@@ -283,6 +283,8 @@
     if (v.me != null) return `<div class="banner"><b>You're already in ${esc(v.name)}.</b> <a href="play.html?id=${esc(joinId)}">Open the league</a></div>`;
     const open = teams.map((t, i) => [t, i]).filter(([, i]) => seats[i] == null);
     if (!open.length) return fail(`Every team in ${v.name} has a manager.`);
+    // an invite emailed for one team (&team=) picks that team, when it's still open
+    const want = Number(params.get("team")), pickI = Number.isInteger(want) && open.some(([, i]) => i === want) ? want : open[0][1];
     const u = C.user(), guess = (prof && prof.name) || (u.email.split("@")[0] || "").replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 24);
     const k = v.sport;
     return `<div class="su sp-${k}"><form id="join"><div class="nl-band si-band jn-band">${FIELD[k] || ""}<div class="nl-bi">
@@ -291,7 +293,7 @@
         <p>${esc(S[k].name)}, ${teams.length} teams, ${open.length} open${v.draft.phase !== "setup" ? ". The draft has started, so you take over that team's picks." : ". Pick a team and you're in."}</p>
       </div></div>
       <div class="nl-ess jn-body">
-        <div class="fl"><div class="fl-l">Pick your team</div><fieldset class="seats"><legend class="sr">Pick a team</legend>${teams.map((t, i) => `<label class="${seats[i] != null ? "taken" : ""}"><input type="radio" name="team" value="${i}"${seats[i] != null ? " disabled" : open[0][1] === i ? " checked" : ""}>${U.teamAv(t, "sm")}<span><b>${esc(t.name)}</b><small>${seats[i] != null ? esc(seats[i]) : "Open"}</small></span></label>`).join("")}</fieldset></div>
+        <div class="fl"><div class="fl-l">Pick your team</div><fieldset class="seats"><legend class="sr">Pick a team</legend>${teams.map((t, i) => `<label class="${seats[i] != null ? "taken" : ""}"><input type="radio" name="team" value="${i}"${seats[i] != null ? " disabled" : pickI === i ? " checked" : ""}>${U.teamAv(t, "sm")}<span><b>${esc(t.name)}</b><small>${seats[i] != null ? esc(seats[i]) : "Open"}</small></span></label>`).join("")}</fieldset></div>
         <div class="g2"><div class="fl"><div class="fl-l"><label for="j-name">Your name</label></div><input id="j-name" type="text" maxlength="24" required value="${esc(guess)}" autocomplete="name"></div><div class="fl"><div class="fl-l"><label for="j-team">Your team's name</label></div><input id="j-team" type="text" maxlength="28" placeholder="Leave blank to keep it" autocomplete="off"></div></div>
         <div><button class="btn go" type="submit">Join the league</button></div>
       </div></form></div>`;

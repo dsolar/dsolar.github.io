@@ -935,7 +935,25 @@
       const botList = bots.length ? `<div class="card" style="margin-top:14px"><div class="mod-h"><h2>${opts.invite != null ? "Open seats" : "Run by bots"}</h2><span class="ps">${bots.length} team${bots.length > 1 ? "s" : ""}</span>${opts.invite != null ? `<button type="button" class="btn sm" data-live="invite" style="margin-left:auto">Invite managers</button>` : ""}</div>
         <ul class="feed">${bots.map((id) => { const m = managerStats(id); return `<li style="grid-template-columns:auto minmax(0,1fr) auto;align-items:center;padding:9px 16px"><a class="row" href="${teamHref(id)}" style="gap:8px;text-decoration:none;color:inherit;grid-column:1 / 3">${teamAv(T(id), "sm")}<span class="ell"><b>${esc(T(id).name)}</b></span></a><span class="ps num">${esc(m.now)}${!gl() && !roto() && m.place ? `, ${ord(m.place)}` : ""}</span></li>`; }).join("")}</ul></div>` : "";
       return `<div class="wrap page"><div class="head"><h1 class="disp">Managers</h1><span class="ps">${people} of ${L().teams.length} teams have a manager${people < L().teams.length ? ", bots run the rest" : ""}.</span>${me() != null && opts.editProfile ? `<button type="button" class="btn sm" data-editprofile style="margin-left:auto">Edit your profile</button>` : ""}</div>
-        <div class="mgrs">${ids.filter((id) => T(id).owner).map((id) => managerCard(id)).join("")}</div>${botList}</div>`;
+        <div class="mgrs">${ids.filter((id) => T(id).owner).map((id) => managerCard(id)).join("")}</div>${botList}${contactsCard()}</div>`;
+    }
+    /* The commissioner's address book (opts.contacts): every team's manager email, kept on the server and shown only
+       to the commissioner, with an invite to email to any team nobody has claimed yet. */
+    function contactsCard() {
+      const cx = opts.contacts && opts.contacts();
+      if (!cx) return "";
+      if (cx.loading) return `<div class="card" style="margin-top:14px"><div class="bd"><p class="ps" style="margin:0">Loading managers' email addresses…</p></div></div>`;
+      const rows = L().teams.map((t) => {
+        const c = cx.teams[t.id] || {}, claimed = cx.claimed(t.id);
+        const status = claimed ? `<span class="tag win">Joined</span>${c.account && c.account !== c.email ? ` <small class="ps">signed up as ${esc(c.account)}</small>` : ""}` : c.invited_at ? `<span class="tag gold">Invited</span> <small class="ps">${esc(U.ago(Date.parse(c.invited_at), now()))}${c.invites > 1 ? `, ${c.invites} times` : ""}</small>` : `<span class="tag">Not invited</span>`;
+        return `<tr data-ct="${t.id}"><td class="nm"><span class="row" style="gap:8px">${teamAv(t, "sm")}<span class="ell"><b>${esc(t.name)}</b>${t.owner ? `<small class="ps" style="display:block">${esc(t.owner)}</small>` : ""}</span></span></td>
+          <td><label class="sr" for="ct-${t.id}">Email for ${esc(t.name)}</label><input id="ct-${t.id}" class="ct-in" type="email" value="${esc(c.email || c.account || "")}" placeholder="name@example.com" autocomplete="off"></td>
+          <td>${status}</td><td class="r act ct-acts"><button type="button" class="btn sm ghost" data-ctsave="${t.id}">Save</button>${claimed ? "" : `<button type="button" class="btn sm${c.invited_at ? "" : " go"}" data-ctinv="${t.id}">${c.invited_at ? "Send again" : "Send invite"}</button>`}</td></tr>`;
+      }).join("");
+      const open = L().teams.filter((t) => !cx.claimed(t.id) && (cx.teams[t.id] || {}).email && !(cx.teams[t.id] || {}).invited_at).length;
+      return `<div class="card ct-card" style="margin-top:14px"><div class="mod-h"><h2>Manager emails</h2><span class="ps">Only you see these</span>${open > 1 ? `<button type="button" class="btn sm go" data-ctall style="margin-left:auto">Invite all ${open} not invited</button>` : ""}</div>
+        <div class="table-wrap"><table class="t ct"><thead><tr><th>Team</th><th>Email</th><th>Status</th><th class="act"></th></tr></thead><tbody>${rows}</tbody></table></div>
+        <p class="ps" style="margin:10px 16px 14px">An invite emails that manager the league's link with his team picked. Once he signs in, the team is his.</p></div>`;
     }
     const duesPage = () => (opts.dues ? `<div class="wrap page"><div class="head"><h1 class="disp">Dues</h1><span class="ps">Money moves through Venmo, PayPal, Cash App or Zelle. This keeps track of who's paid.</span></div><div id="fk-dues">${opts.dues()}</div></div>` : `<div class="wrap page"><p class="ps">This league doesn't have dues.</p></div>`);
     function settingsPage() {
@@ -2340,11 +2358,30 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (d.day != null) { ui.day = +d.day; ui.dayWeek = +d.dw; ui.moving = null; render(); }
+        if (d.ctsave != null || d.ctinv != null) {
+          const t = +(d.ctsave != null ? d.ctsave : d.ctinv), inp = opts.el.querySelector(`#ct-${t}`), em = inp ? inp.value.trim() : "";
+          const cx = opts.contacts(), c = cx.teams[t] || {};
+          const go = async () => {
+            if (em !== (c.email || "")) { const r = await cx.set(t, em, T(t).owner || ""); if (r && r.error) { U.toast(r.error, true); return; } }
+            if (d.ctinv != null) { const r = await cx.invite(t); if (r && r.error) { U.toast(r.error, true); return; } U.toast(`Invite sent to ${em}.`); }
+            else U.toast("Saved.");
+            await cx.reload(); render();
+          };
+          if (d.ctinv != null && !em) { U.toast("Add an email address first.", true); return; }
+          go();
+        }
+        else if (b.hasAttribute("data-ctall")) {
+          const cx = opts.contacts(), list = L().teams.filter((t) => !cx.claimed(t.id) && (cx.teams[t.id] || {}).email && !(cx.teams[t.id] || {}).invited_at);
+          U.confirm(`Email ${list.length} invites?`, `Each manager gets the league's link with his team picked: ${list.map((t) => esc(t.name)).join(", ")}.`, "Send them", async () => {
+            let n = 0; for (const t of list) { const r = await cx.invite(t.id); if (r && r.ok) n++; }
+            U.toast(`${n} invite${n === 1 ? "" : "s"} sent.`); await cx.reload(); render();
+          });
+        }
+        else if (d.day != null) { ui.day = +d.day; ui.dayWeek = +d.dw; ui.moving = null; render(); }
         else if (d.tssort != null) { ui.tsSort = d.tssort || null; render(); }
         else if (d.tfmode) { ui.tfMode = d.tfmode; render(); }
         else if (d.mgr != null) { const Dl = U.dialog(managerCard(+d.mgr, true)); Dl.onclick = (ev) => { if (ev.target.closest("[data-editprofile]")) { Dl.close(); opts.editProfile(); } }; }

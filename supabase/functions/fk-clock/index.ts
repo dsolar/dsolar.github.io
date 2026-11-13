@@ -60,6 +60,19 @@ async function loadWeeks(sport: string, season: string) {
   return w && String(w.season) === String(season) ? w : null;
 }
 
+// Daily box scores (fantasy-kit/data/days-<sport>.json: the current and last week, day by day), for leagues with
+// daily lineups, which score each day's starters on that day's games.
+const dayFiles: Record<string, { at: number; data: any }> = {};
+async function loadDays(sport: string, season: string) {
+  const c = dayFiles[sport];
+  if (!c || Date.now() - c.at >= 10 * 60e3) {
+    const data = await fetch(`${SITE}data/days-${sport}.json?t=${Math.floor(Date.now() / 600e3)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    dayFiles[sport] = { at: Date.now(), data };
+  }
+  const d = dayFiles[sport].data;
+  return d && String(d.season) === String(season) ? d : null;
+}
+
 // Outside dynasty rankings (fantasy-kit/data/dynasty-<sport>.json), for dynasty leagues' values.
 const dynFiles: Record<string, { at: number; data: any }> = {};
 async function loadDynasty(sport: string) {
@@ -106,6 +119,7 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       const byId = Object.fromEntries(players.map((p: any) => [p.id, p]));
       // a one-day league scores its own games: their box scores and states from fk-live ?games=, laid over the weeks file
       let real = weeks;
+      if (weeks && L && L.settings && L.settings.daily) { const dd = await loadDays(l.sport, data.season); if (dd) real = Object.assign({}, weeks, { days: dd }); }
       const gids = L && Z.slateGames ? Z.slateGames(L) : null;
       if (weeks && gids && gids.length) {
         const gm = await fetch(`${URL_}/functions/v1/fk-live?sport=${encodeURIComponent(l.sport)}&games=${gids.join(",")}`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -185,6 +199,10 @@ function rosterHtml(r: any, sport: string, FK: any) {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #E1E5EB;border-radius:12px;border-collapse:separate;overflow:hidden;margin:6px 0 22px">
     <tr><td colspan="3" style="padding:14px 16px 10px;background:#F6F7F9;border-bottom:1px solid #E1E5EB"><div style="font:800 17px ${FONT};color:#0E1621">${h(r.team)}</div><div style="font:400 13px ${FONT};color:#566273;margin-top:2px">${h(sub)}</div></td></tr>${rows}</table>`;
 }
+// why this email came: an invite the commissioner sent, or the manager's own alerts
+const footText = (e: any) => e.kind === "invite"
+  ? `You're getting this because the commissioner of ${e.league_name} invited you to the league on Draft Lab. If it isn't for you, ignore it.`
+  : `You get these because email alerts are on for your team in ${e.league_name}. To turn them off, open the league and choose League, then uncheck email alerts.`;
 function emailHtml(e: any, FK: any) {
   const lines = String(e.body || "").split("\n\n");
   const link = lines.length && /^Open the league: (\S+)$/.exec(lines[lines.length - 1]);
@@ -204,9 +222,9 @@ function emailHtml(e: any, FK: any) {
   <tr><td style="padding:22px 24px 8px">
     <p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">Hi ${h(e.manager || "there")},</p>
     ${paras}${roster}
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 22px"><tr><td style="background:#F6C445;border-radius:9px"><a href="${h(url)}" style="display:inline-block;padding:12px 22px;font:800 15px ${FONT};color:#1F1600;text-decoration:none">Open the league</a></td></tr></table>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 22px"><tr><td style="background:#F6C445;border-radius:9px"><a href="${h(url)}" style="display:inline-block;padding:12px 22px;font:800 15px ${FONT};color:#1F1600;text-decoration:none">${e.kind === "invite" ? "Join the league" : "Open the league"}</a></td></tr></table>
   </td></tr>
-  <tr><td style="padding:14px 24px 18px;border-top:1px solid #EEF1F4;font:400 12.5px/1.5 ${FONT};color:#677284">You get these because email alerts are on for your team in ${h(e.league_name)}. To turn them off, open the league, choose League, then uncheck email alerts.<br><br>Draft Lab, <a href="https://davidsolar.dev/fantasy-kit/" style="color:#677284">davidsolar.dev</a></td></tr>
+  <tr><td style="padding:14px 24px 18px;border-top:1px solid #EEF1F4;font:400 12.5px/1.5 ${FONT};color:#677284">${h(footText(e))}<br><br>Draft Lab, <a href="https://davidsolar.dev/fantasy-kit/" style="color:#677284">davidsolar.dev</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -250,7 +268,7 @@ async function sendMail(token: string) {
     if (!e.email) { errors[e.id] = "no email address"; continue; }
     const roster = e.data && e.data.roster && Array.isArray(e.data.roster.rows) ? rosterText(e.data.roster) : "";
     const body = roster ? String(e.body).replace(/\n\nOpen the league: /, `${roster}\n\nOpen the league: `) : e.body;
-    const text = `Hi ${e.manager || "there"},\n\n${body}\n\nYou get these because email alerts are on for your team in ${e.league_name}. To turn them off, open the league and choose League, then uncheck email alerts.\n\nDraft Lab, davidsolar.dev`;
+    const text = `Hi ${e.manager || "there"},\n\n${body}\n\n${footText(e)}\n\nDraft Lab, davidsolar.dev`;
     let html: string | undefined;
     try { html = emailHtml(e, FK); } catch (_) { html = undefined; } // the plain text still goes out
     const r = await fetch("https://api.resend.com/emails", {

@@ -263,6 +263,8 @@
       get commishTools() { return info.commish ? commishTools : null; },
       notice: () => guestNote() + duesNote() + startNote() + keeperNote(),
       get dues() { return info.dues !== undefined && (duesOn() || info.commish) ? duesBody : null; },
+      // the commissioner's manager emails (fk_contacts), loaded the first time the Managers page asks
+      contacts: () => (info.commish && C.user() ? contactsApi() : null),
       // the money on the line for the league's front page: [{ label, team, amount, kind, place }]
       prizes: () => (duesOn() && Array.isArray(dues().prizes) ? dues().prizes.filter((x) => x.kind === "playoff" || x.kind === "season").map((x) => ({ label: prizeLabel(x), team: prizeWinner(x), amount: prizeTotal(x), kind: x.kind, place: x.place })) : null),
       get invite() { return info.invite ? openSeats() : null; },
@@ -686,6 +688,17 @@
           if (r.error) U.toast(r.error, true); else { U.toast("Done. The team is open."); version = -1; pull(); }
         });
       }
+    };
+  }
+  let contacts = null, contactsAsked = false;
+  function contactsApi() {
+    const reload = async () => { const r = await C.rpc("fk_contacts", { p_id: id }).catch((e) => ({ error: e.message })); contacts = r && r.ok ? r.teams || {} : {}; };
+    if (!contactsAsked) { contactsAsked = true; reload().then(() => app && app.refresh()); }
+    return contacts == null ? { loading: true } : {
+      teams: contacts, reload,
+      claimed: (t) => info.seats[t] != null,
+      set: (t, email, name) => C.rpc("fk_contact_set", { p_id: id, p_team: t, p_email: email, p_name: name }).catch((e) => ({ error: e.message })),
+      invite: (t) => C.rpc("fk_invite_send", { p_id: id, p_team: t, p_note: null }).catch((e) => ({ error: e.message })),
     };
   }
   /* ---------- the next season: keepers, then a new draft ---------- */

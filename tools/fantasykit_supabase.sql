@@ -636,3 +636,88 @@ begin
   return null;
 end $$;
 -- (fk_save itself: as in migration fk_keeper_lock, with the fk_keeper_error check after fk_gameday_error.)
+
+-- ---------- manager emails and invites (migration fantasykit_contacts_invites) ----------
+-- Managers' email addresses the commissioner keeps for each team (before anyone claims it, or a better address than
+-- the one an account signed up with), and invites emailed to them. Commissioner only; the page never sees anyone
+-- else's address. An outbox row with to_email goes to that address instead of the team's seat.
+create table if not exists public.fk_contacts (
+  league text not null references public.fk_leagues(id) on delete cascade,
+  team int not null,
+  email text,
+  name text,
+  invited_at timestamptz,
+  invites int not null default 0,
+  primary key (league, team)
+);
+alter table public.fk_contacts enable row level security;
+alter table public.fk_outbox add column if not exists to_email text;
+alter table public.fk_outbox add column if not exists to_name text;
+
+create or replace function public.fk_outbox_take(p_token text, p_limit integer) returns jsonb
+language plpgsql security definer set search_path to 'public' as $function$
+declare out jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  with picked as (
+    select o.id from fk_outbox o where o.sent_at is null and o.tries < 4 order by o.created_at limit least(coalesce(p_limit, 20), 50) for update skip locked
+  ), bumped as (
+    update fk_outbox o set tries = o.tries + 1 from picked where o.id = picked.id returning o.*
+  )
+  select coalesce(jsonb_agg(jsonb_build_object('id', b.id, 'league', b.league, 'league_name', l.name, 'sport', l.sport, 'team', b.team, 'kind', b.kind,
+    'subject', b.subject, 'body', b.body, 'data', b.data, 'email', coalesce(b.to_email, s.email), 'manager', coalesce(b.to_name, s.manager),
+    'push', case when b.to_email is not null then '[]'::jsonb else (select coalesce(jsonb_agg(p.sub), '[]'::jsonb) from fk_push p where p.user_id = s.user_id) end)), '[]'::jsonb) into out
+  from bumped b join fk_leagues l on l.id = b.league left join fk_seats s on s.league = b.league and s.team = b.team;
+  return jsonb_build_object('emails', out);
+end $function$;
+
+create or replace function public.fk_contacts(p_id text) returns jsonb
+language plpgsql stable security definer set search_path to 'public' as $$
+declare l fk_leagues;
+begin
+  select * into l from fk_leagues where id = p_id;
+  if l.id is null or l.commish is distinct from auth.uid() then return jsonb_build_object('error', 'Only the commissioner can see managers'' email addresses.'); end if;
+  return jsonb_build_object('ok', true, 'teams', coalesce((
+    select jsonb_object_agg(t.team, jsonb_build_object('email', c.email, 'name', c.name, 'invited_at', c.invited_at, 'invites', coalesce(c.invites, 0), 'account', s.email, 'manager', s.manager))
+    from (select team from fk_contacts where league = p_id union select team from fk_seats where league = p_id) t
+    left join fk_contacts c on c.league = p_id and c.team = t.team left join fk_seats s on s.league = p_id and s.team = t.team), '{}'::jsonb));
+end $$;
+
+create or replace function public.fk_contact_set(p_id text, p_team int, p_email text, p_name text) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare l fk_leagues; e text := nullif(lower(trim(coalesce(p_email, ''))), '');
+begin
+  select * into l from fk_leagues where id = p_id;
+  if l.id is null or l.commish is distinct from auth.uid() then return jsonb_build_object('error', 'Only the commissioner can change that.'); end if;
+  if p_team is null or p_team < 0 or p_team >= jsonb_array_length(coalesce(l.league->'teams', l.draft->'teams')) then return jsonb_build_object('error', 'No such team.'); end if;
+  if e is not null and e !~ '^[^@\s]+@[^@\s]+\.[^@\s]+$' then return jsonb_build_object('error', 'That isn''t an email address.'); end if;
+  insert into fk_contacts (league, team, email, name) values (p_id, p_team, e, nullif(trim(coalesce(p_name, '')), ''))
+    on conflict (league, team) do update set email = excluded.email, name = coalesce(excluded.name, fk_contacts.name);
+  return jsonb_build_object('ok', true);
+end $$;
+
+-- email a team's invite: the league's invite link with the team picked, to the address on file; one an hour per team
+create or replace function public.fk_invite_send(p_id text, p_team int, p_note text default null) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare l fk_leagues; c fk_contacts; tname text; link text;
+begin
+  select * into l from fk_leagues where id = p_id;
+  if l.id is null or l.commish is distinct from auth.uid() then return jsonb_build_object('error', 'Only the commissioner can send invites.'); end if;
+  select * into c from fk_contacts where league = p_id and team = p_team;
+  if c.email is null then return jsonb_build_object('error', 'Add an email address for that team first.'); end if;
+  if c.invited_at is not null and c.invited_at > now() - interval '1 hour' then return jsonb_build_object('error', 'An invite went to that team in the last hour.'); end if;
+  tname := coalesce(l.league->'teams'->p_team->>'name', l.draft->'teams'->p_team->>'name', 'a team');
+  link := 'https://davidsolar.dev/fantasy-kit/leagues.html?join=' || p_id || '&code=' || l.invite || '&team=' || p_team;
+  insert into fk_outbox (league, team, kind, subject, body, to_email, to_name, data)
+  values (p_id, p_team, 'invite', l.name || ': you''re invited',
+    'You''re invited to run ' || tname || ' in ' || l.name || ' on Draft Lab, the league''s new home.' ||
+    case when nullif(trim(coalesce(p_note, '')), '') is not null then E'\n\n' || left(trim(p_note), 600) else '' end ||
+    E'\n\nSign in or make an account, and the team is yours. Keepers, trades, chat and the draft all happen there.' ||
+    E'\n\nOpen the league: ' || link,
+    c.email, c.name, jsonb_build_object('url', link, 'invite', true));
+  update fk_contacts set invited_at = now(), invites = invites + 1 where league = p_id and team = p_team;
+  return jsonb_build_object('ok', true);
+end $$;
+
+revoke all on function public.fk_contacts(text), public.fk_contact_set(text, int, text, text), public.fk_invite_send(text, int, text) from public, anon;
+grant execute on function public.fk_contacts(text), public.fk_contact_set(text, int, text, text), public.fk_invite_send(text, int, text) to authenticated;
