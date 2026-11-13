@@ -40,6 +40,8 @@
                        // length premium included (the way Baseball Trade Values reads field value)
     lenPrem: null,     // {4: premium for 4-5 years, 6: premium for 6+}, read from the free agent market
     tiered: false,     // price WAR by tier: 1-2 WAR players are plentiful, stars aren't (from the free agent market)
+    qoPickCost: 4,     // $M, what signing another team's qualifying-offer player costs in lost draft picks and
+                       // international pool money (an average: tax payors lose more, revenue-sharing teams less)
     years: 5,          // seasons on the slider
     sims: 4000
   };
@@ -653,6 +655,20 @@
       } };
   }
 
+  // A signed deal's grade: what deals this long go for (market) against what the team pays, plus the draft pick
+  // and pool money a team gives up for another club's qualifying-offer player, as a share of the market price.
+  // A B is a deal at the going rate. Only deals of $2M+ for players projected at 1+ WAR are graded: that's the range
+  // the market study covers (most relievers and depth signings fall below it, and their percentages swing wildly)
+  var GRADES = [[0.4, "A+"], [0.25, "A"], [0.15, "A-"], [0.06, "B+"], [-0.06, "B"], [-0.15, "B-"], [-0.25, "C+"], [-0.35, "C"], [-0.5, "D"]];
+  function gradeDeal(r, yrs, war, val, mktAav, cfg) {
+    if (!r.aav || !r.yrs || !mktAav || war == null || war < 1 || r.aav < 2e6 || /MiLB/i.test(r.ctype || "")) return null;
+    var paid = r.tot ? r.tot / 1e6 : r.aav / 1e6 * r.yrs, mkt = mktAav * yrs;
+    var pick = r.qo && !r.qoa && r.to && r.from && r.to !== r.from ? cfg.qoPickCost : 0;
+    var edge = (mkt - paid - pick) / mkt, g = "F";
+    for (var i = 0; i < GRADES.length; i++) if (edge >= GRADES[i][0]) { g = GRADES[i][1]; break; }
+    return { g: g, edge: edge, paid: paid, mkt: mkt, pick: pick, worth: val, prod: val - paid - pick };
+  }
+
   // This winter's free agents: what the model says each is worth over the crowd's contract length
   Hub.prototype.faBoard = function () {
     var cls = (this.fa.classes || {})[this.season] || [], self = this, cfg = this.cfg, mk = this.market;
@@ -667,7 +683,7 @@
       var mktAav = spotAav != null && mk ? spotAav * (1 + mk.lenPrem(yrs)) : spotAav;
       return { r: r, p: p, war: war, yrs: yrs, age: age, path: path, value: val, spotAav: spotAav, mktAav: mktAav,
         crowdAav: r.ma ? r.ma / 1e6 : null, signedAav: r.aav ? r.aav / 1e6 : null,
-        gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null };
+        gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null, grade: gradeDeal(r, yrs, war, val, mktAav, cfg) };
     }).filter(function (x) { return x.war != null; }).sort(function (a, b) { return b.value - a.value; });
   };
 
@@ -722,7 +738,7 @@
 
   var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
-    marketRead: marketRead, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
+    marketRead: marketRead, gradeDeal: gradeDeal, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.MLBModel = api;
 })(typeof window !== "undefined" ? window : this);

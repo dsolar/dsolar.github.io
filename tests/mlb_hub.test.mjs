@@ -117,3 +117,15 @@ test("veterans on market deals: Ohtani's pitching counts, no second-year playing
     if (r.length > 1 && p.age < 29) assert.ok(r[1].war > r[0].war - 0.6, p.n + " drops " + r[0].war.toFixed(1) + " to " + r[1].war.toFixed(1));
   }
 });
+
+test('deal grades: at market is a B, a bargain an A, a QO pick costs the signing team', () => {
+  const r = { aav: 15e6, tot: 60e6, yrs: 4, from: 'MIL', to: 'BOS', ctype: 'Free Agent' };
+  assert.equal(M.gradeDeal(r, 4, 2.5, 70, 15, cfg).g, 'B');
+  assert.equal(M.gradeDeal(r, 4, 2.5, 70, 18, cfg).g, 'A-');
+  const qo = M.gradeDeal(Object.assign({}, r, { qo: 22e6 }), 4, 2.5, 70, 18, cfg);
+  assert.equal(qo.pick, cfg.qoPickCost);
+  assert.ok(qo.edge < M.gradeDeal(r, 4, 2.5, 70, 18, cfg).edge);
+  assert.equal(M.gradeDeal(Object.assign({}, r, { qo: 22e6, to: 'MIL' }), 4, 2.5, 70, 18, cfg).pick, 0, 're-signing his own team costs no pick');
+  assert.equal(M.gradeDeal(r, 4, 0.5, 10, 3, cfg), null, 'low-WAR signings go ungraded');
+  assert.equal(M.gradeDeal(Object.assign({}, r, { ctype: 'MiLB' }), 4, 2.5, 70, 15, cfg), null);
+});
