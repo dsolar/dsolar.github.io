@@ -71,6 +71,22 @@ window.PROJECTS = [
     cover: { image: "assets/covers/guess-the-pick.webp", bg: "#0B1626", band: "#C8102E" }
   },
   {
+    title: "The Number",
+    hidden: true,   // until the database (tools/pickem_supabase.sql) is live
+    homeFeatured: true,
+    line: "NFL pick'em against the spread",
+    tag: "Weekly",
+    type: "Games",
+    released: "2026-11",
+    url: "pickem/",
+    action: "Make your picks",
+    question: "Chiefs -3 at Atlanta. Do you lay the points?",
+    summary: "Every NFL game on one card, against a line that freezes the day before the week starts. Pick them all, change your mind until kickoff, and climb the season standings. Start a private group and see your friends' picks the moment each game kicks off.",
+    facts: [["1", "line per game, the same for everyone"], ["½", "a point for a push"], ["200", "players a group can hold"]],
+    stack: ["JavaScript", "PostgreSQL"],
+    cover: { image: "assets/covers/pickem.webp", bg: "#E4ECDF", band: "#C21E2E" }
+  },
+  {
     title: "Journeyman",
     homeFeatured: true,
     line: "Name the player from his teams",
