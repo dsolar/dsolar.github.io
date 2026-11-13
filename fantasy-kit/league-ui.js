@@ -680,9 +680,10 @@
        (side: true). */
     function bracketCard(br, side) {
       const seeds = G.seedOrder(L()), seed = (t) => seeds.indexOf(t) + 1;
-      const won = (m, k) => m.final && (m.w ? m.w === k : k === "a" ? m.sa > m.sb : m.sb > m.sa);
       const box = (m, wk) => {
-        const ln = (t, sc, w, k) => `<div class="bk-t${w ? " w" : m.final ? " l" : ""}${isMe(t) ? " me" : ""}"><i>${seed(t) || ""}</i>${teamAv(T(t), "sm")}<span class="ell">${esc(T(t).name)}</span><b>${m.final || m.live ? fmtS(sc) : ""}</b></div>`;
+        const wn = G.playoffWinner(L(), wk, m), tie = m.final && m.sa === m.sb;
+        const ln = (t, sc, w, k) => `<div class="bk-t${w ? " w" : m.final ? " l" : ""}${isMe(t) ? " me" : ""}"${w && tie ? ` title="Won the tiebreak${L().settings.playoffTie === "h2h" ? ": the better head-to-head record in the regular season" : ": the better seed"}"` : ""}><i>${seed(t) || ""}</i>${teamAv(T(t), "sm")}<span class="ell">${esc(T(t).name)}${w && tie ? ` <small class="tag">TB</small>` : ""}</span><b>${m.final || m.live ? fmtS(sc) : ""}</b></div>`;
+        const won = (_, k) => wn != null && wn === (k === "a" ? m.a : m.b);
         return `<a class="bk-g" href="${matchHref(wk, m.i)}">${ln(m.a, m.sa, won(m, "a"), "a")}${ln(m.b, m.sb, won(m, "b"), "b")}</a>`;
       };
       if (side) {
@@ -1577,8 +1578,47 @@
     const slotGrp = (sl) => { const v = sport.slots[sl]; return sport.groups && Array.isArray(v) && v.every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
     // A baseball category matchup, Yahoo's way: each team's box for the week, hitters and pitchers apart, every
     // category. A week brought in from Yahoo came as team totals, so it says so instead of making up player lines.
+    // A week brought in from another site: its box scores come from a file beside the league (L.imported.boxUrl):
+    // { weeks: { week: { team: [[player id, slot, days started, stats]] } } }, stats as parts that add up (ab, h, tb,
+    // obpab for OPS; outs, er, bbh for ERA and WHIP). Loaded once, the first time a week needs it.
+    let boxFile = null, boxAsked = false;
+    function importedBox(w) {
+      const url = L().imported && L().imported.boxUrl;
+      if (!url || !/^(\/|https:\/\/)[^\s"<>]*$/.test(url)) return null;
+      if (!boxAsked) { boxAsked = true; fetch(url).then((r) => (r.ok ? r.json() : null)).then((j) => { boxFile = j || { weeks: {} }; render(); }).catch(() => { boxFile = { weeks: {} }; render(); }); }
+      return boxFile ? (boxFile.weeks || {})[w] || {} : undefined;
+    }
+    const boxVal = (st, col) => {
+      const s2 = st || {}, d = (a, b) => (b ? a / b : null);
+      if (col === "avg") return d(s2.h || 0, s2.ab);
+      if (col === "ops") return s2.ab ? (s2.obpab || 0) / s2.ab + (s2.tb || 0) / s2.ab : null;
+      if (col === "ip") return s2.outs != null ? Math.floor(s2.outs / 3) + (s2.outs % 3) / 3 : null;
+      if (col === "era") return d((s2.er || 0) * 27, s2.outs);
+      if (col === "whip") return d((s2.bbh || 0) * 3, s2.outs);
+      return s2[col] != null ? s2[col] : 0;
+    };
+    function importedBoxes(w, m, wk) {
+      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+      const box = (team) => {
+        const rows = wk[team] || [];
+        const tbl = (grp, title) => {
+          const cs = cols(grp), mine = rows.filter((r) => slotGrp(r[1]) === grp || (r[3] && (grp === "pit" ? r[3].outs != null : r[3].ab != null) && !sport.slots[r[1]]));
+          const order = L().settings.lineup;
+          mine.sort((x, y) => order.indexOf(x[1]) - order.indexOf(y[1]));
+          const tr = mine.map(([pid, sl, days, st]) => { const p = ctx.byId[pid]; return `<tr><td class="c"><span class="slot">${esc(sl)}</span></td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${days} day${days === 1 ? "" : "s"}`, { size: "sm" })}</span>` : `<span>${esc(String(pid).replace(/^y:/, ""))}</span> <small class="ps">${days} days</small>`}</td>${cs.map((c) => { const v = boxVal(st, c.col); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`; }).join("");
+          return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">No ${title.toLowerCase()} started.</td></tr>`}</tbody></table>`;
+        };
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Everyone who started, with the days he started</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+      };
+      return `<div class="mboxes">${box(m.a)}${box(m.b)}</div>`;
+    }
     function catBoxes(w, m, la, lb) {
-      if (m.final && !m.ta && !m.tb && L().imported) return `<div class="card"><div class="bd"><p class="ps" style="margin:0">This week came over from Yahoo as each team's category totals (above), so there's no player-by-player box score for it.</p></div></div>`;
+      if (m.final && !m.ta && !m.tb && L().imported) {
+        const wk = importedBox(w);
+        if (wk === undefined) return `<div class="card"><div class="bd"><p class="ps" style="margin:0">Loading the box score…</p></div></div>`;
+        if (wk && (wk[m.a] || wk[m.b])) return importedBoxes(w, m, wk);
+        return `<div class="card"><div class="bd"><p class="ps" style="margin:0">This week came over from ${esc(L().imported.from || "another site")} as each team's category totals (above), so there's no player-by-player box score for it.</p></div></div>`;
+      }
       const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
       const box = (team, lu) => {
         const tbl = (grp, title) => {
