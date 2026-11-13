@@ -1812,6 +1812,15 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .cell .pk .by{margin-left:auto;font-style:normal;padding:0 4px;border-radius:3px;background:rgba(0,0,0,.22);color:inherit}
 .cell.via{outline:1.5px dashed rgba(0,0,0,.28);outline-offset:-2px}
 @media (max-width:1100px){.board.fit{overflow:auto}.board.fit .bgrid{min-width:calc(var(--n) * 78px + 30px)}.board.fit .bgrid .h{top:0}}
+/* the week's headline game: the two best records meeting, or the championship */
+.scoreboard .game.feat{border-color:color-mix(in srgb,var(--gold,#d4a017) 70%,var(--line));box-shadow:0 0 0 1px color-mix(in srgb,var(--gold,#d4a017) 45%,transparent),var(--shadow);background:linear-gradient(180deg,color-mix(in srgb,var(--gold,#d4a017) 9%,var(--surface)),var(--surface) 55%)}
+.scoreboard .game.feat .st span:last-child{color:color-mix(in srgb,var(--gold,#d4a017) 75%,var(--ink));font-weight:850}
+.card.sb-feat{background:linear-gradient(180deg,color-mix(in srgb,var(--gold) 10%,var(--surface)),var(--surface) 45%);border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.feat-tag{padding:8px 16px 0;font-size:11px;font-weight:850;letter-spacing:.04em;color:var(--gold)}
+.feat-tag.plain{color:var(--muted)}
+table.t.hl-t td{max-width:0;width:45%}
+table.t.hl-t th[scope=row]{width:1%;white-space:nowrap}
+table.t.hl-t tr.gs td,table.t.hl-t tr.gs th{border-top:2px solid var(--line-2)}
 .pc-logo{width:64px;height:64px;object-fit:contain;flex:none;margin-left:auto;align-self:center;opacity:.95}
 table.t.pc-sc{font-size:13px}
 table.t.pc-sc th[scope=row]{font-weight:750;white-space:nowrap}

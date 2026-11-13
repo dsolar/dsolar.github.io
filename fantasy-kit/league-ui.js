@@ -143,14 +143,33 @@
     // pick your opponent: who chose this matchup
     const pickedBy = (w, m) => { const p = L().picked && L().picked[w]; return p ? (p.includes(m.a) ? m.a : p.includes(m.b) ? m.b : null) : null; };
     /* ---------- view models ---------- */
+    // Each team's winning percentage going into week w (categories or games, the way the league counts them)
+    function pctBefore(w) {
+      const rec = {}, cats = L().settings.tally === "cats";
+      for (let k = 1; k < Math.min(w, L().settings.weeks + 1); k++) for (const g of L().results[k] || []) {
+        for (const [t, me, op] of [[g.a, g.sa, g.sb], [g.b, g.sb, g.sa]]) { const r = (rec[t] = rec[t] || { w: 0, l: 0 }); if (cats) { r.w += me; r.l += op; } else if (me > op) r.w++; else if (me < op) r.l++; }
+      }
+      return (t) => { const r = rec[t]; return r && r.w + r.l ? r.w / (r.w + r.l) : 0; };
+    }
+    // The week's headline game: in the regular season the two best records meeting (from week 2), in the playoffs the
+    // championship. Returns the game's index in G.matchups, or -1.
+    function featuredGame(w, ms) {
+      if (gl() || roto()) return -1;
+      if (w > L().settings.weeks) return ms.findIndex((m) => m.kind === "title" && (G.roundOf(L(), w) || {}).name === "Final");
+      if (w < 2) return -1;
+      const pct = pctBefore(w);
+      let best = -1, bv = -1;
+      ms.forEach((m, i) => { const v = pct(m.a) + pct(m.b) - Math.abs(pct(m.a) - pct(m.b)) * 0.5; if (v > bv) { bv = v; best = i; } });
+      return best;
+    }
     function gamesVM(w) {
-      const ms = G.matchups(L(), ctx, w, frac(w));
-      return ms.map((m) => ({
+      const ms = G.matchups(L(), ctx, w, frac(w)), fi = featuredGame(w, ms);
+      return ms.map((m, idx) => ({ feat: idx === fi, ...(idx === fi && w <= L().settings.weeks ? { featLabel: "Matchup of the week" } : {}),
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
         label: m.final ? "Final" : m.live ? "Live" : pts() ? `Week ${w}, projected` : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : pickedBy(w, m) ? `${T(pickedBy(w, m)).abbr}'s pick` : "",
         a: { team: T(m.a), score: m.final || m.live ? m.sa : pts() ? m.pa : null, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : pts() ? m.pb : null, rec: recOf(m.b) }, m,
         wp: m.final ? null : m.winProb,
-      })).sort((x, y) => (y.me ? 1 : 0) - (x.me ? 1 : 0));   // your game first
+      })).map((g) => (g.featLabel ? Object.assign(g, { sub: g.featLabel }) : g)).sort((x, y) => (y.me ? 2 : 0) + (y.feat ? 1 : 0) - (x.me ? 2 : 0) - (x.feat ? 1 : 0));   // your game first, then the headline game
     }
     function versusVM(w, m) {
       if (isMe(m.b)) m = flip(m);
@@ -395,6 +414,25 @@
       lines.push("", location.href.replace(/#.*$/, "") + `#league/recap/${rc.week}`);
       return lines.join("\n");
     }
+    /* A category week's highs and lows across the whole league: the best and worst team in every category, and
+       which of them are the best or worst any team has put up all season. */
+    function catHighs(w) {
+      const res = L().results[w];
+      if (!Array.isArray(res) || !res.some((g) => g.cats)) return "";
+      const vals = (wk) => { const out = {}; for (const g of L().results[wk] || []) if (g.cats) for (const [k, [x, y]] of Object.entries(g.cats)) { (out[k] = out[k] || []).push([g.a, x], [g.b, y]); } return out; };
+      const now = vals(w), past = {};
+      for (let k = 1; k <= w; k++) for (const [c, list] of Object.entries(vals(k))) (past[c] = past[c] || []).push(...list.map((v) => v[1]));
+      const cats = sc().cats.filter((c) => now[c.k]);
+      const f = (c, v) => (c.fmt ? c.fmt(v) : String(Math.round(v)));
+      const rows = cats.map((c, i) => {
+        const list = now[c.k].slice().sort((a, b) => (c.low ? a[1] - b[1] : b[1] - a[1]));
+        const best = list[0], worst = list[list.length - 1], all = past[c.k], better = (a, b) => (c.low ? a < b : a > b);
+        const sHigh = all.every((v) => !better(v, best[1])), sLow = all.every((v) => !better(worst[1], v));
+        const who = (x, flag) => `<span class="row" style="gap:7px;min-width:0">${teamAv(T(x[0]), "sm")}<span class="ell">${esc(T(x[0]).name)}</span><b class="num">${f(c, x[1])}</b>${flag}</span>`;
+        return `<tr${i > 0 && (c.line || "") !== (cats[i - 1].line || "") ? ` class="gs"` : ""}><th scope="row">${esc(c.label)}</th><td>${who(best, sHigh && w > 1 ? `<span class="tag win" title="The best any team has done all season">Season best</span>` : "")}</td><td>${who(worst, sLow && w > 1 ? `<span class="tag loss" title="The worst any team has done all season">Season worst</span>` : "")}</td></tr>`;
+      }).join("");
+      return `<div class="card"><div class="mod-h"><h2>Highs and lows</h2><span class="ps">The best and worst in every category, league-wide</span></div><div class="table-wrap"><table class="t hl-t"><thead><tr><th>Cat</th><th>Best</th><th>Worst</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
+    }
     function recapPage(arg) {
       const last = lastDone();
       if (!recapOn() || last < 1) return `<div class="wrap page"><div class="head"><h1 class="disp">Recap</h1></div><div class="card"><div class="bd"><p class="ps" style="margin:0">The recap is written when the first week is final.</p></div></div></div>`;
@@ -419,12 +457,15 @@
       const pw = w === last && !over() ? G.power(L(), ctx).slice(0, 5) : [];
       const pwCard = pw.length ? `<div class="card"><div class="mod-h"><h2>Power rankings</h2><a href="#league/standings">More</a></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<span class="ell"><b>${nm(r.team)}</b> <span class="ps">${recOf(r.team)}</span></span>${moveTag(r.move)}</li>`).join("")}</ol></div>` : "";
       const lede = recapLede(rc);
+      const hl = !pts() ? catHighs(w) : "";
+      // a playoff week leads with its biggest game: the championship in the last round
+      const title = rc.playoff ? rc.games.find((g) => g.kind === "title") : null;
       return `<div class="wrap page rcp">
         <div class="head"><h1 class="disp">Week ${w} recap</h1><span class="ps">${rc.playoff ? esc(kindName(rc.games[0] && rc.games[0].kind, w)) + ". " : ""}${rc.games.length} game${rc.games.length === 1 ? "" : "s"}</span></div>
         ${weeks.length > 1 ? `<div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-rcweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>` : ""}
         <div class="card rc-lede"><div class="bd"><p>${lede || "Every result from the week."}</p><div class="row" style="flex-wrap:wrap"><button class="btn sm" data-copyrecap="${w}">Copy for the group chat</button>${typeof navigator.share === "function" ? `<button class="btn sm ghost" data-sharerecap="${w}">Share</button>` : ""}</div></div></div>
         <div class="cols"><div class="stack">
-          ${gameCard(rc.close, "Game of the week")}
+          ${title ? gameCard(title, esc(kindName("title", w))) : gameCard(rc.close, "Game of the week")}${hl}
           <div class="card"><div class="mod-h"><h2>Every result</h2><a href="#league/scoreboard/${w}">Scoreboard</a></div><div class="bd sbtwo">${U.scoreboard(gamesVM(w).map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>
           ${callsCard}
         </div><aside class="stack">${topCard}${stCard}${pwCard}</aside></div></div>`;
@@ -639,7 +680,7 @@
       const weeks = Array.from({ length: Math.min(curWeek(), G.totalWeeks(L())) }, (_, i) => i + 1);
       return `<div class="wrap page"><div class="head"><h1 class="disp">Scoreboard</h1></div>
         <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>
-        <div class="cols2 hide-m">${G.matchups(L(), ctx, w, frac(w)).slice().sort((a, b) => (isMe(b.a) || isMe(b.b) ? 1 : 0) - (isMe(a.a) || isMe(a.b) ? 1 : 0)).map((m) => `<a class="card" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div>
+        <div class="cols2 hide-m">${((ms) => { const fi = featuredGame(w, ms); return ms.map((m) => Object.assign({}, m, { feat: m.i === fi })); })(G.matchups(L(), ctx, w, frac(w))).sort((a, b) => (isMe(b.a) || isMe(b.b) ? 2 : 0) + (b.feat ? 1 : 0) - (isMe(a.a) || isMe(a.b) ? 2 : 0) - (a.feat ? 1 : 0)).map((m) => `<a class="card${m.feat ? " sb-feat" : ""}" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${m.feat ? `<div class="feat-tag">${w > L().settings.weeks ? esc(kindName("title", w)) : "Matchup of the week"}</div>` : w > L().settings.weeks && m.kind ? `<div class="feat-tag plain">${esc(kindName(m.kind, w))}</div>` : ""}${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div>
         <div class="show-m sbm">${U.scoreboard(gamesVM(w), fmtS, { list: true })}</div></div>`;
     }
     const TXK = { add: "add", drop: "drop", "add/drop": "add", waiver: "waiver", trade: "trade", veto: "trade" };
