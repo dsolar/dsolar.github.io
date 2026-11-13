@@ -566,11 +566,10 @@
     if (!s.rows.length) html += '<tr><td class="note" colspan="7">Projects below his pay in every controlled season: a team would cut him before paying more than he\'s worth.</td></tr>';
     else {
       var tw = s.rows.reduce(function (a, r) { return a + r.war * fth; }, 0), tv = s.rows.reduce(function (a, r) { return a + r.value; }, 0), ts = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
-      html += '<tr class="tot"><td colspan="3">Total</td><td>' + f1(tw) + "</td><td>" + money(tv) + "</td><td>" + money(ts) + '</td><td class="' + (s.total >= 0 ? "pos" : "neg") + '">' + signed(s.total) + "</td></tr>";
-      html += '<tr class="tot"><td colspan="3">Discounted</td><td></td><td>' + money(s.valuePV) + "</td><td>" + money(s.contractPV) + '</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
+      html += '<tr class="tot"><td colspan="3">Total</td><td>' + f1(tw) + "</td><td>" + money(tv) + "</td><td>" + money(ts) + '</td><td class="' + (s.total >= 0 ? "pos" : "neg") + '">' + "<b>" + signed(s.total) + "</b></td></tr>";
     }
     html += "</tbody></table></div>";
-    html += '<p class="note">Discounted at ' + pct(H.cfg.discount, 0) + " a year. A win costs " + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year." +
+    html += '<p class="note">A win costs ' + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year." +
       (s.prospect ? " Prospect value is scaled by his risk grade (" + pct(s.hit, 0) + ")." : "") + "</p></div>";
     html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade: side A</button> <button class="btn" data-add="b" data-id="' + esc(p.id) + '">Side B</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth chart</a></p></div>";
     cardBody.innerHTML = html;
