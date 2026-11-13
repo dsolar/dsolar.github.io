@@ -133,6 +133,7 @@
     const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
+      if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(sport.key === "mlb" ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
       return [];
@@ -2563,7 +2564,7 @@
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
       else if (r.tab === "draft") html = draftPage();
-      else if (r.tab === "commish") html = `<div class="wrap page">${opts.commishTools()}</div>`;
+      else if (r.tab === "commish") html = `<div class="wrap page">${opts.commishTools(r.sub, { contacts: contactsCard })}</div>`;
       // every page names itself: in the tab title, and as a heading for screen readers when the page has none
       const tabName = (TABS().find(([k]) => k === r.tab) || [, ""])[1], subName = (subs.find(([k]) => k === r.sub) || [, ""])[1];
       const pageName = subName && subName !== "Overview" ? subName : tabName;
