@@ -1474,7 +1474,8 @@ tr.show-s{display:none}
 .mgr:hover{border-color:var(--line-2)}.mgr.me{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
 .mgr-h{display:flex;align-items:center;gap:12px;min-width:0}.mgr-h b{font-size:16px;display:block}.mgr-h .ps{font-size:12.5px}
 .mgr-t{display:flex;align-items:center;gap:8px;min-width:0;font-weight:650}
-.mgr-s{display:flex;gap:16px;flex-wrap:wrap}.mgr-s span{display:flex;flex-direction:column}.mgr-s small{font-size:11px;color:var(--muted)}.mgr-s b{font-variant-numeric:tabular-nums}
+.mgr-s{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}.mgr-s span{display:flex;flex-direction:column;min-width:0}.mgr-s small{font-size:11px;color:var(--muted)}.mgr-s b{font-variant-numeric:tabular-nums}
+.mgr-yrs{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.mgr-yrs span{font-size:11px;font-weight:850;padding:2px 7px;border-radius:5px;background:var(--lc,var(--gold));color:#fff;font-variant-numeric:tabular-nums}
 .mgr-tags{display:flex;gap:6px;flex-wrap:wrap}
 .mgr-card{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px}
 /* pack draft: price tags, the budget, mystery cards */
@@ -1969,3 +1970,56 @@ table.t.mbox + table.t.mbox{border-top:2px solid var(--line-2)}
   .tf-ar{display:none}
   .tf-side+.tf-ar+.tf-side{border-top:1px dashed var(--line);padding-top:8px}
 }
+
+/* the champion's module: the league's masthead colors, the title game on the left and the podium with its prizes */
+.ch-hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:0;border-radius:18px;overflow:hidden;border-top:4px solid var(--lc)}
+.ch-main{padding:22px 26px;display:grid;gap:12px;align-content:start;background:linear-gradient(120deg,rgba(255,255,255,.06),transparent 60%)}
+.ch-k{font-size:13px;font-weight:800;color:var(--lc);filter:brightness(1.35)}
+.ch-team{display:flex;gap:16px;align-items:center}
+.ch-team h2{margin:0;font-size:clamp(26px,3.4vw,40px);line-height:1.02}
+.ch-fin{margin:0;font-size:15px;color:var(--muted)}
+.ch-fin b{color:var(--ink)}
+.ch-main .btn{justify-self:start;background:transparent;color:var(--ink);border-color:var(--line-2)}
+.ch-pod{list-style:none;margin:0;padding:14px 0;background:rgba(0,0,0,.18);display:grid;align-content:center}
+.ch-pod li{display:grid;grid-template-columns:42px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 22px}
+.ch-pod li+li{border-top:1px solid var(--line)}
+.ch-pod li.rs:first-of-type,.ch-pod li:not(.rs)+li.rs{border-top:1px dashed var(--line-2)}
+.ch-pl{font-weight:900;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.ch-pod li:first-child .ch-pl{color:var(--lc);filter:brightness(1.35)}
+.ch-nm{display:grid;min-width:0}
+.ch-nm small{font-size:11.5px;color:var(--muted);font-weight:650}
+.ch-amt{font-variant-numeric:tabular-nums;font-size:15px}
+@media (max-width:800px){.ch-hero{grid-template-columns:minmax(0,1fr)}.ch-main{padding:18px}.ch-pod li{padding:8px 18px}}
+@media (min-width:981px){.scoreboard.fill.n4,.pobd .scoreboard.n4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:981px){.card .sbtwo .scoreboard.list.n4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* the playoff bracket: a column a round, games spaced so each lines up between the two it came from */
+.bk{display:grid;grid-template-columns:repeat(var(--cols),minmax(190px,1fr));gap:0 26px;padding:14px 16px 18px;overflow-x:auto}
+.bk-col{display:flex;flex-direction:column;min-width:0}
+.bk-h{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid var(--ink)}
+.bk-h small{font-size:11.5px;color:var(--muted);font-weight:650}
+.bk-gs{flex:1;display:flex;flex-direction:column;justify-content:space-around;gap:12px}
+.bk-g{position:relative;display:grid;border:1px solid var(--line-2);border-radius:10px;background:var(--surface);text-decoration:none;color:inherit;overflow:hidden}
+.bk-g:hover{border-color:var(--ink)}
+.bk-col:not(.bk-champ):not(:nth-last-child(2)) .bk-g::after,.bk-col:nth-last-child(2) .bk-g::after{content:"";position:absolute;right:-27px;top:50%;width:26px;border-top:2px solid var(--line-2)}
+.bk-g{overflow:visible}
+.bk-t{display:grid;grid-template-columns:18px auto minmax(0,1fr) auto;gap:7px;align-items:center;padding:6px 10px;font-size:13.5px}
+.bk-t+.bk-t{border-top:1px solid var(--line)}
+.bk-t i{font-style:normal;font-size:11px;font-weight:800;color:var(--muted);text-align:right}
+.bk-t b{font-variant-numeric:tabular-nums}
+.bk-t.w span{font-weight:800}
+.bk-t.l{color:var(--muted)}.bk-t.l .av{opacity:.55}
+.bk-t.me{background:var(--brand-soft, color-mix(in srgb,var(--brand) 14%,transparent))}
+.bk-cup{display:grid;justify-items:center;text-align:center;gap:6px;padding:16px 10px;border-radius:12px;background:linear-gradient(180deg,var(--gold-soft),transparent);border:1px solid var(--line-2)}
+.bk-cup b{font-size:15px}
+.bk-rest{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.bk-rest>div{display:grid;gap:5px}
+
+/* the season in moves: a strip of numbers above the transaction log */
+.tx-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border:1px solid var(--line);border-top:3px solid var(--lc, var(--brand));border-radius:14px;background:var(--surface);margin-bottom:14px}
+.tx-sum>div{display:grid;gap:2px;padding:12px 16px;border-left:1px solid var(--line);min-width:0}
+.tx-sum>div:first-child{border-left:0}
+.tx-sum small{font-size:11.5px;color:var(--muted);font-weight:700}
+.tx-sum b{font-size:22px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.1}
+@media (max-width:600px){.tx-sum{grid-template-columns:1fr 1fr}.tx-sum>div:nth-child(odd){border-left:0}.tx-sum>div:nth-child(n+3){border-top:1px solid var(--line)}}
+aside .sbtwo .scoreboard.list,aside .card .sbtwo .scoreboard.list.n4{grid-template-columns:minmax(0,1fr) !important}

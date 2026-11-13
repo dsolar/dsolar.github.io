@@ -527,7 +527,7 @@
   // games: [{ href, me, status: "final" | "live" | "proj", label, sub, a: { team, score, rec }, b }]
   // The scoreboard: a strip of games (opts.list stacks them full width, for phones). g.wp adds a win probability bar.
   function scoreboard(games, fmt = (x) => x, opts = {}) {
-    return `<div class="scoreboard${opts.list ? " list" : ""}${!opts.list && games.length && games.length <= 6 ? " fill" : ""}">${games.map((g) => {
+    return `<div class="scoreboard${opts.list ? " list" : ""}${!opts.list && games.length && games.length <= 6 ? " fill" : ""}${games.length === 4 ? " n4" : ""}">${games.map((g) => {
       const lead = g.a.score === g.b.score ? null : g.a.score > g.b.score ? "a" : "b";
       const ln = (s, k) => `<div class="ln ${lead ? (lead === k ? "lead" : "trail") : ""}">${teamAv(s.team, "sm")}<span class="ell">${esc(s.team.name)}</span><span class="ab">${esc(s.team.abbr || "")}</span><small>${esc(s.rec || "")}</small><b>${fmt(s.score)}</b></div>`;
       const wp = g.wp != null ? `<div class="wpm" aria-label="Win probability ${Math.round(g.wp * 100)} to ${Math.round((1 - g.wp) * 100)}"><i style="width:${(g.wp * 100).toFixed(1)}%;background:var(--t${g.a.team.color % 12})"></i><i style="width:${((1 - g.wp) * 100).toFixed(1)}%;background:var(--t${g.b.team.color % 12})"></i></div>` : "";

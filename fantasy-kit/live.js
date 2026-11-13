@@ -257,6 +257,8 @@
       get commishTools() { return info.commish ? commishTools : null; },
       notice: () => guestNote() + duesNote() + startNote() + keeperNote(),
       get dues() { return info.dues !== undefined && (duesOn() || info.commish) ? duesBody : null; },
+      // the money on the line for the league's front page: [{ label, team, amount, kind, place }]
+      prizes: () => (duesOn() && Array.isArray(dues().prizes) ? dues().prizes.filter((x) => x.kind === "playoff" || x.kind === "season").map((x) => ({ label: prizeLabel(x), team: prizeWinner(x), amount: prizeTotal(x), kind: x.kind, place: x.place })) : null),
       get invite() { return info.invite ? openSeats() : null; },
       chat,
       history: () => past,

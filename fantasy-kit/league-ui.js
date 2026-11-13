@@ -367,7 +367,7 @@
       const total = G.totalWeeks(L());
       return `<div class="wrap page">
         <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
-        ${champ != null && oneWeekLg() ? finishCard() : champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The ${esc(L().season || "")} season is over.</div></div></div>` : ""}
+        ${champ != null && oneWeekLg() ? finishCard() : champ != null ? champHero(champ) : ""}
         ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
@@ -476,15 +476,17 @@
       const hl = !pts() ? catHighs(w) : "";
       // a playoff week leads with its biggest game: the championship in the last round
       const title = rc.playoff ? rc.games.find((g) => g.kind === "title") : null;
+      // every result: under the headline game, or in the sidebar when nothing else fills it (a playoff week)
+      const everyCard = `<div class="card"><div class="mod-h"><h2>Every result</h2><a href="#league/scoreboard/${w}">Scoreboard</a></div><div class="bd sbtwo">${U.scoreboard(gamesVM(w).map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
       return `<div class="wrap page rcp">
         <div class="head"><h1 class="disp">Week ${w} recap</h1><span class="ps">${rc.playoff ? esc(kindName(rc.games[0] && rc.games[0].kind, w)) + ". " : ""}${rc.games.length} game${rc.games.length === 1 ? "" : "s"}</span></div>
         ${weeks.length > 1 ? `<div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-rcweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>` : ""}
         <div class="card rc-lede"><div class="bd"><p>${lede || "Every result from the week."}</p><div class="row" style="flex-wrap:wrap"><button class="btn sm" data-copyrecap="${w}">Copy for the group chat</button>${typeof navigator.share === "function" ? `<button class="btn sm ghost" data-sharerecap="${w}">Share</button>` : ""}</div></div></div>
         <div class="cols"><div class="stack">
           ${title ? gameCard(title, esc(kindName("title", w))) : gameCard(rc.close, "Game of the week")}${hl}
-          <div class="card"><div class="mod-h"><h2>Every result</h2><a href="#league/scoreboard/${w}">Scoreboard</a></div><div class="bd sbtwo">${U.scoreboard(gamesVM(w).map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>
+          ${topCard || stCard || pwCard ? everyCard : ""}
           ${callsCard}
-        </div><aside class="stack">${topCard}${stCard}${pwCard}</aside></div></div>`;
+        </div><aside class="stack">${topCard || stCard || pwCard ? `${topCard}${stCard}${pwCard}` : everyCard}</aside></div></div>`;
     }
     const moveTag = (m) => (m > 0 ? `<span class="tag win">+${m}</span>` : m < 0 ? `<span class="tag loss">${m}</span>` : `<span class="ps">-</span>`);
     const championOf = () => G.finish(L()).champion;
@@ -673,6 +675,27 @@
         ? first.map(([a, b]) => (b ? `<div class="bk-g">${team(a)}${team(b)}</div>` : `<div class="bk-g">${team(a)}<div class="bk-t"><span class="ps">Bye</span></div></div>`)).join("")
         : Array.from({ length: P / 2 ** (ri + 1) }, () => tbd).join("")}</div>`).join("")}</div>`;
     }
+    /* The playoffs as a bracket: a column a round, the champion at the end, seeds beside each team. With placement
+       games (every playoff team plays for its place) or a consolation bracket, those games follow in their own card
+       (side: true). */
+    function bracketCard(br, side) {
+      const seeds = G.seedOrder(L()), seed = (t) => seeds.indexOf(t) + 1;
+      const won = (m, k) => m.final && (m.w ? m.w === k : k === "a" ? m.sa > m.sb : m.sb > m.sa);
+      const box = (m, wk) => {
+        const ln = (t, sc, w, k) => `<div class="bk-t${w ? " w" : m.final ? " l" : ""}${isMe(t) ? " me" : ""}"><i>${seed(t) || ""}</i>${teamAv(T(t), "sm")}<span class="ell">${esc(T(t).name)}</span><b>${m.final || m.live ? fmtS(sc) : ""}</b></div>`;
+        return `<a class="bk-g" href="${matchHref(wk, m.i)}">${ln(m.a, m.sa, won(m, "a"), "a")}${ln(m.b, m.sb, won(m, "b"), "b")}</a>`;
+      };
+      if (side) {
+        const rest = br.flatMap((b) => b.games.filter((m) => m.kind && m.kind !== "title").map((m) => ({ m, wk: b.week, label: m.kind === "third" ? "Third place" : /^p\d+$/.test(m.kind) ? kindName(m.kind, b.week) : `Consolation, ${b.round}` })));
+        if (!rest.length) return "";
+        return `<div class="card"><div class="mod-h"><h2>Placement games</h2><span class="ps">Every playoff team plays for its place</span></div><div class="bd bk-rest">${rest.map((x) => `<div><small class="ps">${esc(x.label)}, week ${x.wk}</small>${box(x.m, x.wk)}</div>`).join("")}</div></div>`;
+      }
+      const cols = br.map((b) => ({ name: b.round, wk: b.week, games: b.games.filter((m) => (m.kind || "title") === "title") })).filter((c) => c.games.length);
+      const champ = over() ? championOf() : null;
+      return `<div class="card bk-card"><div class="mod-h"><h2>Playoff bracket</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}${L().settings.reseed ? ", reseeded each round" : ""}</span></div>
+        <div class="bk" style="--cols:${cols.length + 1}">${cols.map((c) => `<div class="bk-col"><b class="bk-h">${esc(c.name)}<small>Week ${c.wk}</small></b><div class="bk-gs">${c.games.map((m) => box(m, c.wk)).join("")}</div></div>`).join("")}
+          <div class="bk-col bk-champ"><b class="bk-h">Champion<small>${esc(L().season || "")}</small></b><div class="bk-gs"><div class="bk-cup">${champ != null ? `${teamAv(T(champ), "lg")}<b>${esc(T(champ).name)}</b>${T(champ).owner ? `<small class="ps">${esc(T(champ).owner)}</small>` : ""}` : `<b class="ps">To be decided</b>`}</div></div></div></div></div>`;
+    }
     function standingsPage() {
       if (gl()) return survivorsPage();
       if (roto()) return rotoStandingsPage();
@@ -684,9 +707,11 @@
       const br = G.bracket(L(), ctx);
       return `<div class="wrap page"><div class="head"><h1 class="disp">Standings</h1><span class="ps">${!L().settings.playoffTeams ? `No playoffs: first place wins the title. Ties break on ${pts() ? "points for" : "categories won"}.` : over() ? "Final regular-season standings. The playoffs decided the title." : `${dv ? `${L().settings.playoffTeams >= L().settings.divisions ? "Division winners get the top seeds, then the best records fill" : "The best records make"} the ${L().settings.playoffTeams} playoff spots` : `Top ${L().settings.playoffTeams} make the playoffs (the dashed line)`}${byes() ? `, and the top ${byes()} get a bye` : ""}.${L().settings.median ? " Records count a game against the league median each week." : ""} Ties break on ${pts() ? "points for" : "categories won"}.`}</span></div>
         ${tables}
+        ${br.length ? bracketCard(br) : ""}
         <div class="cols2">
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><span class="ps">Record, scoring and roster strength</span></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<a class="ell" href="${teamHref(r.team)}" style="color:inherit;text-decoration:none"><b>${esc(T(r.team).name)}</b> <span class="ps">${recOf(r.team)}</span></a>${moveTag(r.move)}</li>`).join("")}</ol></div>
-          <div class="card"><div class="mod-h"><h2>Playoffs</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}</span></div><div class="bd pobd">${br.length ? br.map((b) => [["title", ""], ["third", "Third place"]].concat([...new Set(b.games.map((m) => m.kind).filter((k) => /^p\d+$/.test(k || "")))].sort((x, y) => +x.slice(1) - +y.slice(1)).map((k) => [k, kindName(k, b.week)]), [["cons", "Consolation"]]).map(([k, name]) => [name, b.games.filter((m) => (m.kind || "title") === k), k]).filter(([, gs]) => gs.length).map(([name, gs, k]) => `<div class="stack" style="gap:8px;margin-bottom:12px"><b class="ps">${/^p\d+$/.test(k) ? `${esc(name)}, week ${b.week}` : `${name ? `${name}: ` : ""}${esc(b.round)}, week ${b.week}${b.leg ? ` (${b.leg})` : ""}`}</b>${U.scoreboard(gs.map((m) => ({ href: matchHref(b.week, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : "proj", a: { team: T(m.a), score: m.final ? m.sa : m.pa }, b: { team: T(m.b), score: m.final ? m.sb : m.pb } })), fmtS)}</div>`).join("")).join("") : bracketPreview()}</div></div>
+          ${bracketCard(br, true)}
+          ${br.length ? "" : `<div class="card"><div class="mod-h"><h2>Playoffs</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}</span></div><div class="bd pobd">${bracketPreview()}</div></div>`}
         </div></div>`;
     }
     function scoreboardPage(arg) {
@@ -762,12 +787,24 @@
       const items = chatItems().slice(-4), n = opts.chat.unread();
       return `<div class="card chat-card"><div class="mod-h"><h2>League chat</h2>${n ? `<span class="badge">${n}</span>` : ""}<a href="#league/chat">Open chat</a></div>${chatList(items)}${chatForm(false)}</div>`;
     }
+    // the season in moves, above the log: how busy the wire was, who worked it most, who traded most, the priciest claim
+    function txSummary() {
+      const tx = L().tx.filter((x) => x.type !== "draft" && x.team >= 0);
+      if (tx.length < 8) return "";
+      const by = (f) => { const c = {}; for (const x of tx.filter(f)) c[x.team] = (c[x.team] || 0) + 1; return Object.entries(c).sort((a, b) => b[1] - a[1])[0]; };
+      const adds = tx.filter((x) => (x.adds || []).length && x.type !== "trade").length, trades = L().trades.filter((t) => t.status === "accepted").length;
+      const busy = by((x) => x.type !== "trade"), dealer = by((x) => x.type === "trade");
+      const big = L().settings.waivers === "faab" ? tx.filter((x) => x.type === "waiver" && x.faab != null).sort((a, b) => b.faab - a.faab)[0] : null;
+      const cell = (k, v, sub) => `<div><small>${k}</small><b>${v}</b>${sub ? `<span class="ps ell">${sub}</span>` : ""}</div>`;
+      return `<div class="tx-sum">${cell("Pickups", adds)}${cell("Trades", trades)}${busy ? cell("Busiest wire", `${busy[1]} moves`, esc(T(+busy[0]).name)) : ""}${dealer ? cell("Most trades", `${Math.round(dealer[1] / 1)}`, esc(T(+dealer[0]).name)) : ""}${big && big.faab ? cell("Top claim", `$${big.faab}`, `${esc((ctx.byId[(big.adds || [])[0]] || {}).n || "")}, ${esc(T(big.team).abbr)}`) : ""}</div>`;
+    }
     function txPage() {
       const f = ui.txf;
       const tf = ui.txt != null && ui.txt !== "" ? +ui.txt : null;
       const items = L().tx.slice().reverse().filter((x) => x.type !== "draft" && (tf == null || x.team === tf || x.other === tf) && (!f || (f === "add" ? /add/.test(x.type) : f === "drop" ? (x.drops || []).length && x.type !== "trade" : x.type === f)));
       const lim = ui.txlim || 200;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Transactions</h1><span class="ps">${((n) => (n ? `${n} move${n === 1 ? "" : "s"} this season` : "No moves yet this season"))(L().tx.filter((x) => x.type !== "draft").length)}</span></div>
+        ${txSummary()}
         <div class="row txbar"><div class="chips" role="group" aria-label="Type">${[["", "All"], ["add", "Adds"], ["drop", "Drops"], ["waiver", "Waivers"], ["trade", "Trades"]].map(([k, n]) => `<button type="button" data-txf="${k}" aria-pressed="${k === f}">${n}</button>`).join("")}</div>
         <label class="sr" for="fk-txt">Team</label><select id="fk-txt" class="txsel"><option value="">Every team</option>${L().teams.map((t) => `<option value="${t.id}"${tf === t.id ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</select></div>
         ${txTable(items.slice(0, lim))}${items.length > lim ? `<div class="row" style="justify-content:center;margin-top:12px"><button type="button" class="btn" data-txmore>Show more (${items.length - lim} left)</button></div>` : ""}</div>`;
@@ -831,13 +868,14 @@
     function managerStats(id) {
       const r = standings().find((x) => x.team === id) || {}, all = seasonsAll();
       let titles = 0, w = 0, l = 0, t = 0, seasons = 0;
-      for (const x of all) { const row = (x.standings || []).find((y) => y.team === id); if (!row) continue; seasons++; w += row.w || 0; l += row.l || 0; t += row.t || 0; if (!x.live && x.champion && x.champion.team === id) titles++; }
+      const years = [];
+      for (const x of all) { const row = (x.standings || []).find((y) => y.team === id); if (!row) continue; seasons++; w += row.w || 0; l += row.l || 0; t += row.t || 0; if (!x.live && x.champion && x.champion.team === id) { titles++; years.push(x.season || x.year); } }
       const now = gl() ? recOf(id) : roto() ? `${ord(r.rank)}` : `${r.w || 0}-${r.l || 0}${r.t ? "-" + r.t : ""}`;
-      return { now, place: r.rank, titles, seasons, all: `${w}-${l}${t ? "-" + t : ""}` };
+      return { now, place: r.rank, titles, seasons, years, all: `${w}-${l}${t ? "-" + t : ""}` };
     }
     function managerCard(id, big) {
       const tm = T(id), f = faceOf(id), m = managerStats(id), hasWL = !gl() && !roto();
-      const stats = `<div class="mgr-s"><span><small>${gl() ? "This season" : roto() ? "Place" : "Record"}</small><b>${esc(m.now)}</b></span>${!gl() && !roto() && m.place ? `<span><small>Place</small><b>${ord(m.place)}</b></span>` : ""}${m.seasons > 1 && hasWL ? `<span><small>All-time</small><b>${esc(m.all)}</b></span>` : ""}<span><small>Titles</small><b>${m.titles}</b></span></div>`;
+      const stats = `<div class="mgr-s"><span><small>${gl() ? "This season" : roto() ? "Place" : "Record"}</small><b>${esc(m.now)}</b></span>${!gl() && !roto() && m.place ? `<span><small>Place</small><b>${ord(m.place)}</b></span>` : ""}${m.seasons > 1 && hasWL ? `<span><small>All-time</small><b>${esc(m.all)}</b></span>` : ""}<span><small>Titles</small><b>${m.titles}</b></span></div>${m.years.length ? `<div class="mgr-yrs" aria-label="Title seasons">${m.years.map((y) => `<span>${esc(String(y))}</span>`).join("")}</div>` : ""}`;
       const tags = `${isMe(id) && !/^you$/i.test(tm.owner || "") ? `<span class="tag you">You</span>` : ""}${!tm.owner ? `<span class="tag">Bot</span>` : ""}`;
       if (big) return `<div class="mgr-card">${U.faceAv(f, tm.owner || "Bot", "xl")}<h3 class="disp" style="margin:6px 0 0">${esc(tm.owner || "A bot")}</h3><div class="mgr-tags">${tags}</div>
         <a class="mgr-t" href="${teamHref(id)}" data-close>${teamAv(tm, "sm")}<span class="ell">${esc(tm.name)}</span></a>${stats}
@@ -1958,6 +1996,25 @@
       }));
     }
 
+    /* The season's last word on the front page, in the league's own colors: the champion and the title game on the
+       left; the podium and what each place pays (the dues' prizes, when the league has them) on the right. */
+    function champHero(champ) {
+      const br = U.leagueBrand(L().name, L().settings.brand), tw = G.totalWeeks(L());
+      const fin = gl() || roto() ? null : G.matchups(L(), ctx, tw, 1).find((m) => m.kind === "title" && (m.a === champ || m.b === champ));
+      const opp = fin ? (fin.a === champ ? fin.b : fin.a) : null, sw = fin ? (fin.a === champ ? [fin.sa, fin.sb] : [fin.sb, fin.sa]) : null;
+      const sm = G.summary(L()), row = sm.standings.find((r) => r.team === champ) || {}, prizes = (opts.prizes && opts.prizes()) || null;
+      const reg = standings();
+      const pod = prizes && prizes.length ? prizes.slice().sort((a, b) => (a.kind === b.kind ? a.place - b.place : a.kind === "playoff" ? -1 : 1))
+        : [1, 2, 3].map((k) => ({ label: k === 1 ? "Champion" : k === 2 ? "Runner-up" : "Third place", kind: "playoff", place: k, team: (sm.standings.find((r) => r.place === k) || {}).team }));
+      const li = (x) => { const t = x.team != null ? T(x.team) : null; return `<li class="${x.kind === "season" ? "rs" : ""}"><span class="ch-pl">${x.kind === "season" ? `RS${x.place}` : ord(x.place)}</span>${t ? teamAv(t, "sm") : `<span class="av sm"></span>`}<span class="ch-nm"><b class="ell">${t ? esc(t.name) : "To be decided"}</b><small>${esc(x.label)}</small></span>${x.amount ? `<b class="ch-amt">${money(x.amount)}</b>` : ""}</li>`; };
+      const t = T(champ);
+      return `<section class="ch-hero fk-band" style="--band:${esc(br.bg || "#14202E")};--lc:${esc(br.hex || `var(--t${br.color})`)}">
+        <div class="ch-main"><span class="ch-k">${esc(L().season || "")} champion</span>
+          <div class="ch-team">${teamAv(t, "xl")}<div style="min-width:0"><h2 class="disp">${esc(t.name)}</h2><span class="ps">${[t.owner ? esc(t.owner) : "", reg.find((r) => r.team === champ) ? `${ord(reg.find((r) => r.team === champ).rank)} in the regular season` : ""].filter(Boolean).join(", ")}</span></div></div>
+          ${fin ? `<p class="ch-fin">Beat <b>${esc(T(opp).name)}</b> <b class="num">${fmtS(sw[0])}-${fmtS(sw[1])}</b> in the championship${row.w != null ? `, after a ${row.w}-${row.l}${row.t ? "-" + row.t : ""} season` : ""}.</p>` : ""}
+          <a class="btn sm" href="#league/history">League history</a></div>
+        <ol class="ch-pod">${pod.map(li).join("")}</ol></section>`;
+    }
     /* ---------- the league's masthead, on its front page ---------- */
     function mastVM() {
       const Lg = L(), br = U.leagueBrand(Lg.name, Lg.settings.brand), total = G.totalWeeks(Lg), reg = Lg.settings.weeks, w = Lg.week;
@@ -1976,6 +2033,8 @@
     function render() {
       if (U.dialogOpen()) return;
       blockCache = {};
+      // the league's accent and band colors for every page's branded modules (--lc, --lband)
+      { const br = U.leagueBrand(L().name, L().settings.brand); opts.el.style.setProperty("--lc", br.hex || `var(--t${br.color})`); if (br.bg) opts.el.style.setProperty("--lband", br.bg); }
       const r = route();
       const tabs = TABS().map(([k, n]) => [k, n, k === "team" ? pendingTrades() : 0]);
       const subs = subsOf(r.tab);
