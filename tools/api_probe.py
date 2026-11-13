@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
-"""One-off: where to get real baseball prospect rankings (not draft prospects) with ids we can join to MiLB stats.
+"""One-off: the NHL hub's data sources from GitHub's runners (NHL's stats API and MoneyPuck's public season files).
 Writes what each source returns to tools/api_probe_out.json."""
+import csv
+import io
 import json
-import re
 import urllib.request
 
-UA = "Mozilla/5.0 (compatible; davidsolar-draftlab/1.0; +https://davidsolar.dev/fantasy-kit/)"
+UA = "davidsolar-nhlhub/1.0 (+https://davidsolar.dev/nhl/)"
 out = {}
 
 
-def get(url, accept="text/html"):
+def get(url, accept="application/json"):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": accept})
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read().decode("utf-8", "replace")
-
-
-def nextdata(html):
-    m = re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>', html, re.S)
-    return json.loads(m.group(1)) if m else None
 
 
 def shape(x, depth=0):
@@ -28,23 +24,41 @@ def shape(x, depth=0):
     return type(x).__name__ if not isinstance(x, (str, int, float)) else (x if len(str(x)) < 60 else str(x)[:60])
 
 
-def board(draft):
-    rows = json.loads(get(f"https://www.fangraphs.com/api/prospects/board/prospects-list?draft={draft}&season=2026&playerid=&position=&statType=player", "application/json"))
-    top = sorted([r for r in rows if str(r.get("cOVR") or "").isdigit()], key=lambda r: int(r["cOVR"]))
-    return {"len": len(rows), "ranked": len(top), "levels": sorted({str(r.get("llevel")) for r in rows}), "top": [(r.get("cOVR"), r.get("playerName"), r.get("llevel"), r.get("mlevel"), r.get("cFV"), r.get("cETA"), r.get("minorMasterId")) for r in top[:12]], "keys": sorted(rows[0].keys()) if rows else None}
-
-for d in ["2026updated", "2026in-season", "2026inseason", "2026prospect", "2027prospect", "2026update"]:
-    try: out["board_" + d] = board(d)
-    except Exception as e: out["board_" + d] = f"FAILED {str(e)[:120]}"
-
-ML = "https://www.fangraphs.com/api/leaders/minor-league/data?pos=all&level=0&lg=2,4,5,6,7,8,9,10,11,14,12,13,15,16,17,18,30,32&stats={st}&qual=0&type=0&team=&season=2026&seasonEnd=2026&org=&ind=0&splitTeam=false"
-for st in ["bat", "pit"]:
+def probe(name, url, kind="json"):
     try:
-        t = json.loads(get(ML.format(st=st), "application/json"))
-        rows = t if isinstance(t, list) else t.get("data") or t
-        out["minors_" + st] = {"len": len(rows), "first": rows[0], "griffin": [r for r in rows if "Griffin" in str(r.get("PlayerName") or r.get("playerName") or "")][:2]}
+        body = get(url, "text/csv" if kind == "csv" else "application/json")
+        if kind == "csv":
+            rows = list(csv.DictReader(io.StringIO(body)))
+            out[name] = {"ok": True, "rows": len(rows), "cols": list(rows[0].keys()) if rows else [], "sample": rows[:2]}
+        else:
+            d = json.loads(body)
+            out[name] = {"ok": True, "shape": shape(d)}
+            if name == "standings":
+                out[name]["first"] = d.get("standings", [None])[0]
+            if name == "roster":
+                out[name]["first"] = (d.get("forwards") or [None])[0]
+            if name == "clubstats":
+                out[name]["firstSkater"] = (d.get("skaters") or [None])[0]
+                out[name]["firstGoalie"] = (d.get("goalies") or [None])[0]
     except Exception as e:
-        out["minors_" + st] = f"FAILED {str(e)[:160]}"
+        out[name] = {"ok": False, "error": str(e)[:300]}
 
-json.dump(out, open("tools/api_probe_out.json", "w"), indent=1, default=str)
-print(json.dumps(out, default=str)[:3000])
+
+A = "https://api-web.nhle.com/v1"
+probe("standings", A + "/standings/now")
+probe("roster", A + "/roster/BOS/current")
+probe("clubstats", A + "/club-stats/BOS/now")
+probe("schedule", A + "/club-schedule-season/BOS/now")
+probe("player", A + "/player/8478402/landing")
+probe("draftrank", A + "/draft/rankings/now")
+probe("teamstats", "https://api.nhle.com/stats/rest/en/team/summary?cayenneExp=seasonId=20262027%20and%20gameTypeId=2")
+MP = "https://moneypuck.com/moneypuck/playerData/seasonSummary"
+probe("mp_skaters_2026", MP + "/2026/regular/skaters.csv", "csv")
+probe("mp_goalies_2026", MP + "/2026/regular/goalies.csv", "csv")
+probe("mp_skaters_2025", MP + "/2025/regular/skaters.csv", "csv")
+probe("mp_teams_2026", MP + "/2026/regular/teams.csv", "csv")
+probe("mp_lines_2026", MP + "/2026/regular/lines.csv", "csv")
+
+with open("tools/api_probe_out.json", "w") as f:
+    json.dump(out, f, indent=1, default=str)
+print(json.dumps({k: (v.get("ok"), v.get("rows"), v.get("error")) for k, v in out.items()}, indent=1))
