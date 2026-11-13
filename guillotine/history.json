@@ -6140,7 +6140,7 @@
       "pos": "RB",
       "nfl": "BAL",
       "slot": "RB",
-      "proj": 14.73,
+      "proj": 14.59,
       "pts": null
      },
      {
@@ -6196,7 +6196,7 @@
       "pos": "RB",
       "nfl": "HOU",
       "slot": "BN",
-      "proj": 6.27,
+      "proj": 6.28,
       "pts": null
      },
      {
@@ -6310,7 +6310,7 @@
       "pos": "QB",
       "nfl": "HOU",
       "slot": "Q/W/R/T",
-      "proj": 17.11,
+      "proj": 17.09,
       "pts": null
      },
      {
@@ -6408,7 +6408,7 @@
       "pos": "WR",
       "nfl": "CLE",
       "slot": "WR",
-      "proj": 8.23,
+      "proj": 8.21,
       "pts": null
      },
      {
@@ -6417,7 +6417,7 @@
       "nfl": "NYG",
       "slot": "TE",
       "proj": 10.12,
-      "pts": null
+      "pts": 23.2
      },
      {
       "n": "Blake Corum",
@@ -6464,7 +6464,7 @@
       "pos": "TE",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 8.56,
+      "proj": 8.55,
       "pts": null
      },
      {
@@ -6506,7 +6506,7 @@
       "pos": "WR",
       "nfl": "BAL",
       "slot": "WR",
-      "proj": 13.38,
+      "proj": 13.55,
       "pts": null
      },
      {
@@ -6578,7 +6578,7 @@
       "pos": "RB",
       "nfl": "LAC",
       "slot": "BN",
-      "proj": 7.18,
+      "proj": 7.08,
       "pts": null
      }
     ],
@@ -6605,14 +6605,14 @@
       "nfl": "NYG",
       "slot": "RB",
       "proj": 11.3,
-      "pts": null
+      "pts": 25.7
      },
      {
       "n": "Nico Collins",
       "pos": "WR",
       "nfl": "HOU",
       "slot": "WR",
-      "proj": 12.53,
+      "proj": 12.51,
       "pts": null
      },
      {
@@ -6629,7 +6629,7 @@
       "nfl": "NYG",
       "slot": "WR",
       "proj": 13.59,
-      "pts": null
+      "pts": 4.9
      },
      {
       "n": "Trey McBride",
@@ -6703,6 +6703,22 @@
       "nfl": "WAS",
       "slot": "QB",
       "proj": 18.78,
+      "pts": 22.76
+     },
+     {
+      "n": "Ladd McConkey",
+      "pos": "WR",
+      "nfl": "LAC",
+      "slot": "BN",
+      "proj": 9.73,
+      "pts": null
+     },
+     {
+      "n": "Bhayshul Tuten",
+      "pos": "RB",
+      "nfl": "JAX",
+      "slot": "BN",
+      "proj": 13.08,
       "pts": null
      },
      {
@@ -6714,27 +6730,11 @@
       "pts": null
      },
      {
-      "n": "Ladd McConkey",
-      "pos": "WR",
-      "nfl": "LAC",
-      "slot": "BN",
-      "proj": 9.63,
-      "pts": null
-     },
-     {
       "n": "Trevor Lawrence",
       "pos": "QB",
       "nfl": "JAX",
       "slot": "BN",
       "proj": 20.71,
-      "pts": null
-     },
-     {
-      "n": "Bhayshul Tuten",
-      "pos": "RB",
-      "nfl": "JAX",
-      "slot": "BN",
-      "proj": 13.08,
       "pts": null
      },
      {
