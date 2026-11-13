@@ -134,7 +134,7 @@
     function subsOf(tab) {
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : roto() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "team") return [["roster", "Roster"]].concat(roto() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
-      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length], ["tx", "Transactions"]]);
+      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(sport.key === "mlb" ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
       return [];
     }
     const pendingTrades = () => L().trades.filter((t) => (t.status === "pending" && t.to === me()) || (t.status === "review" && G.voters(L(), t).includes(me()) && !(t.votes || {})[me()])).length;
@@ -379,6 +379,7 @@
         </div><aside class="stack">
           ${myCards.trim() ? `<div class="d-only stack">${myCards}</div>` : ""}
           ${chatCard()}
+          ${newsCard()}
           ${blockCard(3)}
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><a href="#league/standings">More</a></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<span class="ell"><b>${esc(T(r.team).name)}</b></span>${moveTag(r.move)}</li>`).join("")}</ol></div>
           ${over() ? "" : `<div class="card"><div class="mod-h"><h2>Hot on waivers</h2><a href="#players/fa">Free agents</a></div><ul class="feed">${hot.map(({ p, h }) => `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, h > 1.15 ? `<span class="win">hot</span>` : "")}</span>${mid != null ? `<button class="btn icon add" data-add="${esc(p.id)}" aria-label="Add ${esc(p.n)}">+</button>` : ""}</li>`).join("") || `<li class="empty">Nobody stands out.</li>`}</ul></div>`}
@@ -2015,6 +2016,8 @@
       const mid = me(), w = watch();
       if (sub === "claims") return claimsPage();
       if (sub === "tx") return txPage();
+      if (sub === "news" && sport.key === "mlb") return newsPage();
+      if (sub === "trends") return trendsPage();
       if (sub === "finder") return finderPage();
       let rows = opts.players.filter((p) => U.passes(sport, p, ui.pf));
       // who's shown, Yahoo's way: everyone, available (free agents and waivers), either alone, all taken, your team,
@@ -2258,6 +2261,151 @@
         if (more) more.addEventListener("click", () => { el.querySelector(".pc-gl tbody").innerHTML = gl(games.length); more.remove(); });
       } catch (e) { el.innerHTML = `<p class="ps" style="margin:0">MLB's stats didn't answer, so splits and the game log aren't here right now.</p>`; }
     }
+    /* ---------- Player news (baseball) ----------
+       Two sources, merged newest first: MLB.com stories that name the player (data/news-mlb.json, pulled every two
+       hours; the headline links to the story) and MLB's transaction wire straight from its Stats API (injured list
+       moves, call-ups and options, trades, signings, releases). */
+    const NEWS_DAYS = 21;
+    let newsFile, newsAsked = false, wire, wireAsked = false;
+    const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
+    function newsData() {
+      if (!newsAsked) { newsAsked = true; fetch("data/news-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { newsFile = j && Array.isArray(j.items) ? j : { items: [] }; newsRender(); }).catch(() => { newsFile = { items: [] }; newsRender(); }); }
+      return newsFile;
+    }
+    function wireData() {
+      if (!wireAsked) { wireAsked = true; fetch(`https://statsapi.mlb.com/api/v1/transactions?sportId=1&startDate=${isoDay(now() - NEWS_DAYS * 864e5)}&endDate=${isoDay(now())}`).then((r) => (r.ok ? r.json() : null)).then((j) => { wire = (j && j.transactions) || []; newsRender(); }).catch(() => { wire = []; newsRender(); }); }
+      return wire;
+    }
+    // only the news page and the home card wait on these files; anywhere else there's nothing to redraw
+    const newsRender = () => { const r = route(); if ((r.tab === "players" && r.sub === "news") || r.tab === "league" && (!r.sub || r.sub === "overview")) render(); };
+    // a transaction's kind, in a word, with its tag color
+    function wireKind(x) {
+      const d = (x.description || "").toLowerCase(), t = (x.typeDesc || "").toLowerCase();
+      if (/injured list/.test(d)) return /activated|reinstated/.test(d) ? ["Back", "win"] : /transferred/.test(d) ? ["IL", "loss"] : ["IL", "loss"];
+      if (t === "trade") return ["Trade", "gold"];
+      if (/designated|released|outright/.test(d + t)) return [/released/.test(d + t) ? "Released" : /outright/.test(d + t) ? "Outrighted" : "DFA", "loss"];
+      if (/optioned/.test(d)) return ["Optioned", ""];
+      if (/recalled|selected|purchased/.test(d)) return ["Called up", "win"];
+      if (/signed|claimed/.test(d + t)) return [/claimed/.test(d + t) ? "Claimed" : "Signed", "win"];
+      if (/retire/.test(d + t)) return ["Retired", ""];
+      return [x.typeDesc || "Move", ""];
+    }
+    // every news item, as { at, ids, kind, cls, text, url }
+    function newsItems() {
+      const nf = newsData(), wr = wireData();
+      if (nf === undefined && wr === undefined) return undefined;
+      const out = [];
+      for (const s of (nf && nf.items) || []) out.push({ at: Date.parse(s.at), ids: (s.ids || []).filter((id) => ctx.byId[id]), kind: s.src || "News", cls: "story", text: s.t, url: /^https:\/\//.test(s.u || "") ? s.u : null });
+      for (const x of wr || []) { const id = x.person && String(x.person.id); if (!id || !ctx.byId[id] || !x.description) continue; const [k, c] = wireKind(x); out.push({ at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [id], kind: k, cls: c, text: x.description, url: null, wire: true }); }
+      // one move logged twice (a trade for each club) shows once
+      const seen = new Set();
+      return out.filter((n) => n.ids.length && !isNaN(n.at)).sort((a, b) => b.at - a.at).filter((n) => { const k = n.text + "|" + n.ids.join(); if (seen.has(k)) return false; seen.add(k); return true; });
+    }
+    function newsLi(n, o = {}) {
+      const tag = `<span class="tag ${n.cls === "story" ? "nw-s" : n.cls}">${esc(n.kind)}</span>`;
+      const who = o.noWho ? "" : `<span class="nw-who">${n.ids.slice(0, 3).map((id) => { const p = ctx.byId[id], own = ctx.own[id]; return `<span class="nw-p"><span data-player="${esc(id)}" style="cursor:pointer">${pname(sport, p, "", { size: "sm" })}</span>${own != null ? `<a href="${teamHref(own)}" class="nw-own" title="On ${esc(T(own).name)}">${teamAv(T(own), "sm")}<span class="ps">${esc(T(own).abbr)}</span></a>` : `<span class="tag win nw-fa">FA</span>`}</span>`; }).join("")}</span>`;
+      const text = n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener" class="nw-t">${esc(n.text)}</a>` : `<span class="nw-t">${esc(n.text)}</span>`;
+      return `<li class="nw">${who}<span class="nw-b">${tag}${text}</span><span class="ps nw-at">${esc(new Date(n.at).toLocaleDateString("en-US", { month: "short", day: "numeric" }))}</span></li>`;
+    }
+    // the card's section: his last year of moves (his own query to MLB) and the stories that name him
+    async function playerNews(p, el) {
+      if (!el) return;
+      let moves = [];
+      try {
+        const j = await fetch(`https://statsapi.mlb.com/api/v1/transactions?playerId=${encodeURIComponent(p.id)}&startDate=${isoDay(now() - 400 * 864e5)}&endDate=${isoDay(now())}`).then((r) => (r.ok ? r.json() : null));
+        moves = ((j && j.transactions) || []).filter((x) => x.description).map((x) => { const [k, c] = wireKind(x); return { at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [String(p.id)], kind: k, cls: c, text: x.description, url: null }; });
+      } catch (e) { /* the stories still show */ }
+      const nf = newsFile || await fetch("data/news-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      if (nf && !newsFile) newsFile = nf;
+      const stories = ((nf && nf.items) || []).filter((s) => (s.ids || []).includes(String(p.id))).map((s) => ({ at: Date.parse(s.at), ids: [String(p.id)], kind: s.src || "News", cls: "story", text: s.t, url: /^https:\/\//.test(s.u || "") ? s.u : null }));
+      const seen = new Set(), all = stories.concat(moves).sort((a, b) => b.at - a.at).filter((n) => { if (seen.has(n.text)) return false; seen.add(n.text); return true; });
+      const od = ownFile !== undefined ? ownFile : await fetch("data/own-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      const ow = ownOf(od, String(p.id), 7), owTxt = ow ? `<span class="pc-own" title="Yahoo % rostered, the last 30 days">${spark(ow.row, ow.chg > 0 ? "up" : ow.chg < 0 ? "dn" : "")}<b>${ow.cur}%</b> rostered on Yahoo${ow.chg ? ` <em class="${ow.chg > 0 ? "up" : "dn"}">${ow.chg > 0 ? "+" : ""}${ow.chg} this week</em>` : ""}</span>` : "";
+      el.innerHTML = `<div class="mod-h" style="padding:0;flex-wrap:wrap"><h3 style="margin:0;font-size:14px">News</h3><span class="grow"></span>${owTxt || `<span class="ps">MLB.com and MLB transactions</span>`}</div>${all.length ? `<ul class="nw-l">${all.slice(0, 8).map((n) => newsLi(n, { noWho: true })).join("")}</ul>${all.length > 8 ? `<button type="button" class="btn sm ghost nw-more">All ${all.length}</button>` : ""}` : `<p class="ps" style="margin:6px 0 0">No news on him in the last year.</p>`}`;
+      const more = el.querySelector(".nw-more");
+      if (more) more.addEventListener("click", () => { el.querySelector(".nw-l").innerHTML = all.map((n) => newsLi(n, { noWho: true })).join(""); more.remove(); });
+    }
+    // the league's news: players on your team, on any roster here, or anyone in the pool; or one team's
+    function newsPage() {
+      const mid = me(), show = ui.newsShow || (mid != null ? "mine" : "owned"), items = newsItems();
+      const keep = (n) => show === "all" ? true : show === "owned" ? n.ids.some((id) => ctx.own[id] != null) : show === "fa" ? n.ids.some((id) => ctx.own[id] == null) : show === "mine" ? n.ids.some((id) => ctx.own[id] === mid) : n.ids.some((id) => String(ctx.own[id]) === show);
+      const kinds = ui.newsKind || "", list = (items || []).filter(keep).filter((n) => !kinds || (kinds === "story" ? n.cls === "story" : n.cls !== "story"));
+      const sel = `<label class="sr" for="fk-nshow">Whose news</label><select id="fk-nshow" class="txsel">${(mid != null ? [["mine", "My team"]] : []).concat([["owned", "Every rostered player"], ["fa", "Free agents"], ["all", "Everyone"]]).map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}<optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`;
+      const seg = `<div class="seg" role="group" aria-label="Kind">${[["", "All"], ["story", "Stories"], ["wire", "Moves"]].map(([k, n]) => `<button type="button" data-nkind="${k}" aria-pressed="${kinds === k}">${n}</button>`).join("")}</div>`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Player news</h1><span class="ps">The last ${NEWS_DAYS} days: MLB.com stories and MLB's transaction wire</span></div>
+        <div class="tools">${sel}${seg}</div>
+        <div class="card">${items === undefined ? `<div class="bd"><p class="ps" style="margin:0">Loading the news…</p></div>` : list.length ? `<ul class="nw-l nw-page">${list.slice(0, ui.newsMore ? 400 : 60).map((n) => newsLi(n)).join("")}</ul>${list.length > 60 && !ui.newsMore ? `<div class="bd"><button type="button" class="btn sm ghost" data-nmore>Show all ${list.length}</button></div>` : ""}` : `<div class="bd"><p class="ps" style="margin:0">${show === "mine" ? "Nothing on your players lately." : "Nothing here lately."}</p></div>`}</div></div>`;
+    }
+    // the home page's card: the latest on rostered players, yours first
+    function newsCard() {
+      if (sport.key !== "mlb") return "";
+      const items = newsItems(), mid = me();
+      if (items === undefined) return `<div class="card"><div class="mod-h"><h2>Player news</h2><a href="#players/news">All news</a></div><div class="bd"><p class="ps" style="margin:0">Loading…</p></div></div>`;
+      const owned = items.filter((n) => n.ids.some((id) => ctx.own[id] != null));
+      const mine = mid != null ? owned.filter((n) => n.ids.some((id) => ctx.own[id] === mid)) : [];
+      const pick = mine.slice(0, 3).concat(owned.filter((n) => !mine.includes(n))).slice(0, 6).sort((a, b) => b.at - a.at);
+      if (!pick.length) return "";
+      return `<div class="card nw-card"><div class="mod-h"><h2>Player news</h2><a href="#players/news">All news</a></div><ul class="nw-l">${pick.map((n) => newsLi(n)).join("")}</ul></div>`;
+    }
+    /* ---------- Ownership trends ----------
+       Yahoo's % rostered, pulled once a day into data/own-mlb.json ({ dates, players: { id: [% each date] } }),
+       for who's rising and falling across all of Yahoo; and this league's own adds and drops. */
+    let ownFile, ownAsked = false;
+    function ownData() {
+      if (sport.key !== "mlb") return null;
+      if (!ownAsked) { ownAsked = true; fetch("data/own-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { ownFile = j && Array.isArray(j.dates) ? j : null; const r = route(); if (r.tab === "players" && r.sub === "trends") render(); }).catch(() => { ownFile = null; }); }
+      return ownFile;
+    }
+    // his % now and its change over the last n days (or as far back as the history goes)
+    function ownOf(od, id, n) {
+      const row = od && od.players && od.players[id];
+      if (!row) return null;
+      const last = row.length - 1, cur = row[last];
+      if (cur == null) return null;
+      let k = Math.max(0, last - n);
+      while (k < last && row[k] == null) k++;
+      return { cur, chg: k < last ? cur - row[k] : null, row: row.slice(Math.max(0, last - 29)) };
+    }
+    function spark(vals, cls = "") {
+      const v = vals.map((x) => (x == null ? null : x)), ok = v.filter((x) => x != null);
+      if (ok.length < 2) return "";
+      const lo = Math.min(...ok), hi = Math.max(...ok), W = 72, H = 20, sx = W / Math.max(1, v.length - 1), y = (x) => H - 2 - ((x - lo) / Math.max(1, hi - lo)) * (H - 4);
+      const pts2 = v.map((x, i) => (x == null ? null : `${(i * sx).toFixed(1)},${y(x).toFixed(1)}`)).filter(Boolean).join(" ");
+      return `<svg class="spark ${cls}" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" aria-hidden="true"><polyline points="${pts2}" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+    }
+    function trendsPage() {
+      const mid = me(), win = [7, 30, 0].includes(ui.trWin) ? ui.trWin : 7, od = ownData();
+      const since = win ? now() - win * 864e5 : -Infinity;
+      const whoCell = (id) => { const own = ctx.own[id]; return own != null ? `<a href="${teamHref(own)}" class="nw-own" title="On ${esc(T(own).name)}">${teamAv(T(own), "sm")}<span class="ps">${esc(T(own).abbr)}</span></a>` : mid != null && canMove() ? `<button class="btn icon add" data-add="${esc(id)}" aria-label="Add ${esc(ctx.byId[id].n)}">+</button>` : `<span class="tag win">FA</span>`; };
+      const prow = (id, right) => `<li class="tr-r"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0">${pname(sport, ctx.byId[id], "", { size: "sm" })}</span>${right}${whoCell(id)}</li>`;
+      // Yahoo: the biggest movers over the window, then the most rostered players still free here
+      let yahoo = "";
+      if (sport.key === "mlb") {
+        if (od === undefined) yahoo = `<div class="card"><div class="bd"><p class="ps" style="margin:0">Loading Yahoo's % rostered…</p></div></div>`;
+        else if (od) {
+          const n = win || od.dates.length, rows = Object.keys(od.players).filter((id) => ctx.byId[id]).map((id) => [id, ownOf(od, id, n)]).filter((x) => x[1]);
+          const moved = rows.filter((x) => x[1].chg != null && x[1].chg !== 0);
+          const col = (title, list, up) => `<div><b class="ps">${title}</b><ul class="dl tr-l">${list.map(([id, o]) => prow(id, `<span class="tr-v">${spark(o.row, up ? "up" : "dn")}<b class="num">${o.cur}%</b><em class="${up ? "up" : "dn"}">${o.chg > 0 ? "+" : ""}${o.chg}</em></span>`)).join("") || `<li class="empty">No moves yet.</li>`}</ul></div>`;
+          const free = rows.filter(([id]) => ctx.own[id] == null).sort((a, b) => b[1].cur - a[1].cur).slice(0, 10);
+          const days = od.dates.length;
+          yahoo = `<div class="card tr-card"><div class="mod-h"><h2>Across Yahoo</h2><span class="grow"></span><span class="ps">% rostered${days > 1 ? `, change over ${win && win < days ? `${win} days` : `${days} days of history`}` : ""}</span></div>
+            ${days > 1 ? `<div class="dstars-g">${col("Rising", moved.filter((x) => x[1].chg > 0).sort((a, b) => b[1].chg - a[1].chg).slice(0, 10), true)}${col("Falling", moved.filter((x) => x[1].chg < 0).sort((a, b) => a[1].chg - b[1].chg).slice(0, 10), false)}</div>` : `<div class="bd" style="padding-bottom:4px"><p class="ps" style="margin:0">The daily history starts ${esc(new Date(od.dates[0] + "T12:00:00Z").toLocaleDateString("en-US", { month: "long", day: "numeric", timeZone: "UTC" }))}; risers and fallers show from the second day.</p></div>`}
+            ${free.length ? `<div class="dstars-g tr-free"><div><b class="ps">Most rostered on Yahoo, free here</b><ul class="dl tr-l">${free.map(([id, o]) => prow(id, `<span class="tr-v"><b class="num">${o.cur}%</b></span>`)).join("")}</ul></div></div>` : ""}</div>`;
+        } else yahoo = `<div class="card"><div class="bd"><p class="ps" style="margin:0">Yahoo's % rostered isn't in yet. It's pulled once a day.</p></div></div>`;
+      }
+      // this league: adds and drops in the window
+      const adds = {}, drops = {};
+      for (const x of L().tx || []) {
+        if (x.at < since || !["add", "waiver", "drop"].includes(x.type) && !(x.type == null && (x.adds || x.drops))) continue;
+        for (const id of x.adds || []) if (ctx.byId[id]) adds[id] = (adds[id] || 0) + 1;
+        for (const id of x.drops || []) if (ctx.byId[id]) drops[id] = (drops[id] || 0) + 1;
+      }
+      const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, 10);
+      const lcol = (title, list, verb) => `<div><b class="ps">${title}</b><ul class="dl tr-l">${list.map(([id, c]) => prow(id, `<span class="tr-v"><b class="num">${c}</b><small class="ps">${verb}${c === 1 ? "" : "s"}</small></span>`)).join("") || `<li class="empty">None ${win ? `in the last ${win} days` : "this season"}.</li>`}</ul></div>`;
+      const league = `<div class="card tr-card"><div class="mod-h"><h2>In this league</h2><span class="grow"></span><span class="ps">Adds and drops</span></div><div class="dstars-g">${lcol("Most added", top(adds), "add")}${lcol("Most dropped", top(drops), "drop")}</div></div>`;
+      const seg = `<div class="seg" role="group" aria-label="Over">${[[7, "7 days"], [30, "30 days"], [0, "Season"]].map(([k, n]) => `<button type="button" data-trwin="${k}" aria-pressed="${win === k}">${n}</button>`).join("")}</div>`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Ownership trends</h1><span class="ps">Who's being picked up and let go</span></div><div class="tools">${seg}</div><div class="stack">${yahoo}${league}</div></div>`;
+    }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
       if (!p) return;
@@ -2291,8 +2439,8 @@
       // a category league leads with his season in the league's own categories; a season brought in from another
       // site has no weekly lines here, so there's no week-by-week table for it
       const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id));
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
-      if (mlbOn) mlbSplits(p, Dl.querySelector(".pc-mlb"));
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div><div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
+      if (mlbOn) { playerNews(p, Dl.querySelector(".pc-news")); mlbSplits(p, Dl.querySelector(".pc-mlb")); }
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
@@ -2525,7 +2673,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -2585,6 +2733,9 @@
         else if (d.sharerecap) { const rc = recapOf(+d.sharerecap); if (rc) navigator.share({ title: `${L().name}, week ${rc.week} recap`, text: recapText(rc) }).catch(() => {}); }
         else if (d.sbweek) { ui.sbWeek = +d.sbweek; location.hash = `#league/scoreboard/${d.sbweek}`; }
         else if (d.mweek) { location.hash = `#matchup/${d.mweek}`; }
+        else if (d.trwin != null) { ui.trWin = +d.trwin; render(); }
+        else if (d.nkind != null) { ui.newsKind = d.nkind; render(); }
+        else if (b.hasAttribute("data-nmore")) { ui.newsMore = true; render(); }
         else if (d.mday != null) { ui.mday = d.mday === "" ? null : +d.mday; ui.mdayW = +d.mdw; render(); }
         else if (d.txf !== undefined && b.hasAttribute("data-txf")) { ui.txf = d.txf; render(); }
         else if (d.fpos !== undefined && b.hasAttribute("data-fpos")) { ui.pf.pos = d.fpos; render(); }
@@ -2612,7 +2763,7 @@
     });
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-q") { ui.pf.q = e.target.value; render(); } });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-txt") { ui.txt = e.target.value; ui.txlim = 200; render(); } });
-    opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "fk-pro") { ui.ppro = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
+    opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-nshow") { ui.newsShow = e.target.value; ui.newsMore = false; render(); return; } if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "fk-pro") { ui.ppro = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });
     window.addEventListener("hashchange", () => { ui.moving = null; render(); window.scrollTo(0, 0); });
     render();

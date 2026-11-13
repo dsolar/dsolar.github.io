@@ -2112,3 +2112,38 @@ table.t.mbox tr.mtot td{border-top:2px solid var(--line-2);font-weight:800;backg
 .db-x{font-size:11.5px;white-space:nowrap}
 .dboard .ds-s{display:none}
 @media (max-width:640px){.dboard .ds-l{display:none}.dboard .ds-s{display:inline}}
+/* player news: the card's section, the league's page and the home card */
+.pc-news{display:grid;gap:4px}
+ul.nw-l{list-style:none;margin:0;padding:0}
+li.nw{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:start;padding:10px 0;border-top:1px solid var(--line)}
+li.nw:first-child{border-top:0}
+.nw-card ul.nw-l,ul.nw-l.nw-page{padding:0 16px 6px}
+.nw-card li.nw:first-child,.nw-page li.nw:first-child{border-top:0}
+.nw-who{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 16px}
+.nw-p{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.nw-own{display:inline-flex;align-items:center;gap:5px;text-decoration:none;color:inherit}
+.nw-fa{font-size:10.5px}
+.nw-b{display:flex;gap:8px;align-items:baseline;min-width:0;line-height:1.35}
+.nw-b .tag{flex:none;font-size:10.5px}
+.nw-t{font-size:13.5px;color:var(--ink);overflow-wrap:anywhere}
+a.nw-t{font-weight:650;text-decoration:none}
+a.nw-t:hover{text-decoration:underline}
+.nw-at{font-size:12px;white-space:nowrap}
+.tag.nw-s{background:var(--band);color:#fff}
+/* ownership trends */
+.tr-card .dstars-g{padding-top:8px}
+li.tr-r{gap:12px}
+li.tr-r > span:first-child{flex:1;min-width:0}
+.tr-v{display:inline-flex;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.tr-v b{min-width:38px;text-align:right}
+.tr-v em,.pc-own em{font-style:normal;font-weight:800;font-size:12.5px}
+.tr-v em{min-width:30px;text-align:right}
+em.up,.spark.up{color:var(--win,#1a7f37)}
+em.dn,.spark.dn{color:var(--loss,#c62828)}
+.spark{color:var(--muted);flex:none}
+.pc-own{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.pc-own b{color:var(--ink)}
+.tr-free ul.dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));column-gap:22px}
+.tr-free ul.dl li:nth-child(2){border-top:0}
+@media (max-width:700px){.tr-free ul.dl li:nth-child(2){border-top:1px solid var(--line)}}
+@media (max-width:640px){.tr-v .spark{display:none}}

@@ -1,0 +1,38 @@
+# Baseball player news for Draft Lab: MLB.com's news feeds matched to players (fantasy-kit/data/news-mlb.json).
+# Headlines and links only. Commits only when there's a new story.
+name: Draft Lab player news
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/news_pull.py
+      - .github/workflows/fantasykit-news.yml
+  schedule:
+    - cron: "41 */2 * * *"      # every two hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fantasykit-news
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - name: Pull the news feeds
+        run: python3 tools/news_pull.py
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fantasy-kit/data/news-mlb.json
+          if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
+          git commit -m "Draft Lab: player news"
+          git pull --rebase -q origin main
+          git push

@@ -8,6 +8,7 @@ on:
     branches: [main]
     paths:
       - tools/yoenis_box_pull.py
+      - tools/ownership_pull.py
       - .github/workflows/yoenis-box.yml
   schedule:
     - cron: "13 */3 * * *"      # every three hours: a finished season's pull is spread over a few runs, then stops
@@ -32,6 +33,13 @@ jobs:
           YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
           YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
         run: python3 tools/yoenis_box_pull.py
+      - name: Yahoo % rostered, once a day (Draft Lab's ownership trends)
+        if: always()
+        env:
+          YAHOO_CLIENT_ID: ${{ secrets.YAHOO_CLIENT_ID }}
+          YAHOO_CLIENT_SECRET: ${{ secrets.YAHOO_CLIENT_SECRET }}
+          YAHOO_REFRESH_TOKEN: ${{ secrets.YAHOO_REFRESH_TOKEN }}
+        run: python3 tools/ownership_pull.py || true
       - name: Build the league's box score file
         if: always()
         # the importer rebuilds the whole league; only its box score file (yoenis/box-2026.json) is kept here
@@ -44,6 +52,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tools/yahoo_yoenis/box yoenis/box-2026.json yoenis/days-2026
+          git add fantasy-kit/data/own-mlb.json 2>/dev/null || true
           if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
           git commit -m "Wipe Yoenis: box scores and ranks from Yahoo"
           git pull --rebase -q origin main
