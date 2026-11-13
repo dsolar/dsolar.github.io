@@ -16,6 +16,7 @@
      stack     What it's built with.
      cover     image: screenshot in assets/covers/ (optional; without one, a colored
                block with the title is drawn instead). bg / band: the project's own colors.
+     hub       true puts it in the homepage's Hubs section (first after the hero) and the Hubs group of its menu.
      homeFeatured true selects a project for the curated homepage. Full collections still show every visible project.
      featured  Optional featured badge on detailed cards.
      spotlight true puts it first on the page in a full-width card (use on one project).
@@ -209,8 +210,67 @@ window.PROJECTS = [
     cover: { image: "assets/covers/sunday-strategist.svg", bg: "#0D1821", band: "#F7D23E" }
   },
   {
+    title: "NBA Hub",
+    hub: true,
+    line: "Standings, lottery odds, rotations five years out, trade value",
+    tag: "Updated every day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "nba/",
+    action: "Open the hub",
+    question: "Who's actually worth his contract, and what does every roster look like in 2030?",
+    summary: "This season played out 1,000 times from every team's real record, with the play-in, the playoffs and the 3-2-1 lottery. Every rotation and cap sheet rolled forward five seasons as contracts end and draft picks arrive, surplus value for every contract and pick (picks priced by what each slot has produced since 2001), a trade builder that checks the apron rules, and next summer's free agents.",
+    facts: [["30", "rotations and cap sheets"], ["5", "seasons on the year slider"], ["1,080", "draft picks behind the pick values"]],
+    stack: ["JavaScript", "Python"],
+    cover: { image: "assets/covers/nba-hub.svg", bg: "#F5F4F0", band: "#C60C30" }
+  },
+  {
+    title: "NFL Hub",
+    hub: true,
+    line: "Playoff odds, player ratings, trade values and an offseason you can play out",
+    tag: "Updated every day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "nfl/",
+    action: "Open the hub",
+    question: "What would it take to trade for a star, and what should every team do with its cap this offseason?",
+    summary: "The rest of the season played out thousands of times from the betting market's spreads, with every division's projected records and playoff odds. A player rating built from play-by-play plus-minus and three seasons of production, every depth chart and every contract year by year from Over The Cap's data via nflverse. Price any player in draft picks and build the deal from both teams' picks, see each team's needs and likely cap casualties, and play out a team's whole offseason: cuts, tags, free agency against rival bids, and a mock draft.",
+    facts: [["6,000", "simulated seasons"], ["2,600", "contracts by year"], ["32", "offseasons to play"]],
+    stack: ["JavaScript", "Python"],
+    cover: { image: "assets/covers/nfl-hub.svg", bg: "#F5F4F0", band: "#013369" }
+  },
+  {
+    title: "MLB Hub",
+    hub: true,
+    line: "Standings, depth charts five years out, trade value",
+    tag: "Updated every morning",
+    type: "Simulations",
+    released: "2026-11",
+    url: "mlb/",
+    action: "Open the hub",
+    question: "What does every roster look like in 2030, and who's actually worth his contract?",
+    summary: "Projected 2027 standings and playoff odds from FanGraphs Depth Charts, every depth chart rolled forward five seasons as contracts end and prospects arrive, surplus value for every player and prospect with a trade builder, and this winter's free agents against what the market really pays.",
+    facts: [["30", "organizations, majors down to A ball"], ["5", "seasons on the year slider"], ["6", "free agent classes in the market model"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { image: "assets/covers/mlb-hub.svg", bg: "#F5F4F0", band: "#002244" }
+  },
+  {
+    title: "Big Board",
+    hub: true,
+    line: "Every 2027 draft board, plus a mock draft",
+    tag: "Updated every day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "draft/",
+    action: "Open the board",
+    question: "Where does everyone actually have him?",
+    summary: "The 2027 NBA and NFL drafts with every board worth reading rolled into one ranking: Tankathon, ESPN, Bleacher Report, FanSided, SI and NFL Mock Draft Database now, with No Ceilings, KOC, Jeremiah and the rest as they publish. Who's rising, who's sliding, where the boards can't agree, and a mock draft with the real lottery odds, every protected pick, trade offers on the clock and future picks.",
+    facts: [["141", "NBA prospects across 5 boards"], ["219", "NFL prospects across 2 boards"], ["12", "protected 2027 NBA firsts, resolved"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { image: "assets/covers/draft.webp", bg: "#F3EFE6", band: "#17191E" }
+  },
+  {
   title: "The 31st Franchise",
-    homeFeatured: true,
   line: "Build Seattle an NBA team",
     type: "Simulations",
     released: "2026-10",
@@ -223,7 +283,6 @@ window.PROJECTS = [
   },
   {
     title: "Banner 19",
-    homeFeatured: true,
     line: "Run the Celtics front office",
     type: "Simulations",
     released: "2026-10",
@@ -345,61 +404,5 @@ window.PROJECTS = [
     summary: "Charlotte’s game, designed by Charlotte and built with her dad. Build a whole house room by room, from a kitchen to a beauty parlor, decorate every corner with wallpaper, paint and her own art, design the yard, and grow a whole island village. Cow, who just learned to talk, is her guide and hands out stickers for design missions.",
     stack: ["JavaScript", "SVG"],
     cover: { image: "assets/covers/wild-bloom-isles-studio.webp", bg: "#F4F1E8", band: "#B8788B" }
-  },
-  {
-    title: "Big Board",
-    line: "Every 2027 draft board, plus a mock draft",
-    tag: "Updated every day",
-    type: "Simulations",
-    released: "2026-11",
-    url: "draft/",
-    action: "Open the board",
-    question: "Where does everyone actually have him?",
-    summary: "The 2027 NBA and NFL drafts with every board worth reading rolled into one ranking: Tankathon, ESPN, Bleacher Report, FanSided, SI and NFL Mock Draft Database now, with No Ceilings, KOC, Jeremiah and the rest as they publish. Who's rising, who's sliding, where the boards can't agree, and a mock draft with the real lottery odds, every protected pick, trade offers on the clock and future picks.",
-    facts: [["141", "NBA prospects across 5 boards"], ["219", "NFL prospects across 2 boards"], ["12", "protected 2027 NBA firsts, resolved"]],
-    stack: ["JavaScript", "Python", "GitHub Actions"],
-    cover: { image: "assets/covers/draft.webp", bg: "#F3EFE6", band: "#17191E" }
-  },
-  {
-    title: "MLB Hub",
-    line: "Standings, depth charts five years out, trade value",
-    tag: "Updated every morning",
-    type: "Simulations",
-    released: "2026-11",
-    url: "mlb/",
-    action: "Open the hub",
-    question: "What does every roster look like in 2030, and who's actually worth his contract?",
-    summary: "Projected 2027 standings and playoff odds from FanGraphs Depth Charts, every depth chart rolled forward five seasons as contracts end and prospects arrive, surplus value for every player and prospect with a trade builder, and this winter's free agents against what the market really pays.",
-    facts: [["30", "organizations, majors down to A ball"], ["5", "seasons on the year slider"], ["6", "free agent classes in the market model"]],
-    stack: ["JavaScript", "Python", "GitHub Actions"],
-    cover: { image: "assets/covers/mlb-hub.svg", bg: "#F5F4F0", band: "#002244" }
-  },
-  {
-    title: "NBA Hub",
-    line: "Standings, lottery odds, rotations five years out, trade value",
-    tag: "Updated every day",
-    type: "Simulations",
-    released: "2026-11",
-    url: "nba/",
-    action: "Open the hub",
-    question: "Who's actually worth his contract, and what does every roster look like in 2030?",
-    summary: "This season played out 1,000 times from every team's real record, with the play-in, the playoffs and the 3-2-1 lottery. Every rotation and cap sheet rolled forward five seasons as contracts end and draft picks arrive, surplus value for every contract and pick (picks priced by what each slot has produced since 2001), a trade builder that checks the apron rules, and next summer's free agents.",
-    facts: [["30", "rotations and cap sheets"], ["5", "seasons on the year slider"], ["1,080", "draft picks behind the pick values"]],
-    stack: ["JavaScript", "Python"],
-    cover: { image: "assets/covers/nba-hub.svg", bg: "#F5F4F0", band: "#C60C30" }
-  },
-  {
-    title: "NFL Hub",
-    line: "Playoff odds, player ratings, trade values and an offseason you can play out",
-    tag: "Updated every day",
-    type: "Simulations",
-    released: "2026-11",
-    url: "nfl/",
-    action: "Open the hub",
-    question: "What would it take to trade for a star, and what should every team do with its cap this offseason?",
-    summary: "The rest of the season played out thousands of times from the betting market's spreads, with every division's projected records and playoff odds. A player rating built from play-by-play plus-minus and three seasons of production, every depth chart and every contract year by year from Over The Cap's data via nflverse. Price any player in draft picks and build the deal from both teams' picks, see each team's needs and likely cap casualties, and play out a team's whole offseason: cuts, tags, free agency against rival bids, and a mock draft.",
-    facts: [["6,000", "simulated seasons"], ["2,600", "contracts by year"], ["32", "offseasons to play"]],
-    stack: ["JavaScript", "Python"],
-    cover: { image: "assets/covers/nfl-hub.svg", bg: "#F5F4F0", band: "#013369" }
   }
 ];

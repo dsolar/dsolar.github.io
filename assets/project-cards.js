@@ -49,7 +49,7 @@
     var title = !accessible ? esc(p.title) : '<a href="' + esc(url) + '">' + esc(p.title) + "</a>";
     var id = p.external ? slug(p.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")) : slug(p.url);
     return '<article class="entry' + (p.spotlight ? ' spotlight' : '') + '" id="' + esc(id) + '" data-type="' + esc(p.type) + '" style="' + esc(style) + '">'
-      + '<div class="entry-meta">' + order + '<span class="type">' + esc(p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
+      + '<div class="entry-meta">' + order + '<span class="type">' + esc(p.hub ? "Hub" : p.type) + "</span>" + (p.featured ? '<span class="featured-tag">Featured</span>' : '')
       + (building ? '<span class="state">In progress</span>' : p.tag ? '<span class="tag">' + esc(p.tag) + "</span>" : "") + "</div>"
       + (!accessible ? '<div class="entry-cover" aria-hidden="true">' + art + '<span class="band"></span></div>'
                   : '<a class="entry-cover" href="' + esc(url) + '" tabindex="-1" aria-hidden="true">' + art + '<span class="band"></span></a>')
@@ -82,7 +82,7 @@
       + "<" + tag + ' class="tile' + (accessible ? "" : " is-off") + '"' + (accessible ? ' href="' + esc(at(p.url)) + '"' : "") + ' style="' + esc(style) + '">'
       // the number and the badge sit in the card's own line, not on the cover art, where they hid the cover's title
       + '<span class="tile-cover">' + art + "</span>"
-      + '<span class="tile-body"><span class="tile-meta">' + order + '<span class="tile-type">' + esc(p.type) + "</span>" + (badge ? '<span class="tile-badge">' + esc(badge) + "</span>" : "") + '</span><h3 class="tile-title">' + esc(p.title) + (p.external ? " ↗" : "") + "</h3>"
+      + '<span class="tile-body"><span class="tile-meta">' + order + '<span class="tile-type">' + esc(p.hub ? "Hub" : p.type) + "</span>" + (badge ? '<span class="tile-badge">' + esc(badge) + "</span>" : "") + '</span><h3 class="tile-title">' + esc(p.title) + (p.external ? " ↗" : "") + "</h3>"
       + (p.line ? '<span class="tile-line">' + esc(p.line) + "</span>" : "") + "</span>"
       + "</" + tag + "></li>";
   }

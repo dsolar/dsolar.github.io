@@ -22,9 +22,9 @@
     : project && project.type === "Games" ? "games"
     : project && project.type === "Simulations" ? "simulations" : "";
   var sections = [
+    { id: "simulations", label: "Hubs & Tools", url: "simulations/" },
     { id: "fantasy", label: "Fantasy", url: "fantasy/" },
     { id: "games", label: "Games", url: "games/" },
-    { id: "simulations", label: "Simulations & Tools", url: "simulations/" },
     { id: "kids", label: "Kids", url: "kids/" },
     { id: "writing", label: "Writing", url: "#writing" }
   ];
@@ -61,7 +61,10 @@
       return group("Daily challenges", games.filter(function (p) { return p.daily; }))
         + group("Strategy & more", games.filter(function (p) { return !p.daily; }));
     }
-    if (id === "simulations") return group("The front office & draft board", visible.filter(function (p) { return p.type === "Simulations"; }));
+    if (id === "simulations") {
+      var sims = visible.filter(function (p) { return p.type === "Simulations"; });
+      return group("Hubs", sims.filter(function (p) { return p.hub; })) + group("Front office", sims.filter(function (p) { return !p.hub; }));
+    }
     return "";
   }
   function closeDropdowns(except) {

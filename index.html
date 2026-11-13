@@ -40,7 +40,7 @@
 .world-button{display:inline-flex;gap:35px;align-items:center;background:#f6c445;color:#13233a;padding:12px 20px;text-decoration:none;font-weight:700;margin-top:26px}.world-button:hover{background:#ffe08a;color:#13233a}
 .fantasy-shortcuts{display:flex;flex-wrap:wrap;gap:10px 20px;margin-top:22px;font-size:.78rem}.fantasy-shortcuts a{color:#e4e9f0;text-decoration-color:#647185}
 .fantasy-sports{display:grid;border-left:1px solid #425066}.fantasy-sports>a{position:relative;display:flex;flex-direction:column;justify-content:center;padding:25px 52px 25px 30px;text-decoration:none;border-bottom:1px solid #425066;color:#f7f4eb;gap:5px}.fantasy-sports>a:last-child{border:0}.fantasy-sports>a:hover{background:#20344e}.sport-label{font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;color:#f6c445}.fantasy-sports strong{font-family:var(--f-display);font-size:1.35rem}.fantasy-sports a>span:last-of-type{font-size:.82rem;color:#cbd4df}.fantasy-sports b{position:absolute;right:25px;top:40%}
-#games-and-simulations{padding-top:0}.project-start{scroll-margin-top:90px}.world-group{scroll-margin-top:24px;margin-bottom:55px}.world-heading{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:end;border-top:2px solid var(--ink);padding-top:22px;margin-bottom:25px}.world-heading h2{font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.2}.world-heading>p{color:var(--muted);font-size:.9rem;max-width:48ch;justify-self:end}.world-group .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}#simulations .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#simulations .tile-cover{aspect-ratio:4/3}
+#hubs{padding-block:44px 0}#hubs .world-group{margin-bottom:0}.leaders-mid{border-top:1px solid var(--rule);margin-bottom:44px}#games-and-simulations{padding-top:0}.project-start{scroll-margin-top:90px}.world-group{scroll-margin-top:24px;margin-bottom:55px}.world-heading{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:end;border-top:2px solid var(--ink);padding-top:22px;margin-bottom:25px}.world-heading h2{font-size:clamp(1.7rem,3vw,2.5rem);line-height:1.2}.world-heading>p{color:var(--muted);font-size:.9rem;max-width:48ch;justify-self:end}.world-group .tiles{grid-template-columns:repeat(4,minmax(0,1fr))}#simulations .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}#simulations .tile-cover{aspect-ratio:4/3}
 .family-world{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:24px;border-block:1px solid var(--rule);padding-block:32px;margin-bottom:24px}.family-world h2{font-size:1.9rem;line-height:1.2;margin-bottom:16px}.family-world p:not(.world-label){color:var(--muted);font-size:.9rem;margin-bottom:20px}.family-feature{text-decoration:none;background:var(--paper-2)}.family-feature img{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover}.family-feature>span{display:block;padding:15px;font-size:.72rem}.family-feature strong{display:block;font-family:var(--f-display);font-size:1.08rem;margin-top:4px}
 @media(max-width:900px){#simulations .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.world-group .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.family-world{grid-template-columns:1fr 1fr}.family-world>div{grid-column:1/-1}.fantasy-main{padding:28px}.fantasy-door{margin-inline:16px}.world-heading{grid-template-columns:1fr;gap:12px}.world-heading>p{justify-self:start}}
 @media(max-width:600px){.hero .wrap{padding-block:30px}.fantasy-door{grid-template-columns:1fr;margin-block:28px}.fantasy-sports{border-left:0;border-top:1px solid #425066}.fantasy-main h2{font-size:2.4rem}.fantasy-sports>a{padding:20px 45px 20px 28px}.site-nav{font-size:.8rem;gap:10px 17px}.family-world{gap:12px}.family-feature>span{padding:10px}#simulations .tiles{grid-template-columns:1fr}.world-nav{font-size:.78rem}.world-group{margin-bottom:36px}}
@@ -48,7 +48,7 @@
 
 <link rel="stylesheet" href="assets/navigation.css?v=20261112">
 <link rel="stylesheet" href="assets/catalog.css?v=20261104-start">
-<script src="assets/navigation.js?v=20261112" defer></script>
+<script src="assets/navigation.js?v=20261113-hubs" defer></script>
 </head>
 <body>
 
@@ -83,8 +83,8 @@
       <div class="hero-text">
         <p class="hero-kicker">Sports. Data. Nonsense.</p>
         <h1 id="hero-title">A little competition.<br>A whole lot to explore.</h1>
-        <p class="hero-sub">Daily challenges. Season-long rivalries. Worlds built from scratch. A growing collection of things I make, play, and share with friends and family.</p>
-      <nav class="world-nav" aria-label="Explore the site"><a href="fantasy/">Run your league ↗</a><a href="#games">Find a game ↓</a><a href="kids/">Explore the kids’ worlds ↗</a></nav>
+        <p class="hero-sub">Team hubs. Season-long rivalries. Daily challenges. A growing collection of things I make, play, and share with friends and family.</p>
+      <nav class="world-nav" aria-label="Explore the site"><a href="#hubs">Open a hub ↓</a><a href="fantasy/">Run your league ↗</a><a href="#games">Find a game ↓</a><a href="kids/">Explore the kids’ worlds ↗</a></nav>
       </div>
       <!-- Today's slate: the daily games as a hand-turned scoreboard. assets/slate.js fills it from what each game saved on this device. -->
       <aside class="slate" id="slate" aria-labelledby="slate-title">
@@ -116,21 +116,15 @@
     </div>
   </section>
 
-  <!-- Who's winning today: each daily game's group board leader. assets/leaders.js fills it from Supabase; it stays hidden if the boards can't be reached. -->
-  <section class="leaders" id="leaders" aria-labelledby="leaders-title" hidden>
-    <div class="wrap">
-      <div class="ld-head">
-        <h2 id="leaders-title">Who&rsquo;s winning today</h2>
-        <p class="ld-note" aria-live="polite"></p>
-      </div>
-      <div class="ld-grid"></div>
-    </div>
+  <div id="projects" class="project-start" tabindex="-1"></div>
+  <!-- Hubs: NBA, NFL, MLB and the Big Board, first after the hero. assets/catalog.js fills it from every project with hub: true. -->
+  <section class="section hubs" id="hubs" aria-label="Hubs">
+    <div class="wrap"><div id="hubs-list"><noscript><h2>Hubs</h2><p><a href="nba/">NBA Hub</a> · <a href="nfl/">NFL Hub</a> · <a href="mlb/">MLB Hub</a> · <a href="draft/">Big Board</a></p></noscript></div></div>
   </section>
 
-  <div id="projects" class="project-start" tabindex="-1"></div>
   <section class="fantasy-door wrap" id="fantasy" aria-labelledby="fantasy-title">
     <div class="fantasy-main">
-      <p class="world-label">01 / Fantasy sports</p>
+      <p class="world-label">02 / Fantasy sports</p>
       <h2 id="fantasy-title">Your season.<br>Your obsession.</h2>
       <p>The league doesn’t end when Sunday does. Draft a team, work the numbers, chase a title—and keep the receipts.</p>
       <a class="world-button" href="fantasy/">Enter the Fantasy hub <span aria-hidden="true">↗</span></a>
@@ -143,9 +137,20 @@
     </div>
   </section>
 
-  <section class="section" id="games-and-simulations" aria-label="Games, simulations and tools">
+  <!-- Who's winning today: each daily game's group board leader. assets/leaders.js fills it from Supabase; it stays hidden if the boards can't be reached. -->
+  <section class="leaders leaders-mid" id="leaders" aria-labelledby="leaders-title" hidden>
+    <div class="wrap">
+      <div class="ld-head">
+        <h2 id="leaders-title">Who&rsquo;s winning today</h2>
+        <p class="ld-note" aria-live="polite"></p>
+      </div>
+      <div class="ld-grid"></div>
+    </div>
+  </section>
+
+  <section class="section" id="games-and-simulations" aria-label="Games">
     <div class="wrap"><div class="catalog" id="catalog">
-      <noscript><h2>Games &amp; simulations</h2><p><a href="win-probability/">Make the Call</a> · <a href="guess-the-pick/">Guess the Pick</a> · <a href="celtics/">Banner 19</a> · <a href="31st-franchise/">The 31st Franchise</a></p></noscript>
+      <noscript><h2>Games</h2><p><a href="win-probability/">Make the Call</a> · <a href="pickem/">The Number</a> · <a href="journeyman/">Journeyman</a> · <a href="paint-the-corners/">Paint the Corners</a></p></noscript>
     </div></div>
   </section>
 
@@ -284,7 +289,7 @@
     <nav class="foot-nav" aria-label="Footer">
       <a href="./fantasy/">Fantasy</a>
       <a href="./#games">Games</a>
-      <a href="./#simulations">Simulations &amp; Tools</a>
+      <a href="./simulations/">Hubs &amp; Tools</a>
       <a href="./kids/">Kids</a>
       <a href="./#writing">Writing</a>
       <a href="./#about">About</a>
@@ -302,9 +307,9 @@
   </div>
 </footer>
 
-<script src="assets/projects.js?v=20261114"></script>
-<script src="assets/project-cards.js?v=20261112"></script>
-<script src="assets/catalog.js?v=20261112"></script>
+<script src="assets/projects.js?v=20261113-hubs"></script>
+<script src="assets/project-cards.js?v=20261113-hubs"></script>
+<script src="assets/catalog.js?v=20261113-hubs"></script>
 <script>
 /* Draws the project list from assets/projects.js. You shouldn't need to edit this. */
 (function () {
