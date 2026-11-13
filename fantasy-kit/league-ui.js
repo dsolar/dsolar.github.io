@@ -656,7 +656,7 @@
         const added = x.type === "trade" ? cell(x.adds, `from ${esc(T(x.other).abbr)}`) : cell(x.adds, x.type === "waiver" && x.faab != null ? `$${x.faab}` : "");
         const gone = x.type === "trade" ? cell(x.drops, `to ${esc(T(x.other).abbr)}`) : cell(x.drops);
         const note = !added && !gone && x.text ? `<span class="ps">${esc(x.text)}</span>` : "";
-        return `<tr><td class="txw"><b>${esc(txDate(x.at))}</b><small class="ps">Week ${x.week}</small></td><td class="txt">${who}</td><td class="c">${kind(x)}</td><td>${added || note}</td><td>${gone}</td></tr>`;
+        return `<tr><td class="txw"><b>${esc(txDate(x.at))}</b><small class="ps">Week ${x.week}</small></td><td class="txt">${who}</td><td class="c txk">${kind(x)}</td><td class="txa">${added || note}</td><td class="txd">${gone}</td></tr>`;
       }).join("");
       return items.length ? `<div class="table-wrap"><table class="t txtab"><thead><tr><th>When</th><th>Team</th><th class="c">Move</th><th>Added</th><th>Dropped</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="card"><p class="empty" style="margin:0">No moves like that yet.</p></div>`;
     }
