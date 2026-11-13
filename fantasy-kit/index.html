@@ -107,7 +107,7 @@ body.fk-room .ds-bar{display:none}
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team football snake draft. Half PPR, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
         <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
-        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="league.html?s=nfl&amp;f=h">Explore a demo</a><a class="btn ghost" href="leagues.html?s=nfl">Your leagues</a></div></article>
+        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="leagues.html?s=nfl">Start a league</a><a class="btn ghost" href="league.html?s=nfl&amp;f=h">Explore a demo</a></div></article>
       </section><p class="start-note">Mock drafts save on this device. You can leave and come back to the same seat.</p></div></main>
 <script>
 /* Fit the first screen to this visitor the way lab.js will: the route, the sport, a saved mock and the theme. */
@@ -149,7 +149,7 @@ body.fk-room .ds-bar{display:none}
 /* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
    stylesheets are in (an inline script waits for them): the first screen above paints without ~640K of JavaScript
    sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
-["sports.js?v=20261111d", "value.js?v=20261111d", "draft.js?v=20261111e", "../assets/faces.js?v=20261109c", "ui.js?v=20261112d", "setup.js?v=20261111d", "cloud.js?v=20261112b", "slates.js?v=20261111d", "lab.js?v=20261112b"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+["sports.js?v=20261111d", "value.js?v=20261111d", "draft.js?v=20261111e", "../assets/faces.js?v=20261109c", "ui.js?v=20261112d", "setup.js?v=20261113", "cloud.js?v=20261112b", "slates.js?v=20261111d", "lab.js?v=20261113"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
 </script>
 </body>
 </html>

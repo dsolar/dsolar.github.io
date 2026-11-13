@@ -139,7 +139,7 @@
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team ${esc(sport.name.toLowerCase())} snake draft. ${esc(scoring)}, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
         <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
-        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="league.html?s=${esc(cfg.sport)}&f=h">Explore a demo</a><a class="btn ghost" href="leagues.html?s=${esc(cfg.sport)}">Your leagues</a></div></article>
+        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="leagues.html?s=${esc(cfg.sport)}">Start a league</a><a class="btn ghost" href="league.html?s=${esc(cfg.sport)}&f=h">Explore a demo</a></div></article>
       </section><p class="start-note">Mock drafts save on this device. You can leave and come back to the same seat.</p></div>`;
   }
   async function quickMock(button) {

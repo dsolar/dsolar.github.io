@@ -95,6 +95,7 @@
   const lineupOf = (sp) => (heist() ? ONE_WEEK_NFL.slice() : slateLU() ? slateLU().lineup.slice() : form.lineup ? form.lineup.split(" ") : oneWeek() && sp.key === "nfl" ? ONE_WEEK_NFL.slice() : sp.lineup.slice()).filter((x) => sp.slots[x] && x !== "BN");
   const benchOf = (sp) => (heist() || capOn() ? 0 : slateLU() ? slateLU().bench : form.bench != null ? form.bench : oneWeek() && sp.key === "nfl" ? 2 : sp.bench);
   if (S.ALL[params.get("s")]) { form.sport = params.get("s"); view = "new"; }
+  if (params.get("new")) view = "new";
   // leagues.html?rematch=<id>: run a one-week game back, next week, with the same managers in the same seats
   const rematchId = params.get("rematch");
   let rematch = null, rematchErr = "";
@@ -143,6 +144,16 @@
     if (prof && prof.name && !(form.me || "").trim()) form.me = prof.name;
   }
   const profChip = () => prof ? `<button type="button" class="pf-chip" data-a="profile">${U.faceAv(prof, prof.name, "md")}<span>${esc(prof.name || "Add your name")}<small style="display:block">${prof.saved ? "Edit your profile" : "Set up your profile"}</small></span></button>` : "";
+  // a league set up while signed out, saved when "Make the league" asks you to sign in
+  const PENDING = "fk-pending-league";
+  let waiting = false;   // the sign-in card is up because a league is waiting on it
+  function savePending() { try { localStorage.setItem(PENDING, JSON.stringify({ at: Date.now(), form })); } catch (e) { /* private mode: the form stays in this tab */ } }
+  function takePending() {
+    let p = null;
+    try { p = JSON.parse(localStorage.getItem(PENDING) || "null"); localStorage.removeItem(PENDING); } catch (e) { p = null; }
+    if (!p || !p.form || Date.now() - p.at > 864e5) { if (waiting) { waiting = false; return true; } return false; }
+    Object.assign(form, p.form); waiting = false; return true;
+  }
   async function render() {
     header();
     const u = C.user();
@@ -154,6 +165,9 @@
       invite = v.error ? fail(v.error) : u ? joinCard(v) : "";
       if (!u && !v.error) return page(`${err}${signInCard(v)}`);
     }
+    // a league set up before signing in: once signed in, it's made right away (that's what the button said)
+    if (u && takePending()) { view = "new"; return makeLeague(); }
+    if (!u && view === "new" && !waiting) return page(newForm());
     if (!u) return page(`${err}${invite}${signInCard()}`);
     if (rematchId && !rematch && !rematchErr) await loadRematch();
     if (rematchErr) return page(fail(rematchErr));
@@ -203,9 +217,12 @@
     if (resetTo) return band("Check your email", `<p>If <b style="color:#fff;overflow-wrap:anywhere">${esc(resetTo)}</b> has an account, we sent it a link to reset the password.</p>
         <div class="si-card"><ol class="si-steps"><li>Open the email and tap the reset link.</li><li>You land back here and pick a new password.</li></ol>
           <div class="si-row"><button class="btn" data-a="si-mode" data-m="password">Back to sign in</button></div></div>`);
-    const lead = inv ? `<p class="jn-kick">${icon(k0, "sp-ic")}You're invited</p><h1 class="disp">${esc(inv.name)}</h1>
+    const lead = !inv && waiting ? `<h1 class="disp">Sign in to make ${esc(form.name || "your league")}</h1>
+        <p>Your settings are saved. Sign in or make an account and the league is made right away. <button type="button" class="si-link" data-a="new" style="color:#fff">Back to the settings</button></p>`
+      : inv ? `<p class="jn-kick">${icon(k0, "sp-ic")}You're invited</p><h1 class="disp">${esc(inv.name)}</h1>
         <p>A ${esc(S[k0].name.toLowerCase())} league with ${inv.draft.teams.length} teams. Sign in or make an account, then pick your team.</p>` : `<h1 class="disp">Draft with your friends.</h1>
-        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>`;
+        <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>
+        <p><button type="button" class="btn go" data-a="new">Set up a league</button> <span style="opacity:.8">No account needed until you make it.</span></p>`;
     const tabs = `<div class="si-tabs" role="tablist" aria-label="Sign in or make an account">${[["password", "Sign in"], ["signup", "Create account"]].map(([m, n]) => `<button type="button" role="tab" aria-selected="${siMode === m || (m === "password" && (siMode === "forgot" || siMode === "link"))}" data-a="si-mode" data-m="${m}">${n}</button>`).join("")}</div>`;
     const pwField = (id, auto, label) => `<label for="${id}">${label}</label><div class="si-pw"><input id="${id}" type="password" autocomplete="${auto}" required minlength="${auto === "new-password" ? 8 : 1}"><button type="button" class="si-show" data-a="si-show" data-for="${id}" aria-label="Show password">Show</button></div>`;
     const alt = (items) => `<div class="si-alt">${items.map(([m, n]) => `<button type="button" class="si-link" data-a="si-mode" data-m="${m}">${n}</button>`).join("")}</div>`;
@@ -373,6 +390,8 @@
         <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
+        ${!C.user() ? `<div class="banner nl-out" style="margin:0 0 4px"><b>Set it up now, sign in at the end.</b> <span class="muted">Everything here is kept.</span></div>` : ""}
+        ${rematch ? "" : presetsHtml(sp)}
         ${rematch ? `<div class="banner" style="margin:0 0 4px"><b>Running it back: ${esc(rematch.name)}, the same ${rematch.n} teams and managers.</b> <span class="muted">Pick next week's games and go. Everyone in this week's game is in the new one.</span></div>` : ""}
         <section class="nl-sec nl-ess"><h2 class="nl-h">The basics</h2>
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
@@ -711,6 +730,7 @@
     const need = (m, el) => { why(m); const x = $(el); if (x) { x.focus({ preventScroll: true }); x.scrollIntoView({ block: "center", behavior: "smooth" }); } };
     if (!(form.name || "").trim()) return need("Give the league a name.", "#n-name");
     if (!(form.me || "").trim()) return need("Add your name.", "#n-me");
+    if (!C.user()) { savePending(); waiting = true; view = "list"; await render(); scrollTo({ top: 0 }); const f = $("#pi-login") || $("#pu-user"); if (f) f.focus({ preventScroll: true }); return; }
     busy = true; render();
     try {
       const r0 = await fetch(`data/${form.sport}.json`, { cache: "no-cache" });
@@ -854,6 +874,45 @@
       location.href = `play.html?id=${encodeURIComponent(joinId)}`;
     } else if (f.id === "new") makeLeague();
   });
+  /* ---------- presets: a starting point for the whole form, then change anything ---------- */
+  const DEF_SCORING = { nfl: "half", nba: "cats9", mlb: "roto5" };
+  const PRESETS = (sp) => {
+    const cats = scoringOf(sp) === "cats", n = sp.key === "nfl" ? 12 : 10;
+    return [
+      ["classic", "Classic", `${n} teams, ${sp.key === "nfl" ? "half PPR" : sp.key === "nba" ? "9 categories" : "5x5"}, snake draft, head to head`],
+      ["chaos", "Chaos", "Mystery packages, Robin Hood and Kingslayer"],
+      ["guillotine", "Guillotine", "16 teams. The lowest score is cut every week"],
+      ["bestball", "Best ball", cats ? "Draft and done: your best stats count every week" : "Draft and done: your best lineup counts every week"],
+      ["quick", sp.key === "nba" ? "One day" : "Quick game", sp.key === "nba" ? "Draft tonight's games, crown a winner by midnight" : "Draft this week's games, crown a winner Monday night"],
+    ];
+  };
+  // the scoring type of the sport's default scoring
+  function scoringOf(sp) { const k = form.scoring && sp.scorings[form.scoring] ? form.scoring : DEF_SCORING[sp.key]; return (sp.scorings[k] || Object.values(sp.scorings)[0]).type; }
+  // the choices a preset sets, so the card stays lit only while the form still matches it
+  const PRE_KEYS = ["kind", "season", "type", "teams", "scoring", "clock", "bestball", "median", "robinOn", "crownOn", "tbOn", "waivers"];
+  const preSig = () => JSON.stringify(PRE_KEYS.map((k) => form[k]));
+  function applyPreset(k) {
+    const sp = S[form.sport];
+    // every twist and extra off first, so presets don't stack
+    Object.assign(form, { pyoOn: 0, robinOn: 0, conqOn: 0, crownOn: 0, hangOn: 0, tbOn: 0, vampOn: 0, median: 0, tvOn: 0, rlOn: 0, hzOn: 0, confOn: 0, bestball: 0,
+      type: "snake", clock: 90, scoring: DEF_SCORING[sp.key] || "", teams: sp.key === "nfl" ? 12 : 10, weeksWant: null, waivers: "faab", open: {} });
+    if (k === "quick") {
+      form.wkSet = 0; setKind("week"); oneWeekDefaults();
+    } else {
+      form.lastKind = "redraft"; setKind("redraft");
+      form.season = "h2h";
+      if (k === "chaos") Object.assign(form, { type: "mystery", robinOn: 1, crownOn: 1, median: 1, twOpen: true });
+      if (k === "guillotine") Object.assign(form, { season: "guillotine", teams: 16, tbOn: 1 });
+      if (k === "bestball") form.bestball = 1;
+      derive();
+    }
+    form.preset = k; form.presetSig = preSig();
+  }
+  function presetsHtml(sp) {
+    const cur = form.preset && form.presetSig === preSig() ? form.preset : null;
+    return `<section class="nl-sec nl-pre"><h2 class="nl-h">Start from a preset</h2><p class="nl-sub">One tap fills in the rules. Change anything below.</p>${pickCards("pre", PRESETS(sp), cur, "Presets")}</section>`;
+  }
+
   // a league type, from the cards or the season / one week choice
   function setKind(k) {
     form.kind = k;
@@ -876,6 +935,8 @@
     if (!e.target.closest(".su")) return;
     const row = e.target.closest("[data-row]");
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
+    const pre = e.target.closest("[data-pre]");
+    if (pre) { grab(); applyPreset(pre.dataset.pre); redraw(`n-pick-pre-${pre.dataset.pre}`); return; }
     const md = e.target.closest("[data-mode]");
     if (md) { grab(); const k = md.dataset.mode === "week" ? "week" : form.lastKind || "redraft"; if (k === "week") oneWeekDefaults(); setKind(k); redraw(`n-pick-mode-${md.dataset.mode}`); return; }
     const ty = e.target.closest("button[data-type]");
@@ -952,7 +1013,7 @@
     else if (k === "account") accountDialog();
     else if (k === "pw-skip") { recovery = false; render(); }
     else if (k === "resend") { try { await C.signIn(sent, back()); U.toast("Sent again."); } catch (err) { U.toast(err.message, true); } }
-    else if (k === "new") { view = "new"; render(); }
+    else if (k === "new") { view = "new"; waiting = false; render(); }
     else if (k === "list") { view = "list"; render(); }
     else if (k === "slates-retry") { delete slatesFor[form.sport]; slatesAsked[form.sport] = false; render(); }
   });

@@ -36,6 +36,11 @@
   const group = (title, body, sub) => `<section class="gp"><div class="gp-h"><h3>${esc(title)}</h3>${sub ? `<p>${sub}</p>` : ""}</div><div class="gp-b">${body}</div></section>`;
   const noLimit = (x) => (x ? `${x}` : "No limit");
   const STYLE_ART = {
+    // the presets on the start-a-league form
+    classic: `<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"/><path d="M12 13v4M9 20h6"/>`,
+    chaos: `<path d="M3 6h3c4 0 6 12 10 12h5"/><path d="M3 18h3c4 0 6-12 10-12h5"/><path d="M18 3l3 3-3 3M18 15l3 3-3 3"/>`,
+    bestball: `<path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.6 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/>`,
+    quick: `<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/>`,
     snake: `<path d="M4 6h13a3 3 0 0 1 0 6H7a3 3 0 0 0 0 6h13"/><path d="M17 15l3 3-3 3"/>`,
     sealed: `<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 8l9 6 9-6"/>`,
     cap: `<path d="M12 3v18"/><path d="M16.5 7.5c-.7-1.5-2.4-2.5-4.5-2.5-2.5 0-4.5 1.3-4.5 3.4 0 4.6 9.5 2.6 9.5 7.2 0 2.1-2.1 3.4-5 3.4-2.3 0-4.2-1-5-2.7"/>`,
