@@ -88,7 +88,7 @@ picks.forEach((p, k) => {
 D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
 D.phase = 'done'; D.done = draftAt + picks.length * 60000; D.year = data.seasons.length;
 // the league's look: the banner says WY (Wipe Yoenis), in green
-const brand = { color: 2, letters: 'WY' };
+const brand = { color: 2, letters: 'WY', hex: '#BD3039', bg: '#1F4532' }; // the Green Monster and Red Sox red, as on the Yoenis page
 D.season = { format: 'h2h', weeks: 22, playoffTeams: 6, faab: 100, waivers: 'faab', keepers: 5, keeperRule: { steps: [0, 2, 6], fa: 15, cutoff: '09-01', sameRound: 'up' }, pickTrades: 'offseason', review: 'commish', ir: 3 };
 D.extraPlayers = [];
 
