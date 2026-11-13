@@ -14,7 +14,7 @@
   const now = () => C.now();
   const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
   let info = null, D = null, L = null, version = 0, base = null;
-  let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null, prospects = null;
+  let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null, prospects = null, practice = null;
   // a trivia draft's questions, made by whichever page puts the pick on the clock
   // Loaded when needed, not with the page: the trivia bank (only a trivia draft asks questions) and the league pages
   // (not until the draft is over; they load in the background once the room is up). Same version as this file.
@@ -104,12 +104,14 @@
   }
 
   /* ---------- the two views ---------- */
-  const modeNow = () => (L ? "league" : Z.sealedKind(D) ? "entry" : "draft");
+  const modeNow = () => (practice ? "practice" : L ? "league" : Z.sealedKind(D) ? "entry" : "draft");
   function mount() {
+    // a reload on #practice picks the saved practice draft back up
+    if (!practice && location.hash === "#practice" && L && seasonOver()) { try { const sv = JSON.parse(localStorage.getItem(PK) || "null"); if (sv && sv.D) practice = sv; } catch (e) { /* no storage */ } }
     if (modeNow() === "league" && !U.leagueApp) { need("league-ui.js").then(mount, (e) => fatal(e.message, `<span class="muted">Reload the page to try again.</span>`)); return; }
     mode = modeNow();
     if (room) { room.stop(); room = null; }
-    if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
+    if (mode === "practice") mountPractice(); else if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
   }
   // a salary cap game or a sealed draft: entries go to the server, hidden until the lock
   function mountEntry() {
@@ -148,7 +150,7 @@
     $("#top").innerHTML = "";
     $("#app").innerHTML = `<div id="room"></div>${guestNote()}`;
     room = U.room({
-      el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now, hooks: { trivia: triviaHook },
+      el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now, hooks: { trivia: triviaHook }, ...roomCols(),
       get commish() { return info.commish; }, get drive() { return driveOk(); },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
       tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
@@ -161,6 +163,50 @@
       chat,
     });
     loadPosts();
+  }
+  // a league's draft room: no auction dollars unless it's an auction (the room shows them then anyway), and no value
+  // column in a category league, where it only confuses
+  function roomCols(d = D) {
+    const sc = d && sport.scorings && sport.scorings[d.scoring];
+    return { money: false, value: !(sc && sc.type === "cats") };
+  }
+  /* ---------- a practice draft: next season's real board, keepers and all, against bots, saved only here ---------- */
+  const PK = "fk-practice:" + id;
+  const practiceMe = () => (info.me != null ? info.me : 0);
+  function practiceBuild() {
+    const ctx = lctx(), picks = {};
+    for (const t of L.teams) picks[t.id] = (L.next && L.next.picks && L.next.picks[t.id]) || Z.autoKeepers(L, ctx, t.id);
+    const D2 = Z.nextDraft(L, ctx, sport, picks, { now: now() });
+    // every team but yours is a bot; the clock is short so it moves
+    D2.teams.forEach((t, i) => { t.owner = i === practiceMe() ? "you" : null; t.auto = false; });
+    D2.botDelay = 1; D2.name = "Practice draft";
+    return { D: D2, at: now(), me: practiceMe() };
+  }
+  function practiceSave() { try { localStorage.setItem(PK, JSON.stringify(practice)); } catch (e) { /* full or private: it lasts until you leave */ } }
+  function practiceOpen(fresh) {
+    let saved = null;
+    if (!fresh) try { saved = JSON.parse(localStorage.getItem(PK) || "null"); } catch (e) { saved = null; }
+    practice = saved && saved.D && saved.me === practiceMe() ? saved : practiceBuild();
+    practiceSave(); history.replaceState(null, "", location.pathname + location.search + "#practice"); mount();
+  }
+  function practiceExit() { practice = null; history.replaceState(null, "", location.pathname + location.search + "#league"); mount(); }
+  function mountPractice() {
+    document.body.classList.add("fk-room");
+    $("#top").innerHTML = "";
+    $("#app").innerHTML = `<div id="room"></div>`;
+    const P = practice;
+    room = U.room({
+      el: $("#room"), sport, players, draft: () => P.D, save: practiceSave, me: () => P.me, now, commish: true, solo: true, ...roomCols(P.D),
+      get drive() { return !document.hidden; },
+      brand: { name: "Practice draft", mark: `<img src="mark.svg" alt="">` },
+      exit: { href: "#league", label: "Back to the league" },
+      tools: () => `<span class="ps">Only you see this. Nothing counts.</span>`,
+      extra: () => `<button class="btn sm" data-live="practice-new">Start over</button>`,
+    });
+  }
+  function practiceLine() {
+    if (!seasonOver() || L.settings.dynasty || !L.settings.keepers || !L.next) return "";
+    return `<p class="small" style="margin:0"><b>Practice draft:</b> next season's board with everyone's keepers in (teams that haven't picked keep their best values), the real draft order and traded picks. Bots draft for everyone else. Only you see it. <button type="button" class="btn sm" data-live="practice">Practice the draft</button></p>`;
   }
   // the managers' photos (fk_faces), for members; your own profile to edit (fk_profile_me, fk_profile_set)
   let faces = {};
@@ -638,7 +684,7 @@
     if (!seasonOver() || !L.next || info.me == null || !L.settings.keepers) return "";
     const mine = L.next.picks && L.next.picks[info.me], lock = keepLocked();
     const left = keepDue() && !lock ? keepDue() - now() : 0, soon = left && left < 2 * 864e5 ? ` That's ${left < 36e5 ? "less than an hour" : `${Math.round(left / 36e5)} hours`} from now.` : "";
-    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button></div></div>`;
+    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button> <button class="btn sm ghost" data-live="practice">Practice the draft</button></div></div>`;
   }
   // a team's keepers: every player with his cost (or why he can't be kept), and where the picks land in the draft
   function keeperDialog(teamId = info.me) {
@@ -743,6 +789,7 @@
       <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? (lock ? `Keepers locked ${esc(whenTxt(keepDue()))}.` : `Keeper picks are open until ${esc(whenTxt(keepDue()))}.`) : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
       ${k ? `<ul class="seatl">${rows}</ul>` : ""}
       ${L.settings.dynasty ? "" : L.settings.draftOrder === "lottery" ? lotteryLine() : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
+      ${practiceLine()}
       <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
   }
   // settings.draftOrder "lottery": the commissioner runs the draw once, and everyone sees how it came out
@@ -989,6 +1036,8 @@
     if (lv && lv.dataset.live === "open-keepers" && info.commish) keeperOpenDialog();
     if (lv && lv.dataset.live === "draft-order" && info.commish) orderDialog();
     if (lv && lv.dataset.live === "lottery" && info.commish) runLottery();
+    if (lv && lv.dataset.live === "practice") { e.preventDefault(); practiceOpen(false); }
+    if (lv && lv.dataset.live === "practice-new") { e.preventDefault(); U.confirm("Start the practice draft over?", "It rebuilds the board from the league's keepers and draft order as they stand now.", "Start over", () => practiceOpen(true)); }
     const kt = e.target.closest("[data-kp-team]");
     if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");
@@ -1003,6 +1052,7 @@
     }); }
   });
 
+  window.addEventListener("hashchange", () => { if (practice && location.hash !== "#practice") { practice = null; mount(); } });
   window.addEventListener("hashchange", () => { if (/access_token=/.test(location.hash) && C.fromLink()) location.reload(); });
   boot().catch((e) => { console.error(e); fatal("Couldn't load the league.", `<span class="muted">${esc(e.message)}</span>`); });
 })();

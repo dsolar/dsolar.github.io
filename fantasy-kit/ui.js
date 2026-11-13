@@ -1084,7 +1084,7 @@
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
       const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
-      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty) });
+      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() ? undefined : opts.money, value: opts.value });
       rows = sortRows(rows, cols, ui.sort);
       const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
       const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);
