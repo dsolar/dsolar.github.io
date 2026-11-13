@@ -569,7 +569,8 @@
       { k: "rec", label: "W-L-T", cls: "r num", html: (r) => `<b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>` },
       { k: "pct", label: "Pct", cls: "r num", hide: "s", html: (r) => r.pct.toFixed(3).replace(/^0/, "") },
       { k: "gb", label: "GB", cls: "r num", hide: "s", html: (r) => (r.gb ? r.gb.toFixed(r.gb % 1 ? 1 : 0) : "-") },
-      { k: "pf", label: opts.pfLabel || "PF", cls: "r num", html: (r) => fmt(r.pf) },
+      // categories won repeat the W in a category league's W-L-T, so a phone leaves them out
+      { k: "pf", label: opts.pfLabel || "PF", cls: "r num", hide: /cat/i.test(opts.pfLabel || "") ? "s" : undefined, html: (r) => fmt(r.pf) },
     ];
     if (!opts.compact) cols.push({ k: "pa", label: opts.paLabel || "PA", cls: "r num", hide: "s", html: (r) => fmt(r.pa) },
       { k: "streak", label: "Strk", cls: "r", hide: "s", html: (r) => `<span class="${/^W/.test(r.streak) ? "win" : /^L/.test(r.streak) ? "loss" : ""}" style="font-weight:800">${esc(r.streak || "-")}</span>` },
