@@ -19,6 +19,8 @@
 
   const r3 = (v) => (v == null ? "-" : v.toFixed(3).replace(/^0/, ""));
   const f1 = (v) => (v == null ? "-" : v.toFixed(1));
+  // innings the way box scores write them: 172 and two thirds is 172.2
+  const fip = (x) => (x == null ? "" : `${Math.floor(x + 1e-6)}.${Math.round((x - Math.floor(x + 1e-6)) * 3)}`);
   const f2 = (v) => (v == null ? "-" : v.toFixed(2));
   const f0 = (v) => (v == null ? "-" : String(Math.round(v)));
 
@@ -176,7 +178,7 @@
       { line: "bat", col: "sb", label: "SB", fmt: f0, group: "bat" },
       { line: "bat", col: "avg", label: "AVG", fmt: r3, group: "bat" },
       { line: "bat", col: "ops", label: "OPS", fmt: r3, group: "bat", hide: "s" },
-      { line: "pit", col: "ip", label: "IP", fmt: f1, group: "pit", hide: "s" },
+      { line: "pit", col: "ip", label: "IP", fmt: fip, group: "pit", hide: "s" },
       { line: "pit", col: "w", label: "W", fmt: f0, group: "pit" },
       { line: "pit", col: "sv", label: "SV", fmt: f0, group: "pit" },
       { line: "pit", col: "k", label: "K", fmt: f0, group: "pit" },
@@ -437,5 +439,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

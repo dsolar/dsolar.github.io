@@ -1567,8 +1567,9 @@ table.t.roster th.act,table.t.roster td:last-child{width:1%;white-space:nowrap}
 .dues-you>.btn.sm{justify-self:start}
 .dues-you .btn{text-decoration:none}
 .dues-l li{gap:10px}
-/* a column sliding under the sticky action column fades out, so a half-hidden "$54" never reads as "$5" */
-table.t td.act::before,table.t th.act::before{content:"";position:absolute;top:0;bottom:0;left:-28px;width:28px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--surface) 85%)}
+/* a column sliding under the sticky action column fades out, so a half-hidden "$54" never reads as "$5". The fade over content scrolling under the pinned actions sits in the column's own padding, so it never dims the last stat when nothing scrolls */
+table.t td.act,table.t th.act{padding-left:26px}
+table.t td.act::before,table.t th.act::before{content:"";position:absolute;top:0;bottom:0;left:0;width:22px;pointer-events:none;background:linear-gradient(90deg,transparent,var(--surface) 85%)}
 table.t th.act::before{background:linear-gradient(90deg,transparent,var(--surface-2) 85%)}
 table.t tr.me td.act::before{background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--brand-soft) 100%,var(--surface)) 85%)}
 @media (max-width:600px){table.t td.nm{min-width:0;width:150px;max-width:150px} .dr-left table.t td:has(.pname){min-width:0;width:150px;max-width:150px}}
@@ -1797,6 +1798,12 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .lk-own legend{font-weight:700;font-size:13px;margin-bottom:8px;padding:0}
 .lk-pick{display:flex;align-items:center;gap:8px;font-size:13px}
 .lk-pick input[type=color]{width:40px;height:30px;padding:0;border:1px solid var(--line-2);border-radius:6px;background:none}
+.rtab{margin-top:12px}
+.seg.rv{margin:4px 0 2px;flex-wrap:wrap}
+.ipbar{display:grid;gap:6px;margin:12px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px}
+.ipbar i{display:block;height:6px;border-radius:3px;background:var(--surface-3,#e8edf2);position:relative;overflow:hidden}
+.ipbar i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:var(--loss);border-radius:3px}
+.ipbar.ok i::after{background:var(--win)}
 .du-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .du-row select,.du-row input[type=text]{min-width:0}
 .lot-o{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:4px 14px;counter-reset:lot}
