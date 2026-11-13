@@ -143,7 +143,7 @@
   }
   function fieldValue(war, year, season, cfg, p) {
     var prospect = p && isProspect(p), young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent"); // a free agent signing (from Japan, say) is established
-    var w = Math.max(0, war) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+    var w = Math.max(0, war) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
       * (young ? Math.pow(cfg.youngFade == null ? 1 : cfg.youngFade, Math.min(year - season, Math.ceil(3 - (p.st || 0)))) : 1); // until he'd be established
     return w * (cfg.tiered ? tierMult(w) : 1) * dpwAt(cfg, year, season);
   }
@@ -303,6 +303,7 @@
     hub.players.forEach(function (p) { self.byId[p.id] = p; });
     this.resigned = {};
     this.fa = fa || { classes: {} };
+    normalizeFa(this.fa);
     applySignings(this);
     this.market = marketRead(this.fa, this.season, this.cfg);
     if (this.market && this.market.dpw && !(opts && opts.dpw)) this.cfg.dpw = this.market.dpw;
@@ -317,12 +318,34 @@
   // A free agent who just signed: RosterResource moves him to his new team within hours, but his year-by-year
   // contract can take days to post. Until it does, build it from the signing (years and total, paid evenly), so his
   // surplus covers the whole deal instead of treating him as an arbitration player with one year left.
+  // RosterResource's free agent tracker uses FanGraphs' team codes; the rest of the hub uses MLB's
+  var FG_ABBR = { CHW: "CWS", KCR: "KC", SDP: "SD", SFG: "SF", TBR: "TB", WSN: "WSH", OAK: "ATH" };
+  function normalizeFa(fa) {
+    Object.keys(fa.classes || {}).forEach(function (y) {
+      fa.classes[y].forEach(function (r) { if (FG_ABBR[r.to]) r.to = FG_ABBR[r.to]; if (FG_ABBR[r.from]) r.from = FG_ABBR[r.from]; });
+    });
+  }
+  // How much faith to put in a free agent's projection: full for a regular with a real big league track record, down
+  // to 55% for a player coming off an MLB club with almost none (a projection built on minor league or overseas
+  // numbers, say, for a player teams haven't seen hold up in the majors). Players signing from Japan or Korea keep
+  // their full projection: teams bid on those overseas records.
+  function faith(r, hubObj) {
+    if (!r.mlb || !r.from || !hubObj.byAbbr[r.from]) return 1;
+    var pa = r.mlb[0] || 0, ip = r.mlb[1] || 0, x;
+    if (isRP(r.pos)) x = ip / 120;
+    else if (/SP|P$/.test(String(r.pos || ""))) x = ip / 300;
+    else x = pa / 1000;
+    return Math.min(1, 0.55 + 0.45 * x);
+  }
+
   function applySignings(hub) {
     var season = hub.season;
     ((hub.fa.classes || {})[season] || []).forEach(function (r) {
       if (!r.id || !r.aav || !r.yrs || !r.to || /MiLB/i.test(r.ctype || "")) return;
       var p = hub.byId[r.id];
       if (!p || p.t !== r.to) return;
+      var tr = faith(r, hub); // the same faith in his projection the free agent board used
+      if (tr < 1) p.faith = tr;
       var has = p.c && p.c.yrs && p.c.yrs.length && p.c.yrs[0][0] === season && p.c.type && !/Arbitration|Pre-Arb/i.test(p.c.type) &&
         p.c.yrs.filter(function (y) { return y[2] === "G"; }).length === r.yrs;
       if (has) return;
@@ -666,8 +689,34 @@
     buckets.forEach(function (b) { b.rows.sort(function (a, c) { return order[a.k] - order[c.k]; }); });
     var allPaid = 0, allModel = 0;
     good.forEach(function (d) { allPaid += d.total; allModel += d.model; });
+    // Length and player tier both move price, and they overlap (most one-year deals go to lesser players), so read
+    // them together: alternate between the two until they settle, each bucket shrunk toward 1 when it has few deals.
+    // The tier factor is set to average 1 across the dollars, so the overall level sits in the length factor.
+    var joint = { len: {}, tier: {} }, SHRINK = 8;
+    for (var it = 0; it < 25; it++) {
+      [["len", lenK, "tier", tiers], ["tier", tiers, "len", lenK]].forEach(function (pass) {
+        var acc = {};
+        good.forEach(function (d) {
+          var k = pass[1](d), other = joint[pass[2]][pass[3](d)] || 1;
+          (acc[k] = acc[k] || { paid: 0, model: 0, n: 0 });
+          acc[k].paid += d.total; acc[k].model += d.model * other; acc[k].n++;
+        });
+        Object.keys(acc).forEach(function (k) {
+          var a = acc[k], f = a.paid / a.model, w = a.n / (a.n + SHRINK);
+          joint[pass[0]][k] = w * f + (1 - w) * 1;
+        });
+      });
+      var tp = 0, tm = 0;
+      good.forEach(function (d) { tp += d.model * (joint.tier[tiers(d)] || 1); tm += d.model; });
+      var norm = tm ? tp / tm : 1;
+      Object.keys(joint.tier).forEach(function (k) { joint.tier[k] /= norm; });
+      Object.keys(joint.len).forEach(function (k) { joint.len[k] *= norm; });
+    }
     return { dpw: dpw, how: how, crowdDpw: cd ? cn / cd : null, crowdN: ck, crowdErr: crowdErr, crowdByClass: byClass,
       spot: spot, deals: good, buckets: buckets, fit: fit, overall: allModel ? allPaid / allModel - 1 : 0,
+      lenF: function (yrs) { return joint.len[lenK({ r: { yrs: yrs } })] || 1; },
+      tierF: function (war) { return joint.tier[tiers({ wj: war })] || 1; },
+      joint: joint,
       lenPrem: function (yrs) {
         var b = buckets[0].rows, k = yrs === 1 ? "1 year" : yrs <= 3 ? "2-3 years" : yrs <= 5 ? "4-5 years" : "6+ years";
         for (var i = 0; i < b.length; i++) if (b[i].k === k && b[i].n >= 4) return b[i].prem;
@@ -731,14 +780,17 @@
     var cls = (this.fa.classes || {})[this.season] || [], self = this, cfg = this.cfg, mk = this.market;
     return cls.map(function (r) {
       var p = r.id ? self.byId[r.id] : null;
-      var war = r.wj != null ? r.wj : p && p.pj ? p.pj.war : null;
+      var proj = r.wj != null ? r.wj : p && p.pj ? p.pj.war : null, trust = faith(r, self);
+      var war = proj == null ? null : proj * trust;
       var yrs = r.yrs || r.my || (war >= 3 ? 4 : war >= 1.5 ? 2 : 1);
       var age = r.age || (p ? seasonAge(p, self.season, self.season) : 30);
       var path = war == null ? [] : warPath(war, age, yrs, isRP(r.pos)), val = 0;
       for (var k = 0; k < path.length; k++) val += path[k] * dpwAt(cfg, self.season + k, self.season);
-      var spotAav = yrs ? Math.max(cfg.minSalary, val / yrs) : null;
-      var mktAav = spotAav != null && mk ? spotAav * (1 + mk.lenPrem(yrs)) : spotAav;
-      return { r: r, p: p, war: war, yrs: yrs, age: age, path: path, value: val, spotAav: spotAav, mktAav: mktAav,
+      // Fair: his wins at the price wins from a player of his tier go for (marginal players are plentiful and cheap
+      // per win; good regulars cost more). Market: what deals that long add on top
+      var spotAav = yrs ? Math.max(cfg.minSalary, val / yrs * (mk ? mk.tierF(war) : 1)) : null;
+      var mktAav = spotAav != null && mk ? Math.max(cfg.minSalary, spotAav * mk.lenF(yrs)) : spotAav;
+      return { r: r, p: p, war: war, proj: proj, trust: trust, yrs: yrs, age: age, path: path, value: val, spotAav: spotAav, mktAav: mktAav,
         crowdAav: r.ma ? r.ma / 1e6 : null, signedAav: r.aav ? r.aav / 1e6 : null,
         gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null, grade: r.aav ? gradeDeal(r, yrs, war, val, mktAav, cfg, self.need(r, war)) : null };
     }).filter(function (x) { return x.war != null; }).sort(function (a, b) { return b.value - a.value; });

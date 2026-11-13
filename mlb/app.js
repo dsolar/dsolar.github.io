@@ -68,6 +68,12 @@
     return '<p class="graded">' + gradeTag(gr) + "<span><b>" + r.yrs + " yr, " + money(gr.paid, 0) + "</b> against a market price of " + money(gr.mkt, 0) + " for deals this long: " +
       pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") + " market" + (gr.pick ? ", counting a small dock for the qualifying-offer pick" : "") + "." + needTxt + "</span></p>";
   }
+  // A projection counted at less than face value, and why
+  function faithNote(r, trust, proj) {
+    if (!(trust < 1)) return "";
+    var rec = r.mlb ? (/SP|RP|P$/.test(String(r.pos || "")) ? Math.round(r.mlb[1] || 0) + " big league innings" : (r.mlb[0] || 0) + " big league plate appearances") : "a thin big league record";
+    return "FanGraphs projects " + f1(proj) + " WAR, counted here at " + pct(trust, 0) + ": " + rec + " over the last three seasons, so the projection leans on numbers from outside the majors.";
+  }
   function gradeTag(gr) { return gr ? '<span class="grade g-' + gr.g.charAt(0).toLowerCase() + '" title="' + esc(pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") + " market" + (gr.pick ? ", after the qualifying-offer pick" : "") + (gr.credit ? "; fills a need" : "")) + '">' + esc(gr.g) + "</span>" : ""; }
   function signed(m) { return m == null ? "—" : (m > 0 ? "+" : "") + money(m); }
   function team(abbr) { return H.byAbbr[abbr] || { abbr: abbr, name: abbr, color: "#33415c", espn: String(abbr || "").toLowerCase() }; }
@@ -530,7 +536,8 @@
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc((p.el || [p.pos]).join("/")) +
       " · age " + (p.age != null ? Math.floor(p.age) : "—") + (p.b ? " · B/T " + esc(p.b) + "/" + esc(p.th) : "") + "</div></div></div>";
     html += '<div class="card-b"><div class="kv">';
-    html += kv(f1(H.warAt(p, H.season)), H.season + " WAR");
+    var fth = p.faith || 1; // a thin big league record: WAR shown as counted
+    html += kv(f1(H.warAt(p, H.season) * fth), H.season + " WAR" + (fth < 1 ? " (adj.)" : ""));
     if (p.p) html += kv(pj.era != null ? pj.era.toFixed(2) : "—", "ERA") + kv(f0(pj.ip), "IP");
     else html += kv(f0(pj.wrc), "wRC+") + kv(f0(pj.pa), "PA");
     html += kv(svc(p.st), "Service (yrs.days)");
@@ -538,7 +545,9 @@
     html += "</div>";
     html += '<div class="vcs"><div><span>Value</span><b>' + money(s.valuePV) + '</b><small>what he should produce</small></div><i>−</i><div><span>Contract</span><b>' + money(s.contractPV) +
       '</b><small>what he\'ll be paid</small></div><i>=</i><div class="' + (s.pv >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.pv) + "</b><small>" + (s.rows.length ? s.rows.length + " season" + (s.rows.length > 1 ? "s" : "") + ", discounted" : "not worth a roster spot") + "</small></div></div>";
-    html += gradeLine(H.faBoard().filter(function (b) { return String(b.r.id) === String(p.id) && b.grade && b.r.to === p.t; })[0]);
+    var fx = H.faBoard().filter(function (b) { return String(b.r.id) === String(p.id) && b.r.to === p.t; })[0];
+    html += gradeLine(fx && fx.grade ? fx : null);
+    if (fx && fx.trust < 1) html += '<p class="note">' + esc(faithNote(fx.r, fx.trust, fx.proj)) + " His value below counts it the same way.</p>";
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
@@ -548,11 +557,11 @@
     html += '<div data-cpane="deal">';
     html += '<h4 class="card-sec">Contract value</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>Status</th><th>WAR</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
     s.rows.forEach(function (r) {
-      html += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
+      html += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war * fth) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
     });
     if (!s.rows.length) html += '<tr><td class="note" colspan="7">Projects below his pay in every controlled season: a team would cut him before paying more than he\'s worth.</td></tr>';
     else {
-      var tw = s.rows.reduce(function (a, r) { return a + r.war; }, 0), tv = s.rows.reduce(function (a, r) { return a + r.value; }, 0), ts = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
+      var tw = s.rows.reduce(function (a, r) { return a + r.war * fth; }, 0), tv = s.rows.reduce(function (a, r) { return a + r.value; }, 0), ts = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
       html += '<tr class="tot"><td colspan="3">Total</td><td>' + f1(tw) + "</td><td>" + money(tv) + "</td><td>" + money(ts) + '</td><td class="' + (s.total >= 0 ? "pos" : "neg") + '">' + signed(s.total) + "</td></tr>";
       html += '<tr class="tot"><td colspan="3">Discounted</td><td></td><td>' + money(s.valuePV) + "</td><td>" + money(s.contractPV) + '</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
     }
@@ -570,11 +579,12 @@
     var r = x.r, from = r.from ? team(r.from) : null;
     var html = '<div class="card-h">' + window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: 72 }) + "<div><h3>" + esc(r.n) + '</h3><div class="meta">' +
       (from ? logo(r.from, 18) + " " + esc(from.name) + " · " : "") + esc(r.pos || "") + " · age " + (x.age || "—") + (r.b ? " · B/T " + esc(r.b) + "/" + esc(r.th) : "") + (x.signedAav && r.to && team(r.to) ? " · signed with the " + esc(team(r.to).name) : " · free agent") + "</div></div></div>";
-    html += '<div class="card-b"><div class="kv">' + kv(f1(x.war), H.season + " WAR (proj.)") + kv(r.my ? r.my + " yr" : "—", "Crowd's length") + kv(money(x.crowdAav), "Crowd's AAV") + kv(r.qo ? money(r.qo / 1e6) : "None", "Qualifying offer") + "</div>";
+    html += '<div class="card-b"><div class="kv">' + kv(f1(x.war), H.season + " WAR" + (x.trust < 1 ? " (adj.)" : " (proj.)")) + kv(r.my ? r.my + " yr" : "—", "Crowd's length") + kv(money(x.crowdAav), "Crowd's AAV") + kv(r.qo ? money(r.qo / 1e6) : "None", "Qualifying offer") + "</div>";
     html += '<div class="vcs"><div><span>Fair</span><b>' + money(x.spotAav) + '</b><small>per year, at ' + money(H.cfg.dpw) + ' a win</small></div><i>·</i><div><span>Market</span><b>' + money(x.mktAav) +
       '</b><small>what deals this long go for</small></div><i>·</i><div class="' + (x.signedAav ? (x.gap > 0 ? "dn" : "up") : "") + '"><span>' + (x.signedAav ? "Signed" : "Status") + "</span><b>" + (x.signedAav ? money(x.signedAav) : "Unsigned") + "</b><small>" +
       (x.signedAav ? esc(r.to || "") + " · " + (r.yrs || "?") + " yr" + (x.gap != null ? " · " + (x.gap > 0 ? "+" : "") + pct(x.gap, 0) + " vs market" : "") : "still on the market") + "</small></div></div>";
     var gr = x.grade, aavS = x.signedAav;
+    if (x.trust < 1) html += '<p class="note">' + esc(faithNote(r, x.trust, x.proj)) + "</p>";
     html += gradeLine(x);
     html += '<h4 class="card-sec">Year by year over ' + (aavS ? "his " : "a ") + x.yrs + '-year deal</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>WAR</th><th>Worth</th>' + (aavS ? "<th>Salary</th><th>Surplus</th>" : "") + "</tr></thead><tbody>";
     var tot = 0, totW = 0, totS = 0;
@@ -872,24 +882,35 @@
     html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th>' + (withSigned ? "<th>Signed</th><th>vs Market</th><th>Grade</th>" : "") + "</tr></thead><tbody>";
     list.forEach(function (x, i) {
       var r = x.r, pl = faName(x, 24);
-      html += "<tr><td>" + (i + 1) + ". " + pl + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + (r.from ? esc(r.from) : "") + "</td><td>" + f1(x.war) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
+      html += "<tr><td>" + (i + 1) + ". " + pl + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + (r.from ? esc(r.from) : "") + "</td><td>" + (x.trust < 1 ? '<span title="' + esc(faithNote(r, x.trust, x.proj)) + '">' + f1(x.war) + "*</span>" : f1(x.war)) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
         "</td><td>" + (r.my ? r.my + " yr · " + money(x.crowdAav) : "—") + "</td><td>" + money(x.spotAav) + "</td><td><b>" + money(x.mktAav) + "</b></td>" + (!withSigned ? "</tr>" : "<td>" +
         (x.signedAav ? esc(r.to || "") + " " + (r.yrs || "?") + " yr · " + money(x.signedAav) : '<span class="note">unsigned</span>') + "</td><td class=\"" + (x.gap == null ? "" : x.gap > 0 ? "neg" : "pos") + '">' +
         (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>");
     });
     html += "</tbody></table></div></div>";
-    html += '<h2 class="sec">How these numbers work</h2><p class="lede"><b>Fair</b> is what each free agent is worth per year over the crowd\'s contract length (or the length he signed for) at the market price of a win (' + money(H.cfg.dpw) + '). <b>Market</b> adjusts for what deals of that length have actually gone for compared with that price. The crowd numbers are FanGraphs readers\' median predictions.</p>' +
+    html += '<h2 class="sec">How these numbers work</h2><p class="lede"><b>Fair</b> is what each free agent is worth per year over the crowd\'s contract length (or the length he signed for): his projected wins at the market price of a win (' + money(H.cfg.dpw) + '), adjusted for what players of his tier have gone for. <b>Market</b> adds what deals of that length have actually gone for: one-year deals come in well under the going rate, long ones over it. A player coming off a big league club with little big league time (under about 1,000 plate appearances, 300 innings as a starter or 120 in relief over three seasons) has his projection counted at 55-100%, since it leans on minor league or overseas numbers teams discount (marked *); players signing from Japan or Korea keep theirs. The crowd numbers are FanGraphs readers\' median predictions.</p>' +
       '<p class="lede"><b>Grades</b> weigh what a team pays against the market price for deals that long. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole (a spot in the bottom third of the league that he improves by most of a win) gets a little more room, and a qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). <b>Surplus</b> is what he should produce over the deal minus his salary, discounted, as on his card. Only deals of $2M+ for players projected at 1+ WAR are graded.</p>';
     if (mk) html += marketCallout(mk) + marketSection(mk);
     view.innerHTML = html;
   }
   // Every signed deal this winter, best value first. Signed players leave the pool table below (by default) and live here
   function gradesPanel(board) {
-    var deals = board.filter(function (x) { return x.grade; }).sort(function (a, b) { return b.grade.edge - a.grade.edge; });
+    // graded deals best value first, then the rest of the big league signings (relievers and depth deals) by size
+    var deals = board.filter(function (x) { return x.signedAav && !/MiLB/i.test(x.r.ctype || ""); }).sort(function (a, b) {
+      if (!!a.grade !== !!b.grade) return a.grade ? -1 : 1;
+      return a.grade ? b.grade.edge - a.grade.edge : (b.r.tot || b.r.aav) - (a.r.tot || a.r.aav);
+    });
     if (!deals.length) return "";
-    var html = '<div class="panel"><h3>Deals so far, graded <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ', best value first</small></h3><div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th>Player</th><th>Team</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
+    var html = '<div class="panel"><h3>Deals so far <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ', graded deals by value, then relievers and small deals (ungraded)</small></h3><div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th>Player</th><th>Team</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
     deals.forEach(function (x) {
-      var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).pv : gr.prod;
+      var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).pv : gr ? gr.prod : null;
+      if (!gr) {
+        var why = x.war != null && x.war < 1 ? "Not graded: projected under 1 WAR, below the range the market study covers" : "Not graded: deal under $2M";
+        var tot = r.tot ? r.tot / 1e6 : x.signedAav * (r.yrs || 1);
+        html += '<tr class="ungraded"><td><span class="grade g-n" title="' + esc(why) + '">—</span></td><td>' + faName(x, 24) + "</td><td>" + (r.to ? logo(r.to, 18) + " " + esc(r.to) : "") + "</td><td>" + (r.yrs || "?") + " yr · " + money(tot, tot < 10 ? 1 : 0) +
+          '</td><td colspan="3" class="note" style="text-align:right">' + (x.war != null && x.war < 1 ? "projected under 1 WAR, not graded" : "small deal, not graded") + "</td></tr>";
+        return;
+      }
       html += "<tr><td>" + gradeTag(gr) + (gr.credit ? ' <span class="pill up" title="Fills a hole on this team">Need</span>' : "") + "</td><td>" + faName(x, 24) + "</td><td>" + (r.to ? logo(r.to, 18) + " " + esc(r.to) : "") +
         "</td><td>" + r.yrs + " yr · " + money(gr.paid, 0) + (gr.pick ? ' <span class="pill warn" title="Small dock for giving up a pick to sign a qualifying-offer player">QO</span>' : "") +
         "</td><td>" + money(gr.mkt, 0) + '</td><td class="' + (gr.edge >= 0 ? "pos" : "neg") + '">' + pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") +
@@ -956,6 +977,7 @@
       "<h3>The year slider</h3><p>" + H.season + " is FanGraphs' Depth Charts as published. Every later season is built here: a player stays while he's under a guaranteed contract, a club option worth picking up, a player option he'd keep, or team control (pre-arb under three years of service, arbitration until six). Everyone else becomes a free agent, unless you re-sign him on his team's page. Ratings age a year at a time by season age (modest gains into the mid-20s, flat at 27 and 28, then falling about a fifth of a win a year at 29-30 and a third of a win from the early 30s on), and playing time grows slowly from FanGraphs' share for the coming season. Prospects arrive at their ETA (or by level when there isn't one) and grow toward the WAR their FV grade implies over their first three seasons. Each spot goes to the best available player who can play it; a team gets five starters and eight relievers. Spots nobody can fill are \"FA Fill\": a replacement player, or a modest free agent if teams sign them (the switch). Wins scale from team WAR so later seasons spread the way Depth Charts' do.</p>" +
       "<h3>Surplus value</h3><p>For each season of contract or control: projected WAR × the price of a win, minus salary, discounted " + pct(H.cfg.discount, 0) + " a year. It counts the full projection, since the price of a win is read off what teams actually pay per projected WAR (cutting the WAR again would undervalue every veteran on a market deal; set a margin of safety on the Trade Value tab if you want one). A two-way player's pitching counts on top of his hitting. An unproven big leaguer (under three years of service) keeps " + pct(H.cfg.youngFade, 0) + " of his value from one year to the next, since long control on a short track record is worth less than its projection adds up to. Value never drops below zero (a team can always play a replacement for the minimum), and a pre-arb or arbitration year can't cost the team more than it's worth, since those salaries aren't guaranteed. Arbitration pays 25/40/60% of market value (a fourth year 70%); pre-arb players earn the minimum (" + money(H.cfg.minSalary) + ", until the next CBA says otherwise). Club options are exercised only when they're worth it, and a player option only comes back when it's bad for the team. A prospect's value is scaled by his risk grade.</p>" +
       "<h3>The price of a win</h3><p>" + (mk ? (mk.how === "crowd" ? "This winter's free agents: Steamer's projected WAR for each, aged over the contract the crowd predicts, against the crowd's predicted dollars, then adjusted by how far past crowds landed from real contracts (" + ((mk.crowdErr - 1) >= 0 ? "+" : "") + pct(mk.crowdErr - 1, 0) + "). That gives " + money(H.cfg.dpw) + " per win." : "Carried forward from the last three winters' deals: " + money(H.cfg.dpw) + " per win.") + " The premium patterns on the Free Agents tab come from every deal of the last five winters for a player projected at 1+ WAR, against that winter's going rate. Past classes don't carry the projection at signing, so it's estimated from the season before, fit to how Steamer projects this winter's class." : "The free agent data hasn't arrived yet, so the price of a win is an assumption: " + money(H.cfg.dpw) + ".") + "</p>" +
+      "<h3>Free agent value</h3><p>A free agent's value is his projected wins at the market price of a win, priced by tier (what players of his caliber have gone for) and, for the market price, by contract length (one-year deals come in well under the going rate, long deals over it); length and tier are read together from the last five winters, since most one-year deals go to lesser players. A player coming off a big league club with little big league time has his projection counted at 55-100%: full at about 1,000 plate appearances, 300 innings as a starter or 120 in relief over the last three seasons, 55% with none. Those projections lean on minor league or overseas numbers that teams discount until a player holds up in the majors. Players signing from Japan or Korea keep their full projection, since teams bid on those records. A signed player's card counts his value the same way.</p>" +
       "<h3>Deal grades</h3><p>Every free agent who signs a big league deal gets a grade the morning after FanGraphs logs it. The grade compares what the team pays with what deals of that length have gone for (the market price on the Free Agents tab), and a team that signs another club's qualifying-offer player takes a small dock (about " + money(H.cfg.qoPickCost) + ") for the draft pick and pool money it gives up. Teams expect to pay a little over the going rate, so a B runs from 6% under market to 10% over. 6-15% under is a B+, 15-25% an A-, 25-40% an A, more than that an A+. Over market, 10-18% is a B-, then C+, C at 27%, D at 37% and F at 50% or more. A signing that fills a hole gets 8 points more room: without him, the spot (or the rotation, for a starter) ranks in the bottom third of the league, and he improves it by at least three quarters of a win. The player card lays out his projected WAR, what it's worth and his salary, season by season, so the surplus behind the grade is visible. Only deals of $2M or more for players projected at 1+ WAR get a grade: that's the range the market study covers, so most relievers and depth signings go ungraded. Grades follow the projections, so a deal can move a little as Steamer updates.</p>" +
       "<h3>Production value or market price</h3><p>By default, value is what a player should produce: projected WAR, aged a year at a time, at the going rate for a win. Some trade-value sites (Baseball Trade Values, for one) value a player at what he'd get as a free agent instead. Free agent deals pay a premium for length (deals of six years or more ran about 19% over the going rate in the last five winters), so a star's long contract can look fair there and underwater here. The Value as switch on the Trade Value tab flips to market price: a remaining term of four or five years gets the premium those deals drew (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[4] : 0, 0) + "), six or more theirs (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[6] : 0, 0) + ").</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +

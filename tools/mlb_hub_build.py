@@ -307,6 +307,35 @@ def build():
            "players": players}
 
     # ---- free agents
+    # MLB track record before each class: plate appearances and innings over the three seasons before it (a player
+    # with little big league time is valued with less faith in his projection)
+    mlb_by_year = {}
+    for fn in os.listdir(os.path.join(HERE, "mlb")) if os.path.isdir(os.path.join(HERE, "mlb")) else []:
+        m = re.match(r"^(\d{4})\.json$", fn)
+        if not m:
+            continue
+        d = json.load(open(os.path.join(HERE, "mlb", fn), encoding="utf-8"))
+        tot = {}
+        for r in d.get("hitting", []):
+            if r.get("id"):
+                tot.setdefault(r["id"], [0, 0])[0] += r.get("pa") or 0
+        for r in d.get("pitching", []):
+            if r.get("id"):
+                tot.setdefault(r["id"], [0, 0])[1] += float(r.get("ip") or 0)
+        mlb_by_year[int(m.group(1))] = tot
+    def track(mid, cls):
+        if not mid:
+            return None
+        pa = ip = 0
+        seen = False
+        for y in range(int(cls) - 3, int(cls)):
+            if y in mlb_by_year:
+                seen = True
+                t = mlb_by_year[y].get(mid)
+                if t:
+                    pa += t[0]; ip += t[1]
+        return [pa, round(ip)] if seen else None
+    FG_ABBR = {"CHW": "CWS", "KCR": "KC", "SDP": "SD", "SFG": "SF", "TBR": "TB", "WSN": "WSH", "OAK": "ATH"}
     fa_out = {"classes": {}}
     if fa:
         c = fa["cols"]
@@ -319,9 +348,9 @@ def build():
                 aav, yrs = fnum(r.get("aav")), r.get("contract_years") or r.get("YearsTotal")
                 out.append({k: v for k, v in {
                     "id": mid, "fg": fgid, "n": r.get("playerName"), "pos": r.get("position"), "age": r.get("age"),
-                    "wp": r1(fnum(r.get("war_prev"))), "wj": r1(fnum(r.get("war_proj"))), "from": r.get("team_prev"),
+                    "wp": r1(fnum(r.get("war_prev"))), "wj": r1(fnum(r.get("war_proj"))), "from": FG_ABBR.get(r.get("team_prev"), r.get("team_prev")), "mlb": track(mid, yr),
                     "st": r.get("free_agent_status"), "qo": fnum(r.get("qo")), "qoa": r.get("qo_accepted"),
-                    "my": r.get("med_years"), "ma": fnum(r.get("med_aav")), "to": r.get("team_new_shortname") or r.get("team_new"),
+                    "my": r.get("med_years"), "ma": fnum(r.get("med_aav")), "to": FG_ABBR.get(r.get("team_new_shortname") or r.get("team_new"), r.get("team_new_shortname") or r.get("team_new")),
                     "yrs": int(yrs) if str(yrs or "").isdigit() else None, "aav": aav, "tot": fnum(r.get("ContractTotal")),
                     "ctype": r.get("ContractType"), "opt": r.get("option_type"), "optst": r.get("option_status"),
                     "b": r.get("Bats"), "th": r.get("Throws")}.items() if v not in (None, "")})
