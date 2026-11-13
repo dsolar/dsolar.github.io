@@ -2072,3 +2072,10 @@ table.ct .ct-in{width:100%;min-width:200px;height:34px;padding:0 10px;border:1px
 table.ct td{vertical-align:middle}
 .ct-acts{white-space:nowrap}.ct-acts .btn+.btn{margin-left:6px}
 @media (max-width:700px){table.ct thead{display:none}table.ct tr{display:grid;grid-template-columns:1fr;gap:6px;padding:10px 12px;border-top:1px solid var(--line)}table.ct td{padding:0;border:0}.ct-acts{text-align:left}}
+
+/* splits and game log on a baseball player card */
+.pc-mlb{display:grid;gap:12px;overflow-x:auto}
+.pc-ln tr.gs th,.pc-ln tr.gs td{border-top:2px solid var(--line-2)}
+.pc-gl tbody th small{font-weight:600}
+.pc-gl tbody td{font-weight:650}
+.pc-glmore{justify-self:start}

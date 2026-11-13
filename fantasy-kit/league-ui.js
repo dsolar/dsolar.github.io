@@ -2093,6 +2093,51 @@
       items.sort((a, b) => b.at - a.at);
       return `<div class="stack" style="gap:6px"><div class="ps"><b>In this league</b></div><ul class="pc-log">${items.slice(0, 8).map((x) => `<li><span>${x.text}</span><small>${x.at ? esc(md(x.at)) : x.week ? `Week ${x.week}` : "Draft"}</small></li>`).join("")}</ul></div>`;
     }
+    /* Baseball splits and game log on the player card, from MLB's Stats API (it answers pages directly): the last 7, 14
+       and 30 days, the season, vs lefties and righties, home and away, then his games, newest first, in this league's
+       categories. Fetched when the card opens, kept for the visit. */
+    const MLB_ABBR = { 108: "LAA", 109: "ARI", 110: "BAL", 111: "BOS", 112: "CHC", 113: "CIN", 114: "CLE", 115: "COL", 116: "DET", 117: "HOU", 118: "KC", 119: "LAD", 120: "WSH", 121: "NYM", 133: "ATH", 134: "PIT", 135: "SD", 136: "SEA", 137: "SF", 138: "STL", 139: "TB", 140: "TEX", 141: "TOR", 142: "MIN", 143: "PHI", 144: "ATL", 145: "CWS", 146: "MIA", 147: "NYY", 158: "MIL" };
+    const mlbCache = {};
+    function mlbAgg(games, grp) {
+      const n = (k) => games.reduce((a, g) => a + (Number(g.stat[k]) || 0), 0);
+      if (grp === "bat") {
+        const ab = n("atBats"), h = n("hits"), bb = n("baseOnBalls"), hbp = n("hitByPitch"), sf = n("sacFlies"), tb = n("totalBases"), den = ab + bb + hbp + sf;
+        const obp = den ? (h + bb + hbp) / den : null;
+        return { g: games.length, pa: n("plateAppearances"), ab, r: n("runs"), h, hr: n("homeRuns"), rbi: n("rbi"), sb: n("stolenBases"), tb, bb, avg: ab ? h / ab : null, obp, ops: obp != null && ab ? obp + tb / ab : null };
+      }
+      const outs = games.reduce((a, g) => a + (g.stat.outs != null ? Number(g.stat.outs) : (() => { const [w, f] = String(g.stat.inningsPitched || "0").split("."); return Number(w) * 3 + Number(f || 0); })()), 0);
+      const ip = outs / 3, er = n("earnedRuns"), bbh = n("baseOnBalls") + n("hits");
+      const qs = games.filter((g) => Number(g.stat.gamesStarted) && (g.stat.outs != null ? Number(g.stat.outs) : 0) >= 18 && Number(g.stat.earnedRuns) <= 3).length;
+      return { g: games.length, gs: n("gamesStarted"), ip, w: n("wins"), l: n("losses"), sv: n("saves"), hld: n("holds"), k: n("strikeOuts"), er, bb: n("baseOnBalls"), h: n("hits"), era: ip ? er * 9 / ip : null, whip: ip ? bbh / ip : null, qs };
+    }
+    async function mlbSplits(p, el) {
+      if (!el) return;
+      const grp = p.l && p.l.pit && !(p.l && p.l.bat) ? "pit" : S.positions(p).every((x) => x === "SP" || x === "RP" || x === "P") ? "pit" : "bat";
+      const season = Number(L().season) || Number(sport.data && sport.data.season) || new Date().getFullYear();
+      const key = `${p.id}:${grp}:${season}`;
+      try {
+        const j = mlbCache[key] || (mlbCache[key] = await fetch(`https://statsapi.mlb.com/api/v1/people/${encodeURIComponent(p.id)}/stats?stats=gameLog,statSplits&sitCodes=vl,vr,h,a&group=${grp === "pit" ? "pitching" : "hitting"}&season=${season}&gameType=R`).then((r) => (r.ok ? r.json() : null)));
+        const log = ((j && j.stats) || []).find((x) => x.type && x.type.displayName === "gameLog"), sp = ((j && j.stats) || []).find((x) => x.type && x.type.displayName === "statSplits");
+        const games = ((log && log.splits) || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+        if (!games.length) { el.innerHTML = `<p class="ps" style="margin:0">No ${season} games for him yet.</p>`; return; }
+        const cols = [{ col: "g", label: "G", fmt: (v) => String(v) }].concat(grp === "pit" ? [{ col: "gs", label: "GS", fmt: (v) => String(v) }] : [], U.statColumns(sport, L().scoring).filter((c) => c.group === grp));
+        const fmt = (c, v) => (v == null ? "-" : c.fmt ? c.fmt(v) : String(Math.round(v)));
+        // the windows: back from today in season, back from his last game once it's over
+        const last = Date.parse(games[0].date + "T12:00:00Z"), end = over() || now() - last > 3 * 864e5 ? last : now();
+        const within = (d) => games.filter((g) => end - Date.parse(g.date + "T12:00:00Z") < d * 864e5);
+        const name = { vl: grp === "pit" ? "vs lefty hitters" : "vs lefties", vr: grp === "pit" ? "vs righty hitters" : "vs righties", h: "Home", a: "Away" };
+        const splitRow = (code) => { const x = ((sp && sp.splits) || []).find((y) => y.split && y.split.code === code); return x ? [name[code], mlbAgg([x], grp), x.stat.gamesPlayed] : null; };
+        const rows = [["Last 7 days", mlbAgg(within(7), grp)], ["Last 14 days", mlbAgg(within(14), grp)], ["Last 30 days", mlbAgg(within(30), grp)], [`${season} season`, mlbAgg(games, grp)]]
+          .concat(["vl", "vr", "h", "a"].map(splitRow).filter(Boolean).map(([nm, a, g]) => [nm, Object.assign(a, { g: Number(g) || a.g })]));
+        const thead = `<tr><th></th>${cols.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr>`;
+        const splitT = `<table class="pc-ln pc-sp"><thead>${thead.replace("<th></th>", `<th>${grp === "pit" ? "Pitching" : "Hitting"} splits</th>`)}</thead><tbody>${rows.map(([nm, a], i) => `<tr class="${i === 3 ? "act" : ""}${i === 4 ? " gs" : ""}"><th scope="row"><span>${esc(nm)}</span></th>${cols.map((c) => `<td class="num">${fmt(c, a[c.col])}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+        const gl = (n) => games.slice(0, n).map((g) => { const a = mlbAgg([g], grp), opp = MLB_ABBR[g.opponent && g.opponent.id] || (g.opponent && g.opponent.name) || ""; return `<tr><th scope="row"><span>${esc(new Date(g.date + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric" }))}</span> <small class="ps">${g.isHome ? "vs" : "@"} ${esc(opp)}</small></th>${cols.map((c) => `<td class="num">${c.col === "g" ? (g.isWin ? `<span class="win">W</span>` : `<span class="ps">L</span>`) : fmt(c, a[c.col])}</td>`).join("")}</tr>`; }).join("");
+        const glHead = thead.replace("<th></th>", "<th>Game log</th>").replace(`<th class="num">G</th>`, `<th class="num">Res</th>`);
+        el.innerHTML = `${splitT}<table class="pc-ln pc-gl"><thead>${glHead}</thead><tbody>${gl(10)}</tbody></table>${games.length > 10 ? `<button type="button" class="btn sm ghost pc-glmore">All ${games.length} games</button>` : ""}`;
+        const more = el.querySelector(".pc-glmore");
+        if (more) more.addEventListener("click", () => { el.querySelector(".pc-gl tbody").innerHTML = gl(games.length); more.remove(); });
+      } catch (e) { el.innerHTML = `<p class="ps" style="margin:0">MLB's stats didn't answer, so splits and the game log aren't here right now.</p>`; }
+    }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
       if (!p) return;
@@ -2125,7 +2170,9 @@
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
       // a category league leads with his season in the league's own categories; a season brought in from another
       // site has no weekly lines here, so there's no week-by-week table for it
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p)), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
+      const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id));
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
+      if (mlbOn) mlbSplits(p, Dl.querySelector(".pc-mlb"));
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
