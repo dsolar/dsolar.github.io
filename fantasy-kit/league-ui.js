@@ -744,7 +744,8 @@
         const added = x.type === "trade" ? cell(x.adds, `from ${esc(T(x.other).abbr)}`) : cell(x.adds, x.type === "waiver" && x.faab != null ? `$${x.faab}` : "");
         const gone = x.type === "trade" ? cell(x.drops, `to ${esc(T(x.other).abbr)}`) : cell(x.drops);
         const note = !added && !gone && x.text ? `<span class="ps">${esc(x.text)}</span>` : "";
-        return `<tr><td class="txw"><b>${esc(txDate(x.at))}</b><small class="ps">Week ${x.week}</small></td><td class="txt">${who}</td><td class="c txk">${kind(x)}</td><td class="txa">${added || note}</td><td class="txd">${gone}</td></tr>`;
+        const bids = x.type === "waiver" && x.all && L().settings.showBids !== "won" ? `<small class="ps txbids">Bids: ${x.all.map(([t, b2]) => `${esc(T(t).abbr || T(t).name)} $${b2}`).join(", ")}</small>` : "";
+        return `<tr><td class="txw"><b>${esc(txDate(x.at))}</b><small class="ps">Week ${x.week}</small></td><td class="txt">${who}</td><td class="c txk">${kind(x)}</td><td class="txa">${added || note}${bids}</td><td class="txd">${gone}</td></tr>`;
       }).join("");
       return items.length ? `<div class="table-wrap"><table class="t txtab"><thead><tr><th>When</th><th>Team</th><th class="c">Move</th><th>Added</th><th>Dropped</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<div class="card"><p class="empty" style="margin:0">No moves like that yet.</p></div>`;
     }
@@ -752,6 +753,8 @@
       const lines = [];
       if (x.type === "trade") { for (const id of x.adds) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.team).abbr)}`)); for (const id of x.drops) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.other).abbr)}`)); }
       else { for (const id of x.adds || []) lines.push(U.txLine(sport, x.type === "waiver" ? "waiver" : "add", playerVM(id), x.type === "waiver" && x.faab != null ? `$${x.faab}${x.bid != null && x.bid !== x.faab ? ` (bid $${x.bid})` : ""}${x.bids > 1 ? `, beat ${x.bids - 1} bid${x.bids > 2 ? "s" : ""}` : ""}` : "")); for (const id of x.drops || []) lines.push(U.txLine(sport, "drop", playerVM(id))); }
+      // the losing bids, once waivers have run (unless the league keeps them private)
+      if (x.type === "waiver" && x.all && L().settings.showBids !== "won") lines.push(`<span class="ps bids">Bids: ${x.all.map(([t, b2]) => `${esc(T(t).abbr || T(t).name)} $${b2}`).join(", ")}</span>`);
       if (x.type === "veto") lines.push(`<span class="ps">The league vetoed a trade</span>`);
       if (x.type === "draft" || x.text) lines.push(`<span class="ps">${esc(x.text || "")}</span>`);
       if (x.type === "chop") { lines.length = 0; lines.push(`<span class="ps">${esc(x.text)}</span>`); }

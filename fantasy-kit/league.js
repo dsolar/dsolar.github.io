@@ -1525,7 +1525,7 @@
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
     tradeMax: (v) => clampInt(v, 0, 10), reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
-    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, daily: (v) => !!v, historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
+    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, daily: (v) => !!v, showBids: (v) => (v === "all" || v === "won" ? v : null), historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
   const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
@@ -1910,7 +1910,10 @@
       for (const x of L.teams) if (x.priority > t.priority) x.priority--;
       t.priority = mx;
       vampireFirst(L);
-      log(L, now, { type: "waiver", team: c.team, adds: [c.add], drops: c.drop ? [c.drop] : [], faab: L.settings.waivers === "faab" ? price : null, bid: vickrey(L) ? c.bid : undefined, bids: rivals.length });
+      log(L, now, { type: "waiver", team: c.team, adds: [c.add], drops: c.drop ? [c.drop] : [], faab: L.settings.waivers === "faab" ? price : null, bid: vickrey(L) ? c.bid : undefined, bids: rivals.length,
+        // every bid on him, highest first, shown once waivers run (settings.showBids "all", the default; "won" keeps
+        // just the winning price). Bids stay private until then
+        all: L.settings.waivers === "faab" && rivals.length > 1 ? rivals.slice().sort((a, b) => b.bid - a.bid).map((x) => [x.team, x.bid]) : undefined });
       refresh(L, ctx);
       won.push(c);
     }
