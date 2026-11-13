@@ -1812,6 +1812,11 @@ table.t.en-t td.act,table.t.en-t th.act{position:static;box-shadow:none;backgrou
 .cell .pk .by{margin-left:auto;font-style:normal;padding:0 4px;border-radius:3px;background:rgba(0,0,0,.22);color:inherit}
 .cell.via{outline:1.5px dashed rgba(0,0,0,.28);outline-offset:-2px}
 @media (max-width:1100px){.board.fit{overflow:auto}.board.fit .bgrid{min-width:calc(var(--n) * 78px + 30px)}.board.fit .bgrid .h{top:0}}
+.pc-logo{width:64px;height:64px;object-fit:contain;flex:none;margin-left:auto;align-self:center;opacity:.95}
+table.t.pc-sc{font-size:13px}
+table.t.pc-sc th[scope=row]{font-weight:750;white-space:nowrap}
+table.t.pc-sc + table.t.pc-sc{border-top:2px solid var(--line-2)}
+.pc-stats em{display:block;font-style:normal;font-size:11px;font-weight:650;color:var(--muted)}
 table.t.sched td.c,table.t.sched th.c{width:1%;padding-left:14px;padding-right:14px}
 table.t.sched td.hide-s.ps{white-space:nowrap;width:1%}
 table.t.sched td.r.hide-s{width:1%;white-space:nowrap}

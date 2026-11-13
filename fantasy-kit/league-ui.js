@@ -1656,6 +1656,26 @@
       const Wd = x(n) - gap;
       return `<div class="wkbars"><div class="ps"><b>Points by week</b>${W.avg != null ? `, ${fmtS(avg)} a week on average` : ""}${c ? `. The outlined bar is week ${c.w}'s projection` : ""}</div><svg viewBox="0 -2 ${Wd} ${H + 18}" role="img" aria-label="Points by week: ${W.done.map((d) => `week ${d.w} ${fmtS(d.v)}`).join(", ")}${c ? `, week ${c.w} ${fmtS(c.so)} so far of ${fmtS(c.pj)} projected` : ""}" preserveAspectRatio="xMinYMid meet" style="max-width:${Math.max(Wd, 120)}px">${bars}${now}${vals.length ? `<line x1="0" x2="${x(k) - gap}" y1="${y(avg).toFixed(1)}" y2="${y(avg).toFixed(1)}" class="avg"></line>` : ""}</svg></div>`;
     }
+    const nextYearOf = () => (Number(L().season) ? Number(L().season) + 1 : "Next");
+    // what a player would cost to keep, in a few words for the card's headline row
+    function keepShort(p) {
+      const c = window.FK.season.keeperCost(L(), p.id);
+      if (c.no) return `<span class="ps" style="font-size:13px">${c.no === "late" ? "Added too late" : c.no === "done" ? "Kept 3 years" : "Can't keep"}</span>`;
+      return c.round != null ? `Rd ${c.round}${c.year ? `<em>year ${c.year}</em>` : ""}` : c.price != null ? money(c.price) : "-";
+    }
+    // His season and projection in the league's own categories, a row each (hitting, pitching, or both for a two-way player)
+    function seasonCats(p) {
+      const cols = U.statColumns(sport, L().scoring), lines = (sport.data && sport.data.lines) || {}, yr = (sport.data && sport.data.season) || L().season;
+      const groups = ["bat", "pit", "pg"].filter((g) => p.l && (p.l[g] || p.l["p" + g]));
+      if (!groups.length) return "";
+      const tbl = (g) => {
+        const cs = cols.filter((c) => (c.group || c.line) === g || (!c.group && !c.line));
+        if (!cs.length) return "";
+        const row = (lab, line) => `<tr><th scope="row">${esc(lab)}</th>${cs.map((c) => { const v = U.statCell(sport, p, Object.assign({}, c, { line })); return `<td class="num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
+        return `<table class="t dense pc-sc"><thead><tr><th>${g === "pit" ? "Pitching" : g === "bat" ? "Hitting" : "Season"}</th>${cs.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${p.l[g] ? row(String(yr), g) : ""}${lines["p" + g] && p.l["p" + g] ? row("Projected", "p" + g) : ""}</tbody></table>`;
+      };
+      return `<div class="table-wrap">${groups.map(tbl).join("")}</div>`;
+    }
     // the counting categories that say the most about a player, the big ones first: PTS REB AST, R HR RBI, K W SV
     const PREF = ["pts", "reb", "ast", "tpm", "stl", "blk", "r", "hr", "rbi", "sb", "k", "w", "sv", "qs", "hld"];
     const topCats = (p, n = 5) => sc().cats.filter((c) => c.col && p.l[c.line || "pg"] && (sport.cols[c.line || "pg"] || {})[c.col] != null).sort((a, b) => ((PREF.indexOf(a.col) + 99) % 99) - ((PREF.indexOf(b.col) + 99) % 99)).slice(0, n);
@@ -1728,9 +1748,13 @@
       const stats = [["Overall", `#${p.rank}`], ["Position", esc(p.prank)]]
         .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : pts() ? [[sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection", sport.weekOf != null ? fmtS(p.v / 17) : String(Math.round(p.v))]] : [])
         .concat(trend != null ? [["Last 3 weeks", `${fmtS(last3)}<em class="${trend >= 0.1 ? "up" : trend <= -0.1 ? "dn" : ""}">${trend >= 0 ? "+" : ""}${Math.round(trend * 100)}%</em>`]] : [])
-        .concat(startWeeks.length && !bb() ? [["Started", `${started} of ${startWeeks.length}`]] : [])
+        .concat(startWeeks.length && !bb() && !L().imported ? [["Started", `${started} of ${startWeeks.length}`]] : [])
+        .concat(!auctionLg() && draftedAt(pid) ? [["Drafted", `Rd ${draftedAt(pid).r}, #${draftedAt(pid).n}`]] : [])
+        .concat((L().settings.keepers || L().settings.dynasty) && window.FK.season ? [[`${nextYearOf()} keeper`, keepShort(p)]] : [])
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : catWeeks(p), after: leagueLog(p), fold: true }), null, { wide: true, sheet: true });
+      // a category league leads with his season in the league's own categories; a season brought in from another
+      // site has no weekly lines here, so there's no week-by-week table for it
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p)), after: leagueLog(p), fold: true }), null, { wide: true, sheet: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
