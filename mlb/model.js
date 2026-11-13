@@ -30,13 +30,13 @@
     discount: 0,       // yearly discount rate for surplus. Off by default so every figure is real contract dollars
                        // (set it on the page to see today's dollars)
     minSalary: 0.8,    // $M, league minimum (assumed until the next CBA sets it)
-    arbPct: [0.33, 0.52, 0.78, 0.91], // share of market value paid in arbitration years 1-4 (calibrated to Baseball
+    arbPct: [0.36, 0.58, 0.87, 0.95], // share of market value paid in arbitration years 1-4 (calibrated to Baseball
                        // Trade Values, Nov 2026: good players' arbitration raises eat most of their surplus by year three)
     fill: true,        // teams buy modest free agents for empty spots
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
     haircut: 1,        // share of projected WAR to count. 100%: the price of a win is already read off what teams pay per projected WAR
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
-    youngFade: 0.55,   // extra yearly shrink (calibrated to Baseball Trade Values, Nov 2026)
+    youngFade: 0.5,    // extra yearly shrink (calibrated to Baseball Trade Values, Nov 2026)
     extFade: 0.75,     // the same for a young player already signed to an extension for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
     lens: "production",// "production": what he should produce; "market": what free agents get for that many years,
