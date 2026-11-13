@@ -12,6 +12,7 @@ Sources (all public FanGraphs pages, read once a day, politely spaced):
   payroll  RosterResource payroll pages: every contract year by year, options and arbitration years
   board    The Board: prospect grades (FV), risk and ETA
   fa       The free agent tracker for this offseason and the five before it (crowd and signed contracts)
+  war      Actual WAR (FanGraphs) for the last three seasons, hitters and pitchers, for the hub's own outlook
 
 Each part writes its own file. When a part fails, its previous file is left alone, so the hub keeps working on
 the last good copy. tools/mlb_hub_build.py turns the snapshots into mlb/data/. Standard library only.
@@ -274,7 +275,41 @@ def pull_fa():
     save("fa.json", out)
 
 
-PARTS = {"proj": pull_proj, "rosters": pull_rosters, "board": pull_board, "fa": pull_fa, "payroll": pull_payroll}
+# ---------------------------------------------------------------- actual WAR, last three seasons
+
+def pull_war():
+    out = {"seasons": {}}
+    prev_path = os.path.join(OUT, "war.json")
+    if os.path.exists(prev_path):  # finished seasons don't change: keep them if a fetch fails
+        with open(prev_path, encoding="utf-8") as f:
+            out["seasons"] = json.load(f).get("seasons", {})
+    s0 = season()
+    keep = {str(y) for y in range(s0 - 3, s0)}
+    out["seasons"] = {k: v for k, v in out["seasons"].items() if k in keep}
+    got = 0
+    for y in range(s0 - 3, s0):
+        if str(y) in out["seasons"] and y < s0 - 1:
+            continue  # an older finished season already on file
+        rec = {}
+        for stats, cols in (("bat", [("fg", lambda r: str(r.get("playerid") or "")), ("mlbam", lambda r: r.get("xMLBAMID")),
+                                      ("pa", lambda r: num(r.get("PA"), 0)), ("war", lambda r: num(r.get("WAR"), 2))]),
+                            ("pit", [("fg", lambda r: str(r.get("playerid") or "")), ("mlbam", lambda r: r.get("xMLBAMID")),
+                                      ("ip", lambda r: num(r.get("IP"), 1)), ("gs", lambda r: num(r.get("GS"), 0)),
+                                      ("war", lambda r: num(r.get("WAR"), 2))])):
+            d = fetch(f"/api/leaders/major-league/data?pos=all&stats={stats}&lg=all&qual=0&type=8&season={y}&season1={y}"
+                      f"&month=0&team=0&pageitems=3000&pagenum=1&ind=0&rost=0&players=&sortdir=default&sortstat=WAR")
+            rows = d.get("data", []) if isinstance(d, dict) else (d if isinstance(d, list) else [])
+            print(f"  {y} {stats}: {len(rows)} players")
+            rec[stats] = table(rows, cols)
+        if rec["bat"]["rows"] or rec["pit"]["rows"]:
+            out["seasons"][str(y)] = rec
+            got += 1
+    if not out["seasons"]:
+        raise RuntimeError("no WAR came back")
+    save("war.json", out)
+
+
+PARTS = {"war": pull_war, "proj": pull_proj, "rosters": pull_rosters, "board": pull_board, "fa": pull_fa, "payroll": pull_payroll}
 
 if __name__ == "__main__":
     want = sys.argv[1:] or list(PARTS)

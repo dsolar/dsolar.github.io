@@ -192,6 +192,24 @@ def build():
                 continue
             hist.setdefault(r["id"], {}).setdefault("p", []).append(
                 [y, abbr_of(r.get("team")), r.get("g"), r.get("gs"), r.get("ip"), r.get("w"), r.get("l"), r.get("sv"), r.get("k"), r.get("bb"), r.get("era"), r.get("whip")])
+    # actual WAR, last three seasons (tools/mlb_hub/war.json): by MLBAM id, else FanGraphs id
+    war_rec, war_fg = {}, {}
+    for y, d in ((load("war.json") or {}).get("seasons") or {}).items():
+        for stats in ("bat", "pit"):
+            t = d.get(stats) or {}
+            cols = t.get("cols") or []
+            for raw in t.get("rows") or []:
+                r = dict(zip(cols, raw))
+                key = int(r["mlbam"]) if str(r.get("mlbam") or "").isdigit() else None
+                for store, k in ((war_rec, key), (war_fg, r.get("fg") or None)):
+                    if k is None:
+                        continue
+                    e = store.setdefault(k, {}).setdefault(int(y), [int(y), 0.0, 0, 0.0])
+                    e[1] = round(e[1] + (r.get("war") or 0), 2)
+                    if stats == "bat":
+                        e[2] += int(r.get("pa") or 0)
+                    else:
+                        e[3] = round(e[3] + float(r.get("ip") or 0), 1)
     minors = {}
     kit = os.path.join(os.path.dirname(HERE), "fantasy-kit", "data", "prospects-mlb.json")
     if os.path.exists(kit):
@@ -272,6 +290,9 @@ def build():
                 p.update(pr)
             if mid in hist:
                 p["hist"] = hist[mid]
+            wr = war_rec.get(mid) or war_fg.get(p.get("fg"))
+            if wr:  # [year, WAR, PA, IP] for each of the last three seasons he played
+                p["rec"] = [wr[y] for y in sorted(wr)]
             if mid in minors:
                 p["ml"] = minors[mid]
             if ct:
