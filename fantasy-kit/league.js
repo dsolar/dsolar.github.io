@@ -193,10 +193,12 @@
     return over ? `Only ${lim.max} starters can come from the ${over[0]}: you have ${over[1].slice(0, -1).join(", ")} and ${over[1][over[1].length - 1]}` : null;
   }
   // "Start my best lineup" around the locked players: they stay where they are, the rest fill the open slots.
-  function bestLineup(L, ctx, teamId, w, now) {
+  // o.only: who may start ("Start active players" passes the players with a game that week); the rest sit unless a
+  // slot would be left empty
+  function bestLineup(L, ctx, teamId, w, now, o = {}) {
     const cur = lineupFor(L, ctx, teamId, w).slice(), slots = L.settings.lineup;
     const fixed = cur.map((id) => !!id && isLocked(L, ctx.byId[id], w, now));
-    const pool = healthy(L, ctx, teamId).filter((p) => !isLocked(L, p, w, now) && !cur.some((id, i) => fixed[i] && id === p.id));
+    const pool = healthy(L, ctx, teamId).filter((p) => !isLocked(L, p, w, now) && !cur.some((id, i) => fixed[i] && id === p.id) && (!o.only || o.only(p)));
     const open = slots.map((s, i) => i).filter((i) => !fixed[i]);
     // locked starters count against the conference limit for the rest
     const lim = limitOf(L), lockedConf = {};

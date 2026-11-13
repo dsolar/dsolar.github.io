@@ -84,6 +84,13 @@
     else loadWeeks().then((w) => { if (!w) return; if (mode === "league") mount(); livePoll(); });
     const [market, dr, pros] = await extras;
     V.evaluate(sport, players, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, budget: D.auction ? D.auction.budget : 200, week: S.weekFor(L || D, sport), oneDay: !!S.dayOf(L || D), dynasty: dyn, dynastyRanks: dyn ? dr : null, bestBall: bb, weeks: bb ? weeks : null, market });
+    // baseball ranks on next season's projections; last season's real ranks go beside them (p.crank, p.cprank)
+    if (k === "mlb" && sport.data && sport.data.lines && sport.data.lines.pbat) {
+      const cur = players.map((p) => ({ id: p.id, n: p.n, pos: p.pos, l: p.l, age: p.age }));
+      V.evaluate(sport, cur, { teams: D.teams.length, lineup: D.lineup, bench: D.bench, scoring: D.scoring, projections: false });
+      const by = Object.fromEntries(cur.map((c) => [c.id, c]));
+      for (const p of players) { const c = by[p.id]; if (c && p.l && (p.l.bat || p.l.pit)) { p.crank = c.rank; p.cprank = c.prank; } }
+    }
     byId = Object.fromEntries(players.map((p) => [p.id, p]));
     // a dynasty prices its rookie picks from next year's class on the Big Board
     if (dyn) prospects = S.prospectClass(pros, k);

@@ -101,7 +101,7 @@
     // and this week while the season's on
     function rosterViews() {
       const lines = (sport.data && sport.data.lines) || {}, yr = (sport.data && sport.data.season) || L().season || "Season";
-      return [["stats", `${yr} stats`]].concat(lines.pbat ? [["proj", "Projections"]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : [], over() ? [] : [["week", "This week"]]);
+      return [["stats", `${yr} stats`]].concat(lines.pbat ? [["proj", `${Number(yr) ? Number(yr) + 1 : "Season"} proj`]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : [], over() ? [] : [["week", "This week"]]);
     }
     // where a player went in this league's draft: { r: round, n: overall pick }
     let draftIdx = null;
@@ -110,6 +110,17 @@
       if (!D || !Array.isArray(D.board)) return null;
       if (!draftIdx || draftIdx.D !== D) { draftIdx = { D, m: {} }; const n = D.teams ? D.teams.length : L().teams.length; D.board.forEach((x, k) => { if (x && x.pid != null) draftIdx.m[x.pid] = { r: Math.floor(k / n) + 1, n: k + 1 }; }); }
       return draftIdx.m[pid] || null;
+    }
+    // how a player came to a team: the last move that brought him there, or the draft
+    const md = (t) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    function acquiredOf(pid, tid) {
+      const x = L().tx.slice().reverse().find((y) => y.team === tid && (y.adds || []).includes(pid));
+      if (x && x.type === "trade") return { how: "Trade", detail: `${x.other != null && L().teams[x.other] ? `with ${esc(T(x.other).abbr || T(x.other).name)}, ` : ""}${md(x.at)}` };
+      if (x && x.type === "waiver") return { how: "Waivers", detail: `${x.faab != null && L().settings.waivers === "faab" ? `$${x.faab}, ` : ""}${md(x.at)}` };
+      if (x && (x.type === "add" || x.type === "fa")) return { how: "Free agent", detail: md(x.at) };
+      const D = L().draft, i = D && Array.isArray(D.board) ? D.board.findIndex((y) => y && y.pid === pid && y.team === tid) : -1;
+      if (i >= 0) { const n = D.teams.length, r = Math.floor(i / n) + 1; return { how: D.board[i].keeper ? "Kept" : "Drafted", detail: `round ${r}, ${r}.${String(i % n + 1).padStart(2, "0")}` }; }
+      return x ? { how: "Added", detail: md(x.at) } : null;
     }
     // a league that drafted by auction prices players in dollars; a snake league has no use for them
     const auctionLg = () => !!(L().draft && L().draft.type === "auction") || !!L().settings.cap;
@@ -157,9 +168,12 @@
       if (gl() || roto()) return -1;
       if (w > L().settings.weeks) return ms.findIndex((m) => m.kind === "title" && (G.roundOf(L(), w) || {}).name === "Final");
       if (w < 2) return -1;
-      const pct = pctBefore(w);
+      // two good teams, not one great team carrying a bad one: the weaker side's record decides it. Late in the
+      // season a game between teams on the playoff bubble gets a lift
+      const pct = pctBefore(w), po = L().settings.playoffTeams || 0, late = po && w > L().settings.weeks - 4;
+      const order = L().teams.map((t) => t.id).sort((a, b) => pct(b) - pct(a)), bubble = (t) => (late && Math.abs(order.indexOf(t) + 0.5 - po) <= 2.5 ? 0.06 : 0);
       let best = -1, bv = -1;
-      ms.forEach((m, i) => { const v = pct(m.a) + pct(m.b) - Math.abs(pct(m.a) - pct(m.b)) * 0.5; if (v > bv) { bv = v; best = i; } });
+      ms.forEach((m, i) => { const v = Math.min(pct(m.a), pct(m.b)) + 0.15 * Math.max(pct(m.a), pct(m.b)) + bubble(m.a) + bubble(m.b); if (v > bv) { bv = v; best = i; } });
       return best;
     }
     function gamesVM(w) {
@@ -214,6 +228,8 @@
     const gameNow = (gs) => FK.gameday.current(gs, now());
     const kick = (at) => new Date(at).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }).replace(":00", "");
     // "Sun 1 PM vs NYJ", "Q3 4:21, 17-10", "Final, W 24-17", plus "2 of 4 played" for the daily sports
+    // the schedule's known for this week (a real season): what "Start active players" goes by
+    const hasGames = (tid, w) => L().rosters[tid].some((x) => ctx.byId[x] && Array.isArray(gamesOf(ctx.byId[x], w)));
     function gameChip(p, w) {
       const gs = gamesOf(p, w);
       if (!gs) return "";
@@ -710,7 +726,7 @@
       if (x.type === "chop") { lines.length = 0; lines.push(`<span class="ps">${esc(x.text)}</span>`); }
       if (x.type === "bite") { lines.length = 0; for (const id of x.adds) lines.push(U.txLine(sport, "trade", playerVM(id), `from ${esc(T(x.other).abbr)}`)); for (const id of x.drops) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.other).abbr)}`)); }
       const badge = x.type === "bite" ? `<span class="tag loss">Bite</span>` : x.type === "chop" ? `<span class="tag loss">Chopped</span>` : x.type === "champion" ? `<span class="tag win">Champion</span>` : x.type === "trade" ? `<span class="tag info">Trade</span>` : x.type === "waiver" ? `<span class="tag gold">Waiver</span>` : x.type === "veto" ? `<span class="tag loss">Veto</span>` : "";
-      return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? `Week ${x.week}, ${U.ago(x.at, now())}` : `${txDate(x.at)}, week ${x.week}`, lines, badge };
+      return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? U.ago(x.at, now()) : txDate(x.at), lines, badge };
     }
     /* ---------- league chat (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) ---------- */
     // Posts and the league's biggest moves, oldest first, so a trade shows up where people talked about it.
@@ -1032,12 +1048,13 @@
     }
 
     /* ---------- pages: My Team ---------- */
-    function teamHead(id) {
+    // o.all: the dropdown also offers "All teams" (the trades page), selected when o.all is "on"
+    function teamHead(id, o = {}) {
       const t = T(id), r = standings().find((x) => x.team === id);
       return `<div class="team-h">${teamAv(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)}${isMe(id) ? ` <span class="tag you" style="font-size:13px;vertical-align:6px">You</span>` : ""}${G.vampireOf(L()) === id ? ` <span class="tag loss" style="font-size:13px;vertical-align:6px">Vampire</span>` : ""}</h1>
         <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner && !(isMe(id) && /^you$/i.test(t.owner)) ? `<a href="#league/managers" data-mgr="${id}"${isMe(id) ? ' class="th-me"' : ""} style="display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none">${U.faceAv(faceOf(id), t.owner, "sm")}Manager <b>${esc(t.owner)}</b></a>` : t.owner ? "" : `<span>Bot</span>`}</div></div>
         <span class="grow"></span><div class="th-acts">${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && canTrade() ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
-        <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${L().teams.map((x) => `<option value="${x.id}"${x.id === id ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div></div>`;
+        <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${o.all ? `<option value="all"${o.all === "on" ? " selected" : ""}>All teams</option>` : ""}${L().teams.map((x) => `<option value="${x.id}"${x.id === id && o.all !== "on" ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div></div>`;
     }
     // Where this week's numbers come from: real box scores (and when they last came in), or a simulation.
     function scoreNote() { const m = scoreMsg(); return m ? `<div class="wrap" style="padding-top:10px"><p class="ps" style="margin:0">${m}</p></div>` : ""; }
@@ -1053,10 +1070,12 @@
     }
     // a link to something that isn't there says so once, instead of quietly showing something else
     function badLink(msg) { if (ui.badLink === location.hash) return; ui.badLink = location.hash; setTimeout(() => U.toast(msg, true), 0); }
+    let rosterTeam = null;
     function rosterPage(arg) {
       const id = arg !== "" && arg != null && L().teams[+arg] ? +arg : me() != null ? me() : 0;
       if (arg !== "" && arg != null && !L().teams[+arg]) badLink(`There's no team ${arg} in this league, so here's ${isMe(id) ? "yours" : T(id).name}.`);
       const mine = isMe(id);
+      rosterTeam = id;
       // between seasons the roster shows (and edits) the lineup it'll carry into next season
       const w = G.offseason(L()) ? L().week : ui.week && ui.week >= L().week ? ui.week : curWeek();
       const slots = L().settings.lineup;
@@ -1131,15 +1150,25 @@
       function rvCols(grp) {
         const line = (c) => (view === "proj" ? "p" + c.line : c.line);
         const cats = U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
-        if (view === "stats" || view === "proj") return cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.statCell(sport, p, Object.assign({}, c, { line: line(c) })); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } }));
-        if (view === "ranks") return [
-          { h: "Rank", title: "Rank among all players in this league's categories", cell: (p) => `#${p.rank}` },
-          { h: "Pos rank", title: "Rank at his position", cell: (p) => esc(p.prank || "") },
-          { h: "Drafted", title: "Where he went in this season's draft", cls: "r num hide-s", cell: (p) => { const k = draftedAt(p.id); return k ? `Rd ${k.r}, #${k.n}` : `<span class="ps">Undrafted</span>`; } },
-        ].concat(sport.market && Object.values(ctx.byId).some((x) => x.mk && x.mk.own != null) ? [{ h: "% Ros", title: "Rostered in ESPN leagues", cell: (p) => (p.mk && p.mk.own != null ? `${Math.round(p.mk.own)}%` : `<span class="ps">-</span>`) }] : []);
+        // games played first: what the rest of the line is out of
+        const gp = { h: "GP", title: view === "proj" ? "Projected games" : "Games played", cls: "r num", cell: (p) => { const v = S.stat(sport, p, line({ line: grp }), "g"); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } };
+        if (view === "stats" || view === "proj") return [gp].concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.statCell(sport, p, Object.assign({}, c, { line: line(c) })); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
+        if (view === "ranks") {
+          // another site's ranks for the season just played (L.ext.ranks: Yahoo's preseason and final ranks, % rostered)
+          const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, src = (L().ext && L().ext.source) || "";
+          const yr = Number(L().season) || "", num = (v) => (v != null ? `#${v}` : `<span class="ps">-</span>`);
+          const own = ext && Object.values(ext).some((r) => r.own != null) ? (p) => xr(p).own : sport.market && Object.values(ctx.byId).some((x) => x.mk && x.mk.own != null) ? (p) => (p.mk ? p.mk.own : null) : null;
+          return [].concat(
+            ext ? [{ h: `${yr} pre`, title: `${src} preseason rank, ${yr}`, cell: (p) => num(xr(p).pre) }] : [],
+            [{ h: `${yr} final`, title: ext ? `${src} rank for the ${yr} season` : `Rank on ${yr} stats in this league's categories`, cell: (p) => num(ext && xr(p).szn != null ? xr(p).szn : p.crank) }],
+            [{ h: `${yr ? yr + 1 : "Next"} proj`, title: "Rank on next season's projections in this league's categories", cell: (p) => num(p.rank) }],
+            [{ h: "Pos", title: "Rank at his position on next season's projections", cell: (p) => esc(p.prank || "") }],
+            own ? [{ h: "% Ros", title: ext ? `Rostered in ${src} leagues` : "Rostered in ESPN leagues", cls: "r num hide-s", cell: (p) => { const v = own(p); return v != null ? `${Math.round(v)}%` : `<span class="ps">-</span>`; } }] : []);
+        }
         if (view === "keep") return [
-          { h: `${nextYear()} cost`, title: "What he'd cost to keep next season", cls: "r", cell: (p) => keepCell(p) },
+          { h: "Acquired", title: "How he joined this team", cls: "", cell: (p) => { const a = acquiredOf(p.id, rosterTeam); return a ? `<b>${esc(a.how)}</b> <span class="ps">${a.detail}</span>` : `<span class="ps">-</span>`; } },
           { h: "Years kept", title: "Seasons he's been kept in a row", cls: "r num hide-s", cell: (p) => { const k = (L().keepInfo || {})[p.id]; return k && k.years ? String(k.years) : `<span class="ps">0</span>`; } },
+          { h: `${nextYear()} cost`, title: "What he'd cost to keep next season", cls: "r", cell: (p) => keepCell(p) },
         ];
         // this week: his games so far and to come
         return [{ h: "This week", cls: "", cell: (p, onIR, onTaxi) => (onIR || onTaxi ? "" : gameChip(p, w) || `<span class="ps">No games</span>`) }];
@@ -1148,8 +1177,8 @@
       function keepCell(p) {
         const Z = window.FK.season; if (!Z) return "";
         const c = Z.keeperCost(L(), p.id);
-        if (c.no) return `<span class="ps">${c.no === "late" ? "Added too late" : c.no === "done" ? "Kept 3 years: back in the draft" : "Can't be kept"}</span>`;
-        return c.round != null ? `<b>Round ${c.round}</b>${c.year ? ` <span class="ps">year ${c.year}</span>` : ""}` : c.price != null ? `<b>$${c.price}</b>` : "";
+        if (c.no) return c.no === "late" ? `<span class="tag inel" title="${esc(c.label || "Added after the keeper cutoff")}">Ineligible</span>` : `<span class="ps">${c.no === "done" ? "Kept the limit: back in the draft" : "Can't be kept"}</span>`;
+        return c.round != null ? `<b>Round ${c.round}</b>` : c.price != null ? `<b>$${c.price}</b>` : "";
       }
       const starters = slots.map((s, i) => row(s, lu[i] ? ctx.byId[lu[i]] : null, i, false)).join("");
       const benchIds = L().rosters[id].filter((x) => !lu.includes(x) && !ir.includes(x) && !taxi.includes(x));
@@ -1180,7 +1209,7 @@
         <div class="row wk-bar" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">Week ${x}${x === L().week ? ", now" : ""}</button>`).join("")}</div>` : ""}
           ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}${w === L().week && frac(w) > 0 ? `: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}` : ""}</a>` : ""}
           ${brow ? `<a class="pill" href="#matchup/${w}" style="text-decoration:none">${fmtS(brow.score)}, ${ord(brow.rank)} of ${L().alive.length}, ${pct(brow.chop)} to be chopped</a>` : ""}
-          <span class="grow"></span>${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
+          <span class="grow"></span>${mine && !locked && !moving && hasGames(id, w) ? `<button class="btn sm" data-optimize="active" title="Starts everyone with a game this week, best first, and sits the rest"><span class="hide-xs">Start active players</span><span class="show-xs">Start active</span></button>` : ""}${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
         ${moving ? `<div class="movebar" role="status"><span>Moving <b>${esc(moving.n)}</b>. Pick a highlighted spot${movingSlot >= 0 ? ", or swap with a bench player" : ""}.</span><span class="grow"></span>${movingSlot >= 0 ? `<button class="btn sm" data-here="BN">To bench</button>` : ""}<button class="btn sm" data-move="">Cancel</button></div>` : ""}
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
         ${mine && L().settings.frozen && L().heist && L().rosters[id].length < G.maxRoster(L()) && !over() ? `<div class="alert"><span>A steal left a spot open in your lineup. Pick up a free agent for it before his game starts: he scores normal points.</span><a class="btn sm go" href="#players/fa">Free agents</a></div>` : ""}
@@ -1447,13 +1476,22 @@
       } else if (t.why) acts = `<span class="ps">${esc(T(t.to).name)}: &ldquo;${esc(t.why)}&rdquo;</span>`;
       return { id: t.id, status: t.status, statusLabel: label, from: T(t.from), to: T(t.to), give: t.give.map(playerVM).concat((t.pickGive || []).map(pickVM)), get: t.get.map(playerVM).concat((t.pickGet || []).map(pickVM)), faab: [t.faabGive, t.faabGet], note: t.note, when: U.ago(t.done || t.at, now()), acts, sub: t.rivalOf != null ? `For the same players as a deal in its counter window` : t.counterOf ? "Counteroffer" : "" };
     }
-    function tradesPage() {
+    function tradesPage(arg) {
       const mid = me();
+      // another team's trades, or every trade in the league ("All teams" in the dropdown)
+      const pick = arg === "all" ? "all" : arg !== "" && arg != null && L().teams[+arg] && +arg !== mid ? +arg : null;
+      if (pick != null || mid == null) {
+        const list = L().trades.slice().reverse().filter((t) => t.status !== "pending" && (pick === "all" || pick == null || t.from === pick || t.to === pick));
+        const who = pick === "all" || pick == null ? "the league" : T(pick).name;
+        return `<div class="wrap page">${teamHead(pick === "all" || pick == null ? (mid != null ? mid : 0) : pick, { all: pick === "all" || pick == null ? "on" : true })}
+          <div class="head"><h2 class="disp" style="font-size:24px;margin:0">${pick === "all" || pick == null ? "Every trade" : "Trades"}</h2><span class="ps">${list.length} in ${esc(who)}${pick === "all" || pick == null ? " this season" : ""}</span></div>
+          ${list.length ? `<div class="tr-grid">${list.map((t) => U.tradeCard(sport, tradeVM(t))).join("")}</div>` : `<div class="card"><p class="empty" style="margin:0">No trades yet.</p></div>`}</div>`;
+      }
       const all = L().trades.slice().reverse();
       const toMe = all.filter((t) => t.status === "pending" && t.to === mid), fromMe = all.filter((t) => t.status === "pending" && t.from === mid);
       const review = all.filter((t) => t.status === "review"), done = all.filter((t) => !["pending", "review"].includes(t.status) && (t.from === mid || t.to === mid || t.status === "accepted")).slice(0, 20);
       const sec = (title, list, empty) => `<div class="stack"><h2 style="margin:0;font-size:16px">${title}</h2>${list.length ? list.map((t) => U.tradeCard(sport, tradeVM(t))).join("") : `<div class="card"><p class="empty" style="margin:0">${empty}</p></div>`}</div>`;
-      return `<div class="wrap page">${mid != null ? teamHead(mid) : ""}<div class="head"><${mid != null ? 'h2 class="disp" style="font-size:24px;margin:0"' : 'h1 class="disp"'}>Trades</${mid != null ? "h2" : "h1"}><span class="grow"></span>${canTrade() ? `<button class="btn go" data-trade>Propose a trade</button>` : mid != null && L().settings.deadline && L().week > L().settings.deadline && !over() ? `<span class="ps">The trade deadline was week ${L().settings.deadline}.</span>` : ""}</div>${G.offseason(L()) && L().settings.trades !== false ? `<div class="banner info"><b>Offseason trading is open.</b> <span class="muted">Trade players and picks for the next two seasons until next season starts. Roster limits wait until next season's week 1.</span></div>` : ""}
+      return `<div class="wrap page">${mid != null ? teamHead(mid, { all: true }) : ""}<div class="head"><${mid != null ? 'h2 class="disp" style="font-size:24px;margin:0"' : 'h1 class="disp"'}>Trades</${mid != null ? "h2" : "h1"}><span class="grow"></span>${canTrade() ? `<button class="btn go" data-trade>Propose a trade</button>` : mid != null && L().settings.deadline && L().week > L().settings.deadline && !over() ? `<span class="ps">The trade deadline was week ${L().settings.deadline}.</span>` : ""}</div>${G.offseason(L()) && L().settings.trades !== false ? `<div class="banner info"><b>Offseason trading is open.</b> <span class="muted">Trade players and picks for the next two seasons until next season starts. Roster limits wait until next season's week 1.</span></div>` : ""}
         <div class="cols"><div class="stack">${sec("Offers for you", toMe, "No offers waiting.")}${sec("Your offers", fromMe, "You haven't sent any open offers.")}${sec("League review", review, "No trades under review.")}</div>
         <aside class="stack">${picksCard()}${blockCard(99, true)}${sec("Recent trades", done, "No trades yet.")}</aside></div></div>`;
     }
@@ -1595,49 +1633,83 @@
        league's starting lineups; a deal scores for a team by the category value it gains, weighted by those needs.
        It suggests 1-for-1 deals (hitter for hitter, pitcher for pitcher) and 2-for-1s that help both teams and stay
        close in overall value, best for you first. */
+    /* The trade finder. Three ways to look:
+         fit   deals that help both lineups where each is weakest, at close to even value
+         buy   you win now: send players whose value is in a cheap keeper cost, get players who produce more now
+         sell  the reverse: send production, get keeper value for next season
+       "Now" is a player's value this season (between seasons, next season's projection); "keeper value" is how many
+       rounds he beats his keeper cost by (a 1st-round talent kept in round 15 is worth 14 rounds). */
     function finderPage() {
-      const mid = me();
+      const mid = me(), mode = ["fit", "buy", "sell"].includes(ui.tfMode) ? ui.tfMode : "fit";
       const cats = sc().cats.map((c) => c.k), n = L().teams.length, wk = Math.min(L().week, G.totalWeeks(L()));
       const zc = (id) => (ctx.byId[id] && ctx.byId[id].zc) || {}, val = (id) => (ctx.byId[id] && ctx.byId[id].v) || 0;
       const lu = (t) => G.lineupFor(L(), ctx, t, wk).filter(Boolean);
-      // each team's category totals over its lineup, and its rank in each (1 the best)
       const tot = L().teams.map((t) => { const o = {}; for (const id of lu(t.id)) for (const k of cats) o[k] = (o[k] || 0) + (zc(id)[k] || 0); return o; });
       const need = L().teams.map((t) => Object.fromEntries(cats.map((k) => { const r = 1 + tot.filter((x) => (x[k] || 0) > (tot[t.id][k] || 0)).length; return [k, 0.35 + (r - 1) / Math.max(1, n - 1)]; })));
       const grp = (id) => { const p = ctx.byId[id]; return p && sport.groups && S.positions(p).every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
-      const gain = (t, inn, out) => cats.reduce((a, k) => a + need[t][k] * (inn.reduce((s, id) => s + (zc(id)[k] || 0), 0) - out.reduce((s, id) => s + (zc(id)[k] || 0), 0)), 0);
+      const gain = (t, inn, out) => cats.reduce((a, k) => a + need[t][k] * (inn.reduce((s2, id) => s2 + (zc(id)[k] || 0), 0) - out.reduce((s2, id) => s2 + (zc(id)[k] || 0), 0)), 0);
+      const Z = window.FK.season, keepOn = !!(Z && (L().settings.keepers || L().settings.keeperRule));
+      // rounds of keeper value: where his projected rank would go in a draft against what keeping him costs
+      const kv = {};
+      const keepVal = (id) => {
+        if (kv[id] != null) return kv[id];
+        const p = ctx.byId[id]; if (!p || !keepOn) return (kv[id] = 0);
+        const c = Z.keeperCost(L(), id); if (c.no || c.round == null) return (kv[id] = 0);
+        return (kv[id] = Math.max(0, c.round - Math.ceil(p.rank / n)));
+      };
       const keepers = new Set(((L().next && L().next.picks) || {})[mid] || []);
-      const mine = L().rosters[mid].filter((id) => ctx.byId[id] && !keepers.has(id)), max = L().settings.tradeMax || 9;
+      const mine = L().rosters[mid].filter((id) => ctx.byId[id] && (mode !== "fit" || !keepers.has(id))), max = L().settings.tradeMax || 9;
       const out = [];
+      const nowV = (ids) => ids.reduce((x, id) => x + val(id), 0), keepV = (ids) => ids.reduce((x, id) => x + keepVal(id), 0);
       for (const t of L().teams) {
         if (t.id === mid) continue;
         const theirs = L().rosters[t.id].filter((id) => ctx.byId[id]);
-        for (const a of mine) for (const b of theirs) {
-          if (grp(a) !== grp(b)) continue;
-          const g1 = gain(mid, [b], [a]), g2 = gain(t.id, [a], [b]), va = val(a), vb = val(b);
-          if (g1 > 0.25 && g2 > 0.25 && Math.abs(va - vb) <= Math.max(1.5, 0.3 * Math.max(Math.abs(va), Math.abs(vb)))) out.push({ to: t.id, give: [a], get: [b], g1, g2 });
-        }
-        // two of yours for one of theirs: consolidating depth into a better starter
-        if (max >= 2) {
-          const top = mine.slice().sort((x, y) => val(y) - val(x)).slice(0, 16);
-          for (let i = 0; i < top.length; i++) for (let j = i + 1; j < top.length; j++) for (const b of theirs) {
-            if (grp(top[i]) !== grp(b) || grp(top[j]) !== grp(b)) continue;
-            const a1 = top[i], a2 = top[j], g1 = gain(mid, [b], [a1, a2]) + 0.6 * Math.max(0, val(b) - Math.max(val(a1), val(a2))), g2 = gain(t.id, [a1, a2], [b]);
-            if (g1 > 0.4 && g2 > 0.4 && val(a1) + val(a2) >= val(b) * 0.9 && val(a1) + val(a2) <= val(b) * 1.6 && val(b) > Math.max(val(a1), val(a2))) out.push({ to: t.id, give: [a1, a2], get: [b], g1, g2 });
+        const tops = (ids) => ids.slice().sort((x, y) => val(y) + keepVal(y) - val(x) - keepVal(x)).slice(0, 18);
+        const singles = (ids) => ids.map((x) => [x]);
+        const pairs = (ids) => { const tp = tops(ids), o = []; for (let i = 0; i < tp.length; i++) for (let j = i + 1; j < tp.length; j++) o.push([tp[i], tp[j]]); return o; };
+        const gives = singles(mine).concat(max >= 2 ? pairs(mine) : []), gets = singles(theirs).concat(max >= 2 && mode !== "fit" ? pairs(theirs) : []);
+        for (const give of gives) for (const get of gets) {
+          if (give.length === 2 && get.length === 2) continue;
+          if (mode === "fit") {
+            if (get.length !== 1 || give.some((a2) => grp(a2) !== grp(get[0]))) continue;
+            const g1 = gain(mid, get, give) + (give.length === 2 ? 0.6 * Math.max(0, val(get[0]) - Math.max(...give.map(val))) : 0), g2 = gain(t.id, give, get);
+            const vg = nowV(give), vb = nowV(get);
+            const even = give.length === 1 ? Math.abs(vg - vb) <= Math.max(1.5, 0.3 * Math.max(Math.abs(vg), Math.abs(vb))) : vg >= vb * 0.9 && vg <= vb * 1.6 && vb > Math.max(...give.map(val));
+            if (g1 > (give.length === 2 ? 0.4 : 0.25) && g2 > (give.length === 2 ? 0.4 : 0.25) && even) out.push({ to: t.id, give, get, g1, g2, score: Math.min(g1, g2 * 1.2) });
+            continue;
           }
+          // buyer: more now for you, more keeper value for them (seller: the other way). Value now in z units, keeper
+          // value in rounds; a round of keeper value is about a quarter of a z unit of production
+          const dNow = nowV(get) - nowV(give), dKeep = keepV(give) - keepV(get);
+          const youNow = mode === "buy" ? dNow : -dNow, themKeep = mode === "buy" ? dKeep : -dKeep;
+          if (youNow < 1 || themKeep < 3) continue;
+          const fair = Math.abs(youNow - themKeep * 0.25) <= Math.max(1.5, 0.35 * youNow);
+          if (!fair) continue;
+          out.push({ to: t.id, give, get, dNow, dKeep, score: Math.min(youNow, themKeep * 0.25) - 0.1 * (give.length + get.length) });
         }
       }
-      // best for you first, a couple per team so one roster doesn't fill the list
-      out.sort((x, y) => Math.min(y.g1, y.g2 * 1.2) - Math.min(x.g1, x.g2 * 1.2));
-      const per = {}, picks = out.filter((x) => (per[x.to] = (per[x.to] || 0) + 1) <= 2).slice(0, 12);
-      const helps = (t, inn, outp) => cats.map((k) => [k, need[t][k] * (inn.reduce((s, id) => s + (zc(id)[k] || 0), 0) - outp.reduce((s, id) => s + (zc(id)[k] || 0), 0))]).filter(([, v]) => v > 0.12).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => (sc().cats.find((c) => c.k === k) || {}).label).filter(Boolean);
-      const pl = (ids) => ids.map((id) => `<div data-player="${esc(id)}" style="cursor:pointer">${pname(sport, ctx.byId[id], esc(ctx.byId[id].prank || ""), { size: "sm" })}</div>`).join("");
-      const card = (x) => `<div class="card tf-c"><div class="mod-h">${teamAv(T(x.to), "sm")}<h2>${esc(T(x.to).name)}</h2><span class="grow"></span><button class="btn sm go" data-tfprop="${x.to}" data-give="${esc(x.give.join(","))}" data-get="${esc(x.get.join(","))}">Propose</button></div>
-        <div class="tf-b"><div><small class="ps">You send</small>${pl(x.give)}</div><span class="arrow" aria-hidden="true">&#8644;</span><div><small class="ps">You get</small>${pl(x.get)}</div></div>
-        <p class="ps tf-why">Helps you in ${esc(helps(mid, x.get, x.give).join(", ") || "depth")}. Helps them in ${esc(helps(x.to, x.give, x.get).join(", ") || "depth")}.</p></div>`;
-      const weak = cats.map((k) => [k, need[mid][k]]).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => (sc().cats.find((c) => c.k === k) || {}).label);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Trade finder</h1><span class="ps">Deals that help both sides, for ${esc(T(mid).name)}</span></div>
-        <div class="card"><div class="bd"><p style="margin:0">Your lineup ranks lowest in <b>${esc(weak.join(", "))}</b>. These deals add there while giving the other team something it needs, at close to even value${keepers.size ? ". Your declared keepers are left out" : ""}.</p></div></div>
-        ${picks.length ? `<div class="tf-grid">${picks.map(card).join("")}</div>` : `<div class="card"><p class="empty" style="margin:0">No deal helps both teams right now. Try again after a few moves around the league.</p></div>`}</div>`;
+      out.sort((x, y) => y.score - x.score);
+      // a couple per team, and no one package of yours in more than two, so the list has range
+      const per = {}, sent = {}, picks = out.filter((x) => { const k = x.give.slice().sort().join(","); if ((per[x.to] || 0) >= 2 || (sent[k] || 0) >= 2) return false; per[x.to] = (per[x.to] || 0) + 1; sent[k] = (sent[k] || 0) + 1; return true; }).slice(0, 14);
+      const label = (k) => (sc().cats.find((c) => c.k === k) || {}).label;
+      const helps = (t, inn, outp) => cats.map((k) => [k, need[t][k] * (inn.reduce((s2, id) => s2 + (zc(id)[k] || 0), 0) - outp.reduce((s2, id) => s2 + (zc(id)[k] || 0), 0))]).filter(([, v]) => v > 0.12).sort((x, y) => y[1] - x[1]).slice(0, 3).map(([k]) => label(k)).filter(Boolean);
+      const keepTxt = (id) => { if (!keepOn) return ""; const c = Z.keeperCost(L(), id); return c.no ? "can't be kept" : c.round != null ? `keep Rd ${c.round}` : ""; };
+      const pl = (ids) => ids.map((id) => { const p = ctx.byId[id]; return `<div class="tf-p" data-player="${esc(id)}">${pname(sport, p, `${esc(p.prank || "")}${keepTxt(id) ? `, ${esc(keepTxt(id))}` : ""}`, { size: "sm" })}</div>`; }).join("");
+      const tags = (xs) => (xs.length ? `<span class="tf-tags">${xs.map((x) => `<span class="tag">${esc(x)}</span>`).join("")}</span>` : "");
+      const why = (x) => mode === "fit"
+        ? `<div><small>You gain</small>${tags(helps(mid, x.get, x.give)) || `<span class="ps">depth</span>`}</div><div><small>They gain</small>${tags(helps(x.to, x.give, x.get)) || `<span class="ps">depth</span>`}</div>`
+        : `<div><small>${mode === "buy" ? "You gain now" : "You gain in keepers"}</small><b>${mode === "buy" ? `+${x.dNow.toFixed(1)} value` : `+${-x.dKeep} rounds`}</b></div><div><small>${mode === "buy" ? "They gain in keepers" : "They gain now"}</small><b>${mode === "buy" ? `+${x.dKeep} rounds` : `+${(-x.dNow).toFixed(1)} value`}</b></div>`;
+      const row = (x) => `<li class="tf-r"><div class="tf-t">${teamAv(T(x.to), "md")}<span><b class="ell">${esc(T(x.to).name)}</b><small class="ps">${esc(recOf(x.to))}</small></span></div>
+        <div class="tf-side"><small>You send</small>${pl(x.give)}</div><span class="tf-ar" aria-hidden="true">&#8644;</span><div class="tf-side"><small>You get</small>${pl(x.get)}</div>
+        <div class="tf-why">${why(x)}</div><div class="tf-go"><button class="btn sm go" data-tfprop="${x.to}" data-give="${esc(x.give.join(","))}" data-get="${esc(x.get.join(","))}">Propose</button></div></li>`;
+      const weak = cats.map((k) => [k, need[mid][k]]).sort((x, y) => y[1] - x[1]).slice(0, 4).map(([k]) => label(k));
+      const lead = mode === "fit" ? `Your lineup ranks lowest in <b>${esc(weak.join(", "))}</b>. These deals add there while giving the other team something it needs, at close to even value${keepers.size ? ". Your declared keepers are left out" : ""}.`
+        : mode === "buy" ? `Win now: you send players whose value is a cheap keeper cost and get players who produce more${G.offseason(L()) ? " next season" : " this season"}. The other team banks keeper value.`
+        : `Build for next season: you send production and get players who beat their keeper cost by the most rounds. The other team gets the better player now.`;
+      const seg = `<div class="seg" role="group" aria-label="Trade finder mode">${[["fit", "Best fit"], ["buy", "Buyer"], ["sell", "Seller"]].map(([k, nm]) => `<button type="button" data-tfmode="${k}" aria-pressed="${k === mode}"${!keepOn && k !== "fit" ? " disabled" : ""}>${nm}</button>`).join("")}</div>`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Trade finder</h1><span class="ps">For ${esc(T(mid).name)}</span><span class="grow"></span>${seg}</div>
+        <p class="tf-lead">${lead}</p>
+        ${picks.length ? `<ul class="tf-list card">${picks.map(row).join("")}</ul>` : `<div class="card"><p class="empty" style="margin:0">${mode === "fit" ? "No deal helps both teams right now. Try again after a few moves around the league." : "No keeper deal lines up right now. Try the other mode, or Best fit."}</p></div>`}</div>`;
     }
     function watchPage(actions) {
       const mid = me(), w = watch(), q = (ui.pf.q || "").toLowerCase();
@@ -1774,8 +1846,9 @@
     // what a player would cost to keep, in a few words for the card's headline row
     function keepShort(p) {
       const c = window.FK.season.keeperCost(L(), p.id);
-      if (c.no) return `<span class="ps" style="font-size:13px">${c.no === "late" ? "Added too late" : c.no === "done" ? "Kept 3 years" : "Can't keep"}</span>`;
-      return c.round != null ? `Rd ${c.round}${c.year ? `<em>year ${c.year}</em>` : ""}` : c.price != null ? money(c.price) : "-";
+      if (c.no) return c.no === "late" ? `<span class="tag inel" title="${esc(c.label || "")}">Ineligible</span>` : `<span class="ps" style="font-size:13px">${c.no === "done" ? "Kept the limit" : "Can't keep"}</span>`;
+      const yrs = ((L().keepInfo || {})[p.id] || {}).years || 0;
+      return c.round != null ? `Rd ${c.round}<em>${yrs ? `kept ${yrs} year${yrs > 1 ? "s" : ""}` : "never kept"}</em>` : c.price != null ? money(c.price) : "-";
     }
     // His season and projection in the league's own categories, a row each (hitting, pitching, or both for a two-way player)
     function seasonCats(p) {
@@ -1785,10 +1858,11 @@
       const tbl = (g) => {
         const cs = cols.filter((c) => (c.group || c.line) === g || (!c.group && !c.line));
         if (!cs.length) return "";
-        const row = (lab, line) => `<tr><th scope="row">${esc(lab)}</th>${cs.map((c) => { const v = U.statCell(sport, p, Object.assign({}, c, { line })); return `<td class="num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
-        return `<table class="t dense pc-sc"><thead><tr><th>${g === "pit" ? "Pitching" : g === "bat" ? "Hitting" : "Season"}</th>${cs.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${p.l[g] ? row(String(yr), g) : ""}${lines["p" + g] && p.l["p" + g] ? row("Projected", "p" + g) : ""}</tbody></table>`;
+        const gp = sport.cols[g] && sport.cols[g].g != null;
+        const row = (lab, line, cls) => `<tr class="${cls}"><th scope="row"><span>${esc(lab)}</span></th>${gp ? `<td class="num">${S.stat(sport, p, line, "g") != null ? Math.round(S.stat(sport, p, line, "g")) : "-"}</td>` : ""}${cs.map((c) => { const v = U.statCell(sport, p, Object.assign({}, c, { line })); return `<td class="num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
+        return `<table class="pc-ln"><thead><tr><th>${g === "pit" ? "Pitching" : g === "bat" ? "Hitting" : "Season"}</th>${gp ? `<th class="num" title="Games">GP</th>` : ""}${cs.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${p.l[g] ? row(String(yr), g, "act") : ""}${lines["p" + g] && p.l["p" + g] ? row(`${Number(yr) ? Number(yr) + 1 : ""} proj`.trim(), "p" + g, "prj") : ""}</tbody></table>`;
       };
-      return `<div class="table-wrap">${groups.map(tbl).join("")}</div>`;
+      return `<div class="pc-lns">${groups.map(tbl).join("")}</div>`;
     }
     // the counting categories that say the most about a player, the big ones first: PTS REB AST, R HR RBI, K W SV
     const PREF = ["pts", "reb", "ast", "tpm", "stl", "blk", "r", "hr", "rbi", "sb", "k", "w", "sv", "qs", "hld"];
@@ -1839,7 +1913,7 @@
       }
       if (!items.length) return "";
       items.sort((a, b) => b.at - a.at);
-      return `<div class="stack" style="gap:6px"><div class="ps"><b>In this league</b></div><ul class="pc-log">${items.slice(0, 8).map((x) => `<li><span>${x.text}</span><small>${x.week ? `Week ${x.week}` : "Draft"}</small></li>`).join("")}</ul></div>`;
+      return `<div class="stack" style="gap:6px"><div class="ps"><b>In this league</b></div><ul class="pc-log">${items.slice(0, 8).map((x) => `<li><span>${x.text}</span><small>${x.at ? esc(md(x.at)) : x.week ? `Week ${x.week}` : "Draft"}</small></li>`).join("")}</ul></div>`;
     }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
@@ -1859,11 +1933,16 @@
       const trend = last3 != null && W.avg ? (last3 - W.avg) / W.avg : null;
       const startWeeks = own != null ? Array.from({ length: Math.min(L().week - 1, G.totalWeeks(L())) }, (_, i) => i + 1) : [];
       const started = startWeeks.filter((w) => G.lineupFor(L(), ctx, own, w).includes(pid)).length;
-      const stats = [["Overall", `#${p.rank}`], ["Position", esc(p.prank)]]
+      // baseball between seasons: last season's ranks (another site's, when the league came from one), next season's
+      // projected rank, how he got here and what he'd cost to keep
+      const ext = (L().ext && L().ext.ranks && L().ext.ranks[pid]) || null, yr0 = Number(L().season) || null, acq = own != null ? acquiredOf(pid, own) : null;
+      const base = p.crank != null || ext ? [].concat(ext && ext.pre ? [[`${yr0} preseason`, `#${ext.pre}`]] : [], [[`${yr0} final`, (ext && ext.szn) || p.crank ? `#${(ext && ext.szn) || p.crank}` : "-"]], [[`${yr0 ? yr0 + 1 : "Next"} projected`, `#${p.rank}`]], [["Position", esc(p.prank)]])
+        : [["Overall", `#${p.rank}`], ["Position", esc(p.prank)]];
+      const stats = base
         .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : pts() ? [[sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection", sport.weekOf != null ? fmtS(p.v / 17) : String(Math.round(p.v))]] : [])
         .concat(trend != null ? [["Last 3 weeks", `${fmtS(last3)}<em class="${trend >= 0.1 ? "up" : trend <= -0.1 ? "dn" : ""}">${trend >= 0 ? "+" : ""}${Math.round(trend * 100)}%</em>`]] : [])
         .concat(startWeeks.length && !bb() && !L().imported ? [["Started", `${started} of ${startWeeks.length}`]] : [])
-        .concat(!auctionLg() && draftedAt(pid) ? [["Drafted", `Rd ${draftedAt(pid).r}, #${draftedAt(pid).n}`]] : [])
+        .concat(acq ? [["Acquired", `${esc(acq.how)}<em>${acq.detail}</em>`]] : !auctionLg() && draftedAt(pid) ? [["Drafted", `Rd ${draftedAt(pid).r}, #${draftedAt(pid).n}`]] : [])
         .concat((L().settings.keepers || L().settings.dynasty) && window.FK.season ? [[`${nextYearOf()} keeper`, keepShort(p)]] : [])
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
       // a category league leads with his season in the league's own categories; a season brought in from another
@@ -1912,7 +1991,7 @@
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
       if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
-      else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: tradesPage }[r.sub]();
+      else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: () => tradesPage(r.arg) }[r.sub]();
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
       else if (r.tab === "draft") html = draftPage();
@@ -2014,7 +2093,8 @@
 
     opts.el.addEventListener("pointerdown", (e) => {
       const row = e.target.closest("tr[data-dg]");
-      if (!row || e.button > 0 || e.target.closest("button:not(.slotbtn),a,input,select,[data-player]")) return;
+      // the whole row drags, the player's name too (a tap on it still opens his card; a drag swallows that click)
+      if (!row || e.button > 0 || e.target.closest("button:not(.slotbtn),a,input,select")) return;
       const d = { pid: row.dataset.dg, from: row.dataset.from, row, x: e.clientX, y: e.clientY, id: e.pointerId, touch: e.pointerType !== "mouse", live: false };
       d.block = (ev) => { if (drag && drag.live) ev.preventDefault(); };
       document.addEventListener("touchmove", d.block, { passive: false });
@@ -2071,11 +2151,12 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (d.mgr != null) { const Dl = U.dialog(managerCard(+d.mgr, true)); Dl.onclick = (ev) => { if (ev.target.closest("[data-editprofile]")) { Dl.close(); opts.editProfile(); } }; }
+        if (d.tfmode) { ui.tfMode = d.tfmode; render(); }
+        else if (d.mgr != null) { const Dl = U.dialog(managerCard(+d.mgr, true)); Dl.onclick = (ev) => { if (ev.target.closest("[data-editprofile]")) { Dl.close(); opts.editProfile(); } }; }
         else if (b.hasAttribute("data-editprofile")) opts.editProfile();
         else if (d.unblock) act(() => G.setBlock(L(), mid, d.unblock, false), `${ctx.byId[d.unblock].n} is off the block.`);
         else if (b.hasAttribute("data-editteam")) editTeam();
@@ -2091,7 +2172,11 @@
         else if (d.trade !== undefined && b.hasAttribute("data-trade")) openTrade(d.trade === "" ? null : +d.trade, d.want || null);
         else if (d.move !== undefined && b.hasAttribute("data-move")) { ui.moving = d.move || null; render(); }
         else if (d.here !== undefined && b.hasAttribute("data-here")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); const pid = ui.moving; ui.moving = null; act(() => G.move(L(), ctx, mid, w, pid, d.here === "BN" ? "BN" : +d.here, now())); }
-        else if (b.hasAttribute("data-optimize")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now()), now()), "Best lineup set."); }
+        else if (b.hasAttribute("data-optimize")) {
+          const w = ui.week && ui.week >= L().week ? ui.week : curWeek(), active = b.dataset.optimize === "active";
+          const only = active ? (p) => { const gs = gamesOf(p, w); return !gs || gs.length > 0; } : null;
+          act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now(), { only }), now()), active ? "Everyone with a game this week is in." : "Best lineup set.");
+        }
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }
         else if (b.hasAttribute("data-rematch")) { if (opts.rematch) opts.rematch(); }
