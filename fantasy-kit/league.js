@@ -2091,11 +2091,11 @@
     if (ctx._km && ctx._km.key === key) return ctx._km;
     const n = L.teams.length, R = (L.draft && L.draft.rounds) || 15, K = L.settings.keepers;
     const val = (p) => Math.max(0, (p && p.$) || 0);
-    // one entry a person: a two-way player can be in the pool twice (as a hitter and as a pitcher), and the copy nobody
-    // rosters isn't really there to draft
-    const nm = (p) => String(p.n || "").toLowerCase().replace(/\s*\((batter|pitcher|hitter)\)$/, "").replace(/[^a-z]/g, "");
-    const rostered = new Set(ctx.players.filter((p) => ctx.own[p.id] != null).map(nm)), seen = new Set();
-    const all = ctx.players.filter((p) => p && p.$ != null).sort((a, b) => val(b) - val(a)).filter((p) => { const k = nm(p); if (ctx.own[p.id] == null && rostered.has(k)) return false; if (seen.has(k)) return false; seen.add(k); return true; });
+    // the pool as the league sees it: players the league hides (the feed's combined Ohtani, where the league carries
+    // his batter and pitcher as two) aren't in it, and a name the feed lists twice counts once
+    const hidden = new Set(L.hidePlayers || []), seen = new Set();
+    const nm = (p) => String(p.n || "").toLowerCase().replace(/[^a-z()]/g, "");
+    const all = ctx.players.filter((p) => p && p.$ != null && !hidden.has(p.id)).sort((a, b) => val(b) - val(a)).filter((p) => { const k = nm(p); if (seen.has(k)) return false; seen.add(k); return true; });
     const cost = {};
     for (const ids of L.rosters) for (const id of ids) { try { cost[id] = kc(L, id); } catch (e) { cost[id] = null; } }
     const mid = (r) => (Math.max(1, Math.min(R, r)) - 1) * n + n / 2;
