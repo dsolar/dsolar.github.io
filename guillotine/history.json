@@ -6124,7 +6124,7 @@
       "pos": "QB",
       "nfl": "CAR",
       "slot": "QB",
-      "proj": 18.91,
+      "proj": 18.87,
       "pts": null
      },
      {
@@ -6188,7 +6188,7 @@
       "pos": "QB",
       "nfl": "KC",
       "slot": "Q/W/R/T",
-      "proj": 18.59,
+      "proj": 18.55,
       "pts": null
      },
      {
@@ -6196,7 +6196,7 @@
       "pos": "RB",
       "nfl": "HOU",
       "slot": "BN",
-      "proj": 6.28,
+      "proj": 6.08,
       "pts": null
      },
      {
@@ -6212,7 +6212,7 @@
       "pos": "WR",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 12.12,
+      "proj": 11.83,
       "pts": null
      },
      {
@@ -6246,7 +6246,7 @@
       "pos": "QB",
       "nfl": "BUF",
       "slot": "QB",
-      "proj": 24.65,
+      "proj": 24.43,
       "pts": null
      },
      {
@@ -6254,7 +6254,7 @@
       "pos": "RB",
       "nfl": "BUF",
       "slot": "RB",
-      "proj": 16.1,
+      "proj": 16.74,
       "pts": null
      },
      {
@@ -6262,7 +6262,7 @@
       "pos": "RB",
       "nfl": "KC",
       "slot": "RB",
-      "proj": 19.14,
+      "proj": 19.74,
       "pts": null
      },
      {
@@ -6306,11 +6306,19 @@
       "pts": null
      },
      {
+      "n": "Matthew Stafford",
+      "pos": "QB",
+      "nfl": "LAR",
+      "slot": "Q/W/R/T",
+      "proj": 16.59,
+      "pts": null
+     },
+     {
       "n": "C.J. Stroud",
       "pos": "QB",
       "nfl": "HOU",
-      "slot": "Q/W/R/T",
-      "proj": 17.09,
+      "slot": "BN",
+      "proj": 17.12,
       "pts": null
      },
      {
@@ -6318,7 +6326,7 @@
       "pos": "RB",
       "nfl": "TEN",
       "slot": "BN",
-      "proj": 11.47,
+      "proj": 11.29,
       "pts": null
      },
      {
@@ -6334,15 +6342,7 @@
       "pos": "RB",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 8.94,
-      "pts": null
-     },
-     {
-      "n": "Tyler Warren",
-      "pos": "TE",
-      "nfl": "IND",
-      "slot": "BN",
-      "proj": 9.78,
+      "proj": 8.95,
       "pts": null
      },
      {
@@ -6440,7 +6440,7 @@
       "pos": "WR",
       "nfl": "TEN",
       "slot": "BN",
-      "proj": 9.38,
+      "proj": 0,
       "pts": null
      },
      {
@@ -6464,7 +6464,7 @@
       "pos": "TE",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 8.55,
+      "proj": 8.54,
       "pts": null
      },
      {
@@ -6514,7 +6514,7 @@
       "pos": "WR",
       "nfl": "CAR",
       "slot": "WR",
-      "proj": 12.82,
+      "proj": 12.76,
       "pts": null
      },
      {
@@ -6580,6 +6580,14 @@
       "slot": "BN",
       "proj": 7.08,
       "pts": null
+     },
+     {
+      "n": "Corey Kiner",
+      "pos": "RB",
+      "nfl": "NE",
+      "slot": "BN",
+      "proj": 10.98,
+      "pts": null
      }
     ],
     "Drake Mayezini": [
@@ -6612,7 +6620,7 @@
       "pos": "WR",
       "nfl": "HOU",
       "slot": "WR",
-      "proj": 12.51,
+      "proj": 12.5,
       "pts": null
      },
      {
@@ -6660,7 +6668,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 10.48,
+      "proj": 10.6,
       "pts": null
      },
      {
@@ -6685,6 +6693,14 @@
       "nfl": "SF",
       "slot": "BN",
       "proj": 8.49,
+      "pts": null
+     },
+     {
+      "n": "Ryan Flournoy",
+      "pos": "WR",
+      "nfl": "DAL",
+      "slot": "BN",
+      "proj": 7.25,
       "pts": null
      },
      {
@@ -6766,7 +6782,7 @@
       "pos": "WR",
       "nfl": "BUF",
       "slot": "BN",
-      "proj": 10.69,
+      "proj": 10.39,
       "pts": null
      },
      {
