@@ -300,3 +300,8 @@ table.pg tr.muted-row td{color:var(--muted);font-style:italic}
 .grade.g-a{background:var(--up)} .grade.g-b{background:#2F6FB0} .grade.g-c{background:var(--gold)} .grade.g-d{background:#d9822b} .grade.g-f{background:var(--down)}
 .graded{display:flex;gap:10px;align-items:flex-start;margin:10px 0 4px;font-size:14px;line-height:1.45}
 .graded .grade{font-size:15px;padding:6px 7px;flex:none}
+
+/* player card tabs */
+.cardtabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:12px 0 4px}
+.cardtabs button{background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;padding:8px 12px;font:700 13px/1 var(--body);color:var(--muted);cursor:pointer}
+.cardtabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--red)}

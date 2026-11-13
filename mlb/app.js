@@ -542,7 +542,10 @@
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
-    html += statTables(p);
+    var stats = statTables(p);
+    html += '<nav class="cardtabs" role="tablist"><button type="button" role="tab" data-ctab="deal" aria-selected="true">Contract &amp; value</button><button type="button" role="tab" data-ctab="stats" aria-selected="false">Stats</button></nav>';
+    html += '<div data-cpane="stats" hidden>' + stats + "</div>";
+    html += '<div data-cpane="deal">';
     html += '<h4 class="card-sec">Contract value</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>Status</th><th>WAR</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
     s.rows.forEach(function (r) {
       html += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
@@ -555,7 +558,7 @@
     }
     html += "</tbody></table></div>";
     html += '<p class="note">Discounted at ' + pct(H.cfg.discount, 0) + " a year. A win costs " + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year." +
-      (s.prospect ? " Prospect value is scaled by his risk grade (" + pct(s.hit, 0) + ")." : "") + "</p>";
+      (s.prospect ? " Prospect value is scaled by his risk grade (" + pct(s.hit, 0) + ")." : "") + "</p></div>";
     html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade: side A</button> <button class="btn" data-add="b" data-id="' + esc(p.id) + '">Side B</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth chart</a></p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
@@ -624,6 +627,12 @@
   function kv(v, k) { return "<div><b>" + v + "</b><span>" + k + "</span></div>"; }
   function closeCard() { if (card.open) card.close(); }
   card.addEventListener("click", function (e) {
+    var ct = e.target.closest("[data-ctab]");
+    if (ct) {
+      card.querySelectorAll("[data-ctab]").forEach(function (b) { b.setAttribute("aria-selected", b === ct ? "true" : "false"); });
+      card.querySelectorAll("[data-cpane]").forEach(function (pn) { pn.hidden = pn.dataset.cpane !== ct.dataset.ctab; });
+      return;
+    }
     if (e.target === card || e.target.closest("[data-close]")) { closeCard(); return; }
     var add = e.target.closest("[data-add]");
     if (add) {
@@ -845,31 +854,48 @@
       return;
     }
     var signedN = board.filter(function (x) { return x.signedAav; }).length;
-    html += '<p class="lede">' + board.length + " free agents, " + signedN + " signed so far. <b>Fair</b> is what each is worth per year over the crowd's contract length at the market price of a win (" + money(H.cfg.dpw) + "). <b>Market</b> adjusts for what deals of that length have actually gone for compared with that price. The crowd numbers are FanGraphs readers' median predictions.</p>";
+    html += '<p class="lede">' + (board.length - signedN) + " free agents still unsigned, " + signedN + " signed so far. <b>Fair</b> is what each is worth per year over the crowd's contract length at the market price of a win (" + money(H.cfg.dpw) + "). <b>Market</b> adjusts for what deals of that length have actually gone for compared with that price. The crowd numbers are FanGraphs readers' median predictions.</p>";
     if (mk) html += marketCallout(mk);
-    var show = q.f || "all";
+    html += gradesPanel(board);
+    var show = q.f || "open";
     var opt = function (v, l) { return '<option value="' + v + '"' + (v === show ? " selected" : "") + ">" + l + "</option>"; };
-    html += controls('<label>Show<select data-q="f">' + opt("all", "Everyone") + opt("open", "Still unsigned") + opt("signed", "Signed") + opt("bat", "Hitters") + opt("sp", "Starters") + opt("rp", "Relievers") + "</select></label>");
+    html += controls('<label>Show<select data-q="f">' + opt("open", "Still unsigned") + opt("all", "Everyone") + opt("signed", "Signed") + opt("bat", "Hitters") + opt("sp", "Starters") + opt("rp", "Relievers") + "</select></label>");
     var list = board.filter(function (x) {
       var pos = String(x.r.pos || "");
-      if (show === "open") return !x.signedAav;
       if (show === "signed") return !!x.signedAav;
+      if (show !== "all" && x.signedAav) return false; // the pool is who's still out there; signings sit in the graded panel
       if (show === "rp") return /RP/.test(pos);
       if (show === "sp") return /SP/.test(pos);
       if (show === "bat") return !/P$|SP|RP/.test(pos);
       return true;
     });
-    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th><th>Signed</th><th>vs Market</th><th>Grade</th></tr></thead><tbody>';
+    var withSigned = list.some(function (x) { return x.signedAav; });
+    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th>' + (withSigned ? "<th>Signed</th><th>vs Market</th><th>Grade</th>" : "") + "</tr></thead><tbody>";
     list.forEach(function (x, i) {
       var r = x.r, pl = faName(x, 24);
       html += "<tr><td>" + (i + 1) + ". " + pl + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + (r.from ? esc(r.from) : "") + "</td><td>" + f1(x.war) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
-        "</td><td>" + (r.my ? r.my + " yr · " + money(x.crowdAav) : "—") + "</td><td>" + money(x.spotAav) + "</td><td><b>" + money(x.mktAav) + "</b></td><td>" +
+        "</td><td>" + (r.my ? r.my + " yr · " + money(x.crowdAav) : "—") + "</td><td>" + money(x.spotAav) + "</td><td><b>" + money(x.mktAav) + "</b></td>" + (!withSigned ? "</tr>" : "<td>" +
         (x.signedAav ? esc(r.to || "") + " " + (r.yrs || "?") + " yr · " + money(x.signedAav) : '<span class="note">unsigned</span>') + "</td><td class=\"" + (x.gap == null ? "" : x.gap > 0 ? "neg" : "pos") + '">' +
-        (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>";
+        (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>");
     });
-    html += '</tbody></table></div><div class="body"><p class="note" style="margin:0"><b>Grades</b> weigh what a team pays against what deals of that length have gone for. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole gets a little more room, and signing another club\'s qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). Click a signed player for his projected WAR, salary and surplus each year of the deal.</p></div></div>';
+    html += "</tbody></table></div></div>";
     if (mk) html += marketSection(mk);
     view.innerHTML = html;
+  }
+  // Every signed deal this winter, best value first. Signed players leave the pool table below (by default) and live here
+  function gradesPanel(board) {
+    var deals = board.filter(function (x) { return x.grade; }).sort(function (a, b) { return b.grade.edge - a.grade.edge; });
+    if (!deals.length) return "";
+    var html = '<div class="panel"><h3>Deals so far, graded <small>' + deals.length + " signing" + (deals.length > 1 ? "s" : "") + ', best value first</small></h3><div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th>Player</th><th>Team</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
+    deals.forEach(function (x) {
+      var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).pv : gr.prod;
+      html += "<tr><td>" + gradeTag(gr) + (gr.credit ? ' <span class="pill up" title="Fills a hole on this team">Need</span>' : "") + "</td><td>" + faName(x, 24) + "</td><td>" + (r.to ? logo(r.to, 18) + " " + esc(r.to) : "") +
+        "</td><td>" + r.yrs + " yr · " + money(gr.paid, 0) + (gr.pick ? ' <span class="pill warn" title="Small dock for giving up a pick to sign a qualifying-offer player">QO</span>' : "") +
+        "</td><td>" + money(gr.mkt, 0) + '</td><td class="' + (gr.edge >= 0 ? "pos" : "neg") + '">' + pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") +
+        '</td><td class="' + (sv >= 0 ? "pos" : "neg") + '">' + signed(sv) + "</td></tr>";
+    });
+    html += '</tbody></table></div><div class="body"><p class="note" style="margin:0">Grades weigh what a team pays against what deals of that length have gone for. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole gets a little more room, and a qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). Surplus is what he should produce over the deal minus his salary, discounted, as on his card: click a player for each season.</p></div></div>';
+    return html;
   }
   function marketCallout(mk) {
     var b = mk.buckets[0].rows, get = function (k) { return b.filter(function (r) { return r.k === k; })[0]; };
