@@ -6,7 +6,7 @@
 // Sources: tools/yahoo_yoenis/2026.json (Yahoo's draft, rosters and final ranks) and yoenis/data.json (team and
 // manager names, past seasons, and data.keepers2027: each rostered player's keeper cost under the league's rules,
 // which the Yoenis page shows). Run: node tools/yoenis_draftlab.mjs
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
@@ -277,6 +277,34 @@ if (yb && yb.box && Object.keys(yb.box).length) {
   writeFileSync(new URL('yoenis/box-2026.json', root), JSON.stringify({ season: 2026, source: 'Yahoo', complete: !!yb.complete, weeks }));
   L.imported.boxUrl = '/yoenis/box-2026.json';
   console.log(`box scores: ${Object.keys(weeks).length} weeks, ${n} player-weeks (${miss} not in the player pool)${yb.complete ? '' : ', still filling in'}`);
+  // each day on its own, a file a week (yoenis/days-2026/<week>.json), so a matchup can go back to any day:
+  // { start, end, days: [{ date, teams: { team: [[player id, slot, stats]] } }] }, only starters who played
+  const yd = tryRead('tools/yahoo_yoenis/box/days2026.json');
+  if (yd && yb.weeks) {
+    mkdirSync(new URL('yoenis/days-2026/', root), { recursive: true });
+    let files = 0;
+    for (const [w, span] of Object.entries(yb.weeks)) {
+      const days = [];
+      for (let t = Date.parse(span.start + 'T12:00:00Z'); t <= Date.parse(span.end + 'T12:00:00Z'); t += 864e5) {
+        const ds = new Date(t).toISOString().slice(0, 10), day = yd[ds], teamsOut = {};
+        if (day) for (const [tk, lst] of Object.entries(day.lu || {})) {
+          const tm = keyOf[tk];
+          if (tm == null || tm < 0) continue;
+          for (const [pk, name, slot] of lst) {
+            const sl = (day.st || {})[pk];
+            if (!sl) continue;
+            const pid = byKey[pk] || findId(name || (yb.names || {})[pk] || '', null, null);
+            (teamsOut[tm] = teamsOut[tm] || []).push([pid || `y:${name}`, slot === 'Util' ? 'UTIL' : slot, sl[1]]);
+          }
+        }
+        days.push({ date: ds, teams: day ? teamsOut : null });
+      }
+      writeFileSync(new URL(`yoenis/days-2026/${w}.json`, root), JSON.stringify({ week: +w, start: span.start, end: span.end, days }));
+      files++;
+    }
+    L.imported.dayUrl = '/yoenis/days-2026/{w}.json';
+    console.log(`day box scores: ${files} weeks`);
+  }
 }
 
 L.extraPlayers = [...extra.values()];

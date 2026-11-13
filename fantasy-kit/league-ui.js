@@ -725,10 +725,13 @@
       if (roto()) return rotoWeekPage(arg);
       const w = Math.min(curWeek(), +arg || ui.sbWeek || curWeek());
       const weeks = Array.from({ length: Math.min(curWeek(), G.totalWeeks(L())) }, (_, i) => i + 1);
+      // a day of the week (category baseball with day box scores)
+      const games = G.matchups(L(), ctx, w, frac(w)), wd = !pts() && sport.groups && games[0] ? weekDays(w, games[0]) : null;
+      const dsel = wd && ui.mdayW === w && ui.mday != null && wd.days[ui.mday] && wd.days[ui.mday].teams ? ui.mday : null;
       return `<div class="wrap page"><div class="head"><h1 class="disp">Scoreboard</h1></div>
         <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>
-        <div class="cols2 hide-m">${((ms) => { const fi = featuredGame(w, ms); return ms.map((m) => Object.assign({}, m, { feat: m.i === fi })); })(G.matchups(L(), ctx, w, frac(w))).sort((a, b) => (isMe(b.a) || isMe(b.b) ? 2 : 0) + (b.feat ? 1 : 0) - (isMe(a.a) || isMe(a.b) ? 2 : 0) - (a.feat ? 1 : 0)).map((m) => `<a class="card${m.feat ? " sb-feat" : ""}" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${m.feat ? `<div class="feat-tag">${w > L().settings.weeks ? esc(kindName("title", w)) : "Matchup of the week"}</div>` : w > L().settings.weeks && m.kind ? `<div class="feat-tag plain">${esc(kindName(m.kind, w))}</div>` : ""}${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div>
-        <div class="show-m sbm">${U.scoreboard(gamesVM(w), fmtS, { list: true })}</div></div>`;
+        ${wd ? dayStrip(w, wd, dsel) : ""}${dsel != null ? dayBoard(w, games, wd, dsel) : `<div class="cols2 hide-m">${((ms) => { const fi = featuredGame(w, ms); return ms.map((m) => Object.assign({}, m, { feat: m.i === fi })); })(games).sort((a, b) => (isMe(b.a) || isMe(b.b) ? 2 : 0) + (b.feat ? 1 : 0) - (isMe(a.a) || isMe(a.b) ? 2 : 0) - (a.feat ? 1 : 0)).map((m) => `<a class="card${m.feat ? " sb-feat" : ""}" href="${matchHref(w, m.i)}" style="text-decoration:none;color:inherit${isMe(m.a) || isMe(m.b) ? ";border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)" : ""}">${m.feat ? `<div class="feat-tag">${w > L().settings.weeks ? esc(kindName("title", w)) : "Matchup of the week"}</div>` : w > L().settings.weeks && m.kind ? `<div class="feat-tag plain">${esc(kindName(m.kind, w))}</div>` : ""}${U.versus(Object.assign(versusVM(w, m), { cats: null }))}</a>`).join("")}</div>
+        <div class="show-m sbm">${U.scoreboard(gamesVM(w), fmtS, { list: true })}</div>`}</div>`;
     }
     const TXK = { add: "add", drop: "drop", "add/drop": "add", waiver: "waiver", trade: "trade", veto: "trade" };
     // a week's dates: "Mar 30 to Apr 5"
@@ -1667,20 +1670,133 @@
       if (col === "whip") return d((s2.bbh || 0) * 3, s2.outs);
       return s2[col] != null ? s2[col] : 0;
     };
-    function importedBoxes(w, m, wk) {
+    // box score tables from rows of [player id, slot, days started (or null for one day), stats as parts]; with
+    // o.total, a totals row under each table
+    const sumParts = (rows) => { const o = {}; for (const r of rows) for (const [k, v] of Object.entries(r[3] || {})) o[k] = (o[k] || 0) + v; return o; };
+    function partBoxes(m, rowsOf, o = {}) {
       const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+      const cell = (st, c) => { const v = boxVal(st, c.col); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; };
       const box = (team) => {
-        const rows = wk[team] || [];
+        const rows = rowsOf(team) || [];
         const tbl = (grp, title) => {
-          const cs = cols(grp), mine = rows.filter((r) => slotGrp(r[1]) === grp || (r[3] && (grp === "pit" ? r[3].outs != null : r[3].ab != null) && !sport.slots[r[1]]));
-          const order = L().settings.lineup;
+          const cs = cols(grp), order = L().settings.lineup;
+          const mine = rows.filter((r) => (sport.slots[r[1]] ? slotGrp(r[1]) === grp : r[3] && (grp === "pit" ? r[3].outs != null : r[3].ab != null)));
           mine.sort((x, y) => order.indexOf(x[1]) - order.indexOf(y[1]));
-          const tr = mine.map(([pid, sl, days, st]) => { const p = ctx.byId[pid]; return `<tr><td class="c"><span class="slot">${esc(sl)}</span></td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${days} day${days === 1 ? "" : "s"}`, { size: "sm" })}</span>` : `<span>${esc(String(pid).replace(/^y:/, ""))}</span> <small class="ps">${days} days</small>`}</td>${cs.map((c) => { const v = boxVal(st, c.col); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`; }).join("");
-          return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">No ${title.toLowerCase()} started.</td></tr>`}</tbody></table>`;
+          const tr = mine.map(([pid, sl, days, st]) => { const p = ctx.byId[pid], sub = days == null ? "" : `${days} day${days === 1 ? "" : "s"}`; return `<tr><td class="c"><span class="slot">${esc(sl)}</span></td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, sub, { size: "sm" })}</span>` : `<span>${esc(String(pid).replace(/^y:/, ""))}</span>${sub ? ` <small class="ps">${sub}</small>` : ""}`}</td>${cs.map((c) => cell(st, c)).join("")}</tr>`; }).join("");
+          const tot = o.total && mine.length ? `<tfoot><tr class="mtot"><td></td><td><b>Totals</b></td>${cs.map((c) => cell(sumParts(mine), c)).join("")}</tr></tfoot>` : "";
+          return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">${o.empty ? o.empty(title) : `No ${title.toLowerCase()} started.`}</td></tr>`}</tbody>${tot}</table>`;
         };
-        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Everyone who started, with the days he started</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">${esc(o.sub || "Everyone who started, with the days he started")}</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
       };
       return `<div class="mboxes">${box(m.a)}${box(m.b)}</div>`;
+    }
+    function importedBoxes(w, m, wk) { return partBoxes(m, (t) => wk[t]); }
+
+    /* ---------- One day of a matchup ----------
+       Going back to a day the way Yahoo's date picker does: each team's starters that day with their lines and the
+       team's totals, who won each category on the day, and the best lines anywhere in the league. A week brought in
+       from another site reads a file a week beside the league (L.imported.dayUrl, {w} standing for the week):
+       { start, end, days: [{ date, teams: { team: [[player id, slot, stats as parts]] } }] }. A daily league here
+       builds the same thing from its own day lineups and box scores. */
+    const dayFiles = {};
+    const okUrl = (u) => typeof u === "string" && /^(\/|https:\/\/)[^\s"<>]*$/.test(u);
+    function linePartsOf(line) {
+      const o = {}, D = sport.data.lines, g = (k, c) => { const i = D[k] ? D[k].cols.indexOf(c) : -1; return i >= 0 ? line[k][i] || 0 : 0; };
+      if (line.bat) { for (const c of ["r", "h", "hr", "rbi", "sb", "tb"]) if (g("bat", c)) o[c] = g("bat", c); o.ab = g("bat", "ab"); o.obpab = g("bat", "obp") * o.ab; }
+      if (line.pit) { for (const c of ["w", "l", "sv", "k", "hld", "qs"]) if (g("pit", c)) o[c] = g("pit", c); o.outs = Math.round(g("pit", "ip") * 3); o.er = g("pit", "er"); o.bbh = g("pit", "bb") + g("pit", "h"); }
+      return o;
+    }
+    let liveDays = null;
+    function weekDays(w, m) {
+      const I = L().imported;
+      if (m.final && !m.ta && !m.tb && I) {
+        if (!okUrl(I.dayUrl)) return null;
+        if (!(w in dayFiles)) {
+          dayFiles[w] = undefined;
+          fetch(I.dayUrl.replace("{w}", w)).then((r) => (r.ok ? r.json() : null)).then((j) => { dayFiles[w] = j && Array.isArray(j.days) ? j : null; render(); }).catch(() => { dayFiles[w] = null; render(); });
+        }
+        return dayFiles[w];
+      }
+      if (!G.hasDays(L(), ctx, w)) return null;
+      if (liveDays && liveDays.w === w && liveDays.at > now() - 60000 && liveDays.v === L().version) return liveDays.data;
+      const st = G.weekStart(L(), w), upto = w < L().week ? 7 : G.dayIdx(L(), w, now()) + 1;
+      const days = Array.from({ length: 7 }, (_, d) => ({ date: new Date(st + d * 864e5 + 12 * 36e5).toISOString().slice(0, 10), teams: d < upto ? {} : null }));
+      for (const t of L().teams) for (const [p, line, d] of G.dailyLines(L(), ctx, t.id, w)) {
+        if (!days[d].teams) continue;
+        const k = G.lineupFor(L(), ctx, t.id, w, d).indexOf(p.id), sl = k >= 0 ? L().settings.lineup[k] : line.pit ? "P" : "UTIL";
+        (days[d].teams[t.id] = days[d].teams[t.id] || []).push([p.id, sl, linePartsOf(line)]);
+      }
+      const data = { start: days[0].date, days };
+      liveDays = { w, at: now(), v: L().version, data };
+      return data;
+    }
+    const dayLabel = (ds, long) => { const dt = new Date(ds + "T12:00:00Z"); return dt.toLocaleDateString("en-US", long ? { weekday: "long", month: "long", day: "numeric", timeZone: "UTC" } : { weekday: "short", timeZone: "UTC" }); };
+    const dayShort = (ds) => new Date(ds + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+    // the day picker: the whole week, then each day; a day still to come can't be picked
+    function dayStrip(w, wd, sel) {
+      const today = new Date(now()).toISOString().slice(0, 10);
+      return `<div class="seg mdays" role="group" aria-label="Day" style="--n:${wd.days.length + 1}"><button type="button" data-mday="" data-mdw="${w}" aria-pressed="${sel == null}"><b>Week</b><small>All ${wd.days.length} days</small></button>${wd.days.map((d, k) => `<button type="button" data-mday="${k}" data-mdw="${w}" aria-pressed="${sel === k}"${d.teams ? "" : ` disabled title="${d.date > today ? "Still to come" : "No box scores for this day"}"`}><b>${esc(dayLabel(d.date))}</b><small>${d.date === today ? "Today" : esc(dayShort(d.date))}</small></button>`).join("")}</div>`;
+    }
+    // the day's totals for both teams in every category, who won each, and the day's record
+    function dayScore(m, day) {
+      const { cells, wa, wb, tie } = dayRecord(m, day);
+      const row = (team, side, rec) => `<tr><td class="nm"><span class="row" style="gap:8px">${teamAv(T(team), "sm")}<b class="ds-l">${esc(T(team).name)}</b><b class="ds-s">${esc(T(team).abbr)}</b></span></td>${cells.map((x) => `<td class="r num${x.win === side ? " dwin" : ""}">${x[side]}</td>`).join("")}<td class="r num drec">${rec}</td></tr>`;
+      return `<div class="card dscore"><div class="mod-h"><h2>${esc(dayLabel(day.date, true))}</h2><span class="grow"></span><span class="ps">Each team's totals that day</span></div><div class="table-wrap"><table class="t"><thead><tr><th>Team</th>${cells.map((x) => `<th class="r num"${x.c.low ? ' title="Lower is better"' : ""}>${esc(x.c.label)}</th>`).join("")}<th class="r num">Day</th></tr></thead><tbody>${row(m.a, "a", `${wa}-${wb}-${tie}`)}${row(m.b, "b", `${wb}-${wa}-${tie}`)}</tbody></table></div></div>`;
+    }
+    function dayRecord(m, day) {
+      const cats = sc().cats, rowsA = (day.teams || {})[m.a] || [], rowsB = (day.teams || {})[m.b] || [];
+      const pA = sumParts(rowsA.map((r) => [r[0], r[1], null, r[2]])), pB = sumParts(rowsB.map((r) => [r[0], r[1], null, r[2]]));
+      const colOf = (c) => c.col || c.rate || c.k;
+      let wa = 0, wb = 0, tie = 0;
+      const cells = cats.map((c) => {
+        const a = boxVal(pA, colOf(c)), b = boxVal(pB, colOf(c));
+        let win = null;
+        if (a != null && b != null && Math.abs(a - b) > 1e-9) win = (a > b) !== !!c.low ? "a" : "b";
+        else if (a == null && b != null) win = "b";
+        else if (b == null && a != null) win = "a";
+        if (win === "a") wa++; else if (win === "b") wb++; else tie++;
+        const f = c.fmt || ((x) => String(Math.round(x)));
+        return { c, a: a == null ? "-" : f(a), b: b == null ? "-" : f(b), win };
+      });
+      return { cells, wa, wb, tie };
+    }
+    // the scoreboard on one day: every game's record that day, then the day's best lines
+    function dayBoard(w, games, wd, k) {
+      const day = wd.days[k];
+      if (!day || !day.teams) return "";
+      const li = (m) => { const r = dayRecord(m, day), side = (t, n, won) => `<span class="db-t${won ? " won" : ""}">${teamAv(T(t), "sm")}<b class="ds-l">${esc(T(t).name)}</b><b class="ds-s">${esc(T(t).abbr)}</b><span class="db-n">${n}</span></span>`;
+        return `<a class="db-g" href="${matchHref(w, m.i)}">${side(m.a, r.wa, r.wa > r.wb)}<span class="ps db-x">${r.tie ? `${r.tie} tied` : "vs"}</span>${side(m.b, r.wb, r.wb > r.wa)}</a>`; };
+      return `<div class="card dboard"><div class="mod-h"><h2>${esc(dayLabel(day.date, true))}</h2><span class="grow"></span><span class="ps">Categories won that day</span></div><div class="db-l">${games.map(li).join("")}</div></div>${dayStars(day)}`;
+    }
+    // a line in words: 3-for-5, 2 HR, 4 RBI / 7 IP, 1 ER, 9 K, W
+    function lineWords(st) {
+      if (st.outs != null && !st.ab) {
+        const bits = [`${S.fmt.ip(st.outs / 3)} IP`, `${Math.round(st.er || 0)} ER`, `${st.k || 0} K`];
+        for (const [k, l] of [["w", "W"], ["sv", "SV"], ["hld", "HLD"], ["qs", "QS"]]) if (st[k]) bits.push(st[k] > 1 ? `${st[k]} ${l}` : l);
+        return bits.join(", ");
+      }
+      const bits = [`${st.h || 0}-for-${st.ab || 0}`];
+      for (const [k, l] of [["hr", "HR"], ["rbi", "RBI"], ["r", "R"], ["sb", "SB"]]) if (st[k]) bits.push(st[k] > 1 ? `${st[k]} ${l}` : l);
+      return bits.join(", ");
+    }
+    // a rough game score, to pick the day's best lines
+    const dayVal = (st) => (st.outs != null && !st.ab
+      ? st.outs / 2 + (st.k || 0) - 2 * (st.er || 0) - 0.6 * (st.bbh || 0) + 4 * (st.w || 0) + 4 * (st.sv || 0) + 2 * (st.hld || 0) + 2 * (st.qs || 0) - 2 * (st.l || 0)
+      : (st.tb || 0) + (st.r || 0) + (st.rbi || 0) + 2 * (st.sb || 0) + (st.hr || 0) - 0.25 * Math.max(0, (st.ab || 0) - (st.h || 0)));
+    function dayStars(day) {
+      const all = [];
+      for (const [t, rows] of Object.entries(day.teams || {})) for (const [pid, sl, st] of rows) all.push({ t: +t, pid, st, pit: st.outs != null && !st.ab, v: dayVal(st) });
+      const top = (pit) => all.filter((x) => x.pit === pit).sort((a, b) => b.v - a.v).slice(0, 3);
+      const li = (x) => { const p = ctx.byId[x.pid]; return `<li><span class="grow">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, "", { size: "sm" })}</span>` : `<b>${esc(String(x.pid).replace(/^y:/, ""))}</b>`}<small class="dline">${esc(lineWords(x.st))}</small></span><a href="${teamHref(x.t)}" class="row" style="gap:6px;text-decoration:none;color:inherit" title="${esc(T(x.t).name)}">${teamAv(T(x.t), "sm")}<span class="ps">${esc(T(x.t).abbr)}</span></a></li>`; };
+      const h = top(false), p = top(true);
+      if (!h.length && !p.length) return "";
+      return `<div class="card dstars"><div class="mod-h"><h2>Best of the day</h2><span class="grow"></span><span class="ps">Across the league, starters only</span></div><div class="dstars-g"><div><b class="ps">Hitters</b><ul class="dl">${h.map(li).join("")}</ul></div><div><b class="ps">Pitchers</b><ul class="dl">${p.map(li).join("")}</ul></div></div></div>`;
+    }
+    function dayView(w, m, wd, k) {
+      const day = wd.days[k];
+      if (!day || !day.teams) return "";
+      const rowsOf = (t) => ((day.teams || {})[t] || []).map((r) => [r[0], r[1], null, r[2]]);
+      return `${dayScore(m, day)}${dayStars(day)}${partBoxes(m, rowsOf, { total: true, sub: `Starters who played, ${dayShort(day.date)}`, empty: (title) => `No ${title.toLowerCase()} played.` })}`;
     }
     function catBoxes(w, m, la, lb) {
       if (m.final && !m.ta && !m.tb && L().imported) {
@@ -1759,11 +1875,15 @@
       }).filter(Boolean).slice(0, 12) : [];
       const playsHtml = plays.length ? `<div class="card plays"><div class="mod-h"><h2>Scoring plays</h2><span class="ps">Updates every minute</span></div><ul class="pl-l">${plays.join("")}</ul></div>` : "";
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1);
+      // a day of the week: Yahoo's date picker (category baseball, with day box scores)
+      const wd = !pts() && sport.groups ? weekDays(w, m) : null;
+      const dsel = wd && ui.mdayW === w && ui.mday != null && wd.days[ui.mday] && wd.days[ui.mday].teams ? ui.mday : null;
+      const boxes = !pts() && sport.groups ? (dsel != null ? dayView(w, m, wd, dsel) : catBoxes(w, m, la, lb)) : "";
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
-        ${!pts() && sport.groups ? catBoxes(w, m, la, lb) : ""}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
+        ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 
@@ -2405,7 +2525,7 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -2465,6 +2585,7 @@
         else if (d.sharerecap) { const rc = recapOf(+d.sharerecap); if (rc) navigator.share({ title: `${L().name}, week ${rc.week} recap`, text: recapText(rc) }).catch(() => {}); }
         else if (d.sbweek) { ui.sbWeek = +d.sbweek; location.hash = `#league/scoreboard/${d.sbweek}`; }
         else if (d.mweek) { location.hash = `#matchup/${d.mweek}`; }
+        else if (d.mday != null) { ui.mday = d.mday === "" ? null : +d.mday; ui.mdayW = +d.mdw; render(); }
         else if (d.txf !== undefined && b.hasAttribute("data-txf")) { ui.txf = d.txf; render(); }
         else if (d.fpos !== undefined && b.hasAttribute("data-fpos")) { ui.pf.pos = d.fpos; render(); }
         else if (d.trAccept && L().trades.some((x) => x.id === +d.trAccept && x.rivalOf != null)) { const id = +d.trAccept; U.confirm("Take this bid?", "It goes through now, and the deal it beat is off.", "Take the bid", () => act(() => G.respond(L(), ctx, id, true, now()), "Done. The rival bid went through.")); }

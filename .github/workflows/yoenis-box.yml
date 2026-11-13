@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/yahoo_yoenis/box yoenis/box-2026.json
+          git add tools/yahoo_yoenis/box yoenis/box-2026.json yoenis/days-2026
           if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
           git commit -m "Wipe Yoenis: box scores and ranks from Yahoo"
           git pull --rebase -q origin main

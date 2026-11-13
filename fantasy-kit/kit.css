@@ -2079,3 +2079,36 @@ table.ct td{vertical-align:middle}
 .pc-gl tbody th small{font-weight:600}
 .pc-gl tbody td{font-weight:650}
 .pc-glmore{justify-self:start}
+/* one day of a matchup: the day picker, the day's score, the best lines and the totals rows */
+.seg.mdays{display:grid;grid-template-columns:repeat(var(--n),minmax(56px,1fr));overflow-x:auto;max-width:100%;scrollbar-width:thin}
+.seg.mdays button{display:grid;gap:0;padding:6px 4px;line-height:1.15;white-space:nowrap}
+.seg.mdays button b{font-size:13px}
+.seg.mdays button small{font-size:11px;opacity:.75}
+.seg.mdays button:first-child{border-right:2px solid var(--line-2)}
+.seg.mdays button:disabled{opacity:.35;cursor:default}
+.dscore{border-top:3px solid var(--lc,var(--brand))}
+.dscore .table-wrap{border:0;box-shadow:none}
+.dscore td.dwin{font-weight:850;background:color-mix(in srgb,var(--lc,var(--brand)) 16%,transparent)}
+.dscore td.drec,.dscore th:last-child{border-left:2px solid var(--line-2);font-weight:850}
+.dstars-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:4px 22px;padding:4px 16px 14px}
+ul.dl{list-style:none;margin:4px 0 0;padding:0}
+ul.dl li{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line)}
+ul.dl li:first-child{border-top:0}
+ul.dl .grow{display:grid;gap:1px;min-width:0}
+ul.dl .dline{font-size:12.5px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+table.t.mbox tr.mtot td{border-top:2px solid var(--line-2);font-weight:800;background:var(--surface-2,transparent)}
+.dscore .ds-s{display:none}
+@media (max-width:640px){.dscore .ds-l{display:none}.dscore .ds-s{display:inline}.dscore td.nm{white-space:nowrap}}
+.dboard{border-top:3px solid var(--lc,var(--brand))}
+.db-l{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 22px;padding:0 16px 8px}
+.db-g{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line);text-decoration:none;color:inherit}
+.db-g:hover .ds-l,.db-g:hover .ds-s{text-decoration:underline}
+.db-t{display:flex;align-items:center;gap:8px;min-width:0}
+.db-t b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:650}
+.db-g .db-t:last-child{flex-direction:row-reverse;text-align:right}
+.db-n{margin-left:auto;font-size:20px;font-weight:850;font-variant-numeric:tabular-nums;color:var(--muted)}
+.db-g .db-t:last-child .db-n{margin-left:0;margin-right:auto}
+.db-t.won b,.db-t.won .db-n{color:var(--ink);font-weight:850}
+.db-x{font-size:11.5px;white-space:nowrap}
+.dboard .ds-s{display:none}
+@media (max-width:640px){.dboard .ds-l{display:none}.dboard .ds-s{display:inline}}
