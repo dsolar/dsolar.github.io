@@ -1,0 +1,61 @@
+# Rebuilds the NHL hub (nhl/): pulls standings, rosters, stats and schedules from NHL's API and the season files from
+# MoneyPuck.com (tools/nhl_hub_pull.py, trimmed snapshots in tools/nhl_hub/), then builds the page data
+# (tools/nhl_hub_build.py, nhl/data/). Runs every morning, when either script changes, and by hand from the Actions tab.
+name: NHL hub
+
+on:
+  schedule:
+    - cron: "41 10 * * *"   # 5:41am ET, after last night's late games
+  push:
+    branches: [main]
+    paths:
+      - tools/nhl_hub_pull.py
+      - tools/nhl_hub_build.py
+      - .github/workflows/nhl-hub.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nhl-hub
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull from NHL and MoneyPuck
+        # A failed part keeps its last good snapshot, so the build below still runs
+        continue-on-error: true
+        run: python3 tools/nhl_hub_pull.py
+
+      - name: Catch up with main
+        run: |
+          git stash -q -u || true
+          git pull --rebase -q origin main
+          git stash pop -q || true
+
+      - name: Build the hub data
+        run: |
+          if [ -f tools/nhl_hub_build.py ]; then python3 tools/nhl_hub_build.py; fi
+
+      - name: Commit
+        run: |
+          mkdir -p nhl/data
+          git add tools/nhl_hub nhl/data
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update the NHL hub"
+          git pull --rebase -q
+          git push
