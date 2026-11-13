@@ -255,6 +255,21 @@ window.PROJECTS = [
     cover: { image: "assets/covers/mlb-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
+    title: "NHL Hub",
+    hub: true,
+    line: "Playoff and Cup odds, lines and player ratings",
+    tag: "Updated every morning",
+    type: "Simulations",
+    released: "2026-11",
+    url: "nhl/",
+    action: "Open the hub",
+    question: "Who's really winning the Cup, and who are the best players by what happens when they're on the ice?",
+    summary: "The rest of the NHL season played out thousands of times from every team's strength, with overtime points, the wild-card format and the playoffs to the Cup. Every team's lines, pairings and goalie split, and wins above replacement for every skater and goalie from three seasons of MoneyPuck's expected goals.",
+    facts: [["6,000", "simulated seasons"], ["790+", "skaters and goalies rated"], ["32", "sets of lines and pairings"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { bg: "#F5F4F0", band: "#111111" }
+  },
+  {
     title: "Big Board",
     hub: true,
     line: "Every 2027 draft board, plus a mock draft",

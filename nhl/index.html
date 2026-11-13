@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>NHL Hub | David Solar</title>
+<meta name="description" content="2026-27 NHL playoff and Stanley Cup odds, every team's lines and pairings, and a rating for every skater and goalie from expected goals.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/nhl/">
+<meta property="og:title" content="NHL Hub">
+<meta property="og:description" content="Playoff and Cup odds, lines and pairings, and a rating for every player.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#002244">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../mlb/hub.css?v=20261113r">
+<link rel="stylesheet" href="hub.css?v=20261113a">
+<script src="../assets/analytics.js" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261113-nhl" defer></script>
+<script src="../assets/navigation.js?v=20261113-hubs" defer></script>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../simulations/">← Simulations</a>
+  <a href="../#projects">Explore all projects</a>
+</nav>
+
+<main class="wrap">
+  <header class="mast">
+    <div>
+      <p class="kicker" id="kicker">NHL · 2026-27</p>
+      <h1>NHL <span>Hub</span></h1>
+      <p class="sub">Playoff and Stanley Cup odds from the rest of the season played out thousands of times, every team's lines and pairings, and a rating for every skater and goalie.</p>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <a href="#/standings" data-tab="standings">Standings</a>
+    <a href="#/teams" data-tab="teams">Teams</a>
+    <a href="#/players" data-tab="players">Player Ratings</a>
+    <a href="#/method" data-tab="method">How it works</a>
+  </nav>
+
+  <section id="view" aria-live="polite"><p class="loading">Loading the league…</p></section>
+
+  <p class="foot" id="foot"></p>
+</main>
+
+<dialog id="card" aria-label="Player">
+  <button class="x" type="button" aria-label="Close" data-close>×</button>
+  <div id="cardBody"></div>
+</dialog>
+
+<script src="app.js?v=20261113a"></script>
+<script src="../assets/hubswitch.js?v=2"></script>
+</body>
+</html>

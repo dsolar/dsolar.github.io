@@ -1,17 +1,19 @@
-/* Sport switcher for the three hubs (mlb/, nba/, nfl/): MLB · NBA · NFL pills at the top of each hub's header.
+/* Sport switcher for the hubs (mlb/, nba/, nfl/, nhl/): MLB · NBA · NFL · NHL pills at the top of each hub's header.
    Switching keeps you on the same kind of page where the other hub has one (Trade Value to Trade Value, Free Agents
    to Free Agents, contracts to contracts), and otherwise lands on that hub's front page. */
 (function () {
   "use strict";
-  var HUBS = ["mlb", "nba", "nfl"];
-  var here = (location.pathname.match(/\/(mlb|nba|nfl)\/?/) || [])[1];
+  var HUBS = ["mlb", "nba", "nfl", "nhl"];
+  var here = (location.pathname.match(/\/(mlb|nba|nfl|nhl)\/?/) || [])[1];
   if (!here) return;
 
   // Each hub's address for a kind of page. Kinds: standings, teams, contracts, value, builder, fa, method
   var TO = {
     mlb: { standings: "#standings", teams: "#teams", contracts: "#contracts", value: "#value", builder: "#trade", fa: "#fa", method: "#method" },
     nba: { standings: "#/standings", teams: "#/teams", contracts: "#/contracts/BOS", value: "#/value", builder: "#/trade", fa: "#/fa", method: "#/method" },
-    nfl: { standings: "#/standings", teams: "#/teams", contracts: "#/cap", value: "#/trade", builder: "#/trade", fa: "#/fa", method: "#/method" }
+    nfl: { standings: "#/standings", teams: "#/teams", contracts: "#/cap", value: "#/trade", builder: "#/trade", fa: "#/fa", method: "#/method" },
+    // no contracts yet; its player ratings stand in for the other hubs' value boards
+    nhl: { standings: "#/standings", teams: "#/teams", value: "#/players", method: "#/method" }
   };
   // The kind of page this hub is showing now, from its address
   function kind() {
@@ -26,6 +28,11 @@
       if (route === "picks") return "contracts";
       if (route === "trade") return "builder";
       return { standings: 1, teams: 1, contracts: 1, value: 1, fa: 1, method: 1 }[route] ? route : null;
+    }
+    if (here === "nhl") {
+      if (route === "team") return "teams";
+      if (route === "players") return "value";
+      return { standings: 1, teams: 1, method: 1 }[route] ? route : null;
     }
     // nfl: its Trade Value page is also where trades are built; Power Rankings sit with standings
     if (route === "trade") return "value";

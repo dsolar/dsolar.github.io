@@ -1,0 +1,63 @@
+/* NHL Hub: on top of the MLB hub's styles (../mlb/hub.css), which set the palette, tables, panels and the card. */
+.hs{width:var(--s,28px);height:var(--s,28px);border-radius:50%;object-fit:cover;object-position:50% 12%;background:var(--paper-2);flex:none}
+.card-h .hs{--s:72px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:6px 13px;border-radius:999px;font:700 13px/1 var(--cond);letter-spacing:.04em;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between;margin:10px 0}
+.conf h3.ch{font:800 20px/1.1 var(--display);margin:14px 0 8px}
+table.t tr.cut td{border-bottom:2px dashed var(--faint)}
+table.t td.odds{min-width:64px}
+table.t .rk{color:var(--faint);width:18px;display:inline-block;text-align:right;font-weight:500}
+.oddbar{display:inline-flex;align-items:center;gap:6px;justify-content:flex-end}
+.oddbar i{display:inline-block;width:28px;height:6px;border-radius:3px;background:var(--rule-2);position:relative;overflow:hidden}
+.oddbar i b{position:absolute;inset:0 auto 0 0;background:var(--monster);border-radius:3px}
+.cupstrip{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin:10px 0 16px}
+.cupstrip a{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--rule);border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none}
+.cupstrip a:hover{border-color:var(--ink)}
+.cupstrip b{display:block;font:700 18px/1 var(--cond)}
+.cupstrip span{font-size:12px;color:var(--muted)}
+
+/* lines */
+.rink{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px;margin-bottom:14px}
+.rink h3{margin:2px 0 10px;font:700 13px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;display:flex;justify-content:space-between;gap:8px}
+.rink h3 small{font-weight:600;letter-spacing:.02em;text-transform:none;color:var(--faint)}
+.unit{display:grid;grid-template-columns:62px 1fr auto;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--rule-2)}
+.unit:first-of-type{border-top:0}
+.unit .lab{font:700 13px/1.1 var(--cond);letter-spacing:.04em;color:var(--muted);text-transform:uppercase}
+.unit .lab small{display:block;font:500 11.5px/1.2 var(--body);letter-spacing:0;text-transform:none;color:var(--faint)}
+.unit .men{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:8px}
+.man{display:flex;align-items:center;gap:7px;padding:6px 8px;background:var(--paper-2);border-radius:8px;cursor:pointer;min-width:0}
+.man:hover{outline:1px solid var(--ink)}
+.man .who{min-width:0;flex:1}
+.man .who b{display:block;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.man .who span{display:block;font-size:11.5px;color:var(--muted)}
+.unit .res{text-align:right;font-size:12px;color:var(--muted);white-space:nowrap}
+.unit .res b{display:block;font:700 16px/1 var(--cond);color:var(--ink)}
+.tierdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:0}
+.t0{background:var(--t-elite-i)} .t1{background:var(--t-strong-i)} .t2{background:var(--t-avg-i);opacity:.6} .t3{background:var(--t-weak-i)} .t4{background:var(--t-fringe-i)}
+.compbar{display:grid;grid-template-columns:120px 1fr 56px;align-items:center;gap:8px;padding:3px 0;font-size:13px}
+.compbar .track{position:relative;height:12px;background:var(--paper-2);border-radius:3px}
+.compbar .track i{position:absolute;left:50%;top:-2px;bottom:-2px;width:1px;background:var(--faint)}
+.compbar .track b{position:absolute;top:0;bottom:0;border-radius:3px}
+.compbar .v{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.pager{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:8px 0;font-size:13px;color:var(--muted)}
+.games{list-style:none;margin:0;padding:0}
+.games li{display:grid;grid-template-columns:64px 26px 1fr auto;gap:8px;align-items:center;padding:6px 12px;border-bottom:1px solid var(--rule-2);font-size:13.5px}
+.games li:last-child{border-bottom:0}
+.games .d{color:var(--muted);font-size:12.5px}
+@media (max-width:640px){
+  .unit{grid-template-columns:1fr;gap:6px}
+  .unit .lab{display:flex;justify-content:space-between}
+  .unit .res{text-align:left}
+  .unit .men{gap:5px}
+  .man{padding:5px 6px;gap:5px}
+  .man .hs{display:none}
+  .man .who b{font-size:12.5px}
+  table.t .hide-m{display:none}
+  .compbar{grid-template-columns:96px 1fr 48px}
+}
+table.t.ptab th:nth-child(2),table.t.ptab td:nth-child(2){text-align:left}
+table.t.ptab td:first-child{color:var(--faint);width:28px}
+.wrap .div{overflow-x:auto}
+@media (max-width:640px){.oddbar i{display:none}}
