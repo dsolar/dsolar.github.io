@@ -514,7 +514,8 @@
       return `<div class="stack" style="gap:6px"><div class="ps"><b>${esc(def.label)}</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>`;
     }).join("");
     // a league's card leads with the week and the league; the season lines fold away under one heading
-    const linesHtml = opts.fold && lines ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${lines}</div></details>` : lines;
+    // opts.lines === false: the card already shows his season and projection its own way (a category league's lines)
+    const linesHtml = opts.lines === false ? "" : opts.fold && lines ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${lines}</div></details>` : lines;
     const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
     const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     // opts.logo: his pro team's logo at the right of the header

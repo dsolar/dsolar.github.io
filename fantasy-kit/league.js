@@ -160,12 +160,23 @@
       if (at <= (Date.parse(live.updated) || 0)) teams[t] = Math.min(teams[t] == null ? Infinity : teams[t], at);
     }
     const k = { week: L.week, teams };
+    if (L.settings.daily) {
+      // every game's start this week, for daily locks; a game seen under way counts as started then at the latest
+      const all = {}, seen = Date.parse(live.updated) || null;
+      for (const [t, gs] of Object.entries(live.games)) all[t] = (gs || []).map((g) => { const at = Date.parse(g.at); return g.state && g.state !== "pre" && seen ? Math.min(Number.isFinite(at) ? at : seen, seen) : at; }).filter(Number.isFinite).sort((a, b) => a - b);
+      k.all = all;
+    }
     if (L.kick && JSON.stringify(L.kick) === JSON.stringify(k)) return false;
     L.kick = k;
     return true;
   }
   const kickOf = (L, p) => (L.kick && L.kick.week === L.week && p && p.t && L.kick.teams[p.t] != null ? L.kick.teams[p.t] : undefined);
-  const isLocked = (L, p, w, now) => w === L.week && now != null && kickOf(L, p) != null && now >= kickOf(L, p);
+  const isLocked = (L, p, w, now) => {
+    if (w !== L.week || now == null || !p) return false;
+    // daily lineups: his team's game today has started
+    if (daily(L)) { const all = L.kick && L.kick.week === L.week && L.kick.all ? L.kick.all[p.t] || [] : [], td = dayIdx(L, w, now); return all.some((t) => t <= now && dayIdx(L, w, t) === td); }
+    return kickOf(L, p) != null && now >= kickOf(L, p);
+  };
   const firstKick = (L) => (L.kick && L.kick.week === L.week ? Math.min(...Object.values(L.kick.teams)) : null);
   // a locked player in a team's lineup this week: he can't leave it
   const lockedStarter = (L, ctx, teamId, pid, now) => isLocked(L, ctx.byId[pid], L.week, now) && lineupFor(L, ctx, teamId, L.week).includes(pid);
@@ -196,9 +207,11 @@
   // o.only: who may start ("Start active players" passes the players with a game that week); the rest sit unless a
   // slot would be left empty
   function bestLineup(L, ctx, teamId, w, now, o = {}) {
-    const cur = lineupFor(L, ctx, teamId, w).slice(), slots = L.settings.lineup;
-    const fixed = cur.map((id) => !!id && isLocked(L, ctx.byId[id], w, now));
-    const pool = healthy(L, ctx, teamId).filter((p) => !isLocked(L, p, w, now) && !cur.some((id, i) => fixed[i] && id === p.id) && (!o.only || o.only(p)));
+    const cur = lineupFor(L, ctx, teamId, w, o.day).slice(), slots = L.settings.lineup;
+    // daily lineups: a later day than today has no one locked yet
+    const later = daily(L) && o.day != null && w === L.week && now != null && o.day > dayIdx(L, w, now);
+    const fixed = cur.map((id) => !later && !!id && isLocked(L, ctx.byId[id], w, now));
+    const pool = healthy(L, ctx, teamId).filter((p) => (later || !isLocked(L, p, w, now)) && !cur.some((id, i) => fixed[i] && id === p.id) && (!o.only || o.only(p)));
     const open = slots.map((s, i) => i).filter((i) => !fixed[i]);
     // locked starters count against the conference limit for the rest
     const lim = limitOf(L), lockedConf = {};
@@ -224,6 +237,12 @@
   }
   // A player who leaves a lineup mid-week (dropped, traded, put on IR) keeps the points he'd already scored for it.
   function bank(L, ctx, teamId, pid, now) {
+    // daily lineups: write down every day so far as it stood, so the days he started still count once he's gone
+    if (daily(L) && L.week <= totalWeeks(L) && now != null) {
+      const w = L.week, td = dayIdx(L, w, now), byW = ((L.dayLineups = L.dayLineups || {})[w] = L.dayLineups[w] || {}), by = (byW[teamId] = byW[teamId] || {});
+      for (let d = 0; d < td; d++) if (!by[d]) by[d] = lineupFor(L, ctx, teamId, w, d).slice();
+      return;
+    }
     if (L.week > totalWeeks(L) || !ctx.byId[pid] || scoring(L, ctx).type !== "points") return;
     const w = L.week, f = weekFrac(L, now);
     if (f <= 0) return;
@@ -239,16 +258,37 @@
   }
 
   /* ---------- lineups ---------- */
-  function lineupFor(L, ctx, teamId, w) {
-    const saved = L.lineups[w] && L.lineups[w][teamId];
+  /* ---------- daily lineups (settings.daily) ----------
+     Yahoo's daily leagues set a lineup for every day. L.dayLineups[w][team][d] (d: 0 to 6, from the week's Monday)
+     holds the days a manager changed it; a day with none carries the last change before it, then the week's lineup
+     (L.lineups), so a lineup stands until it's changed. A player locks for the day when his team's game that day
+     starts (L.kick.all: every game time this week), and a past day can't change. Scoring adds up each day's starters
+     on that day's box scores (dayLines): the days file (hooks.real.days) for finished games, the live feed's box
+     scores for today's. */
+  const daily = (L) => !!(L.settings && L.settings.daily);
+  const dayIdx = (L, w, t) => Math.max(0, Math.min(6, Math.floor((t - weekStart(L, w)) / DAY)));
+  // the day a lineup is being looked at or set for, when none is named: today in the current week
+  const dayNow = (L, w, now) => (w < L.week ? 6 : w > L.week ? 0 : dayIdx(L, w, now != null ? now : Date.now()));
+  function dayEntry(L, teamId, w, d) {
+    const by = L.dayLineups && L.dayLineups[w] && L.dayLineups[w][teamId];
+    if (!by) return null;
+    for (let k = d; k >= 0; k--) if (by[k]) return by[k];
+    return null;
+  }
+  function lineupFor(L, ctx, teamId, w, d) {
+    const saved = (daily(L) && dayEntry(L, teamId, w, d != null ? d : dayNow(L, w))) || (L.lineups[w] && L.lineups[w][teamId]);
     if (L.settings.bestBall && w >= L.week) return projectedBest(L, ctx, teamId);
     const ros = L.rosters[teamId], ir = held(L, teamId);
     if (saved) return saved.map((id) => (id && ros.includes(id) && !ir.includes(id) ? id : null));
     return weighted(L, ctx, fillLineup(L, ctx, teamId).map((p) => (p ? p.id : null)));
   }
-  function setLineup(L, ctx, teamId, w, slots, now) {
+  function setLineup(L, ctx, teamId, w, slots, now, d) {
     if (L.settings.bestBall) return { ok: false, why: "Best ball sets your lineup for you" };
     if (lineupLocked(L, w, now)) return { ok: false, why: `Week ${w} is locked` };
+    if (daily(L)) {
+      d = d != null ? d : dayNow(L, w, now);
+      if (w === L.week && now != null && d < dayIdx(L, w, now)) return { ok: false, why: "That day is over" };
+    }
     const ros = L.rosters[teamId], seen = new Set();
     for (let i = 0; i < L.settings.lineup.length; i++) {
       const id = slots[i];
@@ -263,8 +303,9 @@
     const cw = confCheck(L, ctx, slots);
     if (cw) return { ok: false, why: cw };
     // a player whose game has started stays where he is, in the lineup or out of it
-    if (now != null && L.kick) {
-      const cur = lineupFor(L, ctx, teamId, w);
+    // (with daily lineups, only today's games lock anyone: a later day is open)
+    if (now != null && L.kick && !(daily(L) && (w !== L.week || d > dayIdx(L, w, now)))) {
+      const cur = lineupFor(L, ctx, teamId, w, d);
       for (let i = 0; i < L.settings.lineup.length; i++) {
         const was = cur[i] || null, will = slots[i] || null;
         if (was === will) continue;
@@ -273,18 +314,20 @@
         if (will && isLocked(L, ctx.byId[will], w, now)) return { ok: false, why: `${ctx.byId[will].n}'s game has started, so he can't move into the lineup` };
       }
     }
-    (L.lineups[w] = L.lineups[w] || {})[teamId] = L.settings.lineup.map((_, i) => slots[i] || null);
+    const set = L.settings.lineup.map((_, i) => slots[i] || null);
+    if (daily(L)) { const byW = ((L.dayLineups = L.dayLineups || {})[w] = L.dayLineups[w] || {}); (byW[teamId] = byW[teamId] || {})[d] = set; }
+    else (L.lineups[w] = L.lineups[w] || {})[teamId] = set;
     return { ok: true };
   }
   // Swap a roster player into a slot (or to the bench): the Yahoo "Move" flow.
-  function move(L, ctx, teamId, w, pid, toSlot, now) {
-    const cur = lineupFor(L, ctx, teamId, w).slice();
+  function move(L, ctx, teamId, w, pid, toSlot, now, d) {
+    const cur = lineupFor(L, ctx, teamId, w, d).slice();
     const from = cur.indexOf(pid);
-    if (toSlot === "BN" || toSlot == null) { if (from >= 0) cur[from] = null; return setLineup(L, ctx, teamId, w, cur, now); }
+    if (toSlot === "BN" || toSlot == null) { if (from >= 0) cur[from] = null; return setLineup(L, ctx, teamId, w, cur, now, d); }
     const other = cur[toSlot];
     cur[toSlot] = pid;
     if (from >= 0) cur[from] = other && S.fits(ctx.sport, ctx.byId[other], L.settings.lineup[from]) ? other : null;
-    return setLineup(L, ctx, teamId, w, cur, now);
+    return setLineup(L, ctx, teamId, w, cur, now, d);
   }
 
   const healthy = (L, ctx, teamId) => L.rosters[teamId].filter((id) => !held(L, teamId).includes(id)).map((id) => ctx.byId[id]).filter((p) => p && !/^(out|ir|o)$/i.test(p.inj || ""));
@@ -439,9 +482,73 @@
     }
     return out;
   }
+  /* A player's box score lines for one day of a week ({ bat: [...], pit: [...] } in the player file's columns), one a
+     game (a doubleheader gives two). Today's and any day the live feed covers come from its box scores; earlier days
+     from the days file. Null when neither has the day. */
+  function dayLines(L, ctx, p, w, d) {
+    const R = ctx.hooks && ctx.hooks.real;
+    if (!R || !p) return null;
+    const t = weekStart(L, w), near = (x) => x && Math.abs(Date.parse(x.start + "T12:00:00Z") - t) < 2.5 * DAY;
+    const conv = (line, cols) => { const out = {}; for (const [key, def] of Object.entries(ctx.sport.data.lines)) { const cs = cols[key], v = line && line[key]; if (!cs || !v || def.proj) continue; out[key] = def.cols.map((c) => { const i = cs.indexOf(c); return i >= 0 ? v[i] || 0 : 0; }); } return Object.keys(out).length ? out : null; };
+    const lv = R.live;
+    if (lv && near(lv) && lv.boxes && lv.games) {
+      const gs = (lv.games[p.t] || []).filter((g) => g.state && g.state !== "pre" && dayIdx(L, w, Date.parse(g.at)) === d);
+      if (gs.length && gs.every((g) => lv.boxes[g.id])) return gs.map((g) => conv(lv.boxes[g.id][p.id], R.lines || {})).filter(Boolean);
+    }
+    const dw = R.days && Object.values(R.days.weeks || {}).find(near);
+    if (!dw || !dw.days || !dw.days[d]) return null;
+    const line = dw.days[d][p.id];
+    return line ? [conv(line, R.days.lines || R.lines || {})].filter(Boolean) : [];
+  }
+  // whether a week has any daily box scores to score from (else daily leagues fall back to the week's totals)
+  function hasDays(L, ctx, w) {
+    const R = ctx.hooks && ctx.hooks.real;
+    if (!daily(L) || !R) return false;
+    const t = weekStart(L, w), near = (x) => x && Math.abs(Date.parse(x.start + "T12:00:00Z") - t) < 2.5 * DAY;
+    return !!((R.days && Object.values(R.days.weeks || {}).some(near)) || (R.live && near(R.live) && R.live.boxes));
+  }
+  // every line a team's starters put up, day by day, in a daily league: [player, line, day]. A day that's over keeps
+  // its lineup as it was written down, players since dropped or traded included
+  function dailyLines(L, ctx, teamId, w) {
+    const out = [], td = w < L.week ? 7 : w > L.week ? 0 : dayIdx(L, w, Date.now());
+    for (let d = 0; d < 7; d++) {
+      const raw = d < td ? dayEntry(L, teamId, w, d) : null;
+      for (const id of (raw || lineupFor(L, ctx, teamId, w, d)).filter(Boolean)) {
+        const p = ctx.byId[id], ls = dayLines(L, ctx, p, w, d);
+        if (ls) for (const l of ls) out.push([p, l, d]);
+      }
+    }
+    return out;
+  }
+  // one player's week for a team in a daily league: his lines on the days he started, added up (rates from parts)
+  function dailyPlayerLine(L, ctx, teamId, pid, w) {
+    const ls = dailyLines(L, ctx, teamId, w).filter((x) => x[0].id === pid).map((x) => x[1]);
+    const out = {}, days = new Set(dailyLines(L, ctx, teamId, w).filter((x) => x[0].id === pid).map((x) => x[2]));
+    for (const [key, def] of Object.entries(ctx.sport.data.lines)) {
+      const has = ls.filter((l) => l[key]); if (!has.length) continue;
+      const ix = (c) => def.cols.indexOf(c), tot = def.cols.map((c, i) => sum(has.map((l) => l[key][i] || 0)));
+      // rates from their parts: AVG from H/AB, OBP and OPS by plate appearances, ERA and WHIP from innings
+      const wsum = (c, wc) => sum(has.map((l) => (l[key][ix(c)] || 0) * (l[key][ix(wc)] || 0)));
+      if (ix("ab") >= 0 && ix("avg") >= 0) tot[ix("avg")] = tot[ix("ab")] ? tot[ix("h")] / tot[ix("ab")] : 0;
+      if (ix("pa") >= 0) { for (const c of ["obp", "ops"]) if (ix(c) >= 0) tot[ix(c)] = tot[ix("pa")] ? wsum(c, "pa") / tot[ix("pa")] : 0; }
+      if (ix("ip") >= 0) { for (const c of ["era", "whip"]) if (ix(c) >= 0) tot[ix(c)] = tot[ix("ip")] ? wsum(c, "ip") / tot[ix("ip")] : 0; }
+      out[key] = tot;
+    }
+    return { line: out, days: days.size };
+  }
   // A team's week: points of its starters, or each category's total.
   function teamWeek(L, ctx, teamId, w, frac = 1) {
     if (ctx.hooks.score) return ctx.hooks.score(L, ctx, teamId, w, frac);
+    // daily lineups with daily box scores: each day's starters, that day
+    if (hasDays(L, ctx, w)) {
+      const sc0 = scoring(L, ctx), dl = dailyLines(L, ctx, teamId, w);
+      if (sc0.type === "points") {
+        const R = ctx.hooks.real, players = {};
+        for (const [p, l] of dl) players[p.id] = (players[p.id] || 0) + realPts({ lines: ctx.sport.data.lines && Object.fromEntries(Object.entries(ctx.sport.data.lines).map(([k, v]) => [k, v.cols])) }, sc0, l, p);
+        return { total: sum(Object.values(players)), players, lineup: null, banked: [] };
+      }
+      return Object.assign(catsOf(ctx, sc0, dl.map((x) => x[1])), { total: null, lineup: null });
+    }
     const sc = scoring(L, ctx);
     const best = L.settings.bestBall && w >= L.week ? bestBallIds(L, ctx, teamId, w, frac) : null;
     const slotsOf = best || lineupFor(L, ctx, teamId, w), ids = slotsOf.filter(Boolean);
@@ -483,7 +590,7 @@
   }
   const plays = (p) => { const tag = String(p.inj || "").trim(); if (!tag) return 1; const hit = PLAYS.find(([re]) => re.test(tag)); return hit ? hit[1] : 1; };
   function projectLine(L, ctx, teamId, p, w, frac) {
-    const sofar = playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac), frac);
+    const sofar = hasDays(L, ctx, w) ? dailyPlayerLine(L, ctx, teamId, p.id, w).line : playerWeek(L, ctx, p, w, effFrac(L, teamId, p.id, w, frac), frac);
     const wk = WEEK[ctx.sport.key] || { weeks: 20 }, g = GAMES[ctx.sport.key] || 82, togo = gamesLeft(L, ctx, p, w, frac) * plays(p);
     const rest = {};
     for (const [line, def] of Object.entries(ctx.sport.data.lines)) {
@@ -500,11 +607,14 @@
   function projectCats(L, ctx, teamId, w, frac) {
     const sc = scoring(L, ctx);
     if (sc.type === "points") return null;
-    const lines = [], rest = [];
+    const lines = [], rest = [], dd = hasDays(L, ctx, w);
+    // daily: what every day's starters did so far, plus what today's lineup has left
+    if (dd) for (const x of dailyLines(L, ctx, teamId, w)) lines.push(x[1]);
     for (const id of lineupFor(L, ctx, teamId, w).filter(Boolean)) {
       const p = ctx.byId[id]; if (!p) continue;
       const [a, b] = projectLine(L, ctx, teamId, p, w, frac);
-      lines.push(a, b); rest.push(b);
+      if (!dd) lines.push(a);
+      lines.push(b); rest.push(b);
     }
     const r = catsOf(ctx, sc, rest);
     return Object.assign(catsOf(ctx, sc, lines), { rest: r.cats, restParts: r.parts });
@@ -1415,7 +1525,7 @@
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
     tradeMax: (v) => clampInt(v, 0, 10), reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
-    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
+    lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, daily: (v) => !!v, historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
   const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
@@ -2272,7 +2382,7 @@
     if (L.settings.playoffTie === "h2h") { const h = h2h(L, m.a, m.b); if (h < 0) return m.b; if (h > 0) return m.a; }
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
-  return { playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, tradeCheck, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

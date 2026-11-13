@@ -133,3 +133,42 @@ test('eligibility: a league with its own thresholds recomputes positions from th
   assert.deepEqual(ps[0].pos, ['2B']);
   assert.ok(G.setRules({ settings: {}, week: 1, teams: [], tx: [], nextId: 1 }, { elig: { g: 20, gs: 0, sp: 5, rp: 8 } }, 0).ok);
 });
+
+test('daily lineups: a lineup per day, carried forward, scored day by day', () => {
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/mlb.json', import.meta.url), 'utf8'));
+  const sport = S.attach(Object.assign({}, S.mlb), data);
+  const players = data.players.map((p) => ({ ...p }));
+  V.evaluate(sport, players, { teams: 4, scoring: 'roto5' });
+  const T0 = Date.UTC(2027, 2, 29, 4);   // a Monday, midnight Eastern
+  const D = F.create({ sport, teams: 4, seed: 3, now: T0, scoring: 'roto5', botDelay: 0 });
+  D.season = { format: 'h2h', weeks: 4, playoffTeams: 2 };
+  F.start(D, T0);
+  let t = T0; const c = F.context(D, players, sport);
+  for (let i = 0; i < 9000 && D.phase === 'live'; i++) { t += 3000; F.tick(D, c, t); }
+  const L = Z.begin(D, sport, { now: T0 });
+  L.start = T0; L.week = 1; L.settings.daily = true; L.settings.real = true;
+  // two hitters on team 0: a starter and a bench bat at a slot both fit
+  const ros = L.rosters[0].map((id) => players.find((p) => p.id === id)).filter((p) => p.l && p.l.bat && !p.l.pit);
+  const slots = L.settings.lineup, ctx0 = G.context(L, players, sport);
+  const lu = G.lineupFor(L, ctx0, 0, 1, 0), i = lu.findIndex((id) => id && ros.some((p) => p.id === id));
+  const a = lu[i], b = ros.find((p) => !lu.includes(p.id) && S.fits(sport, p, slots[i]));
+  assert.ok(a && b, 'a starter and a bench hitter who can swap');
+  // day lines: a homers on day 0, b homers on day 3
+  const cols = { bat: ['g', 'pa', 'ab', 'r', 'h', 'hr', 'rbi', 'sb', 'tb', 'avg', 'obp', 'ops'] };
+  const hr = [1, 4, 4, 1, 1, 1, 1, 0, 4, 0.25, 0.25, 1.25];
+  const days = Array.from({ length: 7 }, () => ({}));
+  days[0][a] = { bat: hr }; days[3][b.id] = { bat: hr }; days[3][a] = { bat: hr };
+  const start = new Date(T0).toISOString().slice(0, 10);
+  const real = { lines: cols, weeks: { 1: { start, lines: {}, final: false } }, days: { lines: cols, weeks: { 1: { start, days } } } };
+  const ctx = G.context(L, players, sport, { real });
+  // day 2: put b in a's slot; it carries to day 3 and on
+  const now2 = T0 + 2 * 864e5 + 3600e3;
+  const r = G.move(L, ctx, 0, 1, b.id, i, now2, 2);
+  assert.ok(r.ok, r.why);
+  assert.equal(G.lineupFor(L, ctx, 0, 1, 0)[i], a, 'day 0 keeps the week lineup');
+  assert.equal(G.lineupFor(L, ctx, 0, 1, 3)[i], b.id, 'day 3 carries the day 2 change');
+  assert.match(G.setLineup(L, ctx, 0, 1, lu, now2, 1).why, /over/, "a past day can't change");
+  // scoring: a's day 0 homer and b's day 3 homer count; a's day 3 homer (benched) doesn't
+  const tw = G.teamWeek(L, ctx, 0, 1, 1);
+  assert.equal(tw.cats.hr, 2);
+});

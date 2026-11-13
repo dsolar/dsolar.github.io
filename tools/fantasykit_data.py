@@ -547,26 +547,42 @@ def mlb_weeks():
         by_week.setdefault(k, []).extend(d["games"])
     weeks, fetched = {}, 0
     last_day = max(date.fromisoformat(d["date"]) for d in dates)
+    # daily lines for leagues with daily lineups (days-mlb.json): each day of the current week and the one before,
+    # so a week can still be scored day by day after it ends
+    old_days = load("fantasy-kit/data/days-mlb.json", {}) or {}
+    old_days = old_days.get("weeks", {}) if str(old_days.get("season")) == str(year) else {}
+    recent = sorted(by_week, key=int)[-2:]
+    days_out = {}
     for k in sorted(by_week, key=int):
         start = monday + timedelta(days=7 * (int(k) - 1))
         end = start + timedelta(days=6)
-        if keep.get(k, {}).get("final"):
+        if keep.get(k, {}).get("final") and (k not in recent or k in old_days):
             weeks[k] = keep[k]
+            if k in recent and k in old_days:
+                days_out[k] = old_days[k]
             continue
         games = [g for g in by_week[k] if (g.get("status") or {}).get("abstractGameState") == "Final"]
-        acc = {}
+        acc, acc_day = {}, [{} for _ in range(7)]
         with ThreadPoolExecutor(max_workers=8) as ex:
-            for box in ex.map(lambda g: mlb_boxes(g["gamePk"]), games):
+            for g, box in zip(games, ex.map(lambda g: mlb_boxes(g["gamePk"]), games)):
                 fetched += 1
+                di = (date.fromisoformat(g.get("officialDate") or start.isoformat()) - start).days
                 for pid, row in box.items():
-                    a = acc.setdefault(pid, {})
-                    for part, vals in row.items():
-                        a[part] = [x + y for x, y in zip(a[part], vals)] if part in a else list(vals)
+                    for target in ([acc, acc_day[di]] if 0 <= di < 7 else [acc]):
+                        a = target.setdefault(pid, {})
+                        for part, vals in row.items():
+                            a[part] = [x + y for x, y in zip(a[part], vals)] if part in a else list(vals)
+        if k in recent:
+            days_out[k] = {"start": start.isoformat(), "days": [mlb_lines(x) for x in acc_day]}
         done = all((g.get("status") or {}).get("abstractGameState") == "Final" for g in by_week[k])
         over = today > min(end, last_day)
         weeks[k] = {"start": start.isoformat(), "end": end.isoformat(), "final": bool(over and done and datetime.now(timezone.utc) >= after_night(min(end, last_day))), "lines": mlb_lines(acc)}
     print(f"MLB weeks: {len(weeks)} ({fetched} box scores fetched)")
     write_weeks("mlb", {"sport": "mlb", "season": str(year), "updated": NOW, "source": "MLB Stats API", "lines": {"bat": WK_BAT, "pit": WK_PIT}, "weeks": weeks})
+    path = os.path.join(OUT, "days-mlb.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"sport": "mlb", "season": str(year), "updated": NOW, "lines": {"bat": WK_BAT, "pit": WK_PIT}, "weeks": days_out}, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"Wrote {path}: weeks {', '.join(sorted(days_out, key=int))}")
 
 
 # ---------- NFL ----------

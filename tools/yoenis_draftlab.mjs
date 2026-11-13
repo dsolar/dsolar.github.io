@@ -135,7 +135,7 @@ Object.assign(L.settings, {
   weeks: REG, playoffTeams: 8, playoffLegs: '1', consolation: 'places', reseed: true, playoffTie: 'h2h',  // 8 teams, no byes, every playoff team plays for its place
   ir: 4, maxAdds: 7, minIP: 30, waiverDays: 2, faab: 100, waivers: 'faab',
   tradeReview: 'counter', reviewHours: 48, tradeMax: 2, deadline: weekOfDay(Date.parse(Y.settings.trade_end_date + 'T12:00:00Z')),
-  draftOrder: 'lottery', lotteryOdds: 'weighted', bots: false, historyUrl: '/yoenis/',
+  draftOrder: 'lottery', lotteryOdds: 'weighted', daily: true, bots: false, historyUrl: '/yoenis/',
 });
 L.settings.playoffWeeks = G.playoffPlan(L).reduce((a, rd) => a + rd.weeks.length, 0);
 // weeks line up with Yahoo's: week 1 is the short opening week, then Monday to Sunday

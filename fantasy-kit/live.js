@@ -68,6 +68,8 @@
     const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(D.season && D.season.bestBall && D.season.format !== "guillotine");
     const dataP = early && early.k === k ? early.p : getJSON(`data/${k}.json`);
     weeksP = getJSON(`data/weeks-${k}.json`);
+    // daily lineups score day by day: the last two weeks' daily box scores ride along with the weeks file
+    if (L && L.settings.daily) weeksP = Promise.all([weeksP, getJSON(`data/days-${k}.json`).catch(() => null)]).then(([w, dd]) => { if (w && dd && String(dd.season) === String(w.season)) w.days = dd; return w; });
     const extras = Promise.all([getJSON(`data/market-${k}.json`), dyn ? dynastyRanks(k) : null, dyn ? getJSON(`../draft/${k}.json`) : null]);
     data = await dataP;
     if (!data || !Array.isArray(data.players)) return fatal("Couldn't load the players.", `<span class="muted">Reload the page to try again.</span>`);
@@ -911,6 +913,7 @@
       ${gl ? "" : `<div class="row3">
         ${sport.key === "mlb" ? sel("elig", "Position eligibility", Object.entries(S.ELIG_PRESETS).map(([k2, [lab]]) => [k2, lab]), Object.keys(S.ELIG_PRESETS).find((k2) => JSON.stringify(S.ELIG_PRESETS[k2][1]) === JSON.stringify(s.elig || S.ELIG)) || "yahoo") : ""}
         ${sport.key === "mlb" && G.scoring(L, lctx()).type !== "points" ? sel("minIP", "Innings a week", [0, 10, 15, 20, 25, 30, 35, 40, 50].map((x) => [x, x ? `At least ${x}, or lose ERA and WHIP` : "No minimum"]), s.minIP || 0) : ""}
+        ${L.settings.real || L.sport === "mlb" || L.sport === "nba" ? sel("daily", "Lineups", [["0", "Weekly: set once a week"], ["1", "Daily: set every day, each player locks at his game"]], s.daily ? "1" : "0") : ""}
         ${sel("draftOrder", "Next season's draft order", [["worst", "Worst to first"], ["lottery", "A lottery for non-playoff teams"]], s.draftOrder || "worst")}
         ${s.draftOrder === "lottery" ? sel("lotteryOdds", "Lottery odds", [["weighted", "Weighted toward the worst records"], ["equal", "Equal for every team"]], s.lotteryOdds || "weighted") : ""}
       </div>
@@ -932,8 +935,8 @@
       <p class="ps" style="margin:0">${started ? "The season has started, so its length and schedule are set. " : ""}Changes apply from now on; finished weeks keep their results${medianOk ? ", except that turning the median game on or off recounts every record" : ""}.</p>
       <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => {
       const patch = {};
-      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed", "bots"].includes(k) ? v === "1" : k === "historyUrl" ? String(v).trim() : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds"].includes(k) ? v : Number(v);
-      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "weighted" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
+      for (const [k, v] of fd.entries()) if (k === "elig") patch[k] = (S.ELIG_PRESETS[v] || S.ELIG_PRESETS.yahoo)[1]; else patch[k] = ["trades", "median", "bestBall", "reseed", "bots", "daily"].includes(k) ? v === "1" : k === "historyUrl" ? String(v).trim() : ["waivers", "tradeReview", "playoffLegs", "consolation", "waiverOrder", "waiverPrice", "gameLock", "draftOrder", "lotteryOdds"].includes(k) ? v : Number(v);
+      const was = (k) => (k === "elig" ? s.elig || S.ELIG : k === "bots" ? s.bots !== false : k === "daily" ? !!s.daily : k === "historyUrl" ? s.historyUrl || "" : k === "trades" ? s.trades !== false : ["median", "bestBall", "reseed"].includes(k) ? !!s[k] : k === "draftOrder" ? s[k] || "worst" : k === "waiverPrice" ? s[k] || "first" : k === "waiverOrder" ? s[k] || "rolling" : k === "maxAddsSeason" ? s[k] || 0 : k === "lotteryOdds" ? s[k] || "weighted" : ["tradeMax", "minIP"].includes(k) ? s[k] || 0 : s[k]);
       for (const k of Object.keys(patch)) if (JSON.stringify(patch[k]) === JSON.stringify(was(k))) delete patch[k];
       if (!Object.keys(patch).length) return;
       const r = G.setRules(L, patch, now());

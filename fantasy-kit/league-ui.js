@@ -1151,6 +1151,11 @@
     // a link to something that isn't there says so once, instead of quietly showing something else
     function badLink(msg) { if (ui.badLink === location.hash) return; ui.badLink = location.hash; setTimeout(() => U.toast(msg, true), 0); }
     let rosterTeam = null;
+    // daily lineups: Yahoo's date tabs, Monday to Sunday of the week, today marked; past days read only
+    function dayTabs(w, day, today) {
+      const st = G.weekStart(L(), w);
+      return `<div class="seg days" role="group" aria-label="Day">${Array.from({ length: 7 }, (_, k) => { const dt = new Date(st + k * 864e5 + 12 * 36e5); return `<button type="button" data-day="${k}" data-dw="${w}" aria-pressed="${k === day}"${today != null && k < today ? ' class="past"' : ""}><b>${dt.toLocaleDateString("en-US", { weekday: "short" })}</b><small>${today === k ? "Today" : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</small></button>`; }).join("")}</div>`;
+    }
     function rosterPage(arg) {
       const id = arg !== "" && arg != null && L().teams[+arg] ? +arg : me() != null ? me() : 0;
       if (arg !== "" && arg != null && !L().teams[+arg]) badLink(`There's no team ${arg} in this league, so here's ${isMe(id) ? "yours" : T(id).name}.`);
@@ -1163,7 +1168,8 @@
       const brow = gl() && !over() && G.isAlive(L(), id) && w === L().week ? blockRow(w, id) : null;
       const side = game ? (game.a === id ? game.ta : game.tb) : null;
       // best ball shows the lineup that is counting right now; otherwise the lineup that's set
-      const lu = (bb() && w === L().week && (brow ? brow.lineup : side && side.lineup)) || G.lineupFor(L(), ctx, id, w);
+      const day = rosterDay(w), today = G.daily(L()) && w === L().week ? G.dayIdx(L(), w, now()) : null;
+      const lu = (bb() && w === L().week && (brow ? brow.lineup : side && side.lineup)) || G.lineupFor(L(), ctx, id, w, day);
       const ptsOf = (pid) => {
         const v = brow ? (brow.players || {})[pid] : side ? (side.players || {})[pid] : null;
         if (v != null || !bb() || !pts() || w !== L().week || !ctx.byId[pid]) return v;
@@ -1177,9 +1183,10 @@
       const ir = L().ir[id] || [], irMax = G.irSlots(L()), alive = G.isAlive(L(), id), taxi = G.taxiOf(L(), id), txMax = G.taxiSlots(L());
       const moving = ui.moving && L().rosters[id].includes(ui.moving) && !G.held(L(), id).includes(ui.moving) ? ctx.byId[ui.moving] : null;
       const movingSlot = moving ? lu.indexOf(moving.id) : -1;
-      const locked = G.lineupLocked(L(), w, now()) || bb() || !alive;
-      // a player whose game has started (real leagues): he stays put, in the lineup or on the bench
-      const pl = (p) => !!p && G.isLocked(L(), p, w, now());
+      const locked = G.lineupLocked(L(), w, now()) || bb() || !alive || (today != null && day < today);
+      // a player whose game has started (real leagues): he stays put, in the lineup or on the bench. With daily
+      // lineups only today's games lock anyone; a later day is open
+      const pl = (p) => !!p && !(today != null && day > today) && G.isLocked(L(), p, w, now());
       const fitsSlot = (i) => moving && i != null && S.fits(sport, moving, slots[i]) && !pl(lu[i] && ctx.byId[lu[i]]);
       // where the player being moved can go: an open or filled starting slot he fits, or a bench player who fits his slot
       const targetFor = (p, i) => {
@@ -1286,10 +1293,11 @@
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
       const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
       return `<div class="wrap page">${teamHead(id)}
+        ${G.daily(L()) && !over() ? dayTabs(w, day, today) : ""}
         <div class="row wk-bar" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">Week ${x}${x === L().week ? ", now" : ""}</button>`).join("")}</div>` : ""}
           ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}${w === L().week && frac(w) > 0 ? `: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}` : ""}</a>` : ""}
           ${brow ? `<a class="pill" href="#matchup/${w}" style="text-decoration:none">${fmtS(brow.score)}, ${ord(brow.rank)} of ${L().alive.length}, ${pct(brow.chop)} to be chopped</a>` : ""}
-          <span class="grow"></span>${mine && !locked && !moving && hasGames(id, w) ? `<button class="btn sm" data-optimize="active" title="Starts everyone with a game this week, best first, and sits the rest"><span class="hide-xs">Start active players</span><span class="show-xs">Start active</span></button>` : ""}${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
+          <span class="grow"></span>${mine && !locked && !moving && hasGames(id, w) ? `<button class="btn sm" data-optimize="active" title="${G.daily(L()) ? "Starts everyone with a game that day" : "Starts everyone with a game this week"}, best first, and sits the rest"><span class="hide-xs">Start active players</span><span class="show-xs">Start active</span></button>` : ""}${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
         ${moving ? `<div class="movebar" role="status"><span>Moving <b>${esc(moving.n)}</b>. Pick a highlighted spot${movingSlot >= 0 ? ", or swap with a bench player" : ""}.</span><span class="grow"></span>${movingSlot >= 0 ? `<button class="btn sm" data-here="BN">To bench</button>` : ""}<button class="btn sm" data-move="">Cancel</button></div>` : ""}
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
         ${mine && L().settings.frozen && L().heist && L().rosters[id].length < G.maxRoster(L()) && !over() ? `<div class="alert"><span>A steal left a spot open in your lineup. Pick up a free agent for it before his game starts: he scores normal points.</span><a class="btn sm go" href="#players/fa">Free agents</a></div>` : ""}
@@ -1661,6 +1669,20 @@
         return `<div class="card"><div class="bd"><p class="ps" style="margin:0">This week came over from ${esc(L().imported.from || "another site")} as each team's category totals (above), so there's no player-by-player box score for it.</p></div></div>`;
       }
       const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+      // daily lineups: everyone who started at least one day, his line from just those days
+      if (G.hasDays(L(), ctx, w)) {
+        const dbox = (team) => {
+          const dl = G.dailyLines(L(), ctx, team, w), ids = [...new Set(dl.map((x) => x[0].id))];
+          const slotOf = (pid) => { for (let d = 6; d >= 0; d--) { const k = G.lineupFor(L(), ctx, team, w, d).indexOf(pid); if (k >= 0 && dl.some((x) => x[0].id === pid && x[2] === d)) return L().settings.lineup[k]; } return "BN"; };
+          const tbl = (grp, title) => {
+            const cs = cols(grp), mine = ids.filter((pid) => slotGrp(slotOf(pid)) === grp).sort((a, b) => L().settings.lineup.indexOf(slotOf(a)) - L().settings.lineup.indexOf(slotOf(b)));
+            const tr = mine.map((pid) => { const p = ctx.byId[pid], x = G.dailyPlayerLine(L(), ctx, team, pid, w), ps = { l: x.line }; return `<tr><td class="c"><span class="slot">${esc(slotOf(pid))}</span></td><td class="nm"><span data-player="${esc(pid)}" style="cursor:pointer">${pname(sport, p, `${x.days} day${x.days === 1 ? "" : "s"}`, { size: "sm" })}</span></td>${cs.map((c) => { const v = U.statCell(sport, ps, c); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`; }).join("");
+            return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">No ${title.toLowerCase()} have played yet.</td></tr>`}</tbody></table>`;
+          };
+          return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Each player's days in the lineup</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+        };
+        return `<div class="mboxes">${dbox(m.a)}${dbox(m.b)}</div>`;
+      }
       const box = (team, lu) => {
         const tbl = (grp, title) => {
           const cs = cols(grp);
@@ -2082,7 +2104,7 @@
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
       // a category league leads with his season in the league's own categories; a season brought in from another
       // site has no weekly lines here, so there's no week-by-week table for it
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p)), after: leagueLog(p), fold: true }), null, { wide: true, sheet: true });
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p)), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
@@ -2189,22 +2211,24 @@
       if (from.startsWith("s")) {
         ok.set("bn", { why: "Bench" });
         const k = +from.slice(1);
-        const lu = G.lineupFor(L(), ctx, mid, rosterWeek()), tx = G.taxiOf(L(), mid);
+        const lu = G.lineupFor(L(), ctx, mid, rosterWeek(), rosterDay()), tx = G.taxiOf(L(), mid);
         for (const q of L().rosters[mid]) { const qp = ctx.byId[q]; if (qp && q !== pid && !lu.includes(q) && !ir.includes(q) && !tx.includes(q) && S.fits(sport, qp, slots[k])) ok.set("bn:" + q, { why: "Swap" }); }
       }
       if (G.irEligible(p) && ir.length < G.irSlots(L())) ok.set("ir", { why: "To IR" });
       return ok;
     }
     const rosterWeek = () => (ui.week && ui.week >= L().week ? ui.week : curWeek());
+    // daily lineups: the day the roster page is showing (today unless another is picked), else undefined
+    const rosterDay = (w = rosterWeek()) => (G.daily(L()) ? (ui.day != null && w === ui.dayWeek ? ui.day : G.dayNow(L(), w, now())) : undefined);
     const zoneKey = (el) => (!el ? null : el.dataset.dzp ? "bn:" + el.dataset.dzp : el.dataset.dz);
     function dropAt(key) {
       const { pid, from } = drag, mid = me(), w = rosterWeek(), p = ctx.byId[pid];
       if (!key || !drag.ok.has(key)) return;
       if (from === "ir") { const r = G.activate(L(), ctx, mid, pid, null, now()); if (r.needDrop) activateDialog(pid); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${p.n} is back from IR.`); render(); } return; }
       if (key === "ir") return act(() => G.toIR(L(), ctx, mid, pid, now()), `${p.n} is on IR. His roster spot is open.`);
-      if (key.startsWith("bn:")) return act(() => G.move(L(), ctx, mid, w, key.slice(3), +from.slice(1), now()));
-      if (key === "bn") return act(() => G.move(L(), ctx, mid, w, pid, "BN", now()));
-      act(() => G.move(L(), ctx, mid, w, pid, +key.slice(1), now()));
+      if (key.startsWith("bn:")) return act(() => G.move(L(), ctx, mid, w, key.slice(3), +from.slice(1), now(), rosterDay(w)));
+      if (key === "bn") return act(() => G.move(L(), ctx, mid, w, pid, "BN", now(), rosterDay(w)));
+      act(() => G.move(L(), ctx, mid, w, pid, +key.slice(1), now(), rosterDay(w)));
     }
     function endDrag(e, commit) {
       if (!drag) return;
@@ -2313,11 +2337,12 @@
     opts.el.addEventListener("click", (e) => {
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
-        if (d.tssort != null) { ui.tsSort = d.tssort || null; render(); }
+        if (d.day != null) { ui.day = +d.day; ui.dayWeek = +d.dw; ui.moving = null; render(); }
+        else if (d.tssort != null) { ui.tsSort = d.tssort || null; render(); }
         else if (d.tfmode) { ui.tfMode = d.tfmode; render(); }
         else if (d.mgr != null) { const Dl = U.dialog(managerCard(+d.mgr, true)); Dl.onclick = (ev) => { if (ev.target.closest("[data-editprofile]")) { Dl.close(); opts.editProfile(); } }; }
         else if (b.hasAttribute("data-editprofile")) opts.editProfile();
@@ -2329,16 +2354,17 @@
         else if (d.totaxi) act(() => G.toTaxi(L(), ctx, mid, d.totaxi, now()), `${ctx.byId[d.totaxi].n} is on the taxi squad. His roster spot is open.`);
         else if (d.promote) { const r = G.promote(L(), ctx, mid, d.promote, null, now()); if (r.needDrop) activateDialog(d.promote, true); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.promote].n} is on the active roster.`); render(); } }
         else if (d.activate) { const r = G.activate(L(), ctx, mid, d.activate, null, now()); if (r.needDrop) activateDialog(d.activate); else if (!r.ok) U.toast(r.why, true); else { save(); U.toast(`${ctx.byId[d.activate].n} is back from IR.`); render(); } }
-        else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot, now())); }
+        else if (d.swapb) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); ui.moving = null; act(() => G.move(L(), ctx, mid, w, d.swapb, +d.slot, now(), rosterDay(w))); }
         else if (d.add) addDialog(d.add);
         else if (d.drop) dropDialog(d.drop);
         else if (d.trade !== undefined && b.hasAttribute("data-trade")) openTrade(d.trade === "" ? null : +d.trade, d.want || null);
         else if (d.move !== undefined && b.hasAttribute("data-move")) { ui.moving = d.move || null; render(); }
-        else if (d.here !== undefined && b.hasAttribute("data-here")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); const pid = ui.moving; ui.moving = null; act(() => G.move(L(), ctx, mid, w, pid, d.here === "BN" ? "BN" : +d.here, now())); }
+        else if (d.here !== undefined && b.hasAttribute("data-here")) { const w = ui.week && ui.week >= L().week ? ui.week : curWeek(); const pid = ui.moving; ui.moving = null; act(() => G.move(L(), ctx, mid, w, pid, d.here === "BN" ? "BN" : +d.here, now(), rosterDay(w))); }
         else if (b.hasAttribute("data-optimize")) {
           const w = ui.week && ui.week >= L().week ? ui.week : curWeek(), active = b.dataset.optimize === "active";
-          const only = active ? (p) => { const gs = gamesOf(p, w); return !gs || gs.length > 0; } : null;
-          act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now(), { only }), now()), active ? "Everyone with a game this week is in." : "Best lineup set.");
+          // daily lineups: a game that day (Yahoo's Start Active Players); weekly: a game this week
+          const dd = rosterDay(w), only = active ? (p) => { const gs = gamesOf(p, w); return !gs || (dd != null ? gs.some((g) => G.dayIdx(L(), w, Date.parse(g.at)) === dd) : gs.length > 0); } : null;
+          act(() => G.setLineup(L(), ctx, mid, w, G.bestLineup(L(), ctx, mid, w, now(), { only, day: rosterDay(w) }), now(), rosterDay(w)), active ? (dd != null ? "Everyone with a game that day is in." : "Everyone with a game this week is in.") : "Best lineup set.");
         }
         else if (d.week) { ui.week = +d.week; render(); }
         else if (d.watch) { const w = watch(); const i = w.indexOf(d.watch); if (i >= 0) w.splice(i, 1); else w.push(d.watch); save(); render(); }

@@ -2059,3 +2059,9 @@ table.ts .gs{border-left:2px solid var(--line-2)}
 .rs-l li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;align-items:center;padding:3px 14px;font-size:13px}
 .rs-l .slot{font-size:10.5px;padding:1px 0;text-align:center}
 .rs-c .mod-h .ps{white-space:nowrap}
+/* daily lineups: the week's date tabs above the roster */
+.seg.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin-bottom:10px}
+.seg.days button{display:grid;gap:0;padding:6px 4px;line-height:1.15}
+.seg.days button b{font-size:13px}
+.seg.days button small{font-size:11px;opacity:.75}
+.seg.days button.past{opacity:.6}
