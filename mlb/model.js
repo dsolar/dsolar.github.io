@@ -30,12 +30,14 @@
     discount: 0,       // yearly discount rate for surplus. Off by default so every figure is real contract dollars
                        // (set it on the page to see today's dollars)
     minSalary: 0.8,    // $M, league minimum (assumed until the next CBA sets it)
-    arbPct: [0.25, 0.4, 0.6, 0.7], // share of market value paid in arbitration years 1-4
+    arbPct: [0.33, 0.52, 0.78, 0.91], // share of market value paid in arbitration years 1-4 (calibrated to Baseball
+                       // Trade Values, Nov 2026: good players' arbitration raises eat most of their surplus by year three)
     fill: true,        // teams buy modest free agents for empty spots
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
     haircut: 1,        // share of projected WAR to count. 100%: the price of a win is already read off what teams pay per projected WAR
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
-    youngFade: 0.8,    // extra yearly shrink for unproven big leaguers (under 3 years of service): long control on a
+    youngFade: 0.55,   // extra yearly shrink (calibrated to Baseball Trade Values, Nov 2026)
+    extFade: 0.75,     // the same for a young player already signed to an extension for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
     lens: "production",// "production": what he should produce; "market": what free agents get for that many years,
                        // length premium included (the way Baseball Trade Values reads field value)
@@ -142,10 +144,16 @@
     }
     return pts[pts.length - 1][1];
   }
+  // How much of an unproven big leaguer's value carries into each next season until he's established. A young player
+  // the team has already extended keeps more: the club has committed to him, and his salary is fixed either way
+  function youngKeep(p, cfg) {
+    if (p.c && /Extension/i.test(p.c.type || "")) return cfg.extFade == null ? 1 : cfg.extFade;
+    return cfg.youngFade == null ? 1 : cfg.youngFade;
+  }
   function fieldValue(war, year, season, cfg, p) {
     var prospect = p && isProspect(p), young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent"); // a free agent signing (from Japan, say) is established
     var w = Math.max(0, war) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
-      * (young ? Math.pow(cfg.youngFade == null ? 1 : cfg.youngFade, Math.min(year - season, Math.ceil(3 - (p.st || 0)))) : 1); // until he'd be established
+      * (young ? Math.pow(youngKeep(p, cfg), Math.min(year - season, Math.ceil(3 - (p.st || 0)))) : 1); // until he'd be established
     return w * (cfg.tiered ? tierMult(w) : 1) * dpwAt(cfg, year, season);
   }
 
