@@ -146,6 +146,12 @@
       D.board[k] = { n: k + 1, team: teamId, pid, at: D.created, keeper: true };
       return { ok: true, pick: k + 1 };
     }
+    // nothing open from his round on (two keepers costing the last round, say): he moves up to the team's latest open pick
+    for (let k = D.order.length - 1; k >= 0; k--) {
+      if (D.order[k] !== teamId || D.board[k]) continue;
+      D.board[k] = { n: k + 1, team: teamId, pid, at: D.created, keeper: true };
+      return { ok: true, pick: k + 1, moved: true };
+    }
     return { ok: false, why: "No pick left for that keeper" };
   }
 

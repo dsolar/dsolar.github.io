@@ -261,7 +261,8 @@ test('game-time locks: a player whose game has started stays put, and a pickup b
   assert.equal(G.isLocked(L, starter, 1, now), true);
   assert.equal(G.isLocked(L, bench, 1, now), false);
   assert.equal(G.move(L, ctx, 0, 1, starter.id, 'BN', now).ok, false, 'a locked starter cannot be benched');
-  const slot = L.settings.lineup.indexOf(L.settings.lineup.find((x, i) => i !== 0 && S.fits(ctx.sport, bench, x)));
+  // a slot the bench player fits whose starter isn't locked too (a teammate of the locked starter would be)
+  const slot = L.settings.lineup.findIndex((x, i) => i !== 0 && S.fits(ctx.sport, bench, x) && !(lu[i] && ctx.byId[lu[i]] && G.isLocked(L, ctx.byId[lu[i]], 1, now)));
   if (slot >= 0) assert.equal(G.move(L, ctx, 0, 1, bench.id, slot, now).ok, true, 'an unlocked bench player can move in');
   assert.equal(G.addDrop(L, ctx, 0, null, starter.id, now).ok, false, 'a locked starter cannot be dropped');
   // the best lineup keeps the locked starter where he is
