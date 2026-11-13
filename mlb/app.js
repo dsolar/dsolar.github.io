@@ -854,8 +854,7 @@
       return;
     }
     var signedN = board.filter(function (x) { return x.signedAav; }).length;
-    html += '<p class="lede">' + (board.length - signedN) + " free agents still unsigned, " + signedN + " signed so far. <b>Fair</b> is what each is worth per year over the crowd's contract length at the market price of a win (" + money(H.cfg.dpw) + "). <b>Market</b> adjusts for what deals of that length have actually gone for compared with that price. The crowd numbers are FanGraphs readers' median predictions.</p>";
-    if (mk) html += marketCallout(mk);
+    html += '<p class="lede">' + (board.length - signedN) + " free agents still unsigned, " + signedN + " signed so far.</p>";
     html += gradesPanel(board);
     var show = q.f || "open";
     var opt = function (v, l) { return '<option value="' + v + '"' + (v === show ? " selected" : "") + ">" + l + "</option>"; };
@@ -879,7 +878,9 @@
         (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>");
     });
     html += "</tbody></table></div></div>";
-    if (mk) html += marketSection(mk);
+    html += '<h2 class="sec">How these numbers work</h2><p class="lede"><b>Fair</b> is what each free agent is worth per year over the crowd\'s contract length (or the length he signed for) at the market price of a win (' + money(H.cfg.dpw) + '). <b>Market</b> adjusts for what deals of that length have actually gone for compared with that price. The crowd numbers are FanGraphs readers\' median predictions.</p>' +
+      '<p class="lede"><b>Grades</b> weigh what a team pays against the market price for deals that long. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole (a spot in the bottom third of the league that he improves by most of a win) gets a little more room, and a qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). <b>Surplus</b> is what he should produce over the deal minus his salary, discounted, as on his card. Only deals of $2M+ for players projected at 1+ WAR are graded.</p>';
+    if (mk) html += marketCallout(mk) + marketSection(mk);
     view.innerHTML = html;
   }
   // Every signed deal this winter, best value first. Signed players leave the pool table below (by default) and live here
@@ -894,7 +895,7 @@
         "</td><td>" + money(gr.mkt, 0) + '</td><td class="' + (gr.edge >= 0 ? "pos" : "neg") + '">' + pct(Math.abs(gr.edge), 0) + (gr.edge >= 0 ? " under" : " over") +
         '</td><td class="' + (sv >= 0 ? "pos" : "neg") + '">' + signed(sv) + "</td></tr>";
     });
-    html += '</tbody></table></div><div class="body"><p class="note" style="margin:0">Grades weigh what a team pays against what deals of that length have gone for. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole gets a little more room, and a qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). Surplus is what he should produce over the deal minus his salary, discounted, as on his card: click a player for each season.</p></div></div>';
+    html += "</tbody></table></div></div>";
     return html;
   }
   function marketCallout(mk) {
