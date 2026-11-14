@@ -1,18 +1,8 @@
 {
- "updated": "2026-11-14T01:29:20Z",
+ "updated": "2026-11-14T10:39:24Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
-  "2026-11-13-bert-kreischer-the-vets": {
-   "sg": 18163952,
-   "history": [],
-   "url": "https://comedy.tickets/tickets/bert-kreischer/",
-   "title": "Bert Kreischer",
-   "date": "2026-11-13",
-   "venue": "The Vets",
-   "low": null,
-   "src": null
-  },
   "2026-11-14-bert-kreischer-the-hanover-theatre": {
    "sg": 18163954,
    "history": [],
@@ -26,19 +16,10 @@
   "2026-12-19-mark-normand-great-cedar-showroom": {
    "sg": 18236597,
    "history": [],
-   "url": "https://seatgeek.com/mark-normand-tickets/comedy/2026-12-19-6-pm/18236597",
+   "url": "https://comedy.tickets/tickets/mark-normand/",
    "title": "Mark Normand",
    "date": "2026-12-19",
    "venue": "Great Cedar Showroom at Foxwoods",
-   "low": null
-  },
-  "tm-k7vGF_2Lj9ock": {
-   "sg": 18406745,
-   "history": [],
-   "url": "https://www.ticketmaster.com/dark-star-orchestra-albany-new-york-11-13-2026/event/000064F7DC5D1B46",
-   "title": "Dark Star Orchestra",
-   "date": "2026-11-13",
-   "venue": "The Palace Theatre Albany",
    "low": null,
    "src": null
   },
@@ -171,16 +152,6 @@
    "venue": "The Capitol Theatre",
    "low": null,
    "src": null
-  },
-  "tm-G5diZ_2NJDtfA": {
-   "history": [],
-   "sg": 18474898,
-   "title": "Dave Matthews Band",
-   "date": "2026-11-13",
-   "venue": "Madison Square Garden",
-   "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-13-2026/event/3B0064F8E6EE9505",
-   "src": null,
-   "low": null
   },
   "sg-18608936": {
    "history": [],
@@ -357,6 +328,10 @@
     [
      "2026-11-13",
      56
+    ],
+    [
+     "2026-11-14",
+     56
     ]
    ],
    "sg": null,
@@ -492,6 +467,10 @@
     ],
     [
      "2026-11-13",
+     22
+    ],
+    [
+     "2026-11-14",
      22
     ]
    ],
@@ -691,6 +670,10 @@
     [
      "2026-11-13",
      28
+    ],
+    [
+     "2026-11-14",
+     28
     ]
    ],
    "sg": null,
@@ -701,130 +684,6 @@
    "src": "Ticketmaster",
    "low": 28,
    "first": 28
-  },
-  "tm-rZ7HnEZ1AfCA0f": {
-   "history": [
-    [
-     "2026-10-17",
-     22
-    ],
-    [
-     "2026-10-18",
-     22
-    ],
-    [
-     "2026-10-19",
-     22
-    ],
-    [
-     "2026-10-20",
-     22
-    ],
-    [
-     "2026-10-21",
-     22
-    ],
-    [
-     "2026-10-22",
-     22
-    ],
-    [
-     "2026-10-23",
-     22
-    ],
-    [
-     "2026-10-24",
-     22
-    ],
-    [
-     "2026-10-25",
-     22
-    ],
-    [
-     "2026-10-26",
-     22
-    ],
-    [
-     "2026-10-27",
-     22
-    ],
-    [
-     "2026-10-28",
-     22
-    ],
-    [
-     "2026-10-29",
-     22
-    ],
-    [
-     "2026-10-30",
-     22
-    ],
-    [
-     "2026-10-31",
-     22
-    ],
-    [
-     "2026-11-01",
-     22
-    ],
-    [
-     "2026-11-02",
-     22
-    ],
-    [
-     "2026-11-03",
-     22
-    ],
-    [
-     "2026-11-04",
-     22
-    ],
-    [
-     "2026-11-05",
-     22
-    ],
-    [
-     "2026-11-06",
-     22
-    ],
-    [
-     "2026-11-07",
-     22
-    ],
-    [
-     "2026-11-08",
-     22
-    ],
-    [
-     "2026-11-09",
-     22
-    ],
-    [
-     "2026-11-10",
-     22
-    ],
-    [
-     "2026-11-11",
-     22
-    ],
-    [
-     "2026-11-12",
-     22
-    ],
-    [
-     "2026-11-13",
-     22
-    ]
-   ],
-   "sg": null,
-   "title": "The Pod That Jane Likes - Live Taping [A Dave Matthews Band MSG Preshow Event]",
-   "date": "2026-11-13",
-   "venue": "Hill Country Live",
-   "url": "https://www.ticketweb.com/event/the-pod-that-jane-likes-hill-country-live-tickets/14385914",
-   "src": "Ticketmaster",
-   "low": 27,
-   "first": 22
   },
   "tm-vv1AvZkoyGkdn0R7v": {
    "history": [],
@@ -1075,24 +934,72 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7vfy",
    "src": null,
    "low": null
+  },
+  "sg-18634493": {
+   "history": [],
+   "sg": 18634493,
+   "title": "LCD Soundsystem",
+   "date": "2026-12-13",
+   "venue": "Knockdown Center",
+   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-12-13-8-pm/concert/18634493",
+   "src": null,
+   "low": null
+  },
+  "tm-rZ7HnEZ1AfCa-f": {
+   "history": [
+    [
+     "2026-11-14",
+     44
+    ]
+   ],
+   "sg": null,
+   "title": "Chris Beck Quartet",
+   "date": "2026-12-18",
+   "venue": "Smalls Jazz Club",
+   "url": "https://www.ticketweb.com/event/chris-beck-quartet-smalls-jazz-club-tickets/14389854",
+   "src": "Ticketmaster",
+   "low": 44,
+   "first": 44
+  },
+  "tm-rZ7HnEZ1AfCa0f": {
+   "history": [
+    [
+     "2026-11-14",
+     44
+    ]
+   ],
+   "sg": null,
+   "title": "Chris Beck Quartet",
+   "date": "2026-12-19",
+   "venue": "Smalls Jazz Club",
+   "url": "https://www.ticketweb.com/event/chris-beck-quartet-smalls-jazz-club-tickets/14389914",
+   "src": "Ticketmaster",
+   "low": 44,
+   "first": 44
+  },
+  "tm-vvG17Z_29NYHQR": {
+   "history": [],
+   "sg": 18408759,
+   "title": "Pigeons Playing Ping Pong: NYE 2026 (21+)",
+   "date": "2026-12-30",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "url": "https://www.ticketmaster.com/pigeons-playing-ping-pong-nye-2026-boston-massachusetts-12-30-2026/event/010064F5E3C3C6AF",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-G5vVZ_5R5G1f5": "2026-11-13",
-  "tm-vv1AeZkftGkdqDKq0": "2026-11-13",
   "tm-G5vVZ_5RuGQjG": "2026-11-13",
   "tm-vvG17Z_5wCylI9": "2026-11-13",
   "tm-vv177Z_oGkXBnY-F": "2026-11-13",
   "tm-vv177Z_oGkXBi8-I": "2026-11-13",
   "tm-rZ7HnEZ1AfuNZ7": "2026-11-13",
   "tm-rZ7HnEZ1AfuYF0": "2026-11-13",
-  "tm-vvG17Z_5wbduXe": "2026-11-13",
   "tm-Z7r9jZ1A7PJaJ": "2026-11-13",
   "tm-vvG17Z_u7Z_JCI": "2026-11-13",
   "tm-Z7r9jZ1AAvx-I": "2026-11-13",
   "tm-Z7r9jZ1AAvx-E": "2026-11-13",
   "tm-rZ7HnEZ1Afugk7": "2026-11-13",
-  "tm-rZ7HnEZ1AfCA0f": "2026-11-13",
   "tm-Z7r9jZ1AA77-E": "2026-11-13",
   "tm-rZ7HnEZ1Af83q7": "2026-11-13",
   "tm-rZ7HnEZ1Af83Q7": "2026-11-13",
@@ -1104,7 +1011,10 @@
   "tm-rZ7HnEZ1Af83qf": "2026-11-13",
   "tm-Z7r9jZ1AA7zoy": "2026-11-12",
   "tm-vv1AvZkf7GkdbzXaM": "2026-11-13",
-  "tm-vvG17Z_2wSVFP-": "2026-11-13"
+  "tm-vvG17Z_2wSVFP-": "2026-11-13",
+  "tm-rZ7HnEZ1AfCa-f": "2026-11-14",
+  "tm-rZ7HnEZ1AfCa0f": "2026-11-14",
+  "tm-vvG17Z_CTNmdDP": "2026-11-14"
  },
  "drops": []
 }
