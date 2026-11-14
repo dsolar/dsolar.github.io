@@ -6132,7 +6132,7 @@
       "pos": "RB",
       "nfl": "IND",
       "slot": "RB",
-      "proj": 15.48,
+      "proj": 15.42,
       "pts": null
      },
      {
@@ -6148,7 +6148,7 @@
       "pos": "WR",
       "nfl": "DAL",
       "slot": "WR",
-      "proj": 16.1,
+      "proj": 16.16,
       "pts": null
      },
      {
@@ -6204,7 +6204,7 @@
       "pos": "QB",
       "nfl": "ATL",
       "slot": "BN",
-      "proj": 15.38,
+      "proj": 15.34,
       "pts": null
      },
      {
@@ -6246,7 +6246,7 @@
       "pos": "QB",
       "nfl": "BUF",
       "slot": "QB",
-      "proj": 24.43,
+      "proj": 24.39,
       "pts": null
      },
      {
@@ -6254,7 +6254,7 @@
       "pos": "RB",
       "nfl": "BUF",
       "slot": "RB",
-      "proj": 16.74,
+      "proj": 16.68,
       "pts": null
      },
      {
@@ -6286,7 +6286,7 @@
       "pos": "WR",
       "nfl": "PIT",
       "slot": "WR",
-      "proj": 10.5,
+      "proj": 10.44,
       "pts": null
      },
      {
@@ -6302,7 +6302,7 @@
       "pos": "RB",
       "nfl": "MIA",
       "slot": "W/R/T",
-      "proj": 12.63,
+      "proj": 12.69,
       "pts": null
      },
      {
@@ -6318,7 +6318,7 @@
       "pos": "QB",
       "nfl": "HOU",
       "slot": "BN",
-      "proj": 17.13,
+      "proj": 17.27,
       "pts": null
      },
      {
@@ -6384,7 +6384,7 @@
       "pos": "RB",
       "nfl": "PIT",
       "slot": "RB",
-      "proj": 15.66,
+      "proj": 15.6,
       "pts": null
      },
      {
@@ -6408,7 +6408,7 @@
       "pos": "WR",
       "nfl": "CLE",
       "slot": "WR",
-      "proj": 8.21,
+      "proj": 8.23,
       "pts": null
      },
      {
@@ -6436,14 +6436,6 @@
       "pts": null
      },
      {
-      "n": "Carnell Tate",
-      "pos": "WR",
-      "nfl": "TEN",
-      "slot": "BN",
-      "proj": 0,
-      "pts": null
-     },
-     {
       "n": "Luther Burden III",
       "pos": "WR",
       "nfl": "CHI",
@@ -6464,7 +6456,7 @@
       "pos": "TE",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 8.55,
+      "proj": 8.56,
       "pts": null
      },
      {
@@ -6472,6 +6464,14 @@
       "pos": "QB",
       "nfl": "DEN",
       "slot": "BN",
+      "proj": 0,
+      "pts": null
+     },
+     {
+      "n": "Carnell Tate",
+      "pos": "WR",
+      "nfl": "TEN",
+      "slot": "IR",
       "proj": 0,
       "pts": null
      }
@@ -6522,7 +6522,7 @@
       "pos": "WR",
       "nfl": "MIN",
       "slot": "WR",
-      "proj": 14.59,
+      "proj": 15.23,
       "pts": null
      },
      {
@@ -6620,7 +6620,7 @@
       "pos": "WR",
       "nfl": "HOU",
       "slot": "WR",
-      "proj": 12.51,
+      "proj": 12.59,
       "pts": null
      },
      {
@@ -6692,7 +6692,7 @@
       "pos": "WR",
       "nfl": "SF",
       "slot": "BN",
-      "proj": 8.49,
+      "proj": 9.02,
       "pts": null
      },
      {
@@ -6734,7 +6734,7 @@
       "pos": "RB",
       "nfl": "DAL",
       "slot": "RB",
-      "proj": 15.71,
+      "proj": 15.77,
       "pts": null
      },
      {
@@ -6786,14 +6786,6 @@
       "pts": null
      },
      {
-      "n": "Ladd McConkey",
-      "pos": "WR",
-      "nfl": "LAC",
-      "slot": "BN",
-      "proj": 9.73,
-      "pts": null
-     },
-     {
       "n": "Rome Odunze",
       "pos": "WR",
       "nfl": "CHI",
@@ -6823,6 +6815,14 @@
       "nfl": "CHI",
       "slot": "BN",
       "proj": 0,
+      "pts": null
+     },
+     {
+      "n": "Ashton Jeanty",
+      "pos": "RB",
+      "nfl": "LV",
+      "slot": "BN",
+      "proj": 10.07,
       "pts": null
      },
      {
