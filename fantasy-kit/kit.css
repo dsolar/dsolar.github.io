@@ -2457,3 +2457,8 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
   .lgm:not(.slim) .lgm-side .fk-who{display:flex;gap:8px;flex-wrap:wrap}
   .lgm:not(.slim) .lgm-wk{margin-top:10px}
 }
+/* a league on a phone: the site bar and the league's masthead scroll away; the page tabs stay pinned at the very top
+   (under the status bar in the installed app). Beats the site navigation's own pin for .fk-top. */
+@media (max-width:700px){
+  body.fk-hasbar .fk-top,body.fk-hasbar:has(.ds-navigation) .fk-top{top:calc(env(safe-area-inset-top,0px) - var(--fk-mast-h,60px)) !important}
+}

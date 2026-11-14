@@ -2555,7 +2555,10 @@
       opts.top.innerHTML = U.shell({ brand: opts.brand, title: opts.switcher ? opts.switcher() : "", tabs, tab: r.tab, subs, sub: r.sub, hrefOf, right: opts.right ? opts.right() : "", tabbar: true, mast: mastVM(), slim: !front, navEnd: chatLink });
       document.body.classList.add("fk-hasbar");
       // the sticky header's height, so sticky bars on the page (the "Moving" bar) sit just under it
-      const topEl = opts.top.querySelector(".fk-top") || opts.top; document.documentElement.style.setProperty("--fk-top-h", `${Math.round(topEl.getBoundingClientRect().height)}px`);
+      // (on a phone the league's masthead scrolls away and only its page tabs stay pinned, so that's the height)
+      const topEl = opts.top.querySelector(".fk-top") || opts.top, mastEl = topEl.querySelector(".fk-mast"), mastH = mastEl ? Math.round(mastEl.getBoundingClientRect().height) : 0, phone = matchMedia("(max-width:700px)").matches;
+      document.documentElement.style.setProperty("--fk-mast-h", `${mastH}px`);
+      document.documentElement.style.setProperty("--fk-top-h", `${Math.round(topEl.getBoundingClientRect().height) - (phone ? mastH : 0)}px`);
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
