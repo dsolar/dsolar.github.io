@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-13T18:03:11Z",
+ "updated": "2026-11-14T16:44:42Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,366 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-rZ7HnEZ1AfCA0f",
-   "date": "2026-11-13",
-   "time": "17:00",
-   "title": "The Pod That Jane Likes - Live Taping [A Dave Matthews Band MSG Preshow Event]",
-   "cat": "music",
-   "venue": "Hill Country Live",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/the-pod-that-jane-likes-hill-country-live-tickets/14385914",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Dave Matthews Band",
-   "from": 27,
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-Z7r9jZ1A70EvJ",
-   "date": "2026-11-13",
-   "time": "18:00",
-   "title": "Basement w/ Fiddlehead",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70EvJ",
-   "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "18:30"
-   ],
-   "aka": [
-    "sg-18235940"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-G5vVZ_5R5G1f5",
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "An Evening With Goose",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/an-evening-with-goose-uncasville-connecticut-11-13-2026/event/1D0064BBCB30A50B",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "act": "Goose",
-   "aka": [
-    "sg-18280633",
-    "sg-18280634",
-    "2026-11-13-goose-mohegan-sun-arena"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "Bert Kreischer",
-   "sub": "Permission to Party tour",
-   "cat": "comedy",
-   "venue": "The Vets",
-   "city": "Providence, RI",
-   "drive_hours": 1,
-   "url": "https://comedy.tickets/tickets/bert-kreischer/",
-   "source": "picks",
-   "id": "2026-11-13-bert-kreischer-the-vets",
-   "act": "Bert Kreischer",
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "tm-vv177Z_kGkw31n77",
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "Blue October: Foiled 20th Anniversary World Tour",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/blue-october-foiled-20th-anniversary-world-boston-massachusetts-11-13-2026/event/0100646C922AA104",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18143448",
-    "2026-11-13-blue-october-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GkBx8x-a",
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "Havok (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/havok-18-boston-massachusetts-11-13-2026/event/0100650EA2422849",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18515349"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAvtfU",
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "JoJo (18+ Event)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvtfU",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18599279",
-    "2026-11-13-jojo-royale"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1rB3avF",
-   "date": "2026-11-13",
-   "time": "19:00",
-   "title": "The Bends",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-bends-boston-massachusetts-11-13-2026/event/010064A7BA489048",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18310245"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-k7vGF_2Lj9ock",
-   "date": "2026-11-13",
-   "time": "19:30",
-   "title": "Dark Star Orchestra",
-   "cat": "music",
-   "venue": "The Palace Theatre Albany",
-   "city": "Albany, NY",
-   "url": "https://www.ticketmaster.com/dark-star-orchestra-albany-new-york-11-13-2026/event/000064F7DC5D1B46",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "act": "Dark Star Orchestra",
-   "aka": [
-    "sg-18406745"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-G5diZ_2NJDtfA",
-   "date": "2026-11-13",
-   "time": "19:30",
-   "title": "Dave Matthews Band",
-   "cat": "music",
-   "venue": "Madison Square Garden",
-   "city": "New York, NY",
-   "url": "https://www.ticketmaster.com/dave-matthews-band-new-york-new-york-11-13-2026/event/3B0064F8E6EE9505",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Dave Matthews Band",
-   "aka": [
-    "sg-18474898"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZkfYGkec_PeO",
-   "date": "2026-11-13",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-13-2026/event/01006530AD6650A0",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_oGklaASBr",
-   "date": "2026-11-13",
-   "time": "19:30",
-   "title": "Lucy Darling: The More the Merrier",
-   "cat": "comedy",
-   "venue": "Boch Center Wang Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/lucy-darling-the-more-the-merrier-boston-massachusetts-11-13-2026/event/0100651AC9173E9E",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-11-13-lucy-darling-wang-theatre"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkoYGkdhRK8C",
-   "date": "2026-11-13",
-   "time": "19:30",
-   "title": "Phoebe Robinson: Feral & Fired Up!",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/phoebe-robinson-feral-fired-up-boston-massachusetts-11-13-2026/event/01006470DBBD340E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18138812",
-    "2026-11-13-phoebe-robinson-the-wilbur"
-   ],
-   "sub": "Feral & Fired Up!",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AeZkftGkdqDKq0",
-   "date": "2026-11-13",
-   "time": "19:30",
-   "title": "Trey Anastasio Band",
-   "cat": "music",
-   "venue": "Loew's Jersey Theatre",
-   "city": "Jersey City, NJ",
-   "url": "https://www.ticketmaster.com/trey-anastasio-band-jersey-city-new-jersey-11-13-2026/event/02006529DDED3764",
-   "source": "ticketmaster",
-   "drive_hours": 4.5,
-   "act": "Trey Anastasio",
-   "aka": [
-    "sg-18593200"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-Z7r9jZ1A7xboU",
-   "date": "2026-11-13",
-   "time": "20:00",
-   "title": "Donny Benet",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7xboU",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18618497"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_5wbduXe",
-   "date": "2026-11-13",
-   "time": "20:00",
-   "title": "Dweezil Zappa DZ20: Like Father, Like Son",
-   "cat": "music",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/dweezil-zappa-dz20-like-father-like-medford-massachusetts-11-13-2026/event/010064BC980CDF82",
-   "source": "ticketmaster",
-   "act": "Dweezil Zappa",
-   "aka": [
-    "sg-18282783",
-    "2026-11-13-dweezil-zappa-chevalier-theatre"
-   ],
-   "score": 2,
-   "why": "like"
-  },
-  {
-   "id": "tm-vv1AvZko6GkdI04jl",
-   "date": "2026-11-13",
-   "time": "20:00",
-   "title": "Marlon Wayans",
-   "cat": "comedy",
-   "venue": "Lynn Auditorium",
-   "city": "Lynn, MA",
-   "url": "https://www.ticketmaster.com/marlon-wayans-lynn-massachusetts-11-13-2026/event/01006447E891572B",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18135957"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_aGkDcDokY",
-   "date": "2026-11-13",
-   "time": "20:00",
-   "title": "Punch Brothers",
-   "cat": "music",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/punch-brothers-boston-massachusetts-11-13-2026/event/0100649EEDED11B0",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18225229"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfPGkdyBXE-",
-   "date": "2026-11-13",
-   "time": "20:00",
-   "title": "Victoria Monét: Frequency Of Love Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/victoria-monet-frequency-of-love-tour-boston-massachusetts-11-13-2026/event/01006525F9EBE9E1",
-   "source": "ticketmaster",
-   "times": [
-    "20:00",
-    "21:00"
-   ],
-   "aka": [
-    "sg-18579770",
-    "2026-11-13-victoria-monet-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_1pyxEjx",
-   "date": "2026-11-13",
-   "time": "21:00",
-   "title": "Madeon presents Victory Live ( 18+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/madeon-presents-victory-live-18-boston-massachusetts-11-13-2026/event/010064A5B98A7722",
-   "source": "ticketmaster",
-   "times": [
-    "21:00",
-    "22:30"
-   ],
-   "aka": [
-    "sg-18230457"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-1718v0G6GTwt-8I",
-   "date": "2026-11-13",
-   "time": "22:00",
-   "title": "Indo Warehouse",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketweb.com/event/indo-warehouse-royale-boston-tickets/14198314?REFERRAL_ID=tmfeed",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18721518"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18747166",
-   "date": "2026-11-13",
-   "time": "22:00",
-   "title": "The Glitter Boys",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-13-10-pm/concert/18747166",
-   "source": "seatgeek",
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkfYGkecjAdl",
    "date": "2026-11-14",
@@ -1258,11 +898,11 @@
    "id": "tm-vv1AvZk36GkeIgqfc",
    "date": "2026-11-19",
    "time": "19:00",
-   "title": "West 22nd: Places To Be (18+)",
+   "title": "West 22nd: Places To Be",
    "cat": "music",
    "venue": "Paradise Rock Club presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/west-22nd-places-to-be-18-boston-massachusetts-11-19-2026/event/01006487A8D5D52D",
+   "url": "https://www.ticketmaster.com/west-22nd-places-to-be-boston-massachusetts-11-19-2026/event/01006487A8D5D52D",
    "source": "ticketmaster",
    "aka": [
     "sg-18168767"
@@ -5626,6 +5266,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/bingo-loco-21-boston-massachusetts-01-16-2027/event/0100656D91FB728D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18774274"
+   ],
    "score": 0
   },
   {
@@ -6180,6 +5823,18 @@
    "score": 1
   },
   {
+   "id": "tm-Z7r9jZ1AAA3Zf",
+   "date": "2027-01-29",
+   "time": "20:00",
+   "title": "Almost Queen: A Tribute to Queen",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA3Zf",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "espn-401893261",
    "date": "2027-01-30",
    "time": "19:00",
@@ -6347,11 +6002,11 @@
    "id": "sg-18761756",
    "date": "2027-02-03",
    "time": "21:00",
-   "title": "Clairan",
+   "title": "Ciaran",
    "cat": "music",
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/bearface-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-03-9-pm/concert/18761756",
+   "url": "https://seatgeek.com/ciaran-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-03-9-pm/concert/18761756",
    "source": "seatgeek",
    "score": 0
   },
@@ -9768,6 +9423,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/bebe-and-cece-winans-the-encore-boston-massachusetts-04-15-2027/event/01006569D613E3AE",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18774293"
+   ],
    "score": 0
   },
   {
@@ -9822,6 +9480,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-dr-dog-boston-massachusetts-04-16-2027/event/01006569D3EDDEAE",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18773913"
+   ],
    "score": 0
   },
   {
@@ -10628,6 +10289,36 @@
     "sg-18642531"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4oGkdd_3Qz",
+   "date": "2027-05-13",
+   "time": "18:30",
+   "title": "Frank Turner & The Sleeping Souls: Last Evenings World Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/frank-turner-the-sleeping-souls-last-boston-massachusetts-05-13-2027/event/01006551C36526B8",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724844"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4NGkesrIYp",
+   "date": "2027-05-13",
+   "time": "19:00",
+   "title": "ANGUS & JULIA STONE: Karaoke Bar World Tour",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/angus-julia-stone-karaoke-bar-world-boston-massachusetts-05-13-2027/event/01006563B17A8C16",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18746454"
+   ],
+   "score": 0
   }
  ],
  "movies": [
@@ -10703,10 +10394,10 @@
   }
  ],
  "sources": {
-  "picks": 4,
+  "picks": 3,
   "venues": 2,
   "espn": 71,
-  "ticketmaster": 522,
-  "seatgeek": 110
+  "ticketmaster": 505,
+  "seatgeek": 109
  }
 }
