@@ -1335,7 +1335,7 @@
         })();
         const irT = irMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Injured reserve, ${ir.length} of ${irMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody data-dz="ir">${irRows}</tbody></table></div>` : "";
         const txT = txMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Taxi squad, ${taxi.length} of ${txMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody>${txRows}</tbody></table></div>` : "";
-        return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${esc(n)}</button>`).join("")}</div>
+        return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${/ stats$/.test(n) ? `<span class="lng">${esc(n)}</span><span class="sht">${esc(n.replace(/ stats$/, ""))}</span>` : esc(n)}</button>`).join("")}</div>
           ${tbl("bat", "Hitters")}${ipLine}${tbl("pit", "Pitchers")}${irT}${txT}`;
       }
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);

@@ -1571,8 +1571,8 @@ td.more .ps{display:block;margin-top:6px;width:max-content}
 .ticker{scroll-padding-inline:16px}
 .ticker>:first-child,.budgets>:first-child{margin-left:12px}
 .ticker>:last-child,.budgets>:last-child{margin-right:12px}
-.board.fade-l:not(.fade-r){-webkit-mask-image:none;mask-image:none}
-.board.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+.board.fade-l:not(.fade-r),.table-wrap.fade-l:not(.fade-r){-webkit-mask-image:none;mask-image:none}
+.board.fade-l.fade-r,.table-wrap.fade-l.fade-r{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
 @media (max-width:600px){table.t.vs td.nm{min-width:0;max-width:none;width:auto}table.t.vs{table-layout:fixed;width:100%}table.t.vs td.pa,table.t.vs td.pb{width:46px}table.t.vs td.sl{width:40px}}
 @media (min-width:861px){body.fk-room .toast{left:auto;right:20px;transform:none;top:auto;bottom:20px}}
 /* a column header that explains itself on hover */
@@ -1923,7 +1923,8 @@ table.t td.st,table.t th.st{width:1%;white-space:nowrap}
 table.t.mbox{font-size:13px}
 table.t.mbox td,table.t.mbox th{padding-left:7px;padding-right:7px}
 table.t.mbox + table.t.mbox{border-top:2px solid var(--line-2)}
-.seg.rv{margin:4px 0 2px;flex-wrap:wrap}
+.seg.rv{margin:4px 0 2px;flex-wrap:wrap;align-self:flex-start;width:fit-content;max-width:100%}
+.seg.rv+.rtab{margin-top:12px}
 .ipbar{display:grid;gap:6px;margin:12px 0 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface);font-size:13px}
 .ipbar i{display:block;height:6px;border-radius:3px;background:var(--surface-3,#e8edf2);position:relative;overflow:hidden}
 .ipbar i::after{content:"";position:absolute;inset:0 auto 0 0;width:var(--p);background:var(--loss);border-radius:3px}
@@ -2220,7 +2221,7 @@ td.srt{background:color-mix(in srgb,var(--accent) 7%,transparent)}
   /* stat tables: the player column stays put while the numbers scroll under it */
   .table-wrap table.t td.nm,.table-wrap table.t td:has(> .pname),.table-wrap table.t td:has(> span > .pname){position:sticky;left:0;z-index:1;background:var(--surface);box-shadow:6px 0 8px -7px rgba(0,0,0,.28)}
   .table-wrap table.t tr.me td.nm{background:linear-gradient(var(--brand-soft),var(--brand-soft)),var(--surface)}
-  .table-wrap table.t:has(tbody td.nm:nth-child(2)) th:nth-child(2){position:sticky;left:0;z-index:2;background:var(--surface-2)}
+  .table-wrap table.t:has(tbody td.nm:nth-child(2)) th:nth-child(2){position:sticky;left:0;z-index:3;background:var(--surface-2)}
   table.t .pname .pn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:132px}
   table.t .pname .sub{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:132px}
   table.t.mbox .pname .pav{display:none}
@@ -2462,3 +2463,28 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 @media (max-width:700px){
   body.fk-hasbar .fk-top,body.fk-hasbar:has(.ds-navigation) .fk-top{top:calc(env(safe-area-inset-top,0px) - var(--fk-mast-h,60px)) !important}
 }
+
+/* Phone roster: the slot and the player stay pinned on the left, header cells included (above the stat headers
+   that slide under them), and the action column scrolls with the stats instead of eating the width, so four or
+   five stats show at once. The roster view switch is one swipeable row of short labels. */
+@media (max-width:600px){
+  .table-wrap table.t.roster th.c,.table-wrap table.t.roster td.c{position:sticky;left:0;z-index:1;background:var(--surface);width:54px !important;min-width:54px;max-width:54px;padding:6px 4px 6px 6px;text-align:left}
+  .table-wrap table.t.roster th.c{z-index:3;background:var(--surface-2)}
+  .table-wrap table.t.roster td.nm{left:54px;width:124px;min-width:124px;max-width:124px;padding-left:6px;padding-right:6px}
+  .table-wrap table.t.roster th:nth-child(2){position:sticky;left:54px !important;z-index:3 !important;background:var(--surface-2);box-shadow:6px 0 8px -7px rgba(0,0,0,.28);padding-left:6px}
+  .table-wrap table.t.roster tr.me td.c{background:linear-gradient(var(--brand-soft),var(--brand-soft)),var(--surface)}
+  table.t.roster .slot{min-width:34px;padding-left:4px;padding-right:4px}
+  table.t.roster .grip{display:none}
+  table.t.roster .pname{gap:7px}
+  table.t.roster .pname .pav,table.t.roster .pname .av{width:26px;height:26px;font-size:9.5px}
+  table.t.roster .pname .pn,table.t.roster .pname .sub{max-width:85px}
+  table.t.roster td.num,table.t.roster th.r{min-width:44px;padding-left:4px;padding-right:8px}
+  .table-wrap table.t.roster td.act,.table-wrap table.t.roster th.act{position:static;box-shadow:none;padding-left:8px}
+  table.t.roster td.act::before,table.t.roster th.act::before{display:none}
+  .seg.rv{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:auto;align-self:stretch;max-width:100%}
+  .seg.rv::-webkit-scrollbar{display:none}
+  .seg.rv button{flex:1 0 auto;white-space:nowrap;padding:7px 11px}
+  .seg.rv .lng{display:none}
+}
+@media (max-width:600px){.table-wrap table.t:has(tbody td.nm:first-child) thead th:first-child{position:sticky;left:0;z-index:3;background:var(--surface-2);box-shadow:6px 0 8px -7px rgba(0,0,0,.28)}}
+@media (min-width:601px){.seg.rv .sht{display:none}}
