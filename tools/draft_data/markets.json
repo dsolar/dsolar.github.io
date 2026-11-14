@@ -1,134 +1,148 @@
 {
  "source": "Kalshi",
- "updated": "2026-11-13",
+ "updated": "2026-11-14",
  "events": [
   {
-   "league": "nba",
-   "series": "KXNBADRAFTPICK",
-   "event": "KXNBADRAFTPICK-27-1",
-   "title": "Pro Basketball #1 Overall Pick in 2027",
-   "sub": "1st Pick 2027",
-   "url": "https://kalshi.com/markets/kxnbadraftpick",
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
+   "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
+   "sub": "Drew Mestemaker (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
    "outcomes": [
     {
-     "name": "Tyran Stokes",
-     "price": 49.5,
-     "last": 74.0,
-     "bid": 45.0,
-     "ask": 54.0,
-     "volume": 4625
-    },
-    {
-     "name": "Caleb Holt",
-     "price": 8.5,
-     "last": 7.0,
-     "bid": 6.0,
-     "ask": 11.0,
-     "volume": 1146
-    },
-    {
-     "name": "Jordan Smith Jr.",
-     "price": 8.5,
-     "last": 7.0,
-     "bid": 5.0,
-     "ask": 12.0,
-     "volume": 1739
-    },
-    {
-     "name": "Bruce Branch III",
-     "price": 7.0,
-     "last": 6.0,
-     "bid": 3.0,
-     "ask": 11.0,
-     "volume": 448
-    },
-    {
-     "name": "Patrick Ngongba II",
-     "price": 6.0,
-     "last": 7.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 275
-    },
-    {
-     "name": "Thomas Haugh",
-     "price": 4.5,
-     "last": 8.0,
+     "name": "Drew Mestemaker to declare for the Pro Football Draft",
+     "price": 50.5,
+     "last": 91.0,
      "bid": 1.0,
-     "ask": 8.0,
-     "volume": 300
-    },
+     "ask": 100.0,
+     "volume": 1944
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
+   "title": "Will Arch Manning declare for the 2027 Pro Football Draft?",
+   "sub": "Arch Manning (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Cameron Williams",
-     "price": 3.0,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 5.0,
-     "volume": 1082
-    },
-    {
-     "name": "Colben Landrew",
-     "price": 3.0,
+     "name": "Arch Manning to declare for the Pro Football Draft",
+     "price": 28.0,
      "last": 30.0,
-     "bid": 0.0,
-     "ask": 6.0,
-     "volume": 845
-    },
+     "bid": 25.0,
+     "ask": 31.0,
+     "volume": 970
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27ASIM",
+   "title": "Will Austin Simmons declare for the 2027 Pro Football Draft?",
+   "sub": "Austin Simmons (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Braylon Mullins",
-     "price": 2.5,
-     "last": 5.0,
-     "bid": 0.0,
-     "ask": 5.0,
-     "volume": 228
-    },
+     "name": "Austin Simmons to declare for the Pro Football Draft",
+     "price": 27.5,
+     "last": 50.0,
+     "bid": 5.0,
+     "ask": 50.0,
+     "volume": 50
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
+   "title": "Will CJ Carr declare for the 2027 Pro Football Draft?",
+   "sub": "CJ Carr (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Motiejus Krivas",
-     "price": 2.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 5.0,
-     "volume": 0
-    },
+     "name": "CJ Carr to declare for the Pro Football Draft",
+     "price": 73.0,
+     "last": 99.0,
+     "bid": 47.0,
+     "ask": 99.0,
+     "volume": 1043
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
+   "title": "Will Darian Mensah declare for the 2027 Pro Football Draft?",
+   "sub": "Darian Mensah (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Baba Oladotun",
-     "price": 2.0,
-     "last": 6.0,
-     "bid": 0.0,
-     "ask": 4.0,
-     "volume": 193
-    },
+     "name": "Darian Mensah to declare for the Pro Football Draft",
+     "price": 86.0,
+     "last": 83.0,
+     "bid": 82.0,
+     "ask": 90.0,
+     "volume": 11
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
+   "title": "Will Dante Moore declare for the 2027 Pro Football Draft?",
+   "sub": "Dante Moore (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Amari Allen",
-     "price": 2.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 4.0,
-     "volume": 0
-    },
+     "name": "Dante Moore to declare for the Pro Football Draft",
+     "price": 77.5,
+     "last": 99.0,
+     "bid": 57.0,
+     "ask": 98.0,
+     "volume": 309
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
+   "title": "Will Jadan Baugh declare for the 2027 Pro Football Draft?",
+   "sub": "Jadan Baugh (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Dylan Mingo",
-     "price": 2.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 4.0,
-     "volume": 0
-    },
+     "name": "Jadan Baugh to declare for the Pro Football Draft",
+     "price": 91.0,
+     "last": 88.0,
+     "bid": 87.0,
+     "ask": 95.0,
+     "volume": 39
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
+   "title": "Will Ryan Coleman-Williams declare for the 2027 Pro Football Draft?",
+   "sub": "Ryan Coleman-Williams (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
     {
-     "name": "Hugo Yimga-Moukouri",
-     "price": 2.0,
-     "last": 4.0,
-     "bid": 0.0,
-     "ask": 4.0,
-     "volume": 89
-    },
-    {
-     "name": "Brandon McCoy",
-     "price": 1.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 81
+     "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
+     "price": 84.5,
+     "last": 89.0,
+     "bid": 80.0,
+     "ask": 89.0,
+     "volume": 61
     }
    ]
   },
@@ -142,35 +156,35 @@
    "outcomes": [
     {
      "name": "Miami",
-     "price": 26.0,
-     "last": 33.0,
-     "bid": 24.0,
-     "ask": 28.0,
-     "volume": 28887
+     "price": 24.5,
+     "last": 22.0,
+     "bid": 22.0,
+     "ask": 27.0,
+     "volume": 28903
     },
     {
      "name": "Tennessee",
-     "price": 22.5,
-     "last": 23.0,
+     "price": 24.5,
+     "last": 26.0,
      "bid": 22.0,
-     "ask": 23.0,
-     "volume": 8942
+     "ask": 27.0,
+     "volume": 9104
     },
     {
      "name": "Los Angeles C",
-     "price": 19.5,
+     "price": 18.0,
      "last": 22.0,
-     "bid": 18.0,
-     "ask": 21.0,
-     "volume": 8238
+     "bid": 14.0,
+     "ask": 22.0,
+     "volume": 8416
     },
     {
      "name": "New York J",
      "price": 10.5,
-     "last": 13.0,
+     "last": 8.0,
      "bid": 8.0,
      "ask": 13.0,
-     "volume": 11475
+     "volume": 11497
     },
     {
      "name": "Philadelphia",
@@ -400,331 +414,683 @@
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
-   "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
-   "sub": "Drew Mestemaker (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P1",
+   "title": "Pro Football 1st Quarterback Drafted in 2027",
+   "sub": "1st QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
    "outcomes": [
     {
-     "name": "Drew Mestemaker to declare for the Pro Football Draft",
-     "price": 50.5,
-     "last": 91.0,
-     "bid": 1.0,
-     "ask": 100.0,
-     "volume": 1944
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
-   "title": "Will Arch Manning declare for the 2027 Pro Football Draft?",
-   "sub": "Arch Manning (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
+     "name": "Drew Mestemaker",
+     "price": 56.0,
+     "last": 69.0,
+     "bid": 53.0,
+     "ask": 59.0,
+     "volume": 3411
+    },
     {
-     "name": "Arch Manning to declare for the Pro Football Draft",
-     "price": 28.5,
-     "last": 30.0,
-     "bid": 26.0,
-     "ask": 31.0,
-     "volume": 970
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27ASIM",
-   "title": "Will Austin Simmons declare for the 2027 Pro Football Draft?",
-   "sub": "Austin Simmons (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
+     "name": "Darian Mensah",
+     "price": 21.5,
+     "last": 19.0,
+     "bid": 19.0,
+     "ask": 24.0,
+     "volume": 558
+    },
     {
-     "name": "Austin Simmons to declare for the Pro Football Draft",
-     "price": 50.5,
-     "last": 0.0,
+     "name": "CJ Carr",
+     "price": 18.0,
+     "last": 14.0,
+     "bid": 15.0,
+     "ask": 21.0,
+     "volume": 2336
+    },
+    {
+     "name": "Arch Manning",
+     "price": 8.5,
+     "last": 6.0,
+     "bid": 6.0,
+     "ask": 11.0,
+     "volume": 517
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 3.5,
+     "last": 4.0,
      "bid": 2.0,
-     "ask": 99.0,
+     "ask": 5.0,
+     "volume": 6410
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 3.5,
+     "last": 5.0,
+     "bid": 2.0,
+     "ask": 5.0,
+     "volume": 1256
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 3.0,
+     "last": 6.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 903
+    },
+    {
+     "name": "Dante Moore",
+     "price": 3.0,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 480
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 2.0,
+     "last": 49.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 560
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 1.5,
+     "last": 40.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 523
+    },
+    {
+     "name": "Katin Houser",
+     "price": 1.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 4
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
      "volume": 0
     }
    ]
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
-   "title": "Will CJ Carr declare for the 2027 Pro Football Draft?",
-   "sub": "CJ Carr (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P2",
+   "title": "Pro Football 2nd Quarterback Drafted in 2027",
+   "sub": "2nd QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
    "outcomes": [
-    {
-     "name": "CJ Carr to declare for the Pro Football Draft",
-     "price": 73.0,
-     "last": 99.0,
-     "bid": 47.0,
-     "ask": 99.0,
-     "volume": 1043
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
-   "title": "Will Darian Mensah declare for the 2027 Pro Football Draft?",
-   "sub": "Darian Mensah (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Darian Mensah to declare for the Pro Football Draft",
-     "price": 86.0,
-     "last": 83.0,
-     "bid": 82.0,
-     "ask": 90.0,
-     "volume": 11
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
-   "title": "Will Dante Moore declare for the 2027 Pro Football Draft?",
-   "sub": "Dante Moore (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Dante Moore to declare for the Pro Football Draft",
-     "price": 77.5,
-     "last": 99.0,
-     "bid": 57.0,
-     "ask": 98.0,
-     "volume": 309
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
-   "title": "Will Jadan Baugh declare for the 2027 Pro Football Draft?",
-   "sub": "Jadan Baugh (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Jadan Baugh to declare for the Pro Football Draft",
-     "price": 91.0,
-     "last": 88.0,
-     "bid": 87.0,
-     "ask": 95.0,
-     "volume": 39
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
-   "title": "Will Ryan Coleman-Williams declare for the 2027 Pro Football Draft?",
-   "sub": "Ryan Coleman-Williams (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
-     "price": 84.5,
-     "last": 89.0,
-     "bid": 80.0,
-     "ask": 89.0,
-     "volume": 61
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-1",
-   "title": "Pro Football #1 Overall Pick in 2027",
-   "sub": "1st Pick 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftpick",
-   "outcomes": [
-    {
-     "name": "Drew Mestemaker",
-     "price": 37.0,
-     "last": 38.0,
-     "bid": 36.0,
-     "ask": 38.0,
-     "volume": 66987
-    },
-    {
-     "name": "Jeremiah Smith",
-     "price": 25.5,
-     "last": 27.0,
-     "bid": 24.0,
-     "ask": 27.0,
-     "volume": 91270
-    },
-    {
-     "name": "CJ Carr",
-     "price": 9.5,
-     "last": 10.0,
-     "bid": 9.0,
-     "ask": 10.0,
-     "volume": 45266
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 7.5,
-     "last": 9.0,
-     "bid": 7.0,
-     "ask": 8.0,
-     "volume": 48004
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 5.0,
-     "last": 6.0,
-     "bid": 3.0,
-     "ask": 7.0,
-     "volume": 27907
-    },
-    {
-     "name": "Arch Manning",
-     "price": 4.5,
-     "last": 5.0,
-     "bid": 4.0,
-     "ask": 5.0,
-     "volume": 157262
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 2.5,
-     "last": 3.0,
-     "bid": 2.0,
-     "ask": 3.0,
-     "volume": 50290
-    },
-    {
-     "name": "Dante Moore",
-     "price": 1.5,
-     "last": 2.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 44472
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 14266
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 1.5,
-     "last": 4.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 12783
-    },
-    {
-     "name": "DJ Lagway",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2865
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 0.5,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 24884
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2794
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2979
-    },
-    {
-     "name": "Cam Coleman",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 3403
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 13614
-    },
-    {
-     "name": "Quincy Rhodes Jr.",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2463
-    },
-    {
-     "name": "Ryan Williams",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2879
-    },
-    {
-     "name": "John Mateer",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 10110
-    },
     {
      "name": "Nico Iamaleava",
-     "price": 0.5,
-     "last": 1.0,
+     "price": 47.0,
+     "last": 0.0,
      "bid": 0.0,
-     "ask": 1.0,
-     "volume": 7634
+     "ask": 94.0,
+     "volume": 0
     },
     {
      "name": "Sam Leavitt",
-     "price": 0.5,
-     "last": 1.0,
+     "price": 47.0,
+     "last": 0.0,
      "bid": 0.0,
-     "ask": 1.0,
-     "volume": 13613
+     "ask": 94.0,
+     "volume": 0
     },
     {
-     "name": "Lincoln Kienholz",
-     "price": 0.5,
+     "name": "Josh Hoover",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 46.0,
+     "last": 10.0,
+     "bid": 1.0,
+     "ask": 91.0,
+     "volume": 0
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 34.5,
+     "last": 91.0,
+     "bid": 7.0,
+     "ask": 62.0,
+     "volume": 1
+    },
+    {
+     "name": "CJ Carr",
+     "price": 25.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 25.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 24.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 48.0,
+     "volume": 0
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 22.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 44.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 15.5,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 29.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 15.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 29.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 14.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 28.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P3",
+   "title": "Pro Football 3rd Quarterback Drafted in 2027",
+   "sub": "3rd QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
+    {
+     "name": "Drew Mestemaker",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 30.5,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 59.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 30.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 59.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 29.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 59.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTTOP",
+   "event": "KXNFLDRAFTTOP-27-5",
+   "title": "Pro Football Players Drafted Top 5",
+   "sub": "Top 5 2027",
+   "url": "https://kalshi.com/markets/kxnfldrafttop",
+   "outcomes": [
+    {
+     "name": "Jeremiah Smith",
+     "price": 91.0,
+     "last": 94.0,
+     "bid": 88.0,
+     "ask": 94.0,
+     "volume": 1483
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 71.0,
+     "last": 89.0,
+     "bid": 52.0,
+     "ask": 90.0,
+     "volume": 200
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 51.0,
+     "last": 36.0,
+     "bid": 38.0,
+     "ask": 64.0,
+     "volume": 165
+    },
+    {
+     "name": "CJ Carr",
+     "price": 48.0,
+     "last": 26.0,
+     "bid": 14.0,
+     "ask": 82.0,
+     "volume": 50
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 47.5,
+     "last": 80.0,
+     "bid": 16.0,
+     "ask": 79.0,
+     "volume": 187
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 46.5,
+     "last": 58.0,
+     "bid": 11.0,
+     "ask": 82.0,
+     "volume": 59
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 32.0,
+     "last": 6.0,
+     "bid": 6.0,
+     "ask": 58.0,
+     "volume": 111
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 28.5,
+     "last": 54.0,
+     "bid": 3.0,
+     "ask": 54.0,
+     "volume": 19
+    },
+    {
+     "name": "Dante Moore",
+     "price": 21.5,
+     "last": 11.0,
+     "bid": 1.0,
+     "ask": 42.0,
+     "volume": 433
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 20.0,
+     "last": 10.0,
+     "bid": 1.0,
+     "ask": 39.0,
+     "volume": 662
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 20.0,
      "last": 2.0,
      "bid": 0.0,
-     "ask": 1.0,
-     "volume": 701
+     "ask": 40.0,
+     "volume": 214
+    },
+    {
+     "name": "Quincy Rhodes Jr.",
+     "price": 17.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 35.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 17.0,
+     "last": 29.0,
+     "bid": 10.0,
+     "ask": 24.0,
+     "volume": 12071
+    },
+    {
+     "name": "Cam Coleman",
+     "price": 17.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 34.0,
+     "volume": 0
+    },
+    {
+     "name": "Ryan Williams",
+     "price": 16.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 32.0,
+     "volume": 103
+    },
+    {
+     "name": "John Mateer",
+     "price": 4.0,
+     "last": 7.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 929
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 4.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 104
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 3.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 95
+    },
+    {
+     "name": "DJ Lagway",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nba",
+   "series": "KXNBADRAFTPICK",
+   "event": "KXNBADRAFTPICK-27-1",
+   "title": "Pro Basketball #1 Overall Pick in 2027",
+   "sub": "1st Pick 2027",
+   "url": "https://kalshi.com/markets/kxnbadraftpick",
+   "outcomes": [
+    {
+     "name": "Tyran Stokes",
+     "price": 48.5,
+     "last": 74.0,
+     "bid": 45.0,
+     "ask": 52.0,
+     "volume": 4625
+    },
+    {
+     "name": "Jordan Smith Jr.",
+     "price": 9.0,
+     "last": 7.0,
+     "bid": 5.0,
+     "ask": 13.0,
+     "volume": 1739
+    },
+    {
+     "name": "Caleb Holt",
+     "price": 8.5,
+     "last": 7.0,
+     "bid": 6.0,
+     "ask": 11.0,
+     "volume": 1146
+    },
+    {
+     "name": "Bruce Branch III",
+     "price": 7.5,
+     "last": 6.0,
+     "bid": 3.0,
+     "ask": 12.0,
+     "volume": 448
+    },
+    {
+     "name": "Patrick Ngongba II",
+     "price": 6.5,
+     "last": 7.0,
+     "bid": 3.0,
+     "ask": 10.0,
+     "volume": 275
+    },
+    {
+     "name": "Thomas Haugh",
+     "price": 5.0,
+     "last": 8.0,
+     "bid": 1.0,
+     "ask": 9.0,
+     "volume": 300
+    },
+    {
+     "name": "Cameron Williams",
+     "price": 3.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 6.0,
+     "volume": 1082
+    },
+    {
+     "name": "Colben Landrew",
+     "price": 3.0,
+     "last": 30.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 845
+    },
+    {
+     "name": "Braylon Mullins",
+     "price": 2.5,
+     "last": 5.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 228
+    },
+    {
+     "name": "Motiejus Krivas",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baba Oladotun",
+     "price": 2.0,
+     "last": 6.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 193
+    },
+    {
+     "name": "Amari Allen",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dylan Mingo",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Hugo Yimga-Moukouri",
+     "price": 2.0,
+     "last": 4.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 89
+    },
+    {
+     "name": "Brandon McCoy",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 81
     }
    ]
   },
@@ -817,14 +1183,6 @@
      "volume": 0
     },
     {
-     "name": "Houston",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
      "name": "New York G",
      "price": 3.5,
      "last": 0.0,
@@ -838,6 +1196,14 @@
      "last": 0.0,
      "bid": 1.0,
      "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -1019,31 +1385,7 @@
      "volume": 0
     },
     {
-     "name": "Atlanta",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
      "name": "Baltimore",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Carolina",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Las Vegas",
      "price": 6.0,
      "last": 0.0,
      "bid": 3.0,
@@ -1059,19 +1401,27 @@
      "volume": 0
     },
     {
-     "name": "Washington",
-     "price": 6.0,
+     "name": "Atlanta",
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
-     "name": "Arizona",
+     "name": "Carolina",
      "price": 5.0,
      "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
@@ -1080,6 +1430,22 @@
      "last": 0.0,
      "bid": 2.0,
      "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
@@ -1099,15 +1465,15 @@
      "volume": 0
     },
     {
-     "name": "Philadelphia",
-     "price": 3.5,
+     "name": "New England",
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
-     "name": "New England",
+     "name": "Philadelphia",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -1270,102 +1636,102 @@
    "outcomes": [
     {
      "name": "New York J",
-     "price": 9.0,
+     "price": 8.0,
      "last": 0.0,
      "bid": 6.0,
-     "ask": 12.0,
-     "volume": 0
-    },
-    {
-     "name": "Cleveland",
-     "price": 7.0,
-     "last": 0.0,
-     "bid": 4.0,
      "ask": 10.0,
      "volume": 0
     },
     {
-     "name": "Atlanta",
+     "name": "Cleveland",
      "price": 6.0,
      "last": 0.0,
+     "bid": 4.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 5.0,
+     "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Baltimore",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Las Vegas",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Arizona",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Carolina",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "New Orleans",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Tampa Bay",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Washington",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Houston",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "New York G",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -2068,122 +2434,82 @@
    "outcomes": [
     {
      "name": "Cleveland",
-     "price": 9.0,
+     "price": 8.0,
      "last": 0.0,
      "bid": 6.0,
-     "ask": 12.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 7.0,
-     "last": 0.0,
-     "bid": 4.0,
      "ask": 10.0,
      "volume": 0
     },
     {
-     "name": "Baltimore",
+     "name": "New York J",
      "price": 6.0,
      "last": 0.0,
+     "bid": 4.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 5.0,
+     "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Houston",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Las Vegas",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "New England",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "New York G",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Atlanta",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Washington",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Arizona",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Carolina",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New Orleans",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Tampa Bay",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -2212,6 +2538,46 @@
     },
     {
      "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -2334,126 +2700,70 @@
    "outcomes": [
     {
      "name": "Cleveland",
-     "price": 11.0,
+     "price": 10.0,
      "last": 0.0,
      "bid": 8.0,
-     "ask": 14.0,
+     "ask": 12.0,
      "volume": 0
     },
     {
      "name": "Baltimore",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Houston",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "New York J",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "New England",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Seattle",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Las Vegas",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Atlanta",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Carolina",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Dallas",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Detroit",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Minnesota",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New York G",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Washington",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
      "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Arizona",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -2469,7 +2779,39 @@
      "volume": 0
     },
     {
+     "name": "Dallas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Kansas City",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -2485,7 +2827,31 @@
      "volume": 0
     },
     {
+     "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -2615,22 +2981,6 @@
      "volume": 0
     },
     {
-     "name": "Dallas",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Detroit",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
      "name": "Minnesota",
      "price": 5.0,
      "last": 0.0,
@@ -2647,11 +2997,19 @@
      "volume": 0
     },
     {
-     "name": "Baltimore",
+     "name": "Dallas",
      "price": 4.0,
      "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
@@ -2704,6 +3062,14 @@
     },
     {
      "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -2866,73 +3232,57 @@
    "outcomes": [
     {
      "name": "Seattle",
-     "price": 12.0,
+     "price": 11.0,
      "last": 0.0,
      "bid": 9.0,
-     "ask": 15.0,
+     "ask": 13.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 9.0,
+     "price": 8.0,
      "last": 0.0,
      "bid": 6.0,
-     "ask": 12.0,
+     "ask": 10.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 9.0,
+     "price": 8.0,
      "last": 0.0,
      "bid": 6.0,
-     "ask": 12.0,
+     "ask": 10.0,
      "volume": 0
     },
     {
      "name": "Detroit",
-     "price": 8.0,
+     "price": 7.0,
      "last": 0.0,
      "bid": 5.0,
-     "ask": 11.0,
+     "ask": 9.0,
      "volume": 0
     },
     {
      "name": "Minnesota",
-     "price": 8.0,
+     "price": 7.0,
      "last": 0.0,
      "bid": 5.0,
-     "ask": 11.0,
+     "ask": 9.0,
      "volume": 0
     },
     {
      "name": "Chicago",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "New England",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
      "ask": 6.0,
      "volume": 0
     },
     {
-     "name": "Pittsburgh",
-     "price": 3.5,
+     "name": "New York J",
+     "price": 4.0,
      "last": 0.0,
-     "bid": 1.0,
+     "bid": 2.0,
      "ask": 6.0,
      "volume": 0
     },
@@ -2961,7 +3311,23 @@
      "volume": 0
     },
     {
+     "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -3132,105 +3498,57 @@
    "outcomes": [
     {
      "name": "Tampa Bay",
-     "price": 12.0,
+     "price": 11.0,
      "last": 0.0,
      "bid": 9.0,
-     "ask": 15.0,
+     "ask": 13.0,
      "volume": 0
     },
     {
      "name": "New York G",
-     "price": 8.0,
-     "last": 0.0,
-     "bid": 5.0,
-     "ask": 11.0,
-     "volume": 0
-    },
-    {
-     "name": "Carolina",
      "price": 7.0,
      "last": 0.0,
-     "bid": 4.0,
-     "ask": 10.0,
-     "volume": 0
-    },
-    {
-     "name": "New Orleans",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
+     "bid": 5.0,
      "ask": 9.0,
      "volume": 0
     },
     {
-     "name": "Atlanta",
+     "name": "Carolina",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 4.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
      "price": 5.0,
      "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 4.0,
+     "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Houston",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "New England",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Dallas",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Kansas City",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Washington",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
      "ask": 6.0,
      "volume": 0
     },
@@ -3251,6 +3569,14 @@
      "volume": 0
     },
     {
+     "name": "Dallas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Jacksonville",
      "price": 3.0,
      "last": 0.0,
@@ -3259,7 +3585,47 @@
      "volume": 0
     },
     {
+     "name": "Kansas City",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Las Vegas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -3398,10 +3764,10 @@
    "outcomes": [
     {
      "name": "Miami",
-     "price": 20.0,
+     "price": 19.0,
      "last": 11.0,
      "bid": 17.0,
-     "ask": 23.0,
+     "ask": 21.0,
      "volume": 0
     },
     {
@@ -3422,10 +3788,10 @@
     },
     {
      "name": "New York J",
-     "price": 14.5,
+     "price": 13.5,
      "last": 6.0,
      "bid": 12.0,
-     "ask": 17.0,
+     "ask": 15.0,
      "volume": 20
     },
     {
@@ -3663,14 +4029,6 @@
    "url": "https://kalshi.com/markets/kxnfldraftselect",
    "outcomes": [
     {
-     "name": "New England",
-     "price": 7.5,
-     "last": 0.0,
-     "bid": 4.0,
-     "ask": 11.0,
-     "volume": 0
-    },
-    {
      "name": "New York G",
      "price": 7.5,
      "last": 0.0,
@@ -3680,6 +4038,14 @@
     },
     {
      "name": "Cleveland",
+     "price": 6.5,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
      "price": 6.5,
      "last": 0.0,
      "bid": 3.0,
@@ -3783,15 +4149,15 @@
      "volume": 0
     },
     {
-     "name": "Atlanta",
-     "price": 3.5,
+     "name": "Washington",
+     "price": 4.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
-     "name": "Buffalo",
+     "name": "Atlanta",
      "price": 3.5,
      "last": 0.0,
      "bid": 1.0,
@@ -3847,11 +4213,11 @@
      "volume": 0
     },
     {
-     "name": "Washington",
-     "price": 3.5,
+     "name": "Buffalo",
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -3930,121 +4296,41 @@
    "outcomes": [
     {
      "name": "Cleveland",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "New England",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Pittsburgh",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Kansas City",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "New York G",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Cincinnati",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Dallas",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Denver",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Detroit",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Houston",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Jacksonville",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Minnesota",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Chicago",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
      "ask": 6.0,
      "volume": 0
     },
@@ -4073,6 +4359,62 @@
      "volume": 0
     },
     {
+     "name": "Chicago",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Las Vegas",
      "price": 3.0,
      "last": 0.0,
@@ -4081,7 +4423,31 @@
      "volume": 0
     },
     {
+     "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "San Francisco",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -4462,126 +4828,126 @@
    "outcomes": [
     {
      "name": "Denver",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
+     "ask": 8.0,
      "volume": 0
     },
     {
      "name": "Cincinnati",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Pittsburgh",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Chicago",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Detroit",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Jacksonville",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Kansas City",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Minnesota",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Buffalo",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "San Francisco",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "New England",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -4994,138 +5360,58 @@
    "outcomes": [
     {
      "name": "New York G",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Tampa Bay",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Houston",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "New England",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Carolina",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Kansas City",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Atlanta",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Cincinnati",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Detroit",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Jacksonville",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Minnesota",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New Orleans",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -5145,7 +5431,23 @@
      "volume": 0
     },
     {
+     "name": "Carolina",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Chicago",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -5161,6 +5463,30 @@
      "volume": 0
     },
     {
+     "name": "Detroit",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Las Vegas",
      "price": 3.0,
      "last": 0.0,
@@ -5169,7 +5495,47 @@
      "volume": 0
     },
     {
+     "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "San Francisco",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -5260,138 +5626,138 @@
    "outcomes": [
     {
      "name": "Cincinnati",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Detroit",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Jacksonville",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Kansas City",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Minnesota",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Buffalo",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Chicago",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Denver",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "New England",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "New York G",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "San Francisco",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Houston",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "New York J",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -5526,114 +5892,98 @@
    "outcomes": [
     {
      "name": "Buffalo",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Chicago",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Cincinnati",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Denver",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Jacksonville",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Detroit",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Kansas City",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Minnesota",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "San Francisco",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "New England",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -5646,6 +5996,22 @@
     },
     {
      "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -6324,18 +6690,18 @@
    "outcomes": [
     {
      "name": "New York J",
-     "price": 20.0,
+     "price": 19.0,
      "last": 0.0,
      "bid": 17.0,
-     "ask": 23.0,
+     "ask": 21.0,
      "volume": 0
     },
     {
      "name": "Miami",
-     "price": 16.0,
+     "price": 15.0,
      "last": 0.0,
      "bid": 13.0,
-     "ask": 19.0,
+     "ask": 17.0,
      "volume": 0
     },
     {
@@ -6348,26 +6714,26 @@
     },
     {
      "name": "Philadelphia",
-     "price": 12.0,
+     "price": 11.0,
      "last": 9.0,
      "bid": 9.0,
-     "ask": 15.0,
+     "ask": 13.0,
      "volume": 501
     },
     {
      "name": "Tennessee",
-     "price": 12.0,
+     "price": 11.0,
      "last": 10.0,
      "bid": 9.0,
-     "ask": 15.0,
+     "ask": 13.0,
      "volume": 1
     },
     {
      "name": "Arizona",
-     "price": 5.0,
+     "price": 4.0,
      "last": 4.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 287
     },
     {
@@ -6379,15 +6745,15 @@
      "volume": 0
     },
     {
-     "name": "Washington",
-     "price": 3.0,
+     "name": "Atlanta",
+     "price": 2.5,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 5.0,
+     "ask": 4.0,
      "volume": 0
     },
     {
-     "name": "Atlanta",
+     "name": "Washington",
      "price": 2.5,
      "last": 0.0,
      "bid": 1.0,
@@ -6590,98 +6956,90 @@
    "outcomes": [
     {
      "name": "Buffalo",
-     "price": 10.0,
+     "price": 9.0,
      "last": 0.0,
      "bid": 7.0,
-     "ask": 13.0,
+     "ask": 11.0,
      "volume": 0
     },
     {
      "name": "San Francisco",
-     "price": 9.0,
+     "price": 8.0,
      "last": 0.0,
      "bid": 6.0,
-     "ask": 12.0,
-     "volume": 0
-    },
-    {
-     "name": "Jacksonville",
-     "price": 7.0,
-     "last": 0.0,
-     "bid": 4.0,
      "ask": 10.0,
      "volume": 0
     },
     {
-     "name": "Chicago",
+     "name": "Jacksonville",
      "price": 6.0,
      "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Cincinnati",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Denver",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Kansas City",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
+     "bid": 4.0,
      "ask": 8.0,
      "volume": 0
     },
     {
-     "name": "Detroit",
-     "price": 4.0,
+     "name": "Chicago",
+     "price": 5.0,
      "last": 0.0,
-     "bid": 1.0,
+     "bid": 3.0,
      "ask": 7.0,
      "volume": 0
     },
     {
-     "name": "Minnesota",
+     "name": "Cincinnati",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
      "price": 4.0,
      "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "bid": 2.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
-     "name": "Pittsburgh",
-     "price": 3.5,
+     "name": "Detroit",
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -6694,6 +7052,14 @@
     },
     {
      "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -6856,110 +7222,94 @@
    "outcomes": [
     {
      "name": "Buffalo",
-     "price": 8.0,
-     "last": 0.0,
-     "bid": 5.0,
-     "ask": 11.0,
-     "volume": 0
-    },
-    {
-     "name": "San Francisco",
-     "price": 8.0,
-     "last": 0.0,
-     "bid": 5.0,
-     "ask": 11.0,
-     "volume": 0
-    },
-    {
-     "name": "Jacksonville",
      "price": 7.0,
      "last": 0.0,
-     "bid": 4.0,
-     "ask": 10.0,
-     "volume": 0
-    },
-    {
-     "name": "Chicago",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
+     "bid": 5.0,
      "ask": 9.0,
      "volume": 0
     },
     {
-     "name": "Cincinnati",
+     "name": "San Francisco",
+     "price": 7.0,
+     "last": 0.0,
+     "bid": 5.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 4.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
      "price": 5.0,
      "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 4.0,
+     "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Denver",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Kansas City",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Detroit",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Minnesota",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Pittsburgh",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -6984,6 +7334,22 @@
     },
     {
      "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -7122,106 +7488,82 @@
    "outcomes": [
     {
      "name": "San Francisco",
-     "price": 9.0,
+     "price": 8.0,
      "last": 0.0,
      "bid": 6.0,
-     "ask": 12.0,
+     "ask": 10.0,
      "volume": 0
     },
     {
      "name": "Buffalo",
-     "price": 8.0,
+     "price": 7.0,
      "last": 0.0,
      "bid": 5.0,
-     "ask": 11.0,
+     "ask": 9.0,
      "volume": 0
     },
     {
      "name": "Chicago",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
-     "volume": 0
-    },
-    {
-     "name": "Jacksonville",
-     "price": 7.0,
-     "last": 0.0,
-     "bid": 4.0,
-     "ask": 10.0,
-     "volume": 0
-    },
-    {
-     "name": "Kansas City",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
      "ask": 8.0,
      "volume": 0
     },
     {
-     "name": "Cincinnati",
+     "name": "Jacksonville",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 4.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
      "price": 4.0,
      "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.0,
+     "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Dallas",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Denver",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Detroit",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Minnesota",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "New York J",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Seattle",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -7233,7 +7575,31 @@
      "volume": 0
     },
     {
+     "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -7654,90 +8020,66 @@
    "outcomes": [
     {
      "name": "New York J",
-     "price": 23.0,
+     "price": 22.0,
      "last": 0.0,
      "bid": 20.0,
-     "ask": 26.0,
+     "ask": 24.0,
      "volume": 0
     },
     {
      "name": "Philadelphia",
-     "price": 10.5,
+     "price": 9.0,
      "last": 0.0,
      "bid": 7.0,
-     "ask": 14.0,
-     "volume": 0
-    },
-    {
-     "name": "Arizona",
-     "price": 8.5,
-     "last": 0.0,
-     "bid": 6.0,
      "ask": 11.0,
      "volume": 0
     },
     {
+     "name": "Arizona",
+     "price": 8.0,
+     "last": 0.0,
+     "bid": 6.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
      "name": "Los Angeles C",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
+     "ask": 8.0,
      "volume": 0
     },
     {
      "name": "Miami",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
+     "ask": 8.0,
      "volume": 0
     },
     {
      "name": "New Orleans",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Tennessee",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Atlanta",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Washington",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Carolina",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Tampa Bay",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -7749,7 +8091,7 @@
      "volume": 0
     },
     {
-     "name": "Cleveland",
+     "name": "Carolina",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -7762,6 +8104,30 @@
      "last": 0.0,
      "bid": 1.0,
      "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 4.0,
      "volume": 0
     },
     {
@@ -7951,14 +8317,6 @@
      "volume": 0
     },
     {
-     "name": "Atlanta",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
      "name": "Los Angeles C",
      "price": 5.0,
      "last": 0.0,
@@ -7967,39 +8325,23 @@
      "volume": 0
     },
     {
-     "name": "Miami",
-     "price": 5.0,
+     "name": "Atlanta",
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
-     "name": "Carolina",
+     "name": "Miami",
      "price": 4.0,
      "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Las Vegas",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
+     "bid": 2.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Tampa Bay",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Tennessee",
      "price": 4.0,
      "last": 0.0,
      "bid": 1.0,
@@ -8023,15 +8365,39 @@
      "volume": 0
     },
     {
+     "name": "Carolina",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Cleveland",
-     "price": 3.5,
+     "price": 3.0,
      "last": 1.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -8186,10 +8552,10 @@
    "outcomes": [
     {
      "name": "New York J",
-     "price": 15.0,
+     "price": 14.0,
      "last": 0.0,
      "bid": 12.0,
-     "ask": 18.0,
+     "ask": 16.0,
      "volume": 0
     },
     {
@@ -8202,102 +8568,102 @@
     },
     {
      "name": "Philadelphia",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
+     "ask": 8.0,
      "volume": 0
     },
     {
      "name": "New Orleans",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Atlanta",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Carolina",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Las Vegas",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Washington",
-     "price": 5.0,
+     "price": 4.0,
      "last": 0.0,
      "bid": 2.0,
-     "ask": 8.0,
+     "ask": 6.0,
      "volume": 0
     },
     {
      "name": "Baltimore",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Cleveland",
-     "price": 4.0,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Los Angeles C",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Tampa Bay",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Miami",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
-     "volume": 0
-    },
-    {
-     "name": "Tennessee",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
      "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -8452,102 +8818,102 @@
    "outcomes": [
     {
      "name": "New York J",
-     "price": 12.0,
+     "price": 11.0,
      "last": 0.0,
      "bid": 9.0,
-     "ask": 15.0,
+     "ask": 13.0,
      "volume": 0
     },
     {
      "name": "Arizona",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
+     "ask": 8.0,
      "volume": 0
     },
     {
      "name": "Atlanta",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Carolina",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "New Orleans",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Philadelphia",
-     "price": 6.0,
+     "price": 5.0,
      "last": 0.0,
      "bid": 3.0,
-     "ask": 9.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Washington",
-     "price": 6.0,
+     "price": 4.5,
      "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
+     "bid": 2.0,
+     "ask": 7.0,
      "volume": 0
     },
     {
      "name": "Las Vegas",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Tampa Bay",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Baltimore",
      "price": 4.0,
      "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Cleveland",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Los Angeles C",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 1.0,
+     "bid": 2.0,
      "ask": 6.0,
      "volume": 0
     },
     {
+     "name": "Tampa Bay",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
      "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -8718,98 +9084,90 @@
    "outcomes": [
     {
      "name": "New York J",
-     "price": 11.0,
+     "price": 10.0,
      "last": 0.0,
      "bid": 8.0,
-     "ask": 14.0,
+     "ask": 12.0,
      "volume": 0
     },
     {
      "name": "Arizona",
-     "price": 7.0,
+     "price": 6.0,
      "last": 0.0,
      "bid": 4.0,
-     "ask": 10.0,
+     "ask": 8.0,
      "volume": 0
     },
     {
      "name": "Atlanta",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Carolina",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Las Vegas",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "New Orleans",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Washington",
-     "price": 6.0,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Baltimore",
      "price": 5.0,
      "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Cleveland",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Tampa Bay",
-     "price": 5.0,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 8.0,
-     "volume": 0
-    },
-    {
-     "name": "Philadelphia",
-     "price": 4.0,
-     "last": 0.0,
-     "bid": 1.0,
+     "bid": 3.0,
      "ask": 7.0,
      "volume": 0
     },
     {
+     "name": "Carolina",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
      "name": "Houston",
-     "price": 3.5,
+     "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
-     "ask": 6.0,
+     "ask": 5.0,
      "volume": 0
     },
     {
@@ -8822,6 +9180,14 @@
     },
     {
      "name": "Miami",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
      "price": 3.0,
      "last": 0.0,
      "bid": 1.0,
@@ -8976,562 +9342,196 @@
   },
   {
    "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P1",
-   "title": "Pro Football 1st Quarterback Drafted in 2027",
-   "sub": "1st QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-1",
+   "title": "Pro Football #1 Overall Pick in 2027",
+   "sub": "1st Pick 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
      "name": "Drew Mestemaker",
-     "price": 59.5,
-     "last": 69.0,
-     "bid": 49.0,
-     "ask": 70.0,
-     "volume": 3411
+     "price": 36.5,
+     "last": 38.0,
+     "bid": 36.0,
+     "ask": 37.0,
+     "volume": 66987
     },
-    {
-     "name": "CJ Carr",
-     "price": 32.0,
-     "last": 14.0,
-     "bid": 3.0,
-     "ask": 61.0,
-     "volume": 2336
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 21.5,
-     "last": 19.0,
-     "bid": 19.0,
-     "ask": 24.0,
-     "volume": 558
-    },
-    {
-     "name": "Arch Manning",
-     "price": 8.5,
-     "last": 6.0,
-     "bid": 6.0,
-     "ask": 11.0,
-     "volume": 517
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 3.5,
-     "last": 4.0,
-     "bid": 2.0,
-     "ask": 5.0,
-     "volume": 6410
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 3.0,
-     "last": 6.0,
-     "bid": 1.0,
-     "ask": 5.0,
-     "volume": 903
-    },
-    {
-     "name": "Dante Moore",
-     "price": 3.0,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 5.0,
-     "volume": 480
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 3.0,
-     "last": 2.0,
-     "bid": 2.0,
-     "ask": 4.0,
-     "volume": 1243
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 1.5,
-     "last": 40.0,
-     "bid": 0.0,
-     "ask": 3.0,
-     "volume": 523
-    },
-    {
-     "name": "Katin Houser",
-     "price": 1.5,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 3.0,
-     "volume": 4
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P2",
-   "title": "Pro Football 2nd Quarterback Drafted in 2027",
-   "sub": "2nd QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Nico Iamaleava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 45.5,
-     "last": 10.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 44.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 89.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 34.5,
-     "last": 91.0,
-     "bid": 7.0,
-     "ask": 62.0,
-     "volume": 1
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 25.5,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 49.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 49.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 49.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 24.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 48.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 22.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 44.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 14.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 28.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P3",
-   "title": "Pro Football 3rd Quarterback Drafted in 2027",
-   "sub": "3rd QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Nico Iamaleava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 45.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 90.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 30.5,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 59.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 30.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 59.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 29.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 59.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTTOP",
-   "event": "KXNFLDRAFTTOP-27-5",
-   "title": "Pro Football Players Drafted Top 5",
-   "sub": "Top 5 2027",
-   "url": "https://kalshi.com/markets/kxnfldrafttop",
-   "outcomes": [
     {
      "name": "Jeremiah Smith",
-     "price": 91.0,
-     "last": 94.0,
-     "bid": 88.0,
-     "ask": 94.0,
-     "volume": 1483
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 70.0,
-     "last": 89.0,
-     "bid": 56.0,
-     "ask": 84.0,
-     "volume": 200
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 50.0,
-     "last": 36.0,
-     "bid": 36.0,
-     "ask": 64.0,
-     "volume": 165
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 46.5,
-     "last": 58.0,
-     "bid": 11.0,
-     "ask": 82.0,
-     "volume": 59
+     "price": 24.5,
+     "last": 23.0,
+     "bid": 23.0,
+     "ask": 26.0,
+     "volume": 91655
     },
     {
      "name": "CJ Carr",
-     "price": 46.5,
-     "last": 26.0,
-     "bid": 14.0,
-     "ask": 79.0,
-     "volume": 50
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 46.0,
-     "last": 80.0,
-     "bid": 14.0,
-     "ask": 78.0,
-     "volume": 187
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 32.0,
-     "last": 6.0,
-     "bid": 6.0,
-     "ask": 58.0,
-     "volume": 111
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 28.5,
-     "last": 54.0,
-     "bid": 3.0,
-     "ask": 54.0,
-     "volume": 19
-    },
-    {
-     "name": "Dante Moore",
-     "price": 27.5,
+     "price": 10.0,
      "last": 11.0,
-     "bid": 12.0,
-     "ask": 43.0,
-     "volume": 433
+     "bid": 9.0,
+     "ask": 11.0,
+     "volume": 45464
     },
     {
-     "name": "Trinidad Chambliss",
-     "price": 27.0,
-     "last": 10.0,
-     "bid": 1.0,
-     "ask": 53.0,
-     "volume": 662
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 20.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 40.0,
-     "volume": 214
-    },
-    {
-     "name": "Quincy Rhodes Jr.",
-     "price": 17.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 35.0,
-     "volume": 0
-    },
-    {
-     "name": "Cam Coleman",
-     "price": 17.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 34.0,
-     "volume": 0
-    },
-    {
-     "name": "Ryan Williams",
-     "price": 16.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 32.0,
-     "volume": 103
+     "name": "Darian Mensah",
+     "price": 7.5,
+     "last": 9.0,
+     "bid": 7.0,
+     "ask": 8.0,
+     "volume": 48004
     },
     {
      "name": "Arch Manning",
-     "price": 15.0,
-     "last": 29.0,
-     "bid": 8.0,
-     "ask": 22.0,
-     "volume": 12071
+     "price": 4.5,
+     "last": 5.0,
+     "bid": 4.0,
+     "ask": 5.0,
+     "volume": 157262
     },
     {
-     "name": "John Mateer",
+     "name": "LaNorris Sellers",
      "price": 4.0,
-     "last": 7.0,
-     "bid": 0.0,
-     "ask": 8.0,
-     "volume": 929
+     "last": 6.0,
+     "bid": 3.0,
+     "ask": 5.0,
+     "volume": 27907
     },
     {
-     "name": "Nico Iamaleava",
-     "price": 4.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 8.0,
-     "volume": 104
+     "name": "Trinidad Chambliss",
+     "price": 2.5,
+     "last": 3.0,
+     "bid": 2.0,
+     "ask": 3.0,
+     "volume": 50290
     },
     {
-     "name": "Julian Sayin",
-     "price": 3.5,
+     "name": "Dante Moore",
+     "price": 1.5,
      "last": 2.0,
-     "bid": 0.0,
-     "ask": 7.0,
-     "volume": 95
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 44472
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 14266
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.5,
+     "last": 4.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 12783
     },
     {
      "name": "DJ Lagway",
-     "price": 2.0,
-     "last": 0.0,
+     "price": 0.5,
+     "last": 1.0,
      "bid": 0.0,
-     "ask": 4.0,
-     "volume": 0
+     "ask": 1.0,
+     "volume": 2865
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 0.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 24884
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2794
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2979
+    },
+    {
+     "name": "Cam Coleman",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 3403
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 13614
+    },
+    {
+     "name": "Quincy Rhodes Jr.",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2463
+    },
+    {
+     "name": "Ryan Williams",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2879
+    },
+    {
+     "name": "John Mateer",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 10110
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 7634
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 13613
+    },
+    {
+     "name": "Lincoln Kienholz",
+     "price": 0.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 701
     }
    ]
   }
  ],
  "_seen": [
   {
-   "series": "KXNBADRAFTPICK",
-   "event": "KXNBADRAFTPICK-27-1",
-   "n": 15,
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
+   "n": 1,
    "keys": [
     "can_close_early",
     "close_time",
@@ -9579,18 +9579,6 @@
    ]
   },
   {
-   "series": "KXNFLDRAFT1ST",
-   "event": "KXNFLDRAFT1ST-27",
-   "n": 32,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
-   "n": 1,
-   "keys": null
-  },
-  {
    "series": "KXNCAAFDRAFTDECLARE",
    "event": "KXNCAAFDRAFTDECLARE-27AMAN",
    "n": 1,
@@ -9633,9 +9621,39 @@
    "keys": null
   },
   {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-1",
-   "n": 22,
+   "series": "KXNFLDRAFT1ST",
+   "event": "KXNFLDRAFT1ST-27",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P1",
+   "n": 15,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P2",
+   "n": 15,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P3",
+   "n": 15,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTTOP",
+   "event": "KXNFLDRAFTTOP-27-5",
+   "n": 19,
+   "keys": null
+  },
+  {
+   "series": "KXNBADRAFTPICK",
+   "event": "KXNBADRAFTPICK-27-1",
+   "n": 15,
    "keys": null
   },
   {
@@ -9825,27 +9843,9 @@
    "keys": null
   },
   {
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P1",
-   "n": 15,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P2",
-   "n": 15,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P3",
-   "n": 15,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTTOP",
-   "event": "KXNFLDRAFTTOP-27-5",
-   "n": 19,
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-1",
+   "n": 22,
    "keys": null
   }
  ]
