@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-14T16:44:42Z",
+ "updated": "2026-11-15T17:24:21Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,327 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkfYGkecjAdl",
-   "date": "2026-11-14",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-14-2026/event/01006530AD7050EB",
-   "source": "ticketmaster",
-   "times": [
-    "14:00",
-    "19:30"
-   ],
-   "aka": [
-    "tm-vv1AvZkfYGkecQgd_"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_5n05Gwj",
-   "date": "2026-11-14",
-   "time": "17:00",
-   "title": "Catch Your Breath - Not Broken Enough Tour",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/catch-your-breath-not-broken-enough-boston-massachusetts-11-14-2026/event/010064BAA42CCC9C",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18270150"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18670570",
-   "date": "2026-11-14",
-   "time": "18:30",
-   "title": "Rocky Dale Davis",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/rocky-dale-davis-tickets/comedy/2026-11-14-6-30-pm/18670570",
-   "source": "seatgeek",
-   "times": [
-    "18:30",
-    "21:00"
-   ],
-   "aka": [
-    "sg-18666670"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-G5vVZ_5RuGQjG",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "An Evening With Goose",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/an-evening-with-goose-uncasville-connecticut-11-14-2026/event/1D0064BBCD31A70C",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "act": "Goose",
-   "aka": [
-    "sg-18280635",
-    "2026-11-14-goose-mohegan-sun-arena"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Bert Kreischer",
-   "sub": "Permission to Party tour",
-   "cat": "comedy",
-   "venue": "The Hanover Theatre",
-   "city": "Worcester, MA",
-   "drive_hours": 1,
-   "url": "https://comedy.tickets/tickets/bert-kreischer/",
-   "source": "picks",
-   "id": "2026-11-14-bert-kreischer-the-hanover-theatre",
-   "act": "Bert Kreischer",
-   "score": 2,
-   "why": "fav"
-  },
-  {
-   "id": "espn-401892709",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Bruins vs Wild",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892709/wild-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_2roBuNo",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Dark Star Orchestra",
-   "cat": "music",
-   "venue": "Orpheum Theatre presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/dark-star-orchestra-boston-massachusetts-11-14-2026/event/010064F791E8D8D1",
-   "source": "ticketmaster",
-   "act": "Dark Star Orchestra",
-   "aka": [
-    "tm-vvG17Z_2roBuNo",
-    "sg-18406746",
-    "sg-18406746",
-    "2026-11-14-dark-star-orchestra-orpheum-theatre"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "sg-18723039",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Frank Santos - The R-Rated Hypnotist",
-   "cat": "comedy",
-   "venue": "Marilyn Rodman Performing Arts Center",
-   "city": "Foxborough, MA",
-   "url": "https://seatgeek.com/frank-santos-the-r-rated-hypnotist-tickets/comedy/2026-11-14-7-pm/18723039",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkuyGkeD7hbY",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Small Town Murder",
-   "cat": "comedy",
-   "venue": "Chevalier Theatre",
-   "city": "Medford, MA",
-   "url": "https://www.ticketmaster.com/small-town-murder-medford-massachusetts-11-14-2026/event/01006379BB11B630",
-   "source": "ticketmaster",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_urYOTcS",
-   "date": "2026-11-14",
-   "time": "19:00",
-   "title": "Sophie Hunter Presents: Stereoscope The Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sophie-hunter-presents-stereoscope-the-tour-boston-massachusetts-11-14-2026/event/010064D7B083FB73",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18331569"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_G5NjXVU",
-   "date": "2026-11-14",
-   "time": "19:30",
-   "title": "12th Annual CoreyFest featuring Brothers Osborne 21+",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/12th-annual-coreyfest-featuring-brothers-osborne-boston-massachusetts-11-14-2026/event/010064C2E373ED36",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18294763",
-    "2026-11-14-brothers-osborne-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70U3f",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Big Head Todd & the Monsters",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70U3f",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-17859364"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1A8vPoeGA2vzM7",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Boston Comedy Festival: Comedy Contest Finals",
-   "cat": "comedy",
-   "venue": "Somerville Theatre",
-   "city": "Somerville, MA",
-   "url": "https://www.ticketmaster.com/boston-comedy-festival-comedy-contest-finals-somerville-massachusetts-11-14-2026/event/010065442F078DC4",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18721576"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PIPE",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Carbon Leaf",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PIPE",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18702699",
-    "2026-11-14-carbon-leaf-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_CLLJB6Q",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Klass XV - The Prelude: Konpa Direk Live & Loud",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/klass-xv-the-prelude-konpa-direk-boston-massachusetts-11-14-2026/event/010064E7DF9BA1DA",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18471200",
-    "2026-11-14-klass-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfxGkeyORgH",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Prateek Kuhad: Full Moon Chamber Tour (Acoustic)",
-   "cat": "music",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/prateek-kuhad-full-moon-chamber-tour-boston-massachusetts-11-14-2026/event/01006522B982FD7C",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18721041"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70bfw",
-   "date": "2026-11-14",
-   "time": "20:00",
-   "title": "Slow Pulp w/ Ivy",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70bfw",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18301817"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-LvZ18QcYfkzX6__V71mXS",
-   "date": "2026-11-14",
-   "time": "21:30",
-   "title": "Favela Encantada Wig Party | Nov 14 @ Centro Nightclub Lawrence",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.universe.com/events/favela-encantada-wig-party-nov-14-centro-nightclub-lawrence-tickets-GB9654?ref=ticketmaster",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18750255"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_3GkDSbWIc",
-   "date": "2026-11-14",
-   "time": "22:30",
-   "title": "William Black ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/william-black-21-boston-massachusetts-11-14-2026/event/0100652EF363DA2D",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18594675"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_pGkmfNExV",
-   "date": "2026-11-14",
-   "time": "23:00",
-   "title": "Klass Official After Party at Studio B ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/klass-official-after-party-at-studio-boston-massachusetts-11-14-2026/event/0100656B948E78B4",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "date": "2026-11-14",
-   "time": null,
-   "title": "Jalen Ngonda",
-   "cat": "music",
-   "venue": "Paradise Rock Club",
-   "city": "Boston, MA",
-   "url": "https://labs.songkick.com/venues/29521-paradise-rock-club/calendar",
-   "source": "venues",
-   "id": "2026-11-14-jalen-ngonda-paradise-rock-club",
-   "score": 0
-  },
   {
    "id": "tm-Z7r9jZ1A7PJaJ",
    "date": "2026-11-15",
@@ -2692,6 +2371,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18618956"
+   ],
    "score": 0
   },
   {
@@ -10319,6 +10001,87 @@
     "sg-18746454"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4oGkddQeh8",
+   "date": "2027-05-14",
+   "time": "18:30",
+   "title": "Frank Turner & The Sleeping Souls: Last Evenings World Tour",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/frank-turner-the-sleeping-souls-last-boston-massachusetts-05-14-2027/event/01006551C36826D0",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724845"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4aGkdKFfLN",
+   "date": "2027-05-14",
+   "time": "19:00",
+   "title": "JOSH JOHNSON'S COMEDY BAND CAMP",
+   "cat": "comedy",
+   "venue": "Boch Center Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/josh-johnsons-comedy-band-camp-boston-massachusetts-05-14-2027/event/01006549D32147E3",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18692309"
+   ],
+   "score": 1
+  },
+  {
+   "id": "tm-Z7r9jZ1AAZg0f",
+   "date": "2027-05-14",
+   "time": "19:00",
+   "title": "Mass of the Fermenting Dregs (18 and Over)",
+   "cat": "music",
+   "venue": "Royale Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZg0f",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18500071"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18724520",
+   "date": "2027-05-14",
+   "time": "20:00",
+   "title": "BUNT.",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/bunt-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-05-14-8-pm/concert/18724520",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18747205",
+   "date": "2027-05-14",
+   "time": "20:00",
+   "title": "Clap Your Hands Say Yeah",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/clap-your-hands-say-yeah-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-14-8-pm/concert/18747205",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18748378",
+   "date": "2027-05-14",
+   "time": "20:00",
+   "title": "Hermanos Gutierrez",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/hermanos-gutierrez-tickets/boston-massachusetts-roadrunner-boston-2027-05-14-8-pm/concert/18748378",
+   "source": "seatgeek",
+   "score": 0
   }
  ],
  "movies": [
@@ -10394,10 +10157,10 @@
   }
  ],
  "sources": {
-  "picks": 3,
-  "venues": 2,
-  "espn": 71,
-  "ticketmaster": 505,
-  "seatgeek": 109
+  "picks": 2,
+  "venues": 1,
+  "espn": 70,
+  "ticketmaster": 492,
+  "seatgeek": 110
  }
 }
