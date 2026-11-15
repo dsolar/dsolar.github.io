@@ -4,6 +4,168 @@
  "events": [
   {
    "league": "nfl",
+   "series": "KXNFLDRAFTTOP",
+   "event": "KXNFLDRAFTTOP-27-5",
+   "title": "Pro Football Players Drafted Top 5",
+   "sub": "Top 5 2027",
+   "url": "https://kalshi.com/markets/kxnfldrafttop",
+   "outcomes": [
+    {
+     "name": "Jeremiah Smith",
+     "price": 90.5,
+     "last": 93.0,
+     "bid": 88.0,
+     "ask": 93.0,
+     "volume": 1487
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 72.0,
+     "last": 89.0,
+     "bid": 55.0,
+     "ask": 89.0,
+     "volume": 203
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 54.5,
+     "last": 63.0,
+     "bid": 46.0,
+     "ask": 63.0,
+     "volume": 166
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 52.5,
+     "last": 80.0,
+     "bid": 26.0,
+     "ask": 79.0,
+     "volume": 187
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 49.0,
+     "last": 58.0,
+     "bid": 17.0,
+     "ask": 81.0,
+     "volume": 59
+    },
+    {
+     "name": "CJ Carr",
+     "price": 45.5,
+     "last": 76.0,
+     "bid": 17.0,
+     "ask": 74.0,
+     "volume": 57
+    },
+    {
+     "name": "Ryan Williams",
+     "price": 45.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 90.0,
+     "volume": 103
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 30.0,
+     "last": 6.0,
+     "bid": 3.0,
+     "ask": 57.0,
+     "volume": 111
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 28.0,
+     "last": 54.0,
+     "bid": 3.0,
+     "ask": 53.0,
+     "volume": 19
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 21.5,
+     "last": 37.0,
+     "bid": 3.0,
+     "ask": 40.0,
+     "volume": 665
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 20.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 40.0,
+     "volume": 214
+    },
+    {
+     "name": "Dante Moore",
+     "price": 19.5,
+     "last": 11.0,
+     "bid": 0.0,
+     "ask": 39.0,
+     "volume": 433
+    },
+    {
+     "name": "Quincy Rhodes Jr.",
+     "price": 17.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 35.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 17.0,
+     "last": 18.0,
+     "bid": 16.0,
+     "ask": 18.0,
+     "volume": 12971
+    },
+    {
+     "name": "Cam Coleman",
+     "price": 17.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 34.0,
+     "volume": 0
+    },
+    {
+     "name": "John Mateer",
+     "price": 4.0,
+     "last": 7.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 929
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 4.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 104
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 3.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 95
+    },
+    {
+     "name": "DJ Lagway",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
    "series": "KXNCAAFDRAFTDECLARE",
    "event": "KXNCAAFDRAFTDECLARE-2027DMES",
    "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
@@ -48,9 +210,9 @@
    "outcomes": [
     {
      "name": "Austin Simmons to declare for the Pro Football Draft",
-     "price": 27.5,
+     "price": 25.5,
      "last": 50.0,
-     "bid": 6.0,
+     "bid": 2.0,
      "ask": 49.0,
      "volume": 50
     }
@@ -138,11 +300,8523 @@
    "outcomes": [
     {
      "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
-     "price": 85.0,
-     "last": 89.0,
+     "price": 84.0,
+     "last": 80.0,
      "bid": 81.0,
+     "ask": 87.0,
+     "volume": 78
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P10",
+   "title": "Team to Make the 10th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 10th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Atlanta",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 47.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 46.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 93.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.5,
+     "last": 5.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P11",
+   "title": "Team to Make the 11th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 11th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Arizona",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P12",
+   "title": "Team to Make the 12th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 12th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "New York J",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P13",
+   "title": "Team to Make the 13th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 13th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Buffalo",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P14",
+   "title": "Team to Make the 14th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 14th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Buffalo",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 12.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P15",
+   "title": "Team to Make the 15th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 15th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Cleveland",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P16",
+   "title": "Team to Make the 16th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 16th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Cleveland",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P17",
+   "title": "Team to Make the 17th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 17th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Cleveland",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P18",
+   "title": "Team to Make the 18th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 18th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Chicago",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
      "ask": 89.0,
-     "volume": 61
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 12.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P19",
+   "title": "Team to Make the 19th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 19th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Tampa Bay",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 12.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P2",
+   "title": "Team to Make the 2nd Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 2nd",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Tennessee",
+     "price": 57.5,
+     "last": 16.0,
+     "bid": 16.0,
+     "ask": 99.0,
+     "volume": 1394
+    },
+    {
+     "name": "Miami",
+     "price": 12.5,
+     "last": 11.0,
+     "bid": 2.0,
+     "ask": 23.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 10.0,
+     "last": 5.0,
+     "bid": 3.0,
+     "ask": 17.0,
+     "volume": 16
+    },
+    {
+     "name": "New York J",
+     "price": 9.5,
+     "last": 6.0,
+     "bid": 2.0,
+     "ask": 17.0,
+     "volume": 20
+    },
+    {
+     "name": "Arizona",
+     "price": 6.5,
+     "last": 1.0,
+     "bid": 2.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 6.0,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 4.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 4.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 74.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 669
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.0,
+     "last": 80.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 87
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P20",
+   "title": "Team to Make the 20th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 20th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Arizona",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P21",
+   "title": "Team to Make the 21st Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 21st",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Cleveland",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P22",
+   "title": "Team to Make the 22nd Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 22nd",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Arizona",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P23",
+   "title": "Team to Make the 23rd Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 23rd",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Denver",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P24",
+   "title": "Team to Make the 24th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 24th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Arizona",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 12.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P25",
+   "title": "Team to Make the 25th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 25th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Atlanta",
+     "price": 46.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 93.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.0,
+     "last": 5.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P26",
+   "title": "Team to Make the 26th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 26th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Cincinnati",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P27",
+   "title": "Team to Make the 27th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 27th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Chicago",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P28",
+   "title": "Team to Make the 28th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 28th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Buffalo",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P29",
+   "title": "Team to Make the 29th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 29th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Arizona",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 45.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 45.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 45.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P3",
+   "title": "Team to Make the 3rd Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 3rd",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Indianapolis",
+     "price": 51.0,
+     "last": 4.0,
+     "bid": 2.0,
+     "ask": 100.0,
+     "volume": 200
+    },
+    {
+     "name": "Philadelphia",
+     "price": 23.5,
+     "last": 9.0,
+     "bid": 1.0,
+     "ask": 46.0,
+     "volume": 501
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 9.5,
+     "last": 18.0,
+     "bid": 2.0,
+     "ask": 17.0,
+     "volume": 281
+    },
+    {
+     "name": "New York J",
+     "price": 9.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 19.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 8.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 16.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 7.5,
+     "last": 15.0,
+     "bid": 0.0,
+     "ask": 15.0,
+     "volume": 2
+    },
+    {
+     "name": "Arizona",
+     "price": 2.5,
+     "last": 4.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 287
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P30",
+   "title": "Team to Make the 30th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 30th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Los Angeles C",
+     "price": 50.0,
+     "last": 5.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 62
+    },
+    {
+     "name": "Buffalo",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P31",
+   "title": "Team to Make the 31st Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 31st",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Buffalo",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P32",
+   "title": "Team to Make the 32nd Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 32nd",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "San Francisco",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P4",
+   "title": "Team to Make the 4th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 4th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Baltimore",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 50.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 100.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 48.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 96.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 12.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 25.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 7.5,
+     "last": 6.0,
+     "bid": 0.0,
+     "ask": 15.0,
+     "volume": 23
+    },
+    {
+     "name": "Miami",
+     "price": 7.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 14.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 6.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 13.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 5.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 10.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P5",
+   "title": "Team to Make the 5th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 5th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "Carolina",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 11.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 23.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P6",
+   "title": "Team to Make the 6th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 6th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "New York J",
+     "price": 8.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 16.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 4.0,
+     "last": 9.0,
+     "bid": 0.0,
+     "ask": 8.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P7",
+   "title": "Team to Make the 7th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 7th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "New York J",
+     "price": 7.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 15.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 5.5,
+     "last": 10.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 30
+    },
+    {
+     "name": "Philadelphia",
+     "price": 4.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P8",
+   "title": "Team to Make the 8th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 8th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "New York J",
+     "price": 6.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 12.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New York G",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 3.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P9",
+   "title": "Team to Make the 9th Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft - 9th",
+   "url": "https://kalshi.com/markets/kxnfldraftselect",
+   "outcomes": [
+    {
+     "name": "New York G",
+     "price": 47.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 95.0,
+     "volume": 0
+    },
+    {
+     "name": "New York J",
+     "price": 5.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Arizona",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Las Vegas",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "New Orleans",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Washington",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Atlanta",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Carolina",
+     "price": 3.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 6.0,
+     "volume": 0
+    },
+    {
+     "name": "Baltimore",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Cleveland",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Miami",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Philadelphia",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Tennessee",
+     "price": 2.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Houston",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "New England",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Seattle",
+     "price": 2.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Minnesota",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Buffalo",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chicago",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Cincinnati",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Denver",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Detroit",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Green Bay",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Indianapolis",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jacksonville",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kansas City",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFT1ST",
+   "event": "KXNFLDRAFT1ST-27",
+   "title": "Team to make the 1st Overall Pick in the 2027 Pro Football Draft",
+   "sub": "2027 Pro Football Draft",
+   "url": "https://kalshi.com/markets/kxnfldraft1st",
+   "outcomes": [
+    {
+     "name": "Miami",
+     "price": 27.5,
+     "last": 22.0,
+     "bid": 24.0,
+     "ask": 31.0,
+     "volume": 29046
+    },
+    {
+     "name": "Tennessee",
+     "price": 27.5,
+     "last": 27.0,
+     "bid": 23.0,
+     "ask": 32.0,
+     "volume": 9130
+    },
+    {
+     "name": "Los Angeles C",
+     "price": 25.5,
+     "last": 29.0,
+     "bid": 22.0,
+     "ask": 29.0,
+     "volume": 8469
+    },
+    {
+     "name": "New York J",
+     "price": 9.0,
+     "last": 13.0,
+     "bid": 7.0,
+     "ask": 11.0,
+     "volume": 11519
+    },
+    {
+     "name": "Baltimore",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 3246
+    },
+    {
+     "name": "Carolina",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 6829
+    },
+    {
+     "name": "New York G",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 5666
+    },
+    {
+     "name": "Philadelphia",
+     "price": 1.5,
+     "last": 2.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 3521
+    },
+    {
+     "name": "Washington",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 3723
+    },
+    {
+     "name": "Atlanta",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 7074
+    },
+    {
+     "name": "Cleveland",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 7094
+    },
+    {
+     "name": "Dallas",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 3088
+    },
+    {
+     "name": "Las Vegas",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 3700
+    },
+    {
+     "name": "New Orleans",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 3161
+    },
+    {
+     "name": "San Francisco",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 2853
+    },
+    {
+     "name": "Arizona",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 12518
+    },
+    {
+     "name": "Buffalo",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 216
+    },
+    {
+     "name": "Chicago",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 14
+    },
+    {
+     "name": "Cincinnati",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 175
+    },
+    {
+     "name": "Denver",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 28
+    },
+    {
+     "name": "Detroit",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 44
+    },
+    {
+     "name": "Green Bay",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 226
+    },
+    {
+     "name": "Houston",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2679
+    },
+    {
+     "name": "Indianapolis",
+     "price": 0.5,
+     "last": 5.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 10463
+    },
+    {
+     "name": "Jacksonville",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 187
+    },
+    {
+     "name": "Kansas City",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 1701
+    },
+    {
+     "name": "Los Angeles R",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2848
+    },
+    {
+     "name": "Minnesota",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 1035
+    },
+    {
+     "name": "New England",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 617
+    },
+    {
+     "name": "Pittsburgh",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2489
+    },
+    {
+     "name": "Seattle",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 1742
+    },
+    {
+     "name": "Tampa Bay",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 4456
     }
    ]
   },
@@ -156,18 +8830,18 @@
    "outcomes": [
     {
      "name": "Tyran Stokes",
-     "price": 48.0,
-     "last": 51.0,
+     "price": 52.5,
+     "last": 45.0,
      "bid": 45.0,
-     "ask": 51.0,
-     "volume": 4629
+     "ask": 60.0,
+     "volume": 4635
     },
     {
      "name": "Caleb Holt",
      "price": 10.0,
      "last": 6.0,
-     "bid": 7.0,
-     "ask": 13.0,
+     "bid": 6.0,
+     "ask": 14.0,
      "volume": 1155
     },
     {
@@ -278,6 +8952,396 @@
   },
   {
    "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P1",
+   "title": "Pro Football 1st Quarterback Drafted in 2027",
+   "sub": "1st QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
+    {
+     "name": "Drew Mestemaker",
+     "price": 42.0,
+     "last": 43.0,
+     "bid": 41.0,
+     "ask": 43.0,
+     "volume": 3422
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 23.5,
+     "last": 25.0,
+     "bid": 21.0,
+     "ask": 26.0,
+     "volume": 1310
+    },
+    {
+     "name": "CJ Carr",
+     "price": 17.5,
+     "last": 14.0,
+     "bid": 15.0,
+     "ask": 20.0,
+     "volume": 2336
+    },
+    {
+     "name": "Arch Manning",
+     "price": 13.0,
+     "last": 6.0,
+     "bid": 0.0,
+     "ask": 26.0,
+     "volume": 517
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 3.5,
+     "last": 5.0,
+     "bid": 2.0,
+     "ask": 5.0,
+     "volume": 6428
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 3.0,
+     "last": 6.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 903
+    },
+    {
+     "name": "Dante Moore",
+     "price": 3.0,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 5.0,
+     "volume": 480
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 2.5,
+     "last": 5.0,
+     "bid": 1.0,
+     "ask": 4.0,
+     "volume": 1256
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 1.5,
+     "last": 3.0,
+     "bid": 0.0,
+     "ask": 3.0,
+     "volume": 925
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 1.0,
+     "last": 3.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 100
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 1.0,
+     "last": 40.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 523
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 4
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P2",
+   "title": "Pro Football 2nd Quarterback Drafted in 2027",
+   "sub": "2nd QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
+    {
+     "name": "Drake Lindsey",
+     "price": 44.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 89.0,
+     "volume": 0
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 44.0,
+     "last": 10.0,
+     "bid": 3.0,
+     "ask": 85.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 39.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 79.0,
+     "volume": 0
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 38.5,
+     "last": 91.0,
+     "bid": 9.0,
+     "ask": 68.0,
+     "volume": 1
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 24.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 24.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 24.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 24.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 49.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 24.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 48.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 23.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 45.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 23.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 45.0,
+     "volume": 0
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 22.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 44.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 14.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 28.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 13.5,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 25.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 13.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 25.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNFLDRAFTQB",
+   "event": "KXNFLDRAFTQB-27P3",
+   "title": "Pro Football 3rd Quarterback Drafted in 2027",
+   "sub": "3rd QB 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftqb",
+   "outcomes": [
+    {
+     "name": "Nico Iamaleava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Drake Lindsey",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Josh Hoover",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Katin Houser",
+     "price": 47.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 94.0,
+     "volume": 0
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 45.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 45.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 45.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 45.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 45.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 45.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 90.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 29.5,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 59.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 28.5,
+     "last": 0.0,
+     "bid": 2.0,
+     "ask": 55.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 28.0,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 55.0,
+     "volume": 0
+    }
+   ]
+  },
+  {
+   "league": "nfl",
    "series": "KXNFLDRAFTPICK",
    "event": "KXNFLDRAFTPICK-27-1",
    "title": "Pro Football #1 Overall Pick in 2027",
@@ -285,68 +9349,60 @@
    "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
-     "name": "Drew Mestemaker",
-     "price": 39.5,
-     "last": 36.0,
-     "bid": 37.0,
-     "ask": 42.0,
-     "volume": 67074
+     "name": "Jeremiah Smith",
+     "price": 34.5,
+     "last": 37.0,
+     "bid": 32.0,
+     "ask": 37.0,
+     "volume": 92634
     },
     {
-     "name": "Jeremiah Smith",
-     "price": 28.5,
-     "last": 31.0,
-     "bid": 27.0,
-     "ask": 30.0,
-     "volume": 92024
+     "name": "Drew Mestemaker",
+     "price": 23.5,
+     "last": 26.0,
+     "bid": 22.0,
+     "ask": 25.0,
+     "volume": 68471
     },
     {
      "name": "CJ Carr",
-     "price": 11.0,
-     "last": 11.0,
+     "price": 10.5,
+     "last": 12.0,
      "bid": 9.0,
-     "ask": 13.0,
-     "volume": 45464
+     "ask": 12.0,
+     "volume": 45759
     },
     {
      "name": "Darian Mensah",
      "price": 6.5,
      "last": 6.0,
-     "bid": 5.0,
-     "ask": 8.0,
-     "volume": 48175
+     "bid": 6.0,
+     "ask": 7.0,
+     "volume": 48769
     },
     {
      "name": "Arch Manning",
-     "price": 3.5,
-     "last": 4.0,
-     "bid": 3.0,
-     "ask": 4.0,
-     "volume": 157379
+     "price": 6.0,
+     "last": 9.0,
+     "bid": 5.0,
+     "ask": 7.0,
+     "volume": 159494
     },
     {
      "name": "LaNorris Sellers",
      "price": 3.5,
-     "last": 6.0,
+     "last": 3.0,
      "bid": 3.0,
      "ask": 4.0,
-     "volume": 27907
+     "volume": 27934
     },
     {
      "name": "Trinidad Chambliss",
-     "price": 2.5,
-     "last": 1.0,
+     "price": 3.5,
+     "last": 3.0,
      "bid": 2.0,
-     "ask": 3.0,
-     "volume": 50561
-    },
-    {
-     "name": "Dante Moore",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 44495
+     "ask": 5.0,
+     "volume": 50632
     },
     {
      "name": "Jayden Maiava",
@@ -357,10 +9413,18 @@
      "volume": 14915
     },
     {
-     "name": "Austin Simmons",
-     "price": 1.5,
+     "name": "Dante Moore",
+     "price": 1.0,
      "last": 1.0,
-     "bid": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 44495
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
      "ask": 2.0,
      "volume": 12855
     },
@@ -461,418 +9525,58 @@
      "volume": 701
     }
    ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P1",
-   "title": "Pro Football 1st Quarterback Drafted in 2027",
-   "sub": "1st QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Drew Mestemaker",
-     "price": 42.0,
-     "last": 43.0,
-     "bid": 41.0,
-     "ask": 43.0,
-     "volume": 3422
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 24.0,
-     "last": 25.0,
-     "bid": 21.0,
-     "ask": 27.0,
-     "volume": 1310
-    },
-    {
-     "name": "CJ Carr",
-     "price": 17.5,
-     "last": 14.0,
-     "bid": 15.0,
-     "ask": 20.0,
-     "volume": 2336
-    },
-    {
-     "name": "Arch Manning",
-     "price": 14.0,
-     "last": 6.0,
-     "bid": 0.0,
-     "ask": 28.0,
-     "volume": 517
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 3.0,
-     "last": 6.0,
-     "bid": 1.0,
-     "ask": 5.0,
-     "volume": 903
-    },
-    {
-     "name": "Dante Moore",
-     "price": 3.0,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 5.0,
-     "volume": 480
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 3.0,
-     "last": 4.0,
-     "bid": 2.0,
-     "ask": 4.0,
-     "volume": 6410
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 2.5,
-     "last": 5.0,
-     "bid": 1.0,
-     "ask": 4.0,
-     "volume": 1256
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 1.5,
-     "last": 3.0,
-     "bid": 0.0,
-     "ask": 3.0,
-     "volume": 925
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 1.0,
-     "last": 3.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 100
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 1.0,
-     "last": 40.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 523
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 1.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 4
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P2",
-   "title": "Pro Football 2nd Quarterback Drafted in 2027",
-   "sub": "2nd QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Darian Mensah",
-     "price": 45.5,
-     "last": 10.0,
-     "bid": 2.0,
-     "ask": 89.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 44.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 89.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 40.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 80.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 38.5,
-     "last": 91.0,
-     "bid": 8.0,
-     "ask": 69.0,
-     "volume": 1
-    },
-    {
-     "name": "CJ Carr",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 49.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 49.0,
-     "volume": 0
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 50.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 50.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 50.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 25.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 50.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 24.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 48.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 22.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 44.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 15.5,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 29.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 15.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 29.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 14.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 28.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTQB",
-   "event": "KXNFLDRAFTQB-27P3",
-   "title": "Pro Football 3rd Quarterback Drafted in 2027",
-   "sub": "3rd QB 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftqb",
-   "outcomes": [
-    {
-     "name": "Drew Mestemaker",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 47.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Drake Lindsey",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Josh Hoover",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Katin Houser",
-     "price": 47.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 94.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 30.5,
-     "last": 0.0,
-     "bid": 2.0,
-     "ask": 59.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 30.0,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 59.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 29.5,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 59.0,
-     "volume": 0
-    }
-   ]
   }
  ],
  "_seen": [
   {
-   "series": "KXNBADRAFTINT",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXWNBADRAFT3",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNBADRAFTTEAM",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXWNBADRAFT4",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXWNBADRAFTTOP5",
-   "error": "HTTP Error 429: Too Many Requests"
+   "series": "KXNFLDRAFTTOP",
+   "event": "KXNFLDRAFTTOP-27-5",
+   "n": 19,
+   "keys": [
+    "can_close_early",
+    "close_time",
+    "created_time",
+    "custom_strike",
+    "early_close_condition",
+    "event_ticker",
+    "exchange_index",
+    "expected_expiration_time",
+    "expiration_time",
+    "expiration_value",
+    "last_price_dollars",
+    "latest_expiration_time",
+    "market_type",
+    "no_ask_dollars",
+    "no_bid_dollars",
+    "no_sub_title",
+    "notional_value_dollars",
+    "occurrence_datetime",
+    "open_interest_fp",
+    "open_time",
+    "previous_price_dollars",
+    "previous_yes_ask_dollars",
+    "previous_yes_bid_dollars",
+    "price_level_structure",
+    "price_ranges",
+    "result",
+    "rules_primary",
+    "rules_secondary",
+    "settlement_bounds_type",
+    "settlement_timer_seconds",
+    "status",
+    "strike_type",
+    "subtitle",
+    "ticker",
+    "title",
+    "updated_time",
+    "volume_24h_fp",
+    "volume_fp",
+    "yes_ask_dollars",
+    "yes_ask_size_fp",
+    "yes_bid_dollars",
+    "yes_bid_size_fp",
+    "yes_sub_title"
+   ]
   },
   {
    "series": "KXNCAAFDRAFTDECLARE",
@@ -923,15 +9627,201 @@
    "keys": null
   },
   {
-   "series": "KXNBADRAFTPICK",
-   "event": "KXNBADRAFTPICK-27-1",
-   "n": 15,
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P10",
+   "n": 32,
    "keys": null
   },
   {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-1",
-   "n": 22,
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P11",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P12",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P13",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P14",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P15",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P16",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P17",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P18",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P19",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P2",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P20",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P21",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P22",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P23",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P24",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P25",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P26",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P27",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P28",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P29",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P3",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P30",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P31",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P32",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P4",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P5",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P6",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P7",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P8",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTSELECT",
+   "event": "KXNFLDRAFTSELECT-27P9",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFT1ST",
+   "event": "KXNFLDRAFT1ST-27",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNBADRAFTPICK",
+   "event": "KXNBADRAFTPICK-27-1",
+   "n": 15,
    "keys": null
   },
   {
@@ -953,32 +9843,10 @@
    "keys": null
   },
   {
-   "series": "KXNBADRAFTTOP25",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNFLDRAFT1ST",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNFLDRAFTLB",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNBATOPPICK",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNFLDRAFTSELECT",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNFLDRAFTTOP",
-   "error": "HTTP Error 429: Too Many Requests"
-  },
-  {
-   "series": "KXNBADRAFTCONF",
-   "error": "HTTP Error 429: Too Many Requests"
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-1",
+   "n": 22,
+   "keys": null
   }
  ]
 }
