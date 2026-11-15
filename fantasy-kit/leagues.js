@@ -50,16 +50,20 @@
     const sp = S[form.sport], players = sl.teams.reduce((a, t) => a + (proCount[t] || 0), 0), per = lineupOf(sp).length + benchOf(sp);
     return { players, per, games: sl.games.length, max: Math.max(2, Math.floor(players / Math.max(1, per))) };
   }
-  const slWeeks = () => ((slData() && slData().weeks) || []).filter((w) => SL.list(w).length);
+  // the moment a slate is cut from: the draft time (or when sealed lists lock) when one is set, else now. A noon draft
+  // offers the 1 PM games and leaves out a morning game that will have kicked off by then, however early it's set up.
+  const slRef = () => { const t = capOn() ? null : sealedOn() ? form.lkAt : form.dtMode === "at" ? form.dtAt : null; return t && t > Date.now() ? t : Date.now(); };
+  const slWeeks = () => ((slData() && slData().weeks) || []).filter((w) => SL.list(w, slRef()).length);
   const slWeek = () => { const ws = slWeeks(); return ws[Math.min(form.slWeek || 0, Math.max(0, ws.length - 1))] || null; };
   const slateOn = () => oneWeek() && SLATE_SPORTS.includes(form.sport);
   const dayOn = () => slateOn() && form.sport === "nba";
   function curSlate() {
     const w = slWeek(); if (!w) return null;
     const kind = form.slKind || "full";
-    if (kind === "one") return SL.pick(w, "one", [form.slOne || (SL.open(w)[0] || {}).id]);
-    if (kind === "custom") return (form.slGames || []).length ? SL.pick(w, "custom", form.slGames) : null;
-    return SL.pick(w, kind) || SL.pick(w, "full");
+    const ref = slRef(), open = SL.open(w, ref);
+    if (kind === "one") return SL.pick(w, "one", [open.some((g) => g.id === form.slOne) ? form.slOne : (open[0] || {}).id], ref);
+    if (kind === "custom") return (form.slGames || []).length ? SL.pick(w, "custom", form.slGames, ref) : null;
+    return SL.pick(w, kind, null, ref) || SL.pick(w, "full", null, ref);
   }
   // one game: a showdown, with its own lineup and budget
   // (a basketball game is a day slate of one: its captain comes from the slate's lineup, not a football showdown)
@@ -492,20 +496,22 @@
     if (slData().error) return `<section class="nl-sec" role="alert"><h2 class="nl-h">The games</h2><p class="ps">Couldn't load the schedule. Check your connection and try again.</p><button type="button" class="btn" data-a="slates-retry">Try again</button></section>`;
     const ws = slWeeks();
     if (!ws.length) return `<section class="nl-sec"><h2 class="nl-h">The games</h2><p class="ps">${dayOn() ? "There are no games left tonight or tomorrow to draft." : "There are no games left on the schedule to draft. Try again when the next week's games are out."}</p></section>`;
-    const w = slWeek(), list = SL.list(w), day = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
+    const w = slWeek(), list = SL.list(w, slRef()), day = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
     if (!list.some((x) => x.kind === form.slKind)) form.slKind = "full";
     const wkName = (x) => (x.day ? `${SL.dayName(x.day)}, ${day(x.day)}` : `Week ${x.week}, ${day(x.start)} to ${day(x.end)}`);
     const weekSeg = w.day ? (ws.length > 1 ? `<div style="margin-bottom:12px">${seg("slWeek", ws.map((x, i) => [i, wkName(x)]), Math.min(form.slWeek || 0, ws.length - 1), "Which night", { wrap: true })}</div>` : `<p class="ps" style="margin:0 0 10px">${esc(wkName(w))}</p>`)
       : ws.length > 1 ? `<div style="margin-bottom:12px">${seg("slWeek", ws.map((x, i) => [i, wkName(x)]), Math.min(form.slWeek || 0, ws.length - 1), "Which week", { wrap: true })}</div>` : `<p class="ps" style="margin:0 0 10px">Week ${w.week}, ${day(w.start)} to ${day(w.end)}</p>`;
     const cardsHtml = pickCards("slkind", list.map((x) => [x.kind, x.label, x.sub]), form.slKind, "The games");
-    const games = SL.open(w);
+    const games = SL.open(w, slRef());
     const chip = (g, on, attr) => `<button type="button" class="slg${on ? " on" : ""}" ${attr} aria-pressed="${on}"><b>${esc(g.away)} @ ${esc(g.home)}</b><small>${esc(SL.kick(g.at))}</small></button>`;
     const pickOne = form.slKind === "one" ? `<div class="slg-l">${games.map((g) => chip(g, (form.slOne || games[0].id) === g.id, `data-slone="${esc(g.id)}"`)).join("")}</div>` : "";
     const pickMany = form.slKind === "custom" ? `<div class="slg-l">${games.map((g) => chip(g, (form.slGames || []).includes(g.id), `data-slg="${esc(g.id)}"`)).join("")}</div>` : "";
     const sl = curSlate(), lu = sl ? (heist() ? null : SL.lineup(sl.games.length, form.teams, form.sport)) : null, kw = SL.word(form.sport);
-    const early = sl && sl.first - Date.now() < 36 * 36e5 ? ` The first game ${kw} ${esc(SL.kick(sl.games[0].at))}: finish the draft before then, or that game's players won't count.` : "";
+    const ref = slRef(), later = ref > Date.now() + 6e4;
+    const early = sl && sl.first - ref < 36 * 36e5 ? ` The first game ${kw} ${esc(SL.kick(sl.games[0].at))}: finish the draft before then, or that game's players won't count.` : "";
+    const cut = later && w.games && SL.open(w).length > SL.open(w, ref).length ? ` Games that ${kw === "tips off" ? "tip off" : "kick off"} before the ${sealedOn() ? "lists lock" : "draft"} (${esc(SL.kick(new Date(ref).toISOString()))}) are left out.` : "";
     const dayNote = sl && sl.day ? " It's scored on tonight's box scores and wraps up when the last game ends." : "";
-    const sum = sl ? `<p class="fl-h slsum"><b>${esc(sl.label)}: ${sl.games.length} game${sl.games.length === 1 ? "" : "s"}, ${sl.teams.length} teams' players.</b> ${heist() ? "The heist lineup: QB, 2 RB, 3 WR, TE and a flex, no bench." : esc(lu.note) + "."} Each player locks when his game ${kw}.${dayNote}${early}</p>`
+    const sum = sl ? `<p class="fl-h slsum"><b>${esc(sl.label)}: ${sl.games.length} game${sl.games.length === 1 ? "" : "s"}, ${sl.teams.length} teams' players.</b> ${heist() ? "The heist lineup: QB, 2 RB, 3 WR, TE and a flex, no bench." : esc(lu.note) + "."} Each player locks when his game ${kw}.${dayNote}${cut}${early}</p>`
       : `<p class="fl-h slsum">Pick at least one game.</p>`;
     return `<section class="nl-sec"><h2 class="nl-h">The games</h2>${weekSeg}${cardsHtml}${pickOne}${pickMany}${sum}</section>`;
   }
@@ -521,8 +527,7 @@
   function draftTimeHtml() {
     const at = form.dtMode === "at";
     if (at && !form.dtAt) form.dtAt = draftTimeDefault();
-    const sl = slateOn() ? curSlate() : null;
-    return fld("Draft time", `${seg("dtMode", [["self", "I'll start it"], ["at", "Set a time"]], at ? "at" : "self", "Draft time")}${at ? `<div style="margin-top:8px"><input id="n-dt" type="datetime-local" value="${esc(localInput(form.dtAt))}" min="${esc(localInput(Date.now() + 5 * 6e4))}"${sl ? ` max="${esc(localInput(sl.first - 10 * 6e4))}"` : ""} aria-label="When the draft starts"></div>` : ""}`,
+    return fld("Draft time", `${seg("dtMode", [["self", "I'll start it"], ["at", "Set a time"]], at ? "at" : "self", "Draft time")}${at ? `<div style="margin-top:8px"><input id="n-dt" type="datetime-local" value="${esc(localInput(form.dtAt))}" min="${esc(localInput(Date.now() + 5 * 6e4))}" aria-label="When the draft starts"></div>` : ""}`,
       at ? "It starts on its own, with an email an hour before. Anyone who isn't there gets picks from their queue, or the best player left." : "Start it from the draft room when everyone's in.");
   }
   const auction = () => form.type === "auction";
@@ -538,8 +543,7 @@
   // a sealed draft: the time the lists lock, when the draft runs itself (before the first kickoff, for a slate)
   function lockHtml() {
     if (!form.lkAt) form.lkAt = draftTimeDefault();
-    const sl = slateOn() ? curSlate() : null;
-    return fld("Lists lock", `<input id="n-lk" type="datetime-local" value="${esc(localInput(form.lkAt))}" min="${esc(localInput(Date.now() + 5 * 6e4))}"${sl ? ` max="${esc(localInput(sl.first - 10 * 6e4))}"` : ""} aria-label="When the lists lock">`,
+    return fld("Lists lock", `<input id="n-lk" type="datetime-local" value="${esc(localInput(form.lkAt))}" min="${esc(localInput(Date.now() + 5 * 6e4))}" aria-label="When the lists lock">`,
       "Everyone ranks players in private until then. Then the draft runs itself in a snake order: each pick is the highest player left on that team's list.");
   }
   // team roulette works with drafts that go pick by pick (not a showdown: two teams make a dull wheel)
@@ -1001,7 +1005,8 @@
     } else if (el.id === "n-name") { const t = $("#tk-name"); if (t) t.textContent = el.value || "Your league"; }
   });
   app.addEventListener("change", (e) => {
-    if (!e.target.closest(".su") || !(e.target.name === "sport" || e.target.dataset.f)) return;
+    // the draft time redraws too: the slate is cut from it
+    if (!e.target.closest(".su") || !(e.target.name === "sport" || e.target.dataset.f || e.target.id === "n-dt" || e.target.id === "n-lk")) return;
     const was = { sport: form.sport, season: form.season, weeks: form.weeks };
     grab();
     // a shorter season can't keep a deadline past its end; go back to the default for the new length
