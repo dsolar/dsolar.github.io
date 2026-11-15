@@ -12,6 +12,16 @@
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function f1(x) { return x == null || isNaN(x) ? "—" : (Math.round(x * 10) / 10).toFixed(1); }
   function f2(x) { return x == null || isNaN(x) ? "—" : x.toFixed(2); }
+  // money: $11.25M, $975K
+  function m(x, d) {
+    if (x == null || isNaN(x)) return "—";
+    var a = Math.abs(x), s = x < 0 ? "−$" : "$";
+    if (a >= 1e6) return s + (a / 1e6).toFixed(d == null ? (a >= 1e7 ? 1 : 2) : d) + "M";
+    if (a < 500) return "$0";
+    return s + Math.round(a / 1e3) + "K";
+  }
+  function msgn(x) { return x == null ? "—" : (x > 0 ? "+" : "") + m(x, 1); }
+  function slab(y) { return y + "-" + String(y + 1).slice(2); }
   function sgn(x, d) { if (x == null || isNaN(x)) return "—"; var s = x.toFixed(d == null ? 1 : d); return x > 0 ? "+" + s : s.replace("-", "−"); }
   function pct(x) {
     if (x == null) return "—";
@@ -79,9 +89,11 @@
     if (r === "teams") view.innerHTML = teamsView();
     else if (r === "team" && TEAMS[state.arg]) view.innerHTML = teamView(TEAMS[state.arg]);
     else if (r === "players") view.innerHTML = playersView();
+    else if (r === "stats") view.innerHTML = statsView();
+    else if (r === "contracts") view.innerHTML = contractsView();
     else if (r === "method") view.innerHTML = methodView();
     else view.innerHTML = standingsView();
-    var k = { standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", method: "How it works" }[r] || "Standings";
+    var k = { standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", stats: "Stats", contracts: "Contracts", method: "How it works" }[r] || "Standings";
     document.title = k + " · NHL Hub | David Solar";
   }
 
@@ -194,7 +206,8 @@
       '<div class="stat"><b>' + pct(t.odds.po) + "</b><span>Make playoffs</span></div>" +
       '<div class="stat"><b>' + pct(t.odds.div) + "</b><span>Win division</span></div>" +
       '<div class="stat"><b>' + pct(t.odds.cf) + "</b><span>Reach conf. final</span></div>" +
-      '<div class="stat"><b>' + pct(t.odds.cup) + "</b><span>Win the Cup</span></div></div>";
+      '<div class="stat"><b>' + pct(t.odds.cup) + "</b><span>Win the Cup</span></div>" +
+      (t.cap ? '<div class="stat"><a href="#/contracts?t=' + t.abbr + '" style="color:inherit;text-decoration:none"><b class="' + (t.cap.space >= 0 ? "" : "neg") + '">' + m(t.cap.space, 1) + "</b><span>Cap space · sheet →</span></a></div>" : "") + "</div>";
 
     // lines and pairings
     var lines = '<div class="rink"><h3>Forward lines <small>Most-used 5-on-5 trios this season, among players still here</small></h3>';
@@ -233,18 +246,155 @@
     var sk = ps.filter(function (p) { return p.grp !== "G"; }).sort(function (a, b) { return b.war - a.war; });
     var gs = ps.filter(function (p) { return p.grp === "G"; }).sort(function (a, b) { return b.war - a.war; });
     h += '<h3 class="card-sec">Roster</h3><div class="div"><table class="t"><thead><tr><th>Skater</th><th>Pos</th><th class="hide-m">Age</th><th>GP</th><th>G</th><th>A</th><th>P</th><th class="hide-m">TOI</th>' +
-      '<th title="Wins above replacement over 82 games at his ice time">WAR/82</th><th class="hide-m" title="Goals above replacement this season so far">This season</th></tr></thead><tbody>' +
+      '<th title="Wins above replacement over 82 games at his ice time">WAR/82</th><th class="hide-m" title="Goals above replacement this season so far">This season</th><th title="2026-27 cap hit">Cap hit</th><th class="hide-m">Thru</th></tr></thead><tbody>' +
       sk.map(function (p) {
         var n = p.now || {};
         return '<tr><td>' + pname(p) + "</td><td>" + posLabel(p) + '</td><td class="hide-m">' + (p.age || "—") + "</td><td>" + (n.gp || 0) + "</td><td>" + (n.g || 0) + "</td><td>" + (n.a || 0) + "</td><td>" + (n.pts || 0) +
-          '</td><td class="hide-m">' + (n.toi ? toi(n.toi / 60) : "—") + "</td><td><b>" + tierDot(p) + f1(p.war) + '</b></td><td class="hide-m">' + (p.gar_now == null ? "—" : sgn(p.gar_now) + " GAR") + "</td></tr>";
+          '</td><td class="hide-m">' + (n.toi ? toi(n.toi / 60) : "—") + "</td><td><b>" + tierDot(p) + f1(p.war) + '</b></td><td class="hide-m">' + (p.gar_now == null ? "—" : sgn(p.gar_now) + " GAR") + "</td>" + capCells(p) + "</tr>";
       }).join("") + "</tbody></table></div>";
-    h += '<div class="div"><table class="t"><thead><tr><th>Goalie</th><th class="hide-m">Age</th><th>GP</th><th>W-L-OT</th><th>Sv%</th><th class="hide-m">GAA</th><th title="Wins above replacement over 58 starts">WAR/58</th><th class="hide-m">This season</th></tr></thead><tbody>' +
+    h += '<div class="div"><table class="t"><thead><tr><th>Goalie</th><th class="hide-m">Age</th><th>GP</th><th>W-L-OT</th><th>Sv%</th><th class="hide-m">GAA</th><th title="Wins above replacement over 58 starts">WAR/58</th><th class="hide-m">This season</th><th>Cap hit</th><th class="hide-m">Thru</th></tr></thead><tbody>' +
       gs.map(function (p) {
         var n = p.now || {};
         return "<tr><td>" + pname(p) + '</td><td class="hide-m">' + (p.age || "—") + "</td><td>" + (n.gp || 0) + "</td><td>" + (n.gp ? n.w + "-" + n.l + "-" + n.otl : "—") + "</td><td>" + (n.sv != null && n.gp ? n.sv.toFixed(3).replace(/^0/, "") : "—") +
-          '</td><td class="hide-m">' + (n.gaa != null && n.gp ? n.gaa.toFixed(2) : "—") + "</td><td><b>" + tierDot(p) + f1(p.war) + '</b></td><td class="hide-m">' + (p.gar_now == null ? "—" : sgn(p.gar_now) + " GAR") + "</td></tr>";
+          '</td><td class="hide-m">' + (n.gaa != null && n.gp ? n.gaa.toFixed(2) : "—") + "</td><td><b>" + tierDot(p) + f1(p.war) + '</b></td><td class="hide-m">' + (p.gar_now == null ? "—" : sgn(p.gar_now) + " GAR") + "</td>" + capCells(p) + "</tr>";
       }).join("") + "</tbody></table></div>";
+    return h;
+  }
+  function capCells(p) {
+    var k = p.k || {};
+    var cap = k.cap == null ? '<span title="No public figure in the open contract data">—</span>' : m(k.cap) + (k.est ? '<sup title="Entry-level deal with no public figure: estimated">est</sup>' : "");
+    return "<td>" + cap + '</td><td class="hide-m">' + (k.end && !k.est ? slab(k.end) : "—") + "</td>";
+  }
+
+  // ---------- stats ----------
+  var ST_SK = [["gp", "GP"], ["g", "G"], ["a", "A"], ["pts", "P"], ["pm", "+/-"], ["ppg", "PPG"], ["sog", "SOG"], ["shp", "Sh%"], ["toi", "TOI"], ["fo", "FO%"], ["ixg", "ixG"], ["xgp", "xG%"]];
+  var ST_G = [["gp", "GP"], ["gs", "GS"], ["w", "W"], ["l", "L"], ["otl", "OTL"], ["sv", "Sv%"], ["gaa", "GAA"], ["so", "SO"], ["gsax", "GSAx"]];
+  function statVal(p, k) {
+    var n = p.now || {}, s = (p.seasons || []).filter(function (x) { return x.yr === 2026; })[0] || {};
+    if (k === "shp") return n.sog ? n.g / n.sog : null;
+    if (k === "toi") return n.toi || null;
+    if (k === "ixg") return s.ixg;
+    if (k === "xgp") return s.xgp;
+    if (k === "gsax") return s.gsax;
+    return n[k];
+  }
+  function statFmt(k, v) {
+    if (v == null) return "—";
+    if (k === "shp") return (v * 100).toFixed(1);
+    if (k === "toi") return toi(v / 60);
+    if (k === "fo") return v ? (v * 100).toFixed(1) : "—";
+    if (k === "xgp") return (v * 100).toFixed(1);
+    if (k === "sv") return v.toFixed(3).replace(/^0/, "");
+    if (k === "gaa") return v.toFixed(2);
+    if (k === "ixg" || k === "gsax") return f1(v);
+    if (k === "pm") return v > 0 ? "+" + v : String(v);
+    return String(v);
+  }
+  function statsView() {
+    var q = state.q, g = q.g || "F", team = q.t || "", find = (q.q || "").toLowerCase(), page = +(q.p || 0), per = 50;
+    var cols = g === "G" ? ST_G : ST_SK, s = q.s || (g === "G" ? "w" : "pts");
+    var asc = s === "gaa";
+    var list = H.players.filter(function (p) {
+      return p.grp === g && (!team || p.team === team) && (!find || p.name.toLowerCase().indexOf(find) >= 0) && p.now && p.now.gp;
+    });
+    if (s === "sv" || s === "gaa") list = list.filter(function (p) { return (p.now.gp || 0) >= 5; });
+    if (s === "shp" || s === "fo") list = list.filter(function (p) { return s === "fo" ? p.now.fo && p.pos === "C" : (p.now.sog || 0) >= 20; });
+    list.sort(function (a, b) {
+      var x = statVal(a, s), y = statVal(b, s);
+      if (x == null) return 1; if (y == null) return -1;
+      return asc ? x - y : y - x;
+    });
+    var pages = Math.max(1, Math.ceil(list.length / per)); page = Math.min(page, pages - 1);
+    var shown = list.slice(page * per, page * per + per);
+    var h = '<h2 class="sec">Stats</h2><p class="lede">This season\'s numbers from the NHL, plus expected goals from MoneyPuck: ixG is the expected goals of a player\'s own shots, xG% is his team\'s share of expected goals at 5-on-5 with him on the ice' +
+      (g === "G" ? ", and GSAx is goals saved above expected" : "") + ". Click a column to sort.</p>";
+    h += '<div class="controls"><label>Position<span class="seg" role="group">' + [["F", "Forwards"], ["D", "Defense"], ["G", "Goalies"]].map(function (x) {
+      return '<button type="button" data-g="' + x[0] + '" aria-pressed="' + (g === x[0]) + '">' + x[1] + "</button>";
+    }).join("") + '</span></label><label>Team<select id="pteam"><option value="">All teams</option>' +
+      H.teams.slice().sort(function (a, b) { return a.name < b.name ? -1 : 1; }).map(function (t) { return '<option value="' + t.abbr + '"' + (t.abbr === team ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("") +
+      '</select></label><label>Find<input type="search" id="pfind" placeholder="Player name" value="' + esc(q.q || "") + '"></label></div>';
+    var keep = g === "G" ? { gp: 1, w: 1, sv: 1 } : { gp: 1, g: 1, a: 1, pts: 1 };
+    h += '<div class="div"><table class="t ptab"><thead><tr><th>#</th><th>Player</th><th class="hide-m">Team</th>' +
+      cols.map(function (c) { return '<th class="sort' + (s === c[0] ? " on" : "") + (keep[c[0]] ? "" : " hide-m") + '" data-s="' + c[0] + '">' + c[1] + (s === c[0] ? (asc ? " ▴" : " ▾") : "") + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      shown.map(function (p, i) {
+        return "<tr><td>" + (page * per + i + 1) + "</td><td>" + pname(p) + '</td><td class="hide-m"><a href="#/team/' + p.team + '" style="display:inline-flex;gap:5px;align-items:center;color:inherit;text-decoration:none">' + logo(TEAMS[p.team], 18) + p.team + "</a></td>" +
+          cols.map(function (c) { return "<td" + (keep[c[0]] ? "" : ' class="hide-m"') + ">" + (s === c[0] ? "<b>" : "") + statFmt(c[0], statVal(p, c[0])) + (s === c[0] ? "</b>" : "") + "</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div>";
+    if (pages > 1) h += '<div class="pager">' + (page * per + 1) + "–" + Math.min(list.length, page * per + per) + " of " + list.length +
+      ' <button class="btn" data-pg="' + (page - 1) + '"' + (page ? "" : " disabled") + '>Previous</button><button class="btn" data-pg="' + (page + 1) + '"' + (page < pages - 1 ? "" : " disabled") + ">Next</button></div>";
+    h += '<p class="note">Players are listed with their current team. Save percentage and GAA need 5 games, shooting percentage 20 shots, and faceoffs are for centers.</p>';
+    return h;
+  }
+
+  // ---------- contracts ----------
+  function contractsView() {
+    if (!H.money) return '<p class="loading">Contract data didn\'t load today.</p>';
+    var q = state.q, v = q.v || "cap", M = H.money;
+    var h = '<h2 class="sec">Contracts</h2><p class="lede">Every cap hit from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset, each team\'s cap sheet, and what every deal is worth: projected WAR each season, aging included, at what teams pay for a win (' +
+      m(M.dpw, 2) + " for skaters, " + m(M.dpwG, 2) + " for goalies), against the cap hit.</p>";
+    h += '<div class="toolbar"><div class="seg" role="group" aria-label="Contracts view">' + [["cap", "Cap sheets"], ["best", "Best contracts"], ["worst", "Worst contracts"]].map(function (x) {
+      return '<button type="button" data-cv="' + x[0] + '" aria-pressed="' + (v === x[0]) + '">' + x[1] + "</button>";
+    }).join("") + "</div></div>";
+    if (v === "best" || v === "worst") return h + valueBoard(v);
+    if (q.t && TEAMS[q.t]) return h + capSheet(TEAMS[q.t]);
+    var y1 = H.teams[0].cap.years[1][0];
+    h += '<div class="div"><table class="t"><thead><tr><th>Team</th><th>Cap hit</th><th class="hide-m">Dead cap</th><th>Space</th><th class="hide-m">LTIR</th><th title="Committed to players under contract next season">' + slab(y1) + "</th><th class=\"hide-m\">Not public</th></tr></thead><tbody>" +
+      H.teams.slice().sort(function (a, b) { return a.cap.space - b.cap.space; }).map(function (t) {
+        var c = t.cap;
+        return '<tr class="go" data-capteam="' + t.abbr + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.common) + "</span></td><td>" + m(c.hit, 1) + '</td><td class="hide-m">' + (c.dead ? m(c.dead, 1) : "—") +
+          '</td><td class="' + (c.space < 0 ? "neg" : "") + '"><b>' + m(c.space, 1) + '</b></td><td class="hide-m">' + (c.ltir.length || "—") + "</td><td>" + m(c.years[1][1] + c.years[1][2], 1) + '</td><td class="hide-m">' + (c.unknown.length || "—") + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+    h += '<p class="note">Cap hit is every player on the current roster, injured ones included, plus dead cap (retained salary and buyouts), against the ' + m(H.teams[0].cap.ceiling, 1) + " ceiling. " +
+      "Teams over it are usually using long-term injured reserve, which the open data lists but doesn't price, so space here is before any LTIR relief. Entry-level deals with no public figure count at " + m(M.elcEst) + ". Click a team for its sheet.</p>";
+    return h;
+  }
+  function capSheet(t) {
+    var c = t.cap, ps = (ROSTER[t.abbr] || []).slice();
+    var h = '<div class="thead">' + logo(t, 46) + "<div><h2>" + esc(t.name) + ' cap sheet</h2><div class="meta">2026-27 · ' + ps.length + ' players on the roster</div></div><a class="back" href="#/contracts">All teams</a></div>';
+    h += '<div class="teampick">' + H.teams.slice().sort(function (a, b) { return a.abbr < b.abbr ? -1 : 1; }).map(function (x) {
+      return '<a href="#/contracts?t=' + x.abbr + '"' + (x === t ? ' style="border-color:var(--ink)"' : "") + ">" + logo(x, 18) + x.abbr + "</a>";
+    }).join("") + "</div>";
+    h += '<div class="stats"><div class="stat"><b>' + m(c.hit, 1) + '</b><span>Roster cap hit</span></div><div class="stat"><b>' + (c.dead ? m(c.dead, 1) : "$0") + '</b><span>Dead cap</span></div>' +
+      '<div class="stat"><b class="' + (c.space < 0 ? "neg" : "") + '">' + m(c.space, 1) + "</b><span>Space under " + m(c.ceiling, 0) + "</span></div>" +
+      c.years.slice(1, 4).map(function (y) { return '<div class="stat"><b>' + m(y[1] + y[2], 1) + "</b><span>" + slab(y[0]) + " committed · " + y[4] + " players</span></div>"; }).join("") + "</div>";
+    var groups = [["F", "Forwards"], ["D", "Defense"], ["G", "Goalies"]];
+    groups.forEach(function (gr) {
+      var list = ps.filter(function (p) { return p.grp === gr[0]; }).sort(function (a, b) { return ((b.k || {}).cap || 0) - ((a.k || {}).cap || 0); });
+      h += '<h3 class="card-sec">' + gr[1] + '</h3><div class="div"><table class="t"><thead><tr><th>Player</th><th class="hide-m">Age</th><th>Cap hit</th><th>Thru</th><th class="hide-m">Expiry</th><th class="hide-m">Clause</th><th>' + (gr[0] === "G" ? "WAR/58" : "WAR/82") +
+        '</th><th class="hide-m" title="What his projected WAR is worth this season">Value</th><th title="Value minus cap hit over the rest of the deal, in real dollars">Surplus</th></tr></thead><tbody>' +
+        list.map(function (p) {
+          var k = p.k || {};
+          return "<tr><td>" + pname(p) + (k.ltir ? ' <span class="tag" title="On long-term injured reserve">LTIR</span>' : "") + '</td><td class="hide-m">' + (p.age || "—") + "</td>" + capCells(p).replace('<td class="hide-m">', "<td>") +
+            '<td class="hide-m">' + esc(k.exp || "—") + '</td><td class="hide-m">' + esc(k.clause || "—") + "</td><td>" + tierDot(p) + f1(p.war) + '</td><td class="hide-m">' + m(k.val) + '</td><td class="' + (k.sur > 0 ? "pos" : k.sur < 0 ? "neg" : "") + '"><b>' + msgn(k.sur) + "</b></td></tr>";
+        }).join("") + "</tbody></table></div>";
+    });
+    if (c.deadList.length) h += '<div class="panel"><h3>Dead cap <small>2026-27</small></h3><ul class="games">' + c.deadList.map(function (d) {
+      return '<li><span class="d">' + (d[1] === "buyout" ? "Buyout" : "Retained") + "</span><span></span><span>" + esc(d[0]) + (d[3] ? " (with " + esc(d[3]) + ")" : "") + "</span><b>" + m(d[2]) + "</b></li>";
+    }).join("") + "</ul></div>";
+    var notes = [];
+    if (c.ltir.length) notes.push("On long-term injured reserve: " + c.ltir.map(function (x) { var p = PLAYERS[x[0]]; return esc(p ? p.name : "") + (x[1] ? " (" + m(x[1]) + " relief stated)" : ""); }).join(", ") + ". The relief a team really gets depends on its space when he was placed, so it isn't taken off above.");
+    if (c.unknown.length) notes.push("No public figure for " + c.unknown.map(function (i) { return esc(PLAYERS[i].name); }).join(", ") + ", so they're left out of the totals.");
+    if (c.est.length) notes.push("Entry-level deals with no public figure, counted at " + m(H.money.elcEst) + ": " + c.est.map(function (i) { return esc(PLAYERS[i].name); }).join(", ") + ".");
+    if (notes.length) h += '<p class="note">' + notes.join(" ") + "</p>";
+    return h;
+  }
+  function valueBoard(v) {
+    var g = state.q.g || "", page = +(state.q.p || 0), per = 50;
+    var list = H.players.filter(function (p) { return p.k && p.k.sur != null && (!g || p.grp === g); });
+    list.sort(function (a, b) { return v === "best" ? b.k.sur - a.k.sur : a.k.sur - b.k.sur; });
+    var pages = Math.max(1, Math.ceil(list.length / per)); page = Math.min(page, pages - 1);
+    var h = '<div class="controls"><label>Position<span class="seg" role="group">' + [["", "All"], ["F", "Forwards"], ["D", "Defense"], ["G", "Goalies"]].map(function (x) {
+      return '<button type="button" data-kg="' + x[0] + '" aria-pressed="' + (g === x[0]) + '">' + x[1] + "</button>";
+    }).join("") + "</span></label></div>";
+    h += '<div class="div"><table class="t ptab"><thead><tr><th>#</th><th>Player</th><th class="hide-m">Team</th><th class="hide-m">Age</th><th>Cap hit</th><th class="hide-m">Thru</th><th>WAR</th><th class="hide-m">Value now</th><th>Surplus</th></tr></thead><tbody>' +
+      list.slice(page * per, page * per + per).map(function (p, i) {
+        var k = p.k;
+        return "<tr><td>" + (page * per + i + 1) + "</td><td>" + pname(p) + '</td><td class="hide-m">' + logo(TEAMS[p.team], 18) + " " + p.team + '</td><td class="hide-m">' + (p.age || "—") + "</td><td>" + m(k.cap) + '</td><td class="hide-m">' + slab(k.end) +
+          "</td><td>" + tierDot(p) + f1(p.war) + '</td><td class="hide-m">' + m(k.val) + '</td><td class="' + (k.sur >= 0 ? "pos" : "neg") + '"><b>' + msgn(k.sur) + "</b></td></tr>";
+      }).join("") + "</tbody></table></div>";
+    if (pages > 1) h += '<div class="pager">' + (page * per + 1) + "–" + Math.min(list.length, page * per + per) + " of " + list.length +
+      ' <button class="btn" data-pg="' + (page - 1) + '"' + (page ? "" : " disabled") + '>Previous</button><button class="btn" data-pg="' + (page + 1) + '"' + (page < pages - 1 ? "" : " disabled") + ">Next</button></div>";
+    h += '<p class="note">Surplus adds up value minus cap hit for every season left on the deal (up to six), in real dollars with no discounting. Value is the league minimum plus projected WAR at the price of a win, which rises with the cap. Click a player for the year by year.</p>';
     return h;
   }
   function avgUse(ids, k) { var s = 0, n = 0; ids.forEach(function (i) { var p = PLAYERS[i]; if (p && p.use) { s += p.use[k]; n++; } }); return n ? s / n : 0; }
@@ -304,12 +454,30 @@
       (p.age ? " · age " + p.age : "") + (p.shoots ? " · " + (G ? "catches " : "shoots ") + p.shoots : "") + (ht ? " · " + ht + (p.wt ? ", " + p.wt + " lb" : "") : "") + (p.country ? " · " + esc(p.country) : "") + "</div></div></div>";
     h += '<div class="card-b"><div class="kv"><div><b>' + f1(p.war) + "</b><span>" + (G ? "WAR / 58 starts" : "WAR / 82") + "</span></div><div><b>" + ord(p.rank) + "</b><span>among " + (G ? "goalies" : p.grp === "D" ? "defensemen" : "forwards") +
       "</span></div><div><b>" + tierDot(p) + esc(tr.label) + "</b><span>Tier</span></div><div><b>" + (p.gar_now == null ? "—" : sgn(p.gar_now)) + "</b><span>GAR this season</span></div></div>";
-    h += '<div class="cardtabs" role="tablist"><button type="button" role="tab" data-ct="rate" aria-selected="true">Rating</button><button type="button" role="tab" data-ct="stats" aria-selected="false">Stats</button></div>';
+    h += '<div class="cardtabs" role="tablist"><button type="button" role="tab" data-ct="rate" aria-selected="true">Rating</button><button type="button" role="tab" data-ct="stats" aria-selected="false">Stats</button>' + (p.k ? '<button type="button" role="tab" data-ct="deal" aria-selected="false">Contract</button>' : "") + "</div>";
     h += '<div data-pane="rate">' + (G ? goalieRating(p) : skaterRating(p)) + "</div>";
-    h += '<div data-pane="stats" hidden>' + (G ? goalieStats(p) : skaterStats(p)) + "</div></div>";
+    h += '<div data-pane="stats" hidden>' + (G ? goalieStats(p) : skaterStats(p)) + "</div>";
+    h += p.k ? '<div data-pane="deal" hidden>' + dealTab(p) + "</div>" : "";
+    h += "</div>";
     cardBody.innerHTML = h;
     if (!card.open) card.showModal();
   }
+  function dealTab(p) {
+    var k = p.k;
+    if (k.est === "unknown") return '<p class="note">The open contract data has no public figure for his deal yet.</p>';
+    var head = '<div class="kv"><div><b>' + m(k.cap) + (k.est ? " est." : "") + "</b><span>2026-27 cap hit</span></div><div><b>" + (k.end ? slab(k.end) : "—") + "</b><span>Signed through" + (k.exp ? " · then " + esc(k.exp) : "") + "</span></div>" +
+      '<div><b class="' + (k.sur > 0 ? "pos" : k.sur < 0 ? "neg" : "") + '">' + msgn(k.sur) + "</b><span>Surplus, rest of deal</span></div></div>";
+    if (k.est) return head + '<p class="note">An entry-level deal with no public figure, so this uses a typical ' + m(H.money.elcEst) + " cap hit and doesn't add up a surplus.</p>";
+    var rows = k.years.map(function (r) {
+      var sur = r[1] == null ? null : r[6] - r[1];
+      return "<tr><td>" + slab(r[0]) + '</td><td class="hide-m">' + (p.age ? p.age + (r[0] - 2026) : "—") + "</td><td>" + f1(r[5]) + "</td><td>" + m(r[6]) + "</td><td>" + m(r[1]) + (r[7] ? '<sup title="After salary retained by another team">ret</sup>' : "") +
+        '</td><td class="' + (sur > 0 ? "pos" : sur < 0 ? "neg" : "") + '"><b>' + msgn(sur) + '</b></td><td class="hide-m">' + esc(r[4] || "") + "</td></tr>";
+    }).join("");
+    return head + '<table class="t"><thead><tr><th>Season</th><th class="hide-m">Age</th><th>Proj. WAR</th><th>Value</th><th>Cap hit</th><th>Surplus</th><th class="hide-m">Clause</th></tr></thead><tbody>' + rows + "</tbody></table>" +
+      '<p class="note">' + (k.type ? esc(k.type === "ELC" ? "Entry-level" : k.type === "extension" ? "Extension" : "Contract") + (k.signed ? " signed " + esc(k.signed) : "") + (k.term ? ", " + k.term + " years" : "") + (k.total ? ", " + m(k.total, 1) + " total" : "") + ". " : "") +
+      "WAR fades or grows with age each season; value is the league minimum plus WAR at " + m(G_or_S(p), 2) + " a win, rising with the cap.</p>";
+  }
+  function G_or_S(p) { return p.grp === "G" ? H.money.dpwG : H.money.dpw; }
   function skaterRating(p) {
     var C = p.comp, parts = [["evo", "EV offense"], ["evd", "EV defense"], ["ppo", "Power play"], ["pkd", "Penalty kill"], ["fin", "Finishing"], ["pen", "Penalties"], ["fo", "Faceoffs"]];
     var mx = Math.max.apply(null, parts.map(function (x) { return Math.abs(C[x[0]]); }).concat([3]));
@@ -353,8 +521,9 @@
       '<a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>\'s public season files: on-ice and individual expected goals for every skater, every goalie\'s shots faced, team totals and line combinations, for this season and the two before it. ' +
       "MoneyPuck's expected goals give every shot a chance of going in from where and how it was taken. The hub rebuilds every morning.</p>" +
       "<h3>Player ratings</h3><p>Each skater is rated in goals a 60 minutes against an average player, in parts:</p><ul>" +
-      "<li><b>Even-strength offense and defense.</b> Expected goals for and against while he's on the ice at 5-on-5, measured two ways: against the league's rate, and against his own team when he's on the bench. " +
-      "Each counts for part of the credit (" + Math.round(P.credit.league * 100) + "% and " + Math.round(P.credit.rel * 100) + "% of the difference), since four teammates share the ice with him. Those shares were set so that a lineup's ratings add up to its results: rate every player on 2024-25, price 2025-26's lineups at those ratings, and the predicted goal differentials matched the real ones one for one.</li>" +
+      "<li><b>Even-strength offense.</b> Mostly what he creates himself at 5-on-5: the expected goals of his own shots plus half a goal for every primary assist and a little for secondary ones, against the average at his position. On top of that, a small share of the expected goals for while he's on the ice, measured against the league and against his own team when he's on the bench.</li>" +
+      "<li><b>Even-strength defense.</b> Expected goals against while he's on the ice, the same two ways (against the league, and against his team without him). He gets " + Math.round(P.credit.league * 100) + "% and " + Math.round(P.credit.rel * 100) + "% of those differences, since four teammates share the ice with him.</li>" +
+      "<li><b>How the weights were set.</b> Rate every player on 2024-25 alone, price 2025-26's lineups at those ratings, and compare with what the teams actually did. These weights predicted goal differential best (a correlation of 0.58), and the predicted differentials matched the real ones one for one in size.</li>" +
       "<li><b>Power play and penalty kill.</b> On-ice expected goals for at 5-on-4 and against at 4-on-5, against the league.</li>" +
       "<li><b>Finishing.</b> Goals over his own expected goals. Most of this is luck from year to year, so it's pulled hard toward zero.</li>" +
       "<li><b>Penalties and faceoffs.</b> Penalties drawn minus taken at " + P.penValue + " goals each (what a power play is worth), and faceoffs won minus lost at " + P.foValue + " goals each.</li></ul>" +
@@ -371,8 +540,11 @@
       "Ties go to overtime and the shootout, which lean slightly toward the better team, and the loser gets a point. Standings break ties on points, then regulation wins, then regulation and overtime wins, then wins. " +
       "The top three in each division and two wild cards per conference make the playoffs, in the NHL's bracket (the better division winner draws the second wild card), and every series is played game by game, 2-2-1-1-1, with home ice to the team that finished higher.</p>" +
       "<h3>Lines and pairings</h3><p>Each team's most-used 5-on-5 forward trios and defense pairs this season from MoneyPuck's line data, keeping only players still on the roster and never using a player twice. They show who has played together, not tonight's lineup, so a new trade or an injury won't show up until the new combination has logged minutes.</p>" +
-      "<h3>What it doesn't know</h3><ul><li>Injuries: an injured player still counts if he's on the roster, and a call-up counts at his own (usually small) sample.</li><li>Contracts and the cap. Those are coming.</li><li>Quality of competition and teammates beyond the on-ice/off-ice comparison, so a fourth-liner sheltered from top lines can look a little better than he is.</li></ul>" +
-      '<p class="note">Expected goals and line data from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>; standings, rosters and stats from the NHL. Built ' + esc(H.built.slice(0, 10)) + ".</p></div>";
+      (H.money ? "<h3>Contracts and value</h3><p>Cap hits, year-by-year structure, clauses, retained salary, buyouts and long-term injured reserve come from the open <a href=\"https://github.com/ehlersio/nhl-contracts\" rel=\"noopener\">nhl-contracts</a> dataset (public domain, CC0). It traces every figure to the public document it came from: club releases and NHL.com stories, ESPN's transaction wire, PuckPedia's public posts and archived CapFriendly pages. A few deals have no public figure; entry-level ones count at " + m(H.money.elcEst) + " and the rest are left out and named. " +
+        "A deal's value each season is the league minimum (" + m(H.money.minSalary) + ") plus his projected WAR at the price of a win. That price comes from the market itself: what teams pay veterans 25 and older above the minimum, divided by the WAR they're projected for. Skaters and goalies are priced apart (" + m(H.money.dpw, 2) + " and " + m(H.money.dpwG, 2) + " a win this season), since teams pay less for a goalie's win. " +
+        "WAR grows a little each year into the mid-20s and fades from the late 20s, and the price of a win rises with the cap (" + m(H.money.caps["2027-28"], 1) + " next season, then about " + Math.round(H.money.capGrowth * 100) + "% a year). Surplus is value minus cap hit added up over the rest of the deal, up to six seasons, in real dollars.</p>" : "") +
+      "<h3>What it doesn't know</h3><ul><li>Injuries: an injured player still counts if he's on the roster, and a call-up counts at his own (usually small) sample.</li><li>Cap space after long-term injured reserve relief, which depends on when each player was placed.</li><li>Quality of competition and teammates beyond the on-ice/off-ice comparison, so a fourth-liner sheltered from top lines can look a little better than he is.</li></ul>" +
+      '<p class="note">Expected goals and line data from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>; contracts from <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a>; standings, rosters and stats from the NHL. Built ' + esc(H.built.slice(0, 10)) + ".</p></div>";
   }
 
   // ---------- events ----------
@@ -381,9 +553,12 @@
     if ((el = e.target.closest("[data-p]"))) { openCard(+el.dataset.p); return; }
     if ((el = e.target.closest("tr[data-team]"))) { go("team", el.dataset.team); return; }
     if ((el = e.target.closest("[data-v]"))) { setQ({ v: el.dataset.v }); return; }
-    if ((el = e.target.closest("[data-g]"))) { setQ({ g: el.dataset.g, s: "war", p: "" }); return; }
+    if ((el = e.target.closest("[data-g]"))) { setQ({ g: el.dataset.g, s: state.route === "stats" ? "" : "war", p: "" }); return; }
     if ((el = e.target.closest("th[data-s]"))) { setQ({ s: el.dataset.s, p: "" }); return; }
-    if ((el = e.target.closest("[data-pg]"))) { setQ({ p: el.dataset.pg }); window.scrollTo({ top: view.offsetTop - 10 }); }
+    if ((el = e.target.closest("[data-pg]"))) { setQ({ p: el.dataset.pg }); window.scrollTo({ top: view.offsetTop - 10 }); return; }
+    if ((el = e.target.closest("[data-cv]"))) { go("contracts", null, { v: el.dataset.cv }); return; }
+    if ((el = e.target.closest("[data-kg]"))) { setQ({ g: el.dataset.kg, p: "" }); return; }
+    if ((el = e.target.closest("tr[data-capteam]"))) { go("contracts", null, { t: el.dataset.capteam }); }
   });
   view.addEventListener("change", function (e) { if (e.target.id === "pteam") setQ({ t: e.target.value, p: "" }); });
   var typing;
@@ -392,9 +567,9 @@
     clearTimeout(typing);
     var v = e.target.value;
     typing = setTimeout(function () {
-      history.replaceState(null, "", location.pathname + "#/players?" + ["g=" + (state.q.g || "F"), state.q.t ? "t=" + state.q.t : "", state.q.s ? "s=" + state.q.s : "", v ? "q=" + encodeURIComponent(v) : ""].filter(Boolean).join("&"));
+      history.replaceState(null, "", location.pathname + "#/" + state.route + "?" + ["g=" + (state.q.g || "F"), state.q.t ? "t=" + state.q.t : "", state.q.s ? "s=" + state.q.s : "", v ? "q=" + encodeURIComponent(v) : ""].filter(Boolean).join("&"));
       parse();
-      view.innerHTML = playersView();
+      view.innerHTML = state.route === "stats" ? statsView() : playersView();
       var box = $("#pfind"); box.focus(); box.setSelectionRange(v.length, v.length);
     }, 180);
   });
@@ -412,7 +587,7 @@
     H = d;
     H.teams.forEach(function (t) { TEAMS[t.abbr] = t; });
     H.players.forEach(function (p) { PLAYERS[p.id] = p; (ROSTER[p.team] = ROSTER[p.team] || []).push(p); });
-    $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + ".";
+    $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Contracts from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset (CC0). Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + ".";
     render();
   }).catch(function () { view.innerHTML = '<p class="loading">The hub didn\'t load. Try again in a minute.</p>'; });
 })();

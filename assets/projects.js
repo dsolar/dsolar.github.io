@@ -257,17 +257,17 @@ window.PROJECTS = [
   {
     title: "NHL Hub",
     hub: true,
-    line: "Playoff and Cup odds, lines and player ratings",
+    line: "Playoff and Cup odds, lines, ratings and cap sheets",
     tag: "Updated every morning",
     type: "Simulations",
     released: "2026-11",
     url: "nhl/",
     action: "Open the hub",
-    question: "Who's really winning the Cup, and who are the best players by what happens when they're on the ice?",
-    summary: "The rest of the NHL season played out thousands of times from every team's strength, with overtime points, the wild-card format and the playoffs to the Cup. Every team's lines, pairings and goalie split, and wins above replacement for every skater and goalie from three seasons of MoneyPuck's expected goals.",
-    facts: [["6,000", "simulated seasons"], ["790+", "skaters and goalies rated"], ["32", "sets of lines and pairings"]],
+    question: "Who's really winning the Cup, who are the best players, and whose contract is worth it?",
+    summary: "The rest of the NHL season played out thousands of times from every team's strength, with overtime points, the wild-card format and the playoffs to the Cup. Every team's lines, pairings and goalie split, wins above replacement for every skater and goalie from three seasons of MoneyPuck's expected goals, this season's stats, and every cap sheet with each contract's value against its cap hit.",
+    facts: [["6,000", "simulated seasons"], ["790+", "skaters and goalies rated"], ["32", "cap sheets"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
-    cover: { bg: "#F5F4F0", band: "#111111" }
+    cover: { image: "assets/covers/nhl-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
     title: "Big Board",

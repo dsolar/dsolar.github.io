@@ -61,3 +61,5 @@ table.t.ptab th:nth-child(2),table.t.ptab td:nth-child(2){text-align:left}
 table.t.ptab td:first-child{color:var(--faint);width:28px}
 .wrap .div{overflow-x:auto}
 @media (max-width:640px){.oddbar i{display:none}}
+.tag{display:inline-block;font:700 10.5px/1 var(--cond);letter-spacing:.06em;padding:3px 5px;border-radius:4px;background:var(--paper-2);color:var(--muted);vertical-align:1px}
+sup{font-size:10px;color:var(--faint);margin-left:2px}

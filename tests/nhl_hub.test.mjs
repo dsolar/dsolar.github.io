@@ -65,3 +65,21 @@ test('ratings: stars near the top, replacement below average, tiers by rank', ()
     for (let i = 1; i < ps.length; i++) assert.ok(ps[i].war <= ps[i - 1].war);
   }
 });
+
+test('contracts: cap sheets for every team, most players priced, surplus adds up', () => {
+  assert.ok(H.money && H.money.dpw > 1e6 && H.money.dpwG > 5e5, 'price of a win');
+  const priced = H.players.filter(p => p.k && p.k.cap);
+  assert.ok(priced.length / H.players.length > 0.85, `${priced.length} of ${H.players.length} have a cap hit`);
+  for (const t of H.teams) {
+    const c = t.cap;
+    assert.ok(c.hit > 50e6 && c.hit < 130e6, `${t.abbr} cap hit ${c.hit}`);
+    assert.equal(c.space, c.ceiling - c.hit - c.dead, `${t.abbr} space`);
+    const sum = H.players.filter(p => p.team === t.abbr && p.k && p.k.cap).reduce((s, p) => s + p.k.cap, 0);
+    near(sum, c.hit, 2, `${t.abbr} hit is the sum of its roster`);
+  }
+  for (const p of H.players) {
+    if (!p.k || p.k.sur == null) continue;
+    const s = p.k.years.reduce((a, r) => a + (r[1] == null ? 0 : r[6] - r[1]), 0);
+    near(s, p.k.sur, 2, `${p.name} surplus`);
+  }
+});

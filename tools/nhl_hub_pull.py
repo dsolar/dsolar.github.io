@@ -4,6 +4,9 @@
   NHL's own API (api-web.nhle.com): standings, every team's roster, season stats and schedule.
   MoneyPuck.com's public season files (moneypuck.com/data.htm): skaters, goalies, teams and lines, for this season and
   the two before it. MoneyPuck's data is free for non-commercial use with credit; the hub credits it on every page.
+  The open nhl-contracts dataset (github.com/ehlersio/nhl-contracts, CC0): contracts, year-by-year cap hits, dead cap
+  and long-term injured reserve, each figure traced to the public document it came from. Trimmed to deals that run
+  through this season or later.
 
 Each part keeps its last good snapshot if a pull fails, so the build still runs. Run by .github/workflows/nhl-hub.yml.
 """
@@ -175,8 +178,41 @@ def pull_mp(kind, season, cols, situations=SITUATIONS):
     save(f"mp_{kind}_{season}.json", {"season": season, "cols": have, "rows": out})
 
 
+# ---------- contracts ----------
+NC = "https://github.com/ehlersio/nhl-contracts/releases/download/contracts"
+
+
+def pull_contracts():
+    stamp = getj(NC + "/timestamp.json")
+    contracts = getj(NC + "/contracts.json")
+    seasons = getj(NC + "/contract_seasons.json")
+    dead = getj(NC + "/dead_cap.json")
+    ltir = getj(NC + "/ltir.json")
+
+    def yr(s):
+        try:
+            return int(str(s)[:4])
+        except (TypeError, ValueError):
+            return None
+    keep_c = ["contract_key", "player_name", "player_id", "team", "signed_at", "contract_type", "term_years", "aav_usd",
+              "cap_hit_usd", "total_usd", "one_way", "start_season", "end_season", "bought_out", "expiry_status",
+              "best_tier", "conflicts"]
+    cs = [{k: c.get(k) for k in keep_c} for c in contracts
+          if c.get("contract_type") != "PTO" and (yr(c.get("end_season")) or 0) >= SEASON]
+    keys = {c["contract_key"] for c in cs}
+    ss = [{k: r.get(k) for k in ("contract_key", "season", "cap_hit_usd", "aav_usd", "base_salary_usd",
+                                 "signing_bonus_usd", "performance_bonus_usd", "clause")}
+          for r in seasons if r.get("contract_key") in keys and (yr(r.get("season")) or 0) >= SEASON]
+    dc = [{k: r.get(k) for k in ("team", "kind", "player_name", "player_id", "counterparty", "season", "cap_hit_usd", "pct")}
+          for r in dead if (yr(r.get("season")) or 0) >= SEASON and r.get("cap_hit_usd")]
+    lt = [{k: r.get(k) for k in ("player_id", "player_name", "team", "since", "stated_relief_usd")} for r in ltir if r.get("active")]
+    if len(cs) < 500:
+        raise RuntimeError(f"only {len(cs)} current contracts")
+    save("contracts.json", {"updated": stamp.get("updated_at"), "contracts": cs, "seasons": ss, "dead": dc, "ltir": lt})
+
+
 def main():
-    parts = sys.argv[1:] or ["nhl", "mp"]
+    parts = sys.argv[1:] or ["nhl", "mp", "contracts"]
     failed = []
     if "nhl" in parts:
         try:
@@ -196,6 +232,11 @@ def main():
             pull_mp("lines", SEASON, LINE_COLS, {"5on5", "5on4"})
         except Exception as e:  # noqa: BLE001
             failed.append(f"mp lines: {e}")
+    if "contracts" in parts:
+        try:
+            pull_contracts()
+        except Exception as e:  # noqa: BLE001
+            failed.append(f"contracts: {e}")
     for f in failed:
         print("FAILED", f, file=sys.stderr)
     if failed and len(failed) >= 5:

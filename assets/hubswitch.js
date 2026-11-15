@@ -12,8 +12,8 @@
     mlb: { standings: "#standings", teams: "#teams", contracts: "#contracts", value: "#value", builder: "#trade", fa: "#fa", method: "#method" },
     nba: { standings: "#/standings", teams: "#/teams", contracts: "#/contracts/BOS", value: "#/value", builder: "#/trade", fa: "#/fa", method: "#/method" },
     nfl: { standings: "#/standings", teams: "#/teams", contracts: "#/cap", value: "#/trade", builder: "#/trade", fa: "#/fa", method: "#/method" },
-    // no contracts yet; its player ratings stand in for the other hubs' value boards
-    nhl: { standings: "#/standings", teams: "#/teams", value: "#/players", method: "#/method" }
+    // its player ratings stand in for the other hubs' value boards
+    nhl: { standings: "#/standings", teams: "#/teams", contracts: "#/contracts", value: "#/players", method: "#/method" }
   };
   // The kind of page this hub is showing now, from its address
   function kind() {
@@ -32,7 +32,7 @@
     if (here === "nhl") {
       if (route === "team") return "teams";
       if (route === "players") return "value";
-      return { standings: 1, teams: 1, method: 1 }[route] ? route : null;
+      return { standings: 1, teams: 1, contracts: 1, method: 1 }[route] ? route : null;
     }
     // nfl: its Trade Value page is also where trades are built; Power Rankings sit with standings
     if (route === "trade") return "value";

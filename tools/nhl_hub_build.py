@@ -13,6 +13,8 @@ What it works out:
   Standings: the rest of the schedule played out SIMS times, game by game from Poisson scoring with home ice, with
     overtime points, the division and wild-card playoff format, and the playoffs to the Cup.
   Lines and pairings: each team's most-used 5-on-5 combinations this season among players still on the roster.
+  Contracts: cap hits by season from the open nhl-contracts dataset (CC0), each team's cap sheet, and what each
+    contract is worth: projected WAR by season (aging included) at the market's price of a win, against the cap hit.
 
   python3 tools/nhl_hub_build.py            build nhl/data/hub.json
   python3 tools/nhl_hub_build.py backtest   rate players on 2024-25 alone and check how well that predicts 2025-26
@@ -42,13 +44,203 @@ PRIOR = {"ev": 900, "pp": 250, "pk": 250, "fin": 900, "pen": 1500, "g": 3000}
 # Credit for on-ice results: the share of the on-ice xG difference that goes to the player, against the league
 # (league) and against his own team without him (rel). Set so the ratings of a team's lineup add up to its results
 # (see backtest).
-CREDIT = {"league": 0.25, "rel": 0.30}
+CREDIT = {"league": 0.15, "rel": 0.10, "ind": 1.2}
+IND_A1, IND_A2 = 0.5, 0.15           # a primary and a secondary assist, against a goal of his own expected
 # A small sample is pulled toward this rate (goals a 60 at even strength, each of offense and defense), a bit below
 # average, since players who barely play are mostly fringe players
 PRIOR_MEAN = -0.07
 G_PRIOR_MEAN = -0.002               # the goalie version: goals saved per unblocked shot, below average
 PEN_VALUE = 0.17                    # goals a penalty is worth (a power play's net xG)
 FO_VALUE = 0.008                    # goals a won faceoff is worth
+
+
+# ---------- contracts ----------
+CAP = {2026: 104_000_000, 2027: 113_500_000}   # ceilings the league has announced
+CAP_GROWTH = 0.05                               # after that, a guess
+MIN_SALARY = 850_000
+ELC_EST = 950_000                               # a typical entry-level cap hit, for a deal with no public figure
+YEARS = 6                                       # seasons shown ahead
+# a skater's or goalie's WAR next season against this one, by the age he'll be
+AGING = [(21, 1.15), (23, 1.08), (25, 1.03), (27, 1.0), (29, 0.96), (31, 0.91), (33, 0.86), (99, 0.80)]
+AGING_G = [(23, 1.08), (26, 1.04), (29, 1.0), (32, 0.96), (34, 0.9), (99, 0.84)]
+
+
+def cap_for(y):
+    last = max(CAP)
+    return CAP.get(y) or CAP[last] * (1 + CAP_GROWTH) ** (y - last)
+
+
+def slabel(y):
+    return f"{y}-{str(y + 1)[2:]}"
+
+
+def syear(s):
+    try:
+        return int(str(s)[:4])
+    except (TypeError, ValueError):
+        return None
+
+
+def age_step(age, goalie):
+    for top, m in (AGING_G if goalie else AGING):
+        if age <= top:
+            return m
+    return 0.8
+
+
+def norm_name(n):
+    import unicodedata
+    import re
+    n = unicodedata.normalize("NFKD", n or "").encode("ascii", "ignore").decode().lower()
+    return re.sub(r"[^a-z ]", "", n).strip()
+
+
+def attach_contracts(players, teams_out, gshare):
+    """adds a contract, year-by-year value and surplus to every player, and a cap sheet to every team"""
+    d = load("contracts.json")
+    if not d:
+        return None
+    seasons = defaultdict(dict)
+    for r in d["seasons"]:
+        seasons[r["contract_key"]][syear(r["season"])] = r
+    by_id, by_name = defaultdict(list), defaultdict(list)
+    for c in d["contracts"]:
+        if c.get("player_id"):
+            by_id[int(c["player_id"])].append(c)
+        by_name[norm_name(c["player_name"])].append(c)
+    retained = defaultdict(float)     # (player id or name, season) -> cap kept by an old team
+    dead = defaultdict(list)          # (team, season) -> charges
+    for r in d["dead"]:
+        y = syear(r["season"])
+        dead[(r["team"], y)].append(r)
+        if r["kind"] == "retained":
+            retained[(r.get("player_id") or norm_name(r["player_name"]), y)] += r["cap_hit_usd"]
+    ltir = {}
+    for r in d["ltir"]:
+        ltir[r.get("player_id") or norm_name(r["player_name"])] = r
+
+    # price of a win: what teams pay veterans on the open market above the minimum, per WAR they give
+    def deals_for(p):
+        cs = by_id.get(p["id"]) or [c for c in by_name.get(norm_name(p["name"]), []) if not c.get("player_id")]
+        cs = [c for c in cs if (syear(c.get("end_season")) or 0) >= SEASON]
+        return sorted(cs, key=lambda c: (syear(c.get("start_season")) or 0, c.get("signed_at") or ""))
+
+    def season_cap(c, y):
+        r = seasons[c["contract_key"]].get(y) or {}
+        return r.get("cap_hit_usd") or r.get("aav_usd") or c.get("cap_hit_usd") or c.get("aav_usd"), r
+
+    for p in players.values():
+        cs = deals_for(p)
+        rows = {}
+        for c in cs:
+            st, en = syear(c.get("start_season")), syear(c.get("end_season"))
+            if en is None:
+                continue
+            st = st if st is not None else en - (c.get("term_years") or 1) + 1
+            for y in range(max(st, SEASON), en + 1):
+                cap, r = season_cap(c, y)
+                rows[y] = {"cap": cap, "base": r.get("base_salary_usd"), "sb": r.get("signing_bonus_usd"),
+                           "clause": r.get("clause"), "c": c}
+        k = {"est": None}
+        if SEASON in rows and rows[SEASON]["cap"]:
+            cur = rows[SEASON]["c"]
+            k.update(type=cur.get("contract_type"), signed=cur.get("signed_at"), term=cur.get("term_years"),
+                     aav=cur.get("aav_usd"), total=cur.get("total_usd"), tier=cur.get("best_tier"))
+        elif (p.get("age") or 99) <= 23:
+            rows = {SEASON: {"cap": ELC_EST, "base": None, "sb": None, "clause": None, "c": {}}}
+            k["est"] = "elc"
+            k["type"] = "ELC"
+        else:
+            rows = {y: r for y, r in rows.items() if r["cap"]}
+            if SEASON not in rows:
+                k["est"] = "unknown"
+        keyp = p["id"]
+        for y in list(rows):
+            ret = retained.get((keyp, y)) or retained.get((norm_name(p["name"]), y)) or 0
+            if ret and rows[y]["cap"]:
+                rows[y]["cap"] = max(0, rows[y]["cap"] - ret)
+                rows[y]["ret"] = ret
+        last_c = rows[max(rows)]["c"] if rows else {}
+        k["end"] = max(rows) if rows else None
+        k["exp"] = last_c.get("expiry_status") if rows else None
+        k["cap"] = rows.get(SEASON, {}).get("cap")
+        k["clause"] = rows.get(SEASON, {}).get("clause")
+        k["rows"] = rows
+        if keyp in ltir or norm_name(p["name"]) in ltir:
+            lt = ltir.get(keyp) or ltir.get(norm_name(p["name"]))
+            k["ltir"] = {"since": lt.get("since"), "relief": lt.get("stated_relief_usd")}
+        p["_k"] = k
+
+    def season_war(p, y):
+        w = p["war"]
+        if p["grp"] == "G":
+            w = w * min(1.0, gshare.get(p["id"], 0.0) * 82 / 58) if gshare.get(p["id"]) is not None else w * 0.3
+        age = p.get("age") or 27
+        for i in range(y - SEASON):
+            w *= age_step(age + i + 1, p["grp"] == "G")
+        return w
+
+    # skaters and goalies priced apart: teams pay goalies less for a win, since their results swing so much
+    dpws = {}
+    for side in ("S", "G"):
+        num = den = 0.0
+        for p in players.values():
+            k = p["_k"]
+            if (p["grp"] == "G") != (side == "G"):
+                continue
+            if k["est"] or k.get("type") == "ELC" or not k["cap"] or (p.get("age") or 0) < 25:
+                continue
+            w = season_war(p, SEASON)
+            if w <= 0.2:
+                continue
+            num += max(0, k["cap"] - MIN_SALARY)
+            den += w
+        dpws[side] = num / den if den else 3_000_000
+
+    for p in players.values():
+        dpw = dpws["G" if p["grp"] == "G" else "S"]
+        k = p.pop("_k")
+        rows = k.pop("rows")
+        out_rows, sur = [], 0.0
+        for y in sorted(rows):
+            if y > SEASON + YEARS:
+                break
+            w = season_war(p, y)
+            val = max(0.0, MIN_SALARY + w * dpw * cap_for(y) / cap_for(SEASON))
+            cap = rows[y]["cap"]
+            if cap is not None:
+                sur += val - cap
+            out_rows.append([y, cap, rows[y].get("base"), rows[y].get("sb"), rows[y].get("clause"), round(w, 2),
+                             round(val), rows[y].get("ret")])
+        k["years"] = out_rows
+        k["sur"] = round(sur) if out_rows and not k["est"] else None
+        k["val"] = out_rows[0][6] if out_rows and out_rows[0][0] == SEASON else round(max(0, MIN_SALARY + season_war(p, SEASON) * dpw))
+        p["k"] = k
+
+    by_team = defaultdict(list)
+    for p in players.values():
+        by_team[p["team"]].append(p)
+    for t in teams_out:
+        a = t["abbr"]
+        ps = by_team[a]
+        years = []
+        for y in range(SEASON, SEASON + 5):
+            hit = sum(next((r[1] for r in p["k"]["years"] if r[0] == y and r[1]), 0) for p in ps)
+            dc = sum(r["cap_hit_usd"] for r in dead.get((a, y), []))
+            n = sum(1 for p in ps if any(r[0] == y and r[1] for r in p["k"]["years"]))
+            years.append([y, round(hit), round(dc), round(cap_for(y)), n])
+        hit_now, dead_now = years[0][1], years[0][2]
+        t["cap"] = {
+            "ceiling": CAP[SEASON], "hit": hit_now, "dead": dead_now, "space": CAP[SEASON] - hit_now - dead_now,
+            "deadList": [[r["player_name"], r["kind"], r["cap_hit_usd"], r.get("counterparty")] for r in dead.get((a, SEASON), [])],
+            "unknown": [p["id"] for p in ps if p["k"]["est"] == "unknown"],
+            "est": [p["id"] for p in ps if p["k"]["est"] == "elc"],
+            "ltir": [[p["id"], (p["k"].get("ltir") or {}).get("relief")] for p in ps if p["k"].get("ltir")],
+            "years": years,
+        }
+    return {"dpw": round(dpws["S"]), "dpwG": round(dpws["G"]), "updated": d.get("updated"), "minSalary": MIN_SALARY, "capGrowth": CAP_GROWTH,
+            "caps": {slabel(y): round(cap_for(y)) for y in range(SEASON, SEASON + YEARS + 1)}, "elcEst": ELC_EST,
+            "aging": AGING, "agingG": AGING_G}
 
 
 def load(name):
@@ -92,6 +284,13 @@ def season_lines(season):
         tt = [v for (t, s), v in teams.items() if s == sit]
         sec = sum(v["iceTime"] for v in tt) or 1
         lg[sit] = {"F": per60(sum(v["xGoalsFor"] for v in tt), sec), "A": per60(sum(v["xGoalsAgainst"] for v in tt), sec)}
+    # individual creation at 5-on-5: his own expected goals plus the goals he sets up, against his position's average
+    def ind(ev):
+        return ev["I_F_xGoals"] + IND_A1 * ev["I_F_primaryAssists"] + IND_A2 * ev["I_F_secondaryAssists"]
+    lg_ind = {}
+    for grp in ("F", "D"):
+        xs = [(ind(s["5on5"]), s["5on5"]["icetime"]) for pid, s in by.items() if (meta[pid]["pos"] == "D") == (grp == "D")]
+        lg_ind[grp] = per60(sum(a for a, _ in xs), sum(b for _, b in xs) or 1)
     out = {}
     for pid, s in by.items():
         ev, pp, pk, al = s["5on5"], s["5on4"], s["4on5"], s["all"]
@@ -102,7 +301,8 @@ def season_lines(season):
         onF, onA = per60(ev["OnIce_F_xGoals"], ev["icetime"]), per60(ev["OnIce_A_xGoals"], ev["icetime"])
         offF, offA = per60(ev["OffIce_F_xGoals"], ev["timeOnBench"]), per60(ev["OffIce_A_xGoals"], ev["timeOnBench"])
         # even strength: against the league, and against his own team with him on the bench
-        evo = CREDIT["league"] * (onF - lg["5on5"]["F"]) + CREDIT["rel"] * (onF - offF if ev["timeOnBench"] > 0 else 0)
+        evo = CREDIT["league"] * (onF - lg["5on5"]["F"]) + CREDIT["rel"] * (onF - offF if ev["timeOnBench"] > 0 else 0) \
+            + CREDIT["ind"] * (per60(ind(ev), ev["icetime"]) - lg_ind["D" if meta[pid]["pos"] == "D" else "F"])
         evd = CREDIT["league"] * (lg["5on5"]["A"] - onA) + CREDIT["rel"] * (offA - onA if ev["timeOnBench"] > 0 else 0)
         ppF = per60(pp["OnIce_F_xGoals"], pp["icetime"])
         ppo = CREDIT["league"] * 1.1 * (ppF - lg["5on4"]["F"]) if m_pp > 0 else 0
@@ -589,6 +789,12 @@ def build():
             "goalies": [[g["id"], round(s, 3)] for g, s in gsplit],
         })
 
+    gshare = {}
+    for t in out_teams:
+        for gid, sh in t["goalies"]:
+            gshare[gid] = sh
+    money = attach_contracts(players, out_teams, gshare)
+
     def slim(p):
         q = {k: v for k, v in p.items() if k not in ("pg", "rate", "gs_now", "gs_last")}
         if p["grp"] == "G":
@@ -604,6 +810,7 @@ def build():
         "repl": {"F": round(repl["F"], 3), "D": round(repl["D"], 3), "G": round(g_repl, 3)},
         "params": {"goalsPerWin": GOALS_PER_WIN, "homeEdge": HOME_EDGE, "regGoals": REG_GOALS, "teamK": TEAM_K,
                    "prior": PRIOR, "credit": CREDIT, "seasonW": SEASON_W, "penValue": PEN_VALUE, "foValue": FO_VALUE},
+        "money": money,
         "teams": out_teams,
         "players": [slim(p) for p in sorted(players.values(), key=lambda p: -p["war"])],
         "schedule": [[g["date"], g["away"], g["home"], g.get("as"), g.get("hs"), g.get("end")] for g in sched],

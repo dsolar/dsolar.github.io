@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <!-- NHL Hub cover: illustration only, so it never shows stale odds. -->
+  <rect width="1040" height="780" fill="#F5F4F0"/>
+  <rect width="1040" height="12" fill="#C60C30"/>
+  <g font-family="Arial Narrow, Arial, Helvetica, sans-serif" font-weight="700">
+    <!-- section pills -->
+    <rect x="60" y="62" width="470" height="56" rx="28" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+    <rect x="70" y="70" width="112" height="40" rx="20" fill="#002244"/><text x="126" y="97" fill="#fff" font-size="19" text-anchor="middle">ODDS</text>
+    <text x="236" y="97" fill="#56637A" font-size="19" text-anchor="middle">LINES</text>
+    <text x="340" y="97" fill="#56637A" font-size="19" text-anchor="middle">RATINGS</text>
+    <text x="456" y="97" fill="#56637A" font-size="19" text-anchor="middle">CAP</text>
+
+    <!-- the rink -->
+    <g transform="translate(60 160)">
+      <rect width="600" height="300" rx="140" fill="#fff" stroke="#9AA5B4" stroke-width="4"/>
+      <line x1="40" y1="14" x2="40" y2="286" stroke="#C60C30" stroke-width="3"/>
+      <line x1="560" y1="14" x2="560" y2="286" stroke="#C60C30" stroke-width="3"/>
+      <rect x="196" y="2" width="10" height="296" fill="#1452A0"/>
+      <rect x="394" y="2" width="10" height="296" fill="#1452A0"/>
+      <rect x="297" y="2" width="6" height="296" fill="#C60C30"/>
+      <circle cx="300" cy="150" r="46" fill="none" stroke="#1452A0" stroke-width="3"/>
+      <circle cx="300" cy="150" r="5" fill="#1452A0"/>
+      <g fill="none" stroke="#C60C30" stroke-width="3">
+        <circle cx="112" cy="84" r="40"/><circle cx="112" cy="216" r="40"/>
+        <circle cx="488" cy="84" r="40"/><circle cx="488" cy="216" r="40"/>
+      </g>
+      <g fill="#C60C30"><circle cx="112" cy="84" r="5"/><circle cx="112" cy="216" r="5"/><circle cx="488" cy="84" r="5"/><circle cx="488" cy="216" r="5"/></g>
+      <path d="M40 130 a20 20 0 0 1 0 40" fill="#DCE9FB" stroke="#C60C30" stroke-width="3"/>
+      <path d="M560 130 a20 20 0 0 0 0 40" fill="#DCE9FB" stroke="#C60C30" stroke-width="3"/>
+      <!-- a forward line and a pair -->
+      <g fill="#002244"><circle cx="250" cy="70" r="15"/><circle cx="268" cy="150" r="15"/><circle cx="250" cy="230" r="15"/></g>
+      <g fill="#C60C30"><circle cx="150" cy="110" r="15"/><circle cx="150" cy="190" r="15"/></g>
+      <g fill="#fff" font-size="14" text-anchor="middle"><text x="250" y="75">LW</text><text x="268" y="155">C</text><text x="250" y="235">RW</text><text x="150" y="115">D</text><text x="150" y="195">D</text></g>
+      <circle cx="360" cy="172" r="7" fill="#111"/>
+    </g>
+
+    <!-- playoff odds card -->
+    <g transform="translate(700 160)">
+      <rect width="280" height="300" rx="12" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+      <text x="22" y="40" fill="#56637A" font-size="16" letter-spacing="2">PLAYOFF ODDS</text>
+      <g font-size="15" fill="#56637A">
+        <rect x="22" y="64" width="26" height="26" rx="13" fill="#E3E7EC"/><rect x="60" y="70" width="70" height="14" rx="4" fill="#D9DCE1"/><rect x="150" y="70" width="108" height="14" rx="4" fill="#E3E7EC"/><rect x="150" y="70" width="104" height="14" rx="4" fill="#17663A"/>
+        <rect x="22" y="110" width="26" height="26" rx="13" fill="#E3E7EC"/><rect x="60" y="116" width="58" height="14" rx="4" fill="#D9DCE1"/><rect x="150" y="116" width="108" height="14" rx="4" fill="#E3E7EC"/><rect x="150" y="116" width="86" height="14" rx="4" fill="#17663A"/>
+        <rect x="22" y="156" width="26" height="26" rx="13" fill="#E3E7EC"/><rect x="60" y="162" width="76" height="14" rx="4" fill="#D9DCE1"/><rect x="150" y="162" width="108" height="14" rx="4" fill="#E3E7EC"/><rect x="150" y="162" width="58" height="14" rx="4" fill="#17663A"/>
+        <rect x="22" y="202" width="26" height="26" rx="13" fill="#E3E7EC"/><rect x="60" y="208" width="64" height="14" rx="4" fill="#D9DCE1"/><rect x="150" y="208" width="108" height="14" rx="4" fill="#E3E7EC"/><rect x="150" y="208" width="30" height="14" rx="4" fill="#C60C30"/>
+        <rect x="22" y="248" width="26" height="26" rx="13" fill="#E3E7EC"/><rect x="60" y="254" width="52" height="14" rx="4" fill="#D9DCE1"/><rect x="150" y="254" width="108" height="14" rx="4" fill="#E3E7EC"/><rect x="150" y="254" width="12" height="14" rx="4" fill="#C60C30"/>
+      </g>
+      <line x1="22" y1="194" x2="258" y2="194" stroke="#9AA5B4" stroke-width="2" stroke-dasharray="6 5"/>
+    </g>
+
+    <!-- cap sheet strip -->
+    <g transform="translate(60 500)">
+      <rect width="920" height="210" rx="12" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+      <text x="24" y="40" fill="#56637A" font-size="16" letter-spacing="2">CAP SHEET</text>
+      <rect x="24" y="62" width="872" height="22" rx="6" fill="#E3E7EC"/>
+      <rect x="24" y="62" width="640" height="22" rx="6" fill="#002244"/>
+      <rect x="664" y="62" width="120" height="22" fill="#56637A"/>
+      <line x1="840" y1="54" x2="840" y2="92" stroke="#C60C30" stroke-width="3"/>
+      <g>
+        <rect x="24" y="116" width="200" height="14" rx="4" fill="#D9DCE1"/><rect x="420" y="116" width="90" height="14" rx="4" fill="#D9DCE1"/><rect x="760" y="116" width="96" height="14" rx="4" fill="#17663A"/>
+        <rect x="24" y="146" width="170" height="14" rx="4" fill="#D9DCE1"/><rect x="420" y="146" width="110" height="14" rx="4" fill="#D9DCE1"/><rect x="760" y="146" width="62" height="14" rx="4" fill="#17663A"/>
+        <rect x="24" y="176" width="220" height="14" rx="4" fill="#D9DCE1"/><rect x="420" y="176" width="70" height="14" rx="4" fill="#D9DCE1"/><rect x="760" y="176" width="80" height="14" rx="4" fill="#C60C30"/>
+      </g>
+    </g>
+  </g>
+</svg>
