@@ -1,18 +1,8 @@
 {
- "updated": "2026-11-14T10:39:24Z",
+ "updated": "2026-11-15T06:47:32Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
-  "2026-11-14-bert-kreischer-the-hanover-theatre": {
-   "sg": 18163954,
-   "history": [],
-   "url": "https://comedy.tickets/tickets/bert-kreischer/",
-   "title": "Bert Kreischer",
-   "date": "2026-11-14",
-   "venue": "The Hanover Theatre",
-   "low": null,
-   "src": null
-  },
   "2026-12-19-mark-normand-great-cedar-showroom": {
    "sg": 18236597,
    "history": [],
@@ -20,16 +10,6 @@
    "title": "Mark Normand",
    "date": "2026-12-19",
    "venue": "Great Cedar Showroom at Foxwoods",
-   "low": null,
-   "src": null
-  },
-  "tm-vvG17Z_2roBuNo": {
-   "sg": 18406746,
-   "history": [],
-   "url": "https://www.ticketmaster.com/dark-star-orchestra-boston-massachusetts-11-14-2026/event/010064F791E8D8D1",
-   "title": "Dark Star Orchestra",
-   "date": "2026-11-14",
-   "venue": "Orpheum Theatre presented by Citizens",
    "low": null,
    "src": null
   },
@@ -332,6 +312,10 @@
     [
      "2026-11-14",
      56
+    ],
+    [
+     "2026-11-15",
+     56
     ]
    ],
    "sg": null,
@@ -471,6 +455,10 @@
     ],
     [
      "2026-11-14",
+     22
+    ],
+    [
+     "2026-11-15",
      22
     ]
    ],
@@ -674,6 +662,10 @@
     [
      "2026-11-14",
      28
+    ],
+    [
+     "2026-11-15",
+     28
     ]
    ],
    "sg": null,
@@ -815,16 +807,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892709": {
-   "history": [],
-   "sg": 18378511,
-   "title": "Bruins vs Wild",
-   "date": "2026-11-14",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892709/wild-bruins",
-   "src": null,
-   "low": null
-  },
   "espn-401909989": {
    "history": [],
    "sg": 18495290,
@@ -950,6 +932,10 @@
     [
      "2026-11-14",
      44
+    ],
+    [
+     "2026-11-15",
+     44
     ]
    ],
    "sg": null,
@@ -965,6 +951,10 @@
    "history": [
     [
      "2026-11-14",
+     44
+    ],
+    [
+     "2026-11-15",
      44
     ]
    ],
@@ -986,10 +976,39 @@
    "url": "https://www.ticketmaster.com/pigeons-playing-ping-pong-nye-2026-boston-massachusetts-12-30-2026/event/010064F5E3C3C6AF",
    "src": null,
    "low": null
+  },
+  "espn-401892824": {
+   "history": [],
+   "sg": 18378520,
+   "title": "Bruins vs Canucks",
+   "date": "2026-11-29",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892824/canucks-bruins",
+   "src": null,
+   "low": null
+  },
+  "tm-vvG17Z_CxOocr9": {
+   "history": [],
+   "sg": 18449511,
+   "title": "Gov't Mule (18+)",
+   "date": "2026-12-31",
+   "venue": "MGM Music Hall at Fenway",
+   "url": "https://www.ticketmaster.com/govt-mule-18-boston-massachusetts-12-31-2026/event/010064E8A046D797",
+   "src": null,
+   "low": null
+  },
+  "sg-18663188": {
+   "history": [],
+   "sg": 18663188,
+   "title": "Jason Isbell",
+   "date": "2027-02-02",
+   "venue": "The Metropolitan Museum of Art",
+   "url": "https://seatgeek.com/jason-isbell-tickets/new-york-new-york-the-metropolitan-museum-of-art-2027-02-02-7-pm/concert/18663188",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-G5vVZ_5RuGQjG": "2026-11-13",
   "tm-vvG17Z_5wCylI9": "2026-11-13",
   "tm-vv177Z_oGkXBnY-F": "2026-11-13",
   "tm-vv177Z_oGkXBi8-I": "2026-11-13",
@@ -1009,12 +1028,13 @@
   "tm-rZ7HnEZ1Af83Qf": "2026-11-13",
   "tm-rZ7HnEZ1Af83j0": "2026-11-13",
   "tm-rZ7HnEZ1Af83qf": "2026-11-13",
-  "tm-Z7r9jZ1AA7zoy": "2026-11-12",
+  "tm-Z7r9jZ1AA7zoy": "2026-11-15",
   "tm-vv1AvZkf7GkdbzXaM": "2026-11-13",
   "tm-vvG17Z_2wSVFP-": "2026-11-13",
   "tm-rZ7HnEZ1AfCa-f": "2026-11-14",
   "tm-rZ7HnEZ1AfCa0f": "2026-11-14",
-  "tm-vvG17Z_CTNmdDP": "2026-11-14"
+  "tm-vvG17Z_CTNmdDP": "2026-11-14",
+  "tm-vv177Z_KGknM09Yr": "2026-11-15"
  },
  "drops": []
 }
