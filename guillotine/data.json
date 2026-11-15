@@ -4,7 +4,7 @@
  "week": 10,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-15T19:40:34Z",
+ "updated": "2026-11-15T19:45:54Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -12,7 +12,7 @@
    "manager": "Daid B",
    "faab": 197,
    "proj": 152.7,
-   "points": 43.76,
+   "points": 44.14,
    "scores": [
     135.46,
     161.16,
@@ -287,7 +287,7 @@
      "name": "Emmett Johnson",
      "nfl": "KC",
      "pos": "RB",
-     "yahoo_actual": 18.5,
+     "yahoo_actual": 18.6,
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
      "season": {
@@ -324,7 +324,7 @@
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
-     "yahoo_actual": 16.22,
+     "yahoo_actual": 16.5,
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
      "season": {
@@ -1642,7 +1642,7 @@
    "manager": "Scott",
    "faab": 94,
    "proj": 136.01,
-   "points": 68.32,
+   "points": 69.22,
    "scores": [
     95.18,
     94.64,
@@ -1922,7 +1922,7 @@
      "name": "Chuba Hubbard",
      "nfl": "CAR",
      "pos": "RB",
-     "yahoo_actual": 15.5,
+     "yahoo_actual": 16.4,
      "game": "Sun 1:00 pm",
      "opp": "@ NO",
      "season": {
@@ -2635,7 +2635,7 @@
      "name": "Quinshon Judkins",
      "nfl": "CLE",
      "pos": "RB",
-     "yahoo_actual": 1.4,
+     "yahoo_actual": 1.9,
      "game": "Sun 1:00 pm",
      "opp": "vs HOU",
      "season": {
@@ -2783,7 +2783,7 @@
    "manager": "JeffS",
    "faab": 114,
    "proj": 133.32,
-   "points": 81.42,
+   "points": 82.62,
    "scores": [
     111.28,
     66.9,
@@ -3024,7 +3024,7 @@
      "name": "Travis Kelce",
      "nfl": "KC",
      "pos": "TE",
-     "yahoo_actual": 2.8,
+     "yahoo_actual": 4.0,
      "game": "Sun 1:00 pm",
      "opp": "@ ATL",
      "season": {
@@ -4455,7 +4455,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-15T19:40:36Z",
+  "updated": "2026-11-15T19:45:57Z",
   "players": 3046,
   "unmatched": []
  }
