@@ -1,6 +1,6 @@
 {
- "_about": "NFL team needs for the mock draft's bots, most pressing first, from NFL.com's weekly draft order with biggest needs (entering Week 9 of 2026; IND, LAR, CHI and GB have no 2027 first, so the article skips them and their Week 8 needs stay): https://www.nfl.com/news/2027-nfl-draft-order-biggest-needs-for-every-team. Positions use the board's labels (DT is DL).",
- "asof": "2026-11-03",
+ "_about": "NFL team needs for the mock draft's bots, most pressing first, from NFL.com's weekly draft order with biggest needs (entering Week 10 of 2026; all 32 teams listed, including CHI, GB, IND, JAX and LAR, who have no 2027 first): https://www.nfl.com/news/2027-nfl-draft-order-biggest-needs-for-every-team. Positions use the board's labels (DT is DL).",
+ "asof": "2026-11-10",
  "nfl": {
   "LAC": [
    "WR",
@@ -14,7 +14,7 @@
    "DL",
    "RB",
    "EDGE",
-   "CB"
+   "S"
   ],
   "MIA": [
    "QB",
@@ -32,9 +32,9 @@
   ],
   "PHI": [
    "OT",
-   "CB",
-   "IOL",
    "QB",
+   "DL",
+   "CB",
    "TE"
   ],
   "NYJ": [
@@ -75,7 +75,7 @@
   "TB": [
    "EDGE",
    "WR",
-   "CB",
+   "DL",
    "IOL",
    "TE"
   ],
@@ -97,8 +97,8 @@
    "QB",
    "EDGE",
    "OT",
-   "CB",
-   "IOL"
+   "IOL",
+   "S"
   ],
   "ATL": [
    "OT",
@@ -112,7 +112,7 @@
    "DL",
    "RB",
    "OT",
-   "EDGE"
+   "QB"
   ],
   "SEA": [
    "EDGE",
@@ -126,7 +126,7 @@
    "LB",
    "S",
    "WR",
-   "TE"
+   "RB"
   ],
   "CAR": [
    "OT",
@@ -157,9 +157,9 @@
    "IOL"
   ],
   "JAX": [
-   "DL",
-   "RB",
    "S",
+   "RB",
+   "DL",
    "IOL",
    "LB"
   ],
@@ -206,11 +206,11 @@
    "EDGE"
   ],
   "BUF": [
-   "S",
    "IOL",
    "CB",
    "LB",
-   "DL"
+   "DL",
+   "WR"
   ],
   "SF": [
    "IOL",

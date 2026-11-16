@@ -1,5 +1,5 @@
 {
- "_about": "Future picks already owed, for mock draft trades. Every team owns its own picks in each future year unless a line here says otherwise. Each line: [original team, year, round, goes to, protection or kind]. goes to: one team, or several separated by '/' when it depends on where picks land. kind: '' unprotected, 'forfeit' taken away by the league (the Clippers' 2029-33 firsts, after the Kawhi Leonard ruling on Sept. 2, 2026), 'cond' conditional or unclear (goes to '?' when RealGM's line didn't name a team), 'a-b' protected for those picks, 'swap' (the original team keeps it but someone can swap with it), 'fav' (more/less favorable of several picks). A pick owed with '/' or 'fav' can't be traded by anyone in the mock; a swap pick stays with its team but can't be traded. NBA from RealGM's detailed future draft list, read Nov 3, 2026 (https://basketball.realgm.com/nba/draft/future_drafts/detailed). NFL from Wikipedia's 2028 NFL draft page, read Nov 3, 2026 (https://en.wikipedia.org/wiki/2028_NFL_draft).",
+ "_about": "Future picks already owed, for mock draft trades. Every team owns its own picks in each future year unless a line here says otherwise. Each line: [original team, year, round, goes to, protection or kind]. goes to: one team, or several separated by '/' when it depends on where picks land. kind: '' unprotected, 'forfeit' taken away by the league (the Clippers' 2029-33 firsts, after the Kawhi Leonard ruling on Sept. 2, 2026), 'cond' conditional or unclear (goes to '?' when RealGM's line didn't name a team), 'a-b' protected for those picks, 'swap' (the original team keeps it but someone can swap with it), 'fav' (more/less favorable of several picks). A pick owed with '/' or 'fav' can't be traded by anyone in the mock; a swap pick stays with its team but can't be traded. NBA from RealGM's detailed future draft list, read Nov 3, 2026 (https://basketball.realgm.com/nba/draft/future_drafts/detailed). NFL from Wikipedia's 2028 NFL draft page, read Nov 3, 2026 (https://en.wikipedia.org/wiki/2028_NFL_draft), plus the Nov 2026 trade-deadline deals from team and NFL.com reports (read Nov 16, 2026). Nov 16, 2026: Utah's 2028 second moved from OKC to SAC in the Nique Clifford trade.",
  "nba": {
   "years": [
    2028,
@@ -1050,7 +1050,7 @@
     "UTA",
     2028,
     2,
-    "OKC",
+    "SAC",
     ""
    ],
    [
@@ -1160,6 +1160,20 @@
     ""
    ],
    [
+    "TEN",
+    2028,
+    5,
+    "CHI",
+    ""
+   ],
+   [
+    "JAX",
+    2028,
+    5,
+    "ATL",
+    ""
+   ],
+   [
     "NO",
     2028,
     6,
@@ -1171,6 +1185,20 @@
     2028,
     6,
     "MIA",
+    ""
+   ],
+   [
+    "DET",
+    2028,
+    6,
+    "NYJ",
+    ""
+   ],
+   [
+    "BAL",
+    2028,
+    6,
+    "ATL",
     ""
    ],
    [
@@ -1206,6 +1234,20 @@
     2028,
     7,
     "NE",
+    ""
+   ],
+   [
+    "BAL",
+    2028,
+    7,
+    "ARI",
+    ""
+   ],
+   [
+    "JAX",
+    2029,
+    2,
+    "PHI",
     ""
    ],
    [
