@@ -1,0 +1,28 @@
+name: College basketball source check
+on:
+  push:
+    branches: [codex/college-basketball-hub]
+    paths:
+      - tools/cbb_probe.py
+      - .github/workflows/cbb-source-check.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  sources:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: codex/college-basketball-hub
+      - run: python3 tools/cbb_probe.py
+      - name: Save public source snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/cbb_sources tools/cbb_source_probe.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Check college basketball source availability"
+          git pull --rebase
+          git push
