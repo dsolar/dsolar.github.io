@@ -9,7 +9,9 @@
    White elephant ("elephant") is a snake where your turn can be a steal: take a player someone already drafted.
    The team you took him from picks again right away (a make-up pick) and can't take him straight back. A player
    freezes after `steals.freeze` steals (2), each team gets `steals.perTeam` steals a draft (3), and steals stop
-   for the last `steals.lastRounds` rounds (2).
+   for the last `steals.lastRounds` rounds (2). A stolen player scores `steals.tax` (0.8) for the season, and the
+   player a robbed team takes with its make-up pick scores `steals.golden` (1.15): stealing a star costs something,
+   and being robbed hurts less. tags(D) lists them; the league carries them as L.pmult (points scoring only).
 
    The draft is a plain JSON object (create()). Functions take (D, ctx, ...) where ctx = context(D, players, sport,
    hooks) holds the evaluated player pool (FK.value.evaluate first). Hooks let a league add its own rules:
@@ -84,7 +86,8 @@
       auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
       bank: type !== "auction" && opts.bank ? { perRound: opts.bank.perRound || 30, floor: opts.bank.floor == null ? 10 : opts.bank.floor } : null,
       trading: type !== "auction" && type !== "elephant" && type !== "pack" && opts.trades !== false,
-      steals: type === "elephant" ? { freeze: (opts.steals && opts.steals.freeze) || 2, perTeam: (opts.steals && opts.steals.perTeam) || 3, lastRounds: opts.steals && opts.steals.lastRounds != null ? opts.steals.lastRounds : 2 } : null,
+      steals: type === "elephant" ? { freeze: (opts.steals && opts.steals.freeze) || 2, perTeam: (opts.steals && opts.steals.perTeam) || 3, lastRounds: opts.steals && opts.steals.lastRounds != null ? opts.steals.lastRounds : 2,
+        tax: stealMult(opts.steals && opts.steals.tax, 0.8, 0.5, 1), golden: stealMult(opts.steals && opts.steals.golden, 1.15, 1, 1.5) } : null,
       extra: {}, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
     if (D.bank) for (const t of D.teams) t.bank = D.bank.perRound * rounds * 1000;
@@ -1087,6 +1090,25 @@
 
 
   /* ---------- white elephant ---------- */
+  // a steal setting in range, or its default
+  function stealMult(x, d, lo, hi) { const v = Number(x); return x == null || !Number.isFinite(v) ? d : Math.max(lo, Math.min(hi, Math.round(v * 100) / 100)); }
+  // What a stolen player and a golden pick score. Drafts made before the tax have neither (1).
+  const taxOf = (D) => (D.steals && D.steals.tax != null ? D.steals.tax : 1);
+  const goldenOf = (D) => (D.steals && D.steals.golden != null ? D.steals.golden : 1);
+  // Every tagged player on a roster now: { pid: { mult, kind: "stolen" | "golden" } }. A player stolen after a golden
+  // pick is just stolen; one stolen twice is taxed once.
+  function tags(D) {
+    const out = {};
+    if (!D || !D.steals) return out;
+    const tax = taxOf(D), gold = goldenOf(D);
+    (D.board || []).forEach((x, i) => {
+      if (!x || !x.pid || x.gone) return;
+      if (x.steal && tax !== 1) out[x.pid] = { mult: tax, kind: "stolen" };
+      else if (!x.steal && D.extra && D.extra[i] && gold !== 1) out[x.pid] = { mult: gold, kind: "golden" };
+    });
+    return out;
+  }
+  const tagMults = (D) => Object.fromEntries(Object.entries(tags(D)).map(([k, t]) => [k, t.mult]));
   // Every board entry that ever held this player, and how many times he's been stolen.
   const stealsOf = (D, pid) => D.board.filter((x) => x && x.pid === pid && x.steal).length;
   const stealsLeft = (D, teamId) => (D.steals ? D.steals.perTeam - D.board.filter((x) => x && x.steal && x.team === teamId).length : 0);
@@ -1160,7 +1182,24 @@
       const w = worth(D, ctx, c.team, p, null);
       if (w > pw) { pw = w; pickP = p; }
     }
-    return pickP && pw > bw * (1.7 - greed * 0.6) + 2 ? pickP : null;
+    const tax = taxOf(D);
+    if (tax >= 1) return pickP && pw > bw * (1.7 - greed * 0.6) + 2 ? pickP : null;
+    // With a tax, weigh points, not auction dollars: the tax takes a share of what he scores, so a stolen player is
+    // worth his value over replacement less the taxed share of his points. Need (an open starting spot) carries over
+    // from worth(). Steal when that beats the best new player by a margin.
+    const base = (p) => (p.$ || 0) + Math.max(0, p.vor || 0) / ctx.maxVor;
+    const need = (p, w) => (base(p) > 0 ? w / base(p) : 1);
+    const pts = (p, w, t) => Math.max(0, (p.vor || 0) - (1 - t) * (p.v || 0)) * need(p, w);
+    let sp = null, sv = -Infinity;
+    for (const [id, t] of Object.entries(ctx.own)) {
+      if (t === c.team) continue;
+      const p = ctx.byId[id];
+      if (!p || !canSteal(D, ctx, c.team, id, D.clockStart).ok) continue;
+      const v = pts(p, worth(D, ctx, c.team, p, null), tax);
+      if (v > sv) { sv = v; sp = p; }
+    }
+    const bv = best ? pts(best, bw, 1) : 0;
+    return sp && sv > bv * (1.2 - greed * 0.25) + 3 ? sp : null;
   }
 
   /* ---------- mystery packages ---------- */
@@ -1410,11 +1449,12 @@
   /* ---------- results ---------- */
   // Each team's best lineup and what it adds up to: summed category z-scores or projected points of its starters.
   function standings(D, ctx) {
+    const tg = D.steals ? tagMults(D) : {};
     const rows = rosters(D).map((ids, t) => {
       const ps = ids.map((id) => ctx.byId[id]).filter(Boolean);
       const starters = assign(ctx.sport, ps, D.lineup);
       const mult = (S.SHOWDOWN && S.SHOWDOWN.mult) || {};
-      const score = sum(starters.map((p, i) => (p ? (p.v || 0) * (mult[D.lineup[i]] || 1) : 0)));
+      const score = sum(starters.map((p, i) => (p ? (p.v || 0) * (mult[D.lineup[i]] || 1) * (tg[p.id] || 1) : 0)));
       const cats = {};
       for (const p of starters.filter(Boolean)) for (const [k, z] of Object.entries(p.zc || {})) cats[k] = (cats[k] || 0) + z;
       const spent = D.type === "auction" ? sum(D.sales.filter((s) => s.team === t).map((s) => s.price)) : null;
@@ -1588,6 +1628,6 @@
   }
   return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
-    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
+    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

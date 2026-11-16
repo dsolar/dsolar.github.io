@@ -897,6 +897,11 @@
     // a pick's short label for the ticker and board: 2.5 in a snake, #15 in mystery packages
     const plab = (k) => (mystery() ? `#${k + 1}` : F.pickLabel(D(), k));
     const elephant = () => !!D().steals;
+    // the steal tax and golden pick, as words: "80%" and "115%" (or null when off)
+    const pctOf = (x) => `${Math.round(x * 100)}%`;
+    const taxTxt = () => { const t = F.taxOf ? F.taxOf(D()) : 1; return t < 1 ? pctOf(t) : null; };
+    const goldTxt = () => { const g = F.goldenOf ? F.goldenOf(D()) : 1; return g > 1 ? pctOf(g) : null; };
+    const stealNote = (fromName) => `${esc(fromName)} picks again right away${goldTxt() ? `, and that pick scores ${goldTxt()} all season` : ""}. ${taxTxt() ? `He scores ${taxTxt()} for you all season. ` : ""}They can't take him straight back.`;
     const stealOk = (pid) => { const d = D(); return elephant() && me() != null && d.phase === "live" && F.canSteal(d, ctx, me(), pid, now()); };
     const seenK = (k) => F.seen(D(), k, me());
     const bankFull = () => { const d = D(); return d.bank ? d.bank.perRound * d.rounds * 1000 : 0; };
@@ -1205,7 +1210,7 @@
           if (x && x.k != null && !pk && !seenK(x.k)) { cells += `<div class="cell hid${isMe(t) ? " me" : ""}"><small class="ps">Sealed</small></div>`; continue; }
           const via = x && x.k != null ? (pk && pk.drafter != null && pk.drafter !== pk.team ? team(pk.drafter) : !pk ? viaOf(x.k) : null) : null;
           const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : "", pk && pk.steal ? "steal" : "", x && x.k != null && !pk && D().extra[x.k] ? "mk" : ""].join(" ").replace(/\s+/g, " ");
-          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(shortName(p))}</b><small>${pk.steal ? `stolen from ${esc(team(pk.from).abbr)}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
+          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(shortName(p))}</b><small>${pk.steal ? (taxTxt() ? `stolen ${taxTxt()}, ${esc(team(pk.from).abbr)}` : `stolen from ${esc(team(pk.from).abbr)}`) : D().extra && D().extra[x.k] && goldTxt() ? `golden, ${goldTxt()}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
         }
       }
       return `<div class="board" id="fk-board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
@@ -1345,7 +1350,7 @@
       const rows = Object.entries(ctx.own).filter(([, t]) => t !== m).map(([id, t]) => ({ p: ctx.byId[id], t })).filter((x) => x.p).sort((a, b) => a.p.rank - b.p.rank).slice(0, 150);
       const left = m != null ? F.stealsLeft(d, m) : 0;
       const why = (id) => (m == null || !c ? null : F.canSteal(d, ctx, m, id, now()));
-      return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Steal a player</b><span class="ps">On your turn, take someone already drafted instead of a new player. The team you take him from picks again right away and can't take him straight back. A player is frozen after ${d.steals.freeze} steals, every team gets ${d.steals.perTeam}, and steals end with ${d.steals.lastRounds} rounds to go.${m != null ? ` You have ${left} left.` : ""}</span></div>
+      return `<div style="overflow:auto;flex:1;min-height:0"><div class="pk-h"><b>Steal a player</b><span class="ps">On your turn, take someone already drafted instead of a new player. The team you take him from picks again right away and can't take him straight back.${taxTxt() ? ` A stolen player scores ${taxTxt()} for the thief all season, and the robbed team's make-up pick scores ${goldTxt() || "100%"}.` : ""} A player is frozen after ${d.steals.freeze} steals, every team gets ${d.steals.perTeam}, and steals end with ${d.steals.lastRounds} rounds to go.${m != null ? ` You have ${left} left.` : ""}</span></div>
         ${rows.length ? `<ul class="rslots">${rows.map(({ p, t }) => { const r = why(p.id), n = F.stealsOf(d, p.id), frozen = n >= d.steals.freeze; return `<li style="grid-template-columns:minmax(0,1fr) auto auto"><span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, `#${p.rank}, ${money(p.$)}`, { size: "sm" })}</span><span class="row" style="gap:6px">${frozen ? `<span class="tag">Frozen</span>` : n ? `<span class="tag gold">Stolen ${n}x</span>` : ""}${teamAv(team(t), "sm")}<b class="ps">${esc(team(t).abbr)}</b></span>${r && r.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button>` : `<span class="ps" style="font-size:11px;max-width:150px;text-align:right">${r && c && c.team === m && !frozen ? esc(r.why) : ""}</span>`}</li>`; }).join("")}</ul>` : `<p class="empty">Nobody has drafted anyone yet.</p>`}</div>`;
     }
     // the starting spots a team still has open, keyed like the position chips ("" for a spot anyone can fill)
@@ -1639,7 +1644,7 @@
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card;
         if (a === "pick") { if (act(() => F.pick(D(), ctx, mine, pid, now()))) Dl.close(); }
-        else if (a === "steal") { Dl.close(); const from = team(ctx.own[pid]); confirm(`Steal ${p.n}?`, `${esc(from.name)} picks again right away and can't take him straight back.`, "Steal him", () => { if (act(() => F.steal(D(), ctx, mine, pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } }); }
+        else if (a === "steal") { Dl.close(); const from = team(ctx.own[pid]); confirm(`Steal ${p.n}?`, stealNote(from.name), "Steal him", () => { if (act(() => F.steal(D(), ctx, mine, pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } }); }
         else if (a === "nominate") { Dl.close(); nominateDialog(pid); }
         else { toggleQueue(pid); Dl.close(); }
       }));
@@ -1686,7 +1691,7 @@
       if (sb) {
         e.stopPropagation();
         const pid = sb.dataset.steal, p = ctx.byId[pid], from = team(ctx.own[pid]);
-        confirm(`Steal ${p.n}?`, `${esc(from.name)} picks again right away and can't take him straight back. You have ${F.stealsLeft(D(), me())} steal${F.stealsLeft(D(), me()) === 1 ? "" : "s"} left.`, "Steal him", () => { if (act(() => F.steal(D(), ctx, me(), pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } });
+        confirm(`Steal ${p.n}?`, `${stealNote(from.name)} You have ${F.stealsLeft(D(), me())} steal${F.stealsLeft(D(), me()) === 1 ? "" : "s"} left.`, "Steal him", () => { if (act(() => F.steal(D(), ctx, me(), pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } });
         return;
       }
       const hz = e.target.closest("button[data-hz]");

@@ -81,5 +81,20 @@
 
   const SC_SUB = { half: "Half a point a catch", ppr: "A point a catch", std: "No points for catches", cats9: "FG%, FT%, 3PM, PTS, REB, AST, STL, BLK, TO", points: "Points for every stat", roto5: "R, HR, RBI, SB, AVG, W, SV, K, ERA, WHIP", yoenis: "Adds H, TB, OPS, L, HLD and QS", cp: "Set a value for every stat", cc: "Pick your own categories" };
   const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
-  return { SC_SUB, DRAFT_SHORT, esc, ICON, icon, DRAFTS, RANGE_FMT, opt, fid, seg, cards, stepper, toggle, range, numIn, fld, group, noLimit, STYLE_ART, art, pickCards, FIELD };
+  // White elephant settings, for Start a league and the mock draft. f: { elSteals, elFreeze, elTax, elGold } (taxes in
+  // percent); points: whether the scoring is points (the tax and golden pick only work there)
+  function elephantFields(f, points) {
+    const pct = (x) => `${x}%`;
+    return `<div class="g2">${fld("Steals a team", seg("elSteals", [1, 2, 3, 4, 5].map((x) => [x, String(x)]), f.elSteals, "Steals a team"), "Bot drafts suggest 2 or 3: every team uses all of them.")}
+      ${fld("A player freezes after", seg("elFreeze", [[1, "1 steal"], [2, "2 steals"], [3, "3 steals"]], f.elFreeze, "A player freezes after"))}</div>
+      ${points ? `<div class="g2">${fld("A stolen player scores", seg("elTax", [100, 90, 85, 80, 75].map((x) => [x, x === 100 ? "No tax" : pct(x)]), f.elTax, "A stolen player scores", { wrap: true }), "For the thief, all season. It keeps steals from being a free upgrade, so they come mid-draft instead of all in the first four rounds.")}
+      ${fld("The robbed team's make-up pick", seg("elGold", [100, 110, 115, 120, 125].map((x) => [x, x === 100 ? "Normal" : pct(x)]), f.elGold, "Make-up pick scores", { wrap: true }), "A golden pick, all season. Being robbed still costs you, just less.")}</div>`
+      : `<p class="fl-h">The steal tax and golden pick work on points scoring. In a category league, steals are free.</p>`}
+      <p class="fl-h">The robbed team picks again right away and can't take him straight back. Steals end with 2 rounds to go.</p>`;
+  }
+  const ELEPHANT_DEF = { elSteals: 3, elFreeze: 2, elTax: 80, elGold: 115 };
+  // a draft's steals settings from those fields
+  const elephantSteals = (f, points) => ({ perTeam: +f.elSteals || 3, freeze: +f.elFreeze || 2, tax: points ? (+f.elTax || 100) / 100 : 1, golden: points ? (+f.elGold || 100) / 100 : 1 });
+  const elephantLine = (f, points) => `${+f.elSteals || 3} steals${points && +f.elTax < 100 ? `, stolen ${+f.elTax}%` : ""}${points && +f.elGold > 100 ? `, golden ${+f.elGold}%` : ""}`;
+  return { elephantFields, ELEPHANT_DEF, elephantSteals, elephantLine, SC_SUB, DRAFT_SHORT, esc, ICON, icon, DRAFTS, RANGE_FMT, opt, fid, seg, cards, stepper, toggle, range, numIn, fld, group, noLimit, STYLE_ART, art, pickCards, FIELD };
 });

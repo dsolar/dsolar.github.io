@@ -144,6 +144,8 @@ FK.draft.fairDeal(D, players, sport, hooks, { tries: 5 });   // optional bot tes
 - `steals: { perTeam: 3, freeze: 2, lastRounds: 2 }`: steals each team gets, steals before a player is frozen, and the rounds at the end with no steals.
 - `FK.draft.canSteal` says why a steal won't go. Bots steal when a drafted player is worth clearly more to them than the best one left, more often as the draft goes on.
 - Make-up picks sit between scheduled picks, so round labels count only scheduled ones. A make-up pick shows as `3.M`. Trades are off in this format.
+- **The steal tax and golden pick:** `steals: { tax: 0.8, golden: 1.15 }` (the defaults). A stolen player scores `tax` for the thief all season, and the player a robbed team takes with its make-up pick scores `golden`. `FK.draft.tags(D)` lists them (`{ pid: { mult, kind } }`), draft standings count them, and `season.begin` carries them into the league as `L.pmult` and `L.etags` (points scoring only). A trade keeps a tag; a drop clears it. Drafts saved before the tax have no tags. With a tax, bots weigh a steal in points over replacement less the taxed share. Bot tests of 400 drafts a version (12 teams, half PPR): the tax moves steals from the first four rounds to rounds 5-9, cuts quarterback steals from a quarter to almost none, and the most-robbed team finishes about a place higher.
+- `FK.setup.elephantFields` draws the settings (steals a team, freeze, tax, golden pick) for Start a league and the mock draft.
 
 **Time bank:** create the draft with `bank: { perRound: 30, floor: 10 }` instead of a pick clock.
 

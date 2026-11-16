@@ -7,7 +7,7 @@
   const theme = U.theme("fk-lab");
   const top = $("#top"), app = $("#app");
   const BLURB = { nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
-  const DEFAULTS = { sport: S.inSeason(), scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1 };
+  const DEFAULTS = { sport: S.inSeason(), scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1, ...window.FK.setup.ELEPHANT_DEF };
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
   if ([-20, -30, -60].includes(cfg.clock)) cfg.clock = -200;                // the old per-round banks
   // ?s=nfl (from the fantasy hub) picks the sport for setup and rankings
@@ -94,7 +94,7 @@
   const CLOCKS = PICK_CLOCKS.concat(BANKS.map(([v, l]) => [v, `${l} bank`]));
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
   const fmtBank = (sec) => (sec % 60 ? `${sec} seconds` : `${sec / 60} minutes`);
-  const NUM = /^(teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day)$/;
+  const NUM = /^(teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day|elSteals|elFreeze|elTax|elGold)$/;
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
@@ -203,7 +203,7 @@
             ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
           <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div><div></div></div>
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
-          ${elephant ? `<p class="fl-h">Each team gets 3 steals, a player is frozen after 2, and steals end with 2 rounds to go. The team you rob picks again right away.</p>` : ""}
+          ${elephant ? window.FK.setup.elephantFields(c, (sport.scorings[scoring] || {}).type === "points") : ""}
         </section>
         ${twHtml}
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><div class="nr-l">${roster}</div></section>
@@ -346,7 +346,7 @@
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
       botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : `${P.sport.name} mock`,
-      trades: c.trades !== 0, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
+      trades: c.trades !== 0, steals: c.type === "elephant" ? window.FK.setup.elephantSteals(c, (P.sport.scorings[P.scoring] || {}).type === "points") : undefined, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
     if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };

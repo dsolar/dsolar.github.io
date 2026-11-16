@@ -568,7 +568,7 @@
       const sc0 = scoring(L, ctx), dl = dailyLines(L, ctx, teamId, w);
       if (sc0.type === "points") {
         const R = ctx.hooks.real, players = {};
-        for (const [p, l] of dl) players[p.id] = (players[p.id] || 0) + realPts({ lines: ctx.sport.data.lines && Object.fromEntries(Object.entries(ctx.sport.data.lines).map(([k, v]) => [k, v.cols])) }, sc0, l, p);
+        for (const [p, l] of dl) players[p.id] = (players[p.id] || 0) + realPts({ lines: ctx.sport.data.lines && Object.fromEntries(Object.entries(ctx.sport.data.lines).map(([k, v]) => [k, v.cols])) }, sc0, l, p) * ((L.pmult && L.pmult[p.id]) || 1);
         return { total: sum(Object.values(players)), players, lineup: null, banked: [] };
       }
       return Object.assign(catsOf(ctx, sc0, dl.map((x) => x[1])), { total: null, lineup: null });
@@ -1583,7 +1583,7 @@
     if (!ctx.byId[pid]) return { ok: false, why: "No such player" };
     if (from === to) return { ok: false, why: "He's already there" };
     if (to != null && !L.teams[to]) return { ok: false, why: "No such team" };
-    if (from >= 0) dropOne(L, from, pid, now);
+    if (from >= 0) dropOne(L, from, pid, now, to != null);
     delete L.waivers[pid];
     if (to != null) { L.rosters[to].push(pid); joined(L, to, pid, now, ctx); }
     log(L, now, { type: "commish", team: to != null ? to : from, adds: to != null ? [pid] : [], drops: to == null ? [pid] : [], text: `${ctx.byId[pid].n} moved ${from >= 0 ? `from ${L.teams[from].name} ` : ""}${to != null ? `to ${L.teams[to].name}` : "to free agency"} by the commissioner` });
@@ -1598,8 +1598,8 @@
     for (const pid of t.get) if (!L.rosters[t.from].includes(pid)) return { ok: false, why: `${ctx.byId[pid] ? ctx.byId[pid].n : "A player"} isn't on ${L.teams[t.from].name} anymore` };
     for (const k of t.pickGive || []) if (pickOwner(L, k) !== t.to) return { ok: false, why: "A pick in the trade has moved again" };
     for (const k of t.pickGet || []) if (pickOwner(L, k) !== t.from) return { ok: false, why: "A pick in the trade has moved again" };
-    for (const pid of t.give) { dropOne(L, t.to, pid, now); delete L.waivers[pid]; L.rosters[t.from].push(pid); }
-    for (const pid of t.get) { dropOne(L, t.from, pid, now); delete L.waivers[pid]; L.rosters[t.to].push(pid); }
+    for (const pid of t.give) { dropOne(L, t.to, pid, now, true); delete L.waivers[pid]; L.rosters[t.from].push(pid); }
+    for (const pid of t.get) { dropOne(L, t.from, pid, now, true); delete L.waivers[pid]; L.rosters[t.to].push(pid); }
     L.teams[t.from].faab += (t.faabGive || 0) - (t.faabGet || 0);
     L.teams[t.to].faab += (t.faabGet || 0) - (t.faabGive || 0);
     for (const k of t.pickGive || []) L.picks[k] = t.from;
@@ -1823,7 +1823,9 @@
     if (ctx.hooks.check) { const c = ctx.hooks.check(L, teamId, add ? ctx.byId[add] : null, drops, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
-  function dropOne(L, teamId, pid, now) {
+  function dropOne(L, teamId, pid, now, keepTag) {
+    // a white elephant tag stays with a player through trades, but a drop clears it: whoever adds him gets him plain
+    if (!keepTag && L.etags && L.etags[pid]) { delete L.etags[pid]; if (L.pmult) delete L.pmult[pid]; }
     L.rosters[teamId] = L.rosters[teamId].filter((x) => x !== pid);
     L.ir[teamId] = (L.ir[teamId] || []).filter((x) => x !== pid);
     if (L.taxi && L.taxi[teamId]) L.taxi[teamId] = L.taxi[teamId].filter((x) => x !== pid);

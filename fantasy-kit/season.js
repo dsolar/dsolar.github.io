@@ -130,6 +130,13 @@
       Object.assign(L.settings, { frozen: true, trades: false, ir: 0, cap: { budget: D.cap.budget, bonus: D.cap.bonus || null } });
       L.waivers = {}; delete L.openWaivers;
     }
+    // a white elephant's tags: a stolen player scores the tax all season, a golden pick the bonus (points scoring only;
+    // a category league has nothing to multiply)
+    const tg = D.steals && F.tags ? F.tags(D) : {}, scT = ((sport.scorings && sport.scorings[D.scoring]) || {}).type;
+    if (Object.keys(tg).length && scT !== "cats") {
+      L.pmult = Object.assign({}, L.pmult || {}, Object.fromEntries(Object.entries(tg).map(([k, t]) => [k, t.mult])));
+      L.etags = Object.fromEntries(Object.entries(tg).map(([k, t]) => [k, t.kind]));
+    }
     // started midweek: what every player had done this week before the league began doesn't count
     if (thisWeek && settings.real && o.real && o.real !== true) L.baseline = { start: weekKeyOf(o.real, start), at, lines: JSON.parse(JSON.stringify(linesAt(o.real, start) || {})) };
     return L;
