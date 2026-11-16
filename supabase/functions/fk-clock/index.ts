@@ -112,7 +112,7 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       // a showdown plays one game: its two teams are the whole player pool
       const players = data.players.filter((p: any) => !S.inPool || S.inPool(L || D, p)).map((p: any) => Object.assign({}, p));
       // players the feed doesn't carry (a prospect pool, someone hurt all year) come with the league (doc.extraPlayers)
-      const xs = (L && L.extraPlayers) || D.extraPlayers;
+      const xs = (L && L.extraPlayers) || (D && D.extraPlayers);
       if (Array.isArray(xs)) { if (S.withExtras) S.withExtras(players, { extraPlayers: xs }); else { const have = new Set(players.map((p: any) => p.id)); for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); } }
       const dyn = (L && L.settings && L.settings.dynasty) || (doc.season && doc.season.dynasty);
       const weeks = await loadWeeks(l.sport, data.season);
