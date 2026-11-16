@@ -76,6 +76,9 @@
     } else s.divisions = 0;
     if (s.median && (guillotine || s.format === "roto" || s.tally === "allplay" || s.tally === "cats")) s.median = false;
     // the split (Scotland's): after week `after` the table splits in half and each half plays only itself
+    // a ladder replaces the schedule: no divisions, split, median or pick your opponent
+    if (s.ladder && (guillotine || s.format === "roto" || s.tally === "allplay" || n < 3)) delete s.ladder;
+    if (s.ladder) { s.divisions = 0; delete L.divs; delete s.split; delete s.pyo; s.median = false; }
     if (s.split && !splitOk(s, n)) delete s.split;
     // the playoffs come from the top half
     if (s.split && s.playoffTeams > Math.ceil(n / 2)) { s.playoffTeams = Math.ceil(n / 2); s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0); }
@@ -95,9 +98,88 @@
     if (RL) { const gone = RL.cleanSettings(s); if (gone.includes("vampire")) { delete L.bites; } }
     if (s.topBonus && !guillotine) delete s.topBonus;
     if (s.crown) L.crown = { king: s.crown.king != null && teams[s.crown.king] ? s.crown.king : null, pot: s.crown.start != null ? s.crown.start : 10, since: 1, reigns: [] };
+    if (s.ladder) ladderStart(L, D);
     return L;
   }
 
+  /* The ladder (settings.ladder = { reach }): the standings are a ladder, and there's no schedule to start with. Each
+     week, between the end of last week and the first game of this one, a team can challenge any team up to `reach`
+     rungs above it that nobody has booked yet; a team challenged can't challenge, and first come, first served.
+     Whoever is left when challenges close (bots included) is paired from the bottom up: each challenges the nearest
+     free team above it within reach, then any free team above it. With an odd number one team sits out. A challenger
+     who wins takes the defender's rung and the defender takes his; a tie keeps the defender's. W-L is kept, but the
+     ladder is the standings: the playoffs seed from it, and the top rung with no playoffs is the champion.
+     The first ladder is the draft order upside down: whoever picked first starts at the bottom.
+     L.ladder = { order (top first), reach, week, ch: [[challenger, defender, auto]], due, done, after: { w: order } } */
+  const LADDER_REACH = 2;
+  function ladderStart(L, D) {
+    const ids = L.teams.map((t) => t.id), r1 = D && Array.isArray(D.round1) && D.round1.length === ids.length ? D.round1.slice().reverse() : ids.slice();
+    L.ladder = { order: r1, reach: Math.max(1, Math.min(3, Number(L.settings.ladder.reach) || LADDER_REACH)), after: {}, moves: {} };
+    for (let w = 1; w <= L.settings.weeks; w++) L.schedule[w - 1] = [];
+    ladderOpen(L, 1, L.created);
+  }
+  // challenges close at the week's first game (L.kick, once the live feed has it), or a guess: Thursday night for
+  // football, Monday afternoon (New York) for a daily sport
+  const ladderDue = (L, w) => weekStart(L, w) + (L.sport === "nfl" ? 2.5 * DAY : 6 * HOUR);
+  function ladderOpen(L, w, now) {
+    if (!L.ladder || w > L.settings.weeks) return;
+    Object.assign(L.ladder, { week: w, ch: [], due: Math.max(now + HOUR, ladderDue(L, w)), at: now, done: null });
+  }
+  const ladderRung = (L, t) => (L.ladder ? L.ladder.order.indexOf(t) : -1);
+  const ladderBooked = (L) => new Set(((L.ladder && L.ladder.ch) || []).flatMap((c) => [c[0], c[1]]));
+  // the teams t can challenge this week: up to reach rungs above, not booked
+  function ladderTargets(L, t) {
+    const LD = L.ladder; if (!LD || LD.done) return [];
+    const bk = ladderBooked(L), r = ladderRung(L, t);
+    if (r <= 0 || bk.has(t)) return [];
+    return LD.order.slice(Math.max(0, r - LD.reach), r).filter((x) => !bk.has(x)).reverse();
+  }
+  function ladderChallenge(L, t, target, now, auto) {
+    const LD = L.ladder;
+    if (!LD || LD.done) return { ok: false, why: "Challenges are closed" };
+    if (now >= LD.due) return { ok: false, why: "Challenges closed at the first game" };
+    if (ladderBooked(L).has(t)) return { ok: false, why: "You already have a match this week" };
+    if (!ladderTargets(L, t).includes(target)) return { ok: false, why: ladderBooked(L).has(target) ? "Someone already challenged them" : `You can challenge a team up to ${LD.reach} rung${LD.reach > 1 ? "s" : ""} above you` };
+    LD.ch.push([t, target, auto ? 1 : 0]);
+    log(L, now, { type: "ladder", team: t, other: target, text: `${L.teams[t].name} challenged ${L.teams[target].name} for week ${LD.week}${auto ? " (paired)" : ""}` });
+    return { ok: true };
+  }
+  // close the week's challenges: pair whoever is left, and write the schedule
+  function ladderDone(L, now) {
+    const LD = L.ladder; if (!LD || LD.done) return;
+    for (let k = LD.order.length - 1; k > 0; k--) {
+      const t = LD.order[k], bk = ladderBooked(L);
+      if (bk.has(t)) continue;
+      const near = ladderTargets(L, t)[0];
+      const any = near != null ? near : LD.order.slice(0, k).reverse().find((x) => !bk.has(x));
+      if (any != null) { LD.ch.push([t, any, 1]); }
+    }
+    LD.done = now;
+    LD.start = LD.order.slice();
+    L.schedule[LD.week - 1] = LD.ch.map(([c, d]) => [c, d]);
+  }
+  function runLadder(L, ctx, now) {
+    const LD = L.ladder; if (!LD || LD.done) return 0;
+    if (LD.week === L.week) { const fk = firstKick(L); if (fk != null && fk < LD.due) LD.due = Math.max(LD.at || 0, fk); }
+    if (now >= LD.due) { ladderDone(L, now); return 1; }
+    return 0;
+  }
+  // after week w: each challenger who won swaps rungs with the team he beat
+  function ladderWeek(L, w, games, now) {
+    const LD = L.ladder; if (!LD) return;
+    const start = LD.start || LD.order.slice(), order = start.slice(), moves = [];
+    for (const g of games) {
+      const ra = start.indexOf(g.a), rb = start.indexOf(g.b);
+      if (ra < 0 || rb < 0) continue;
+      const lower = ra > rb ? g.a : g.b, upper = lower === g.a ? g.b : g.a, lowWon = (lower === g.a && g.w === "a") || (lower === g.b && g.w === "b");
+      if (!lowWon) continue;
+      const i = start.indexOf(lower), j = start.indexOf(upper);
+      order[j] = lower; order[i] = upper; moves.push([lower, upper]);
+    }
+    LD.order = order; LD.after[w] = order.slice(); LD.moves[w] = moves;
+    if (moves.length) log(L, now, { type: "ladder", team: -1, text: `Week ${w} on the ladder: ${moves.map(([a, b]) => `${L.teams[a].name} climbed past ${L.teams[b].name}`).join("; ")}` });
+    ladderOpen(L, w + 1, now);
+  }
   const DIV_NAMES = { 2: ["East", "West"], 3: ["North", "South", "West"], 4: ["North", "South", "East", "West"] };
   /* The split, borrowed from Scotland's league. settings.split = { after, names }: once week `after` is played, the
      table splits into a top half (the bigger half when the count is odd) and a bottom half. Records carry over, the
@@ -107,6 +189,12 @@
   const SPLIT_NAMES = ["Top half", "Bottom half"];
   const splitOk = (s, n) => !!s.split && s.format === "h2h" && s.tally !== "allplay" && !s.divisions && !s.pyo && n >= 4 && s.split.after >= 2 && s.split.after <= s.weeks - 2;
   const splitOn = (L, upTo) => !!(L.split && (upTo == null || upTo > L.split.after));
+  // the ladder as it stood after week upTo (the first ladder before any week is played): a team's rung, for sorting
+  function ladderAt(L, upTo) {
+    const LD = L.ladder, ws = Object.keys(LD.after || {}).map(Number).filter((w) => w <= upTo);
+    const order = ws.length ? LD.after[Math.max(...ws)] : LD.start && !Object.keys(LD.after || {}).length ? LD.start : LD.order;
+    return (r) => order.indexOf(r.team);
+  }
   const splitNames = (L) => ((L.settings.split && L.settings.split.names) || SPLIT_NAMES);
   function applySplit(L, now) {
     const w = L.settings.split.after, n = L.teams.length, size = Math.ceil(n / 2);
@@ -937,6 +1025,7 @@
       refresh(L, ctx);
       return { ok: true };
     }
+    if (L.ladder && L.ladder.week === w && !L.ladder.done) ladderDone(L, now);
     const games = matchups(L, ctx, w, 1);
     L.results[w] = games.map((g) => ({ a: g.a, b: g.b, kind: g.kind || undefined, sa: g.sa, sb: g.sb, ties: g.ties || 0, w: g.w, cats: g.cats || null, ta: g.ta && g.ta.players ? { players: g.ta.players } : null, tb: g.tb && g.tb.players ? { players: g.tb.players } : null }));
     L.lineups[w] = L.lineups[w] || {};
@@ -945,6 +1034,7 @@
     for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
     if (L.settings.split && w === L.settings.split.after && !L.split) applySplit(L, now);
+    if (L.ladder && w <= L.settings.weeks) ladderWeek(L, w, games, now);
     if (w <= L.settings.weeks) { openBites(L, w, games, now); openRaids2(L, ctx, w, games, now); crownWeek(L, games, w, now); }
     // pick your opponent: this week's picks are final, and next week's open
     if (L.pyo && !L.pyo.done && L.pyo.week <= L.week) { runPyo(L, ctx, Math.max(now, L.pyo.due)); pyoDone(L, now); }
@@ -1244,7 +1334,7 @@
       while (k >= 0 && r.form[k] === s) { n++; k--; }
       r.streak = s ? s + n : "";
     }
-    const grp = splitOn(L, last) ? (r) => L.split.groups[r.team] || 0 : () => 0;
+    const grp = splitOn(L, last) ? (r) => L.split.groups[r.team] || 0 : L.ladder ? ladderAt(L, last) : () => 0;
     const sorted = rows.slice().sort((a, b) => grp(a) - grp(b) || b.pct - a.pct || b.pf - a.pf || (b.best || 0) - (a.best || 0) || a.team - b.team);
     if (splitOn(L, last)) sorted.forEach((r) => (r.half = grp(r)));
     const lead = sorted[0];
@@ -2584,6 +2674,7 @@
     n += runBites(L, ctx, now);
     n += prospectUpkeep(L, ctx, now);
     if (L.pyo && !L.pyo.done) n += runPyo(L, ctx, now);
+    if (L.ladder && !L.ladder.done) n += runLadder(L, ctx, now);
     lockPlayed(L, ctx, now);
     if (L.settings.waiverAt == null) n += runDue(L, ctx, now);
     L.waiverRuns = L.waiverRuns || {};
@@ -2605,5 +2696,5 @@
   return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

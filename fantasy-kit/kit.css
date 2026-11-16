@@ -1673,6 +1673,8 @@ table.t tr.me td.act::before{background:linear-gradient(90deg,transparent,color-
 .crown-c .mod-h h2{display:flex;align-items:center;gap:4px}
 .crown-c .mod-h h2 .crown-i{color:var(--gold)}
 .pyo-l li.on{background:var(--gold-soft)}
+/* the ladder: one rung a row, yours highlighted */
+.lad-l li.on{background:var(--brand-soft)} .lad-n{width:22px;text-align:right;color:var(--muted);font-weight:800;flex:none}
 .tw-l{gap:4px}
 /* sign in: password or account tabs, show-password toggle, the quieter options under the button */
 .si-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;margin:0 0 8px;border-radius:10px;background:var(--surface-3)}

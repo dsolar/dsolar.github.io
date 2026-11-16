@@ -254,6 +254,14 @@ owns which team, the invite code and the save order. It also stamps each team's 
   Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
   still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
   team's ungraduated taxi prospects kept in them.
+- **The ladder** (`settings.ladder = { reach }`): no schedule. The first ladder is the draft order upside down. Each
+  week a challenge window runs from the end of last week to this week's first game (`L.kick`, else Thursday night for
+  football, Monday afternoon otherwise): a team challenges any unbooked team up to `reach` rungs above
+  (`FK.league.ladderChallenge`, first come first served, a challenged team can't challenge). At the close
+  (`ladderDone`) whoever is left is paired from the bottom up and the week's schedule is written. A challenger who wins
+  swaps rungs with the team he beat (`L.ladder.after[w]`, `moves[w]`); the ladder is the standings, so it seeds the
+  playoffs or crowns the top rung. No divisions, split, median or pick your opponent. The league page shows the ladder
+  card with Challenge buttons and an alert. `node --test tests/fantasyladder.test.mjs`.
 - **The split** (`settings.split = { after }`, borrowed from Scotland): once week `after` is played
   (`FK.league.applySplit`), the table splits into a top half (the bigger half when odd) and a bottom half. Records
   carry over, the rest of the regular season is a round robin inside each half (two odd halves: the teams sitting out
