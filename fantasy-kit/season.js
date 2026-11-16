@@ -57,6 +57,8 @@
     if (s.oneWeek) settings.trades = false;
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
+    // promotion and relegation: which tier of which pyramid (pyramid.js)
+    if (s.pyramid && s.format !== "guillotine" && !s.oneWeek) settings.pyramid = Object.assign({}, s.pyramid);
     // a vampire league (football, head to head): which team is the vampire, and its swap rules
     if (s.vampire && s.format !== "guillotine" && s.format !== "roto") settings.vampire = { team: s.vampire.team, samePos: !!s.vampire.samePos, double: !!s.vampire.double };
     // the twists: pick your opponent, Robin Hood, Conquest, Kingslayer and The Hangover (head to head), the top-score

@@ -594,7 +594,7 @@
       { k: "streak", label: "Strk", cls: "r", hide: "s", html: (r) => `<span class="${/^W/.test(r.streak) ? "win" : /^L/.test(r.streak) ? "loss" : ""}" style="font-weight:800">${esc(r.streak || "-")}</span>` },
       { k: "form", label: "Last 5", cls: "", hide: "s", html: (r) => `<span class="form">${(r.form || []).slice(-5).map((x) => `<i class="${x}" title="${x}"></i>`).join("")}</span>` });
     if (opts.extra) cols.push(...opts.extra);
-    return table({ cols, rows, cls: "stand", rowAttr: (r) => `class="${r.me ? "me " : ""}${r.cut ? "cut" : ""}"` });
+    return table({ cols, rows, cls: "stand", rowAttr: (r) => `class="${r.me ? "me " : ""}${r.cut ? "cut" : ""}${r.zone ? ` z-${r.zone}` : ""}"` });
   }
   // items: [{ when, team, with, badge, lines: [html], note }]
   function feed(items, empty = "No moves yet.") {

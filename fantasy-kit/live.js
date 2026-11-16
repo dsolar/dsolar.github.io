@@ -317,6 +317,8 @@
       // one-week games: run it back next week with the same group, and the series so far
       get rematch() { return L && oneWeekGame() && info.me != null ? rematchGo : null; },
       series: () => series,
+      // promotion and relegation: this tier, the other one, and who's moving
+      pyramid: () => pyramidCard(),
     });
     loadPosts();
     loadPast();
@@ -854,8 +856,82 @@
     const clr = f.querySelector("[data-ord-clear]");
     if (clr) clr.addEventListener("click", () => { delete L.nextOrder; push(); const dl = $("#fk-dlg"); if (dl) dl.close(); setTimeout(() => app.refresh(), 0); U.toast("Back to worst to first."); });
   }
+  /* ---------- promotion and relegation (pyramid.js) ---------- */
+  // the other tier, loaded once with fk_view (anyone can read a league), played up to now on this page
+  let pyr2 = null, pyr2Asked = false;
+  const pyrOn = () => !!(L && L.settings.pyramid && window.FK.pyramid);
+  const ordN = (n) => n + (["th", "st", "nd", "rd"][(n % 100 > 10 && n % 100 < 14) || n % 10 > 3 ? 0 : n % 10] || "th");
+  async function loadPyr2(force) {
+    if (!pyrOn() || (pyr2Asked && !force)) return pyr2;
+    pyr2Asked = true;
+    const p = L.settings.pyramid;
+    if (!p.other) return null;
+    const r = await C.rpc("fk_view", { p_id: p.other, p_since: null }).catch(() => null);
+    if (!r || r.error) return null;
+    const L2 = r.league || null, ctx2 = L2 ? G.context(L2, players, sport, hooks()) : null;
+    if (L2) Z.catchUp(L2, ctx2, now());
+    pyr2 = { id: p.other, name: r.name, version: r.version, L: L2, D: r.draft, ctx: ctx2 };
+    if (app) app.refresh();
+    return pyr2;
+  }
+  // both tiers in order: top first, each { L, ctx, id, version, name }
+  function pyrTiers() {
+    if (!pyr2 || !pyr2.L) return null;
+    const me = { L, ctx: lctx(), id, version, name: info.name || L.name }, other = { L: pyr2.L, ctx: pyr2.ctx, id: pyr2.id, version: pyr2.version, name: pyr2.name };
+    return L.settings.pyramid.tier === 1 ? [me, other] : [other, me];
+  }
+  const fm1 = (x) => (Math.round((x || 0) * 10) / 10).toFixed(1);
+  // what the card says: this tier's rule, who's in the zones now (or who moved, once both seasons are over), last season
+  function pyramidBody() {
+    if (!pyr2Asked) loadPyr2();
+    const PY = window.FK.pyramid, p = L.settings.pyramid, r = PY.rules(p), top = p.tier === 1, names = r.names, otherName = names[top ? 1 : 0];
+    const z = PY.zones(L), who = (kind) => Object.keys(z).filter((t) => z[t] === kind).map((t) => esc(L.teams[t].name)).join(" and ");
+    const rule = top ? `The bottom ${r.k} go down to the ${esc(names[1])}.` : `The top ${r.k} go up to the ${esc(names[0])}.`;
+    const po = r.mode !== "playoff" ? "" : top ? ` The ${ordN(r.k + 1)}-to-last team plays the ${esc(names[1])}'s ${ordN(r.k + 1)}-place team for one more place, the week after the regular season.`
+      : ` The ${ordN(r.k + 1)}-place team plays the ${esc(names[0])}'s ${ordN(r.k + 1)}-to-last team for one more place, the week after the regular season.`;
+    const over = seasonOver(), now1 = top ? who("down") : who("up"), pz = who("playoff");
+    let res = "";
+    const tiers = over ? pyrTiers() : null;
+    if (tiers && PY.over(tiers[0].L) && PY.over(tiers[1].L)) {
+      const x = PY.result(tiers[0].L, tiers[0].ctx, tiers[1].L, tiers[1].ctx), T1 = tiers[0].L.teams, T2 = tiers[1].L.teams;
+      res = `<p class="small" style="margin:0"><b>Going down:</b> ${x.down.map((t) => esc(T1[t].name)).join(", ")}. <b>Coming up:</b> ${x.up.map((t) => esc(T2[t].name)).join(", ")}.</p>`
+        + (x.playoff ? `<p class="small" style="margin:0"><b>Playoff, week ${x.playoff.week}:</b> ${esc(T1[x.playoff.top].name)} ${fm1(x.playoff.topPts)}, ${esc(T2[x.playoff.bot].name)} ${fm1(x.playoff.botPts)}. ${x.playoff.winner === "bot" ? "Promoted" : "Stays up"}.</p>` : "");
+    } else if (over && tiers) res = `<p class="small" style="margin:0">The ${esc(otherName)} is still playing. Promotion and relegation happen once both seasons are over.</p>`;
+    const last = p.last ? `<p class="small" style="margin:0"><b>Last season:</b> ${p.last.down.map(esc).join(" and ")} went down, ${p.last.up.map(esc).join(" and ")} came up.</p>` : "";
+    return `<p class="small" style="margin:0">${top ? "The top tier" : "The lower tier"} of two, with promotion and relegation. ${rule}${po}</p>
+      ${res || (now1 ? `<p class="small" style="margin:0"><b>${top ? "In the drop zone" : "In the promotion places"}:</b> ${now1}${pz ? `. <b>Playoff spot:</b> ${pz}` : ""}.</p>` : "")}
+      ${last}`;
+  }
+  function pyramidCard() {
+    if (!pyrOn()) return "";
+    const p = L.settings.pyramid, names = window.FK.pyramid.rules(p).names;
+    return `<div class="card pyr-c"><div class="mod-h"><h2>${esc(names[p.tier === 1 ? 0 : 1])}</h2><a href="play.html?id=${encodeURIComponent(p.other || "")}">The ${esc(names[p.tier === 1 ? 1 : 0])}</a></div><div class="bd stack">${pyramidBody()}</div></div>`;
+  }
+  function pyramidNextCard() {
+    const PY = window.FK.pyramid, p = L.settings.pyramid, r = PY.rules(p), otherName = r.names[p.tier === 1 ? 1 : 0];
+    if (!pyr2Asked) loadPyr2();
+    const tiers = pyrTiers(), ready = tiers && PY.over(tiers[0].L) && PY.over(tiers[1].L);
+    const body = !pyr2 ? "Loading the other tier…" : !ready ? `The ${esc(otherName)} season isn't over yet. Both tiers start next season together, once promotion and relegation are settled.`
+      : "The season is over in both tiers. Starting next season saves both to their history, moves the managers going up and down (each with his team name), and opens a fresh draft in both leagues. The newcomers take the relegated teams' spots, so they pick first.";
+    return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">${body}</p>${pyramidBody()}
+      ${ready ? `<div><button class="btn go" data-live="new-season">Start next season in both tiers</button></div>` : ""}</div></div>`;
+  }
+  async function pyramidNewSeason() {
+    const o = await loadPyr2(true), tiers = pyrTiers(), PY = window.FK.pyramid, p = L.settings.pyramid;
+    if (!o || !tiers) { U.toast("Couldn't load the other tier. Try again.", true); return; }
+    if (!PY.over(tiers[0].L) || !PY.over(tiers[1].L)) { U.toast("Both tiers have to finish their seasons first.", true); return; }
+    const [top, bot] = tiers, nx = PY.nextDrafts(top.L, top.ctx, bot.L, bot.ctx, sport, { now: now() });
+    const r = await C.rpc("fk_pyramid_new_season", { p_pyramid: p.id, p_top_version: top.version, p_top_draft: nx.top, p_top_summary: Z.summary(top.L), p_bot_version: bot.version, p_bot_draft: nx.bot, p_bot_summary: Z.summary(bot.L),
+      p_pairs: nx.result.pairs, p_events: PY.events(nx.result, top.L, bot.L), p_record: Object.assign({ at: now() }, nx.top.season.pyramid.last) }).catch((e) => ({ error: e.message }));
+    if (r.error === "stale") { U.toast("One of the leagues changed. Try again.", true); version = -1; pyr2Asked = false; pull(); return; }
+    if (r.error) { U.toast(r.error, true); return; }
+    pyr2 = null; pyr2Asked = false; version = -1; L = null; app = null;
+    U.toast("Next season's draft rooms are open in both tiers.");
+    pull();
+  }
   function nextSeasonCard() {
     if (!seasonOver()) return "";
+    if (pyrOn()) return pyramidNextCard();
     const k = L.settings.keepers || 0;
     if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">The season is over. Open keeper picks with a deadline: every manager gets an email and picks up to ${k}.</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
     const doc = L, picks = (L.next && L.next.picks) || {}, lock = keepLocked(), auto = L.next && L.next.missed === "auto";
@@ -892,6 +968,7 @@
     });
   }
   async function newSeason() {
+    if (pyrOn()) return pyramidNewSeason();
     // a league with a prospect pool gets this year's board, keeping last year's prospects who are still on a roster
     let extra = null;
     if (L.settings.prospects || (L.extraPlayers || []).some((x) => x.pro)) {

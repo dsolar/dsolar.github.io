@@ -804,3 +804,152 @@ AS $function$
     'place', (select place from fin))
   from rec r, mrec m;
 $function$;
+
+-- ---------- promotion and relegation: two linked leagues (migration fantasykit_pyramid) ----------
+create table if not exists public.fk_pyramids (
+  id text primary key,
+  sport text not null,
+  commish uuid not null,
+  top text not null references public.fk_leagues(id) on delete cascade,
+  bot text not null references public.fk_leagues(id) on delete cascade,
+  history jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now()
+);
+alter table public.fk_pyramids enable row level security;
+create index if not exists fk_pyramids_top on public.fk_pyramids (top);
+create index if not exists fk_pyramids_bot on public.fk_pyramids (bot);
+
+-- both tiers at once: the creator gets team 0 in the top tier only, and each draft learns the other league's id
+create or replace function public.fk_pyramid_create(p_top_name text, p_bot_name text, p_sport text, p_manager text, p_top jsonb, p_bot jsonb)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare uid uuid := auth.uid(); r1 jsonb; r2 jsonb; pid text;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  if jsonb_typeof(p_top->'season'->'pyramid') is distinct from 'object' or jsonb_typeof(p_bot->'season'->'pyramid') is distinct from 'object' then
+    return jsonb_build_object('error', 'Both tiers need their pyramid settings.');
+  end if;
+  r1 := fk_create(p_top_name, p_sport, p_manager, p_top);
+  if r1 ? 'error' then return r1; end if;
+  r2 := fk_create(p_bot_name, p_sport, p_manager, p_bot);
+  if r2 ? 'error' then delete from fk_leagues where id = r1->>'id'; return r2; end if;
+  delete from fk_seats where league = r2->>'id' and user_id = uid;
+  loop
+    pid := fk_rand(8);
+    exit when not exists (select 1 from fk_pyramids where id = pid);
+  end loop;
+  insert into fk_pyramids (id, sport, commish, top, bot) values (pid, p_sport, uid, r1->>'id', r2->>'id');
+  update fk_leagues set draft = jsonb_set(jsonb_set(jsonb_set(draft, '{season,pyramid,id}', to_jsonb(pid)), '{season,pyramid,other}', to_jsonb(r2->>'id')), '{season,pyramid,tier}', '1'::jsonb)
+    where id = r1->>'id';
+  update fk_leagues set draft = fk_stamp(id, jsonb_set(jsonb_set(jsonb_set(draft, '{season,pyramid,id}', to_jsonb(pid)), '{season,pyramid,other}', to_jsonb(r1->>'id')), '{season,pyramid,tier}', '2'::jsonb))
+    where id = r2->>'id';
+  return jsonb_build_object('pyramid', pid, 'top', r1->>'id', 'bot', r2->>'id', 'topInvite', r1->>'invite', 'botInvite', r2->>'invite');
+end $$;
+
+-- one seat per pyramid: a manager in one tier can't take a team in the other
+create or replace function public.fk_join(p_id text, p_invite text, p_team integer, p_manager text)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); l fk_leagues; mg text := fk_clean(p_manager, 24); n int;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  if l.invite <> coalesce(p_invite, '') then return jsonb_build_object('error', 'That invite code doesn''t match. Ask the commissioner for a new link.'); end if;
+  if exists (select 1 from fk_seats where league = p_id and user_id = uid) then return jsonb_build_object('error', 'You already have a team in this league.'); end if;
+  if exists (select 1 from fk_pyramids p join fk_seats s on s.league in (p.top, p.bot) where (p.top = p_id or p.bot = p_id) and s.user_id = uid) then
+    return jsonb_build_object('error', 'You already have a team in the other tier. One team per manager in a promotion and relegation pyramid.');
+  end if;
+  n := jsonb_array_length(l.draft->'teams');
+  if p_team is null or p_team < 0 or p_team >= n then return jsonb_build_object('error', 'Pick a team.'); end if;
+  if exists (select 1 from fk_seats where league = p_id and team = p_team) then return jsonb_build_object('error', 'Someone already took that team.'); end if;
+  if mg = '' then return jsonb_build_object('error', 'Add your name.'); end if;
+  insert into fk_seats (league, team, user_id, email, manager) values (p_id, p_team, uid, auth.jwt()->>'email', mg);
+  update fk_leagues set draft = fk_stamp(p_id, draft), league = fk_stamp(p_id, league), version = version + 1, updated_at = now() where id = p_id;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+-- a pyramid tier starts its next season together with the other one (fk_pyramid_new_season)
+create or replace function public.fk_new_season(p_id text, p_version integer, p_draft jsonb, p_summary jsonb, p_events jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); l fk_leagues; e jsonb; k int := 0;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  if l.commish <> uid then return jsonb_build_object('error', 'Only the commissioner can start a new season.'); end if;
+  if exists (select 1 from fk_pyramids where top = p_id or bot = p_id) then return jsonb_build_object('error', 'Start the next season from either tier: both start together, with promotion and relegation.'); end if;
+  if l.league is null then return jsonb_build_object('error', 'This league is already drafting.'); end if;
+  if l.version <> p_version then return jsonb_build_object('error', 'stale', 'version', l.version, 'draft', l.draft, 'league', l.league); end if;
+  if jsonb_typeof(p_draft->'teams') is distinct from 'array' then return jsonb_build_object('error', 'That draft is missing its teams.'); end if;
+  if octet_length(p_draft::text) > 1500000 then return jsonb_build_object('error', 'That league is too big to save.'); end if;
+  update fk_leagues set seasons = seasons || jsonb_build_array(coalesce(p_summary, '{}'::jsonb)), draft = fk_stamp(p_id, p_draft), league = null,
+    version = version + 1, updated_at = now() where id = p_id;
+  if jsonb_typeof(p_events) = 'array' then
+    for e in select * from jsonb_array_elements(p_events) loop
+      exit when k >= 40;
+      if (e->>'team') ~ '^\d+$' and exists (select 1 from fk_seats where league = p_id and team = (e->>'team')::int and notify) then
+        insert into fk_outbox (league, team, kind, subject, body, data)
+          values (p_id, (e->>'team')::int, fk_clean(e->>'kind', 20), fk_clean(e->>'subject', 120), left(coalesce(e->>'body', ''), 2000), fk_event_data(e));
+        k := k + 1;
+      end if;
+    end loop;
+  end if;
+  return jsonb_build_object('ok', true, 'version', l.version + 1);
+end $$;
+
+-- the next season for both tiers: managers in p_pairs ([[top team, lower team], ...]) swap seats, then both leagues
+-- open their new drafts. p_events: { league: "top" | "bot", team, kind, subject, body }, read after the swap.
+create or replace function public.fk_pyramid_new_season(p_pyramid text, p_top_version int, p_top_draft jsonb, p_top_summary jsonb,
+  p_bot_version int, p_bot_draft jsonb, p_bot_summary jsonb, p_pairs jsonb, p_events jsonb, p_record jsonb)
+returns jsonb language plpgsql security definer set search_path = public as $$
+declare uid uuid := auth.uid(); p fk_pyramids; lt fk_leagues; lb fk_leagues; pr jsonb; a int; b int; n1 int; n2 int;
+  moving jsonb := '[]'::jsonb; s fk_seats; e jsonb; k int := 0; lid text;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into p from fk_pyramids where id = p_pyramid for update;
+  if not found then return jsonb_build_object('error', 'No pyramid with that link.'); end if;
+  select * into lt from fk_leagues where id = p.top for update;
+  select * into lb from fk_leagues where id = p.bot for update;
+  if p.commish <> uid or lt.commish <> uid or lb.commish <> uid then return jsonb_build_object('error', 'Only the commissioner can start a new season.'); end if;
+  if lt.league is null or lb.league is null then return jsonb_build_object('error', 'Both tiers have to finish their seasons first.'); end if;
+  if lt.version <> p_top_version or lb.version <> p_bot_version then return jsonb_build_object('error', 'stale'); end if;
+  if jsonb_typeof(p_top_draft->'teams') is distinct from 'array' or jsonb_typeof(p_bot_draft->'teams') is distinct from 'array' then return jsonb_build_object('error', 'A draft is missing its teams.'); end if;
+  if octet_length(p_top_draft::text) > 1500000 or octet_length(p_bot_draft::text) > 1500000 then return jsonb_build_object('error', 'That league is too big to save.'); end if;
+  if jsonb_typeof(p_pairs) is distinct from 'array' or jsonb_array_length(p_pairs) > 4 then return jsonb_build_object('error', 'Those moves don''t add up.'); end if;
+  n1 := jsonb_array_length(lt.draft->'teams'); n2 := jsonb_array_length(lb.draft->'teams');
+  -- take every moving seat out first, then put each back in its new league (no manager is ever in both)
+  for pr in select * from jsonb_array_elements(p_pairs) loop
+    a := (pr->>0)::int; b := (pr->>1)::int;
+    if a is null or b is null or a < 0 or a >= n1 or b < 0 or b >= n2 then return jsonb_build_object('error', 'Those moves don''t add up.'); end if;
+    select * into s from fk_seats where league = p.top and team = a;
+    if found then moving := moving || jsonb_build_array(jsonb_build_object('to', p.bot, 'team', b, 'user_id', s.user_id, 'email', s.email, 'manager', s.manager, 'notify', s.notify)); end if;
+    select * into s from fk_seats where league = p.bot and team = b;
+    if found then moving := moving || jsonb_build_array(jsonb_build_object('to', p.top, 'team', a, 'user_id', s.user_id, 'email', s.email, 'manager', s.manager, 'notify', s.notify)); end if;
+    delete from fk_seats where (league = p.top and team = a) or (league = p.bot and team = b);
+  end loop;
+  insert into fk_seats (league, team, user_id, email, manager, notify)
+    select x->>'to', (x->>'team')::int, (x->>'user_id')::uuid, x->>'email', x->>'manager', coalesce((x->>'notify')::boolean, true) from jsonb_array_elements(moving) x;
+  update fk_leagues set seasons = seasons || jsonb_build_array(coalesce(p_top_summary, '{}'::jsonb)), draft = fk_stamp(id, p_top_draft), league = null, version = version + 1, updated_at = now() where id = p.top;
+  update fk_leagues set seasons = seasons || jsonb_build_array(coalesce(p_bot_summary, '{}'::jsonb)), draft = fk_stamp(id, p_bot_draft), league = null, version = version + 1, updated_at = now() where id = p.bot;
+  update fk_pyramids set history = history || jsonb_build_array(coalesce(p_record, '{}'::jsonb)) where id = p.id;
+  if jsonb_typeof(p_events) = 'array' then
+    for e in select * from jsonb_array_elements(p_events) loop
+      exit when k >= 40;
+      lid := case e->>'league' when 'top' then p.top when 'bot' then p.bot else null end;
+      if lid is not null and (e->>'team') ~ '^\d+$' and exists (select 1 from fk_seats where league = lid and team = (e->>'team')::int and notify) then
+        insert into fk_outbox (league, team, kind, subject, body, data)
+          values (lid, (e->>'team')::int, fk_clean(e->>'kind', 20), fk_clean(e->>'subject', 120), left(coalesce(e->>'body', ''), 2000), fk_event_data(e));
+        k := k + 1;
+      end if;
+    end loop;
+  end if;
+  return jsonb_build_object('ok', true, 'topVersion', lt.version + 1, 'botVersion', lb.version + 1);
+end $$;
+
+-- the pyramid's two leagues and its history of moves, for either tier's page
+create or replace function public.fk_pyramid(p_id text) returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('id', p.id, 'top', p.top, 'bot', p.bot, 'history', p.history,
+    'names', jsonb_build_array((select name from fk_leagues where id = p.top), (select name from fk_leagues where id = p.bot)))
+  from fk_pyramids p where p.id = p_id;
+$$;
+grant execute on function public.fk_pyramid_create(text, text, text, text, jsonb, jsonb), public.fk_pyramid_new_season(text, int, jsonb, jsonb, int, jsonb, jsonb, jsonb, jsonb, jsonb), public.fk_pyramid(text) to authenticated;
+grant execute on function public.fk_pyramid(text) to anon;

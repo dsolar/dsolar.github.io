@@ -254,6 +254,16 @@ owns which team, the invite code and the save order. It also stamps each team's 
   Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
   still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
   team's ungraduated taxi prospects kept in them.
+- **Promotion and relegation** (`FK.pyramid`, `pyramid.js`): two leagues made together from the start form (redraft
+  season leagues; the lower tier can be smaller). Each league's `D.season.pyramid` / `settings.pyramid` is
+  `{ id, tier, other, names, mode, k }`. On the regular-season table, the top tier's bottom `k` swap with the lower
+  tier's top `k` (`mode: "swap"`), or the same plus a one-week playoff the week after the regular season between the
+  top tier's next team up and the lower tier's next team down (`"playoff"`; a tie stays up). Managers move with their
+  team name and color and take the relegated team's spot; rosters don't, and both leagues draft fresh. Server:
+  `fk_pyramids`, `fk_pyramid_create` (both leagues, the creator seated in the top tier only), `fk_join` (one seat
+  per pyramid), `fk_pyramid_new_season` (swaps seats and opens both drafts in one transaction; `fk_new_season`
+  refuses a pyramid league). The league page shows the zones in the standings and a card linking the tiers.
+  `node --test tests/fantasypyramid.test.mjs` covers it.
 - **Salary cap prices** (`FK.draft.capPrices`, set once when the game is made): by this week's projection (one day's
   game for basketball), from 40% of an even share for a fringe player to 1.9x it for the best. The default $50,000 cap
   prices in $100 steps like DraftKings (`capStep`, `capMoney` formats them); a $100 or $200 cap, in whole dollars. A

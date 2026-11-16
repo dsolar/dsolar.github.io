@@ -365,7 +365,7 @@
       const w = curWeek(), mid = me();
       const games = gamesVM(w);
       const mine = mid != null && !over() ? findGame(w, mid) : null;
-      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !L().divs && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, badge: seedTag(r) }));
+      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !L().divs && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, zone: zones()[r.team], badge: seedTag(r) + zoneTag(zones()[r.team]) }));
       const recent = L().tx.slice().reverse().filter((x) => x.type !== "draft").slice(0, 7);
       const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
       const champ = over() ? championOf() : null;
@@ -398,6 +398,7 @@
           <div class="card feed2"><div class="mod-h"><h2>Recent activity</h2><a href="#players/tx">All transactions</a></div>${U.feed(recent.slice(0, 6).map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
         </div><aside class="stack">
           ${myCards.trim() ? `<div class="d-only stack">${myCards}</div>` : ""}
+          ${opts.pyramid ? opts.pyramid() : ""}
           ${chatCard()}
           ${newsCard()}
           ${blockCard(3)}
@@ -630,6 +631,10 @@
     // with divisions the playoff line isn't a line, so each team in line for the playoffs is tagged with its seed
     const CROWN = `<svg class="crown-i" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><path d="M2 12.5h12l1-8-4 3-3-5-3 5-4-3z" fill="currentColor"/></svg>`;
     const crownTag = (id) => (G.kingOf(L()) === id && !over() ? ` <span class="tag gold crown-t" title="Wears the crown: beat them to take it and the $${L().crown.pot} bounty">${CROWN}King</span>` : "");
+    // promotion and relegation (pyramid.js): the drop zone, the promotion places and the playoff spot
+    const PZ = { down: ["loss", "Relegation"], up: ["win", "Promotion"], playoff: ["gold", "Playoff"] };
+    const zones = () => (L().settings.pyramid && window.FK.pyramid ? window.FK.pyramid.zones(L()) : {});
+    const zoneTag = (z) => (z ? ` <span class="tag ${PZ[z][0]}" title="${esc(PZ[z][1] === "Playoff" ? "Plays the other tier's team for a place after the regular season" : PZ[z][1] === "Relegation" ? "In the drop zone: goes down if the season ended today" : "Goes up if the season ended today")}">${PZ[z][1]}</span>` : "");
     const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "") + crownTag(r.team);
     // a player's projection for the week: with the live feed, what he has plus what his team's games left should add
     // Football: Sleeper's projection for the week, less the share of his game already played. Basketball and baseball:
@@ -727,7 +732,8 @@
       if (gl()) return survivorsPage();
       if (roto()) return rotoStandingsPage();
       const dv = !!L().divs;
-      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !dv && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, badge: finishTag(r.team) || seedTag(r) }));
+      const zs = zones();
+      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !dv && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, zone: zs[r.team], badge: (finishTag(r.team) || seedTag(r)) + zoneTag(zs[r.team]) }));
       const pw = G.power(L(), ctx);
       const tables = dv ? L().divNames.map((nm, k) => `<div class="stack" style="gap:8px"><h2 style="margin:0;font-size:16px">${esc(nm)}</h2>${U.standingsTable(st.filter((r) => r.div === k).map((r, i) => Object.assign({}, r, { rank: i + 1 })), { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS })}</div>`).join("")
         : U.standingsTable(st, { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS });

@@ -204,6 +204,8 @@ table.t tr.me td{background:var(--brand-soft)}
 /* dimmed rows (chopped teams, players you can't add) fade by color, not opacity, so their text stays readable */
 table.t tr.dim td{color:var(--muted)} table.t tr.dim td b,table.t tr.dim td .pn{color:var(--muted)} table.t tr.dim .av,table.t tr.dim .pav{opacity:.55}
 table.t tr.cut td{border-bottom:2px dashed var(--line-2)}
+/* promotion and relegation: a colored edge on the drop zone, the promotion places and the playoff spot */
+table.stand tr.z-down td:first-child{box-shadow:inset 3px 0 0 var(--loss)} table.stand tr.z-up td:first-child{box-shadow:inset 3px 0 0 var(--win)} table.stand tr.z-playoff td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
 table.t tr.sec td{background:var(--surface-2);font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:6px 10px}
 table.t tr[data-player]{cursor:pointer}
 table.t td.nm{max-width:270px;min-width:170px}
