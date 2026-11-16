@@ -152,7 +152,7 @@
     if (!r || !r.open || Z.sealedKind(D) !== kind) { revealT = setTimeout(reveal, 5000); return; }
     if (Z.driveDraft(D, F.context(D, players, sport), now(), r.open)) push();
   }
-  function refreshView() { if (mode !== modeNow()) mount(); else if (room) room.refresh(); else if (app) app.refresh(); }
+  function refreshView() { if (mode !== modeNow()) mount(); else if (room) { room.refresh(); if (!drawT) watchDraw(); } else if (app) app.refresh(); }
 
   function mountRoom() {
     document.body.classList.add("fk-room");
@@ -169,9 +169,41 @@
         get: () => C.rpc("fk_heist_get", { p_id: id }),
       },
       extra: () => (L ? "" : `<span class="ps">Setting up the season…</span>`),
+      lobby: window.FK.lobby && !L ? () => lobbyHtml() : null,
+      drawing: () => !!(window.FK.lobby && D && window.FK.lobby.drawing(D, now())),
       chat,
     });
     loadPosts();
+    watchDraw();
+  }
+  /* ---------- the pre-draft lobby (lobby.js): order, who's ready, the time, a practice mock ---------- */
+  const lobbyUrl = () => location.href.split("#")[0];
+  const canDraw = () => D && D.type !== "auction" && D.type !== "mystery" && !D.carry && !(D.board || []).some((pk) => pk && pk.keeper);
+  function lobbyRules() {
+    const s = D.season || {}, sc = sport.scorings && sport.scorings[D.scoring], out = [];
+    const clock = D.bank ? "a time bank" : D.clock >= 3600 ? `${D.clock / 3600} hours a pick` : D.clock ? `${D.clock} seconds a pick` : "";
+    out.push(`${F.FORMATS[D.type] || "Snake"} draft, ${D.teams.length} teams, ${D.rounds} rounds${clock ? `, ${clock}` : ""}`);
+    if (sc) out.push(`Scoring: ${sc.label}`);
+    if (sc && S.bonusLines) for (const x of S.bonusLines(sc, sport.key)) out.push(x);
+    if (D.steals) out.push(`${D.steals.perTeam} steals a team, frozen after ${D.steals.freeze}${F.taxOf && F.taxOf(D) < 1 ? `; a stolen player scores ${Math.round(F.taxOf(D) * 100)}%` : ""}${F.goldenOf && F.goldenOf(D) > 1 ? `, a make-up pick ${Math.round(F.goldenOf(D) * 100)}%` : ""}`);
+    if (s.poolOnly && S.POOL_NAMES) out.push(`${S.POOL_NAMES[s.poolOnly]}: only those players can be drafted`);
+    if (s.format === "guillotine") out.push("Guillotine: the lowest score each week is cut");
+    else if (s.weeks) out.push(`${s.weeks} weeks${s.playoffTeams ? `, then ${s.playoffTeams}-team playoffs` : ""}`);
+    if (s.dynasty) out.push(`Dynasty: everyone carries over, ${s.dynasty.rounds}-round rookie draft`);
+    else if (s.keepers > 0) out.push(`Keepers: up to ${s.keepers} a team`);
+    const tw = [["vampire", "Vampire"], ["robin", "Robin Hood"], ["conquest", "Conquest"], ["crown", "Kingslayer"], ["hangover", "The Hangover"], ["pyo", "Pick your opponent"]].filter(([k]) => s[k]).map(([, n]) => n);
+    if (tw.length) out.push(`Twists: ${tw.join(", ")}`);
+    return out;
+  }
+  function lobbyHtml() {
+    return window.FK.lobby.html({ D, now: now(), me: info.me, commish: info.commish, seats: info.seats || {}, invite: info.invite, rules: lobbyRules(), teamAv: (t) => U.teamAv(t, "sm"), canDraw: canDraw(), name: info.name || D.name, url: lobbyUrl() });
+  }
+  // a live draw: every page in the room redraws as the slots come up
+  let drawT = null;
+  function watchDraw() {
+    clearInterval(drawT);
+    if (!window.FK.lobby || !D || D.phase !== "setup" || !window.FK.lobby.drawing(D, now())) return;
+    drawT = setInterval(() => { if (room) room.refresh(); if (!D || !window.FK.lobby.drawing(D, now())) { clearInterval(drawT); drawT = null; if (room) room.refresh(); } }, 250);
   }
   // a league's draft room: no auction dollars unless it's an auction (the room shows them then anyway), and no value
   // column in a category league, where it only confuses
@@ -183,6 +215,14 @@
   const PK = "fk-practice2:" + id;   // 2: every team keeps someone (boards saved before that left some teams bare)
   const practiceMe = () => (info.me != null ? info.me : 0);
   function practiceBuild() {
+    // before the draft: this draft, its rules and your slot, against bots
+    if (!L) {
+      const D2 = clone(D);
+      D2.teams.forEach((t, i) => { t.owner = i === practiceMe() ? "you" : null; t.auto = false; });
+      delete D2.startAt; delete D2.reminded; delete D2.ready; delete D2.drawn;
+      D2.botDelay = 1; D2.name = "Practice mock";
+      return { D: D2, at: now(), me: practiceMe(), pre: true };
+    }
     const ctx = lctx(), picks = {};
     // every team keeps someone, so the board is the real one: declared keepers where a manager has picked, and each
     // other team's best values (up to the limit) where nobody has yet
@@ -197,7 +237,7 @@
   function practiceOpen(fresh) {
     let saved = null;
     if (!fresh) try { saved = JSON.parse(localStorage.getItem(PK) || "null"); } catch (e) { saved = null; }
-    practice = saved && saved.D && saved.me === practiceMe() ? saved : practiceBuild();
+    practice = saved && saved.D && saved.me === practiceMe() && !!saved.pre === !L ? saved : practiceBuild();
     practiceSave(); history.replaceState(null, "", location.pathname + location.search + "#practice"); mount();
   }
   function practiceExit() { practice = null; history.replaceState(null, "", location.pathname + location.search + "#league"); mount(); }
@@ -212,7 +252,7 @@
       el: $("#room"), sport, players, draft: () => P.D, save: practiceSave, me: () => P.me, now, commish: true, solo: true, ...roomCols(P.D),
       get drive() { return !document.hidden; },
       brand: { name: "Practice draft", mark: `<img src="mark.svg" alt="">` },
-      exit: { href: "#league", label: "Back to the league" },
+      exit: { href: P.pre ? "#draft" : "#league", label: P.pre ? "Back to the draft room" : "Back to the league" },
       tools: () => `<span class="ps">Only you see this. Nothing counts.</span>`,
       extra: () => `<button class="btn sm" data-live="practice-new">Start over</button>`,
     });
@@ -1105,6 +1145,22 @@
     const lv = e.target.closest("[data-live]"), th = e.target.closest("button[data-theme]");
     if (th) { theme.toggle(); if (app) app.render(); return; }
     if (lv && lv.dataset.live === "league") { e.preventDefault(); leagueDialog(); }
+    if (lv && lv.dataset.live === "ready" && D && D.phase === "setup" && info.me != null) {
+      D.ready = Object.assign({}, D.ready || {}); if (D.ready[info.me]) delete D.ready[info.me]; else D.ready[info.me] = now();
+      push(); if (room) room.refresh();
+    }
+    if (lv && lv.dataset.live === "draw" && info.commish && D && D.phase === "setup") {
+      U.confirm("Draw the order live?", "The first round's order is shuffled, and everyone in the lobby watches it come up, last pick first.", "Draw it", () => {
+        const r = F.drawOrder(D, now());
+        if (!r.ok) { U.toast(r.why, true); return; }
+        push(); watchDraw(); if (room) room.refresh();
+      });
+    }
+    if (lv && lv.dataset.live === "ics" && D && D.startAt && window.FK.lobby) {
+      const blob = new Blob([window.FK.lobby.ics(D, info.name || D.name, lobbyUrl())], { type: "text/calendar" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${(info.name || "draft").replace(/[^a-z0-9]+/gi, "-").toLowerCase()}-draft.ics`;
+      document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    }
     if (lv && lv.dataset.live === "invite") { e.preventDefault(); inviteDialog(); }
     if (lv && lv.dataset.live === "dues") { e.preventDefault(); duesDialog(); }
     if (lv && lv.dataset.live === "keepers") keeperDialog();

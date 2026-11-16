@@ -1042,6 +1042,8 @@
       const d = D(), n = d.teams.length;
       if (auction()) return lotBar();
       const k0 = d.phase === "live" ? F.onClock(d, now()).index : d.phase === "done" ? d.order.length : 0;
+      // a live draw of the order (lobby.js): the ticker waits for the reveal
+      if (d.phase === "setup" && opts.drawing && opts.drawing()) return `<div class="ticker" id="fk-ticker" tabindex="0" aria-label="Picks"><div class="tk hid wide"><span class="n">${d.order.length} picks</span><b>The order is being drawn</b><small>Watch it come up in the Lobby</small></div></div>`;
       if (mystery() && d.phase === "setup" && !seenK(0)) return `<div class="ticker" id="fk-ticker" tabindex="0" aria-label="Picks"><div class="tk hid wide"><span class="n">${d.order.length} picks</span><b>Every package is dealt and sealed</b><small>They add up within ${(d.mystery.spread * 100).toFixed(1)}% of each other. You'll see them when the draft starts.</small></div></div>`;
       const from = Math.max(0, k0 - 6), to = Math.min(d.order.length, from + 22);
       const cards = [];
@@ -1532,7 +1534,10 @@
       const d = D();
       if (d.phase === "done" && ui.phase && ui.phase !== "done") { ui.left = "results"; ui.mobileRight = false; }
       ui.phase = d.phase;
-      const lefts = [["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"], ["proj", "Projected"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []);
+      // the lobby (opts.lobby) is the first tab until the draft starts, and opens first
+      const lobbyOn = !!opts.lobby && d.phase === "setup";
+      if (lobbyOn && !ui.lobbySeen) { ui.lobbySeen = true; ui.left = "lobby"; }
+      const lefts = (lobbyOn ? [["lobby", "Lobby"]] : []).concat([["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"], ["proj", "Projected"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []));
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
       const unread = opts.chat && ui.right !== "chat" ? opts.chat.unread() : 0;
@@ -1542,7 +1547,8 @@
       const keep = { f: focusKey(el), scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       if (d.phase === "heist") { const sc = $(".hz-scroll", el), y = sc ? sc.scrollTop : 0; el.innerHTML = `<div class="droom hzr fk-dark">${top()}<div class="hz-scroll">${heistView()}</div></div>`; if (y) $(".hz-scroll", el).scrollTop = y; drawTimer(); if (opts.onChange) opts.onChange(d); return; }
-      const left = { players, board, picks, results, packages, steal: steals, proj: projected }[ui.left]();
+      const lobby = () => `<div class="dr-panel" style="overflow:auto;flex:1;min-height:0">${opts.lobby()}</div>`;
+      const left = { lobby, players, board, picks, results, packages, steal: steals, proj: projected }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;

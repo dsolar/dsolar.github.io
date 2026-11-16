@@ -106,6 +106,13 @@
   // teams: [{ name, abbr, owner, color }] in the new order. Keepers and a dynasty's carried rosters can't resize.
   // Before the draft starts: the commissioner sets the first round's order (team ids), or shuffles it. Later rounds
   // follow the draft type (snake, linear, third-round reversal). Not once keepers are on the board.
+  // The commissioner draws the first round's order live: a shuffle everyone in the lobby watches revealed slot by slot
+  // (lobby.js). D.drawn.at is when.
+  function drawOrder(D, now, seed) {
+    const r = setOrder(D, null, seed == null ? Math.floor((now || Date.now()) % 2 ** 31) : seed);
+    if (r.ok) D.drawn = { at: now || Date.now() };
+    return r;
+  }
   function setOrder(D, first, seed) {
     if (D.phase !== "setup") return { ok: false, why: "The draft already started" };
     if (D.type === "auction") return { ok: false, why: "An auction has no draft order" };
@@ -1628,6 +1635,6 @@
   }
   return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
-    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
+    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

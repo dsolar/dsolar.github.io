@@ -888,6 +888,25 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .sx-mv{font-size:11px;font-weight:800;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
 .sx-mv.up{color:var(--win,#1a7f45)}
 .sx-mv.dn{color:var(--loss,#c0392b)}
+/* the pre-draft lobby (lobby.js): the draft room's first tab until the draft starts */
+.lobby{display:grid;gap:12px;padding:4px 2px 16px;max-width:760px}
+.lb-card{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px 14px;display:grid;gap:4px}
+.lb-when b{font-size:17px}
+.lb-k{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.lb-cal,.lb-acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.lb-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
+.lb-l{list-style:none;margin:0;padding:0}
+.lb-row{display:flex;align-items:center;gap:10px;padding:7px 2px;border-top:1px solid var(--line);transition:background .4s}
+.lb-row:first-child{border-top:0}
+.lb-row.me{background:var(--brand-soft,rgba(246,196,69,.12))}
+.lb-row.now{background:var(--win-soft)}
+.lb-row.hid{opacity:.55}
+.lb-n{width:22px;text-align:right;font-weight:800;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.lb-q{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--surface-3);font-weight:800;color:var(--muted);flex:none}
+.lb-t{display:grid;min-width:0}
+.lb-t small{color:var(--muted);font-size:12px}
+.lb-rules{margin:0;padding-left:18px;font-size:13.5px;display:grid;gap:3px}
+.lb-cm{border:1px dashed var(--line-2);border-radius:12px;padding:10px 14px}
 .tw-pack{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px 0}
 .nl-tw>.tw-note{margin:0 16px 14px}
 .nl-bb .tg-w .g2{grid-template-columns:1fr}

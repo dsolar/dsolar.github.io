@@ -243,6 +243,12 @@ owns which team, the invite code and the save order. It also stamps each team's 
   categories wins, or each category counts with `settings.tally: "cats"`), all-play for points (`tally: "allplay"`),
   rotisserie (`format: "roto"`, season totals ranked per category), and best ball guillotine. Roster rules:
   `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
+- **The lobby** (`lobby.js`): until the draft starts, the draft room opens on a Lobby tab: the draft time with an
+  `.ics` file and a Google Calendar link, I'm ready (`D.ready`), a practice mock of this exact draft against bots
+  (saved only on that device), the draft order with who has each team and who's ready, the rules in a few lines, and
+  for the commissioner a live draw of the order (`FK.draft.drawOrder`, stamps `D.drawn.at`; every page reveals the
+  same slot at the same moment, last pick first, and the ticker waits), setting it by hand, the draft time and invites.
+  `node --test tests/fantasylobby.test.mjs` covers it.
 - **Player pool.** `D.season.poolOnly` / `settings.poolOnly`: `"AL"` or `"NL"` (baseball), `"AFC"` or `"NFC"`, `"East"` or
   `"West"` (`FK.sports.POOL_SETS`). Only that half can be drafted or added (`inPool`). A rostered player traded to the
   other half keeps his spot but scores nothing (`outOfPool`, checked in `playerWeek`) and can't be added back once
