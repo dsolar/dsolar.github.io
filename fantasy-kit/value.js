@@ -111,7 +111,7 @@
       // extras and the position multiplier (scoring v2, sports.js pointsOf)
       tot = (tot + S.extraPts(sc, p, at, S.stat(sport, p, gl0, sport.sample ? sport.sample.col : "g") || 0)) * S.posMultOf(sc, p);
       const gl = p.l[line] ? line : Object.keys(p.l).find(own) || line;
-      const g = S.stat(sport, p, gl, sport.sample ? sport.sample.col : "g") || 0;
+      const g = S.stat(sport, p, gl, sport.gamesCol || (sport.sample ? sport.sample.col : "g")) || 0;
       if (sc.per === "game") { p.fpg = tot; p.fpts = tot * g; } else { p.fpts = tot; p.fpg = g ? tot / g : 0; }
       p.g = g;
       let proj = sc.proj != null && p.l.proj ? p.l.proj[sc.proj] : null;
@@ -197,11 +197,11 @@
   // play). Their own lines go back afterward, so tables still show what they did. league.projections = false skips it.
   // Basketball's ppg (Sleeper's season projection, per game) is a prior instead: it counts like 15 games next to his
   // own (pg already leans on last season), so it steadies small samples and fades as the games pile up.
-  const PROJ_LINES = { bat: "pbat", pit: "ppit" };
+  const PROJ_LINES = { bat: "pbat", pit: "ppit", sk: "psk", goalie: "pgoalie" };
   const PROJ_BLEND = { pg: { proj: "ppg", games: "eg", k: 15 } };
   function swapProjections(sport, players, league) {
     const L = sport.data && sport.data.lines;
-    const swap = L && Object.values(PROJ_LINES).some((k) => L[k]), blend = L && Object.entries(PROJ_BLEND).filter(([a, b]) => L[a] && L[b.proj]);
+    const swap = L && (sport.key !== "nhl" || scoringOf(sport, league).type === "cats") && Object.values(PROJ_LINES).some((k) => L[k]), blend = L && Object.entries(PROJ_BLEND).filter(([a, b]) => L[a] && L[b.proj]);
     if (league.projections === false || !L || (!swap && !blend.length)) return null;
     const kept = [];
     for (const p of players) {
@@ -288,6 +288,19 @@
       const meta = (sport.data && sport.data.lines && sport.data.lines.proj) || {};
       const games = sc.games || 17, left = meta.ros ? Math.max(1, meta.weeks || 1) : games;
       for (const p of players) {
+        if (sport.key === "nhl") {
+          // Goalies play a share of their club's games. Score the workload forecast,
+          // rather than giving a backup the same 82 appearances as a skater.
+          const at = (key) => {
+            const [line, col] = key.includes(".") ? key.split(".") : [sc.line, key];
+            const row = league.projections === false ? p.l[line] : rateLine(sport, p, line);
+            const i = sport.cols[line] && sport.cols[line][col];
+            return row && i != null ? row[i] || 0 : 0;
+          };
+          p.vPlay = S.pointsOf(sc, p, at);
+          p.proj = p.vPlay; p.v = p.vPlay * (AVAIL[String(p.inj || "").toLowerCase()] || 1); p.ros = null;
+          continue;
+        }
         const pr = p.proj > 0 ? p.proj / left : null;
         const w = p.g ? p.g / (p.g + 6) : 0;
         let rate = pr == null ? p.v : p.g ? w * p.v + (1 - w) * pr : pr;
@@ -392,11 +405,13 @@
   // 0.6), and the sum is scaled so a player at his peak keeps his value: a 20-year-old climbs, a 29-year-old running
   // back or a 37-year-old guard falls a long way, and a 30-year-old quarterback barely moves.
   const AGE_CURVES = {
+    // Hockey model priors: goalies develop later; skater production fades sooner.
+    nhl: { G: [25, 29, 0.06, 0.04, 0.10, 35, 0.8], D: [24, 28, 0.07, 0.05, 0.10, 35, 0.8], "*": [23, 27, 0.08, 0.05, 0.12, 34, 0.75] },
     nfl: { RB: [23, 26, 0.06, 0.12, 0.2, 30, 0.7], WR: [24, 29, 0.07, 0.08, 0.15, 32, 0.8], TE: [25, 30, 0.1, 0.08, 0.15, 33, 0.8], QB: [25, 33, 0.05, 0.06, 0.15, 37, 0.75] },
     nba: { "*": [24, 29, 0.08, 0.06, 0.15, 33, 0.65] },
     mlb: { SP: [26, 30, 0.04, 0.05, 0.09, 34, 0.8], RP: [26, 30, 0.04, 0.05, 0.09, 34, 0.8], "*": [26, 30, 0.05, 0.04, 0.08, 35, 0.8] },
   };
-  const ROOKIE_AGE = { nfl: 22, nba: 20, mlb: 24 };
+  const ROOKIE_AGE = { nfl: 22, nba: 20, mlb: 24, nhl: 20 };
   const YEAR_W = [1, 0.9, 0.8, 0.7, 0.6];
   function level(c, age) {
     const [a, b, g, d1, d2, ra, q] = c;

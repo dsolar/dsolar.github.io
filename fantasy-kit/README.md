@@ -1,6 +1,6 @@
 # Fantasy Kit
 
-The shared parts of every fantasy league page on davidsolar.dev: player data for basketball, football and baseball, player values, a draft engine, a season engine, and the screens that sit on top of them. The look blends Yahoo and ESPN density for tables with Sleeper polish for matchups, trades and the draft room, in light and dark.
+The shared parts of every fantasy league page on davidsolar.dev: player data for basketball, football, baseball and hockey, player values, a draft engine, a season engine, and the screens that sit on top of them. The look blends Yahoo and ESPN density for tables with Sleeper polish for matchups, trades and the draft room, in light and dark.
 
 - **Draft Lab** (`index.html`, `lab.js`): mock drafts against bots.
 - **Demo leagues** (`league.html`, `demo.js`): full leagues with bots and seasons that move in real time. Each sport has a head to head league and a best ball guillotine league (`?f=g`).
@@ -40,6 +40,7 @@ Every sport uses one shape:
 - **Basketball:** per-game lines, this season blended with last season (last season counts like 20 games), from Hard Cap's ESPN pull. Positions and ages come from `celtics/data.json`.
 - **Baseball:** season totals from MLB's Stats API files in `tools/mlb/`. Values pace a player who missed time toward a full season, so 285 plate appearances counts like about 470.
 - **Football:** season totals and Sleeper's fantasy points, plus Sleeper's season projection when there is one. Until the workflow first reaches Sleeper, the file is seeded from the guillotine league, without kickers or defenses.
+- **Hockey:** NHL.com skater and goalie reports, with current totals, last season, and separate full-season workload forecasts (`sk`, `goalie`, `psk`, `pgoalie`). Goalies project for their share of their club's games. Positions are NHL primary roster positions. `tools/fantasykit_nhl.mjs` shares its game parser with `fk-live/nhl.mjs`; power-play assists come from scoring summaries, and goalie ratios are rebuilt from shots, saves, goals and minutes. Final games are cached in `tools/nhl_fantasy/games.json`. Weekly and daily files cover the season. The NHL hub's open contract feed supplies attributed year-by-year contracts on player cards; estimated and missing figures are labeled.
 
 Read a stat with `FK.sports.stat(sport, player, line, col)` after `FK.sports.attach(sport, data)`.
 
@@ -58,6 +59,9 @@ Scoring presets live in `sport.scorings`:
 - **Basketball:** `cats9` and `points`
 - **Football:** `half`, `ppr` and `std`
 - **Baseball:** `roto5` and `yoenis`, the Yoenis league's 8x8
+- **Hockey:** `cats10`, `bangers` (hits and blocks added), and `points`, plus custom scoring. Category leagues default to three goalie appearances per week; a team below its configured minimum loses goalie categories. Daily and weekly starters lock at their own game times. A goalie cannot fill a skater UTIL slot.
+
+For an existing shared backend, apply `tools/fantasykit_nhl.sql` once to extend the sport allowlist. Deploy `fk-live` with both `index.ts` and `nhl.mjs`, preserving its existing JWT setting. The Fantasy Kit workflow refreshes hockey player pools and scoring; the NHL hub workflow refreshes fantasy contracts after its own daily build. No paid contract key is needed.
 
 To add a preset, add an entry. A category is one of three kinds:
 

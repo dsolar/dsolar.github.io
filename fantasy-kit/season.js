@@ -50,7 +50,9 @@
     // at most this many starters from one college conference
     if (s.confMax) settings.confMax = s.confMax;
     // a conference-only pool (AL or NL, AFC or NFC, East or West)
-    if (({ mlb: ["AL", "NL"], nfl: ["AFC", "NFC"], nba: ["East", "West"] }[D.sport] || []).includes(s.poolOnly)) settings.poolOnly = s.poolOnly;
+    if (({ mlb: ["AL", "NL"], nfl: ["AFC", "NFC"], nba: ["East", "West"], nhl: ["East", "West"] }[D.sport] || []).includes(s.poolOnly)) settings.poolOnly = s.poolOnly;
+    if (sport.key === "nhl") settings.minGoalieGames = settings.format === "roto" ? 0 : s.minGoalieGames == null ? 3 : s.minGoalieGames;
+    if (sport.key === "nhl" && s.daily && !settings.bestBall) settings.daily = true;
     // weekly extras: a game against the league median, best ball lineups, divisions
     if (s.median) settings.median = true;
     // a one-week league has no trades: there's no week after this one to build for
@@ -96,7 +98,7 @@
     const lastKick = s.slate ? s.slate.last : s.showdown ? s.showdown.at : null, cur = weekOf(at, sport.key);
     // a one-day slate plays its own night: it starts now and its one week ends with its last game (settings.span)
     const day = s.slate && s.slate.day && !s.showdown ? s.slate : null;
-    const thisWeek = day ? false : lastKick != null ? lastKick < cur + 7 * DAY : s.when === "now" && sport.key !== "mlb" && cur + 7 * DAY - at >= MIN_LEFT;
+    const thisWeek = day ? false : lastKick != null ? lastKick < cur + 7 * DAY : s.when === "now" && !["mlb", "nhl"].includes(sport.key) && cur + 7 * DAY - at >= MIN_LEFT;
     const start = day ? at : thisWeek ? cur : startAfter(at, sport.key);
     // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
     if (o.real && (o.real === true || realCovers(o.real, start))) settings.real = true;

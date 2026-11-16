@@ -16,6 +16,8 @@ on:
     branches: [main]
     paths:
       - tools/fantasykit_data.py
+      - tools/fantasykit_nhl.mjs
+      - supabase/functions/fk-live/nhl.mjs
       - tools/dynasty_pull.py
       - tools/market_pull.py
       - tools/data_health.py
@@ -60,7 +62,7 @@ jobs:
 
       - name: Commit the pools
         run: |
-          git add fantasy-kit/data
+          git add fantasy-kit/data tools/nhl_fantasy
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

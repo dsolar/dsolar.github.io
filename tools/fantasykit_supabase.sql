@@ -29,7 +29,7 @@ create extension if not exists pgcrypto with schema extensions;
 create table if not exists public.fk_leagues (
   id text primary key,
   name text not null,
-  sport text not null check (sport in ('nba', 'nfl', 'mlb')),
+  sport text not null check (sport in ('nba', 'nfl', 'mlb', 'nhl')),
   commish uuid not null,
   invite text not null,
   draft jsonb not null,
@@ -107,7 +107,7 @@ begin
   if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
   if nm = '' then return jsonb_build_object('error', 'Give the league a name.'); end if;
   if mg = '' then mg := 'Commissioner'; end if;
-  if p_sport not in ('nba', 'nfl', 'mlb') then return jsonb_build_object('error', 'Pick a sport.'); end if;
+  if p_sport not in ('nba', 'nfl', 'mlb', 'nhl') then return jsonb_build_object('error', 'Pick a sport.'); end if;
   if jsonb_typeof(p_draft->'teams') is distinct from 'array' or jsonb_array_length(p_draft->'teams') < 2 then return jsonb_build_object('error', 'A league needs at least two teams.'); end if;
   if octet_length(p_draft::text) > 1500000 then return jsonb_build_object('error', 'That league is too big to save.'); end if;
   if (select count(*) from fk_leagues where commish = uid and created_at > now() - interval '1 day') >= 10 then

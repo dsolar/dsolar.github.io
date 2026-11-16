@@ -1,4 +1,4 @@
-// The Fantasy Kit's live box scores: GET /functions/v1/fk-live?sport=nba|nfl|mlb returns the current fantasy week's
+// The Fantasy Kit's live box scores: GET /functions/v1/fk-live?sport=nba|nfl|mlb|nhl returns the current fantasy week's
 // totals so far for every player, games in progress included, in the same shape as fantasy-kit/data/weeks-<sport>.json
 // (columns as { line, cols } or { lines }, and each player's week under players), plus where each pro team stands this week ({ teams: { ABBR: { played, live, left } } }),
 // which the league pages use for live win chances, each team's games ({ games: { ABBR: [{ at, state, detail, opp, home, us, them }] } }) for the
@@ -17,6 +17,8 @@
 //
 // A result is kept about a minute (table fk_live), so the feeds get a request or two a minute however many pages are
 // open, and a finished game's lines are kept for good (table fk_live_games) so they're only fetched once.
+import { NHL_LINES, gameState as nhlState, boxLines as nhlBox, mergeLines as nhlMerge, finishLines as nhlFinish } from "./nhl.mjs";
+
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const UA = "davidsolar-fantasykit-live/1.0 (+https://davidsolar.dev/fantasy-kit/)";
@@ -123,6 +125,39 @@ async function nba() {
   const acc: Record<string, number[]> = {};
   for (const l of lines) for (const [id, row] of Object.entries(l || {})) sumInto(acc, id, row as number[]);
   return { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: NBA_COLS, players: acc, boxes: Object.fromEntries(games.map((g, i) => [g.id, lines[i]])), teams, games: sched };
+}
+
+/* ---------- hockey ---------- */
+async function nhl() {
+  const today = nyDate(), start = mondayOf(today), end = addDays(start, 6);
+  const board: any = await getJSON(`https://api-web.nhle.com/v1/schedule/${start}`);
+  if (!Array.isArray(board.gameWeek)) throw new Error("NHL schedule missing");
+  const teams: Teams = {}, sched: Games = {}, games: { id: string; day: string; state: string }[] = [];
+  let season = "";
+  for (const d of board.gameWeek) for (const g of d.games || []) {
+    if (g.gameType !== 2 || d.date < start || d.date > end) continue;
+    const state = nhlState(g); if (state === "off") continue;
+    const sy = String(g.season); season = `${sy.slice(0, 4)}-${sy.slice(-2)}`;
+    const pd = g.periodDescriptor, detail = state === "post" ? `Final${pd?.periodType && pd.periodType !== "REG" ? ` (${pd.periodType})` : ""}` : state === "in" ? `${g.clock?.timeRemaining || ""} ${pd?.periodType === "OT" ? "OT" : pd?.periodType === "SO" ? "SO" : `P${pd?.number || 1}`}`.trim() : "";
+    for (const [side, other] of [["awayTeam", "homeTeam"], ["homeTeam", "awayTeam"]]) {
+      const me = g[side], op = g[other]; if (!me?.abbrev || !op?.abbrev) continue;
+      tally(teams, me.abbrev, state);
+      (sched[me.abbrev] ||= []).push({ id: String(g.id), at: g.startTimeUTC, state, detail, opp: op.abbrev, home: side === "homeTeam", us: state === "pre" ? null : me.score ?? 0, them: state === "pre" ? null : op.score ?? 0 });
+    }
+    if (state !== "pre") games.push({ id: String(g.id), day: d.date, state });
+  }
+  const have = await cached("nhl", games.map((g) => g.id)), fresh: any[] = [];
+  const boxes = await pool(games, 6, async (g) => {
+    if (have[g.id]) return have[g.id];
+    const [box, landing]: any[] = await Promise.all([getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/boxscore`), getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/landing`)]);
+    const lines = nhlBox(box, landing);
+    fresh.push({ gid: g.id, day: g.day, final: nhlState(box) === "post", lines });
+    return lines;
+  });
+  await keep("nhl", fresh);
+  const acc = {}; for (const lines of boxes) nhlMerge(acc, lines);
+  if (!season) { const y = Number(today.slice(0, 4)), sy = Number(today.slice(5, 7)) >= 9 ? y : y - 1; season = `${sy}-${String(sy + 1).slice(-2)}`; }
+  return { sport: "nhl", season, start, end, lines: NHL_LINES, players: nhlFinish(acc), boxes: Object.fromEntries(games.map((g, i) => [g.id, boxes[i]])), teams, games: sched };
 }
 
 /* ---------- football ---------- */
@@ -358,13 +393,22 @@ async function gamesFor(sport: string, ids: string[]) {
         if (stt === "post") fresh.push({ gid: id, day: nyDate(Date.parse(s.header?.competitions?.[0]?.date || "") || Date.now()), final: true, lines });
       });
       await keep(sport, fresh);
+    } else if (sport === "nhl") {
+      const fresh: any[] = [];
+      await pool(rest.filter((id) => !out[id]), 4, async (id) => {
+        const [box, landing]: any[] = await Promise.all([getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/boxscore`), getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/landing`)]);
+        const st = nhlState(box), lines = st === "pre" || st === "off" ? {} : nhlBox(box, landing);
+        out[id] = { state: st, lines };
+        if (st === "post") fresh.push({ gid: id, day: box.gameDate || nyDate(), final: true, lines });
+      });
+      await keep(sport, fresh);
     }
   }
-  const cols = wk ? (wk.lines ? { lines: wk.lines } : { line: wk.line, cols: wk.cols }) : sport === "nba" ? { line: "pg", cols: NBA_COLS } : {};
+  const cols = wk ? (wk.lines ? { lines: wk.lines } : { line: wk.line, cols: wk.cols }) : sport === "nba" ? { line: "pg", cols: NBA_COLS } : sport === "nhl" ? { lines: NHL_LINES } : {};
   return { sport, ...cols, games: out, updated: new Date().toISOString() };
 }
 
-const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb };
+const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb, nhl };
 // the week's feed for a sport: the kept copy if it's under a minute old, else built fresh and kept; a feed that's down
 // gives the last copy marked stale
 async function liveData(sport: string) {
@@ -402,7 +446,7 @@ Deno.serve(async (req) => {
     errors.length = 0;
     return json(await mlbLineups(date).catch((e) => ({ days: {}, error: String(e) })), { "cache-control": "max-age=90" });
   }
-  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl or mlb" }, {}, 400);
+  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl, mlb or nhl" }, {}, 400);
   if (q.get("games")) {
     const ids = [...new Set(String(q.get("games")).split(",").map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)))].slice(0, 20);
     return json(await gamesFor(sport, ids).catch((e) => ({ games: {}, error: String(e) })), { "cache-control": "max-age=30" });

@@ -24,7 +24,7 @@
   function gauss(r) { const u = Math.max(1e-9, r()), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 
   // How a season line turns into one week: basketball plays about 3.4 games a week, baseball and football split a season.
-  const WEEK = { nba: { pg: 3.4, weeks: 24 }, nfl: { tot: 1 / 17, weeks: 17 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 } };
+  const WEEK = { nba: { pg: 3.4, weeks: 24 }, nfl: { tot: 1 / 17, weeks: 17 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 }, nhl: { sk: 1 / 28, goalie: 1 / 28, weeks: 28 } };
   const COLORS = 12;
 
   const DEFAULTS = { format: "h2h", bestBall: false, weeks: 14, playoffTeams: 4, faab: 100, minBid: 0, waivers: "faab", waiverHours: 48, waiverAt: null,
@@ -630,7 +630,8 @@
       for (const [key, def] of Object.entries(ctx.sport.data.lines)) {
         const cols = R.lines ? R.lines[key] : R.cols, vals = R.lines ? line && line[key] : line;
         if (!cols || (!R.lines && key !== R.line && !(def.cols.every((c) => cols.includes(c))))) continue;
-        out[key] = def.cols.map((c) => { const i = cols.indexOf(c); const v = vals && i >= 0 ? vals[i] || 0 : 0; return /^(avg|obp|ops|era|whip|fg|ft)$/.test(c) ? v : v * share; });
+        if (!vals && R.lines && !p.l[key]) continue;
+        out[key] = def.cols.map((c) => { const i = cols.indexOf(c); const v = vals && i >= 0 ? vals[i] || 0 : 0; return /^(avg|obp|ops|era|whip|fg|ft|gaa|svp)$/.test(c) ? v : v * share; });
       }
       return out;
     }
@@ -640,7 +641,8 @@
     for (const [line, def] of Object.entries(ctx.sport.data.lines)) {
       if (!p.l[line] || wk[line] == null) continue;
       const f = wk[line] * form * frac;
-      out[line] = def.cols.map((c, i) => (/^(avg|obp|ops|era|whip|fg|ft)$/.test(c) ? p.l[line][i] : p.l[line][i] * f));
+      const base = ctx.sport.key === "nhl" && V.rateLine ? V.rateLine(ctx.sport, p, line) : p.l[line];
+      out[line] = def.cols.map((c, i) => (/^(avg|obp|ops|era|whip|fg|ft|gaa|svp)$/.test(c) ? base[i] : base[i] * f));
     }
     return out;
   }
@@ -694,6 +696,10 @@
       if (ix("ab") >= 0 && ix("avg") >= 0) tot[ix("avg")] = tot[ix("ab")] ? tot[ix("h")] / tot[ix("ab")] : 0;
       if (ix("pa") >= 0) { for (const c of ["obp", "ops"]) if (ix(c) >= 0) tot[ix(c)] = tot[ix("pa")] ? wsum(c, "pa") / tot[ix("pa")] : 0; }
       if (ix("ip") >= 0) { for (const c of ["era", "whip"]) if (ix(c) >= 0) tot[ix(c)] = tot[ix("ip")] ? wsum(c, "ip") / tot[ix("ip")] : 0; }
+      if (key === "goalie") {
+        if (ix("gaa") >= 0) tot[ix("gaa")] = tot[ix("min")] ? tot[ix("ga")] * 60 / tot[ix("min")] : 0;
+        if (ix("svp") >= 0) tot[ix("svp")] = tot[ix("sa")] ? tot[ix("saves")] / tot[ix("sa")] : 0;
+      }
       out[key] = tot;
     }
     return { line: out, days: days.size };
@@ -736,12 +742,14 @@
       else if (c.rate) { const wt = sum(has.map((s) => s[line][ix(c.w)])), x = sum(has.map((s) => s[line][ix(c.rate)] * s[line][ix(c.w)])); cats[c.k] = wt ? x / wt : 0; parts[c.k] = [x, wt]; }
       else cats[c.k] = sum(has.map((s) => s[line][ix(c.col)]));
     }
-    return { cats, parts };
+    const gi = ctx.sport.cols.goalie && ctx.sport.cols.goalie.gp;
+    const goalieGames = gi != null ? sum(lines.filter((s) => s && s.goalie).map((s) => s.goalie[gi] || 0)) : 0;
+    return { cats, parts, goalieGames };
   }
   // How a player's week should end in a category league: his line so far plus his rate over the games he has left.
   // With the live feed, games left are his pro team's (one in progress counts half); without it, the rest of the week.
   // A player who's out projects nothing more; a doubtful or questionable one, a share.
-  const RATIO = /^(avg|obp|ops|era|whip|fg|ft)$/, PLAYS = [[/^(out|o|ir|il|sus|suspended|pup|nfi|dtd-out)/i, 0], [/^(doubtful|d)$/i, 0.3], [/^(questionable|q|gtd|dtd|day-to-day)$/i, 0.85]];
+  const RATIO = /^(avg|obp|ops|era|whip|fg|ft|gaa|svp)$/, PLAYS = [[/^(out|o|ir|il|sus|suspended|pup|nfi|dtd-out)/i, 0], [/^(doubtful|d)$/i, 0.3], [/^(questionable|q|gtd|dtd|day-to-day)$/i, 0.85]];
   function gamesLeft(L, ctx, p, w, frac) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
     // a one-day league: his team's game tonight, if it hasn't finished (one in progress counts half)
@@ -785,7 +793,7 @@
   // (DISP, a variance-to-mean ratio, since a big night or a rainout moves several at once). Rates and percentages:
   // the spread of one attempt (UNIT) over the attempts still to come, as a share of all of the week's attempts.
   const DISP = { pts: 3.5, reb: 2, ast: 2, stl: 1.3, blk: 1.5, tov: 1.3, tpm: 1.6, r: 2, rbi: 2.2, hr: 1.3, sb: 1.6, h: 1.2, tb: 3, k: 2.2, w: 1, l: 1, sv: 1, hld: 1, qs: 1, bb: 1.5, er: 2 };
-  const UNIT = { fg: 0.5, ft: 0.45, avg: 0.43, obp: 0.47, ops: 0.95, era: 7.5, whip: 1.1 };
+  const UNIT = { fg: 0.5, ft: 0.45, avg: 0.43, obp: 0.47, ops: 0.95, era: 7.5, whip: 1.1, gaa: 13, svp: 0.3 };
   function catSpread(c, pj) {
     if (c.num || c.rate) {
       const all = (pj.parts[c.k] || [0, 0])[1], left = (pj.restParts[c.k] || [0, 0])[1];
@@ -839,11 +847,16 @@
     // both short, those categories tie
     const min = L.settings.minIP || 0, ipOf = (s) => { const c = sc.cats.find((k) => k.w === "ip"); return c && s.parts && s.parts[c.k] ? s.parts[c.k][1] : null; };
     const shortA = min && ipOf(a) != null && ipOf(a) < min, shortB = min && ipOf(b) != null && ipOf(b) < min;
+    const minG = L.settings.minGoalieGames || 0, shortGA = minG && (a.goalieGames || 0) < minG, shortGB = minG && (b.goalieGames || 0) < minG;
     for (const c of sc.cats) {
       const x = a.cats[c.k], y = b.cats[c.k];
       const sx = shown(c, x), sy = shown(c, y);
       let d = sx === sy ? 0 : (sx > sy ? 1 : -1) * (c.low ? -1 : 1);
       if (c.w === "ip" && (shortA || shortB)) d = shortA && shortB ? 0 : shortA ? -1 : 1;
+      if (c.line === "goalie") {
+        const noA = (c.num || c.rate) && !(a.parts && a.parts[c.k] && a.parts[c.k][1]), noB = (c.num || c.rate) && !(b.parts && b.parts[c.k] && b.parts[c.k][1]);
+        if (shortGA || shortGB || noA || noB) { const sa = shortGA || noA, sb = shortGB || noB; d = sa && sb ? 0 : sa ? -1 : 1; }
+      }
       cats[c.k] = [x, y, d];
       if (d > 0) wa++; else if (d < 0) wb++; else t++;
     }
@@ -879,7 +892,7 @@
   // What a team's starters have left this week, from the live feed (ctx.hooks.real.live.teams: each pro team's
   // games played, in progress and left): expected points still to come, their variance, and starter-games played
   // and left. A game in progress counts as half played. null without the feed for this week.
-  const GAMES = { nba: 82, nfl: 17, mlb: 162 }, SPREAD = { nba: 0.38, nfl: 0.62, mlb: 1.0 };
+  const GAMES = { nba: 82, nfl: 17, mlb: 162, nhl: 82 }, SPREAD = { nba: 0.38, nfl: 0.62, mlb: 1.0, nhl: 0.65 };
   function outlook(L, ctx, teamId, w) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
     // a one-day league reads its own games' states; anything else, the live feed's week
@@ -1691,7 +1704,7 @@
     playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket", "places"].includes(v) ? v : null),
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
-    tradeMax: (v) => clampInt(v, 0, 10), pickTrades: (v) => (v === "offseason" || v === "always" ? v : v === "off" || v === false ? false : null), faabTrades: (v) => !!v, reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
+    tradeMax: (v) => clampInt(v, 0, 10), pickTrades: (v) => (v === "offseason" || v === "always" ? v : v === "off" || v === false ? false : null), faabTrades: (v) => !!v, reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), minGoalieGames: (v) => clampInt(v, 0, 14), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
     lotteryOdds: (v) => (["equal", "weighted"].includes(v) ? v : null), playoffTie: (v) => (v === "seed" || v === "h2h" ? v : null), bots: (v) => !!v, daily: (v) => !!v, showBids: (v) => (v === "all" || v === "won" ? v : null), historyUrl: (v) => (v === "" || /^(https:\/\/|\/)[^\s"<>]{1,200}$/.test(String(v)) ? String(v) : null),
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };

@@ -187,7 +187,57 @@
     ],
   };
 
-  const ALL = { nba, nfl, mlb };
+  /* ---------- hockey ---------- */
+  const SKATERS = ["C", "LW", "RW", "D"];
+  const NHL_CATS = [
+    { k: "g", label: "G", line: "sk", col: "g" },
+    { k: "a", label: "A", line: "sk", col: "a" },
+    { k: "pm", label: "+/−", line: "sk", col: "pm" },
+    { k: "pim", label: "PIM", line: "sk", col: "pim" },
+    { k: "ppp", label: "PPP", line: "sk", col: "ppp" },
+    { k: "sog", label: "SOG", line: "sk", col: "sog" },
+    { k: "wins", label: "W", line: "goalie", col: "w" },
+    { k: "gaa", label: "GAA", line: "goalie", rate: "gaa", w: "min", low: true, fmt: f2 },
+    { k: "svp", label: "SV%", line: "goalie", num: "saves", den: "sa", fmt: r3 },
+    { k: "so", label: "SO", line: "goalie", col: "so" },
+  ];
+  const nhl = {
+    key: "nhl", name: "Hockey", league: "NHL", unit: "season", gamesCol: "gp",
+    positions: ["C", "LW", "RW", "D", "G"],
+    colors: { C: 1, LW: 3, RW: 4, D: 0, G: 5 },
+    slots: { C: ["C"], LW: ["LW"], RW: ["RW"], W: ["LW", "RW"], F: ["C", "LW", "RW"], D: ["D"], G: ["G"], UTIL: SKATERS, BN: "*" },
+    lineup: ["C", "C", "LW", "LW", "RW", "RW", "D", "D", "D", "D", "G", "G"],
+    bench: 4, posMax: { G: 4 }, late: [],
+    groups: { sk: SKATERS, goalie: ["G"] }, groupLabels: { sk: "Skaters", goalie: "Goalies" },
+    scorings: {
+      cats10: { label: "10 categories", type: "cats", cats: NHL_CATS },
+      bangers: { label: "12 categories: hits + blocks", type: "cats", cats: NHL_CATS.concat([
+        { k: "hits", label: "HIT", line: "sk", col: "hits" }, { k: "blocks", label: "BLK", line: "sk", col: "blk" },
+      ]) },
+      points: { label: "Points", type: "points", line: "sk", games: 82,
+        weights: { "sk.g": 3, "sk.a": 2, "sk.ppp": 1, "sk.shp": 1, "sk.sog": 0.4, "sk.hits": 0.2, "sk.blk": 0.4,
+          "goalie.w": 4, "goalie.saves": 0.2, "goalie.ga": -1, "goalie.so": 3 } },
+    },
+    columns: [
+      { line: "sk", col: "gp", label: "GP", fmt: f0, group: "sk" },
+      { line: "sk", col: "g", label: "G", title: "Goals", fmt: f0, group: "sk" },
+      { line: "sk", col: "a", label: "A", fmt: f0, group: "sk" },
+      { line: "sk", col: "pts", label: "PTS", title: "Goals plus assists", fmt: f0, group: "sk" },
+      { line: "sk", col: "pm", label: "+/−", fmt: f0, group: "sk", hide: "s" },
+      { line: "sk", col: "ppp", label: "PPP", fmt: f0, group: "sk" },
+      { line: "sk", col: "sog", label: "SOG", fmt: f0, group: "sk" },
+      { line: "sk", col: "hits", label: "HIT", fmt: f0, group: "sk", hide: "s" },
+      { line: "sk", col: "blk", label: "BLK", title: "Blocked shots", fmt: f0, group: "sk", hide: "s" },
+      { line: "goalie", col: "gp", label: "GP", fmt: f0, group: "goalie" },
+      { line: "goalie", col: "w", label: "W", fmt: f0, group: "goalie" },
+      { line: "goalie", col: "saves", label: "SV", fmt: f0, group: "goalie" },
+      { line: "goalie", col: "gaa", label: "GAA", fmt: f2, group: "goalie" },
+      { line: "goalie", col: "svp", label: "SV%", fmt: r3, group: "goalie" },
+      { line: "goalie", col: "so", label: "SO", fmt: f0, group: "goalie", hide: "s" },
+    ],
+  };
+
+  const ALL = { nba, nfl, mlb, nhl };
 
   // Links a sport to the columns of its data file, so stat() can read the compact arrays.
   function attach(sport, data) {
@@ -222,11 +272,15 @@
     mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
       ["pit.ip", "Innings pitched"], ["pit.w", "Wins"], ["pit.l", "Losses"], ["pit.sv", "Saves"], ["pit.hld", "Holds"], ["pit.k", "Strikeouts"], ["pit.er", "Earned runs"],
       ["pit.bb", "Walks allowed"], ["pit.h", "Hits allowed"], ["pit.qs", "Quality starts"]],
+    nhl: [["sk.g", "Goals"], ["sk.a", "Assists"], ["sk.pm", "Plus/minus"], ["sk.pim", "Penalty minutes"], ["sk.ppp", "Power-play points"], ["sk.ppg", "Power-play goals"],
+      ["sk.shp", "Shorthanded points"], ["sk.sog", "Shots on goal"], ["sk.hits", "Hits"], ["sk.blk", "Blocked shots"],
+      ["goalie.w", "Goalie wins"], ["goalie.saves", "Saves"], ["goalie.ga", "Goals against"], ["goalie.so", "Shutouts"]],
   };
   const POINT_DEFAULTS = {
     nba: { pts: 1, reb: 1.2, ast: 1.5, stl: 3, blk: 3, tov: -1, tpm: 0.5 },
     nfl: { pass_yd: 0.04, pass_td: 4, pass_int: -2, rush_yd: 0.1, rush_td: 6, rec: 0.5, rec_yd: 0.1, rec_td: 6, fum_lost: -2, fgm: 3, xpm: 1, def_td: 6, def_int: 2, def_sack: 1 },
     mlb: { "bat.r": 1, "bat.tb": 1, "bat.rbi": 1, "bat.sb": 1, "pit.ip": 3, "pit.w": 2, "pit.l": -2, "pit.sv": 5, "pit.hld": 2, "pit.k": 1, "pit.er": -2, "pit.bb": -1, "pit.h": -1 },
+    nhl: Object.assign({}, nhl.scorings.points.weights),
   };
   // Every category any of a sport's presets uses, plus a few common extras.
   const EXTRA_CATS = { mlb: [{ k: "obp", label: "OBP", line: "bat", rate: "obp", w: "pa", fmt: r3 }] };
@@ -247,7 +301,7 @@
       // a preset plus extras: the preset's own columns and projections, with the extras added on top
       if (spec.base && base[spec.base] && base[spec.base].type === "points") return Object.assign({}, base[spec.base], extra, { label: base[spec.base].label + extraLabel(spec), custom: true, base: spec.base });
       const pts = Object.values(base).find((x) => x.type === "points") || {};
-      const line = sport.key === "nfl" ? "tot" : sport.key === "nba" ? "pg" : "bat";
+      const line = sport.key === "nfl" ? "tot" : sport.key === "nba" ? "pg" : sport.key === "nhl" ? "sk" : "bat";
       return { label: "Custom points", type: "points", line, per: sport.key === "nba" ? "game" : undefined, games: pts.games || (sport.key === "mlb" ? 162 : 17),
         weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true, ...extra, label: "Custom points" + extraLabel(spec) };
     }
@@ -389,7 +443,7 @@
   // regular season start to the end of the fantasy season. The default sport is the one whose fantasy season matters
   // most right now: football from August drafts until its fantasy playoffs end in early January, then basketball,
   // then baseball from its March drafts through July.
-  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928] };
+  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928], nhl: [929, 415] };
   const DEFAULT_SPORT = [[801, 107, "nfl"], [108, 314, "nba"], [315, 731, "mlb"]];
   const mmdd = (d) => (d.getMonth() + 1) * 100 + d.getDate();
   const within = (x, [a, b]) => (a <= b ? x >= a && x <= b : x >= a || x <= b);
@@ -407,6 +461,7 @@
 
   // Each pro team's main color, for its abbreviation next to a player's name. Colors only: no logos or marks.
   const TEAM_COLORS = {
+    nhl: { ANA: "#F47A38", BOS: "#FFB81C", BUF: "#003087", CAR: "#CC0000", CBJ: "#002654", CGY: "#D2001C", CHI: "#CF0A2C", COL: "#6F263D", DAL: "#006847", DET: "#CE1126", EDM: "#041E42", FLA: "#C8102E", LAK: "#111111", MIN: "#154734", MTL: "#AF1E2D", NJD: "#CE1126", NSH: "#FFB81C", NYI: "#00539B", NYR: "#0038A8", OTT: "#C52032", PHI: "#F74902", PIT: "#FCB514", SEA: "#001628", SJS: "#006D75", STL: "#002F87", TBL: "#002868", TOR: "#003E7E", UTA: "#6CACE4", VAN: "#00205B", VGK: "#B4975A", WPG: "#041E42", WSH: "#C8102E" },
     nba: { ATL: "#E03A3E", BOS: "#007A33", BRK: "#000000", CHO: "#1D1160", CHI: "#CE1141", CLE: "#860038", DAL: "#00538C", DEN: "#0E2240", DET: "#C8102E", GSW: "#1D428A",
       HOU: "#CE1141", IND: "#002D62", LAC: "#C8102E", LAL: "#552583", MEM: "#5D76A9", MIA: "#98002E", MIL: "#00471B", MIN: "#0C2340", NOP: "#0C2340", NYK: "#006BB6",
       OKC: "#007AC1", ORL: "#0077C0", PHI: "#006BB6", PHO: "#1D1160", POR: "#E03A3E", SAC: "#5A2D81", SAS: "#000000", TOR: "#CE1141", UTA: "#002B5C", WAS: "#002B5C" },
@@ -445,6 +500,7 @@
      East or West basketball. Only that half's players can be drafted or added. A rostered player traded to the other
      half stays on his roster but stops scoring (the AL-only rule), and a player traded in joins the free agents. */
   const POOL_SETS = {
+    nhl: { East: ["BOS", "BUF", "CAR", "CBJ", "DET", "FLA", "MTL", "NJD", "NYI", "NYR", "OTT", "PHI", "PIT", "TBL", "TOR", "WSH"], West: ["ANA", "CGY", "CHI", "COL", "DAL", "EDM", "LAK", "MIN", "NSH", "SEA", "SJS", "STL", "UTA", "VAN", "VGK", "WPG"] },
     mlb: { AL: ["ATH", "BAL", "BOS", "CLE", "CWS", "DET", "HOU", "KC", "LAA", "MIN", "NYY", "SEA", "TB", "TEX", "TOR"], NL: ["ARI", "ATL", "CHC", "CIN", "COL", "LAD", "MIA", "MIL", "NYM", "PHI", "PIT", "SD", "SF", "STL", "WSH"] },
     nfl: { AFC: ["BAL", "BUF", "CIN", "CLE", "DEN", "HOU", "IND", "JAX", "KC", "LAC", "LV", "MIA", "NE", "NYJ", "PIT", "TEN"], NFC: ["ARI", "ATL", "CAR", "CHI", "DAL", "DET", "GB", "LAR", "MIN", "NO", "NYG", "PHI", "SEA", "SF", "TB", "WAS"] },
     nba: { East: ["ATL", "BOS", "BRK", "CHO", "CHI", "CLE", "DET", "IND", "MIA", "MIL", "NYK", "ORL", "PHI", "TOR", "WAS"], West: ["DAL", "DEN", "GSW", "HOU", "LAC", "LAL", "MEM", "MIN", "NOP", "OKC", "PHO", "POR", "SAC", "SAS", "UTA"] },
@@ -543,5 +599,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

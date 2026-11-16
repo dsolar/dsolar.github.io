@@ -920,6 +920,19 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .su{--sp:#246B35;--sp-t:#1F6130;--sp-soft:rgba(36,107,53,.1);--sp-ink:#fff;--band-a:#1E6631;--band-b:#134222;max-width:1040px;margin:0 auto}
 .su.sp-nba{--sp:#B04A1A;--sp-t:#A2440F;--sp-soft:rgba(176,74,26,.1);--band-a:#B4511F;--band-b:#7A2F0E}
 .su.sp-mlb{--sp:#24519C;--sp-t:#1F4789;--sp-soft:rgba(36,81,156,.1);--band-a:#21498F;--band-b:#132C5A}
+.su.sp-nhl{--sp:#168AA4;--sp-t:#09677D;--sp-soft:rgba(22,138,164,.1);--band-a:#125D70;--band-b:#092C3B}
+:root[data-theme="dark"] .su.sp-nhl{--sp-t:#76D9E8;--sp-soft:rgba(118,217,232,.13)}
+.lg-sp.sp-nhl{background:#125D70}
+.pc-contract{border:1px solid var(--line);border-radius:12px;padding:16px;background:color-mix(in srgb,#168AA4 5%,var(--surface))}
+.pc-contract h4{font-size:14px;margin:0;font-weight:850}
+.pc-contract-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pc-contract-hero{display:flex;align-items:baseline;gap:10px;margin:10px 0 14px;flex-wrap:wrap}
+.pc-contract-hero b{font-size:30px;font-variant-numeric:tabular-nums;line-height:1.15}
+.pc-contract-hero span{font-size:12px;color:var(--muted)}
+.pc-contract-years{margin-top:12px}.pc-contract-years summary{font-size:13px;font-weight:750;cursor:pointer;padding:8px 0}
+.pc-contract-note{margin:12px 0 8px;line-height:1.5}
+.pc-contract-links{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px;color:var(--muted)}
+.pc-contract-links a{font-weight:700;color:var(--accent)}
 :root[data-theme="dark"] .su{--sp-t:#74D184;--sp-soft:rgba(116,209,132,.12)}
 :root[data-theme="dark"] .su.sp-nba{--sp-t:#FF9A5E;--sp-soft:rgba(255,154,94,.12)}
 :root[data-theme="dark"] .su.sp-mlb{--sp-t:#8DB2F2;--sp-soft:rgba(141,178,242,.13)}

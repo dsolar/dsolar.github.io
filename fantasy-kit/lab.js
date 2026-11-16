@@ -6,7 +6,7 @@
   const store = U.store("fk-lab");
   const theme = U.theme("fk-lab");
   const top = $("#top"), app = $("#app");
-  const BLURB = { nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
+  const BLURB = { nhl: "Real NHL stats, goalie workloads and contracts", nba: "Real per-game lines, 9-cat or points", nfl: "Season points, half PPR, PPR or standard", mlb: "Last season paced to full, 5x5 or 8x8" };
   const DEFAULTS = { sport: S.inSeason(), scoring: "", type: "snake", teams: 10, slot: 0, clock: 30, budget: 200, bench: null, lineup: "", name: "", reveal: "start", test: 1, trades: 1, ...window.FK.setup.ELEPHANT_DEF };
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
   if ([-20, -30, -60].includes(cfg.clock)) cfg.clock = -200;                // the old per-round banks
@@ -16,7 +16,7 @@
   let mock = store.get("mock", null);            // { cfg, D }
   const cache = {};
   let roomCtl = null;
-  const rank = { sport: cfg.sport, scoring: "", f: { q: "", pos: "", team: "" }, sort: { k: "rank", dir: 1 }, mode: "default" };
+  const rank = { sport: cfg.sport, scoring: "", f: { q: "", pos: cfg.sport === "nhl" ? "g:sk" : "", team: "" }, sort: { k: "rank", dir: 1 }, mode: "default" };
 
   async function loadSport(key) {
     if (!cache[key]) {
@@ -40,10 +40,12 @@
   const dynCache = {};
   const mktCache = {};
   async function loadMarket(k) {
+    if (k === "nhl") return null;
     if (!(k in mktCache)) mktCache[k] = await fetch(`data/market-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return mktCache[k];
   }
   async function loadDynasty(k) {
+    if (k === "nhl") return null;
     if (!(k in dynCache)) dynCache[k] = await fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return dynCache[k];
   }
@@ -382,6 +384,7 @@
     const c = Object.assign({}, cfg, { dynasty: rank.dyn, sport: rank.sport, scoring: rank.scoring || (rank.sport === cfg.sport ? cfg.scoring : ""), lineup: rank.sport === cfg.sport ? cfg.lineup : "", bench: rank.sport === cfg.sport ? cfg.bench : null });
     const P = await pool(c);
     const sp = P.sport;
+    if (sp.key === "nhl" && rank.mode === "prospects") rank.mode = "default";
     // dynasty: the outside consensus rank and how age moves each player's value
     const extra = rank.dyn ? [
       { k: "cons", label: "Cons", cls: "r num", title: "Outside dynasty consensus rank (FantasyPros, plus FantasyCalc for football)", sort: (p) => p.cons || 1e4, asc: true, html: (p) => (p.cons ? String(p.cons) : `<span class="ps">-</span>`) },
@@ -401,7 +404,7 @@
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
         ${U.viewSelect(sp, "r-statv")}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
-        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button><button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button></div></div>
+        <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "nhl" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
       ${rank.mode === "prospects" ? (sp.key === "mlb" ? await mlbProspectsView(sp, P) : await prospectsView(sp)) : mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
       <p class="ps">${rank.dyn ? "Dynasty: each player's value over the next five seasons, from an age curve for his position, blended with outside dynasty consensus where it ranks him. " : ""}${await freshness(sp)}${sp.data.lines && sp.data.lines.pbat ? `Values come from ${esc(sp.data.lines.pbat.label.replace(/, batting$/, ""))} projections from FanGraphs; the stat columns show last season. ` : ""}${sp.market ? `ESPN and ESPN $ are ESPN's rank and the average price in real ESPN auctions, for comparison. ` : ""}Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
@@ -446,7 +449,7 @@
     app.oninput = (e) => { if (e.target.id === "fk-q") { rank.f.q = e.target.value; rankingsPage(); } };
     app.onchange = (e) => {
       const id = e.target.id;
-      if (id === "r-sport") { rank.sport = e.target.value; rank.scoring = ""; rank.f = { q: "", pos: "", team: "" }; rank.sort = { k: "rank", dir: 1 }; }
+      if (id === "r-sport") { rank.sport = e.target.value; rank.scoring = ""; rank.f = { q: "", pos: rank.sport === "nhl" ? "g:sk" : "", team: "" }; rank.sort = { k: "rank", dir: 1 }; }
       else if (id === "r-scoring") rank.scoring = e.target.value;
       else if (id === "r-dyn") rank.dyn = !!e.target.value;
       else if (id === "r-statv") U.setView(sp, e.target.value);

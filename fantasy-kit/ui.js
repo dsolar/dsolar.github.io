@@ -271,6 +271,7 @@
   // his id. Without one, assets/faces.js finds him by name in the faces registry (if the page loads it).
   const facePhoto = (sport, p) => {
     const k = sport && sport.key;
+    if (k === "nhl" && p.head && /^https:\/\/assets\.nhle\.com\//.test(p.head)) return { src: p.head };
     if (k === "mlb" && /^\d{5,7}$/.test(String(p.id))) return { src: `https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/${p.id}/headshot/67/current` };
     if ((k === "nba" || k === "nfl") && p.espn) return { src: `https://a.espncdn.com/combiner/i?img=/i/headshots/${k}/players/full/${p.espn}.png&w=180&h=131`, espn: true };
     return null;
@@ -368,9 +369,9 @@
   /* ---------- players ---------- */
   // Stats or projections: a sport with projection lines (baseball's pbat and ppit, basketball's ppg) can show either
   // in its tables. sport.statView = "proj" reads the projection, and a player without one shows a dash.
-  const PROJ_OF = { bat: "pbat", pit: "ppit", pg: "ppg" };
+  const PROJ_OF = { bat: "pbat", pit: "ppit", pg: "ppg", sk: "psk", goalie: "pgoalie" };
   const hasProj = (sport) => !!(sport && sport.data && sport.data.lines && Object.values(PROJ_OF).some((k) => sport.data.lines[k]));
-  const projLabel = (sport) => { const L = sport.data.lines, l = ((L.pbat || L.ppg || {}).label || "Projections").replace(/, (batting|per game)$/, ""); return sport.key === "mlb" && l === "Steamer" ? `${+sport.data.season + 1} Steamer projections` : l.replace(/season projection/, "projections"); };
+  const projLabel = (sport) => { const L = sport.data.lines, l = ((L.pbat || L.ppg || L.psk || {}).label || "Projections").replace(/, (batting|per game|skaters)$/, ""); return sport.key === "mlb" && l === "Steamer" ? `${+sport.data.season + 1} Steamer projections` : l.replace(/season projection/, "projections"); };
   const statsLabel = (sport) => `${sport.data.season} stats`;
   const lineOf = (sport, p, line) => { const pl = PROJ_OF[line]; return sport.statView === "proj" && pl && sport.data.lines[pl] ? pl : line; };
   // last season's line (p.l0, data.prev): what Yahoo shows as the season before this one
@@ -460,6 +461,8 @@
     }
     // on a phone the draft room keeps one value column: projected points or value, unless it's an auction
     if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", hide: opts.compact && !opts.auction ? "s" : undefined, title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
+    if (sport.key === "nhl") cols.push({ k: "nhlcap", label: "Cap hit", cls: "r num", hide: "s", title: "Real NHL cap hit this season; open the player for contract years and salary details", sort: (p) => p.contract && p.contract.capHit,
+      html: (p) => p.contract && p.contract.capHit != null ? `${capMoney(p.contract.capHit)}${p.contract.estimated ? `<sup title="Estimated cap hit">est</sup>` : ""}` : `<span class="ps">—</span>` });
     // a one-week game or a showdown (sport.weekOf): the week's projected points
     const wkOf = pts ? sport.weekOf : null;
     if (wkOf != null) cols.push({ k: "v", label: `Wk ${wkOf}`, cls: "r num", title: `Projected points in week ${wkOf}: Sleeper's projection for the week, scored for this league`, sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : (p.v / 17).toFixed(1)}</b>` });
@@ -481,7 +484,7 @@
   // `need`: chip value -> starting spots still open there; those chips get a count, so a phone shows what you need
   function posFilter(sport, cur, extra = [], lineup, need) {
     extra = flexChips(sport, lineup).concat(extra);
-    const groups = sport.groups ? [["g:bat", "Hitters"], ["g:pit", "Pitchers"]] : [];
+    const groups = sport.groups ? Object.keys(sport.groups).map((k) => ["g:" + k, (sport.groupLabels || {})[k] || ({ bat: "Hitters", pit: "Pitchers" })[k] || k]) : [];
     // rookies get their own chip when the pool flags them (a dynasty's rookie draft starts on it)
     const rk = sport.data && (sport.data.players || []).some((p) => p.rk) ? [["rk", "Rookies"]] : [];
     const all = [["", "All"]].concat(groups, sport.positions.filter((x) => x !== "UT").map((x) => [x, x]), rk, extra);
@@ -512,6 +515,9 @@
     const gs = new Set(ps.map((x) => Object.keys(sport.groups).find((g) => sport.groups[g].includes(x))));
     return gs.size === 1 ? [...gs][0] || null : null;
   };
+  const groupLabel = (sport, key) => (sport.groupLabels || {})[key] || ({ bat: "Hitters", pit: "Pitchers" })[key] || key;
+  const playerGroup = (sport, p) => Object.keys(sport.groups || {}).find((k) => S.positions(p).every((x) => sport.groups[k].includes(x))) || Object.keys(sport.groups || {}).find((k) => S.positions(p).some((x) => sport.groups[k].includes(x))) || null;
+  const slotGroup = (sport, sl) => { const v = sport.slots[sl]; return Array.isArray(v) ? Object.keys(sport.groups || {}).find((k) => v.every((x) => sport.groups[k].includes(x))) || null : null; };
 
   const LABELS = { gp: "GP", g: "G", gs: "GS", min: "MIN", fgm: "FGM", fga: "FGA", ftm: "FTM", fta: "FTA", tpm: "3PM", pts: "PTS", reb: "REB", ast: "AST", stl: "STL", blk: "BLK", tov: "TO",
     pa: "PA", ab: "AB", r: "R", h: "H", hr: "HR", rbi: "RBI", sb: "SB", tb: "TB", bb: "BB", avg: "AVG", obp: "OBP", ops: "OPS", ip: "IP", w: "W", l: "L", sv: "SV", hld: "HLD", k: "K", er: "ER", era: "ERA", whip: "WHIP", qs: "QS",
@@ -526,7 +532,7 @@
       const cells = def.cols.filter((c) => c !== "eg").map((c) => {
         const v = S.stat(sport, p, k, c);
         if (v == null || (sport.key === "nfl" && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return "";
-        const f = /^(avg|obp|ops|slg)$/.test(c) ? S.fmt.r3 : /^(era|whip)$/.test(c) ? S.fmt.f2 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
+        const f = /^(avg|obp|ops|slg|svp)$/.test(c) ? S.fmt.r3 : /^(era|whip|gaa)$/.test(c) ? S.fmt.f2 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
         return `<span><small>${esc(label(c))}</small><b>${f(v)}</b></span>`;
       }).join("");
       return `<div class="stack" style="gap:6px"><div class="ps"><b>${esc(def.label)}</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>`;
@@ -541,7 +547,23 @@
     return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${opts.extra || ""}${zs}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
+      <div class="stack">${opts.extra || ""}${zs}${contractPanel(sport, p)}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
+  }
+
+  const capMoney = (n) => n == null || !Number.isFinite(+n) ? "—" : +n >= 1e6 ? `$${(+n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${Math.round(+n).toLocaleString("en-US")}`;
+  function contractPanel(sport, p) {
+    if (sport.key !== "nhl") return "";
+    const c = p.contract;
+    if (!c) return `<section class="pc-contract"><h4>NHL contract</h4><p class="ps">No verified contract figure is available for this player yet.</p><a class="ps" href="../nhl/#/contracts?t=${encodeURIComponent(p.t)}">${esc(p.t)} cap sheet →</a></section>`;
+    const years = c.seasons || [], salary = years.find((r) => r.season === sport.data.season);
+    const rows = years.map((r) => `<tr><td>${esc(r.season)}</td><td class="r num">${capMoney(r.capHit)}${r.retained ? `<sup title="After retained salary">ret</sup>` : ""}</td><td class="r num">${capMoney(r.salary)}</td><td class="r num">${capMoney(r.signingBonus)}</td></tr>`).join("");
+    const updated = c.updated && !isNaN(Date.parse(c.updated)) ? new Date(c.updated).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "America/New_York" }) : "";
+    return `<section class="pc-contract"><div class="pc-contract-h"><h4>NHL contract</h4><span class="tag">${c.estimated ? "Estimate" : "Reported figures"}</span></div>
+      <div class="pc-contract-hero"><b>${capMoney(c.capHit)}</b><span>${esc(sport.data.season)} cap hit</span></div>
+      <dl class="kv"><dt>Average annual value</dt><dd>${capMoney(c.aav)}</dd>${c.end ? `<dt>Signed through</dt><dd>${esc(c.end)}${c.expiry ? ` · ${esc(c.expiry)}` : ""}</dd>` : ""}${salary && salary.salary != null ? `<dt>Base salary this season</dt><dd>${capMoney(salary.salary)}</dd>` : ""}${c.clause ? `<dt>Trade protection</dt><dd>${esc(c.clause)}</dd>` : ""}</dl>
+      ${rows ? `<details class="pc-contract-years"><summary>Year-by-year contract</summary><div class="table-wrap"><table class="t dense"><thead><tr><th>Season</th><th class="r">Cap hit</th><th class="r">Base salary</th><th class="r">Signing bonus</th></tr></thead><tbody>${rows}</tbody></table></div></details>` : ""}
+      <p class="ps pc-contract-note">Real NHL contract figures. Fantasy auction values use the league's own budget. Missing figures show a dash.${c.estimated ? " This cap hit is estimated." : ""}</p>
+      <div class="pc-contract-links"><a href="../nhl/#/contracts?t=${encodeURIComponent(p.t)}">${esc(p.t)} cap sheet →</a><a href="https://github.com/ehlersio/nhl-contracts" target="_blank" rel="noopener">nhl-contracts · CC0</a>${updated ? `<span>Updated ${esc(updated)}</span>` : ""}</div></section>`;
   }
 
   /* ---------- league modules (view models in, HTML out) ---------- */
@@ -632,10 +654,10 @@
     const fixed = (kind) => pf.lockGet && (kind === "get" || kind === "pget");
     // a player's numbers in the league's categories (the season or the projection, whichever the switch shows)
     const cols = statColumns(sport, opts.scoring);
-    const grpOf = (p) => (sport.groups && S.positions(p).every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat");
+    const grpOf = (p) => playerGroup(sport, p);
     const statLine = (p) => {
       if (p.pick) return "";
-      const cs = cols.filter((c) => c.group ? c.group === grpOf(p) : !c.fpts && !c.fpg).filter((c) => c.col !== "g" && c.col !== "gp").slice(0, 6);
+      const cs = cols.filter((c) => c.group ? c.group === grpOf(p) : !c.fpts && !c.fpg).filter((c) => (c.col !== "g" || sport.key === "nhl") && c.col !== "gp").slice(0, 6);
       const bits = cs.map((c) => { const v = statCell(sport, p, c); return v == null ? null : `<span><b>${c.fmt ? c.fmt(v) : Math.round(v)}</b> ${esc(c.label)}</span>`; }).filter(Boolean);
       return bits.length ? `<span class="tw2-sl">${bits.join("")}</span>` : `<span class="tw2-sl ps">No ${sport.statView === "proj" ? "projection" : "stats"}</span>`;
     };
@@ -666,7 +688,7 @@
       if (tab === "players") {
         const g = st.grp[side], q = st.q[side].trim().toLowerCase();
         const list = a.players.filter((p) => (!g || grpOf(p) === g) && (!q || p.n.toLowerCase().includes(q)));
-        const grp = sport.groups ? `<div class="tw2-grp chips">${[["", "All"], ["bat", "Hitters"], ["pit", "Pitchers"]].map(([k, n]) => `<button type="button" data-twgrp="${side}:${k}" aria-pressed="${g === k}">${n}</button>`).join("")}</div>` : "";
+        const grp = sport.groups ? `<div class="tw2-grp chips">${[["", "All"]].concat(Object.keys(sport.groups).map((k) => [k, groupLabel(sport, k)])).map(([k, n]) => `<button type="button" data-twgrp="${side}:${k}" aria-pressed="${g === k}">${n}</button>`).join("")}</div>` : "";
         const need = side === "give" && opts.roomFor ? opts.roomFor(trade()) : 0;
         const drops = need > 0 ? `<div class="tw2-sec warn">Drop ${need} to make room${st.drops.size ? `: ${st.drops.size} picked` : ""}</div>${a.players.filter((p) => !st.give.has(p.id)).map((p) => row(p, st.drops, "drop")).join("")}` : "";
         body = `<div class="tw2-filter">${grp}<label class="sr" for="tw2-q-${side}">Find a player</label><input type="search" id="tw2-q-${side}" data-twq="${side}" placeholder="Find a player" value="${esc(st.q[side])}" autocomplete="off"></div>${list.map((p) => row(p, S2.pl, side)).join("") || `<p class="empty">No one matches.</p>`}${drops}`;
@@ -879,7 +901,7 @@
   function room(opts) {
     const { el, sport } = opts;
     // baseball opens on hitters, so the pool shows stat columns to sort by (all players have no shared stats)
-    const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: sport.groups ? "g:bat" : "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
+    const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: sport.groups ? "g:" + Object.keys(sport.groups)[0] : "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
     // a dynasty's rookie draft opens on the rookies
     try { if (opts.draft().rookie && (opts.players || []).some((p) => p.rk)) ui.f.pos = "rk"; } catch (e) { /* no draft yet */ }
     let ctx = null, timer = null;
@@ -1939,17 +1961,19 @@
   // (data-lb, data-d). lineupStep(sport, lineup, button) is the lineup after a press.
   // Common lineups for each sport, then a counter for every slot.
   const PRESETS = {
+    nhl: [["Standard", "C C LW LW RW RW D D D D G G"], ["Flexible forwards", "F F F F F F D D D D G G"], ["Shallow", "C LW RW D D G UTIL UTIL"], ["Deep", "C C LW LW RW RW F F D D D D G G UTIL"]],
     nba: [["Standard", "PG SG G SF PF F C UTIL UTIL UTIL"], ["Two centers", "PG SG G SF PF F C C UTIL UTIL"], ["Shallow", "PG SG SF PF C UTIL UTIL"], ["Deep", "PG SG G SF PF F C C UTIL UTIL UTIL UTIL"]],
     nfl: [["Standard", "QB RB RB WR WR WR TE FLEX K DEF"], ["Superflex", "QB RB RB WR WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR WR TE FLEX K DEF"], ["2 WR", "QB RB RB WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR WR TE FLEX FLEX DEF"]],
     mlb: [["Standard", "C 1B 2B 3B SS OF OF OF UTIL UTIL SP SP RP RP P P P P"], ["Corner and middle", "C 1B 2B 3B SS MI CI OF OF OF OF OF UTIL P P P P P P P P P"], ["Shallow", "C 1B 2B 3B SS OF OF OF UTIL SP SP SP RP RP"]],
   };
   const SLOT_NAMES = { G: "Guard", F: "Forward", UTIL: "Utility", FLEX: "Flex", SFLEX: "Superflex", MI: "Middle infield", CI: "Corner infield", P: "Pitcher" };
   const POS_NAMES = {
+    nhl: { C: "Center", LW: "Left wing", RW: "Right wing", D: "Defenseman", G: "Goalie", W: "Wing" },
     nba: { PG: "Point guard", SG: "Shooting guard", SF: "Small forward", PF: "Power forward", C: "Center" },
     nfl: { QB: "Quarterback", RB: "Running back", WR: "Wide receiver", TE: "Tight end", K: "Kicker", DEF: "Team defense" },
     mlb: { C: "Catcher", "1B": "First base", "2B": "Second base", "3B": "Third base", SS: "Shortstop", OF: "Outfield", SP: "Starting pitcher", RP: "Relief pitcher" },
   };
-  const slotDesc = (sport, k) => { const v = sport.slots[k]; if (v !== "*" && v.length === 1 && !SLOT_NAMES[k]) return (POS_NAMES[sport.key] || {})[k] || k; return `${SLOT_NAMES[k] || k}: ${v === "*" ? "any player" : v.join(", ")}`; };
+  const slotDesc = (sport, k) => { const v = sport.slots[k]; if (v !== "*" && v.length === 1 && (!SLOT_NAMES[k] || sport.key === "nhl")) return (POS_NAMES[sport.key] || {})[k] || k; return `${(POS_NAMES[sport.key] || {})[k] || SLOT_NAMES[k] || k}: ${v === "*" ? "any player" : v.join(", ")}`; };
   function lineupBuilder(sport, lineup) {
     const keys = Object.keys(sport.slots).filter((k) => k !== "BN");
     const count = (k) => lineup.filter((x) => x === k).length;
@@ -1996,5 +2020,5 @@
   FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
-    playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
+    groupLabel, playerGroup, slotGroup, contractPanel, capMoney, playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
 })(this);

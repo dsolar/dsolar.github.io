@@ -1,16 +1,20 @@
-/* Fantasy hub: the overview (/fantasy/) and the three sport pages (/fantasy/nba/, /nfl/, /mlb/).
+/* Fantasy hub: the overview (/fantasy/) and the four sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/).
    Built on the Fantasy Kit's tokens (kit.css). Each sport carries its own identity: a color, an icon and a field
    drawn behind its header. Basketball is hardwood orange, football turf green, baseball blue, matching Draft Lab's
    demo leagues. A page or element with class nba / nfl / mlb picks up that sport's tokens. */
 .nba{--sp:#EA580C;--sp-ink:#B4430A;--sp-deep:#2A1308;--sp-mid:#5B260C}
 .nfl{--sp:#10A36B;--sp-ink:#047857;--sp-deep:#06231A;--sp-mid:#0C4430}
 .mlb{--sp:#3B6FF0;--sp-ink:#1D4ED8;--sp-deep:#0A1834;--sp-mid:#16336E}
+.nhl{--sp:#168AA4;--sp-ink:#09677D;--sp-deep:#092C3B;--sp-mid:#125D70}
+:root[data-theme="dark"] .nhl{--sp-ink:#76D9E8}
+.fbar .t.nhl{--tc:var(--sp-ink)}
+.fbar .t.nhl[aria-current="page"]{background:var(--sp);color:#fff;--tc:#fff;box-shadow:0 4px 14px -6px var(--sp)}
 :root[data-theme="dark"] .nba{--sp-ink:#FB9A5B}
 :root[data-theme="dark"] .nfl{--sp-ink:#3FD69B}
 :root[data-theme="dark"] .mlb{--sp-ink:#8DB0FF}
 .ic{width:1em;height:1em;display:block;flex:none}
 
-/* ---------- the fantasy bar: Overview and the three sports, as real tabs ---------- */
+/* ---------- the fantasy bar: Overview and the four sports, as real tabs ---------- */
 .fbar{background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow)}
 .fbar .wrap{display:flex;align-items:center;gap:4px;min-height:58px;overflow-x:auto;scrollbar-width:none}
 .fbar .wrap::-webkit-scrollbar{display:none}
@@ -157,8 +161,8 @@ a.mode:hover{border-color:var(--sp);transform:translateY(-2px)}
 .wins span{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
 .wins li.addon::before{counter-increment:none;content:"+";background:var(--brand-soft);color:var(--accent)}
 
-/* ---------- overview: the three sport doors ---------- */
-.doors{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+/* ---------- overview: the four sport doors ---------- */
+.doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .door{position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;border-radius:18px;color:#fff;text-decoration:none;background:linear-gradient(150deg,var(--sp-deep) 0%,var(--sp-mid) 100%);border-bottom:5px solid var(--sp);box-shadow:0 14px 30px -18px rgba(0,0,0,.5);transition:transform .18s,box-shadow .18s;min-height:100%}
 .door:hover{transform:translateY(-3px);box-shadow:0 22px 40px -20px rgba(0,0,0,.6)}
 .door .field{right:-60px;top:-10px;transform:none;height:240px;opacity:.9}
@@ -193,7 +197,7 @@ a.mode:hover{border-color:var(--sp);transform:translateY(-2px)}
 .tool .ti{display:grid;place-items:center;width:38px;height:38px;border-radius:10px;background:var(--brand);color:var(--brand-ink);font-size:19px}
 .tool b{font-size:16px;color:#fff}
 .tool span{font-size:13px;color:#A9B6C6;line-height:1.45}
-.tool .go3{display:flex;gap:6px;margin-top:auto;padding-top:6px}
+.tool .go3{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:6px}
 .tool .go3 a{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:7px 4px;border-radius:9px;font-size:12.5px;font-weight:800;color:#fff;text-decoration:none;background:color-mix(in srgb,var(--sp) 30%,transparent);border:1px solid color-mix(in srgb,var(--sp) 60%,transparent)}
 .tool .go3 a:hover{background:var(--sp)}
 .tool .go3 .ic{font-size:14px}

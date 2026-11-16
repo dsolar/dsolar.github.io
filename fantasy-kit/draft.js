@@ -44,6 +44,9 @@
     ["Pick Six", "P6"], ["Rain Delay", "RD"], ["Shot Clock", "SC"], ["Trade Deadline", "TD"], ["Home Stand", "HS"], ["Overtime", "OT"],
     ["Sixth Man", "6M"], ["Bye Week", "BW"],
   ];
+  const NHL_NAMES = [["Five Hole", "FH"], ["Blue Line", "BL"], ["Puck Luck", "PL"], ["Late Scratch", "LS"], ["Ice Time", "IT"], ["Net Gains", "NG"],
+    ["Power Play", "PP"], ["Odd Man Rush", "OMR"], ["Hat Trick", "HT"], ["Top Shelf", "TS"], ["Empty Net", "EN"], ["Crease Crashers", "CC"],
+    ["Short Handed", "SH"], ["Slap Shot", "SS"], ["Bench Minors", "BM"], ["Overtime", "OT"], ["Faceoff", "FO"], ["Neutral Zone", "NZ"], ["The Forecheck", "TF"], ["Trade Deadline", "TD"]];
 
   // Which team picks at each overall pick, from the first round's order.
   function makeOrder(type, first, rounds) {
@@ -66,8 +69,9 @@
     const list = Array.isArray(opts.teams) ? opts.teams : Array.from({ length: opts.teams || 10 }, () => ({}));
     const n = Math.max(2, Math.min(20, list.length));
     const r = rng(seed + 5);
+    const names = sport.key === "nhl" ? NHL_NAMES : NAMES;
     const teams = list.slice(0, n).map((t, i) => ({
-      id: i, name: t.name || NAMES[i % NAMES.length][0], abbr: t.abbr || NAMES[i % NAMES.length][1],
+      id: i, name: t.name || names[i % names.length][0], abbr: t.abbr || names[i % names.length][1],
       owner: t.owner || null, auto: !!t.auto, queue: [], budget: opts.budget || 200,
     }));
     let first = opts.order ? opts.order.slice() : [...Array(n).keys()];

@@ -12,7 +12,7 @@
    - Never: other origins (Supabase, Google Fonts, analytics), anything that isn't a GET, or other site files.
    Install saves the pages and everything they load, read from the pages themselves, so the list here never goes
    stale. Bump VERSION to drop every saved copy: activate deletes the old caches. */
-const VERSION = "1";
+const VERSION = "2";
 const PREFIX = "draft-lab-";
 const SHELL = `${PREFIX}${VERSION}-shell`, DATA = `${PREFIX}${VERSION}-data`;
 const PAGES = ["index.html", "week.html", "leagues.html", "play.html", "league.html"];

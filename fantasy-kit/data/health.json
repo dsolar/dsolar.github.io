@@ -30,6 +30,16 @@
     "ppit"
    ]
   },
+  "nhl.json": {
+   "players": 877,
+   "updated": "2026-11-16T20:58:06.753Z",
+   "lines": [
+    "sk",
+    "goalie",
+    "psk",
+    "pgoalie"
+   ]
+  },
   "dynasty-nfl.json": {
    "players": 391,
    "updated": "2026-11-16T21:16:15+00:00"

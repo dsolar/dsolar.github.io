@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="kit.css?v=20261116lad">
+<link rel="stylesheet" href="kit.css?v=20261116-nhl1">
 <link rel="stylesheet" href="../assets/faces.css?v=20261109c">
 <link rel="stylesheet" href="start.css?v=20261111d">
 <script src="../assets/analytics.js" defer></script>
@@ -103,7 +103,7 @@ body.fk-room .ds-bar{display:none}
 <main id="app"><div class="wrap page">
       <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
       
-      <div class="start-sports" role="group" aria-label="Choose a sport"><button type="button" class="btn" data-entry-sport="nba" aria-pressed="false"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2v20M5 4.9c2.6 2 4 4.4 4 7.1s-1.4 5.1-4 7.1M19 4.9c-2.6 2-4 4.4-4 7.1s1.4 5.1 4 7.1"></path></svg> Basketball</button><button type="button" class="btn" data-entry-sport="nfl" aria-pressed="true"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"></ellipse><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"></path></svg> Football</button><button type="button" class="btn" data-entry-sport="mlb" aria-pressed="false"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"></path></svg> Baseball</button></div>
+      <div class="start-sports" role="group" aria-label="Choose a sport"><button type="button" class="btn" data-entry-sport="nba" aria-pressed="false"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20M12 2v20M5 4.9c2.6 2 4 4.4 4 7.1s-1.4 5.1-4 7.1M19 4.9c-2.6 2-4 4.4-4 7.1s1.4 5.1 4 7.1"></path></svg> Basketball</button><button type="button" class="btn" data-entry-sport="nfl" aria-pressed="true"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"></ellipse><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"></path></svg> Football</button><button type="button" class="btn" data-entry-sport="mlb" aria-pressed="false"><svg class="sp-ic" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"></path></svg> Baseball</button><button type="button" class="btn" data-entry-sport="nhl" aria-pressed="false">Hockey</button></div>
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team football snake draft. Half PPR, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
         <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
@@ -114,7 +114,7 @@ body.fk-room .ds-bar{display:none}
 (function () {
   var get = function (k) { try { return JSON.parse(localStorage.getItem("fk-lab:" + k)); } catch (e) { return null; } };
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return "&#" + c.charCodeAt(0) + ";"; }); };
-  var SP = { nba: ["Basketball", "9 categories"], nfl: ["Football", "Half PPR"], mlb: ["Baseball", "5x5 categories"] };
+  var SP = { nba: ["Basketball", "9 categories"], nfl: ["Football", "Half PPR"], mlb: ["Baseball", "5x5 categories"], nhl: ["Hockey", "10 categories"] };
   var TYPE = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
   var top = document.getElementById("top"), app = document.getElementById("app");
   try {
@@ -136,7 +136,7 @@ body.fk-room .ds-bar{display:none}
       [].forEach.call(app.querySelectorAll("[data-entry-sport]"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.entrySport === sport)); });
       app.querySelector(".start-card-primary p:not(.start-kicker)").textContent = "A 10-team " + SP[sport][0].toLowerCase() + " snake draft. " + SP[sport][1] + ", standard rosters, and 30 seconds a pick. We\u2019ll find you a seat.";
       var a = app.querySelectorAll(".start-actions a");
-      a[0].href = "league.html?s=" + sport + "&f=h"; a[1].href = "leagues.html?s=" + sport;
+      a[0].href = "leagues.html?s=" + sport; a[1].href = "league.html?s=" + sport + "&f=h";
     }
     if (mock) {
       var D = mock.D, done = D.phase === "done";
@@ -149,7 +149,7 @@ body.fk-room .ds-bar{display:none}
 /* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
    stylesheets are in (an inline script waits for them): the first screen above paints without ~640K of JavaScript
    sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
-["sports.js?v=20261116lu", "value.js?v=20261116dfs", "draft.js?v=20261116dfs", "../assets/faces.js?v=20261109c", "ui.js?v=20261116pyr", "setup.js?v=20261116we", "cloud.js?v=20261116lu", "slates.js?v=20261111d", "lab.js?v=20261116we"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+["sports.js?v=20261116-nhl1", "value.js?v=20261116-nhl1", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261116-nhl1", "setup.js?v=20261116-nhl1", "cloud.js?v=20261116lu", "slates.js?v=20261111d", "lab.js?v=20261116-nhl1"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
 </script>
 </body>
 </html>

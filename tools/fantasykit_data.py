@@ -26,12 +26,13 @@ Rookies: a player in his first season carries "rk": 1 (football: Sleeper's years
 season; baseball: under 130 at-bats and 50 innings before this season, MLB's own rookie limits).
   A week is final once the data was pulled after its last night, so a league can close it.
 
-  python tools/fantasykit_data.py            all three
+  python tools/fantasykit_data.py            all four
   python tools/fantasykit_data.py nfl        one sport
 """
 import json
 import os
 import re
+import subprocess
 import sys
 import unicodedata
 import urllib.request
@@ -946,8 +947,11 @@ def mlb_prospects():
 
 
 def main(argv):
-    want = argv[1:] or ["nba", "mlb", "nfl"]
+    want = argv[1:] or ["nba", "mlb", "nfl", "nhl"]
     for s in want:
+        if s == "nhl":
+            subprocess.run(["node", os.path.join(ROOT, "tools", "fantasykit_nhl.mjs")], check=True)
+            continue
         if s == "prospects":
             mlb_prospects()
             continue

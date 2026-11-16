@@ -77,12 +77,12 @@ dsolar.github.io/
                               surplus value, the free agent market) and data/ (hub.json, fa.json: built every morning by
                               the MLB hub workflow from tools/mlb_hub_pull.py and tools/mlb_hub_build.py; don't edit).
                               FanGraphs snapshots live in tools/mlb_hub/. Tests: node --test tests/mlb_hub.test.mjs
-  fantasy/                    The fantasy hub: index.html (overview: the three sports, Draft Lab, the calendar, scoring, every
-                              format and my leagues) and nba/, nfl/, mlb/ (a page per sport). hub.css and hub.js are shared;
+  fantasy/                    The fantasy hub: index.html (overview: the four sports, Draft Lab, the calendar, scoring, every
+                              format and my leagues) and nba/, nfl/, mlb/, nhl/ (a page per sport). hub.css and hub.js are shared;
                               hub.js fills the pages from Draft Lab (sports.js, value.js, its data files), so rankings,
                               stats and categories stay in step with it. Sport copy and ways to play: SPORTS in hub.js
   fantasy-kit/                The Fantasy Kit, shared by the league pages, and Draft Lab (mock drafts against bots, unlisted):
-                              sports.js (positions, lineup slots, scoring for basketball, football, baseball), value.js
+                              sports.js (positions, lineup slots, scoring for basketball, football, baseball, hockey), value.js
                               (z-scores, fantasy points, value over replacement, auction dollars), draft.js (snake, linear,
                               third-round reversal and auction drafts), ui.js and kit.css (shell, player tables, player card,
                               draft room), league.js and league-ui.js (seasons and every league page), lab.js (Draft Lab),

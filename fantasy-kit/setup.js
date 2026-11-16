@@ -8,6 +8,7 @@
   "use strict";
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const ICON = { nba: `<circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2v20M5 4.9c2.6 2 4 4.4 4 7.1s-1.4 5.1-4 7.1M19 4.9c-2.6 2-4 4.4-4 7.1s1.4 5.1 4 7.1"/>`,
+    nhl: `<path d="M5 3l7 13 7-2 1 4-9 3-3-3L2 6"/><ellipse cx="18" cy="6" rx="4" ry="2"/><path d="M14 6v3c0 1.1 8 1.1 8 0V6"/>`,
     nfl: `<ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"/><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"/>`,
     mlb: `<circle cx="12" cy="12" r="10"/><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"/>` };
   const icon = (k, cls) => `<svg class="${cls || "sp-ic"}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${ICON[k]}</svg>`;
@@ -74,12 +75,13 @@
     return `<button type="button" role="radio" class="sty${k === cur ? " on" : ""}" data-${attr}="${k}" aria-checked="${k === cur}"${off ? ` disabled title="${esc(off)}"` : ""}>${art(k)}<b>${esc(l)}</b><small>${esc(off || sub)}</small></button>`;
   }).join("")}</div>`;
   const FIELD = {
+    nhl: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><rect x="100" y="8" width="480" height="184" rx="65"/><path d="M340 8v184M240 8v184M440 8v184"/><circle cx="340" cy="100" r="35"/><circle cx="180" cy="50" r="27"/><circle cx="180" cy="150" r="27"/><circle cx="500" cy="50" r="27"/><circle cx="500" cy="150" r="27"/><path d="M125 70v60M555 70v60"/></svg>`,
     nfl: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">${Array.from({ length: 11 }, (_, i) => `<line x1="${40 + i * 52}" y1="0" x2="${40 + i * 52}" y2="200"/>`).join("")}${Array.from({ length: 50 }, (_, i) => `<line x1="${40 + i * 10.4}" y1="62" x2="${40 + i * 10.4}" y2="70"/><line x1="${40 + i * 10.4}" y1="130" x2="${40 + i * 10.4}" y2="138"/>`).join("")}<text x="${40 + 4 * 52}" y="185">40</text><text x="${40 + 6 * 52}" y="185">50</text><text x="${40 + 8 * 52}" y="185">40</text></svg>`,
     nba: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><circle cx="330" cy="100" r="46"/><line x1="330" y1="0" x2="330" y2="200"/><path d="M600 20 H520 V180 H600"/><path d="M600 -40 A150 150 0 0 0 600 240" /><circle cx="520" cy="100" r="34"/><path d="M60 20 H140 V180 H60"/><circle cx="140" cy="100" r="34"/></svg>`,
     mlb: `<svg class="nl-art" viewBox="0 0 600 200" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><path d="M420 190 L330 100 L420 10 L510 100 Z"/><path d="M420 190 L240 10 M420 190 L600 10"/><circle cx="420" cy="104" r="12"/><path d="M300 30 A170 170 0 0 1 540 30"/><rect x="414" y="184" width="12" height="12" transform="rotate(45 420 190)"/></svg>` };
 
 
-  const SC_SUB = { half: "Half a point a catch", ppr: "A point a catch", std: "No points for catches", cats9: "FG%, FT%, 3PM, PTS, REB, AST, STL, BLK, TO", points: "Points for every stat", roto5: "R, HR, RBI, SB, AVG, W, SV, K, ERA, WHIP", yoenis: "Adds H, TB, OPS, L, HLD and QS", cp: "Set a value for every stat", cc: "Pick your own categories" };
+  const SC_SUB = { cats10: "G, A, +/−, PIM, PPP, SOG, W, GAA, SV%, SO", bangers: "The 10 categories plus hits and blocked shots", half: "Half a point a catch", ppr: "A point a catch", std: "No points for catches", cats9: "FG%, FT%, 3PM, PTS, REB, AST, STL, BLK, TO", points: "Points for every stat", roto5: "R, HR, RBI, SB, AVG, W, SV, K, ERA, WHIP", yoenis: "Adds H, TB, OPS, L, HLD and QS", cp: "Set a value for every stat", cc: "Pick your own categories" };
   const DRAFT_SHORT = { snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
   // White elephant settings, for Start a league and the mock draft. f: { elSteals, elFreeze, elTax, elGold } (taxes in
   // percent); points: whether the scoring is points (the tax and golden pick only work there)

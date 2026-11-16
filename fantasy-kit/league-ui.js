@@ -27,7 +27,7 @@
     const sc = () => G.scoring(L(), ctx);
     const pts = () => sc().type === "points";
     const fmtS = (x) => (x == null ? "-" : pts() ? (Math.abs(x) < 0.05 ? 0 : x).toFixed(1) : String(Math.round(x) || 0));
-    const ui = { moving: null, week: null, pf: { q: "", pos: sport.groups && (sport.scorings[L().scoring] || {}).type !== "points" ? "g:bat" : "" }, psort: { k: "rank", dir: 1 }, pshow: "fa", txf: "", sbWeek: null };
+    const ui = { moving: null, week: null, pf: { q: "", pos: sport.groups && (sport.scorings[L().scoring] || {}).type !== "points" ? "g:" + Object.keys(sport.groups)[0] : "" }, psort: { k: "rank", dir: 1 }, pshow: "fa", txf: "", sbWeek: null };
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
     const over = () => L().week > G.totalWeeks(L());
     // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
@@ -38,6 +38,7 @@
       if (k && k.week === w && k.teams) return Object.values(k.teams).some((t) => t <= now());
       const lv = liveWeek(w);
       if (lv && lv.teams && Object.keys(lv.teams).length) return Object.values(lv.teams).some((t) => t.played || t.live);
+      if (L().sport === "nhl") { const rw = G.realWeek(L(), ctx, w); return !!(rw && Object.values(rw.lines || {}).some((x) => (x.sk && x.sk[0] > 0) || (x.goalie && x.goalie[0] > 0))); }
       return L().sport !== "nfl" || now() >= G.weekStart(L(), w) + 60 * 36e5;
     };
     const noKicks = (w) => !!(L().settings.real && w === L().week && !anyKicked(w));
@@ -108,7 +109,7 @@
     // and this week while the season's on
     function rosterViews() {
       const lines = (sport.data && sport.data.lines) || {}, yr = (sport.data && sport.data.season) || L().season || "Season";
-      return [["stats", `${yr} stats`]].concat(lines.pbat ? [["proj", `${Number(yr) ? Number(yr) + 1 : "Season"} proj`]] : [], sport.data && sport.data.prev ? [["prev", `${sport.data.prev} stats`]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : [], over() ? [] : [["week", "This week"]]);
+      return [["stats", `${yr} stats`]].concat(lines.pbat || lines.psk ? [["proj", sport.key === "nhl" ? "Workload projection" : `${Number(yr) ? Number(yr) + 1 : "Season"} proj`]] : [], sport.data && sport.data.prev ? [["prev", `${sport.data.prev} stats`]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : [], over() ? [] : [["week", "This week"]]);
     }
     // where a player went in this league's draft: { r: round, n: overall pick }
     let draftIdx = null;
@@ -1022,7 +1023,7 @@
           ${s.crown ? `<dt>Kingslayer</dt><dd>Week 1's top scorer took the crown. Beat the king and you take it, with the bounty: it starts at $${s.crown.start} and grows $${s.crown.step} every week he keeps it${s.crown.keep ? `, and he earns $${s.crown.keep} of FAAB for each week he survives` : ""}. Regular season only.</dd>` : ""}
           ${s.hangover ? `<dt>The Hangover</dt><dd>Last week's winners can't add free agents or put in waiver claims this week. Trades and lineup moves are fine.</dd>` : ""}
           ${s.ladder ? `<dt>Ladder</dt><dd>The standings are a ladder, starting with the draft order upside down. Each week, before the first game, challenge a team up to ${s.ladder.reach} rung${s.ladder.reach > 1 ? "s" : ""} above you that nobody has booked; beat them and you swap places. Anyone left is paired from the bottom up.${s.playoffTeams ? " The playoffs seed from the ladder." : " The top rung at the end wins."}</dd>` : ""}${s.split ? `<dt>The split</dt><dd>After week ${s.split.after} the table splits in half and each half plays only itself the rest of the regular season. Records carry over; the top half finishes above the bottom half.</dd>` : ""}${s.pyramid ? `<dt>Promotion and relegation</dt><dd>${esc(window.FK.pyramid ? (() => { const r = window.FK.pyramid.rules(s.pyramid); return s.pyramid.tier === 1 ? `The bottom ${r.k} go down to the ${r.names[1]}` : `The top ${r.k} go up to the ${r.names[0]}`; })() : "")}${s.pyramid.mode === "playoff" ? ", plus a one-week playoff for one more place" : ""}.</dd>` : ""}${s.topBonus ? `<dt>Top-score bonus</dt><dd>The week's top scorer gets $${s.topBonus} of FAAB.</dd>` : ""}<dt>Season</dt><dd>${gl() ? `${s.weeks} weeks, until one team is left` : s.playoffTeams ? playoffLine(s) : `${s.weeks} weeks, no playoffs: first place wins`}</dd>${s.trades === false ? `<dt>Trades</dt><dd>None</dd>` : `<dt>Trade deadline</dt><dd>${s.deadline ? `After week ${s.deadline}` : "None"}</dd><dt>Trade review</dt><dd>${s.tradeReview === "none" ? "None" : s.tradeReview === "counter" ? `A ${fmtHours(s.reviewHours)} counter window, no vetoes. Any other team can bid for the same players, offering no more than the deal does, and the selling team can take the bid instead` : s.tradeReview === "commish" ? `The commissioner reviews for ${fmtHours(s.reviewHours)}` : `${fmtHours(s.reviewHours)}, ${Math.round(s.vetoShare * 100)}% of the league to veto`}</dd>${s.tradeMax ? `<dt>Trade size</dt><dd>${s.tradeMax}-for-${s.tradeMax} at most</dd>` : ""}<dt>Offers</dt><dd>Expire after ${fmtHours(s.offerHours || 48)}</dd>`}${s.keepers || s.dynasty ? `<dt>Draft order</dt><dd>${s.draftOrder === "lottery" ? `A lottery for the teams that miss the playoffs${s.lotteryOdds === "weighted" ? ", with more chances for worse records" : ", equal odds"}; playoff teams follow in reverse order of finish, so the champion picks last` : "Worst to first"}</dd>` : ""}</dl></div></div>
-        <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.minIP ? `<dt>Innings</dt><dd>At least ${s.minIP} a week. A team short of it loses ERA and WHIP that week</dd>` : ""}${sport.key === "mlb" ? `<dt>Positions</dt><dd>${(() => { const e = s.elig || S.ELIG; return `A hitter qualifies at a position with ${[e.g && `${e.g} games`, e.gs && `${e.gs} starts`].filter(Boolean).join(" or ")} there, a pitcher at SP with ${e.sp} starts and at RP with ${e.rp} relief appearances: last season's games, and once the season is under way, this season's too`; })()}</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}${s.confMax ? `<dt>Conference limit</dt><dd>At most ${s.confMax} starters from one FBS college conference, by each school's conference this season. Independents like Notre Dame and schools outside FBS have no limit.</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${G.waiverDays(L())} business day${G.waiverDays(L()) === 1 ? "" : "s"} after a drop, at 3 AM Eastern${G.gameLockOn(L()) ? "; a player whose game has started is locked until next week" : ""}`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
+        <div class="stack"><div class="card"><div class="mod-h"><h2>Rosters</h2></div><div class="bd"><dl class="kv"><dt>Starters</dt><dd>${s.lineup.map((x) => `<span class="slot" style="margin:0 3px 3px 0">${esc(x)}</span>`).join("")}</dd><dt>Bench</dt><dd>${s.bench}</dd><dt>IR spots</dt><dd>${s.ir || "None"}</dd>${s.maxAdds ? `<dt>Pickups</dt><dd>Up to ${s.maxAdds} a week, counting adds and won claims</dd>` : ""}${s.minGoalieGames ? `<dt>Goalie minimum</dt><dd>At least ${s.minGoalieGames} appearances a week, or lose goalie categories. Both teams below the minimum tie those categories.</dd>` : ""}${s.minIP ? `<dt>Innings</dt><dd>At least ${s.minIP} a week. A team short of it loses ERA and WHIP that week</dd>` : ""}${sport.key === "mlb" ? `<dt>Positions</dt><dd>${(() => { const e = s.elig || S.ELIG; return `A hitter qualifies at a position with ${[e.g && `${e.g} games`, e.gs && `${e.gs} starts`].filter(Boolean).join(" or ")} there, a pitcher at SP with ${e.sp} starts and at RP with ${e.rp} relief appearances: last season's games, and once the season is under way, this season's too`; })()}</dd>` : ""}${s.posMax && Object.keys(s.posMax).length ? `<dt>Position limits</dt><dd>${Object.entries(s.posMax).map(([k, v]) => `${v} ${esc(k)}`).join(", ")}</dd>` : ""}${s.confMax ? `<dt>Conference limit</dt><dd>At most ${s.confMax} starters from one FBS college conference, by each school's conference this season. Independents like Notre Dame and schools outside FBS have no limit.</dd>` : ""}<dt>Lineups</dt><dd>${bb() ? "Best ball: set automatically" : "Set each week"}</dd>${s.dynasty ? `<dt>Dynasty</dt><dd>Every roster carries over. Each new season opens with a ${s.dynasty.rounds}-round rookie and free agent draft, worst team first${s.dynasty.picks !== false ? ", and next season's picks can be traded" : ""}.</dd>${s.dynasty && s.taxi ? `<dt>Taxi squad</dt><dd>${s.taxi} spot${s.taxi > 1 ? "s" : ""} for rookies and rookie-draft picks, off the roster limit. They can't start, and a promotion is for good.</dd>` : ""}` : s.keepers ? `<dt>Keepers</dt><dd>Up to ${s.keepers}, costing ${{ round: "the round he went in", round1: "one round earlier than he went", free: "a last-round pick", price: "what he went for", price5: "what he went for plus $5" }[s.keeperCost] || "the round he went in"}</dd>` : ""}<dt>Waivers</dt><dd>${s.waivers === "faab" ? `${s.faabBank ? `FAAB from the draft's time bank, $${Math.round(s.faab / 2)} to $${Math.round(s.faab * 1.5)}` : `$${s.faab} FAAB`}${gl() ? " for the whole season" : ""}, ${s.waiverAt != null ? `claims run ${Math.round(s.waiverAt / 24 * 10) / 10} days into each week` : `${G.waiverDays(L())} business day${G.waiverDays(L()) === 1 ? "" : "s"} after a drop, at 3 AM Eastern${G.gameLockOn(L()) ? "; a player whose game has started is locked until next week" : ""}`}` : "Rolling priority"}</dd><dt>Waiver order</dt><dd>${s.waivers === "faab" ? "The highest bid wins. On a tie, the better waiver priority wins" : "The best waiver priority wins"}. Winning a claim sends you to the back of the line, even within the same run.</dd></dl></div></div>
         ${sc().cats ? `<div class="card"><div class="mod-h"><h2>Categories</h2></div><div class="bd">${sc().cats.map((c) => `<span class="slot" style="margin:0 4px 4px 0">${esc(c.label)}</span>`).join("")}<p class="ps">${gl() ? "Each week, teams are ranked in every category: the best gets one point per team alive, the worst gets one. Lowest total is chopped." : "Head to head: win more categories than your opponent to win the week."}</p></div></div>` : ""}
       </div></div></div>`;
     }
@@ -1319,13 +1320,13 @@
       const grouped = !!sport.groups && !pts();
       const views = rosterViews();
       const view = views.some((v) => v[0] === ui.rview) ? ui.rview : views[0][0];
-      const grpOfSlot = (sl) => { const v = sport.slots[sl]; return Array.isArray(v) && v.every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
-      const grpOf = (p) => (p.l && p.l.pit && !(p.l && p.l.bat) ? "pit" : p.l && p.l.bat && !(p.l && p.l.pit) ? "bat" : S.positions(p).every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat");
+      const grpOfSlot = (sl) => U.slotGroup(sport, sl);
+      const grpOf = (p) => U.playerGroup(sport, p);
       function rvCols(grp) {
         const line = (c) => (view === "proj" ? "p" + c.line : c.line);
-        const cats = U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+        const cats = U.statColumns(sport, L().scoring).filter((c) => c.group === grp && c.col !== "gp");
         // games played first: what the rest of the line is out of
-        const gp = { h: "GP", title: view === "proj" ? "Projected games" : "Games played", cls: "r num", cell: (p) => { const v = view === "prev" ? U.prevStat(sport, p, { line: grp, col: "g" }) : S.stat(sport, p, line({ line: grp }), "g"); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } };
+        const gp = { h: "GP", title: view === "proj" ? "Projected games" : "Games played", cls: "r num", cell: (p) => { const col = sport.gamesCol || "g", v = view === "prev" ? U.prevStat(sport, p, { line: grp, col }) : S.stat(sport, p, line({ line: grp }), col); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } };
         if (view === "prev") return [gp].concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.prevStat(sport, p, c); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
         if (view === "stats" || view === "proj") return [gp].concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.statCell(sport, p, Object.assign({}, c, { line: line(c) })); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
         if (view === "ranks") {
@@ -1376,7 +1377,7 @@
           const st = slots.map((sl, i) => [sl, i]).filter(([sl]) => grpOfSlot(sl) === grp).map(([sl, i]) => row(sl, lu[i] ? ctx.byId[lu[i]] : null, i, false, false, grp)).join("");
           const bn = benchIds.map((x) => ctx.byId[x]).filter((p) => p && grpOf(p) === grp).sort((a, b) => a.rank - b.rank).map((p) => row("BN", p, null, false, false, grp)).join("");
           return `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>${title}</th>${cols.map((c) => `<th class="${c.cls || "r num"}"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.h)}</th>`).join("")}<th class="act"></th></tr></thead>
-            <tbody>${st}<tr class="sec" data-dz="bn"><td colspan="${n}">Bench</td></tr>${bn || `<tr data-dz="bn"><td colspan="${n}" class="empty">No ${grp === "pit" ? "pitchers" : "hitters"} on the bench.</td></tr>`}</tbody></table></div>`;
+            <tbody>${st}<tr class="sec" data-dz="bn"><td colspan="${n}">Bench</td></tr>${bn || `<tr data-dz="bn"><td colspan="${n}" class="empty">No ${U.groupLabel(sport, grp).toLowerCase()} on the bench.</td></tr>`}</tbody></table></div>`;
         };
         const ipLine = (() => {
           if (!L().settings.minIP || over() || w !== L().week) return "";
@@ -1386,7 +1387,7 @@
         const irT = irMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Injured reserve, ${ir.length} of ${irMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody data-dz="ir">${irRows}</tbody></table></div>` : "";
         const txT = txMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Taxi squad, ${taxi.length} of ${txMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody>${txRows}</tbody></table></div>` : "";
         return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${/ stats$/.test(n) ? `<span class="lng">${esc(n)}</span><span class="sht">${esc(n.replace(/ stats$/, ""))}</span>` : esc(n)}</button>`).join("")}</div>
-          ${tbl("bat", "Hitters")}${ipLine}${tbl("pit", "Pitchers")}${irT}${txT}`;
+          ${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}${ipLine}${irT}${txT}`;
       }
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
       const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
@@ -1744,7 +1745,7 @@
 
     /* ---------- Matchup ---------- */
     // which stat group a lineup spot is: pitchers' spots (SP, RP, P) or hitters'
-    const slotGrp = (sl) => { const v = sport.slots[sl]; return sport.groups && Array.isArray(v) && v.every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
+    const slotGrp = (sl) => U.slotGroup(sport, sl);
     // A baseball category matchup, Yahoo's way: each team's box for the week, hitters and pitchers apart, every
     // category. A week brought in from Yahoo came as team totals, so it says so instead of making up player lines.
     // A week brought in from another site: its box scores come from a file beside the league (L.imported.boxUrl):
@@ -1784,7 +1785,7 @@
           const tot = o.total && mine.length ? `<tfoot><tr class="mtot"><td></td><td><b>Totals</b></td>${cs.map((c) => cell(sumParts(mine), c)).join("")}</tr></tfoot>` : "";
           return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">${o.empty ? o.empty(title) : `No ${title.toLowerCase()} started.`}</td></tr>`}</tbody>${tot}</table>`;
         };
-        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">${esc(o.sub || "Everyone who started, with the days he started")}</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">${esc(o.sub || "Everyone who started, with the days he started")}</span></div><div class="table-wrap">${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}</div></div>`;
       };
       return mboxWrap(m, box(m.a), box(m.b));
     }
@@ -1910,11 +1911,11 @@
           const dl = G.dailyLines(L(), ctx, team, w), ids = [...new Set(dl.map((x) => x[0].id))];
           const slotOf = (pid) => { for (let d = 6; d >= 0; d--) { const k = G.lineupFor(L(), ctx, team, w, d).indexOf(pid); if (k >= 0 && dl.some((x) => x[0].id === pid && x[2] === d)) return L().settings.lineup[k]; } return "BN"; };
           const tbl = (grp, title) => {
-            const cs = cols(grp), mine = ids.filter((pid) => slotGrp(slotOf(pid)) === grp).sort((a, b) => L().settings.lineup.indexOf(slotOf(a)) - L().settings.lineup.indexOf(slotOf(b)));
+            const cs = cols(grp), mine = ids.filter((pid) => (slotGrp(slotOf(pid)) || U.playerGroup(sport, ctx.byId[pid])) === grp).sort((a, b) => L().settings.lineup.indexOf(slotOf(a)) - L().settings.lineup.indexOf(slotOf(b)));
             const tr = mine.map((pid) => { const p = ctx.byId[pid], x = G.dailyPlayerLine(L(), ctx, team, pid, w), ps = { l: x.line }; return `<tr><td class="c"><span class="slot">${esc(slotOf(pid))}</span></td><td class="nm"><span data-player="${esc(pid)}" style="cursor:pointer">${pname(sport, p, `${x.days} day${x.days === 1 ? "" : "s"}`, { size: "sm" })}</span></td>${cs.map((c) => { const v = U.statCell(sport, ps, c); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`; }).join("");
             return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">No ${title.toLowerCase()} have played yet.</td></tr>`}</tbody></table>`;
           };
-          return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Each player's days in the lineup</span></div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+          return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Each player's days in the lineup</span></div><div class="table-wrap">${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}</div></div>`;
         };
         return mboxWrap(m, dbox(m.a), dbox(m.b));
       }
@@ -1930,7 +1931,7 @@
         // the innings minimum: how far along this team is (short of it, ERA and WHIP go to the other side)
         const min = L().settings.minIP, side = team === m.a ? m.ta : m.tb, ip = side && side.parts && side.parts.era ? side.parts.era[1] : null;
         const ipTag = min && ip != null ? `<span class="tag ${ip >= min ? "win" : m.final ? "loss" : ""}" title="At least ${min} innings a week, or this team loses ERA and WHIP">${S.fmt.ip(ip)} of ${min} IP</span>` : "";
-        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span>${ipTag}</div><div class="table-wrap">${tbl("bat", "Hitters")}${tbl("pit", "Pitchers")}</div></div>`;
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span>${ipTag}</div><div class="table-wrap">${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}</div></div>`;
       };
       return mboxWrap(m, box(m.a, la), box(m.b, lb));
     }
@@ -2026,7 +2027,7 @@
       const lu = (t) => G.lineupFor(L(), ctx, t, wk).filter(Boolean);
       const tot = L().teams.map((t) => { const o = {}; for (const id of lu(t.id)) for (const k of cats) o[k] = (o[k] || 0) + (zc(id)[k] || 0); return o; });
       const need = L().teams.map((t) => Object.fromEntries(cats.map((k) => { const r = 1 + tot.filter((x) => (x[k] || 0) > (tot[t.id][k] || 0)).length; return [k, 0.35 + (r - 1) / Math.max(1, n - 1)]; })));
-      const grp = (id) => { const p = ctx.byId[id]; return p && sport.groups && S.positions(p).every((x) => sport.groups.pit.includes(x)) ? "pit" : "bat"; };
+      const grp = (id) => U.playerGroup(sport, ctx.byId[id]);
       const gain = (t, inn, out) => cats.reduce((a, k) => a + need[t][k] * (inn.reduce((s2, id) => s2 + (zc(id)[k] || 0), 0) - out.reduce((s2, id) => s2 + (zc(id)[k] || 0), 0)), 0);
       const Z = window.FK.season, keepOn = !!(Z && (L().settings.keepers || L().settings.keeperRule));
       // rounds of keeper value: where his projected rank would go in a draft against what keeping him costs
@@ -2094,8 +2095,8 @@
     function watchPage(actions) {
       const mid = me(), w = watch(), q = (ui.pf.q || "").toLowerCase();
       const mine = opts.players.filter((p) => w.includes(p.id) && (!q || p.n.toLowerCase().includes(q)));
-      const groups = sport.groups && !pts() ? [["bat", "Hitters"], ["pit", "Pitchers"]] : [[null, "Players"]];
-      const inGrp = (p, g) => !g || (g === "pit" ? S.positions(p).every((x) => sport.groups.pit.includes(x)) : !S.positions(p).every((x) => sport.groups.pit.includes(x)));
+      const groups = sport.groups && !pts() ? Object.keys(sport.groups).map((g) => [g, U.groupLabel(sport, g)]) : [[null, "Players"]];
+      const inGrp = (p, g) => !g || U.playerGroup(sport, p) === g;
       const tbl = (list, g, title) => {
         const cols = U.poolColumns(sport, { money: auctionLg(), value: pts(), group: g, scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions });
         const rows = U.sortRows(list, cols, ui.psort);
@@ -2251,14 +2252,14 @@
     // His season and projection in the league's own categories, a row each (hitting, pitching, or both for a two-way player)
     function seasonCats(p) {
       const cols = U.statColumns(sport, L().scoring), lines = (sport.data && sport.data.lines) || {}, yr = (sport.data && sport.data.season) || L().season;
-      const groups = ["bat", "pit", "pg"].filter((g) => p.l && (p.l[g] || p.l["p" + g]));
+      const groups = ["bat", "pit", "pg", "sk", "goalie"].filter((g) => p.l && (p.l[g] || p.l["p" + g]));
       if (!groups.length) return "";
       const tbl = (g) => {
-        const cs = cols.filter((c) => (c.group || c.line) === g || (!c.group && !c.line));
+        const cs = cols.filter((c) => ((c.group || c.line) === g || (!c.group && !c.line)) && (!sport.gamesCol || c.col !== sport.gamesCol));
         if (!cs.length) return "";
-        const gp = sport.cols[g] && sport.cols[g].g != null;
-        const row = (lab, line, cls) => `<tr class="${cls}"><th scope="row"><span>${esc(lab)}</span></th>${gp ? `<td class="num">${S.stat(sport, p, line, "g") != null ? Math.round(S.stat(sport, p, line, "g")) : "-"}</td>` : ""}${cs.map((c) => { const v = U.statCell(sport, p, Object.assign({}, c, { line })); return `<td class="num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
-        return `<table class="pc-ln"><thead><tr><th>${g === "pit" ? "Pitching" : g === "bat" ? "Hitting" : "Season"}</th>${gp ? `<th class="num" title="Games">GP</th>` : ""}${cs.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${p.l[g] ? row(String(yr), g, "act") : ""}${lines["p" + g] && p.l["p" + g] ? row(`${Number(yr) ? Number(yr) + 1 : ""} proj`.trim(), "p" + g, "prj") : ""}</tbody></table>`;
+        const gamesCol = sport.gamesCol || "g", gp = sport.cols[g] && sport.cols[g][gamesCol] != null;
+        const row = (lab, line, cls) => `<tr class="${cls}"><th scope="row"><span>${esc(lab)}</span></th>${gp ? `<td class="num">${S.stat(sport, p, line, gamesCol) != null ? Math.round(S.stat(sport, p, line, gamesCol)) : "-"}</td>` : ""}${cs.map((c) => { const v = U.statCell(sport, p, Object.assign({}, c, { line })); return `<td class="num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
+        return `<table class="pc-ln"><thead><tr><th>${sport.groups && sport.groups[g] ? U.groupLabel(sport, g) : "Season"}</th>${gp ? `<th class="num" title="Games">GP</th>` : ""}${cs.map((c) => `<th class="num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${p.l[g] ? row(String(yr), g, "act") : ""}${lines["p" + g] && p.l["p" + g] ? row(sport.key === "nhl" ? "Full-season proj" : `${Number(yr) ? Number(yr) + 1 : ""} proj`.trim(), "p" + g, "prj") : ""}</tbody></table>`;
       };
       return `<div class="pc-lns">${groups.map(tbl).join("")}</div>`;
     }

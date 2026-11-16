@@ -1,4 +1,4 @@
-/* Pure game-box-score helpers. Weekly totals are never presented as a daily NBA/MLB line. */
+/* Pure game-box-score helpers. Weekly totals are never presented as a daily NBA/MLB/NHL line. */
 (function (root) {
   'use strict';
   const day = (at) => { const d = new Date(at); return Number.isFinite(+d) ? new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d) : ''; };
@@ -30,6 +30,13 @@
       return out;
     }
     if (sport === 'nba') return [['PTS','pts'],['REB','reb'],['AST','ast'],['STL','stl'],['BLK','blk'],['3PM','tpm'],['TO','tov'],['MIN','min']].map(([l,k])=>pair(l,k));
+    if (sport === 'nhl') {
+      if (row.goalie) return [['W', 'w'], ['SV', 'saves'], ['SA', 'sa'], ['GA', 'ga'], ['SO', 'so']].map(([l, k]) => pair(l, k, 'goalie')).concat([
+        ['GAA', at('gaa', 'goalie') == null ? '—' : at('gaa', 'goalie').toFixed(2)],
+        ['SV%', at('svp', 'goalie') == null ? '—' : at('svp', 'goalie').toFixed(3).replace(/^0/, '')],
+      ]);
+      return row.sk ? [['G', 'g'], ['A', 'a'], ['PTS', 'pts'], ['+/−', 'pm'], ['PPP', 'ppp'], ['SOG', 'sog'], ['HIT', 'hits'], ['BLK', 'blk']].map(([l, k]) => pair(l, k, 'sk')) : [];
+    }
     const out = [];
     if (row.bat) out.push(['H/AB',`${n('h','bat')}/${n('ab','bat')}`], ...[['R','r'],['HR','hr'],['RBI','rbi'],['SB','sb']].map(([l,k])=>pair(l,k,'bat')));
     if (row.pit) { const outs = at('outs','pit'); out.push(['IP',outs == null ? n('ip','pit') : `${Math.floor(outs/3)}.${outs%3}`], ...[['K','k'],['ER','er'],['BB','bb'],['H','h'],['W','w'],['SV','sv']].map(([l,k])=>pair(l,k,'pit'))); }

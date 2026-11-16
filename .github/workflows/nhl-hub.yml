@@ -48,10 +48,14 @@ jobs:
         run: |
           if [ -f tools/nhl_hub_build.py ]; then python3 tools/nhl_hub_build.py; fi
 
+      - name: Refresh fantasy players and contracts
+        continue-on-error: true
+        run: node tools/fantasykit_nhl.mjs --pool-only
+
       - name: Commit
         run: |
           mkdir -p nhl/data
-          git add tools/nhl_hub nhl/data
+          git add tools/nhl_hub nhl/data fantasy-kit/data/nhl.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

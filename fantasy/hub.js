@@ -1,6 +1,6 @@
-/* Fantasy hub: the overview (/fantasy/) and the sport pages (/fantasy/nba/, /nfl/, /mlb/).
+/* Fantasy hub: the overview (/fantasy/) and the sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/).
 
-   A page says what it is with <body data-page="overview" | "nba" | "nfl" | "mlb">, and this file fills in the parts
+   A page says what it is with <body data-page="overview" | "nba" | "nfl" | "mlb" | "nhl">, and this file fills in the parts
    marked with data-* containers. Load after kit.css, hub.css, faces.css and these scripts (in order):
      fantasy-kit/sports.js, fantasy-kit/value.js, assets/faces.js, fantasy/hub.js
    Rankings, scoring options and categories come straight from Draft Lab (FK.sports, FK.value and its data files), so
@@ -18,6 +18,8 @@
 
   /* ---------- icons and fields ---------- */
   var SPRITE = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>' +
+    '<symbol id="i-nhl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m7 3 4 11 8-3 2 5-10 4a4 4 0 0 1-5-2L2 7"/><ellipse cx="17" cy="5" rx="3.5" ry="1.5"/><path d="M13.5 5v2c0 2 7 2 7 0V5"/></symbol>' +
+    '<symbol id="f-nhl" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><rect x="25" y="25" width="370" height="230" rx="65"/><path d="M210 25v230M140 25v230M280 25v230M60 55v170M360 55v170"/><circle cx="210" cy="140" r="35"/><circle cx="100" cy="85" r="25"/><circle cx="100" cy="195" r="25"/><circle cx="320" cy="85" r="25"/><circle cx="320" cy="195" r="25"/><path d="M60 120a20 20 0 0 1 0 40M360 120a20 20 0 0 0 0 40"/></symbol>' +
     '<symbol id="i-nba" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6c2.4 2.2 3.4 4 3.4 6.4s-1 4.2-3.4 6.4M18.4 5.6c-2.4 2.2-3.4 4-3.4 6.4s1 4.2 3.4 6.4"/></symbol>' +
     '<symbol id="i-nfl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.2 19.8C2.6 14 5 8.4 8.7 5.8 11.6 3.7 16 3.3 19.8 4.2c1.6 5.8-.8 11.4-4.5 14-2.9 2.1-7.3 2.5-11.1 1.6z"/><path d="M9 15l6-6M10.5 10.5l1.5 1.5M12 9l1.5 1.5M9 12l1.5 1.5M5 14.5l4.5 4.5M14.5 5l4.5 4.5"/></symbol>' +
     '<symbol id="i-mlb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M6.2 5.2c2.2 1.9 3.2 4.2 3.2 6.8s-1 4.9-3.2 6.8M17.8 5.2c-2.2 1.9-3.2 4.2-3.2 6.8s1 4.9 3.2 6.8"/><path d="M8.2 8l1.5-.6M9 11l1.6-.2M9 14l1.6.3M15.8 8l-1.5-.6M15 11l-1.6-.2M15 14l-1.6.3" stroke-width="1.4"/></symbol>' +
@@ -89,9 +91,22 @@
       ],
       demos: [["mlb", "BM", "Head to head", "Bullpen Mafia", "f=h"], ["mlb:g", "SD", "Best ball guillotine", "Sudden Death", "f=g"]],
       mine: "yoenis"
+    },
+    nhl: {
+      name: "Hockey", league: "NHL", season: [929, 415], draft: [901, 928],
+      tag: "Build around the stars. Find value on the blue line. Real NHL scoring, separate skater and goalie lineups, and year-by-year contract details.",
+      blurb: "10 categories, hits and blocks, or points. Real NHL contracts.",
+      presets: [["cats10", "10-cat"], ["bangers", "Hits + blocks"], ["points", "Points"]],
+      modes: [
+        { i: "i-bolt", t: "Quick games", d: "Draft a roster for the next full Monday–Sunday scoring week. A winner when that week's games finish.", u: "fantasy-kit/leagues.html?w=1&s=nhl", go: "Start a quick game" },
+        { i: "i-roto", t: "Categories or points", d: "Start with 10 categories, add hits and blocks, or choose your own points. Goalie ratios use actual saves, shots and minutes.", u: "fantasy-kit/leagues.html?s=nhl", go: "Set up a league" },
+        { i: "i-key", t: "Keepers and dynasty", d: "Keep players into next year or carry your whole roster forward. Value forecasts account for different goalie workloads.", u: "fantasy-kit/leagues.html?s=nhl", go: "Build a lasting roster" },
+        { i: "i-cap", t: "Contracts and cap sheets", d: "Compare real NHL cap hits, salary, bonuses and remaining contract years. Open a player card in Draft Lab for the details.", u: "nhl/#/contracts", go: "Explore NHL contracts" }
+      ],
+      demos: [["nhl", "FA", "Head to head", "Frozen Assets", "f=h"], ["nhl:g", "SI", "Best ball guillotine", "Sudden Death on Ice", "f=g"]]
     }
   };
-  var ORDER = ["nba", "nfl", "mlb"];
+  var ORDER = ["nba", "nfl", "mlb", "nhl"];
   var md = function (d) { return (d.getMonth() + 1) * 100 + d.getDate(); };
   var within = function (x, r) { return r[0] <= r[1] ? x >= r[0] && x <= r[1] : x >= r[0] || x <= r[1]; };
   var mdText = function (x) { return MONTHS[Math.floor(x / 100) - 1] + " " + (x % 100); };
@@ -128,6 +143,7 @@
     el.innerHTML = '<div class="wrap">' + link("overview", "Overview", "i-home", ROOT + "fantasy/") + '<span class="sep" aria-hidden="true"></span>' +
       ORDER.map(function (k) { return link(k, SPORTS[k].name, "i-" + k, ROOT + "fantasy/" + k + "/"); }).join("") +
       '<div class="end"><a href="' + KIT + '">Draft Lab</a><a href="' + KIT + 'leagues.html">Your leagues</a><button class="btn fh-theme" type="button" id="theme">Dark mode</button></div></div>';
+    var current = $('[aria-current="page"]', el); if (current) current.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
   /* ---------- Draft Lab data: rankings ---------- */
@@ -154,12 +170,14 @@
     var st = function (l, c) { return S.stat(sp, p, l, c) || 0; };
     if (k === "nba") return f1(st("pg", "pts")) + " pts, " + f1(st("pg", "reb")) + " reb, " + f1(st("pg", "ast")) + " ast";
     if (k === "nfl") return f1(p.fpg) + " pts a game";
+    if (k === "nhl") return p.pos.indexOf("G") >= 0 ? st("goalie", "w") + " W, " + st("goalie", "gaa").toFixed(2) + " GAA, " + avg(st("goalie", "svp")) + " SV%" : st("sk", "g") + " G, " + st("sk", "a") + " A, " + st("sk", "sog") + " SOG";
     var pitcher = p.pos.every(function (x) { return x === "SP" || x === "RP"; });
     if (pitcher) return p.pos.indexOf("RP") >= 0 && st("pit", "sv") > st("pit", "w") ? st("pit", "sv") + " SV, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA" : st("pit", "w") + " W, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA";
     return st("bat", "hr") + " HR, " + st("bat", "sb") + " SB, " + avg(st("bat", "avg"));
   }
   function face(k, p, size) {
     var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][p.t];
+    if (k === "nhl") return '<span class="ds-face has-face" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("")) + '</span><img src="' + esc(p.head) + '" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'has-face\');this.remove()"></span>';
     var id = k === "nba" ? p.espn : k === "mlb" ? p.id : null;
     return window.DSFaces ? window.DSFaces.html({ sport: k, id: id, name: p.n, color: c || "#33415c", size: size }) : "";
   }
@@ -289,7 +307,7 @@
     board($("[data-board]"), k);
     demos($("[data-demos]"), k);
     var side = $("[data-side]");
-    if (side) side.innerHTML = s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'hardcap/">' + field("nba") + "<small>" + ic("i-cap") + "League type</small><b>Hard Cap</b><span>Salary-cap dynasty on real NBA contracts: one hard line, and a Prospect Board for the next class.</span><em class=\"go\">Open Hard Cap</em></a>";
+    if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'hardcap/">' + field("nba") + "<small>" + ic("i-cap") + "League type</small><b>Hard Cap</b><span>Salary-cap dynasty on real NBA contracts: one hard line, and a Prospect Board for the next class.</span><em class=\"go\">Open Hard Cap</em></a>";
     $("[data-modes]").innerHTML = s.modes.map(function (m) {
       return '<a class="mode" href="' + ROOT + m.u + '"><span class="mi">' + ic(m.i) + "</span><b>" + esc(m.t) + (m.n ? ' <em class="new">New</em>' : "") + "</b><span>" + esc(m.d) + '</span><span class="go">' + esc(m.go) + " &rarr;</span></a>";
     }).join("");

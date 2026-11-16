@@ -140,8 +140,8 @@ window.PROJECTS = [
     url: "fantasy/",
     action: "Pick a sport",
     question: "What if every league I play in ran on the same draft room and the same season engine?",
-    summary: "The hub for the basketball, football and baseball leagues, with mock drafts against bots, rankings and demo leagues for each sport.",
-    facts: [["3", "sports on one kit"], ["6", "draft formats, from snake to white elephant"], ["6", "demo leagues that play in real time"]],
+    summary: "The hub for the basketball, football, baseball and hockey leagues, with mock drafts against bots, rankings and demo leagues for each sport.",
+    facts: [["4", "sports on one kit"], ["9", "draft formats, from snake to sealed lists"], ["8", "demo leagues that play in real time"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
     cover: { image: "assets/covers/fantasy.svg", bg: "#13233A", band: "#F6C445" }
   },
