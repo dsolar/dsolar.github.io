@@ -3,7 +3,7 @@
 Rosters are refreshed once a day; ratings and game snapshots on each run. A failed
 source retains its last successful data with its original timestamp.
 """
-import argparse, concurrent.futures, datetime as dt, json, math, pathlib, re, sys, time, unicodedata, urllib.request
+import argparse, concurrent.futures, datetime as dt, gzip, json, math, pathlib, re, sys, time, unicodedata, urllib.request, zlib
 import xml.etree.ElementTree as ET
 from zoneinfo import ZoneInfo
 
@@ -31,9 +31,26 @@ def norm(s):
 def pct(a,b):
  return round(a/b*100,2) if a is not None and b is not None and b>0 else None
 
+def decode_body(raw,encoding="",charset=None):
+ for enc in reversed([x.strip().lower() for x in encoding.split(",") if x.strip()]):
+  if enc=="gzip":raw=gzip.decompress(raw)
+  elif enc=="deflate":
+   try:raw=zlib.decompress(raw)
+   except zlib.error:raw=zlib.decompress(raw,-zlib.MAX_WBITS)
+  elif enc=="br":
+   import brotli
+   raw=brotli.decompress(raw)
+  elif enc!="identity":raise ValueError("Unsupported content encoding: "+enc)
+ # Some caches omit the gzip header even though the payload is compressed.
+ if raw.startswith(b"\x1f\x8b"):raw=gzip.decompress(raw)
+ return raw.decode(charset or "utf-8-sig")
+
 def get(url):
- req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"text/html,application/json"})
- with urllib.request.urlopen(req,timeout=25) as r:return r.read().decode("utf-8-sig")
+ req=urllib.request.Request(url,headers={"User-Agent":UA,"Accept":"text/html,application/json","Accept-Encoding":"identity"})
+ with urllib.request.urlopen(req,timeout=25) as r:
+  raw=r.read();encoding=r.headers.get("Content-Encoding","");charset=r.headers.get_content_charset()
+  try:return decode_body(raw,encoding,charset)
+  except Exception as e:raise ValueError(f"Response decode failed ({encoding or 'identity'}, {charset or 'utf-8'}, prefix={raw[:6].hex()}): {e}") from e
 
 def source_get(key,url,seed=False):
  p=ROOT/f"tools/cbb_sources/{key}.txt"

@@ -2,6 +2,12 @@ import importlib.util,pathlib,unittest
 P=pathlib.Path(__file__).resolve().parents[1]/"tools/cbb_build.py"
 spec=importlib.util.spec_from_file_location("cbb_build",P);B=importlib.util.module_from_spec(spec);spec.loader.exec_module(B)
 class ImporterTests(unittest.TestCase):
+ def test_compressed_http_responses_decode_before_parsing(self):
+  import gzip,zlib,brotli
+  raw='<mydata><team name="José"/></mydata>'.encode()
+  for payload,enc in [(gzip.compress(raw),"gzip"),(zlib.compress(raw),"deflate"),(brotli.compress(raw),"br")]:
+   self.assertEqual(B.decode_body(payload,enc),raw.decode())
+  self.assertEqual(B.decode_body(gzip.compress(raw)),raw.decode())
  def test_sentinel_values_are_not_real_team_performance(self):
   self.assertIsNone(B.number("-999",True));self.assertIsNone(B.number("999.0000",True));self.assertEqual(B.number("0",True),0);self.assertIsNone(B.number("NaN"))
  def test_roster_statistics_keep_zero_and_leave_absent_metrics_missing(self):
