@@ -49,6 +49,8 @@
     if (s.posMax && Object.keys(s.posMax).length) settings.posMax = Object.assign({}, s.posMax);
     // at most this many starters from one college conference
     if (s.confMax) settings.confMax = s.confMax;
+    // a conference-only pool (AL or NL, AFC or NFC, East or West)
+    if (({ mlb: ["AL", "NL"], nfl: ["AFC", "NFC"], nba: ["East", "West"] }[D.sport] || []).includes(s.poolOnly)) settings.poolOnly = s.poolOnly;
     // weekly extras: a game against the league median, best ball lineups, divisions
     if (s.median) settings.median = true;
     // a one-week league has no trades: there's no week after this one to build for

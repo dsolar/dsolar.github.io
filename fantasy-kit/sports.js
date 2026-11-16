@@ -393,8 +393,30 @@
   }
 
   // A league drawn from a few pro teams (a showdown's one game): doc is a draft (its season) or a league (its settings).
-  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || null;
-  const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t); };
+  /* A conference-only player pool (settings.poolOnly / D.season.poolOnly): AL or NL baseball, AFC or NFC football,
+     East or West basketball. Only that half's players can be drafted or added. A rostered player traded to the other
+     half stays on his roster but stops scoring (the AL-only rule), and a player traded in joins the free agents. */
+  const POOL_SETS = {
+    mlb: { AL: ["ATH", "BAL", "BOS", "CLE", "CWS", "DET", "HOU", "KC", "LAA", "MIN", "NYY", "SEA", "TB", "TEX", "TOR"], NL: ["ARI", "ATL", "CHC", "CIN", "COL", "LAD", "MIA", "MIL", "NYM", "PHI", "PIT", "SD", "SF", "STL", "WSH"] },
+    nfl: { AFC: ["BAL", "BUF", "CIN", "CLE", "DEN", "HOU", "IND", "JAX", "KC", "LAC", "LV", "MIA", "NE", "NYJ", "PIT", "TEN"], NFC: ["ARI", "ATL", "CAR", "CHI", "DAL", "DET", "GB", "LAR", "MIN", "NO", "NYG", "PHI", "SEA", "SF", "TB", "WAS"] },
+    nba: { East: ["ATL", "BOS", "BRK", "CHO", "CHI", "CLE", "DET", "IND", "MIA", "MIL", "NYK", "ORL", "PHI", "TOR", "WAS"], West: ["DAL", "DEN", "GSW", "HOU", "LAC", "LAL", "MEM", "MIN", "NOP", "OKC", "PHO", "POR", "SAC", "SAS", "UTA"] },
+  };
+  const POOL_NAMES = { AL: "AL-only", NL: "NL-only", AFC: "AFC-only", NFC: "NFC-only", East: "East-only", West: "West-only" };
+  const poolRuleOf = (doc) => (doc && ((doc.settings && doc.settings.poolOnly) || (doc.season && doc.season.poolOnly))) || null;
+  const poolTeams = (sportKey, rule) => (rule && POOL_SETS[sportKey] && POOL_SETS[sportKey][rule]) || null;
+  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || poolTeams(doc && doc.sport, poolRuleOf(doc)) || null;
+  // everyone on a league's rosters (a player traded out of a conference-only pool keeps his spot)
+  const rosteredSets = typeof WeakMap !== "undefined" ? new WeakMap() : null;
+  function rostered(doc, id) {
+    if (!doc || !Array.isArray(doc.rosters)) return false;
+    let hit = rosteredSets && rosteredSets.get(doc);
+    const key = doc.rosters.map((r) => r.length).join(",");
+    if (!hit || hit.key !== key) { hit = { key, set: new Set(doc.rosters.flat()) }; if (rosteredSets) rosteredSets.set(doc, hit); }
+    return hit.set.has(id);
+  }
+  const inPool = (doc, p) => { const t = poolOf(doc); return !t || t.includes(p.t) || (!!poolRuleOf(doc) && rostered(doc, p.id)); };
+  // a rostered player whose team is outside a conference-only pool: he doesn't score
+  const outOfPool = (doc, p) => { const rule = poolRuleOf(doc), t = rule && poolTeams(doc.sport, rule); return !!(t && p && !t.includes(p.t)); };
   /* Baseball position eligibility. The feed works out each player's positions Yahoo's way (ELIG: a hitter qualifies at
      a position with 10 games or 5 starts there, a pitcher at SP with 3 starts and at RP with 5 relief appearances, from
      last season and, once it's under way, this one) and carries the counts behind them (p.pg: one { pos: [games,
@@ -473,5 +495,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

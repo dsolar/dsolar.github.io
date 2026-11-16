@@ -480,6 +480,8 @@
     return S.pointsOf(sc, p, at);
   };
   function playerWeek(L, ctx, p, w, frac = 1, whole) {
+    // traded out of a conference-only pool: he keeps his roster spot but doesn't score
+    if (S.outOfPool && S.outOfPool(L, p)) return scoring(L, ctx).type === "points" ? { pts: 0, out: true } : {};
     const form = formOf(L, p, w);
     const sc = scoring(L, ctx);
     const rw = realWeek(L, ctx, w);
@@ -538,7 +540,7 @@
     for (let d = 0; d < 7; d++) {
       const raw = d < td ? dayEntry(L, teamId, w, d) : null;
       for (const id of (raw || lineupFor(L, ctx, teamId, w, d)).filter(Boolean)) {
-        const p = ctx.byId[id], ls = dayLines(L, ctx, p, w, d);
+        const p = ctx.byId[id], ls = p && S.outOfPool && S.outOfPool(L, p) ? null : dayLines(L, ctx, p, w, d);
         if (ls) for (const l of ls) out.push([p, l, d]);
       }
     }
@@ -1812,6 +1814,8 @@
     const ros = L.rosters[teamId].filter((id) => !(drops || []).includes(id));
     const hg = add && pickup ? hungover(L, teamId) : null;
     if (hg) return { ok: false, why: hg };
+    // a conference-only league: a player who now plays in the other half can't be added
+    if (add && pickup && S.outOfPool && ctx.byId[add] && S.outOfPool(L, ctx.byId[add])) return { ok: false, why: `${ctx.byId[add].n} plays outside this ${S.POOL_NAMES[S.poolRuleOf(L)] || "conference-only"} league now` };
     if (add && pickup && pickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAdds} pickups this week` };
     if (add && pickup && seasonPickupsLeft(L, teamId) <= 0) return { ok: false, why: `You've used all ${L.settings.maxAddsSeason} pickups for the season` };
     // settings.posMax { QB: 4 }: at most that many players whose main position it is

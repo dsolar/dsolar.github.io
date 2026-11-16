@@ -243,6 +243,10 @@ owns which team, the invite code and the save order. It also stamps each team's 
   categories wins, or each category counts with `settings.tally: "cats"`), all-play for points (`tally: "allplay"`),
   rotisserie (`format: "roto"`, season totals ranked per category), and best ball guillotine. Roster rules:
   `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
+- **Player pool.** `D.season.poolOnly` / `settings.poolOnly`: `"AL"` or `"NL"` (baseball), `"AFC"` or `"NFC"`, `"East"` or
+  `"West"` (`FK.sports.POOL_SETS`). Only that half can be drafted or added (`inPool`). A rostered player traded to the
+  other half keeps his spot but scores nothing (`outOfPool`, checked in `playerWeek`) and can't be added back once
+  dropped; a player traded in joins the free agents. `node --test tests/fantasypool.test.mjs` covers it.
 - **Invites.** The commissioner shares `leagues.html?join=<id>&code=<invite>`. Whoever opens it signs in and picks an
   open team. Teams nobody has claimed are bots, and a bot's team can be taken over later.
 - **Live nudges.** Every save and chat post sends a nudge over Supabase Realtime (a database trigger posts to the

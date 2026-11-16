@@ -75,7 +75,10 @@
     const LOCK = `<svg class="lk-i" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.6" fill="currentColor"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>`;
     /* ---------- the heist's results ---------- */
     // a player's heist mark: stolen (1.5x for his new team) or jinxed (half)
-    const heistTag = (p) => { const m = p && L().pmult && L().pmult[p.id], et = p && L().etags && L().etags[p.id]; return !m || m === 1 ? ""
+    const heistTag = (p) => poolTag(p) + elTag(p);
+    // a conference-only league: a rostered player traded to the other half keeps his spot but doesn't score
+    const poolTag = (p) => (p && S.outOfPool && S.outOfPool(L(), p) ? ` <span class="tag loss" title="Traded out of this ${esc(S.POOL_NAMES[S.poolRuleOf(L())] || "")} league: he doesn't score">Out of ${esc(S.poolRuleOf(L()))}</span>` : "");
+    const elTag = (p) => { const m = p && L().pmult && L().pmult[p.id], et = p && L().etags && L().etags[p.id]; return !m || m === 1 ? ""
       : et === "stolen" ? ` <span class="tag loss" title="Stolen in the white elephant draft: scores ${Math.round(m * 100)}% all season">Stolen ${Math.round(m * 100)}%</span>`
       : et === "golden" ? ` <span class="tag gold" title="A make-up pick after a steal: scores ${Math.round(m * 100)}% all season">Golden ${Math.round(m * 100)}%</span>` : m > 1 && L().settings.cap ? ` <span class="tag win" title="Nobody else picked him: he scores ${m}x">Unique ${m}x</span>` : m > 1 ? ` <span class="tag win" title="Stolen in the heist: scores ${m}x">${m}x</span>` : ` <span class="tag loss" title="Jinxed in the heist: scores ${m === 0.5 ? "half" : m + "x"}">Jinxed</span>`; };
     // One matchup's heist, both sides: what each team shielded, and every strike with how it landed

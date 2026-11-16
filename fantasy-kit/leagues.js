@@ -73,7 +73,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, capBudget: 100, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, capBudget: 100, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -467,6 +467,7 @@
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverDays}-day waivers` : `Rolling, ${form.waiverDays}-day waivers`,
       trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
       carry: form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Up to ${form.keepN} keepers` : "Redraft",
+      pool: form.poolOnly && poolHalves(sp).includes(form.poolOnly) ? S.POOL_NAMES[form.poolOnly] : "Every team",
       vampire: form.vampOn ? (form.vampWho === "me" ? "You're the vampire" : "A random team") : "Off",
     };
   }
@@ -566,6 +567,7 @@
     rows.push(["scoring", "Scoring details", sp.key === "nfl" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
     if (heist()) rows.push(["heist", "Heist", "Shields, steals, jinxes and its clock", V.heist, () => heistBody()]);
     if (!slateOn() && !heist()) rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
+    if (!oneWeek()) rows.push(["pool", "Player pool", `Every team, or ${{ mlb: "AL or NL", nfl: "AFC or NFC", nba: "East or West" }[sp.key]} only`, V.pool, () => poolBody(sp)]);
     if (!noRoom()) rows.push(["draft", "Draft room", form.type === "mystery" ? "When packages open, trades during the draft" : form.type === "elephant" ? "Steals, the steal tax, the golden pick" : "Trades during the draft", V.draft, () => draftBody()]);
     if (!oneWeek()) rows.push(["season", "Season", form.season === "guillotine" ? "Length" : "Length and divisions", V.season, () => seasonBody(sp)]);
     if (h2hLike() && !oneWeek()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
@@ -648,6 +650,14 @@
     return "";
   }
 
+  // a conference-only pool: AL or NL baseball, AFC or NFC football, East or West basketball
+  const poolHalves = (sp) => Object.keys((S.POOL_SETS || {})[sp.key] || {});
+  function poolBody(sp) {
+    const halves = poolHalves(sp), cur = halves.includes(form.poolOnly) ? form.poolOnly : "";
+    const n = form.teams, deep = n * 2;
+    const hint = cur ? `Only ${esc(cur)} players can be drafted or added: ${n} teams drafting from half the ${esc(sp.league)} is about as deep as a ${deep}-team league with every team.${deep > 24 ? " <b>Very deep:</b> close to everyone with a regular role gets drafted, and the waiver wire will be thin." : ""} A player traded to the other ${sp.key === "mlb" ? "league" : "conference"} stays on his roster but stops scoring, and anyone traded in joins the free agents.` : "";
+    return fld("Players from", seg("poolOnly", [["", "Every team"]].concat(halves.map((h) => [h, S.POOL_NAMES[h]])), cur, "Player pool", { wrap: true }), hint);
+  }
   function rosterStep(sp) {
     const bench = benchOf(sp);
     const pm = (POS_MAIN[sp.key] || []).map((ps) => `<div class="pm"><span class="pm-l">${esc(ps)}</span>${stepper("pm_" + ps, [0, 1, 2, 3, 4, 5, 6, 8], form.posMax[ps] || 0, (x) => (x ? `Up to ${x}` : "Any"), `Most ${ps} on a roster`)}</div>`).join("");
@@ -786,7 +796,8 @@
       const slu = slate && !heist() ? SL.lineup(slate.games.length, form.teams, form.sport) : null;
       const lineup = slu ? slu.lineup.slice() : lineupOf(sport).filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
       const bench = capOn() ? 0 : slu ? slu.bench : benchOf(sport);
-      const players = data.players.filter((p) => !slate || slate.teams.includes(p.t)).map((p) => Object.assign({}, p));
+      const half = !oneWeek() && S.poolTeams ? S.poolTeams(form.sport, form.poolOnly) : null;
+      const players = data.players.filter((p) => (!slate || slate.teams.includes(p.t)) && (!half || half.includes(p.t))).map((p) => Object.assign({}, p));
       const scoring = spec ? "custom" : sport.scorings[form.scoring] ? form.scoring : Object.keys(sport.scorings)[0];
       const n = form.teams, total = n * (lineup.length + bench);
       // can the player pool fill it? every one-position slot needs a player per team, and so does every roster spot
@@ -857,6 +868,7 @@
       }
       if (gl && form.tbOn) D.season.topBonus = form.tbAmt;
       if (form.sport === "nfl" && form.confOn) D.season.confMax = 2;
+      if (!oneWeek() && poolHalves(S[form.sport]).includes(form.poolOnly)) D.season.poolOnly = form.poolOnly;
       if (heist()) Object.assign(D.season, { heist: { shields: form.hzShields, steals: form.hzSteals, jinxes: form.hzJinxes, clock: form.hzClock }, ir: 0 });
       if (oneWeek()) Object.assign(D.season, { weeks: 1, when: D.season.when || (form.when === "next" || form.sport === "mlb" ? "next" : "now"), oneWeek: true });
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: oneWeek() ? 0 : form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: n <= 2 && form.review === "vote" ? "none" : form.review, waiverDays: form.waiverDays, gameLock: form.gameLock || (form.sport === "nfl" ? "week" : "off"), reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
@@ -1009,7 +1021,7 @@
     // a shorter season can't keep a deadline past its end; go back to the default for the new length
     if (form.weeks !== was.weeks && form.deadline != null && form.deadline >= form.weeks) form.deadline = null;
     // a new sport starts from its own lineup; a new season format from its own budget
-    if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; form.weights = null; form.cats = null; form.posMax = {}; form.sx = SX.empty(); }
+    if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; form.weights = null; form.cats = null; form.posMax = {}; form.sx = SX.empty(); form.poolOnly = ""; }
     if (form.season !== was.season) form.faab = null;
     redraw(e.target.id);
   });
