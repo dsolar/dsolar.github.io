@@ -76,3 +76,16 @@ test("a live scoreboard response updates scores and credits its refresh time",as
   assert.ok(w.document.querySelector(".tag.live"));
  }finally{w.close();}
 });
+
+test("the college hub is registered once and the sport switcher preserves page intent",async()=>{
+ const w=await boot("#/rankings");try{
+  w.eval(fs.readFileSync(path.join(ROOT,"assets/projects.js"),"utf8"));
+  assert.equal(w.PROJECTS.filter(p=>p.url==="cbb/").length,1);
+  assert.equal(w.PROJECTS.find(p=>p.url==="cbb/").hub,true);
+  w.eval(fs.readFileSync(path.join(ROOT,"assets/hubswitch.js"),"utf8"));
+  w.document.dispatchEvent(new w.Event("DOMContentLoaded"));await pause(10);
+  const nav=w.document.querySelector(".hubswitch");assert.ok(nav);
+  assert.equal(nav.querySelector('[data-hub="cbb"]').getAttribute("aria-current"),"page");
+  assert.ok(nav.querySelector('[data-hub="nhl"]').href.endsWith("/nhl/#/standings"));
+ }finally{w.close();}
+});

@@ -230,7 +230,7 @@ document.addEventListener("click",e=>{
  if(b.dataset.player){openPlayer(b.dataset.player);return;}
  if(b.dataset.learn){learn(b.dataset.learn);return;}
  if(b.dataset.favorite){
-  const id=b.dataset.favorite;if(faves.has(id))faves.delete(id);else faves.add(id);save("ds-cbb:favorites",[...faves]);render();return;
+  const id=b.dataset.favorite;if(faves.has(id))faves.delete(id);else faves.add(id);save("ds-cbb:favorites",[...faves]);render();view.querySelector('[data-favorite="'+id+'"]')?.focus({preventScroll:true});return;
  }
  if(b.dataset.sort){
   // Roster tables in a team profile use their own default; full sorting is in the player pool.

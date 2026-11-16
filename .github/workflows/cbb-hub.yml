@@ -30,11 +30,13 @@ jobs:
         with:
           node-version: "24"
       - name: Build current college basketball data
-        run: python3 tools/cbb_build.py --seed-cache
+        run: python3 tools/cbb_build.py
       - name: Check JavaScript
         run: |
           node --check cbb/model.js
           if [ -f cbb/app.js ]; then node --check cbb/app.js; fi
+          node --check assets/hubswitch.js
+          node --check assets/projects.js
       - name: Verify calculations, imports and actual data
         run: |
           python3 -m unittest discover -s tests -p 'cbb_*test.py'
