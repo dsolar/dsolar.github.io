@@ -75,7 +75,9 @@
     const LOCK = `<svg class="lk-i" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><rect x="3" y="7" width="10" height="7.5" rx="1.6" fill="currentColor"/><path d="M5.2 7V5.2a2.8 2.8 0 0 1 5.6 0V7" fill="none" stroke="currentColor" stroke-width="1.7"/></svg>`;
     /* ---------- the heist's results ---------- */
     // a player's heist mark: stolen (1.5x for his new team) or jinxed (half)
-    const heistTag = (p) => poolTag(p) + elTag(p);
+    const heistTag = (p) => poolTag(p) + gradTag(p) + elTag(p);
+    // a taxi prospect who graduated: promote him, or he's promoted for you
+    const gradTag = (p) => { const g = p && L().grad && L().grad[p.id]; return g ? ` <span class="tag gold" title="He's not a prospect anymore. Promote him from the taxi squad, or he's promoted after week ${g.week + 2}">Graduated: promote by week ${g.week + 2}</span>` : ""; };
     // a conference-only league: a rostered player traded to the other half keeps his spot but doesn't score
     const poolTag = (p) => (p && S.outOfPool && S.outOfPool(L(), p) ? ` <span class="tag loss" title="Traded out of this ${esc(S.POOL_NAMES[S.poolRuleOf(L())] || "")} league: he doesn't score">Out of ${esc(S.poolRuleOf(L()))}</span>` : "");
     const elTag = (p) => { const m = p && L().pmult && L().pmult[p.id], et = p && L().etags && L().etags[p.id]; return !m || m === 1 ? ""

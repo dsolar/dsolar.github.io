@@ -71,6 +71,12 @@
     } else if (s.format === "guillotine" && s.topBonus) settings.topBonus = cl(s.topBonus, 0, 500, 25);
     if (s.dynasty) settings.dynasty = { rounds: s.dynasty.rounds || 3, picks: s.dynasty.picks !== false };
     if (s.dynasty && s.taxi) settings.taxi = Math.max(0, Math.min(6, s.taxi | 0));
+    // prospect rounds: their picks start on the taxi squad, which has room for at least all of them
+    if (D.prospects && !D.carry) {
+      settings.prospects = { rule: D.prospects.rule, rounds: D.prospects.rounds };
+      settings.taxi = Math.max(settings.taxi || 0, D.prospects.rounds);
+      D.taxi = D.teams.map((t, i) => [...new Set(((D.taxi && D.taxi[i]) || []).concat(F.prospectPicks(D, t.id)))]);
+    }
     // keepers: how many each team carries into next season, and what each one costs
     if (s.keepers) { settings.keepers = s.keepers; settings.keeperCost = s.keeperCost || (D.type === "auction" ? "price" : "round"); }
     // a climbing keeper rule comes over from last season (nextDraft) or the form
@@ -107,6 +113,8 @@
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
     // each keeper's cost history: what he was first worth, and the years he's been kept (this one counted)
     if (D.keepInfo) L.keepInfo = JSON.parse(JSON.stringify(D.keepInfo));
+    // a league's own extra players (a prospect pool) stay with it
+    if (Array.isArray(D.extraPlayers) && D.extraPlayers.length && !L.extraPlayers) L.extraPlayers = D.extraPlayers.slice();
     // its kickoff locks everyone, even before a page has seen the live feed
     if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
     if (sl && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sl.games.flatMap((g) => [[g.away, Date.parse(g.at)], [g.home, Date.parse(g.at)]])) };

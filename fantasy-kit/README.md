@@ -243,6 +243,15 @@ owns which team, the invite code and the save order. It also stamps each team's 
   categories wins, or each category counts with `settings.tally: "cats"`), all-play for points (`tally: "allplay"`),
   rotisserie (`format: "roto"`, season totals ranked per category), and best ball guillotine. Roster rules:
   `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
+- **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
+  after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the
+  taxi squad (`settings.prospects`, at least that many taxi spots, keeper leagues included). The pool rides with the
+  league as `D.extraPlayers` (`FK.sports.prospectPlayers`: FanGraphs' board for baseball, the Big Board's next class for
+  football and basketball), laid in with `FK.sports.withExtras`, pages and the clock job alike. Rules: `"strict"`, never
+  in the bigs; `"loose"`, rookie-eligible (130 AB / 50 IP), plus this season's rookies. Each week `prospectUpkeep`
+  swaps a Big Board prospect to his pro record once he has one, flags a taxi prospect who graduated (`L.grad`), and
+  promotes him two weeks later. The room's player list shows prospects (rank `P12`) during those rounds.
+  `node --test tests/fantasyprospects.test.mjs` covers it.
 - **The lobby** (`lobby.js`): until the draft starts, the draft room opens on a Lobby tab: the draft time with an
   `.ics` file and a Google Calendar link, I'm ready (`D.ready`), a practice mock of this exact draft against bots
   (saved only on that device), the draft order with who has each team and who's ready, the rules in a few lines, and

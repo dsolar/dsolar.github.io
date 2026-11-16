@@ -81,7 +81,8 @@
     { const el = (L && L.settings.elig) || (D.season && D.season.elig); if (el && k === "mlb") S.applyElig(players, el); }
     // players the feed doesn't carry (a prospect, someone hurt all year) come with the league itself (doc.extraPlayers)
     { const hide = new Set((L && L.hidePlayers) || D.hidePlayers || []); if (hide.size) players = players.filter((p) => !hide.has(p.id)); }
-    { const have = new Set(players.map((p) => p.id)), xs = (L && L.extraPlayers) || D.extraPlayers; if (Array.isArray(xs)) for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); }
+    // (prospects too: S.withExtras marks a prospect who's already in the player file instead of adding him twice)
+    S.withExtras(players, { extraPlayers: (L && L.extraPlayers) || D.extraPlayers });
     if (L || bb) await loadWeeks();
     else loadWeeks().then((w) => { if (!w) return; if (mode === "league") mount(); livePoll(); });
     const [market, dr, pros] = await extras;

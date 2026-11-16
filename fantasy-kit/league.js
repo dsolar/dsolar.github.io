@@ -12,10 +12,11 @@
    Everything that changes the league takes `now` (ms) and stays deterministic for the same calls. */
 (function (root, factory) {
   const FK = root.FK || {};
-  const m = factory(FK.sports || (typeof require !== "undefined" ? require("./sports.js") : null), FK.draft || (typeof require !== "undefined" ? require("./draft.js") : null), FK.value || (typeof require !== "undefined" ? require("./value.js") : null));
+  const m = factory(FK.sports || (typeof require !== "undefined" ? require("./sports.js") : null), FK.draft || (typeof require !== "undefined" ? require("./draft.js") : null), FK.value || (typeof require !== "undefined" ? require("./value.js") : null),
+    FK.rules || (typeof require !== "undefined" ? (() => { try { return require("./rules.js"); } catch (e) { return null; } })() : null));
   if (typeof module !== "undefined" && module.exports) module.exports = m;
   else (root.FK = root.FK || {}).league = m;
-})(this, function (S, F, V) {
+})(this, function (S, F, V, RLIST) {
   "use strict";
   const sum = (a) => a.reduce((s, x) => s + x, 0);
   const DAY = 864e5, HOUR = 36e5;
@@ -86,7 +87,7 @@
     if (s.pyo) { s.divisions = 0; delete L.divs; pyoOpen(L, null, 2, L.created); }
     for (const k of ["robin", "conquest", "crown", "hangover"]) if (s[k] && (guillotine || s.format === "roto")) delete s[k];
     // one raid twist at a time, none in a dynasty (rules.js; optional where it isn't loaded)
-    const RL = (typeof self !== "undefined" && self.FK && self.FK.rules) || (typeof require !== "undefined" ? (() => { try { return require("./rules.js"); } catch (e) { return null; } })() : null);
+    const RL = RLIST;
     if (RL) { const gone = RL.cleanSettings(s); if (gone.includes("vampire")) { delete L.bites; } }
     if (s.topBonus && !guillotine) delete s.topBonus;
     if (s.crown) L.crown = { king: s.crown.king != null && teams[s.crown.king] ? s.crown.king : null, pot: s.crown.start != null ? s.crown.start : 10, since: 1, reigns: [] };
@@ -2004,8 +2005,67 @@
   // he can't go back. A player traded off a taxi squad arrives active.
   const taxiOf = (L, t) => (L.taxi && L.taxi[t]) || [];
   const held = (L, t) => (L.ir[t] || []).concat(taxiOf(L, t));
-  const taxiSlots = (L) => (L.settings.dynasty ? Math.max(0, L.settings.taxi || 0) : 0);
-  const taxiEligible = (L, ctx, pid) => { const p = ctx.byId[pid]; return !!p && !(L.promoted && L.promoted[pid]) && !!(p.rk || (L.taxiOk && L.taxiOk[pid])); };
+  const taxiSlots = (L) => (L.settings.dynasty || L.settings.prospects ? Math.max(0, L.settings.taxi || 0) : 0);
+  const taxiEligible = (L, ctx, pid) => { const p = ctx.byId[pid]; return !!p && !(L.promoted && L.promoted[pid]) && !!(p.rk || (L.taxiOk && L.taxiOk[pid]) || (L.settings.prospects && S.isProspect(L.settings.prospects.rule, p) && !graduated(L, ctx, p))); };
+
+  /* ---------- prospects (settings.prospects = { rule, rounds }) ---------- */
+  // A prospect graduates when he isn't one anymore: baseball's strict rule, any big-league time; the loose rule,
+  // 130 at-bats or 50 innings (rookie limits). Football and basketball prospects graduate when they're drafted (linked
+  // to their pro record, below), under the strict rule; the loose rule keeps them through their rookie season.
+  function graduated(L, ctx, p) {
+    const pr = L.settings.prospects;
+    if (!pr || !p) return false;
+    if (ctx.sport.key === "mlb") {
+      const st = (line, col) => S.stat(ctx.sport, p, line, col) || 0;
+      if (pr.rule === "loose") return st("bat", "ab") >= 130 || st("pit", "ip") >= 50;
+      return st("bat", "g") + st("pit", "g") > 0 || st("bat", "pa") > 0 || st("pit", "ip") > 0;
+    }
+    return pr.rule === "loose" ? false : !p.pro;
+  }
+  const GRAD_WEEKS = 2;
+  const normName = (n) => String(n || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z]/g, "").replace(/(jr|sr|ii|iii|iv)$/, "");
+  // Every week: (1) a drafted prospect from the Big Board (id bb:...) who now has a pro record is swapped to it, so he
+  // scores; (2) a taxi prospect who graduated is flagged (L.grad) and promoted GRAD_WEEKS weeks later if his team
+  // hasn't. A promotion that leaves a roster over the limit means a cut, as after a dynasty's rookie draft.
+  function prospectUpkeep(L, ctx, now) {
+    if (!L.settings.prospects) return 0;
+    let n = 0;
+    const owned = new Set(L.rosters.flat());
+    const pros = {};
+    for (const p of ctx.players) if (!/^(bb|fg):/.test(p.id) && !owned.has(p.id)) (pros[normName(p.n)] = pros[normName(p.n)] || []).push(p);
+    for (let t = 0; t < L.rosters.length; t++) {
+      for (const id of L.rosters[t].slice()) {
+        if (!/^(bb|fg):/.test(id)) continue;
+        const was = ctx.byId[id], hits = was ? pros[normName(was.n)] || [] : [];
+        if (hits.length !== 1) continue;
+        const to = hits[0].id, swap = (a) => (Array.isArray(a) ? a.map((x) => (x === id ? to : x)) : a);
+        L.rosters[t] = swap(L.rosters[t]); L.ir[t] = swap(L.ir[t]); if (L.taxi) L.taxi[t] = swap(L.taxi[t]);
+        for (const w of Object.keys(L.lineups)) if (+w >= L.week && L.lineups[w][t]) L.lineups[w][t] = swap(L.lineups[w][t]);
+        if (L.taxiOk && L.taxiOk[id]) { L.taxiOk[to] = true; delete L.taxiOk[id]; }
+        if (L.grad && L.grad[id]) { L.grad[to] = L.grad[id]; delete L.grad[id]; }
+        delete pros[normName(was.n)];
+        log(L, now, { type: "taxi", team: t, adds: [], drops: [], text: `${was.n} is a pro now: his ${ctx.sport.league} stats count from here` });
+        n++;
+      }
+    }
+    if (n) refresh(L, ctx);
+    for (let t = 0; t < L.rosters.length; t++) {
+      for (const id of taxiOf(L, t).slice()) {
+        const p = ctx.byId[id];
+        if (!graduated(L, ctx, p)) continue;
+        L.grad = L.grad || {};
+        if (!L.grad[id]) { L.grad[id] = { week: L.week, at: now }; log(L, now, { type: "taxi", team: t, adds: [], drops: [], text: `${p.n} graduated: promote him by week ${L.week + GRAD_WEEKS}` }); n++; continue; }
+        if (L.week >= L.grad[id].week + GRAD_WEEKS) {
+          L.taxi[t] = taxiOf(L, t).filter((x) => x !== id);
+          (L.promoted = L.promoted || {})[id] = true; delete L.grad[id];
+          joined(L, t, id, now, ctx);
+          log(L, now, { type: "taxi", team: t, adds: [], drops: [], text: `${p.n} promoted from the taxi squad: he graduated` });
+          n++;
+        }
+      }
+    }
+    return n;
+  }
   function toTaxi(L, ctx, teamId, pid, now) {
     const p = ctx.byId[pid];
     if (L.week > totalWeeks(L)) return { ok: false, why: "The season is over" };
@@ -2032,6 +2092,7 @@
     if (drop && (drop === pid || !L.rosters[teamId].includes(drop) || held(L, teamId).includes(drop))) return { ok: false, why: "Pick someone on your active roster to drop" };
     L.taxi[teamId] = tx.filter((x) => x !== pid);
     (L.promoted = L.promoted || {})[pid] = true;
+    if (L.grad) delete L.grad[pid];
     joined(L, teamId, pid, now, ctx);
     if (drop) { bank(L, ctx, teamId, drop, now); dropOne(L, teamId, drop, now); log(L, now, { type: "drop", team: teamId, adds: [], drops: [drop] }); }
     log(L, now, { type: "taxi", team: teamId, adds: [], drops: [], text: `${p.n} promoted from the taxi squad` });
@@ -2471,6 +2532,7 @@
     let n = finalize(L, ctx, now);
     n += botsAnswer(L, ctx, now, 0);
     n += runBites(L, ctx, now);
+    n += prospectUpkeep(L, ctx, now);
     if (L.pyo && !L.pyo.done) n += runPyo(L, ctx, now);
     lockPlayed(L, ctx, now);
     if (L.settings.waiverAt == null) n += runDue(L, ctx, now);
@@ -2490,7 +2552,7 @@
     if (L.settings.playoffTie === "h2h") { const h = h2h(L, m.a, m.b); if (h < 0) return m.b; if (h > 0) return m.a; }
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
-  return { daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

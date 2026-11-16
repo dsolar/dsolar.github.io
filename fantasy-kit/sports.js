@@ -337,6 +337,48 @@
         yr: p.yr, age: p.age, ht: p.ht, wt: p.wt, stats: p.stats || null, year: board.year }));
   }
 
+  /* ---------- prospects and the prospect rounds ---------- */
+  /* A keeper or dynasty league can end its draft with prospect rounds (D.season.prospects = { rounds, rule }): picks
+     from the prospect pool that go straight to the taxi squad. The pool rides along with the league as extra players
+     (doc.extraPlayers, built here by prospectPlayers): baseball's from FanGraphs' board (data/prospects-mlb.json),
+     football's and basketball's from the Big Board's next class (draft/<sport>.json).
+       rule "strict": never played in the bigs (on the board and not in the league's player file)
+       rule "loose":  rookie-eligible: anyone on the board, plus this season's rookies (p.rk)
+     A prospect carries pro: 1, his rank on the board (prk), and for baseball FV, ETA and level. */
+  const FG_TEAM = { WSN: "WSH", CHW: "CWS", KCR: "KC", SDP: "SD", SFG: "SF", TBR: "TB", AZ: "ARI", OAK: "ATH" };
+  const FG_POS = { SP: ["SP"], RHP: ["SP"], LHP: ["SP"], SIRP: ["RP"], MIRP: ["RP"], RP: ["RP"], CF: ["OF"], LF: ["OF"], RF: ["OF"], OF: ["OF"], DH: ["UT"], TWP: ["UT", "SP"] };
+  const NBA_POS = { G: ["PG", "SG"], F: ["SF", "PF"], "G-F": ["SG", "SF"], "F-C": ["PF", "C"] };
+  function prospectPlayers(sportKey, src, limit = 250) {
+    if (!src || !Array.isArray(src.players)) return [];
+    if (sportKey === "mlb") {
+      const rk = (x) => (Number.isFinite(x.rank) ? x.rank : 9999);
+      return src.players.slice().sort((a, b) => rk(a) - rk(b) || (parseInt(b.fv) || 0) - (parseInt(a.fv) || 0)).slice(0, limit).map((x, i) => ({
+        id: String(x.mlbam || `fg:${x.n}`), n: x.n, t: FG_TEAM[x.t] || x.t, pos: (FG_POS[x.pos] || [x.pos]).slice(), age: x.age ? Math.floor(x.age) : undefined,
+        pro: 1, prk: i + 1, fv: x.fv, eta: x.eta, lv: x.lv, l: {}, rank: 5001 + i }));
+    }
+    return prospectClass(src, sportKey).slice(0, limit).map((x) => {
+      const pos = String(x.pos || "").split("/").flatMap((ps) => (sportKey === "nba" ? NBA_POS[ps] || [ps] : [ps])).filter((ps) => (sportKey === "nfl" ? ["QB", "RB", "WR", "TE"] : nba.positions).includes(ps));
+      return { id: `bb:${x.id}`, n: x.n, t: "", school: x.school, pos: [...new Set(pos.length ? pos : sportKey === "nba" ? ["SF"] : ["WR"])], age: x.age ? Math.floor(x.age) : undefined, pro: 1, prk: x.fr, l: {}, rank: 5000 + x.fr };
+    });
+  }
+  // A league's extra players laid into its pool: new ones added, and a prospect who's already in the player file keeps
+  // his lines and picks up his prospect marks (bigs: 1 when he has big-league time, not just a projection)
+  function withExtras(players, doc) {
+    const xs = doc && Array.isArray(doc.extraPlayers) ? doc.extraPlayers : null;
+    if (!xs) return players;
+    const by = new Map(players.map((p) => [p.id, p]));
+    for (const x of xs) {
+      const p = by.get(x.id);
+      if (!p) { const q = Object.assign({ l: {}, rank: 9999 }, x); players.push(q); by.set(q.id, q); }
+      // big-league time is a real stat line (a projection alone doesn't count)
+      else if (x.pro) Object.assign(p, { pro: 1, bigs: p.l && ["bat", "pit", "tot", "pg"].some((k) => p.l[k]) ? 1 : 0, prk: x.prk, fv: x.fv, eta: x.eta, lv: x.lv });
+    }
+    return players;
+  }
+  const prospectRule = (doc) => (doc && ((doc.settings && doc.settings.prospects) || (doc.season && doc.season.prospects) || doc.prospects)) || null;
+  // whether a player counts as a prospect under a rule ("strict" or "loose")
+  const isProspect = (rule, p) => !!p && (rule === "loose" ? !!(p.pro || p.rk) : !!(p.pro && !p.bigs));
+
   // Which sport is in season. Each runs on a month-day window (mmdd), wrapping the new year where needed:
   // regular season start to the end of the fantasy season. The default sport is the one whose fantasy season matters
   // most right now: football from August drafts until its fantasy playoffs end in early January, then basketball,
@@ -495,5 +537,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

@@ -59,7 +59,9 @@
     const sport = typeof opts.sport === "string" ? S.ALL[opts.sport] : opts.sport;
     const lineup = opts.lineup || sport.lineup;
     const bench = opts.bench == null ? sport.bench : opts.bench;
-    const rounds = opts.rounds || lineup.length + bench;
+    // prospect rounds at the end (keeper and dynasty leagues): prospects only, straight to the taxi squad
+    const pros = opts.prospects && +opts.prospects.rounds > 0 ? { rounds: Math.max(1, Math.min(8, +opts.prospects.rounds | 0)), rule: opts.prospects.rule === "loose" ? "loose" : "strict" } : null;
+    const rounds = opts.rounds || lineup.length + bench + (pros ? pros.rounds : 0);
     const seed = opts.seed == null ? Math.floor(Math.random() * 2 ** 31) : opts.seed;
     const list = Array.isArray(opts.teams) ? opts.teams : Array.from({ length: opts.teams || 10 }, () => ({}));
     const n = Math.max(2, Math.min(20, list.length));
@@ -88,6 +90,7 @@
       trading: type !== "auction" && type !== "elephant" && type !== "pack" && opts.trades !== false,
       steals: type === "elephant" ? { freeze: (opts.steals && opts.steals.freeze) || 2, perTeam: (opts.steals && opts.steals.perTeam) || 3, lastRounds: opts.steals && opts.steals.lastRounds != null ? opts.steals.lastRounds : 2,
         tax: stealMult(opts.steals && opts.steals.tax, 0.8, 0.5, 1), golden: stealMult(opts.steals && opts.steals.golden, 1.15, 1, 1.5) } : null,
+      prospects: pros,
       extra: {}, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
     if (D.bank) for (const t of D.teams) t.bank = D.bank.perRound * rounds * 1000;
@@ -221,7 +224,7 @@
   // Without a team, the largest.
   const ownedPicks = (D, t) => D.order.reduce((a, x) => a + (x === t ? 1 : 0), 0);
   const sizeOf = (D, t) => {
-    if (!D.carry) return D.lineup.length + D.bench;
+    if (!D.carry) return D.lineup.length + D.bench + (D.prospects ? D.prospects.rounds : 0);
     if (t == null) return Math.max(...D.teams.map((x) => sizeOf(D, x.id)));
     return (D.carry[t] || []).length + ownedPicks(D, t);
   };
@@ -493,10 +496,22 @@
     return { ok: true, team: t };
   }
   // Room for him on this roster: size, position limits, the starting lineup still fillable, the league's own rule.
+  // Is pick k in the prospect rounds (the last D.prospects.rounds of the draft)?
+  const prospectRound = (D, k) => !!(D.prospects && !D.carry && k >= 0 && slotInfo(D, k).round > D.rounds - D.prospects.rounds);
+  // the picks a team made in the prospect rounds (they go to the taxi squad)
+  const prospectPicks = (D, teamId) => (D.board || []).map((pk, k) => (pk && pk.pid && !pk.gone && pk.team === teamId && prospectRound(D, k) ? pk.pid : null)).filter(Boolean);
   function fitsRoster(D, ctx, teamId, p) {
     const team = D.teams[teamId];
-    const ids = rosters(D)[teamId];
-    if (ids.length >= sizeOf(D, teamId)) return { ok: false, why: "Roster is full" };
+    let ids = rosters(D)[teamId];
+    let size = sizeOf(D, teamId);
+    if (D.prospects && !D.carry) {
+      // the prospect rounds take prospects only; before them, the regular roster fills without the prospect spots
+      const k = nextIndex(D);
+      if (prospectRound(D, k)) return S.isProspect(D.prospects.rule, p) ? { ok: true } : { ok: false, why: "The prospect rounds take prospects only" };
+      const pp = new Set(prospectPicks(D, teamId));
+      ids = ids.filter((id) => !pp.has(id)); size -= D.prospects.rounds;
+    }
+    if (ids.length >= size) return { ok: false, why: "Roster is full" };
     const mine = ids.map((id) => ctx.byId[id]).filter(Boolean);
     for (const [pos, max] of Object.entries(D.posMax || {})) {
       if (!S.positions(p).every((x) => x === pos)) continue;
@@ -504,7 +519,7 @@
     }
     const after = mine.concat(p);
     const open = D.lineup.length - assign(ctx.sport, after, D.lineup).filter(Boolean).length;
-    if (open > sizeOf(D, teamId) - after.length) return { ok: false, why: `Not enough spots left to fill your starting lineup` };
+    if (open > size - after.length) return { ok: false, why: `Not enough spots left to fill your starting lineup` };
     if (ctx.hooks.check) { const c = ctx.hooks.check(D, team, p, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -783,7 +798,9 @@
       if (!memo.has(k)) memo.set(k, assign(ctx.sport, mine.concat(p), D.lineup).filter(Boolean).length > filled);
       return memo.get(k);
     };
-    return { left: sizeOf(D, teamId) - ids.length, openStarters: D.lineup.length - filled, lateOpen, fills, urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
+    // before the prospect rounds, their spots aren't the bench's to fill
+    const proLeft = D.prospects && !D.carry && !prospectRound(D, nextIndex(D)) ? D.prospects.rounds - prospectPicks(D, teamId).length : 0;
+    return { left: sizeOf(D, teamId) - ids.length - proLeft, openStarters: D.lineup.length - filled, lateOpen, fills, urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
   }
   // In a pack draft a position can run out. For a team's open spots that only one position can fill (its TE, its QB):
   // how short that position is, as the teams still needing one against the players left at it in the packs to come.
@@ -842,6 +859,13 @@
   function autoChoice(D, ctx, teamId, r) {
     const team = D.teams[teamId];
     for (const id of team.queue || []) { const p = ctx.byId[id]; if (p && canAdd(D, ctx, teamId, p).ok) return p; }
+    // the prospect rounds: the best prospect left on the board (a rookie with no board rank goes by his overall rank)
+    if (prospectRound(D, nextIndex(D))) {
+      const score = (p) => (p.prk != null ? p.prk : Math.max(1, (p.rank || 999) / 4)) * (r ? 0.85 + r() * 0.3 : 1);
+      const cand = ctx.available.filter((p) => S.isProspect(D.prospects.rule, p)).map((p) => [p, score(p)]).sort((a, b) => a[1] - b[1]);
+      for (const [p] of cand) if (canAdd(D, ctx, teamId, p).ok) return p;
+      return null;
+    }
     let best = null, bw = -Infinity;
     const need = needs(D, ctx, teamId);
     // a manager's own board (team.board, from the Rankings page): the first player on it his roster has a use for
@@ -1635,6 +1659,6 @@
   }
   return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
-    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
+    clockLen, thinkTime, bankShare, slotInfo, fitsRoster, prospectRound, prospectPicks, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

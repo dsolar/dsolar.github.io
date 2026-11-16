@@ -436,7 +436,8 @@
   function poolColumns(sport, opts = {}) {
     const pts = isPoints(sport, opts.scoring);
     const cols = [
-      { k: "rank", label: "Rk", cls: "r num", title: "Overall rank by value over replacement", sort: (p) => p.rank, asc: true, html: (p) => `<span class="ps">${p.rank}</span>` },
+      // a prospect with no big-league value shows his place on the prospect board (P12) and sorts after everyone
+      { k: "rank", label: "Rk", cls: "r num", title: "Overall rank by value over replacement (P: prospect rank)", sort: (p) => (p.pro && p.prk && !(p.v > 0) ? 1e5 + p.prk : p.rank), asc: true, html: (p) => (p.pro && p.prk && !(p.v > 0) ? `<span class="ps" title="Prospect rank">P${p.prk}</span>` : `<span class="ps">${p.rank}</span>`) },
       { k: "name", label: "Player", td: "nm", sort: (p) => p.n, asc: true, html: (p) => pname(sport, p) },
       { k: "prank", label: "Pos rk", cls: "r ps", hide: "s", title: "Rank at his position", sort: (p) => parseInt(String(p.prank).replace(/\D+/g, ""), 10), asc: true, html: (p) => esc(p.prank) },
     ];
@@ -1139,6 +1140,9 @@
       const st = auction() && d.phase === "live" ? F.auctionState(d, n) : null;
       const myNom = st && st.kind === "nominate" && st.team === mine;
       let rows = (ui.show === "all" ? opts.players : ctx.available).filter((p) => passes(sport, p, ui.f));
+      // prospect rounds: the list is the prospects (always, on "Prospects"), unless you ask for everyone
+      const proNow = d.prospects && d.phase === "live" && c && F.prospectRound && F.prospectRound(d, c.index);
+      if (d.prospects && (ui.show === "pros" || (proNow && ui.show !== "all"))) rows = rows.filter((p) => S.isProspect(d.prospects.rule, p)).sort((a, b) => (a.prk || 9999) - (b.prk || 9999));
       // team roulette: the list shows the wheel's team for the pick on the clock, unless you ask for everyone
       const sn = spinNow(), only = sn && sn.t && !ui.rlAll && ui.show !== "all";
       if (only) rows = rows.filter((p) => p.t === sn.t);
@@ -1552,7 +1556,7 @@
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
-      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option></select>${statSeg()}` : "";
+      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option>${d.prospects ? `<option value="pros"${ui.show === "pros" ? " selected" : ""}>Prospects</option>` : ""}</select>${statSeg()}` : "";
       const tq = d.phase === "live" && !auction() && me() != null ? F.onClock(d, now()) : null;
       if (tq && tq.trivia && tq.team === me() && !team(me()).auto) {
         const q = tq.trivia;

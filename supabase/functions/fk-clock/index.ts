@@ -27,14 +27,14 @@ async function loadEngine() {
   if (engine && Date.now() - engine.at < 10 * 60e3) return engine.FK;
   const bust = `?t=${Math.floor(Date.now() / 600e3)}`;
   const g: any = { FK: {} };
-  for (const f of ["sports", "value", "draft", "trivia", "league", "season"]) {
+  for (const f of ["sports", "value", "draft", "trivia", "rules", "league", "season"]) {
     try {
       const r = await fetch(`${SITE}${f}.js${bust}`);
       if (!r.ok) throw new Error(`${f}.js: ${r.status}`);
       const src = await r.text();
       // the files are UMD: with no module or require around, each one adds itself to root.FK
       new Function("module", "require", src).call(g, undefined, undefined);
-    } catch (e) { if (f !== "trivia") throw e; }   // trivia questions are optional: the rest runs without them
+    } catch (e) { if (f !== "trivia" && f !== "rules") throw e; }   // trivia questions and the rules list are optional: the rest runs without them
   }
   engine = { at: Date.now(), FK: g.FK };
   return g.FK;
@@ -111,6 +111,9 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
       // a showdown plays one game: its two teams are the whole player pool
       const players = data.players.filter((p: any) => !S.inPool || S.inPool(L || D, p)).map((p: any) => Object.assign({}, p));
+      // players the feed doesn't carry (a prospect pool, someone hurt all year) come with the league (doc.extraPlayers)
+      const xs = (L && L.extraPlayers) || D.extraPlayers;
+      if (Array.isArray(xs)) { if (S.withExtras) S.withExtras(players, { extraPlayers: xs }); else { const have = new Set(players.map((p: any) => p.id)); for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); } }
       const dyn = (L && L.settings && L.settings.dynasty) || (doc.season && doc.season.dynasty);
       const weeks = await loadWeeks(l.sport, data.season);
       // best ball values upside and depth; a guillotine keeps normal ranks
