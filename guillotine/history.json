@@ -8,8 +8,8 @@
     "A Warren Boston": 132.74,
     "Love Purdy Flowers": 134.08,
     "Drake Mayezini": 95.18,
-    "Tai Streetz Lata?": 111.28,
     "Holofernes": 137.26,
+    "Tai Streetz Lata?": 111.28,
     "Breece’s Pieces": 134.5,
     "Deviated Rectums": 143.54,
     "Liberté Égalité Henri": 119.74,
@@ -139,8 +139,8 @@
     "A Warren Boston": 120.2,
     "Love Purdy Flowers": 101.78,
     "Drake Mayezini": 94.64,
-    "Tai Streetz Lata?": 66.9,
     "Holofernes": 86.62,
+    "Tai Streetz Lata?": 66.9,
     "Breece’s Pieces": 115.3,
     "Deviated Rectums": 131.14,
     "Liberté Égalité Henri": 125.28,
@@ -277,8 +277,8 @@
     "A Warren Boston": 130.74,
     "Love Purdy Flowers": 127.06,
     "Drake Mayezini": 90.74,
-    "Tai Streetz Lata?": 129.9,
     "Holofernes": 133.82,
+    "Tai Streetz Lata?": 129.9,
     "Breece’s Pieces": 101.88,
     "Deviated Rectums": 91.8,
     "Liberté Égalité Henri": 109.6,
@@ -422,8 +422,8 @@
     "A Warren Boston": 114.08,
     "Love Purdy Flowers": 141.6,
     "Drake Mayezini": 154.6,
-    "Tai Streetz Lata?": 133.8,
     "Holofernes": 108.64,
+    "Tai Streetz Lata?": 133.8,
     "Breece’s Pieces": 114,
     "Deviated Rectums": 123.38,
     "Liberté Égalité Henri": 128.1,
@@ -558,8 +558,8 @@
     "A Warren Boston": 129.46,
     "Love Purdy Flowers": 103.44,
     "Drake Mayezini": 145.3,
-    "Tai Streetz Lata?": 124.38,
     "Holofernes": 137.26,
+    "Tai Streetz Lata?": 124.38,
     "Breece’s Pieces": 129.42,
     "Deviated Rectums": 115.28,
     "Liberté Égalité Henri": 99.8,
@@ -876,8 +876,8 @@
     "A Warren Boston": 137.36,
     "Love Purdy Flowers": 119.3,
     "Drake Mayezini": 97.58,
-    "Tai Streetz Lata?": 113.94,
     "Holofernes": 114.52,
+    "Tai Streetz Lata?": 113.94,
     "Breece’s Pieces": 108.48,
     "Deviated Rectums": 93.34,
     "Liberté Égalité Henri": 135.34,
@@ -2477,8 +2477,8 @@
     "A Warren Boston": 112.9,
     "Love Purdy Flowers": 107.78,
     "Drake Mayezini": 136.56,
-    "Tai Streetz Lata?": 139.1,
     "Holofernes": 123.78,
+    "Tai Streetz Lata?": 139.1,
     "Breece’s Pieces": 137.78,
     "Deviated Rectums": 125.2,
     "Liberté Égalité Henri": 95.28
@@ -4964,8 +4964,8 @@
     "A Warren Boston": 127.34,
     "Love Purdy Flowers": 97.56,
     "Drake Mayezini": 125.34,
-    "Tai Streetz Lata?": 131.08,
     "Holofernes": 171.46,
+    "Tai Streetz Lata?": 131.08,
     "Breece’s Pieces": 95.98,
     "Deviated Rectums": 91.74
    },
@@ -6027,8 +6027,8 @@
     "A Warren Boston": 136.32,
     "Love Purdy Flowers": 149.56,
     "Drake Mayezini": 92.86,
-    "Tai Streetz Lata?": 111.34,
     "Holofernes": 186.82,
+    "Tai Streetz Lata?": 111.34,
     "Breece’s Pieces": 87.7
    },
    "next_team": "Drake Mayezini",
@@ -6149,14 +6149,14 @@
       "nfl": "DAL",
       "slot": "WR",
       "proj": 16.48,
-      "pts": null
+      "pts": 16.7
      },
      {
       "n": "Tee Higgins",
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 14.66,
+      "proj": 14.63,
       "pts": null
      },
      {
@@ -6165,7 +6165,7 @@
       "nfl": "SEA",
       "slot": "WR",
       "proj": 19.48,
-      "pts": null
+      "pts": 27.1
      },
      {
       "n": "George Kittle",
@@ -6173,7 +6173,7 @@
       "nfl": "SF",
       "slot": "TE",
       "proj": 12.77,
-      "pts": null
+      "pts": 10.4
      },
      {
       "n": "Emmett Johnson",
@@ -6228,7 +6228,7 @@
       "pos": "QB",
       "nfl": "PIT",
       "slot": "BN",
-      "proj": 17.77,
+      "proj": 17.49,
       "pts": null
      },
      {
@@ -6237,7 +6237,7 @@
       "nfl": "ARI",
       "slot": "IR",
       "proj": 0,
-      "pts": null
+      "pts": 0
      }
     ],
     "A Warren Boston": [
@@ -6262,7 +6262,7 @@
       "pos": "RB",
       "nfl": "PIT",
       "slot": "RB",
-      "proj": 15.65,
+      "proj": 15.53,
       "pts": null
      },
      {
@@ -6303,14 +6303,14 @@
       "nfl": "LAR",
       "slot": "W/R/T",
       "proj": 10.57,
-      "pts": null
+      "pts": 19.4
      },
      {
       "n": "Joe Burrow",
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 22.57,
+      "proj": 22.5,
       "pts": null
      },
      {
@@ -6361,7 +6361,7 @@
       "nfl": "SF",
       "slot": "QB",
       "proj": 22.57,
-      "pts": null
+      "pts": 31.66
      },
      {
       "n": "Christian McCaffrey",
@@ -6369,7 +6369,7 @@
       "nfl": "SF",
       "slot": "RB",
       "proj": 20.56,
-      "pts": null
+      "pts": 44.3
      },
      {
       "n": "Zach Charbonnet",
@@ -6377,7 +6377,7 @@
       "nfl": "SEA",
       "slot": "RB",
       "proj": 11.66,
-      "pts": null
+      "pts": 9.4
      },
      {
       "n": "Zay Flowers",
@@ -6416,7 +6416,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "W/R/T",
-      "proj": 11.62,
+      "proj": 11.63,
       "pts": null
      },
      {
@@ -6483,7 +6483,7 @@
       "nfl": "LAR",
       "slot": "RB",
       "proj": 15.75,
-      "pts": null
+      "pts": 4.2
      },
      {
       "n": "Cam Skattebo",
@@ -6507,7 +6507,7 @@
       "nfl": "DAL",
       "slot": "WR",
       "proj": 11.18,
-      "pts": null
+      "pts": 38
      },
      {
       "n": "Malik Nabers",
@@ -6523,7 +6523,7 @@
       "nfl": "ARI",
       "slot": "TE",
       "proj": 11.4,
-      "pts": null
+      "pts": 6.2
      },
      {
       "n": "Chuba Hubbard",
@@ -6539,7 +6539,7 @@
       "nfl": "DAL",
       "slot": "Q/W/R/T",
       "proj": 18.39,
-      "pts": null
+      "pts": 35.42
      },
      {
       "n": "Breece Hall",
@@ -6563,7 +6563,7 @@
       "nfl": "SF",
       "slot": "BN",
       "proj": 0,
-      "pts": null
+      "pts": 0
      },
      {
       "n": "Deebo Samuel Sr.",
@@ -6571,7 +6571,7 @@
       "nfl": "SF",
       "slot": "BN",
       "proj": 9.12,
-      "pts": null
+      "pts": 24.4
      },
      {
       "n": "Tyler Allgeier",
@@ -6579,7 +6579,7 @@
       "nfl": "ARI",
       "slot": "BN",
       "proj": 8.29,
-      "pts": null
+      "pts": 1.4
      },
      {
       "n": "Puka Nacua",
@@ -6587,7 +6587,129 @@
       "nfl": "LAR",
       "slot": "IR",
       "proj": 0,
+      "pts": 0
+     }
+    ],
+    "Holofernes": [
+     {
+      "n": "Josh Allen",
+      "pos": "QB",
+      "nfl": "BUF",
+      "slot": "QB",
+      "proj": 23.96,
+      "pts": 23.34
+     },
+     {
+      "n": "James Cook III",
+      "pos": "RB",
+      "nfl": "BUF",
+      "slot": "RB",
+      "proj": 16.89,
+      "pts": 21.7
+     },
+     {
+      "n": "Ollie Gordon II",
+      "pos": "RB",
+      "nfl": "MIA",
+      "slot": "RB",
+      "proj": 12.45,
+      "pts": 13.5
+     },
+     {
+      "n": "Matthew Golden",
+      "pos": "WR",
+      "nfl": "GB",
+      "slot": "WR",
+      "proj": 13,
+      "pts": 9.5
+     },
+     {
+      "n": "Ja'Marr Chase",
+      "pos": "WR",
+      "nfl": "CIN",
+      "slot": "WR",
+      "proj": 16.83,
       "pts": null
+     },
+     {
+      "n": "DK Metcalf",
+      "pos": "WR",
+      "nfl": "PIT",
+      "slot": "WR",
+      "proj": 10.43,
+      "pts": null
+     },
+     {
+      "n": "Brock Bowers",
+      "pos": "TE",
+      "nfl": "LV",
+      "slot": "TE",
+      "proj": 12.3,
+      "pts": 2.8
+     },
+     {
+      "n": "Tony Pollard",
+      "pos": "RB",
+      "nfl": "TEN",
+      "slot": "W/R/T",
+      "proj": 11.07,
+      "pts": 19.9
+     },
+     {
+      "n": "C.J. Stroud",
+      "pos": "QB",
+      "nfl": "HOU",
+      "slot": "Q/W/R/T",
+      "proj": 17.83,
+      "pts": 21.44
+     },
+     {
+      "n": "Matthew Stafford",
+      "pos": "QB",
+      "nfl": "LAR",
+      "slot": "BN",
+      "proj": 16.42,
+      "pts": 20.76
+     },
+     {
+      "n": "D'Andre Swift",
+      "pos": "RB",
+      "nfl": "CHI",
+      "slot": "BN",
+      "proj": 0,
+      "pts": null
+     },
+     {
+      "n": "Quinshon Judkins",
+      "pos": "RB",
+      "nfl": "CLE",
+      "slot": "BN",
+      "proj": 8.95,
+      "pts": 14.6
+     },
+     {
+      "n": "A.J. Brown",
+      "pos": "WR",
+      "nfl": "NE",
+      "slot": "BN",
+      "proj": 11.97,
+      "pts": 3.7
+     },
+     {
+      "n": "DeVonta Smith",
+      "pos": "WR",
+      "nfl": "PHI",
+      "slot": "BN",
+      "proj": 0,
+      "pts": null
+     },
+     {
+      "n": "Kenneth Walker III",
+      "pos": "RB",
+      "nfl": "KC",
+      "slot": "IR",
+      "proj": 0,
+      "pts": 0
      }
     ],
     "Tai Streetz Lata?": [
@@ -6613,7 +6735,7 @@
       "nfl": "DAL",
       "slot": "RB",
       "proj": 16.07,
-      "pts": null
+      "pts": 7.2
      },
      {
       "n": "Parker Washington",
@@ -6701,7 +6823,7 @@
       "nfl": "LV",
       "slot": "BN",
       "proj": 10.13,
-      "pts": null
+      "pts": 8.4
      },
      {
       "n": "Travis Etienne Jr.",
@@ -6710,128 +6832,6 @@
       "slot": "IR",
       "proj": 7.7,
       "pts": 4.9
-     }
-    ],
-    "Holofernes": [
-     {
-      "n": "Josh Allen",
-      "pos": "QB",
-      "nfl": "BUF",
-      "slot": "QB",
-      "proj": 23.96,
-      "pts": 23.34
-     },
-     {
-      "n": "James Cook III",
-      "pos": "RB",
-      "nfl": "BUF",
-      "slot": "RB",
-      "proj": 16.89,
-      "pts": 21.7
-     },
-     {
-      "n": "Ollie Gordon II",
-      "pos": "RB",
-      "nfl": "MIA",
-      "slot": "RB",
-      "proj": 12.45,
-      "pts": 13.5
-     },
-     {
-      "n": "Matthew Golden",
-      "pos": "WR",
-      "nfl": "GB",
-      "slot": "WR",
-      "proj": 13,
-      "pts": 9.5
-     },
-     {
-      "n": "Ja'Marr Chase",
-      "pos": "WR",
-      "nfl": "CIN",
-      "slot": "WR",
-      "proj": 16.87,
-      "pts": null
-     },
-     {
-      "n": "DK Metcalf",
-      "pos": "WR",
-      "nfl": "PIT",
-      "slot": "WR",
-      "proj": 10.51,
-      "pts": null
-     },
-     {
-      "n": "Brock Bowers",
-      "pos": "TE",
-      "nfl": "LV",
-      "slot": "TE",
-      "proj": 12.3,
-      "pts": null
-     },
-     {
-      "n": "Tony Pollard",
-      "pos": "RB",
-      "nfl": "TEN",
-      "slot": "W/R/T",
-      "proj": 11.07,
-      "pts": 19.9
-     },
-     {
-      "n": "C.J. Stroud",
-      "pos": "QB",
-      "nfl": "HOU",
-      "slot": "Q/W/R/T",
-      "proj": 17.83,
-      "pts": 21.44
-     },
-     {
-      "n": "Matthew Stafford",
-      "pos": "QB",
-      "nfl": "LAR",
-      "slot": "BN",
-      "proj": 16.42,
-      "pts": null
-     },
-     {
-      "n": "D'Andre Swift",
-      "pos": "RB",
-      "nfl": "CHI",
-      "slot": "BN",
-      "proj": 0,
-      "pts": null
-     },
-     {
-      "n": "Quinshon Judkins",
-      "pos": "RB",
-      "nfl": "CLE",
-      "slot": "BN",
-      "proj": 8.95,
-      "pts": 14.6
-     },
-     {
-      "n": "A.J. Brown",
-      "pos": "WR",
-      "nfl": "NE",
-      "slot": "BN",
-      "proj": 11.97,
-      "pts": 3.7
-     },
-     {
-      "n": "DeVonta Smith",
-      "pos": "WR",
-      "nfl": "PHI",
-      "slot": "BN",
-      "proj": 0,
-      "pts": null
-     },
-     {
-      "n": "Kenneth Walker III",
-      "pos": "RB",
-      "nfl": "KC",
-      "slot": "IR",
-      "proj": 0,
-      "pts": 0
      }
     ]
    },
