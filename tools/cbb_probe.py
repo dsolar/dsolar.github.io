@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Check public college basketball feeds from the same runners used by the hub."""
-import concurrent.futures, datetime, json, pathlib, re, urllib.request, urllib.parse
+import concurrent.futures, datetime, json, pathlib, re, urllib.request, urllib.parse, urllib.error
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 OUT=ROOT/"tools/cbb_sources"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -12,7 +12,7 @@ urls={
  "torvik_players":f"https://barttorvik.com/getadvstats.php?year={year}&csv=1",
  "haslam":"https://haslametrics.com/ratings.php",
  "teams": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?limit=1000",
- "standings":f"https://site.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/standings?season={year}&group=50",
+ "standings":f"https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/standings?region=us&lang=en&contentorigin=espn&season={year}&group=50",
  "games":f"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates={day}&groups=50&limit=1000",
  "duke_stats":f"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/150/statistics?season={year}",
  "duke_roster":f"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/150/roster?season={year}",
@@ -20,8 +20,10 @@ urls={
 def one(item):
  key,url=item
  try:
-  req=urllib.request.Request(url,headers={"User-Agent":"DavidSolarCollegeHub/1.0 (+https://davidsolar.dev/)", "Accept":"application/json,text/plain,text/html"})
-  with urllib.request.urlopen(req,timeout=30) as r: body=r.read().decode("utf-8-sig"); status=r.status
+  req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 (compatible; davidsolar-draft/1.0; +https://davidsolar.dev/cbb/)", "Accept":"application/json,text/plain,text/html"})
+  if key=="haslam" and (OUT/"haslam.txt").exists(): body=(OUT/"haslam.txt").read_text();status=200
+  else:
+   with urllib.request.urlopen(req,timeout=30) as r: body=r.read().decode("utf-8-sig"); status=r.status
   (OUT/(key+".txt")).write_text(body)
   try:
    d=json.loads(body); sample=d[:2] if isinstance(d,list) else {k:v if k in ["status","season"] else (v[:1] if isinstance(v,list) else v) for k,v in d.items()}
@@ -31,7 +33,11 @@ def one(item):
   if key=="haslam":
    extra["scripts"]=re.findall(r'<script[^>]+src=["\x27]([^"\x27]+)',body,re.I)
    extra["references"]=re.findall(r'.{0,90}(?:\.xml|XMLHttpRequest|\.json|loadXML|\.js).{0,140}',body)[:35]
+   extra["config"]=re.findall(r'.{0,80}(?:ThisYear|ThisTimeIndependent|CurrentYear|yearThis|Season|copyright|LastUpdated|AsOfDate|DataThrough|Updated|TeamName).{0,100}',body)[:65]
+   pos=body.find('xmlhttp.open')
+   extra["xmlContext"]=body[max(0,pos-1800):pos+1800]
   return key,{"url":url,"status":status,"kind":kind,"bytes":len(body),"sample":sample,**extra}
+ except urllib.error.HTTPError as e: return key,{"url":url,"error":str(e),"body":e.read(600).decode("utf-8","replace")}
  except Exception as e: return key,{"url":url,"error":str(e)}
 with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool: results=dict(pool.map(one,urls.items()))
 summary={"season":year,"updated":now.isoformat(),"sources":results}
