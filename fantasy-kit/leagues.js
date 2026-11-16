@@ -73,7 +73,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, capBudget: 100, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, capBudget: 50000, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -457,7 +457,7 @@
     const style = oneWeek() ? `${slt && slt.day ? "One day" : "One week"}${slt ? `: ${slt.label}, ${slt.day ? SL.dayName(slt.day).toLowerCase() : `week ${slt.week}`}` : slateOn() ? "" : ` (${form.when === "now" ? "this week" : "next week"})`}${showdown() ? ", captain at 1.5x" : ""}, ${fmtName}${form.bestball ? ", best ball" : ""}`
       : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${fmtName}${form.bestball ? ", best ball" : gl ? ", set lineups" : ""}`;
     return {
-      line: `${sp.name}, ${n} teams, ${sc}, ${capOn() ? `$${form.capBudget} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${heist() ? " and a heist" : ""}${trivia() ? ", trivia to pick" : ""}${sp.key === "nfl" && form.confOn ? ", two starters a conference" : ""}. ${style}`,
+      line: `${sp.name}, ${n} teams, ${sc}, ${capOn() ? `${F.capMoney(form.capBudget)} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${heist() ? " and a heist" : ""}${trivia() ? ", trivia to pick" : ""}${sp.key === "nfl" && form.confOn ? ", two starters a conference" : ""}. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
       draft: `${form.type === "elephant" ? window.FK.setup.elephantLine(form, scoringType(sp) === "points") + ", " : ""}${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${auction() ? `$${showdown() ? 50 : 200} budgets, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
@@ -543,7 +543,7 @@
   const draftTypes = (sp) => Object.keys(F.FORMATS).concat(["sealed"], slateOn() && scoringType(sp) === "points" ? ["cap"] : []);
   function capHtml() {
     const sl = curSlate();
-    return `<div class="g2">${fld("Budget", seg("capBudget", [[50, "$50"], [100, "$100"], [200, "$200"]], form.capBudget, "Budget"), "Stars cost about twice an even share, so you can't have them all.")}
+    return `<div class="g2">${fld("Budget", seg("capBudget", [[50000, "$50,000"], [100, "$100"], [200, "$200"]], form.capBudget, "Budget"), "Stars cost about twice an even share, so you can't have them all.")}
       ${fld("Unique picks", toggle("capBonus", "1.25x for a player nobody else has", "Fading the obvious picks pays", form.capBonus))}</div>
       <p class="fl-h">No draft: everyone builds one lineup under the budget, and anyone can pick the same players. Lineups stay hidden and lock at the first ${dayOn() ? "tip" : "kickoff"}${sl ? `, ${esc(SL.kick(sl.games[0].at))}` : ""}. Anyone who doesn't set one gets a bot's.</p>`;
   }
@@ -846,7 +846,7 @@
       if (D.trading) D.offerHold = form.ohold || "clock";
       if (trivia()) D.trivia = { sec: 15, ok: {}, bumped: {}, used: [], log: [] };
       if (capOn()) {
-        D.cap = { budget: form.capBudget || 100, due: slate.first, bonus: form.capBonus ? 1.25 : null };
+        D.cap = { budget: form.capBudget || 50000, due: slate.first, bonus: form.capBonus ? 1.25 : null };
         D.cap.prices = F.capPrices(D, players, sport);
       } else if (sealedOn()) {
         const t = form.lkAt || draftTimeDefault();

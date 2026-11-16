@@ -77,7 +77,7 @@
         <div class="mk-tip"><b>Run it back</b><p>${nba() ? "When the night's over, one tap starts the next one with the same group." : "When the week's over, one tap starts next week with the same group."} The series keeps score: wins, top-three finishes and points.</p></div>
       </div>
       <div class="mk-how wk-modes" style="margin-top:10px">
-        <div class="mk-tip"><b>Salary cap</b><p>No draft at all. Everyone builds a lineup under a $100 cap before the first ${nba() ? "tip" : "kickoff"}, and a player nobody else picked scores 1.25x.</p></div>
+        <div class="mk-tip"><b>Salary cap</b><p>No draft at all. Everyone builds a lineup under a $50,000 cap before the first ${nba() ? "tip" : "kickoff"}, and a player nobody else picked scores 1.25x.</p></div>
         <div class="mk-tip"><b>Sealed draft</b><p>Rank players in private whenever you like. When the lists lock, the draft runs itself in seconds.</p></div>
         <div class="mk-tip"><b>Trivia draft</b><p>Answer an easy ${nba() ? "basketball" : "football"} question to make your pick. Miss it and your pick moves to the end of the round.</p></div>
       </div></div>`;

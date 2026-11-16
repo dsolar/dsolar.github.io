@@ -1567,21 +1567,33 @@
   // them the board. A player only one team picked scores D.cap.bonus times (1.25x) for that team.
   // Prices are set once, when the game is made (D.cap.prices), so they can't move under a saved lineup: by projection,
   // like a daily game, from 40% of an even share of the budget for a fringe player to 1.9x it for the best one. A
-  // captain costs 1.5x.
+  // captain costs 1.5x. A $50,000 cap prices in $100 steps, like DraftKings; a small one ($100) in whole dollars.
+  // The projection is this week's (this matchup), which backtested as well calibrated at every position: over weeks
+  // 3 to 10 of 2026, players Sleeper projected for 5 to 8 half-PPR points scored 6.3 to 6.9 on average at every
+  // position, and 14 to 17 scored 13.8 to 15.0. So a point costs the same anywhere, and every lineup that spends the
+  // cap projects about the same: the edge is in knowing more than the projection.
+  // A player ruled out (or doubtful, on IR, suspended) is priced as if healthy, like a real site: the game is often
+  // made days before kickoff, and pricing him at the minimum would make him a steal if he's cleared. He shows his tag,
+  // and a bot never starts him.
+  const capStep = (D) => (D.cap && D.cap.budget >= 5000 ? 100 : 1);
+  const HURT = /^(out|o|ir|pup|nfi|sus|suspended|cov|doubtful|d)$/i;
+  const capBasis = (p) => (HURT.test(String(p.inj || "").trim()) && p.vHealthy != null ? Math.max(p.v || 0, p.vHealthy) : p.v || 0);
   function capPrices(D, players, sport) {
-    const n = D.lineup.length, avg = D.cap.budget / n;
-    const fit = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl))).sort((a, b) => (b.v || 0) - (a.v || 0));
+    const n = D.lineup.length, avg = D.cap.budget / n, step = capStep(D);
+    const fit = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl))).map((p) => ({ p, b: capBasis(p) })).sort((a, b) => b.b - a.b);
     if (!fit.length) return {};
-    const hi = fit[0].v || 0, lo = fit[Math.floor(fit.length / 2)].v || 0, out = {};
-    for (const p of fit) {
-      const t = hi > lo ? Math.max(0, Math.min(1, ((p.v || 0) - lo) / (hi - lo))) : 0;
-      out[p.id] = Math.max(1, Math.round(avg * (0.4 + 1.5 * Math.pow(t, 1.1))));
+    const hi = fit[0].b, lo = fit[Math.floor(fit.length / 2)].b, out = {};
+    for (const { p, b } of fit) {
+      const t = hi > lo ? Math.max(0, Math.min(1, (b - lo) / (hi - lo))) : 0;
+      out[p.id] = Math.max(step, Math.round((avg * (0.4 + 1.5 * Math.pow(t, 1.1))) / step) * step);
     }
     return out;
   }
   // a player with no price (a kicker, or someone added to the pool after the game was made) can't be picked: null
   const capPrice = (D, p) => (!p ? null : D.cap && D.cap.prices ? (D.cap.prices[p.id] == null ? null : D.cap.prices[p.id]) : Math.max(1, Math.round(p.$ || 1)));
-  const capCost = (D, p, slot) => { const x = capPrice(D, p); return x == null ? null : slot === "CPT" ? Math.round(x * 1.5) : x; };
+  const capCost = (D, p, slot) => { const x = capPrice(D, p), st = capStep(D); return x == null ? null : slot === "CPT" ? Math.round((x * 1.5) / st) * st : x; };
+  // $7,800; -$300 when over
+  const capMoney = (x) => `${x < 0 ? "-" : ""}$${Math.abs(Math.round(x || 0)).toLocaleString("en-US")}`;
   function capCheck(D, ctx, entry) {
     const lu = D.lineup, budget = D.cap.budget;
     if (!Array.isArray(entry) || entry.length !== lu.length) return { ok: false, why: "Fill every spot in your lineup" };
@@ -1614,12 +1626,13 @@
     // the cheapest player there is, and how much projection a dollar buys on average
     const prices = ctx.players.map((p) => capPrice(D, p)).filter((x) => x != null), minP = prices.length ? Math.min(...prices) : 1;
     const vPer = ctx.players.reduce((a, p) => a + (p.v || 0), 0) / Math.max(1, prices.reduce((a, b) => a + b, 0));
+    const hurt = (p) => HURT.test(String(p.inj || "").trim());
     order.forEach((i, k) => {
       const keep = order.length - k - 1;
       // spend toward an even share of what's left, with room to splurge
       const share = (left - keep * minP) / (keep + 1) * (1.3 + r() * 0.6);
       const minLeft = keep * minP;
-      const pool = ctx.players.filter((p) => !used.has(p.id) && S.fits(ctx.sport, p, lu[i]) && capCost(D, p, lu[i]) != null && capCost(D, p, lu[i]) <= left - minLeft && !(cm && S.confOf(p) && (conf[S.confOf(p)] || 0) >= cm));
+      const pool = ctx.players.filter((p) => !used.has(p.id) && !hurt(p) && S.fits(ctx.sport, p, lu[i]) && capCost(D, p, lu[i]) != null && capCost(D, p, lu[i]) <= left - minLeft && !(cm && S.confOf(p) && (conf[S.confOf(p)] || 0) >= cm));
       const pick = pool.map((p) => ({ p, s: (p.v || 0) * (0.85 + r() * 0.3) - Math.max(0, capCost(D, p, lu[i]) - share) * vPer })).sort((a, b) => b.s - a.s)[0];
       if (pick) { out[i] = pick.p.id; used.add(pick.p.id); left -= capCost(D, pick.p, lu[i]); const c = S.confOf(pick.p); if (c) conf[c] = (conf[c] || 0) + 1; }
     });
@@ -1657,7 +1670,7 @@
     D.sealed.ran = now;
     return true;
   }
-  return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, prospectRound, prospectPicks, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

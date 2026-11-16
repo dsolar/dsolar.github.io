@@ -192,3 +192,20 @@ test('trivia: basketball and baseball questions, four distinct choices with the 
   }
   for (const [k, bank] of Object.entries(T.BANKS)) for (const x of bank) { assert.equal(new Set([x.a].concat(x.w)).size, 4, `${k} ${x.id}`); }
 });
+
+test('salary cap prices: $50,000 in $100 steps, a hurt player priced as if healthy, and bots never start him', () => {
+  const { D, ctx, sport, players, sl } = pool('full', 6, { bench: 0 });
+  // this week's projection: a star who's ruled out projects nothing this week, but he's worth his usual rate healthy
+  const star = players.filter((p) => S.positions(p)[0] === 'RB').sort((a, b) => b.v - a.v)[0];
+  star.inj = 'Out'; star.vHealthy = star.v; star.v = 0;
+  const q = ctx.byId[star.id]; Object.assign(q, { inj: 'Out', vHealthy: star.vHealthy, v: 0 });
+  D.cap = { budget: 50000, due: sl.first, bonus: null };
+  D.cap.prices = F.capPrices(D, players, sport);
+  const prices = Object.values(D.cap.prices);
+  assert.ok(prices.every((x) => x % 100 === 0 && x >= 100), 'every price is a $100 step');
+  const avg = 50000 / D.lineup.length;
+  assert.ok(D.cap.prices[star.id] > avg, `the hurt star still costs more than an even share (${D.cap.prices[star.id]})`);
+  for (let s = 1; s <= 6; s++) { const e = F.capAuto(D, ctx, s * 17); assert.ok(F.capCheck(D, ctx, e).ok); assert.ok(!e.includes(star.id), 'bots skip him'); }
+  assert.equal(F.capMoney(7800), '$7,800'); assert.equal(F.capMoney(-300), '-$300'); assert.equal(F.capMoney(50000), '$50,000');
+  if (D.lineup[0] !== 'CPT') { const D2 = { cap: { budget: 50000, prices: { a: 7300 } } }; assert.equal(F.capCost(D2, { id: 'a' }, 'CPT'), 11000); }
+});

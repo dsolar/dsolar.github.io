@@ -254,6 +254,13 @@ owns which team, the invite code and the save order. It also stamps each team's 
   Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
   still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
   team's ungraduated taxi prospects kept in them.
+- **Salary cap prices** (`FK.draft.capPrices`, set once when the game is made): by this week's projection (one day's
+  game for basketball), from 40% of an even share for a fringe player to 1.9x it for the best. The default $50,000 cap
+  prices in $100 steps like DraftKings (`capStep`, `capMoney` formats them); a $100 or $200 cap, in whole dollars. A
+  player who's out, doubtful, on IR or suspended is priced on his healthy rate (`p.vHealthy`, from `value.js`) and bots
+  never start him. Prices are our own, not pulled from DraftKings or FanDuel: neither has a public feed, and theirs fit
+  their scoring, not a league's custom one. Sleeper's weekly projections backtested as well calibrated at every
+  position (2026 weeks 3 to 10), so a point costs the same anywhere.
 - **Daily lineups** (MLB): `fk-live?sport=mlb&lineups=1[&date=]` returns posted batting orders and probable starters.
   `FK.gameday.lineupStatus` turns them into the roster chip (Batting 3rd, Not in lineup, Probable starter), and
   auto-start re-runs as orders post and benches a hitter who isn't in any of his games' lineups (`FK.league.sitting`).

@@ -291,6 +291,8 @@
         const pr = p.proj > 0 ? p.proj / left : null;
         const w = p.g ? p.g / (p.g + 6) : 0;
         let rate = pr == null ? p.v : p.g ? w * p.v + (1 - w) * pr : pr;
+        // vPlay: his rate when he plays, before the injury discount (a salary cap game prices a hurt player on it)
+        p.vPlay = rate * games;
         if (!meta.ros) rate *= AVAIL[String(p.inj || "").toLowerCase()] || 1;
         p.v = rate * games;
         p.ros = meta.ros && p.proj != null ? p.proj : null;
@@ -304,7 +306,8 @@
       delete sport.weekOf;
       if (league.week != null && wks.includes(Number(league.week))) {
         const n = Number(league.week);
-        for (const p of players) { const x = p.wk && p.wk[n]; p.v = (x != null ? x : (p.v / games) * 0.5 * weekPlays(p)) * games; }
+        // vHealthy: what he's worth when he plays, for pricing a player who's hurt this week (draft.js capPrices)
+        for (const p of players) { const x = p.wk && p.wk[n]; p.vHealthy = p.vPlay != null ? p.vPlay : p.v; p.v = (x != null ? x : (p.v / games) * 0.5 * weekPlays(p)) * games; }
         sport.weekOf = n;
       }
     }
@@ -327,6 +330,7 @@
     // streaming don't apply.
     if (league.oneDay) {
       const f = (p) => weekPlays(p);
+      for (const p of players) p.vHealthy = p.vPlay != null ? p.vPlay : p.v;
       if (sc.type === "points") for (const p of players) p.v *= f(p);
       else { const lo = Math.min(...players.map((p) => p.v)); for (const p of players) { const k = f(p); if (k < 1) p.v = k === 0 ? lo - 1 : lo + (p.v - lo) * k; } }
     }
