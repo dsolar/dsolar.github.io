@@ -112,3 +112,30 @@ test('prospects: a Big Board prospect who turns pro is swapped to his pro record
   assert.ok(G.taxiOf(L, 1).includes('pro-123') && !L.rosters[1].includes(bb), 'swapped on the roster and taxi squad');
   assert.ok(L.tx.some((x) => /is a pro now/.test(x.text || '')));
 });
+
+test('prospects: next season refreshes the pool, keeps rostered prospects, and carries taxi prospects in the prospect rounds', () => {
+  const { sport, players, D, extra } = mlbLeague('strict', { seed: 8 });
+  const L = Z.begin(D, sport, { now: T0 + 2 });
+  const ctx = G.context(L, players, sport);
+  // a fresh board: the top 20 of last year's, plus a new name; a rostered prospect who fell off still comes along
+  const held = new Set(L.rosters.flat());
+  const fresh = extra.slice(0, 20).concat([{ id: 'new-1', n: 'New Guy', t: 'BOS', pos: ['SS'], pro: 1, prk: 21, l: {}, rank: 5021 }]);
+  const pool = S.refreshProspects(fresh, extra, held);
+  assert.ok(pool.some((x) => x.id === 'new-1'));
+  const fell = extra.find((x) => held.has(x.id) && !fresh.some((f) => f.id === x.id));
+  assert.ok(fell && pool.some((x) => x.id === fell.id), 'a rostered prospect who fell off the board stays');
+  assert.ok(!pool.some((x) => !held.has(x.id) && !fresh.some((f) => f.id === x.id)), 'unrostered old names go');
+  const D2 = Z.nextDraft(L, ctx, sport, {}, { now: T0 + 400 * 864e5, extraPlayers: pool });
+  assert.deepEqual(D2.prospects, { rounds: 3, rule: 'strict' });
+  assert.equal(D2.rounds, D.rounds, 'same number of rounds, prospect rounds included');
+  assert.equal(D2.extraPlayers.length, pool.length);
+  // each team's taxi prospects are kept in its prospect rounds
+  for (const t of L.teams) {
+    const kept = D2.board.map((pk, k) => (pk && pk.keeper && pk.team === t.id ? [pk.pid, k] : null)).filter(Boolean);
+    for (const pid of G.taxiOf(L, t.id)) {
+      const hit = kept.find((x) => x[0] === pid);
+      assert.ok(hit, `team ${t.id} keeps taxi prospect ${pid}`);
+      assert.ok(F.prospectRound(D2, hit[1]), 'in a prospect round');
+    }
+  }
+});

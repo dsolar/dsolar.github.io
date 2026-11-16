@@ -253,6 +253,18 @@
       const others = gs.filter(x => x.id !== g.id);
       return oneGame(g) + of + box(g) + (others.length ? `<details class="game-history"><summary>Other games this week</summary>${others.map(x => `<div class="game-history-row">${oneGame(x)}${box(x)}</div>`).join("")}</details>` : "");
     }
+    // baseball: is he in the day's lineup, and where (or the probable starter). The day is the roster page's day in a
+    // daily league, else today; the feed covers today and tomorrow (opts.hooks.lineups, fk-live ?lineups=1)
+    function lineupChip(p, w) {
+      const feed = (opts.hooks || {}).lineups;
+      if (sport.key !== "mlb" || !feed || !FK.gameday.lineupStatus) return "";
+      const d = rosterDay(w), date = d != null ? FK.gameday.day(G.weekStart(L(), w) + d * 864e5 + 12 * 36e5) : FK.gameday.day(now());
+      const st = FK.gameday.lineupStatus(feed, p, date);
+      if (!st || st.kind === "nogame" || st.kind === "ppd") return st && st.kind === "ppd" ? `<span class="ln out">Postponed</span> ` : "";
+      const cls = { batting: "in", sp: "in", out: "out", pending: "wait" }[st.kind] || "";
+      const tip = st.kind === "pending" ? ` title="Lineups come out a few hours before first pitch"` : "";
+      return `<span class="ln ${cls}"${tip}>${esc(st.text)}</span> `;
+    }
     // one game as a chip: kickoff, live clock and score, or the final
     function oneGame(g) {
       const vs = `${g.home ? "vs" : "@"} ${esc(g.opp)}`;
@@ -1304,7 +1316,7 @@
           { h: `${nextYear()} cost`, title: "What he'd cost to keep next season", cls: "two-h", cell: (p) => keepCell(p) },
         ];
         // this week: his games so far and to come
-        return [{ h: "This week", cls: "", cell: (p, onIR, onTaxi) => (onIR || onTaxi ? "" : gameChip(p, w) || `<span class="ps">No games</span>`) }];
+        return [{ h: "This week", cls: "", cell: (p, onIR, onTaxi) => (onIR || onTaxi ? "" : lineupChip(p, w) + (gameChip(p, w) || `<span class="ps">No games</span>`)) }];
       }
       const nextYear = () => (Number(L().season) ? Number(L().season) + 1 : "Next");
       const two = (a, b) => `<span class="two"><b>${a}</b><small>${b}</small></span>`;

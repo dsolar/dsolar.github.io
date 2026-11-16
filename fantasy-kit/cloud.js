@@ -163,6 +163,8 @@
   // named games' box scores and states, for a one-day league (fk-live ?games=)
   const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  // baseball's starting lineups and probable pitchers, today's and tomorrow's (fk-live ?sport=mlb&lineups=1)
+  const lineups = (date) => fetch(`${BASE}/functions/v1/fk-live?sport=mlb&lineups=1${date ? `&date=${encodeURIComponent(date)}` : ""}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 
   // Realtime nudges (Supabase Realtime, public topic fk:<league id>): the database sends one on every save ("save",
   // { v: version }) and chat post ("post"). listen(topic, fn) keeps a socket open, rejoins after a drop and calls
@@ -253,5 +255,5 @@
     save: (sport, b) => (user() ? rpc("fk_board_save", { p_sport: sport, p_board: b || null }) : Promise.resolve(null)),
   };
 
-  FK.cloud = { token, oauth, providers, slates, games, listen, push, boards, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  FK.cloud = { token, oauth, providers, slates, games, listen, push, boards, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, lineups, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);

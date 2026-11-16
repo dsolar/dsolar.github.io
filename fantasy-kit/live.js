@@ -14,6 +14,7 @@
   const now = () => C.now();
   const clone = (x) => (x == null ? x : JSON.parse(JSON.stringify(x)));
   let info = null, D = null, L = null, version = 0, base = null;
+  let lineups = null, lineupsAt = 0;
   let data = null, sport = null, players = null, byId = {}, room = null, app = null, mode = null, mine = [], weeks = null, prospects = null, practice = null;
   // a trivia draft's questions, made by whichever page puts the pick on the clock
   // Loaded when needed, not with the page: the trivia bank (only a trivia draft asks questions) and the league pages
@@ -25,7 +26,7 @@
     document.head.appendChild(el);
   }));
   const triviaHook = (d, k) => (window.FK.trivia ? window.FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used) : null);
-  const hooks = () => ({ real: weeks, prospects, trivia: triviaHook });
+  const hooks = () => ({ real: weeks, prospects, trivia: triviaHook, get lineups() { return lineups; } });
   let rt = null;   // the realtime nudge socket (cloud.listen)
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
@@ -347,6 +348,12 @@
       const gch = !!(gm && Z.mergeGames(weeks, gm));
       if (gch && L && canAct() && catchUp()) push();
       if ((Z.mergeLive(weeks, lv) || kicked || gch) && app && !U.dialogOpen()) { app.refresh(); }
+    }
+    // baseball: who's in today's and tomorrow's lineups (batting order) and the probable starters, every few minutes
+    if (info.sport === "mlb" && L && !document.hidden && Date.now() - lineupsAt > 3 * 60e3 && C.lineups) {
+      lineupsAt = Date.now();
+      const lu = await C.lineups();
+      if (lu && lu.days) { lineups = lu; if (app && !U.dialogOpen()) app.refresh(); }
     }
     liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
   }
@@ -885,7 +892,14 @@
     });
   }
   async function newSeason() {
-    const D2 = Z.nextDraft(L, lctx(), sport, (L.next && L.next.picks) || {}, { now: now() });
+    // a league with a prospect pool gets this year's board, keeping last year's prospects who are still on a roster
+    let extra = null;
+    if (L.settings.prospects || (L.extraPlayers || []).some((x) => x.pro)) {
+      const src = await fetch(info.sport === "mlb" ? "data/prospects-mlb.json" : `../draft/${info.sport}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      const fresh = src ? S.prospectPlayers(info.sport, src) : [];
+      if (fresh.length) extra = S.refreshProspects(fresh, L.extraPlayers || D.extraPlayers || [], new Set(L.rosters.flat()));
+    }
+    const D2 = Z.nextDraft(L, lctx(), sport, (L.next && L.next.picks) || {}, { now: now(), extraPlayers: extra });
     const evs = events(clone({ draft: D, league: L }), { draft: D2, league: null });
     const r = await C.rpc("fk_new_season", { p_id: id, p_version: version, p_draft: D2, p_summary: Z.summary(L), p_events: evs }).catch((e) => ({ error: e.message }));
     if (r.error === "stale") { U.toast("Someone else saved first. Try again.", true); version = -1; pull(); return; }

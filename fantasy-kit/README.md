@@ -251,6 +251,13 @@ owns which team, the invite code and the save order. It also stamps each team's 
   in the bigs; `"loose"`, rookie-eligible (130 AB / 50 IP), plus this season's rookies. Each week `prospectUpkeep`
   swaps a Big Board prospect to his pro record once he has one, flags a taxi prospect who graduated (`L.grad`), and
   promotes him two weeks later. The room's player list shows prospects (rank `P12`) during those rounds.
+  Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
+  still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
+  team's ungraduated taxi prospects kept in them.
+- **Daily lineups** (MLB): `fk-live?sport=mlb&lineups=1[&date=]` returns posted batting orders and probable starters.
+  `FK.gameday.lineupStatus` turns them into the roster chip (Batting 3rd, Not in lineup, Probable starter), and
+  auto-start re-runs as orders post and benches a hitter who isn't in any of his games' lineups (`FK.league.sitting`).
+  `node --test tests/fantasylineups.test.mjs` covers it.
   `node --test tests/fantasyprospects.test.mjs` covers it.
 - **The lobby** (`lobby.js`): until the draft starts, the draft room opens on a Lobby tab: the draft time with an
   `.ics` file and a Google Calendar link, I'm ready (`D.ready`), a practice mock of this exact draft against bots

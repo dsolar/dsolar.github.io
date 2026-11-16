@@ -202,16 +202,35 @@
      Active Players): in a daily league once each day, in a weekly league once each week, unless he already set that
      day's or week's lineup himself. Locked players stay where they are. Runs from catchUp. */
   function setAutoStart(L, teamId, on) { if (!L.teams[teamId]) return { ok: false, why: "No such team" }; L.teams[teamId].autoStart = !!on; return { ok: true }; }
+  // Baseball lineups (ctx.hooks.lineups, fk-live ?lineups=1): the New York date of a league day, how many teams have
+  // posted that day's batting order, and whether a hitter is sitting (every game of his that day has a posted order
+  // and he isn't in any of them).
+  const nyDay = (t) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(t));
+  const luDay = (L, ctx, w, d) => { const f = ctx.hooks && ctx.hooks.lineups; return f && f.days && d != null ? f.days[nyDay(weekStart(L, w) + d * DAY + 12 * HOUR)] || null : null; };
+  const postedCount = (day) => (day ? Object.values(day.teams || {}).filter((gs) => gs.some((g) => g.posted)).length : 0);
+  function sitting(day, p) {
+    if (!day || !p) return false;
+    const hitter = (p.pos || []).some((x) => !["SP", "RP", "P"].includes(x));
+    if (!hitter || (day.sp && day.sp[p.id])) return false;
+    const gs = ((day.teams && day.teams[p.t]) || []).filter((g) => !g.ppd);
+    if (!gs.length || !gs.every((g) => g.posted)) return false;
+    const bat = (day.bat && day.bat[p.id]) || [];
+    return !gs.some((g) => bat.some((b) => b.game === g.game));
+  }
   function autoStart(L, ctx, now) {
     if (L.settings.bestBall || L.week > totalWeeks(L) || L.week < 1) return false;
-    const w = L.week, k = L.kick && L.kick.week === w ? L.kick : null, d = daily(L) ? dayIdx(L, w, now) : null, tag = `${w}:${d == null ? "w" : d}`;
+    const w = L.week, k = L.kick && L.kick.week === w ? L.kick : null, d = daily(L) ? dayIdx(L, w, now) : null, tag0 = `${w}:${d == null ? "w" : d}`;
+    // a daily baseball league starts active players again as batting orders post, benching anyone who's sitting
+    const lday = ctx.sport && ctx.sport.key === "mlb" && d != null ? luDay(L, ctx, w, d) : null, posted = postedCount(lday);
+    const tag = posted ? `${tag0}:${posted}` : tag0, mineTag = (x) => String(x || "").split(":").slice(0, 2).join(":") === tag0;
     let any = false;
     L.autoDone = L.autoDone || {};
     for (const t of L.teams) {
       if (!t.autoStart || !isAlive(L, t.id) || L.autoDone[t.id] === tag) continue;
       const mine = d != null ? L.dayLineups && L.dayLineups[w] && L.dayLineups[w][t.id] && L.dayLineups[w][t.id][d] : L.lineups[w] && L.lineups[w][t.id];
-      if (mine && !(L.autoSet && L.autoSet[t.id] === tag)) { L.autoDone[t.id] = tag; continue; }   // he set it himself
-      const plays = (p) => { if (!k || !p) return true; if (d != null && k.all) { const gs = k.all[p.t]; return !!gs && gs.some((at) => dayIdx(L, w, at) === d); } return k.teams[p.t] != null; };
+      if (mine && !(L.autoSet && mineTag(L.autoSet[t.id]))) { L.autoDone[t.id] = tag; continue; }   // he set it himself
+      const games = (p) => { if (!k || !p) return true; if (d != null && k.all) { const gs = k.all[p.t]; return !!gs && gs.some((at) => dayIdx(L, w, at) === d); } return k.teams[p.t] != null; };
+      const plays = (p) => games(p) && !sitting(lday, p);
       const lu = bestLineup(L, ctx, t.id, w, now, d != null ? { only: plays, day: d } : { only: plays });
       const r = setLineup(L, ctx, t.id, w, lu, now, d != null ? d : undefined);
       L.autoDone[t.id] = tag;
@@ -2552,7 +2571,7 @@
     if (L.settings.playoffTie === "h2h") { const h = h2h(L, m.a, m.b); if (h < 0) return m.b; if (h > 0) return m.a; }
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
-  return { graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };

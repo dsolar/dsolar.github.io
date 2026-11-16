@@ -375,6 +375,12 @@
     }
     return players;
   }
+  // A new season's prospect pool: the current board (fresh), plus last season's extras who are still on a roster (a
+  // prospect who fell off the board, or graduated, stays with his team). keep: the rostered ids.
+  function refreshProspects(fresh, old, keep) {
+    const have = new Set((fresh || []).map((p) => p.id)), held = keep instanceof Set ? keep : new Set(keep || []);
+    return (fresh || []).concat((old || []).filter((x) => held.has(x.id) && !have.has(x.id)));
+  }
   const prospectRule = (doc) => (doc && ((doc.settings && doc.settings.prospects) || (doc.season && doc.season.prospects) || doc.prospects)) || null;
   // whether a player counts as a prospect under a rule ("strict" or "loose")
   const isProspect = (rule, p) => !!p && (rule === "loose" ? !!(p.pro || p.rk) : !!(p.pro && !p.bigs));
@@ -537,5 +543,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

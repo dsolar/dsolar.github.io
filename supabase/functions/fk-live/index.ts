@@ -8,6 +8,8 @@
 //   football    Sleeper's live weekly stats (the same feed as weeks-nfl.json), game states from ESPN's scoreboard
 //   baseball    MLB's Stats API schedule and box scores, Monday to Sunday weeks
 //
+// Starting lineups (baseball): ?sport=mlb&lineups=1 (today and tomorrow) or &date=YYYY-MM-DD, see mlbLineups.
+//
 // Two more reads for one-day games:
 //   ?sport=nba&slates=1          today's and tomorrow's NBA games (New York days), each { id, at, away, home, state }
 //   ?sport=nba&games=id1,id2     those games' box scores and states, { games: { id: { state, lines } } }, whatever week
@@ -225,6 +227,41 @@ async function mlb() {
   }
   return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: mlbLines(acc), boxes: Object.fromEntries(games.map((g, i) => [g.id, mlbLines(per[i] || {})])), teams, games: byTeam };
 }
+// Today's and tomorrow's starting lineups and probable pitchers (?sport=mlb&lineups=1, or &date=YYYY-MM-DD for one
+// day), from MLB's schedule hydrated with lineups. Each day:
+//   teams:  { ABBR: [{ game, at, opp, home, state, posted, ppd }] }   posted: the batting order is out
+//   bat:    { playerId: [{ game, o }] }                               o: his spot in the order, 1 to 9
+//   sp:     { playerId: [{ game, opp, home }] }                        the probable starters
+// Lineups come out a few hours before first pitch; until then a team's games show posted: false.
+const lineupCache: Record<string, { at: number; data: any }> = {};
+async function mlbLineupDay(date: string) {
+  const c = lineupCache[date];
+  if (c && Date.now() - c.at < 90e3) return c.data;
+  const sched: any = await getJSON(`${MLB}schedule?sportId=1&date=${date}&hydrate=lineups,probablePitcher`).catch(() => ({ dates: [] }));
+  const day: any = { teams: {}, bat: {}, sp: {} };
+  for (const d of sched.dates || []) for (const g of d.games || []) {
+    const ab = g.status?.abstractGameState, state = ab === "Final" ? "post" : ab === "Live" ? "in" : "pre";
+    const ppd = g.status?.detailedState === "Postponed" || g.status?.codedGameState === "D";
+    for (const [side, other] of [["away", "home"], ["home", "away"]]) {
+      const me = g.teams?.[side], op = g.teams?.[other];
+      const a1 = MLB_TEAMS[me?.team?.name] || me?.team?.abbreviation, a2 = MLB_TEAMS[op?.team?.name] || op?.team?.abbreviation;
+      if (!a1) continue;
+      const order: any[] = (g.lineups && (g.lineups[`${side}Players`] || g.lineups[side])) || [];
+      (day.teams[a1] ||= []).push({ game: String(g.gamePk), at: g.gameDate, opp: a2, home: side === "home", state, posted: order.length > 0, ppd });
+      order.forEach((pl: any, i: number) => { const id = String(pl?.id ?? pl?.person?.id ?? ""); if (id) (day.bat[id] ||= []).push({ game: String(g.gamePk), o: i + 1 }); });
+      const sp = me?.probablePitcher;
+      if (sp && sp.id) (day.sp[String(sp.id)] ||= []).push({ game: String(g.gamePk), opp: a2, home: side === "home" });
+    }
+  }
+  lineupCache[date] = { at: Date.now(), data: day };
+  return day;
+}
+async function mlbLineups(date: string | null) {
+  const dates = date ? [date] : [nyDate(), addDays(nyDate(), 1)];
+  const days: Record<string, any> = {};
+  for (const d of dates) days[d] = await mlbLineupDay(d);
+  return { sport: "mlb", days, updated: new Date().toISOString(), ...(errors.length ? { errors: errors.slice(0, 5) } : {}) };
+}
 function mlbLines(acc: Record<string, { b?: number[]; p?: number[] }>) {
   const lines: Record<string, { bat?: number[]; pit?: number[] }> = {};
   const r3 = (x: number) => Math.round(x * 1000) / 1000, r2 = (x: number) => Math.round(x * 100) / 100;
@@ -360,6 +397,11 @@ Deno.serve(async (req) => {
   const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
   if (sport === "nfl" && q.get("slates")) return json(await nflSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "nba" && q.get("slates")) return json(await nbaSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
+  if (sport === "mlb" && q.get("lineups")) {
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(q.get("date") || "") ? q.get("date") : null;
+    errors.length = 0;
+    return json(await mlbLineups(date).catch((e) => ({ days: {}, error: String(e) })), { "cache-control": "max-age=90" });
+  }
   if (!BUILD[sport]) return json({ error: "sport must be nba, nfl or mlb" }, {}, 400);
   if (q.get("games")) {
     const ids = [...new Set(String(q.get("games")).split(",").map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)))].slice(0, 20);

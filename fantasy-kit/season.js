@@ -574,9 +574,14 @@
     const set = Array.isArray(want) && want.length === n && new Set(want).size === n ? want.slice() : null;
     const order = set || standings(L).map((r) => r.team).reverse();
     if (L.settings.dynasty) return rookieDraft(L, ctx, sport, order, o);
+    // prospect rounds come back each season: taxi prospects carry over in them (each costs one of his team's prospect
+    // picks), and the regular keepers stay out of them
+    const pros = L.settings.prospects || null, mainR = (D0.rounds || 15) - (pros ? pros.rounds : 0);
+    const taxiKeep = (t) => (pros ? G.taxiOf(L, t).filter((pid) => L.rosters[t].includes(pid) && !G.graduated(L, ctx, ctx && ctx.byId[pid])).slice(0, pros.rounds) : []);
     const keepers = [];
     for (const t of L.teams) {
-      const mine = (picks && picks[t.id] != null ? picks[t.id] : keepersOf(L, ctx, t.id)).filter((id) => L.rosters[t.id].includes(id)).slice(0, L.settings.keepers || 0);
+      const tx = new Set(taxiKeep(t.id));
+      const mine = (picks && picks[t.id] != null ? picks[t.id] : keepersOf(L, ctx, t.id)).filter((id) => L.rosters[t.id].includes(id) && !tx.has(id)).slice(0, L.settings.keepers || 0);
       if (L.settings.keeperRule) {
         const plan = keeperPlan(L, t.id, mine.filter((pid) => !keeperCost(L, pid).no));
         for (const x of plan.ok ? plan.rows : []) keepers.push({ team: t.id, pid: x.pid, round: x.round, years: x.cost.year, base: x.cost.base });
@@ -584,22 +589,28 @@
       }
       const free = [];
       for (const pid of mine) { const c = keeperCost(L, pid); if (c.round == null && c.price == null) free.push(pid); else keepers.push({ team: t.id, pid, round: c.round, price: c.price }); }
-      free.forEach((pid, i) => keepers.push({ team: t.id, pid, round: (D0.rounds || 15) - i }));
+      free.forEach((pid, i) => keepers.push({ team: t.id, pid, round: mainR - i }));
     }
+    if (pros) for (const k of keepers) if (k.round != null) k.round = Math.min(k.round, mainR);
     // a keeper whose round is taken slides to the team's next open pick, so place the earliest rounds first
     keepers.sort((a, b) => (a.round || 0) - (b.round || 0));
     const D = F.create({ sport, type: D0.type || "snake", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
       nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers: [],
-      rounds: D0.rounds, curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal });
+      rounds: D0.rounds, curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal,
+      prospects: pros ? { rounds: pros.rounds, rule: pros.rule } : undefined });
     // picks traded in the offseason belong to the teams holding them (and remember whose they were), then keepers
     // take their slots
     if (D.type !== "auction" && L.picks) D.order.forEach((orig, k) => { const r = Math.floor(k / n) + 1, own = G.pickOwner(L, `${r}:${orig}`); if (own !== orig) { D.order[k] = own; D.via[k] = orig; } });
+    if (pros && D.type !== "auction") for (const t of L.teams) for (const pid of taxiKeep(t.id)) F.keep(D, t.id, pid, mainR + 1);
     for (const k of keepers) F.keep(D, k.team, k.pid, k.round, k.price);
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.rules = JSON.parse(JSON.stringify(L.settings));
     D.year = (D0.year || 1) + 1;
+    // the prospect pool: refreshed from the board when the page passes it (o.extraPlayers), else last season's
+    const xs = o.extraPlayers || L.extraPlayers || D0.extraPlayers;
+    if (Array.isArray(xs) && xs.length) D.extraPlayers = xs.slice();
     // a climbing rule: each keeper's history goes with him into the new season (begin() reads D.keepInfo)
     if (L.settings.keeperRule) {
       D.keeperRule = L.settings.keeperRule; D.keepersN = L.settings.keepers;
@@ -622,6 +633,8 @@
     D.rules = JSON.parse(JSON.stringify(L.settings));
     D.year = (D0.year || 1) + 1;
     D.rookie = true;
+    const xs = o.extraPlayers || L.extraPlayers || D0.extraPlayers;
+    if (Array.isArray(xs) && xs.length) D.extraPlayers = xs.slice();
     // picks traded for the season after next become next season's picks in the new league
     D.futurePicks = {};
     for (const [k, own] of Object.entries(L.picks || {})) if (G.pickYear(k) === 2) { const [r, t] = k.split(":"); if (own !== +t) D.futurePicks[`${r}:${t}`] = own; }

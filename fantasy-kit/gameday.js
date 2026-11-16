@@ -35,7 +35,33 @@
     if (row.pit) { const outs = at('outs','pit'); out.push(['IP',outs == null ? n('ip','pit') : `${Math.floor(outs/3)}.${outs%3}`], ...[['K','k'],['ER','er'],['BB','bb'],['H','h'],['W','w'],['SV','sv']].map(([l,k])=>pair(l,k,'pit'))); }
     return out;
   }
-  const api = { day, current, line, stats };
+  /* Baseball's lineup status for one player on one New York day, from fk-live ?sport=mlb&lineups=1 ({ days: { date:
+     { teams, bat, sp } } }). Returns null when that day isn't in the feed, else { kind, text, ... }:
+       nogame   his team doesn't play               ppd      the game's postponed
+       batting  in the posted lineup (o: 1 to 9)      out      the lineup's posted and he isn't in it
+       pending  the lineup isn't out yet (at: first pitch)
+       sp       the probable starting pitcher (opp, home)   rp: a pitcher who isn't starting (null, nothing to say)
+     A doubleheader lists each game: "Batting 2nd, sitting game 2". */
+  const ORD = (n) => `${n}${({ 1: 'st', 2: 'nd', 3: 'rd' })[n] || 'th'}`;
+  const PITCH = new Set(['SP', 'RP', 'P']);
+  function lineupStatus(feed, player, date) {
+    const d = feed && feed.days && feed.days[date];
+    if (!d || !player) return null;
+    const id = String(player.id), gs = (d.teams && d.teams[player.t]) || [];
+    const pos = player.pos || [], hitter = pos.some((x) => !PITCH.has(x)), pitcher = pos.some((x) => PITCH.has(x));
+    const sp = d.sp && d.sp[id];
+    if (sp && sp.length) return { kind: 'sp', text: `Probable starter ${sp[0].home ? 'vs' : '@'} ${sp[0].opp}`, opp: sp[0].opp, home: sp[0].home };
+    if (!gs.length) return { kind: 'nogame', text: 'No game' };
+    if (!hitter && pitcher) return null;
+    const live = gs.filter((g) => !g.ppd);
+    if (!live.length) return { kind: 'ppd', text: 'Postponed' };
+    const bat = (d.bat && d.bat[id]) || [];
+    const per = live.map((g) => { const b = bat.find((x) => x.game === g.game); return b ? { k: 'batting', o: b.o } : g.posted ? { k: 'out' } : { k: 'pending', at: g.at }; });
+    const word = (x, i) => (x.k === 'batting' ? `Batting ${ORD(x.o)}` : x.k === 'out' ? 'Not in lineup' : 'Lineup not out yet') + (live.length > 1 ? ` (game ${i + 1})` : '');
+    const first = per.find((x) => x.k === 'batting') || per.find((x) => x.k === 'pending') || per[0];
+    return { kind: first.k, o: first.o, at: first.at || live[0].at, text: per.map(word).join(', ') };
+  }
+  const api = { day, current, line, stats, lineupStatus };
   (root.FK = root.FK || {}).gameday = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

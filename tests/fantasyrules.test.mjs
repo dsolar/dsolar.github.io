@@ -150,8 +150,12 @@ test('daily lineups: a lineup per day, carried forward, scored day by day', () =
   // two hitters on team 0: a starter and a bench bat at a slot both fit
   const ros = L.rosters[0].map((id) => players.find((p) => p.id === id)).filter((p) => p.l && p.l.bat && !p.l.pit);
   const slots = L.settings.lineup, ctx0 = G.context(L, players, sport);
-  const lu = G.lineupFor(L, ctx0, 0, 1, 0), i = lu.findIndex((id) => id && ros.some((p) => p.id === id));
-  const a = lu[i], b = ros.find((p) => !lu.includes(p.id) && S.fits(sport, p, slots[i]));
+  // any starting slot a bench hitter can also fill (the first hitter's slot is often catcher, which nobody on the bench
+  // plays, so search them all rather than depend on how the bots drafted)
+  const lu = G.lineupFor(L, ctx0, 0, 1, 0);
+  const bench = ros.filter((p) => !lu.includes(p.id));
+  const i = lu.findIndex((id, k) => id && ros.some((p) => p.id === id) && bench.some((p) => S.fits(sport, p, slots[k])));
+  const a = lu[i], b = i >= 0 ? bench.find((p) => S.fits(sport, p, slots[i])) : null;
   assert.ok(a && b, 'a starter and a bench hitter who can swap');
   // day lines: a homers on day 0, b homers on day 3
   const cols = { bat: ['g', 'pa', 'ab', 'r', 'h', 'hr', 'rbi', 'sb', 'tb', 'avg', 'obp', 'ops'] };
