@@ -4,14 +4,14 @@
  "week": 10,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-16T06:12:56Z",
+ "updated": "2026-11-16T19:53:40Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 197,
-   "proj": 153.02,
+   "proj": 152.78,
    "points": 150.22,
    "scores": [
     135.46,
@@ -62,7 +62,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 8.1,
-     "next_proj": 18.61,
+     "next_proj": 18.51,
      "in_best": true
     },
     {
@@ -102,7 +102,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 11.3,
-     "next_proj": 13.81,
+     "next_proj": 13.66,
      "in_best": true
     },
     {
@@ -138,10 +138,10 @@
        "pass_yd": -3
       }
      },
-     "proj": 14.91,
+     "proj": 14.76,
      "rank": "RB11",
      "date": "2026-11-16",
-     "next_proj": 15.42,
+     "next_proj": 14.9,
      "in_best": true
     },
     {
@@ -181,7 +181,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 16.7,
-     "next_proj": 18.11,
+     "next_proj": 18.54,
      "in_best": true
     },
     {
@@ -218,7 +218,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 9.1,
-     "next_proj": 14.73,
+     "next_proj": 15.67,
      "in_best": true
     },
     {
@@ -297,7 +297,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.4,
-     "next_proj": 10.44,
+     "next_proj": 10.36,
      "in_best": true
     },
     {
@@ -337,7 +337,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 32.1,
-     "next_proj": 9.66,
+     "next_proj": 9.59,
      "in_best": true
     },
     {
@@ -377,7 +377,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 35.42,
-     "next_proj": 22.06,
+     "next_proj": 22.48,
      "in_best": true
     },
     {
@@ -491,7 +491,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 12.1,
-     "next_proj": 11.91
+     "next_proj": 11.8
     },
     {
      "slot": "BN",
@@ -527,7 +527,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.7,
-     "next_proj": 12.52
+     "next_proj": 12.56
     },
     {
      "slot": "BN",
@@ -565,7 +565,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 15.62,
-     "next_proj": 17.46
+     "next_proj": 17.35
     },
     {
      "slot": "IR",
@@ -607,8 +607,8 @@
     }
    ],
    "points_final": 150.22,
-   "best": 148.7,
-   "best_next": 137.6,
+   "best": 148.5,
+   "best_next": 138.5,
    "locked": 150.22,
    "locked_proj": 133.77,
    "games_final": 8
@@ -617,7 +617,7 @@
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 138.72,
+   "proj": 138.59,
    "points": 172.54,
    "scores": [
     132.74,
@@ -668,7 +668,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.98,
-     "next_proj": 16.99,
+     "next_proj": 16.41,
      "in_best": true
     },
     {
@@ -709,7 +709,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 40.7,
-     "next_proj": 20.87,
+     "next_proj": 21.28,
      "in_best": true
     },
     {
@@ -750,7 +750,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 6.6,
-     "next_proj": 13.31,
+     "next_proj": 13.4,
      "in_best": true
     },
     {
@@ -787,7 +787,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 4.5,
-     "next_proj": 13.18,
+     "next_proj": 12.87,
      "in_best": true
     },
     {
@@ -826,7 +826,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 23.8,
-     "next_proj": 15.64,
+     "next_proj": 15.8,
      "in_best": true
     },
     {
@@ -904,7 +904,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 23.2,
-     "next_proj": 12.16,
+     "next_proj": 12.35,
      "in_best": true
     },
     {
@@ -985,7 +985,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 33.16,
-     "next_proj": 23.52,
+     "next_proj": 25.43,
      "in_best": true
     },
     {
@@ -1020,7 +1020,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 12.63
+     "next_proj": 13.09
     },
     {
      "slot": "BN",
@@ -1052,7 +1052,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 15.48
+     "next_proj": 15.78
     },
     {
      "slot": "BN",
@@ -1123,7 +1123,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 17.7
+     "next_proj": 17.84
     },
     {
      "slot": "IR",
@@ -1159,12 +1159,12 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 9.88
+     "next_proj": 9.97
     }
    ],
    "points_final": 172.54,
    "best": 135.4,
-   "best_next": 144.5,
+   "best_next": 147.8,
    "locked": 172.54,
    "locked_proj": 135.41,
    "games_final": 9
@@ -1173,7 +1173,7 @@
    "name": "Love Purdy Flowers",
    "manager": "Nate",
    "faab": 108,
-   "proj": 136.43,
+   "proj": 136.23,
    "points": 140.46,
    "scores": [
     134.08,
@@ -1223,7 +1223,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 31.66,
-     "next_proj": 17.18,
+     "next_proj": 17.63,
      "in_best": true
     },
     {
@@ -1264,7 +1264,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 44.3,
-     "next_proj": 17.87,
+     "next_proj": 18.03,
      "in_best": true
     },
     {
@@ -1336,10 +1336,10 @@
        "rush_yd": 51
       }
      },
-     "proj": 13.38,
+     "proj": 13.24,
      "rank": "WR10",
      "date": "2026-11-16",
-     "next_proj": 12.46,
+     "next_proj": 12.08,
      "in_best": true
     },
     {
@@ -1377,7 +1377,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 5.0,
-     "next_proj": 12.46,
+     "next_proj": 12.4,
      "in_best": true
     },
     {
@@ -1416,7 +1416,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 11.9,
-     "next_proj": 15.48,
+     "next_proj": 15.62,
      "in_best": true
     },
     {
@@ -1455,7 +1455,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 2.1,
-     "next_proj": 10.09,
+     "next_proj": 9.91,
      "in_best": true
     },
     {
@@ -1495,7 +1495,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 24.3,
-     "next_proj": 12.06,
+     "next_proj": 12.61,
      "in_best": true
     },
     {
@@ -1571,7 +1571,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 15.82
+     "next_proj": 15.7
     },
     {
      "slot": "BN",
@@ -1603,7 +1603,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 11.63
+     "next_proj": 11.84
     },
     {
      "slot": "BN",
@@ -1642,7 +1642,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 0.3,
-     "next_proj": 11.19
+     "next_proj": 10.87
     },
     {
      "slot": "BN",
@@ -1675,8 +1675,8 @@
        "rec_yd": 63
       }
      },
-     "proj": 7.18,
-     "rank": "RB36",
+     "proj": 7.15,
+     "rank": "RB37",
      "date": "2026-11-16",
      "next_proj": 8.18
     },
@@ -1722,8 +1722,8 @@
     }
    ],
    "points_final": 140.46,
-   "best": 135.5,
-   "best_next": 125.1,
+   "best": 135.4,
+   "best_next": 125.8,
    "locked": 140.46,
    "locked_proj": 122.14,
    "games_final": 8
@@ -1732,7 +1732,7 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 94,
-   "proj": 136.19,
+   "proj": 136.21,
    "points": 169.04,
    "scores": [
     95.18,
@@ -1751,7 +1751,7 @@
      "name": "Drake Maye",
      "nfl": "NE",
      "pos": "QB",
-     "status": "Q",
+     "status": "D",
      "yahoo_actual": 3.02,
      "game": "Sun 9:30 am",
      "opp": "@ DET",
@@ -1867,7 +1867,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 25.7,
-     "next_proj": 14.27,
+     "next_proj": 15.33,
      "in_best": true
     },
     {
@@ -1906,7 +1906,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 19.9,
-     "next_proj": 13.86,
+     "next_proj": 13.75,
      "in_best": true
     },
     {
@@ -1943,7 +1943,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 38.0,
-     "next_proj": 12.3,
+     "next_proj": 12.95,
      "in_best": true
     },
     {
@@ -1980,7 +1980,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 4.9,
-     "next_proj": 13.47,
+     "next_proj": 13.35,
      "in_best": true
     },
     {
@@ -2017,7 +2017,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 6.2,
-     "next_proj": 10.19,
+     "next_proj": 10.29,
      "in_best": true
     },
     {
@@ -2057,7 +2057,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 31.7,
-     "next_proj": 14.53,
+     "next_proj": 14.49,
      "in_best": true
     },
     {
@@ -2097,7 +2097,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 35.42,
-     "next_proj": 20.56
+     "next_proj": 21.83
     },
     {
      "slot": "BN",
@@ -2135,7 +2135,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 12.8,
-     "next_proj": 10.77
+     "next_proj": 10.82
     },
     {
      "slot": "BN",
@@ -2174,7 +2174,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 22.42,
-     "next_proj": 17.21,
+     "next_proj": 17.14,
      "in_best": true
     },
     {
@@ -2210,7 +2210,7 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 11.13
+     "next_proj": 11.45
     },
     {
      "slot": "BN",
@@ -2249,7 +2249,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 24.4,
-     "next_proj": 7.0
+     "next_proj": 7.31
     },
     {
      "slot": "BN",
@@ -2288,7 +2288,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 1.4,
-     "next_proj": 6.66
+     "next_proj": 6.68
     },
     {
      "slot": "IR",
@@ -2333,7 +2333,7 @@
    ],
    "points_final": 169.04,
    "best": 136.0,
-   "best_next": 127.2,
+   "best_next": 129.9,
    "locked": 169.04,
    "locked_proj": 135.62,
    "games_final": 9
@@ -2343,7 +2343,7 @@
    "mine": true,
    "manager": "David S",
    "faab": 234,
-   "proj": 135.34,
+   "proj": 135.33,
    "points": 155.18,
    "scores": [
     137.26,
@@ -2397,7 +2397,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 23.34,
-     "next_proj": 25.62,
+     "next_proj": 25.33,
      "in_best": true
     },
     {
@@ -2437,7 +2437,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 21.7,
-     "next_proj": 18.23,
+     "next_proj": 17.4,
      "in_best": true
     },
     {
@@ -2476,7 +2476,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 13.5,
-     "next_proj": 10.97,
+     "next_proj": 10.33,
      "in_best": true
     },
     {
@@ -2553,7 +2553,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 28.6,
-     "next_proj": 16.9,
+     "next_proj": 18.11,
      "in_best": true
     },
     {
@@ -2592,7 +2592,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 14.4,
-     "next_proj": 8.37
+     "next_proj": 8.31
     },
     {
      "slot": "TE",
@@ -2632,7 +2632,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 2.8,
-     "next_proj": 11.8,
+     "next_proj": 12.07,
      "in_best": true
     },
     {
@@ -2671,7 +2671,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 19.9,
-     "next_proj": 12.97,
+     "next_proj": 13.53,
      "in_best": true
     },
     {
@@ -2711,7 +2711,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 21.44,
-     "next_proj": 19.65,
+     "next_proj": 20.25,
      "in_best": true
     },
     {
@@ -2783,7 +2783,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 17.77
+     "next_proj": 18.03
     },
     {
      "slot": "BN",
@@ -2891,7 +2891,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 10.52
+     "next_proj": 10.45
     },
     {
      "slot": "IR",
@@ -2929,12 +2929,12 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 17.15
+     "next_proj": 17.06
     }
    ],
    "points_final": 155.18,
    "best": 136.3,
-   "best_next": 131.3,
+   "best_next": 133.0,
    "locked": 155.18,
    "locked_proj": 134.76,
    "games_final": 9
@@ -2943,7 +2943,7 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 114,
-   "proj": 133.67,
+   "proj": 133.69,
    "points": 152.24,
    "scores": [
     111.28,
@@ -2993,7 +2993,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 22.76,
-     "next_proj": 21.16,
+     "next_proj": 21.33,
      "in_best": true
     },
     {
@@ -3074,7 +3074,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 7.2,
-     "next_proj": 18.31,
+     "next_proj": 18.55,
      "in_best": true
     },
     {
@@ -3113,7 +3113,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 24.7,
-     "next_proj": 12.23,
+     "next_proj": 12.38,
      "in_best": true
     },
     {
@@ -3121,7 +3121,6 @@
      "name": "Drake London",
      "nfl": "ATL",
      "pos": "WR",
-     "status": "Q",
      "yahoo_actual": 13.9,
      "game": "Sun 1:00 pm",
      "opp": "vs KC",
@@ -3194,7 +3193,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 17.4,
-     "next_proj": 11.17
+     "next_proj": 11.52
     },
     {
      "slot": "TE",
@@ -3233,7 +3232,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 4.0,
-     "next_proj": 10.52,
+     "next_proj": 10.47,
      "in_best": true
     },
     {
@@ -3273,7 +3272,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 18.8,
-     "next_proj": 14.51,
+     "next_proj": 14.39,
      "in_best": true
     },
     {
@@ -3312,7 +3311,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 27.78,
-     "next_proj": 20.51,
+     "next_proj": 20.6,
      "in_best": true
     },
     {
@@ -3351,7 +3350,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 7.0,
-     "next_proj": 10.36,
+     "next_proj": 10.56,
      "in_best": true
     },
     {
@@ -3383,7 +3382,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 9.55
+     "next_proj": 9.83
     },
     {
      "slot": "BN",
@@ -3414,7 +3413,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 8.87
+     "next_proj": 9.06
     },
     {
      "slot": "BN",
@@ -3446,7 +3445,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 20.39
+     "next_proj": 20.77
     },
     {
      "slot": "BN",
@@ -3485,7 +3484,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 8.4,
-     "next_proj": 10.39
+     "next_proj": 10.25
     },
     {
      "slot": "IR",
@@ -3522,12 +3521,12 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 4.9,
-     "next_proj": 8.05
+     "next_proj": 7.67
     }
    ],
    "points_final": 152.24,
    "best": 134.2,
-   "best_next": 129.2,
+   "best_next": 130.2,
    "locked": 152.24,
    "locked_proj": 133.84,
    "games_final": 9
@@ -3956,42 +3955,6 @@
    "from": "waivers",
    "ts": 1793869691,
    "date": "2026-11-05T09:08:11Z"
-  },
-  {
-   "player": "Josh Downs",
-   "pos": "WR",
-   "team": "Holofernes",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1793869691,
-   "date": "2026-11-05T09:08:11Z"
-  },
-  {
-   "player": "Travis Kelce",
-   "pos": "TE",
-   "team": "Tai Streetz Lata?",
-   "bid": 2,
-   "from": "waivers",
-   "ts": 1793869691,
-   "date": "2026-11-05T09:08:11Z"
-  },
-  {
-   "player": "Woody Marks",
-   "pos": "RB",
-   "team": "Love a Kittle Lamb & WhiteRice",
-   "bid": 3,
-   "from": "waivers",
-   "ts": 1793869691,
-   "date": "2026-11-05T09:08:11Z"
-  },
-  {
-   "player": "Kirk Cousins",
-   "pos": "QB",
-   "team": "Breece’s Pieces",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1793784895,
-   "date": "2026-11-04T09:34:55Z"
   }
  ],
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
@@ -4647,7 +4610,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-16T06:12:59Z",
+  "updated": "2026-11-16T19:53:44Z",
   "players": 3046,
   "unmatched": []
  }
