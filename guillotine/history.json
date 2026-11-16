@@ -6,8 +6,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 135.46,
     "A Warren Boston": 132.74,
-    "Love Purdy Flowers": 134.08,
     "Drake Mayezini": 95.18,
+    "Love Purdy Flowers": 134.08,
     "Holofernes": 137.26,
     "Tai Streetz Lata?": 111.28,
     "Breece’s Pieces": 134.5,
@@ -137,8 +137,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 161.16,
     "A Warren Boston": 120.2,
-    "Love Purdy Flowers": 101.78,
     "Drake Mayezini": 94.64,
+    "Love Purdy Flowers": 101.78,
     "Holofernes": 86.62,
     "Tai Streetz Lata?": 66.9,
     "Breece’s Pieces": 115.3,
@@ -275,8 +275,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 132.38,
     "A Warren Boston": 130.74,
-    "Love Purdy Flowers": 127.06,
     "Drake Mayezini": 90.74,
+    "Love Purdy Flowers": 127.06,
     "Holofernes": 133.82,
     "Tai Streetz Lata?": 129.9,
     "Breece’s Pieces": 101.88,
@@ -420,8 +420,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 121.96,
     "A Warren Boston": 114.08,
-    "Love Purdy Flowers": 141.6,
     "Drake Mayezini": 154.6,
+    "Love Purdy Flowers": 141.6,
     "Holofernes": 108.64,
     "Tai Streetz Lata?": 133.8,
     "Breece’s Pieces": 114,
@@ -556,8 +556,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 116.16,
     "A Warren Boston": 129.46,
-    "Love Purdy Flowers": 103.44,
     "Drake Mayezini": 145.3,
+    "Love Purdy Flowers": 103.44,
     "Holofernes": 137.26,
     "Tai Streetz Lata?": 124.38,
     "Breece’s Pieces": 129.42,
@@ -874,8 +874,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 113.72,
     "A Warren Boston": 137.36,
-    "Love Purdy Flowers": 119.3,
     "Drake Mayezini": 97.58,
+    "Love Purdy Flowers": 119.3,
     "Holofernes": 114.52,
     "Tai Streetz Lata?": 113.94,
     "Breece’s Pieces": 108.48,
@@ -2475,8 +2475,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 105.12,
     "A Warren Boston": 112.9,
-    "Love Purdy Flowers": 107.78,
     "Drake Mayezini": 136.56,
+    "Love Purdy Flowers": 107.78,
     "Holofernes": 123.78,
     "Tai Streetz Lata?": 139.1,
     "Breece’s Pieces": 137.78,
@@ -4962,8 +4962,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 134.7,
     "A Warren Boston": 127.34,
-    "Love Purdy Flowers": 97.56,
     "Drake Mayezini": 125.34,
+    "Love Purdy Flowers": 97.56,
     "Holofernes": 171.46,
     "Tai Streetz Lata?": 131.08,
     "Breece’s Pieces": 95.98,
@@ -6025,8 +6025,8 @@
    "scores": {
     "Love a Kittle Lamb & WhiteRice": 131.94,
     "A Warren Boston": 136.32,
-    "Love Purdy Flowers": 149.56,
     "Drake Mayezini": 92.86,
+    "Love Purdy Flowers": 149.56,
     "Holofernes": 186.82,
     "Tai Streetz Lata?": 111.34,
     "Breece’s Pieces": 87.7
@@ -6354,120 +6354,6 @@
       "pts": 0
      }
     ],
-    "Love Purdy Flowers": [
-     {
-      "n": "Brock Purdy",
-      "pos": "QB",
-      "nfl": "SF",
-      "slot": "QB",
-      "proj": 22.57,
-      "pts": 31.66
-     },
-     {
-      "n": "Christian McCaffrey",
-      "pos": "RB",
-      "nfl": "SF",
-      "slot": "RB",
-      "proj": 20.56,
-      "pts": 44.3
-     },
-     {
-      "n": "Zach Charbonnet",
-      "pos": "RB",
-      "nfl": "SEA",
-      "slot": "RB",
-      "proj": 11.66,
-      "pts": 9.4
-     },
-     {
-      "n": "Zay Flowers",
-      "pos": "WR",
-      "nfl": "BAL",
-      "slot": "WR",
-      "proj": 13.24,
-      "pts": null
-     },
-     {
-      "n": "Tetairoa McMillan",
-      "pos": "WR",
-      "nfl": "CAR",
-      "slot": "WR",
-      "proj": 12.95,
-      "pts": 5
-     },
-     {
-      "n": "Justin Jefferson",
-      "pos": "WR",
-      "nfl": "MIN",
-      "slot": "WR",
-      "proj": 15.55,
-      "pts": 11.9
-     },
-     {
-      "n": "Sam LaPorta",
-      "pos": "TE",
-      "nfl": "DET",
-      "slot": "TE",
-      "proj": 9.72,
-      "pts": 2.1
-     },
-     {
-      "n": "Chase Brown",
-      "pos": "RB",
-      "nfl": "CIN",
-      "slot": "W/R/T",
-      "proj": 11.63,
-      "pts": 24.3
-     },
-     {
-      "n": "Jordan Love",
-      "pos": "QB",
-      "nfl": "GB",
-      "slot": "Q/W/R/T",
-      "proj": 17.5,
-      "pts": 11.8
-     },
-     {
-      "n": "Bucky Irving",
-      "pos": "RB",
-      "nfl": "TB",
-      "slot": "BN",
-      "proj": 0,
-      "pts": null
-     },
-     {
-      "n": "Saquon Barkley",
-      "pos": "RB",
-      "nfl": "PHI",
-      "slot": "BN",
-      "proj": 0,
-      "pts": null
-     },
-     {
-      "n": "Jalen Coker",
-      "pos": "WR",
-      "nfl": "CAR",
-      "slot": "BN",
-      "proj": 10.96,
-      "pts": 0.3
-     },
-     {
-      "n": "Omarion Hampton",
-      "pos": "RB",
-      "nfl": "LAC",
-      "slot": "BN",
-      "proj": 7.15,
-      "pts": null
-     },
-     {
-      "n": "Corey Kiner",
-      "pos": "RB",
-      "nfl": "NE",
-      "slot": "BN",
-      "proj": 5.67,
-      "pts": 2.5
-     }
-    ],
     "Drake Mayezini": [
      {
       "n": "Drake Maye",
@@ -6588,6 +6474,120 @@
       "slot": "IR",
       "proj": 0,
       "pts": 0
+     }
+    ],
+    "Love Purdy Flowers": [
+     {
+      "n": "Brock Purdy",
+      "pos": "QB",
+      "nfl": "SF",
+      "slot": "QB",
+      "proj": 22.57,
+      "pts": 31.66
+     },
+     {
+      "n": "Christian McCaffrey",
+      "pos": "RB",
+      "nfl": "SF",
+      "slot": "RB",
+      "proj": 20.56,
+      "pts": 44.3
+     },
+     {
+      "n": "Zach Charbonnet",
+      "pos": "RB",
+      "nfl": "SEA",
+      "slot": "RB",
+      "proj": 11.66,
+      "pts": 9.4
+     },
+     {
+      "n": "Zay Flowers",
+      "pos": "WR",
+      "nfl": "BAL",
+      "slot": "WR",
+      "proj": 13.24,
+      "pts": null
+     },
+     {
+      "n": "Tetairoa McMillan",
+      "pos": "WR",
+      "nfl": "CAR",
+      "slot": "WR",
+      "proj": 12.95,
+      "pts": 5
+     },
+     {
+      "n": "Justin Jefferson",
+      "pos": "WR",
+      "nfl": "MIN",
+      "slot": "WR",
+      "proj": 15.55,
+      "pts": 11.9
+     },
+     {
+      "n": "Sam LaPorta",
+      "pos": "TE",
+      "nfl": "DET",
+      "slot": "TE",
+      "proj": 9.72,
+      "pts": 2.1
+     },
+     {
+      "n": "Chase Brown",
+      "pos": "RB",
+      "nfl": "CIN",
+      "slot": "W/R/T",
+      "proj": 11.63,
+      "pts": 24.3
+     },
+     {
+      "n": "Jordan Love",
+      "pos": "QB",
+      "nfl": "GB",
+      "slot": "Q/W/R/T",
+      "proj": 17.5,
+      "pts": 11.8
+     },
+     {
+      "n": "Bucky Irving",
+      "pos": "RB",
+      "nfl": "TB",
+      "slot": "BN",
+      "proj": 0,
+      "pts": null
+     },
+     {
+      "n": "Saquon Barkley",
+      "pos": "RB",
+      "nfl": "PHI",
+      "slot": "BN",
+      "proj": 0,
+      "pts": null
+     },
+     {
+      "n": "Jalen Coker",
+      "pos": "WR",
+      "nfl": "CAR",
+      "slot": "BN",
+      "proj": 10.96,
+      "pts": 0.3
+     },
+     {
+      "n": "Omarion Hampton",
+      "pos": "RB",
+      "nfl": "LAC",
+      "slot": "BN",
+      "proj": 7.15,
+      "pts": null
+     },
+     {
+      "n": "Corey Kiner",
+      "pos": "RB",
+      "nfl": "NE",
+      "slot": "BN",
+      "proj": 5.67,
+      "pts": 2.5
      }
     ],
     "Holofernes": [
