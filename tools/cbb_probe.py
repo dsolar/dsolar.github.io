@@ -5,10 +5,10 @@ ROOT=pathlib.Path(__file__).resolve().parents[1]; OUT=ROOT/"tools/cbb_sources";O
 now=datetime.datetime.now(datetime.timezone.utc);year=now.year+(now.month>=7);day=now.strftime("%Y%m%d")
 Q="region=us&lang=en&contentorigin=espn"
 urls={
- "haslam_xml":"https://haslametrics.com/ratings.xml",
- "games_web":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/scoreboard?{Q}&dates={day}&groups=50&limit=1000",
- "players_web":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/athletes?{Q}&isqualified=false&limit=1000&sort=offensive.avgPoints:desc&season={year}&seasontype=2",
- "bpi":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/powerindex?{Q}&limit=1000&season={year}",
+ "duke_roster_web":f"https://site.web.api.espn.com/apis/common/v3/sports/basketball/mens-college-basketball/teams/150/roster?{Q}&season={year}",
+ "games_web2":f"https://site.web.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?{Q}&dates={day}&groups=50&limit=1000",
+ "players_stats":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/athletes/statistics?{Q}&isqualified=false&limit=1000&sort=offensive.avgPoints:desc&season={year}&seasontype=2",
+
 }
 def small(v,depth=0):
  if depth>7: return list(v)[:40] if isinstance(v,dict) else str(v)[:80]
@@ -42,6 +42,10 @@ html=(OUT/"haslam.txt").read_text() if (OUT/"haslam.txt").exists() else ""
 attrs=sorted(set(re.findall(r"getAttribute\(['\"]([^'\"]+)",html)))
 summary["haslam_attributes"]=attrs
 summary["haslam_mapping"]={a:[m.group() for m in re.finditer(r".{0,100}getAttribute\(['\"]"+re.escape(a)+r"['\"]\).{0,180}",html)][:2] for a in attrs}
+if (OUT/"bpi.txt").exists():
+ b=json.loads((OUT/"bpi.txt").read_text())
+ summary["bpiColumns"]=[{"name":c["name"],"names":c.get("names"),"labels":c.get("displayNames"),"descriptions":c.get("descriptions")} for c in b.get("categories",[])]
+ summary["bpiTeam"]=b.get("teams",[{}])[0]
 summary["season"]=year;summary["updated"]=now.isoformat()
 for key,d in summary["sources"].items(): d["sample"]=small(d.get("sample"))
 previous.write_text(json.dumps(summary))
