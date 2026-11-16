@@ -270,6 +270,42 @@ window.PROJECTS = [
     cover: { image: "assets/covers/nhl-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
+    "title": "College Basketball Hub",
+    "hub": true,
+    "line": "Team strength, player scouting and the road to March",
+    "tag": "Follow the season",
+    "type": "Simulations",
+    "released": "2026-11",
+    "url": "cbb/",
+    "action": "Explore college hoops",
+    "question": "Which games matter tonight, and how do I get to know all these teams?",
+    "summary": "A daily guide to men's Division I: Haslametrics and ESPN BPI rankings, conference races, a searchable roster pool, team comparisons, game scores and an attributed 76-team bracket forecast.",
+    "facts": [
+      [
+        "365",
+        "Division I teams"
+      ],
+      [
+        "5,500+",
+        "roster players"
+      ],
+      [
+        "76",
+        "teams in the projected field"
+      ]
+    ],
+    "stack": [
+      "JavaScript",
+      "Python",
+      "GitHub Actions"
+    ],
+    "cover": {
+      "image": "assets/covers/cbb-hub.svg",
+      "bg": "#F5F2EA",
+      "band": "#153D32"
+    }
+  },
+  {
     title: "Big Board",
     hub: true,
     line: "Every 2027 draft board, plus a mock draft",

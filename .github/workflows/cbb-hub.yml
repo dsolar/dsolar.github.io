@@ -1,0 +1,60 @@
+name: College basketball hub
+on:
+  schedule:
+    - cron: "23 4,11,18 * * *"
+  push:
+    branches: [main, codex/college-basketball-hub]
+    paths:
+      - cbb/*.html
+      - cbb/*.js
+      - cbb/*.css
+      - tools/cbb_build.py
+      - tests/cbb*.cjs
+      - tests/cbb*.py
+      - .github/workflows/cbb-hub.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: college-basketball-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Build current college basketball data
+        run: python3 tools/cbb_build.py
+      - name: Check JavaScript
+        run: |
+          node --check cbb/model.js
+          if [ -f cbb/app.js ]; then node --check cbb/app.js; fi
+          node --check assets/hubswitch.js
+          node --check assets/projects.js
+      - name: Verify calculations, imports and actual data
+        run: |
+          python3 -m unittest discover -s tests -p 'cbb_*test.py'
+          node --test tests/cbb-model.test.cjs
+      - name: Install DOM test dependency
+        if: hashFiles('tests/cbb-ui.test.cjs') != ''
+        run: npm install --no-package-lock --no-save --prefix "$RUNNER_TEMP/cbb-qa" jsdom@26.1.0
+      - name: Check navigation, filters and player cards
+        if: hashFiles('tests/cbb-ui.test.cjs') != ''
+        env:
+          NODE_PATH: ${{ runner.temp }}/cbb-qa/node_modules
+        run: node --test tests/cbb-ui.test.cjs
+      - name: Save current college basketball snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cbb/data
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update college basketball ratings, rosters and bracket"
+          git pull --rebase
+          git push
