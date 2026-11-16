@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-15T17:24:21Z",
+ "updated": "2026-11-16T20:40:46Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,218 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-Z7r9jZ1A7PJaJ",
-   "date": "2026-11-15",
-   "time": "12:00",
-   "title": "The Mountain Grass Unit (18 and Over)",
-   "cat": "music",
-   "venue": "Royale Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PJaJ",
-   "source": "ticketmaster",
-   "act": "Mountain Grass Unit",
-   "times": [
-    "12:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18721512",
-    "sg-18321525",
-    "2026-11-15-mountain-grass-unit-royale"
-   ],
-   "score": 2,
-   "why": "like"
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecqP71",
-   "date": "2026-11-15",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-15-2026/event/01006530AD76510A",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18722911",
-   "date": "2026-11-15",
-   "time": "17:00",
-   "title": "Gauri B",
-   "cat": "comedy",
-   "venue": "City Winery - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/gauri-b-tickets/comedy/2026-11-15-5-pm/18722911",
-   "source": "seatgeek",
-   "times": [
-    "17:00",
-    "20:30"
-   ],
-   "aka": [
-    "sg-18722917"
-   ],
-   "score": 0
-  },
-  {
-   "id": "espn-401909989",
-   "date": "2026-11-15",
-   "time": "18:00",
-   "title": "Celtics vs Mavericks",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909989/mavericks-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_5wCylI9",
-   "date": "2026-11-15",
-   "time": "19:00",
-   "title": "An Evening With Goose",
-   "cat": "music",
-   "venue": "Cross Insurance Arena ",
-   "city": "Portland, ME",
-   "url": "https://www.ticketmaster.com/an-evening-with-goose-portland-maine-11-15-2026/event/010064BC8EE6BA17",
-   "source": "ticketmaster",
-   "drive_hours": 2.25,
-   "act": "Goose",
-   "aka": [
-    "sg-18280639",
-    "2026-11-15-goose-cross-insurance-aren"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-vv177Z_3GkTIXngS",
-   "date": "2026-11-15",
-   "time": "19:00",
-   "title": "ApolloRed1: Brazy Butterfly Tour",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/apollored1-brazy-butterfly-tour-boston-massachusetts-11-15-2026/event/0100652FE8FAAD73",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfYGkeEcNaH",
-   "date": "2026-11-15",
-   "time": "19:00",
-   "title": "Gnarls Barkley: To Whom It Still Concerns Tour",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/gnarls-barkley-to-whom-it-still-boston-massachusetts-11-15-2026/event/01006530A7B6327C",
-   "source": "ticketmaster",
-   "sub": "with Duckwrth",
-   "aka": [
-    "2026-11-15-gnarls-barkley-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_5K2uBTq",
-   "date": "2026-11-15",
-   "time": "19:00",
-   "title": "Strawberry Guy",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/strawberry-guy-boston-massachusetts-11-15-2026/event/010064B4CF37AFDD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18269458"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18722915",
-   "date": "2026-11-15",
-   "time": "19:30",
-   "title": "Ron Taylor",
-   "cat": "comedy",
-   "venue": "City Winery - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ron-taylor-tickets/comedy/2026-11-15-7-30-pm/18722915",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7JKAZ",
-   "date": "2026-11-15",
-   "time": "20:00",
-   "title": "Freak Slug w/ Mila Degray",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7JKAZ",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18373223"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18608936",
-   "date": "2026-11-15",
-   "time": "20:00",
-   "title": "Third Eye Blind",
-   "cat": "music",
-   "venue": "Roadrunner - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/third-eye-blind-tickets/boston-massachusetts-roadrunner-boston-2026-11-15-8-pm/concert/18608936",
-   "source": "seatgeek",
-   "act": "Third Eye Blind",
-   "aka": [
-    "sg-18608936",
-    "2026-11-15-third-eye-blind-roadrunner"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZk8yGkdZQquv",
-   "date": "2026-11-15",
-   "time": "20:00",
-   "title": "ZAYN: The Konnakol Tour",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/zayn-the-konnakol-tour-boston-massachusetts-11-15-2026/event/01006439C069D341",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-rZ7HnEZ1Af83q7",
-   "date": "2026-11-15",
-   "time": "20:30",
-   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
-   "cat": "music",
-   "venue": "Wild Horses",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412744",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Grateful Dead",
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "sg-18321068",
-   "date": "2026-11-15",
-   "time": "21:00",
-   "title": "Grupo Niche",
-   "cat": "music",
-   "venue": "Lynn Memorial Auditorium",
-   "city": "Lynn, MA",
-   "url": "https://seatgeek.com/grupo-niche-tickets/lynn-massachusetts-lynn-memorial-auditorium-2026-11-15-9-pm/concert/18321068",
-   "source": "seatgeek",
-   "score": 0
-  },
   {
    "id": "espn-401909994",
    "date": "2026-11-16",
@@ -569,6 +357,7 @@
    "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
    "source": "ticketmaster",
    "aka": [
+    "sg-18617576",
     "2026-11-19-trippie-redd-citizens-house-of-bl"
    ],
    "score": 0
@@ -2371,9 +2160,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18618956"
-   ],
    "score": 0
   },
   {
@@ -5178,6 +4964,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGkMccPyk",
+   "date": "2027-01-22",
+   "time": "19:00",
+   "title": "Broadway Rave Presents: Broadway Does Punk",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/broadway-rave-presents-broadway-does-punk-boston-massachusetts-01-22-2027/event/0100656DEDB65E46",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "sg-18548738",
    "date": "2027-01-22",
    "time": "19:00",
@@ -6683,6 +6481,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_pGkzCStFR",
+   "date": "2027-02-26",
+   "time": "19:30",
+   "title": "Same Gays, New Wigs",
+   "cat": "comedy",
+   "venue": "Crystal Ballroom at Somerville Theatre",
+   "city": "Somerville, MA",
+   "url": "https://www.ticketmaster.com/same-gays-new-wigs-somerville-massachusetts-02-26-2027/event/0100656E0ECE922F",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "sg-18747187",
    "date": "2027-02-26",
    "time": "20:00",
@@ -7437,6 +7247,21 @@
    "why": "big"
   },
   {
+   "id": "tm-vv117Z_pfbPzqg",
+   "date": "2027-03-10",
+   "time": "19:30",
+   "title": "Westlife 25 - The Anniversary North American Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/westlife-25-the-anniversary-north-american-boston-massachusetts-03-10-2027/event/0100656518978775",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18777983"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4xGkdSA3R_",
    "date": "2027-03-11",
    "time": "17:30",
@@ -7564,6 +7389,18 @@
    "aka": [
     "sg-18606065"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkSK9YWf",
+   "date": "2027-03-12",
+   "time": "19:00",
+   "title": "Kaitlin Butts : The Hello, Honky Tonk Tour w/ support from Ava Hall",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/kaitlin-butts-the-hello-honky-tonk-boston-massachusetts-03-12-2027/event/0100656CD35F0F54",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -7764,6 +7601,18 @@
    "aka": [
     "sg-18703390"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkmylG-z",
+   "date": "2027-03-14",
+   "time": "19:00",
+   "title": "Amira Elfeky: It Was Only A Dream Tour",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/amira-elfeky-it-was-only-a-boston-massachusetts-03-14-2027/event/0100656BB9ACC878",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -8140,6 +7989,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_pGklmEfOt",
+   "date": "2027-03-21",
+   "time": "19:00",
+   "title": "Pete Holmes: We're Having Fun",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/pete-holmes-were-having-fun-boston-massachusetts-03-21-2027/event/0100656AEE9D4829",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "sg-18702719",
    "date": "2027-03-21",
    "time": "20:00",
@@ -8258,6 +8119,18 @@
    "url": "https://www.espn.com/nhl/game/_/gameId/401893602/senators-bruins",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_pGkU0qtwX",
+   "date": "2027-03-25",
+   "time": "19:00",
+   "title": "DJ Shadow Celebrates 30 Years of Endtroducing",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/dj-shadow-celebrates-30-years-of-boston-massachusetts-03-25-2027/event/0100656DA4769CBE",
+   "source": "ticketmaster",
+   "score": 0
   },
   {
    "id": "tm-vv1AvZk4NGkeY3z0_",
@@ -9096,6 +8969,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGkReSuwf",
+   "date": "2027-04-14",
+   "time": "19:00",
+   "title": "TORI KELLY - GOD MUST REALLY LOVE ME WORLD TOUR",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/tori-kelly-god-must-really-love-boston-massachusetts-04-14-2027/event/0100656BC2CCDC94",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18778559"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4tGkdp7XCm",
    "date": "2027-04-15",
    "time": "19:00",
@@ -9300,6 +9188,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGklNSxxF",
+   "date": "2027-04-19",
+   "time": "19:00",
+   "title": "Rio Romeo: Personal Slot Machine Tour",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/rio-romeo-personal-slot-machine-tour-boston-massachusetts-04-19-2027/event/0100656AE3CE2888",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1A8vPbyGA2OURp",
    "date": "2027-04-20",
    "time": "19:00",
@@ -9373,6 +9273,18 @@
     "sg-18593769"
    ],
    "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkBjmJCK",
+   "date": "2027-04-23",
+   "time": "19:30",
+   "title": "Justin Silva",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/justin-silva-boston-massachusetts-04-23-2027/event/0100656E9CBA6393",
+   "source": "ticketmaster",
+   "score": 1
   },
   {
    "id": "tm-Z7r9jZ1AA79rk",
@@ -9507,6 +9419,18 @@
    "venue": "The Cabot",
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe3jd",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGknIb1Ah",
+   "date": "2027-04-25",
+   "time": "19:00",
+   "title": "Cursive - Happy Hollow 20th Anniversary (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/cursive-happy-hollow-20th-anniversary-18-boston-massachusetts-04-25-2027/event/0100656AA860A15B",
    "source": "ticketmaster",
    "score": 0
   },
@@ -10048,40 +9972,85 @@
    "score": 0
   },
   {
-   "id": "sg-18724520",
+   "id": "tm-vv177Z_KGkMrc_d_",
    "date": "2027-05-14",
    "time": "20:00",
-   "title": "BUNT.",
+   "title": "BUNT. - The Levi Did It Tour",
    "cat": "music",
    "venue": "MGM Music Hall at Fenway",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/bunt-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-05-14-8-pm/concert/18724520",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/bunt-the-levi-did-it-tour-boston-massachusetts-05-14-2027/event/0100653DDEB590D9",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724520"
+   ],
    "score": 0
   },
   {
-   "id": "sg-18747205",
+   "id": "tm-Z7r9jZ1AA7Eff",
    "date": "2027-05-14",
    "time": "20:00",
    "title": "Clap Your Hands Say Yeah",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/clap-your-hands-say-yeah-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-14-8-pm/concert/18747205",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7Eff",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18747205"
+   ],
    "score": 0
   },
   {
-   "id": "sg-18748378",
+   "id": "tm-Z7r9jZ1AAAeA0",
    "date": "2027-05-14",
    "time": "20:00",
    "title": "Hermanos Gutierrez",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/hermanos-gutierrez-tickets/boston-massachusetts-roadrunner-boston-2027-05-14-8-pm/concert/18748378",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAeA0",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18748378"
+   ],
    "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkmRND3g",
+   "date": "2027-05-15",
+   "time": "19:00",
+   "title": "76th Street",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/76th-street-boston-massachusetts-05-15-2027/event/0100656BAF8FB4B5",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18759205",
+   "date": "2027-05-15",
+   "time": "20:00",
+   "title": "Vic DiBitetto",
+   "cat": "comedy",
+   "venue": "Lynn Memorial Auditorium",
+   "city": "Lynn, MA",
+   "url": "https://seatgeek.com/vic-dibitetto-tickets/comedy/2027-05-15-8-pm/18759205",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
+   "id": "sg-18687613",
+   "date": "2027-05-15",
+   "time": "20:30",
+   "title": "Josh Johnson",
+   "cat": "comedy",
+   "venue": "Boch Center Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/josh-johnson-tickets/comedy/2027-05-15-8-30-pm/18687613",
+   "source": "seatgeek",
+   "score": 1
   }
  ],
  "movies": [
@@ -10159,8 +10128,8 @@
  "sources": {
   "picks": 2,
   "venues": 1,
-  "espn": 70,
-  "ticketmaster": 492,
-  "seatgeek": 110
+  "espn": 69,
+  "ticketmaster": 498,
+  "seatgeek": 105
  }
 }
