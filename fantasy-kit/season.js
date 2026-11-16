@@ -57,6 +57,8 @@
     if (s.oneWeek) settings.trades = false;
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
+    // the split: the table splits in half after this week (league.js applySplit)
+    if (s.split && s.split.after) settings.split = { after: s.split.after, names: Array.isArray(s.split.names) ? s.split.names.slice(0, 2) : undefined };
     // promotion and relegation: which tier of which pyramid (pyramid.js)
     if (s.pyramid && s.format !== "guillotine" && !s.oneWeek) settings.pyramid = Object.assign({}, s.pyramid);
     // a vampire league (football, head to head): which team is the vampire, and its swap rules

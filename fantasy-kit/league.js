@@ -75,6 +75,10 @@
       L.divNames = (s.divNames || DIV_NAMES[s.divisions] || []).slice(0, s.divisions);
     } else s.divisions = 0;
     if (s.median && (guillotine || s.format === "roto" || s.tally === "allplay" || s.tally === "cats")) s.median = false;
+    // the split (Scotland's): after week `after` the table splits in half and each half plays only itself
+    if (s.split && !splitOk(s, n)) delete s.split;
+    // the playoffs come from the top half
+    if (s.split && s.playoffTeams > Math.ceil(n / 2)) { s.playoffTeams = Math.ceil(n / 2); s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0); }
     // a rookie draft's picks can go on the taxi squad, rookies or not
     if (D && D.rookie) { L.taxiOk = {}; for (const pk of D.board || []) if (pk && pk.pid && !pk.keeper) L.taxiOk[pk.pid] = true; }
     if (D && D.promoted) L.promoted = Object.assign({}, D.promoted);
@@ -84,7 +88,7 @@
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
     // pick your opponent: no divisions, head to head only; week 2's picks open now
     if (s.pyo && (guillotine || s.format === "roto")) delete s.pyo;
-    if (s.pyo) { s.divisions = 0; delete L.divs; pyoOpen(L, null, 2, L.created); }
+    if (s.pyo) { s.divisions = 0; delete L.divs; delete s.split; pyoOpen(L, null, 2, L.created); }
     for (const k of ["robin", "conquest", "crown", "hangover"]) if (s[k] && (guillotine || s.format === "roto")) delete s[k];
     // one raid twist at a time, none in a dynasty (rules.js; optional where it isn't loaded)
     const RL = RLIST;
@@ -95,6 +99,30 @@
   }
 
   const DIV_NAMES = { 2: ["East", "West"], 3: ["North", "South", "West"], 4: ["North", "South", "East", "West"] };
+  /* The split, borrowed from Scotland's league. settings.split = { after, names }: once week `after` is played, the
+     table splits into a top half (the bigger half when the count is odd) and a bottom half. Records carry over, the
+     weeks left in the regular season are played only within each half, and the whole top half finishes above the
+     whole bottom half, so the playoffs come from the top half and last place is the bottom half's last. Head to head
+     only (one game or categories), no divisions, no pick your opponent, at least two weeks on each side of it. */
+  const SPLIT_NAMES = ["Top half", "Bottom half"];
+  const splitOk = (s, n) => !!s.split && s.format === "h2h" && s.tally !== "allplay" && !s.divisions && !s.pyo && n >= 4 && s.split.after >= 2 && s.split.after <= s.weeks - 2;
+  const splitOn = (L, upTo) => !!(L.split && (upTo == null || upTo > L.split.after));
+  const splitNames = (L) => ((L.settings.split && L.settings.split.names) || SPLIT_NAMES);
+  function applySplit(L, now) {
+    const w = L.settings.split.after, n = L.teams.length, size = Math.ceil(n / 2);
+    const order = standings(L, w).map((r) => r.team), groups = {};
+    order.forEach((t, i) => (groups[t] = i < size ? 0 : 1));
+    L.split = { after: w, groups, sizes: [size, n - size] };
+    // the weeks left: a round robin inside each half; when both halves are odd, the two teams sitting out play each other
+    const halves = [order.slice(0, size), order.slice(size)], r = rng(L.seed + 31 + w);
+    const rr = halves.map((ids) => roundRobin(ids.length, L.settings.weeks - w, r).map((games) => games.map(([a, b]) => [ids[a], ids[b]])));
+    for (let k = 0; k < L.settings.weeks - w; k++) {
+      const games = rr[0][k].concat(rr[1][k]), playing = new Set(games.flat()), out = L.teams.map((t) => t.id).filter((id) => !playing.has(id));
+      if (out.length === 2 && groups[out[0]] !== groups[out[1]]) games.push(out);
+      L.schedule[w + k] = games;
+    }
+    log(L, now, { type: "split", team: -1, text: `The split: ${halves[0].map((t) => L.teams[t].name).join(", ")} play for the title; ${halves[1].map((t) => L.teams[t].name).join(", ")} play to stay off the bottom` });
+  }
   // Everyone plays everyone, then repeats: the circle method.
   function roundRobin(n, weeks, r) {
     const ids = [...Array(n).keys()];
@@ -916,6 +944,7 @@
     if (L.settings.bestBall) for (const g of games) { if (g.ta && g.ta.lineup) best[g.a] = g.ta.lineup; if (g.tb && g.tb.lineup) best[g.b] = g.tb.lineup; }
     for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
+    if (L.settings.split && w === L.settings.split.after && !L.split) applySplit(L, now);
     if (w <= L.settings.weeks) { openBites(L, w, games, now); openRaids2(L, ctx, w, games, now); crownWeek(L, games, w, now); }
     // pick your opponent: this week's picks are final, and next week's open
     if (L.pyo && !L.pyo.done && L.pyo.week <= L.week) { runPyo(L, ctx, Math.max(now, L.pyo.due)); pyoDone(L, now); }
@@ -1215,7 +1244,9 @@
       while (k >= 0 && r.form[k] === s) { n++; k--; }
       r.streak = s ? s + n : "";
     }
-    const sorted = rows.slice().sort((a, b) => b.pct - a.pct || b.pf - a.pf || (b.best || 0) - (a.best || 0) || a.team - b.team);
+    const grp = splitOn(L, last) ? (r) => L.split.groups[r.team] || 0 : () => 0;
+    const sorted = rows.slice().sort((a, b) => grp(a) - grp(b) || b.pct - a.pct || b.pf - a.pf || (b.best || 0) - (a.best || 0) || a.team - b.team);
+    if (splitOn(L, last)) sorted.forEach((r) => (r.half = grp(r)));
     const lead = sorted[0];
     sorted.forEach((r, i) => { r.rank = i + 1; r.gb = ((lead.w - r.w) + (r.l - lead.l)) / 2; r.inPlayoffs = i < L.settings.playoffTeams; });
     // divisions: each division's leader, then everyone else, decides the playoff seeds
@@ -1590,7 +1621,7 @@
       if (k === "median" && (s.format !== "h2h" || s.tally === "allplay" || s.tally === "cats")) return { ok: false, why: "The median game is for head-to-head leagues with one win a week" };
       changed.push(k); s[k] = v;
     }
-    if (changed.includes("weeks")) L.schedule = roundRobin(L.teams.length, s.weeks, rng(L.seed + 7));
+    if (changed.includes("weeks")) { L.schedule = roundRobin(L.teams.length, s.weeks, rng(L.seed + 7)); if (s.split && !splitOk(s, L.teams.length)) delete s.split; }
     if (changed.some((k) => PLAYOFF_RULES.includes(k) || k === "weeks")) {
       s.playoffTeams = Math.min(s.playoffTeams, L.teams.length); if (s.playoffTeams < 2) s.playoffTeams = 0;
       s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0);
@@ -2574,5 +2605,5 @@
   return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

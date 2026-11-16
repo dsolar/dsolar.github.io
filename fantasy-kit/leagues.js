@@ -73,7 +73,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -469,7 +469,7 @@
       draft: `${form.type === "elephant" ? window.FK.setup.elephantLine(form, scoringType(sp) === "points") + ", " : ""}${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${auction() ? `$${showdown() ? 50 : 200} budgets, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       heist: `${form.hzShields} shield${form.hzShields === 1 ? "" : "s"}, ${form.hzSteals} steal${form.hzSteals === 1 ? "" : "s"}, ${form.hzJinxes} jinx${form.hzJinxes === 1 ? "" : "es"}, ${form.hzClock} sec`,
-      season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}`,
+      season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" ? `, ${form.divs} divisions` : ""}${!gl && !form.divs && ["h2h", "h2hcats"].includes(form.season) && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2 ? `, splits after week ${form.splitAfter}` : ""}`,
       playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverDays}-day waivers` : `Rolling, ${form.waiverDays}-day waivers`,
       trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
@@ -689,7 +689,12 @@
     const length = gl ? `<p class="fl-h">${n - 1} weeks: one team is cut each week until one is left.${left != null && n - 1 > left ? ` <b>Only ${left} weeks are left in the season</b>, so the last ${n - 1 - left} would have no games. Pick ${left + 1} teams or fewer.` : ""}</p>`
       : range("weeks", Math.min(8, maxReg), maxReg, Math.min(form.weeks, maxReg), (x) => `${x} weeks`, h2hLike() && po ? "Weeks before the playoffs" : "Season length") + capNote;
     const divs = !gl && form.season !== "roto" && n >= 4 ? fld("Divisions", seg("divs", [0, 2, 3, 4].filter((d) => !d || n >= 2 * d).map((d) => [d, d ? `${d}` : "None"]), form.divs, "Divisions"), form.divs ? "Division winners make the playoffs, and the schedule plays your division more." : "") : "";
-    return length + divs;
+    // the split: after a week the table splits in half and each half plays only itself (league.js applySplit)
+    const splitFits = ["h2h", "h2hcats"].includes(form.season) && !gl && !form.divs && !form.pyoOn && n >= 4 && form.weeks >= 4;
+    const after = Math.min(form.splitAfter || 0, form.weeks - 2);
+    const split = splitFits ? fld("The split", stepper("splitAfter", [0].concat(Array.from({ length: Math.max(0, form.weeks - 3) }, (_, i) => i + 2)), after, (x) => (x ? `After week ${x}` : "No split"), "The split"),
+      after ? `After week ${after} the table splits in half. The top ${Math.ceil(n / 2)} play only each other for the title${po ? `, and the playoffs come from them${po > Math.ceil(n / 2) ? ` (${Math.ceil(n / 2)} playoff teams, not ${po})` : ""}` : ""}; the bottom ${Math.floor(n / 2)} play only each other and can't finish above them. Records carry over.` : "Like Scotland's league: partway through, the top half and bottom half each play only themselves.") : "";
+    return length + divs + split;
   }
   function pyramidBody() {
     const n = form.teams, n2 = form.pyrTeams, mode = form.pyrMode === "playoff" ? "playoff" : "swap", mk = P.maxK(n, n2, mode), k = pyrK();
@@ -746,7 +751,7 @@
   const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
@@ -896,6 +901,7 @@
       if (form.season === "h2h" && form.median && scoringType(sport) === "points") D.season.median = true;
       if (vampire != null) D.season.vampire = { team: vampire, samePos: form.vlike === 1, double: form.vdouble === 1 };
       if (fmt !== "roto" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;
+      if (["h2h", "h2hcats"].includes(form.season) && !D.season.divisions && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2) D.season.split = { after: form.splitAfter };
       if (twistOk()) {
         if (form.pyoOn && n % 2 === 0) { D.season.pyo = true; delete D.season.divisions; }
         if (form.robinOn) D.season.robin = { protect: form.robinP };

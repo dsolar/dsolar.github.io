@@ -254,6 +254,12 @@ owns which team, the invite code and the save order. It also stamps each team's 
   Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
   still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
   team's ungraduated taxi prospects kept in them.
+- **The split** (`settings.split = { after }`, borrowed from Scotland): once week `after` is played
+  (`FK.league.applySplit`), the table splits into a top half (the bigger half when odd) and a bottom half. Records
+  carry over, the rest of the regular season is a round robin inside each half (two odd halves: the teams sitting out
+  play each other), and `standings` puts the whole top half above the bottom half (`r.half`), so the playoffs come
+  from the top half (capped to its size at creation) and last place is the bottom half's last. Head to head only, no
+  divisions or pick your opponent, two weeks or more on each side. `node --test tests/fantasysplit.test.mjs`.
 - **Promotion and relegation** (`FK.pyramid`, `pyramid.js`): two leagues made together from the start form (redraft
   season leagues; the lower tier can be smaller). Each league's `D.season.pyramid` / `settings.pyramid` is
   `{ id, tier, other, names, mode, k }`. On the regular-season table, the top tier's bottom `k` swap with the lower
