@@ -1,45 +1,48 @@
 #!/usr/bin/env python3
-"""Check public college basketball feeds from the same runners used by the hub."""
-import concurrent.futures, datetime, json, pathlib, re, urllib.request, urllib.parse, urllib.error
-ROOT=pathlib.Path(__file__).resolve().parents[1]
-OUT=ROOT/"tools/cbb_sources"
-OUT.mkdir(parents=True, exist_ok=True)
-now=datetime.datetime.now(datetime.timezone.utc)
-year=now.year+(now.month>=7)
-day=now.strftime("%Y%m%d")
+"""Inspect the public feeds used by the college hub; do not request subscriber data."""
+import concurrent.futures,datetime,json,pathlib,re,urllib.request,urllib.error,xml.etree.ElementTree as ET
+ROOT=pathlib.Path(__file__).resolve().parents[1]; OUT=ROOT/"tools/cbb_sources";OUT.mkdir(parents=True,exist_ok=True)
+now=datetime.datetime.now(datetime.timezone.utc);year=now.year+(now.month>=7);day=now.strftime("%Y%m%d")
+Q="region=us&lang=en&contentorigin=espn"
 urls={
- "torvik_teams":f"https://barttorvik.com/{year}_team_results.json",
- "torvik_players":f"https://barttorvik.com/getadvstats.php?year={year}&csv=1",
- "haslam":"https://haslametrics.com/ratings.php",
- "teams": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams?limit=1000",
- "standings":f"https://site.web.api.espn.com/apis/v2/sports/basketball/mens-college-basketball/standings?region=us&lang=en&contentorigin=espn&season={year}&group=50",
- "games":f"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates={day}&groups=50&limit=1000",
- "duke_stats":f"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/150/statistics?season={year}",
- "duke_roster":f"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/teams/150/roster?season={year}",
+ "haslam_xml":"https://haslametrics.com/ratings.xml",
+ "games_web":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/scoreboard?{Q}&dates={day}&groups=50&limit=1000",
+ "players_web":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/athletes?{Q}&isqualified=false&limit=1000&sort=offensive.avgPoints:desc&season={year}&seasontype=2",
+ "bpi":f"https://site.web.api.espn.com/apis/fitt/v3/sports/basketball/mens-college-basketball/powerindex?{Q}&limit=1000&season={year}",
 }
+def small(v,depth=0):
+ if depth>7: return list(v)[:40] if isinstance(v,dict) else str(v)[:80]
+ if isinstance(v,dict): return {k:small(x,depth+1) for k,x in list(v.items())[:45]}
+ if isinstance(v,list): return [small(x,depth+1) for x in v[:2]]+([f"... {len(v)} total"] if len(v)>2 else [])
+ return v
 def one(item):
  key,url=item
  try:
-  req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 (compatible; davidsolar-draft/1.0; +https://davidsolar.dev/cbb/)", "Accept":"application/json,text/plain,text/html"})
-  if key=="haslam" and (OUT/"haslam.txt").exists(): body=(OUT/"haslam.txt").read_text();status=200
-  else:
-   with urllib.request.urlopen(req,timeout=30) as r: body=r.read().decode("utf-8-sig"); status=r.status
+  req=urllib.request.Request(url,headers={"User-Agent":"Mozilla/5.0 (compatible; davidsolar-draft/1.0; +https://davidsolar.dev/cbb/)","Accept":"text/html,application/json"})
+  with urllib.request.urlopen(req,timeout=40) as r: body=r.read().decode("utf-8-sig");status=r.status
   (OUT/(key+".txt")).write_text(body)
-  try:
-   d=json.loads(body); sample=d[:2] if isinstance(d,list) else {k:v if k in ["status","season"] else (v[:1] if isinstance(v,list) else v) for k,v in d.items()}
-   kind="json"
-  except Exception: sample=body[:1200];kind="text"
   extra={}
-  if key=="haslam":
-   extra["scripts"]=re.findall(r'<script[^>]+src=["\x27]([^"\x27]+)',body,re.I)
-   extra["references"]=re.findall(r'.{0,90}(?:\.xml|XMLHttpRequest|\.json|loadXML|\.js).{0,140}',body)[:35]
-   extra["config"]=re.findall(r'.{0,80}(?:ThisYear|ThisTimeIndependent|CurrentYear|yearThis|Season|copyright|LastUpdated|AsOfDate|DataThrough|Updated|TeamName).{0,100}',body)[:65]
-   pos=body.find('xmlhttp.open')
-   extra["xmlContext"]=body[max(0,pos-1800):pos+1800]
-  return key,{"url":url,"status":status,"kind":kind,"bytes":len(body),"sample":sample,**extra}
- except urllib.error.HTTPError as e: return key,{"url":url,"error":str(e),"body":e.read(600).decode("utf-8","replace")}
+  try: d=json.loads(body);sample=small(d);kind="json"
+  except Exception:
+   sample=body[:800];kind="text"
+   if key=="haslam_xml":
+    root=ET.fromstring(body);tags={}
+    for e in root.iter():
+     if e.tag not in tags: tags[e.tag]={"count":0,"sample":[]}
+     tags[e.tag]["count"]+=1
+     if len(tags[e.tag]["sample"])<2: tags[e.tag]["sample"].append({"attributes":e.attrib,"text":(e.text or "").strip()[:300]})
+    extra["xml"]=tags
+  return key,{"url":url,"status":status,"bytes":len(body),"kind":kind,"sample":sample,**extra}
+ except urllib.error.HTTPError as e: return key,{"url":url,"error":str(e),"body":e.read(400).decode("utf-8","replace")}
  except Exception as e: return key,{"url":url,"error":str(e)}
-with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool: results=dict(pool.map(one,urls.items()))
-summary={"season":year,"updated":now.isoformat(),"sources":results}
-(ROOT/"tools/cbb_source_probe.json").write_text(json.dumps(summary))
-print(json.dumps({k:{x:v for x,v in d.items() if x not in ["sample"]} for k,d in results.items()},indent=2))
+previous=ROOT/"tools/cbb_source_probe.json"
+summary=json.loads(previous.read_text()) if previous.exists() else {"sources":{}}
+with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool: summary["sources"].update(dict(pool.map(one,urls.items())))
+html=(OUT/"haslam.txt").read_text() if (OUT/"haslam.txt").exists() else ""
+attrs=sorted(set(re.findall(r"getAttribute\(['\"]([^'\"]+)",html)))
+summary["haslam_attributes"]=attrs
+summary["haslam_mapping"]={a:[m.group() for m in re.finditer(r".{0,100}getAttribute\(['\"]"+re.escape(a)+r"['\"]\).{0,180}",html)][:2] for a in attrs}
+summary["season"]=year;summary["updated"]=now.isoformat()
+for key,d in summary["sources"].items(): d["sample"]=small(d.get("sample"))
+previous.write_text(json.dumps(summary))
+print(json.dumps({k:{x:v for x,v in d.items() if x not in ["sample","xml"]} for k,d in summary["sources"].items()},indent=2))
