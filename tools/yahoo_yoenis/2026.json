@@ -21,7 +21,7 @@
   "num_keepers": null,
   "keeper_deadline_date": null
  },
- "pulled": "2026-11-13T20:01:32Z",
+ "pulled": "2026-11-16T23:25:40Z",
  "teams": {
   "469.l.30639.t.12": {
    "name": "Newton South Loins",
@@ -1176,7 +1176,7 @@
    "player": "469.p.61627",
    "name": "Ryan Walker",
    "pos": "RP",
-   "mlb": "SF"
+   "mlb": "MIL"
   },
   {
    "pick": 122,
@@ -3469,7 +3469,7 @@
    "round": 24,
    "team": "469.l.30639.t.7",
    "player": "469.p.11802",
-   "name": "Kevin Alcantara",
+   "name": "Kevin Alcántara",
    "pos": "OF",
    "mlb": "CHC"
   },
@@ -8728,7 +8728,7 @@
    },
    {
     "key": "469.p.64285",
-    "name": "Pedro Ramirez",
+    "name": "Pedro Ramírez",
     "pos": "2B,3B",
     "mlb": "CHC",
     "yk": {
@@ -11536,7 +11536,7 @@
     },
     {
      "player": "469.p.11802",
-     "name": "Kevin Alcantara",
+     "name": "Kevin Alcántara",
      "pos": "OF",
      "type": "drop",
      "from": "team",
@@ -21621,7 +21621,7 @@
    "moves": [
     {
      "player": "469.p.64285",
-     "name": "Pedro Ramirez",
+     "name": "Pedro Ramírez",
      "pos": "2B,3B",
      "type": "add",
      "from": "waivers",
@@ -24461,7 +24461,7 @@
     },
     {
      "player": "469.p.64285",
-     "name": "Pedro Ramirez",
+     "name": "Pedro Ramírez",
      "pos": "2B,3B",
      "type": "trade",
      "from": "team",
