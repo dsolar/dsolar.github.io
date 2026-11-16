@@ -865,6 +865,34 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .wts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 14px}
 .wt{display:flex;align-items:center;gap:10px;justify-content:space-between;font-size:14px}
 .wt input,.wt select{width:96px;flex:none}
+/* scoring v2's editor (scoring-ui.js): position rules, multipliers, game bonuses, who moves */
+.sx{display:grid;gap:14px}
+.sx-quick{display:grid;gap:6px}
+.sx .gp-b>.btn.sm{width:auto;justify-self:start;display:inline-flex}
+.sx-quick .chips{display:flex;flex-wrap:wrap;gap:6px}
+.sx-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+.sx-row select{min-height:38px;max-width:200px}
+.sx-row .ni input[type=number]{width:62px}
+.sx-mult{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px 12px}
+.sx-m{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:800;font-size:13.5px}
+.sx-m .ni input[type=number]{width:56px}
+.sx-prev:empty{display:none}
+.sx-prev{border-top:1px solid var(--line);padding-top:12px}
+.sx-counts{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin-bottom:8px}
+.sx-counts small{color:var(--muted)}
+.sx-movers{margin:0 0 8px}
+.sx-top{list-style:none;margin:0;padding:0;columns:3 190px;column-gap:18px;font-size:13px}
+.sx-top li{display:flex;align-items:center;gap:6px;padding:3px 0;break-inside:avoid;border-bottom:1px solid var(--line)}
+.sx-r{width:22px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums;flex:none}
+.sx-top .ell{flex:1}
+.sx-mv{font-size:11px;font-weight:800;color:var(--muted);flex:none;font-variant-numeric:tabular-nums}
+.sx-mv.up{color:var(--win,#1a7f45)}
+.sx-mv.dn{color:var(--loss,#c0392b)}
+.tw-pack{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 16px 0}
+.nl-tw>.tw-note{margin:0 16px 14px}
+.nl-bb .tg-w .g2{grid-template-columns:1fr}
+.tg-off{opacity:.62}
+.tw-note{margin:2px 0 0;padding:8px 10px;border-radius:8px;background:var(--surface-2,rgba(0,0,0,.04))}
 .pml{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 
 /* ---------- start a league ---------- */

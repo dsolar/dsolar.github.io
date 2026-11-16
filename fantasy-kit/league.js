@@ -85,6 +85,9 @@
     if (s.pyo && (guillotine || s.format === "roto")) delete s.pyo;
     if (s.pyo) { s.divisions = 0; delete L.divs; pyoOpen(L, null, 2, L.created); }
     for (const k of ["robin", "conquest", "crown", "hangover"]) if (s[k] && (guillotine || s.format === "roto")) delete s[k];
+    // one raid twist at a time, none in a dynasty (rules.js; optional where it isn't loaded)
+    const RL = (typeof self !== "undefined" && self.FK && self.FK.rules) || (typeof require !== "undefined" ? (() => { try { return require("./rules.js"); } catch (e) { return null; } })() : null);
+    if (RL) { const gone = RL.cleanSettings(s); if (gone.includes("vampire")) { delete L.bites; } }
     if (s.topBonus && !guillotine) delete s.topBonus;
     if (s.crown) L.crown = { king: s.crown.king != null && teams[s.crown.king] ? s.crown.king : null, pot: s.crown.start != null ? s.crown.start : 10, since: 1, reigns: [] };
     return L;
@@ -474,7 +477,7 @@
       if (lk && lk !== R.line) return 0;
       const i = R.cols.indexOf(c); return i >= 0 ? line[i] || 0 : 0;
     };
-    return (sc.weights ? sum(Object.entries(sc.weights).map(([k, x]) => at(k) * x)) : at(sc.col)) + (p ? S.extraPts(sc, p, at) : 0);
+    return S.pointsOf(sc, p, at);
   };
   function playerWeek(L, ctx, p, w, frac = 1, whole) {
     const form = formOf(L, p, w);

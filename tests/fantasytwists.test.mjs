@@ -68,16 +68,21 @@ test('pick your opponent: the worst team picks first, bots pick at once, a slow 
 });
 
 test('Robin Hood and Conquest: the low scorer and every winner take a player, protected players stay, and the swap keeps rosters legal', () => {
-  const s = league({ format: 'h2h', weeks: 4, playoffTeams: 2, robin: { protect: 2 }, conquest: { protect: 3, like: true } }, 6, [1]);
-  const { L, ctx } = s;
-  playTo(s, 1);
-  const robin = L.bites.filter((b) => b.why === 'robin'), conq = L.bites.filter((b) => b.why === 'conquest');
+  // one raid twist a league (rules.js): set up with both, the first one stays
+  const both = league({ format: 'h2h', weeks: 4, playoffTeams: 2, robin: { protect: 2 }, conquest: { protect: 3, like: true } }, 6, [1]);
+  assert.ok(both.L.settings.robin && !both.L.settings.conquest, 'Robin Hood stays, Conquest goes');
+  const sr = league({ format: 'h2h', weeks: 4, playoffTeams: 2, robin: { protect: 2 } }, 6, [1]);
+  playTo(sr, 1);
+  const robin = sr.L.bites.filter((b) => b.why === 'robin');
   assert.equal(robin.length, 1, 'one Robin Hood a week');
-  const g = L.results[1];
-  const scores = g.flatMap((x) => [[x.a, x.sa], [x.b, x.sb]]).sort((a, b) => b[1] - a[1]);
+  const scores = sr.L.results[1].flatMap((x) => [[x.a, x.sa], [x.b, x.sb]]).sort((a, b) => b[1] - a[1]);
   assert.equal(robin[0].victim, scores[0][0], 'from the top scorer');
   assert.equal(robin[0].by, scores[scores.length - 1][0], 'to the lowest');
   assert.equal(robin[0].protect.length, 2);
+  const s = league({ format: 'h2h', weeks: 4, playoffTeams: 2, conquest: { protect: 3, like: true } }, 6, [1]);
+  const { L, ctx } = s;
+  playTo(s, 1);
+  const conq = L.bites.filter((b) => b.why === 'conquest'), g = L.results[1];
   assert.equal(conq.length, g.filter((x) => x.w === 'a' || x.w === 'b').length, 'one per winner');
   for (const b of conq) assert.equal(b.protect.length, 3);
   // a human taker's raid waits; a protected player can't be taken; like for like

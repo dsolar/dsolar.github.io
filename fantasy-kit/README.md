@@ -12,7 +12,9 @@ Plain browser scripts, no build step. `sports.js`, `value.js` and `draft.js` hav
 
 | File | What it does |
 | --- | --- |
-| `sports.js` | `FK.sports`: positions, lineup slots, position limits, stat columns, position colors and scoring presets for `nba`, `nfl` and `mlb` |
+| `sports.js` | `FK.sports`: positions, lineup slots, position limits, stat columns, position colors and scoring presets for `nba`, `nfl` and `mlb`; `pointsOf`, the one place points are scored (see Scoring v2) |
+| `rules.js` | `FK.rules`: which league options go together (one raid twist at a time, no raids in dynasty, Kingslayer needs FAAB). The setup form and `league.js` both read it |
+| `scoring-ui.js` | `FK.scoringUI`: the scoring editor's extras (position points, position multipliers, game bonuses) and the "Who moves" preview |
 | `value.js` | `FK.value.evaluate`: category z-scores or fantasy points, value over replacement by position, auction dollars |
 | `draft.js` | `FK.draft`: snake, linear, third-round reversal, mystery packages, white elephant and auction drafts; pick clocks or a time bank, queues, keepers, bots, pause, undo, trades during the draft, results |
 | `league.js` | `FK.league`: head to head or guillotine, with or without best ball; rosters, weekly lineups, schedule, scoring (simulated, or a `hooks.score` for real box scores), standings, playoffs, power rankings, free agents, FAAB waivers, trades with review votes, the transaction log |
@@ -64,6 +66,33 @@ To add a preset, add an entry. A category is one of three kinds:
 - a rate with a weight, like ERA weighted by innings: `{ rate, w }`
 
 Add `low: true` to any of them when lower is better.
+
+### Scoring v2: extras on any points scoring
+
+A league's `D.scoringSpec` can add three things on top of a preset (`base: "half"`) or custom weights:
+
+```js
+{ type: "points", base: "half",
+  pos: { TE: { rec: 0.5 }, "*": { pass_td: 2 } },   // extra points per stat, for a position or everyone ("*")
+  posMult: { TE: 1.5 },                             // a position's whole score times this, applied last
+  bonus: [{ stat: "rush_yd", at: 100, pts: 3 },     // a game that reaches a mark (football only: a basketball or
+          { stat: "rush_yd", at: 200, pts: 3 }] }   // baseball week sums many games). Rows stack into tiers
+```
+
+`FK.sports.pointsOf(sc, player, at, games)` scores a player: base, plus extras, times the multiplier. Season values,
+week projections and real box scores all go through it. Position points and multipliers are linear, so they work in
+every sport. `node --test tests/fantasyscoring.test.mjs` covers it, the editor's rows and the rules list.
+
+On Start a league, Scoring details holds the editor: quick adds (TE premium +0.5 a catch or 1.5x, yardage bonuses),
+position rules for any stat, a multiplier per position, game bonuses, and "Who moves": the top of the board with your
+rules against the same scoring without them.
+
+### Which options go together
+
+`FK.rules.check(form)` returns `{ errors, warnings }`. Options that share a slot (the raid twists: Vampire, Robin
+Hood, Conquest) can't be on together; `turnOn(form, id)` switches the others off. `blockedWhy(form, id)` says why an
+option can't be on (raids in a dynasty, Kingslayer without FAAB). `cleanSettings(settings)` keeps the first raid twist
+when a league is made, for leagues set up before the rules and for import. Add a rule to `RULES`, not to a page.
 
 ## Drafts
 

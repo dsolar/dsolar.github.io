@@ -78,6 +78,9 @@
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
   const isCustom = () => form.scoring === "cp" || form.scoring === "cc";
+  // scoring v2's extras (position points, multipliers, game bonuses) and which options go together
+  const SX = window.FK.scoringUI, RL = window.FK.rules;
+  const sxOf = () => form.sx || (form.sx = SX.fromLegacy(form));
   const scoringType = (sp) => (form.scoring === "cp" ? "points" : form.scoring === "cc" ? "cats" : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).type);
   // season: how a week is decided. Category leagues can count each category, or go rotisserie; points leagues can add all-play.
   const SEASONS = { cats: [["h2h", "Head to head: most categories wins the week"], ["h2hcats", "Head to head: each category is a win or loss"], ["roto", "Rotisserie: season totals"], ["guillotine", "Guillotine"]],
@@ -357,7 +360,7 @@
   const showdown = () => slateOn() && !!sdGame();
   function pickFormat(k) {
     form.vampOn = 0;
-    if (k === "vampire") { form.vampOn = 1; form.season = "h2h"; if (!["snake", "linear", "3rr"].includes(form.type)) form.type = "snake"; }
+    if (k === "vampire") { RL.turnOn(form, "vampOn"); form.season = "h2h"; if (!["snake", "linear", "3rr"].includes(form.type)) form.type = "snake"; }
     else form.season = k;
     if (k === "guillotine" || k === "vampire") form.kind = "redraft";
     if (oneWeek() && !WEEK_OK.includes(k)) form.kind = "redraft";
@@ -368,6 +371,7 @@
   // a field drawn behind the header, one for each sport
   function newForm() {
     derive();
+    schedulePreview();
     const sp = S[form.sport];
     if (!(sp.scorings[form.scoring] || isCustom())) form.scoring = Object.keys(sp.scorings)[0];
     if (form.type === "cap" && !draftTypes(sp).includes("cap")) form.type = "snake";
@@ -407,7 +411,6 @@
       </div></div>
       <form class="nl-body" id="new" novalidate>
         ${!C.user() ? `<div class="banner nl-out" style="margin:0 0 4px"><b>Set it up now, sign in at the end.</b> <span class="muted">Everything here is kept.</span></div>` : ""}
-        ${rematch ? "" : presetsHtml(sp)}
         ${rematch ? `<div class="banner" style="margin:0 0 4px"><b>Running it back: ${esc(rematch.name)}, the same ${rematch.n} teams and managers.</b> <span class="muted">Pick next week's games and go. Everyone in this week's game is in the new one.</span></div>` : ""}
         <section class="nl-sec nl-ess"><h2 class="nl-h">The basics</h2>
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
@@ -441,10 +444,9 @@
     const gl = form.season === "guillotine", n = form.teams, lu = lineupOf(sp), po = Math.min(form.playoffs, n);
     const sc = form.scoring === "cp" ? "Custom points" : form.scoring === "cc" ? `Custom categories (${(form.cats || []).length})` : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).label.replace(/ \(.*\)$/, "");
     const bon = [];
-    if (sp.key === "nfl" && scoringType(sp) === "points") {
-      if (form.tep) bon.push(`TE +${form.tep}`);
-      if (form.scoring !== "cp" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
-      const y = [form.b100r, form.b100c, form.b300p].filter(Boolean).length; if (y) bon.push(`${y} yardage bonus${y > 1 ? "es" : ""}`);
+    if (scoringType(sp) === "points") {
+      if (sp.key === "nfl" && form.scoring !== "cp" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
+      const sm = SX.summary(sxOf(), sp.key); if (sm) bon.push(sm);
     }
     const clock = form.clock >= 3600 ? `${form.clock / 3600} hr` : form.clock >= 60 ? `${form.clock === 90 ? "90 sec" : form.clock / 60 + " min"}` : `${form.clock} sec`;
     const faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
@@ -470,6 +472,8 @@
   }
   // twists a season-long league can add on top of its format: head to head ones, and a guillotine's top-score bonus
   const twistOk = () => !oneWeek() && ["h2h", "h2hcats"].includes(form.season);
+  // a twist the rules list rules out for this league: shown, switched off, with the reason
+  const blocked = (id) => { const why = RL.blockedWhy(form, id); if (!why) return ""; form[id] = 0; return `<div class="tg-w tg-off"><div class="tg-t pl"><b>${esc(RL.label(id))}</b><small>${esc(why)}</small></div></div>`; };
   function twistsHtml() {
     const gl = form.season === "guillotine";
     if (oneWeek() || (!twistOk() && !gl)) return "";
@@ -478,16 +482,18 @@
     const body = gl ? toggle("tbOn", "Top-score bonus", "The week's top scorer gets extra FAAB: a reason to spend early instead of hoarding", form.tbOn,
         fld("Bonus", seg("tbAmt", [[10, "$10"], [25, "$25"], [50, "$50"], [100, "$100"]], form.tbAmt, "Top-score bonus")))
       : `${toggle("pyoOn", "Pick your opponent", odd ? "Needs an even number of teams" : "Every week, worst record first, each team picks who it plays the next week", form.pyoOn && !odd, `<p class="fl-h">Each team gets 12 hours on its turn. Week 1 is drawn; no divisions.</p>`)}
-        ${toggle("robinOn", "Robin Hood", "The week's lowest scorer takes a player from the top scorer and gives one back", form.robinOn,
+        ${blocked("robinOn") || toggle("robinOn", "Robin Hood", "The week's lowest scorer takes a player from the top scorer and gives one back", form.robinOn,
           fld("The top scorer keeps his best", seg("robinP", [[0, "None"], [1, "1"], [2, "2"], [3, "3"], [4, "4"]], form.robinP, "Protected players"), "Protected, by value. Robin takes from the rest."))}
-        ${toggle("conqOn", "Conquest", "Win your matchup and take a player from the team you beat, giving one back", form.conqOn,
+        ${blocked("conqOn") || toggle("conqOn", "Conquest", "Win your matchup and take a player from the team you beat, giving one back", form.conqOn,
           `<div class="g2">${fld("The loser keeps his best", seg("conqP", [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]], form.conqP, "Protected players"))}${fld("Swaps", seg("conqLike", [[0, "Any player"], [1, "Same position"]], form.conqLike, "Swaps"))}</div>`)}
         ${toggle("crownOn", "Kingslayer", faab ? "One team wears the crown. Beat the king to take it and the bounty, which grows every week he holds it" : "Needs FAAB waivers: the bounty is paid in FAAB", form.crownOn && faab,
           `<div class="g2">${fld("Bounty grows", seg("crownStep", [[5, "$5"], [10, "$10"], [20, "$20"]], form.crownStep, "Bounty grows"), "A week, while the king holds the crown. Week 1's top scorer is the first king.")}${fld("The king earns", seg("crownKeep", [[0, "$0"], [5, "$5"], [10, "$10"]], form.crownKeep, "The king earns"), "For each week he survives.")}</div>`)}
         ${toggle("hangOn", "The Hangover", "Last week's winners can't add free agents or put in claims this week", form.hangOn)}`;
+    // what the rules list says about this mix: a clash it couldn't switch off, or a heads-up
+    const ck = RL.check(form), notes = ck.errors.concat(ck.warnings).map((x) => `<p class="fl-h tw-note">${esc(x.msg)}</p>`).join("");
     // folded until you want them; open on its own once one is on
     const open = on || form.twOpen;
-    return `<section class="nl-sec"><details class="nl-tw" id="nl-tw"${open ? " open" : ""}><summary><span style="display:grid;gap:2px"><b>Twists${on ? ` <span class="tag info">${on} on</span>` : ""}</b><small>${gl ? "An optional extra rule on top of the guillotine." : "Optional extra rules on top of the format: Robin Hood, Kingslayer and more."}</small></span><span class="chev" aria-hidden="true"></span></summary><div class="stack tw-l nl-bb">${body}</div></details></section>`;
+    return `<section class="nl-sec"><details class="nl-tw" id="nl-tw"${open ? " open" : ""}><summary><span style="display:grid;gap:2px"><b>Twists${on ? ` <span class="tag info">${on} on</span>` : ""}</b><small>${gl ? "An optional extra rule on top of the guillotine." : "Optional extra rules on top of the format: Robin Hood, Kingslayer and more."}</small></span><span class="chev" aria-hidden="true"></span></summary>${gl || form.kind === "dynasty" ? "" : `<div class="tw-pack"><button type="button" class="btn sm" data-pack="chaos">Chaos pack</button><small class="ps">Robin Hood, Kingslayer and a mystery packages draft, in one tap</small></div>`}<div class="stack tw-l nl-bb">${body}</div>${notes}</details></section>`;
   }
   // the games a one-week football game plays: this week or next, a slate, and for one game or your own pick, the games
   function slateSection() {
@@ -582,7 +588,7 @@
   function scoringBody(sp) {
     const cur = sp.scorings[form.scoring];
     const cats = cur && cur.type === "cats" ? `<div class="catl" aria-label="Categories">${cur.cats.map((c) => `<span class="${c.line === "pit" ? "pit" : ""}">${esc(c.label)}</span>`).join("")}</div><p class="fl-h">Want different categories? Pick Custom categories above.</p>` : "";
-    const ed = pointsEditor(sp) + (form.scoring !== "cc" && sp.key === "nfl" ? bonusFields(sp) : "");
+    const ed = pointsEditor(sp) + (form.scoring !== "cc" ? extrasFields(sp) : "");
     return cats + ed || `<p class="fl-h">${esc(cur ? cur.label : "")}. Pick Custom points above to set every stat.</p>`;
   }
   function draftBody() {
@@ -595,26 +601,36 @@
       fld("A trade offer stops the clock", seg("ohold", [["clock", "For the team on the clock"], ["all", "For anyone, up to 90 seconds"], ["off", "Never"]], form.ohold, "A trade offer stops the clock", { wrap: true })))
       : `<p class="fl-h">${auction() ? "An auction" : form.type === "pack" ? "A pack draft" : trivia() ? "A trivia draft" : "This draft format"} doesn't allow trades during the draft.${oneWeek() ? "" : " Teams can trade once the season starts."}</p>`;
   }
-  // Football bonuses on any points scoring: a TE premium, passing TDs worth more, and points for big yardage games.
-  function nflExtras() {
-    const pos = {}, bonus = [];
-    if (form.tep) pos.TE = { rec: form.tep };
-    if (form.scoring !== "cp" && form.ptd && form.ptd !== 4) pos["*"] = { pass_td: form.ptd - 4 };
-    if (form.b100r) bonus.push({ stat: "rush_yd", at: 100, pts: form.b100r });
-    if (form.b100c) bonus.push({ stat: "rec_yd", at: 100, pts: form.b100c });
-    if (form.b300p) bonus.push({ stat: "pass_yd", at: 300, pts: form.b300p });
-    return Object.keys(pos).length || bonus.length ? { pos, bonus } : null;
+  // The extras on any points scoring, as the spec sports.js reads: the editor's rows plus football's passing TD control
+  function scoringExtras(sp) {
+    if (scoringType(sp) !== "points") return null;
+    const ptd = sp.key === "nfl" && form.scoring !== "cp" && form.ptd && form.ptd !== 4 ? { "*": { pass_td: form.ptd - 4 } } : null;
+    return SX.toSpec(sxOf(), sp.key, ptd);
   }
-  function bonusFields(sp) {
-    if (sp.key !== "nfl" || scoringType(sp) !== "points") return "";
-    const amt = (k, label, o) => numIn(k + "Amt", form[k + "Amt"], Object.assign({ label, min: 0.25, max: 20, step: o.step || 1 }, o));
-    return group("Bonuses", `<div class="bl">
-      ${toggle("tepOn", "TE premium", "Extra points for every tight end catch", form.tepOn, amt("tep", "TE premium points a catch", { step: 0.25, post: "a catch", pre: "+" }))}
-      ${form.scoring === "cp" ? "" : `<div class="tg-w"><div class="tg-t pl"><b>Passing touchdowns</b><small>Four points is standard</small></div><div class="tg-x">${seg("ptd", [[4, "4 pts"], [5, "5 pts"], [6, "6 pts"]], form.ptd, "Passing touchdown points")}</div></div>`}
-      ${toggle("b100rOn", "100-yard rushing game", "Once a game, on top of yardage points", form.b100rOn, amt("b100r", "100-yard rushing bonus", { pre: "+", post: "points" }))}
-      ${toggle("b100cOn", "100-yard receiving game", "Once a game, on top of yardage points", form.b100cOn, amt("b100c", "100-yard receiving bonus", { pre: "+", post: "points" }))}
-      ${toggle("b300pOn", "300-yard passing game", "Once a game, on top of yardage points", form.b300pOn, amt("b300p", "300-yard passing bonus", { pre: "+", post: "points" }))}
-    </div>`, "Player values and projections include what each bonus is likely to add.");
+  function extrasFields(sp) {
+    if (scoringType(sp) !== "points") return "";
+    const ptd = sp.key === "nfl" && form.scoring !== "cp" ? group("Passing touchdowns", `<div class="tg-x" style="padding:0">${seg("ptd", [[4, "4 pts"], [5, "5 pts"], [6, "6 pts"]], form.ptd, "Passing touchdown points")}</div>`, "Four points is standard.") : "";
+    return ptd + SX.html(sp, sxOf(), window.FK.setup);
+  }
+  // Who moves under the extras: worked out after the form draws, from the sport's player file
+  const prevData = {};
+  let prevTimer = null;
+  function schedulePreview() { clearTimeout(prevTimer); prevTimer = setTimeout(runPreview, 120); }
+  async function runPreview() {
+    const el = $("#sx-prev");
+    if (!el) return;
+    const k = form.sport, sp = S[k];
+    if (!prevData[k]) { el.innerHTML = `<p class="fl-h">Working out the ranks…</p>`; try { prevData[k] = await fetch(`data/${k}.json`).then((r) => r.json()); } catch (e) { el.innerHTML = ""; return; } }
+    const box = $("#sx-prev"); if (!box || form.sport !== k) return;
+    const data = prevData[k], sport = S.attach(Object.assign({}, sp), data);
+    const extras = scoringExtras(sp);
+    const baseSpec = form.scoring === "cp" ? { type: "points", weights: Object.fromEntries(Object.entries(form.weights || S.POINT_DEFAULTS[k]).filter(([, v]) => v)) } : null;
+    const baseKey = form.scoring === "cp" ? "custom" : sp.scorings[form.scoring] ? form.scoring : Object.keys(sp.scorings)[0];
+    const spec = extras ? Object.assign(baseSpec ? Object.assign({}, baseSpec) : { type: "points", base: baseKey }, extras) : baseSpec;
+    try {
+      const r = SX.preview(window.FK.value, { sport, players: data.players, baseSpec, baseKey, spec, teams: form.teams, lineup: lineupOf(sport) });
+      box.innerHTML = SX.previewHtml(r, k, !!extras);
+    } catch (e) { box.innerHTML = ""; }
   }
   function pointsEditor(sp) {
     if (form.scoring === "cp") {
@@ -709,6 +725,7 @@
       form[k] = NUMERIC.test(k) ? Number(x) : x;
     });
     root.querySelectorAll("[data-w]").forEach((el) => { form.weights = form.weights || {}; form.weights[el.dataset.w] = Number(el.value) || 0; });
+    if (root.querySelector("[data-sx]")) SX.read(root, sxOf());
     derive();
   }
   // the values the league is made from, worked out from the friendlier controls
@@ -752,7 +769,7 @@
       const r0 = await fetch(`data/${form.sport}.json`, { cache: "no-cache" });
       const data = await r0.json();
       // a custom scoring rides along as plain data (D.scoringSpec) and becomes the sport's "custom" scoring
-      const ex = form.sport === "nfl" && form.scoring !== "cc" ? nflExtras() : null, sp0 = S[form.sport];
+      const sp0 = S[form.sport], ex = form.scoring !== "cc" ? scoringExtras(sp0) : null;
       const spec = form.scoring === "cp" ? Object.assign({ type: "points", weights: Object.fromEntries(Object.entries(form.weights || S.POINT_DEFAULTS[form.sport]).filter(([, v]) => v)) }, ex || {})
         : form.scoring === "cc" ? { type: "cats", cats: (form.cats || []).slice() }
         : ex ? Object.assign({ type: "points", base: sp0.scorings[form.scoring] ? form.scoring : Object.keys(sp0.scorings)[0] }, ex) : null;
@@ -891,47 +908,18 @@
     } else if (f.id === "new") makeLeague();
   });
   /* ---------- presets: a starting point for the whole form, then change anything ---------- */
-  const DEF_SCORING = { nfl: "half", nba: "cats9", mlb: "roto5" };
-  const PRESETS = (sp) => {
-    const cats = scoringOf(sp) === "cats", n = sp.key === "nfl" ? 12 : 10;
-    return [
-      ["classic", "Classic", `${n} teams, ${sp.key === "nfl" ? "half PPR" : sp.key === "nba" ? "9 categories" : "5x5"}, snake draft, head to head`],
-      ["chaos", "Chaos", "Mystery packages, Robin Hood and Kingslayer"],
-      ["guillotine", "Guillotine", "16 teams. The lowest score is cut every week"],
-      ["bestball", "Best ball", cats ? "Draft and done: your best stats count every week" : "Draft and done: your best lineup counts every week"],
-      ["quick", sp.key === "nba" ? "One day" : "Quick game", sp.key === "nba" ? "Draft tonight's games, crown a winner by midnight" : "Draft this week's games, crown a winner Monday night"],
-    ];
-  };
-  // the scoring type of the sport's default scoring
-  function scoringOf(sp) { const k = form.scoring && sp.scorings[form.scoring] ? form.scoring : DEF_SCORING[sp.key]; return (sp.scorings[k] || Object.values(sp.scorings)[0]).type; }
-  // the choices a preset sets, so the card stays lit only while the form still matches it
-  const PRE_KEYS = ["kind", "season", "type", "teams", "scoring", "clock", "bestball", "median", "robinOn", "crownOn", "tbOn", "waivers"];
-  const preSig = () => JSON.stringify(PRE_KEYS.map((k) => form[k]));
-  function applyPreset(k) {
-    const sp = S[form.sport];
-    // every twist and extra off first, so presets don't stack
-    Object.assign(form, { pyoOn: 0, robinOn: 0, conqOn: 0, crownOn: 0, hangOn: 0, tbOn: 0, vampOn: 0, median: 0, tvOn: 0, rlOn: 0, hzOn: 0, confOn: 0, bestball: 0,
-      type: "snake", clock: 90, scoring: DEF_SCORING[sp.key] || "", teams: sp.key === "nfl" ? 12 : 10, weeksWant: null, waivers: "faab", open: {} });
-    if (k === "quick") {
-      form.wkSet = 0; setKind("week"); oneWeekDefaults();
-    } else {
-      form.lastKind = "redraft"; setKind("redraft");
-      form.season = "h2h";
-      if (k === "chaos") Object.assign(form, { type: "mystery", robinOn: 1, crownOn: 1, median: 1, twOpen: true });
-      if (k === "guillotine") Object.assign(form, { season: "guillotine", teams: 16, tbOn: 1 });
-      if (k === "bestball") form.bestball = 1;
-      derive();
-    }
-    form.preset = k; form.presetSig = preSig();
-  }
-  function presetsHtml(sp) {
-    const cur = form.preset && form.presetSig === preSig() ? form.preset : null;
-    return `<section class="nl-sec nl-pre"><h2 class="nl-h">Start from a preset</h2><p class="nl-sub">One tap fills in the rules. Change anything below.</p>${pickCards("pre", PRESETS(sp), cur, "Presets")}</section>`;
+  // the Chaos pack, one tap in Twists: Robin Hood and Kingslayer (with FAAB waivers), and a mystery packages draft
+  function chaosPack() {
+    Object.assign(form, { waivers: "faab", twOpen: true });
+    RL.turnOn(form, "robinOn"); form.crownOn = 1;
+    if (["snake", "linear", "3rr"].includes(form.type)) form.type = "mystery";
+    derive();
   }
 
   // a league type, from the cards or the season / one week choice
   function setKind(k) {
     form.kind = k;
+    if (k === "dynasty") { form.robinOn = 0; form.conqOn = 0; }
     if (!formatFits(formatOf())) { form.vampOn = 0; form.season = oneWeek() ? (form.teams > 2 ? "allplay" : "h2h") : "h2h"; }
     if (!oneWeek() && form.teams === 2) form.teams = 4;
     if (oneWeek() && !WEEK_OK.includes(form.season)) form.season = form.teams > 2 ? "allplay" : "h2h";
@@ -949,10 +937,11 @@
   app.addEventListener("toggle", (e) => { if (e.target && e.target.id === "nl-tw") form.twOpen = e.target.open; }, true);
   app.addEventListener("click", (e) => {
     if (!e.target.closest(".su")) return;
+    const sxb = e.target.closest("[data-sxa]");
+    if (sxb) { grab(); if (SX.act(sxOf(), form.sport, sxb)) redraw(); return; }
     const row = e.target.closest("[data-row]");
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
-    const pre = e.target.closest("[data-pre]");
-    if (pre) { grab(); applyPreset(pre.dataset.pre); redraw(`n-pick-pre-${pre.dataset.pre}`); return; }
+    if (e.target.closest("[data-pack]")) { grab(); chaosPack(); redraw(); return; }
     const md = e.target.closest("[data-mode]");
     if (md) { grab(); const k = md.dataset.mode === "week" ? "week" : form.lastKind || "redraft"; if (k === "week") oneWeekDefaults(); setKind(k); redraw(`n-pick-mode-${md.dataset.mode}`); return; }
     const ty = e.target.closest("button[data-type]");
@@ -1005,14 +994,21 @@
     } else if (el.id === "n-name") { const t = $("#tk-name"); if (t) t.textContent = el.value || "Your league"; }
   });
   app.addEventListener("change", (e) => {
+    // the scoring editor's numbers: read them and redo the preview, without redrawing under the cursor
+    if (e.target.closest(".su") && e.target.dataset.sx) { grab(); schedulePreview(); const v = $(`.su [data-row="scoring"] .nr-v`); if (v) v.textContent = values(S[form.sport]).scoring; return; }
     // the draft time redraws too: the slate is cut from it
     if (!e.target.closest(".su") || !(e.target.name === "sport" || e.target.dataset.f || e.target.id === "n-dt" || e.target.id === "n-lk")) return;
     const was = { sport: form.sport, season: form.season, weeks: form.weeks };
+    const twist = e.target.dataset.f && RL.byId[e.target.dataset.f] && e.target.type === "checkbox" ? e.target.dataset.f : null;
     grab();
+    if (twist && e.target.checked) {
+      const off = RL.turnOn(form, twist);
+      if (off.length) U.toast(`${off.map(RL.label).join(" and ")} switched off: one raid twist at a time.`);
+    }
     // a shorter season can't keep a deadline past its end; go back to the default for the new length
     if (form.weeks !== was.weeks && form.deadline != null && form.deadline >= form.weeks) form.deadline = null;
     // a new sport starts from its own lineup; a new season format from its own budget
-    if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; form.weights = null; form.cats = null; form.posMax = {}; }
+    if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; form.weights = null; form.cats = null; form.posMax = {}; form.sx = SX.empty(); }
     if (form.season !== was.season) form.faab = null;
     redraw(e.target.id);
   });

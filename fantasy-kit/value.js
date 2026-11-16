@@ -108,7 +108,8 @@
       else tot = S.stat(sport, p, line, sc.col) || 0;
       const own = (k) => k !== "proj" && !(sport.data && sport.data.lines && sport.data.lines[k] && sport.data.lines[k].week != null);
       const base = tot, gl0 = p.l[line] ? line : Object.keys(p.l).find(own) || line;
-      tot += S.extraPts(sc, p, at, S.stat(sport, p, gl0, sport.sample ? sport.sample.col : "g") || 0);
+      // extras and the position multiplier (scoring v2, sports.js pointsOf)
+      tot = (tot + S.extraPts(sc, p, at, S.stat(sport, p, gl0, sport.sample ? sport.sample.col : "g") || 0)) * S.posMultOf(sc, p);
       const gl = p.l[line] ? line : Object.keys(p.l).find(own) || line;
       const g = S.stat(sport, p, gl, sport.sample ? sport.sample.col : "g") || 0;
       if (sc.per === "game") { p.fpg = tot; p.fpts = tot * g; } else { p.fpts = tot; p.fpg = g ? tot / g : 0; }
@@ -141,8 +142,7 @@
       for (const k of keys) {
         if (!p.l[k]) continue;
         const at = (s) => { const i = s.indexOf("."); return S.stat(sport, p, k, i > 0 ? s.slice(i + 1) : s) || 0; };
-        let x = sc.weights ? sum(Object.entries(sc.weights).map(([s, w]) => at(s) * w)) : at(sc.col);
-        x += S.extraPts(sc, p, at, at("g"));
+        const x = S.pointsOf(sc, p, at, at("g"));
         p.wk[L[k].week] = Math.round(x * (L[k].week === near ? weekPlays(p) : 1) * 100) / 100;
       }
     }
