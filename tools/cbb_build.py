@@ -298,7 +298,9 @@ def main():
    "rankings":"Haslametrics and BPI measure team strength differently. Strength of Record measures résumé. Haslametrics quadrant records are based on its own hNET, not official NCAA NET."}}
  if len(ts)<300 or sum(t.get("haslamRank") is not None for t in ts)<300 or len(players)<2500:raise ValueError("Core college data incomplete; not replacing the last complete hub")
  DATA.parent.mkdir(parents=True,exist_ok=True);DATA.write_text(json.dumps(payload,ensure_ascii=False,separators=(",",":"))+"\n")
- print(json.dumps({"teams":len(ts),"rated":sum(t.get("haslamRank") is not None for t in ts),"players":len(players),"games":len(games),"bracketTeams":sum(len(s["teamIds"]) for s in (march or {}).get("slots",[])),"errors":errors}))
+ summary={"season":year,"updated":stamp,"teams":len(ts),"rated":sum(t.get("haslamRank") is not None for t in ts),"players":len(players),"games":len(games),"bracketTeams":sum(len(s["teamIds"]) for s in (march or {}).get("slots",[])),"errors":errors,"sources":sources}
+ (DATA.parent/"summary.json").write_text(json.dumps(summary,ensure_ascii=False,separators=(",",":"))+"\n")
+ print(json.dumps(summary))
  if errors:print("Retained source snapshots where needed.",file=sys.stderr)
 
 if __name__=="__main__":main()

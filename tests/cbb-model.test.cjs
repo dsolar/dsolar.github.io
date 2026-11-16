@@ -30,3 +30,12 @@ test("the published snapshot is current-season, complete and internally consiste
  for(const id of field)assert.ok(ids.has(id));
  for(let seed=1;seed<=16;seed++)assert.equal(slots.filter(s=>s.seed===seed).length,4,"four slots on seed "+seed);
 });
+
+test("game snapshots use the New York game day and never manufacture pregame scores",()=>{
+ const data={events:[{id:"x",date:"2026-11-17T02:00:00Z",season:{year:2027},competitions:[{competitors:[{id:"a",homeAway:"home",score:"0"},{id:"b",homeAway:"away",score:"0"}],status:{type:{state:"pre"}}}]}]};
+ const out=M.gamesFromESPN(data,Object.fromEntries(sample.map(t=>[t.id,t])),2027);
+ assert.equal(out.length,1);assert.equal(out[0].day,"2026-11-16");assert.equal(out[0].homeScore,null);
+ data.events[0].competitions[0].status.type={state:"post",description:"Final"};data.events[0].competitions[0].competitors[0].score="103";
+ const final=M.gamesFromESPN(data,Object.fromEntries(sample.map(t=>[t.id,t])),2027)[0];assert.equal(final.homeScore,103);assert.equal(final.awayScore,0);
+ assert.equal(M.gamesFromESPN(data,{},2027).length,0);assert.equal(M.gamesFromESPN(data,Object.fromEntries(sample.map(t=>[t.id,t])),2026).length,0);
+});

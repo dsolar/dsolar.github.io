@@ -90,5 +90,17 @@ function providerField(data){
  if(!Array.isArray(rows)||rows.length<50)return null;
  return rows.filter(x=>x.teamId&&finite(x.seed));
 }
-return {finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField};
+function gamesFromESPN(data,byId,season){
+ if(!Array.isArray(data?.events))return [];
+ const out=[];
+ for(const e of data.events){
+  if(e.season?.year!=null&&Number(e.season.year)!==Number(season))continue;
+  const c=e.competitions?.[0],cs=c?.competitors||[],h=cs.find(x=>x.homeAway==="home"),a=cs.find(x=>x.homeAway==="away");
+  if(!h||!a||!byId[String(h.id)]||!byId[String(a.id)]||!Number.isFinite(Date.parse(e.date)))continue;
+  const st=(c.status||e.status||{}).type||{},state=/postpon|cancel/i.test(st.description||"")?"off":st.state||"pre";
+  out.push({id:String(e.id),day:new Intl.DateTimeFormat("en-CA",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(e.date)),at:e.date,home:String(h.id),away:String(a.id),neutral:!!c.neutralSite,state,detail:st.shortDetail||st.detail||"",homeScore:["in","post"].includes(state)?num(h.score):null,awayScore:["in","post"].includes(state)?num(a.score):null,tv:[...new Set((c.broadcasts||[]).flatMap(b=>b.names||[]))].join(", "),source:"ESPN live scoreboard",url:(e.links||[]).find(x=>(x.rel||[]).includes("summary"))?.href||"https://www.espn.com/mens-college-basketball/scoreboard"});
+ }
+ return out;
+}
+return {finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });
