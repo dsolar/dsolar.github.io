@@ -13,10 +13,10 @@
 (function (root, factory) {
   const FK = root.FK || {};
   const req = typeof require !== "undefined" ? require : null;
-  const m = factory(FK.draft || (req ? req("./draft.js") : null), FK.league || (req ? req("./league.js") : null));
+  const m = factory(FK.draft || (req ? req("./draft.js") : null), FK.league || (req ? req("./league.js") : null), FK.sports || (req ? req("./sports.js") : null));
   if (typeof module !== "undefined" && module.exports) module.exports = m;
   else (root.FK = root.FK || {}).season = m;
-})(this, function (F, G) {
+})(this, function (F, G, S) {
   "use strict";
   const DAY = 864e5, HOUR = 36e5;
 
@@ -28,7 +28,7 @@
     return d.getTime() + add * DAY;
   }
 
-  const CARRY_SKIP = new Set(["real", "span", "slate", "showdown", "pool", "mult", "playoffWeeks", "lineup", "bench", "frozen", "cap", "waiverAt"]);
+  const CARRY_SKIP = new Set(["real", "span", "slate", "showdown", "pool", "mult", "playoffWeeks", "lineup", "bench", "frozen", "cap", "waiverAt", "hardCap"]);
   function begin(D, sport, o = {}) {
     const s = D.season || { format: "h2h", weeks: 14 };
     const weeks = s.weeks || 14, n = D.teams.length;
@@ -125,6 +125,8 @@
     // a league's second season on: last season's rules as the commissioner left them (D.rules, from nextDraft), so a
     // change made mid-season isn't lost to the original setup. What belongs to one season stays behind.
     if (D.rules) for (const [k, v] of Object.entries(D.rules)) if (!CARRY_SKIP.has(k)) settings[k] = JSON.parse(JSON.stringify(v));
+    // Hard Cap: this season's terms (the year moves on each season; held rights belong to one season)
+    if (D.hardCap) settings.hardCap = JSON.parse(JSON.stringify(D.hardCap));
     const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
     // each keeper's cost history: what he was first worth, and the years he's been kept (this one counted)
     if (D.keepInfo) L.keepInfo = JSON.parse(JSON.stringify(D.keepInfo));
@@ -610,6 +612,7 @@
     const set = Array.isArray(want) && want.length === n && new Set(want).size === n ? want.slice() : null;
     const order = set || standings(L).map((r) => r.team).reverse();
     if (L.settings.dynasty) return rookieDraft(L, ctx, sport, order, o);
+    const hcNext = nextHardCap(L, ctx, null);
     // prospect rounds come back each season: taxi prospects carry over in them (each costs one of his team's prospect
     // picks), and the regular keepers stay out of them
     const pros = L.settings.prospects || null, mainR = (D0.rounds || 15) - (pros ? pros.rounds : 0);
@@ -638,6 +641,7 @@
     // picks traded in the offseason belong to the teams holding them (and remember whose they were), then keepers
     // take their slots
     if (D.type !== "auction" && L.picks) D.order.forEach((orig, k) => { const r = Math.floor(k / n) + 1, own = G.pickOwner(L, `${r}:${orig}`); if (own !== orig) { D.order[k] = own; D.via[k] = orig; } });
+    if (hcNext) D.hardCap = Object.assign(hcNext, { held: keepers.map((k) => k.pid).filter((pid) => S.expiring(ctx && ctx.byId[pid])) });
     if (pros && D.type !== "auction") for (const t of L.teams) for (const pid of taxiKeep(t.id)) F.keep(D, t.id, pid, mainR + 1);
     for (const k of keepers) F.keep(D, k.team, k.pid, k.round, k.price);
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));
@@ -656,12 +660,34 @@
   }
   // A dynasty's next season: every roster (IR too) carries over, and a short linear draft of rookies and free agents
   // runs worst to first. Traded picks go to the teams holding them.
+  // Hard Cap at a new season: the same line a year on. A dynasty's expiring contracts (nothing for next season) are
+  // re-signed, the team holding his rights into the new season at his new real deal (the minimum until it's in the
+  // data), or let go into the rookie and free agent draft: L.next.letGo lists the ones a manager let go, and a bot
+  // lets go anyone it wouldn't roster on value.
+  function nextHardCap(L, ctx, carry) {
+    const hc = L.settings.hardCap;
+    if (!hc) return null;
+    const out = { line: hc.line, min: hc.min, year: (hc.year || 0) + 1, cap: hc.cap || null, held: [] };
+    if (!carry) return out;
+    const letGo = new Set(((L.next && L.next.letGo) || []).map(String)), spots = (L.settings.lineup || []).length + (L.settings.bench || 0);
+    L.teams.forEach((t, i) => {
+      carry[i] = carry[i].filter((pid) => {
+        const p = ctx && ctx.byId[pid];
+        if (!S.expiring(p)) return true;
+        const go = letGo.has(String(pid)) || (!t.owner && (p.rank || 1e9) > L.teams.length * spots);
+        if (!go) out.held.push(pid);
+        return !go;
+      });
+    });
+    return out;
+  }
   function rookieDraft(L, ctx, sport, order, o = {}) {
     const D0 = L.draft || {}, now = o.now || Date.now(), n = L.teams.length, R = L.settings.dynasty.rounds || 3;
     const carry = L.teams.map((t) => L.rosters[t.id].slice());
+    const hcNext = nextHardCap(L, ctx, carry);
     const D = F.create({ sport, type: "linear", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.type === "auction" ? 60 : D0.clock, name: L.name, trades: D0.trading !== false,
-      order, rounds: R, carry });
+      order, rounds: R, carry, hardCap: hcNext || undefined });
     // a traded pick: its slot belongs to the team that holds it now, and remembers whose it was
     D.order.forEach((orig, k) => { const r = Math.floor(k / n) + 1, own = G.pickOwner(L, `${r}:${orig}`); if (own !== orig) { D.order[k] = own; D.via[k] = orig; } });
     D.teams.forEach((t, i) => (t.color = L.teams[i].color));

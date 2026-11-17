@@ -62,16 +62,12 @@ dsolar.github.io/
                               train.js (daily five, Puzzle Rush, lessons), puzzles.js (5,000 Lichess puzzles, CC0),
                               pieces.js (piece art),
                               chess.js (rules) and stockfish.* (the engine, runs in the visitor's browser). Plain files.
-  hardcap/                    Hard Cap, the salary-cap dynasty basketball league (unlisted while it's in testing):
-                              index.html (layout, styles), app.js (League, My Team, Players, Matchups, Draft and
-                              Commissioner sections, the live prospect auction, the message board), engine.js (every rule:
-                              the soft cap and luxury tax or hard-cap tiers, drafts, auctions, lineups, IR, FAAB, trades and
-                              votes, scoring), mark.svg (the HC logo), contracts.json (hand-checked contract fixes), and
-                              stats.json, yahoo.json and prospects.json, written by the Hard Cap stats workflow from ESPN,
-                              Basketball-Reference, Yahoo and Tankathon; don't edit those three. Leagues live in Supabase
-                              (tools/hardcap_supabase.sql); the server clock is supabase/functions/hardcap-clock.
-                              Tests: node --test tests/hardcap.test.mjs
-  prospect/                   old address of Hard Cap; forwards to hardcap/
+  hardcap/                    data only now (Hard Cap is a Draft Lab mode: fantasy-kit/README.md): contracts.json
+                              (hand-checked contract fixes), and stats.json, yahoo.json and prospects.json, written by the
+                              Hard Cap stats workflow from ESPN, Basketball-Reference, Yahoo and Tankathon; don't edit
+                              those three. index.html forwards to Draft Lab's setup with Hard Cap on; sw.js clears the old
+                              app's service worker.
+  prospect/                   old address of Hard Cap; forwards to Draft Lab's setup with Hard Cap on
   mlb/                        MLB Hub: index.html, hub.css, app.js (screens: standings, team depth charts, trade value,
                               trade builder, free agents), model.js (every number: the year slider, playoff odds,
                               surplus value, the free agent market) and data/ (hub.json, fa.json: built every morning by

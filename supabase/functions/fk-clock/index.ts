@@ -137,7 +137,15 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       const data = idp ? S.addIdp(await loadData(l.sport), await loadIdp("nfl-idp")) : await loadData(l.sport);
       const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
       // a showdown plays one game: its two teams are the whole player pool
-      const players = data.players.filter((p: any) => !S.inPool || S.inPool(L || D, p)).map((p: any) => Object.assign({}, p));
+      let players = data.players.filter((p: any) => !S.inPool || S.inPool(L || D, p)).map((p: any) => Object.assign({}, p));
+      // a Hard Cap league: real salaries, and a pool of players on real contracts (plus anyone already rostered)
+      const hc = S.hardCapOf ? S.hardCapOf(L) || S.hardCapOf(D) : null;
+      if (hc) {
+        const hcf = await loadIdp(`contracts-${l.sport}`);
+        if (!hcf) { out.skip = "no contracts"; return out; }
+        S.addContracts(players, hcf, hc);
+        players = S.capPool(players, L ? L.rosters.flat() : F.rosters(D).flat());
+      }
       // players the feed doesn't carry (a prospect pool, someone hurt all year) come with the league (doc.extraPlayers)
       const xs = (L && L.extraPlayers) || (D && D.extraPlayers);
       if (Array.isArray(xs)) { if (S.withExtras) S.withExtras(players, { extraPlayers: xs }); else { const have = new Set(players.map((p: any) => p.id)); for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); } }

@@ -21,6 +21,7 @@ on:
       - tools/fantasykit_nhl.mjs
       - tools/fantasykit_cbb.mjs
       - tools/fantasykit_cfb.mjs
+      - tools/fantasykit_contracts.mjs
       - supabase/functions/fk-live/cfb.mjs
       - supabase/functions/fk-live/cbb.mjs
       - supabase/functions/fk-live/nhl.mjs
@@ -57,6 +58,9 @@ jobs:
 
       - name: Build the player pools
         run: python3 tools/fantasykit_data.py
+
+      - name: Real contracts for Hard Cap leagues
+        run: node tools/fantasykit_contracts.mjs || echo "contracts didn't build"
 
       - name: Build college basketball's weeks
         run: node tools/fantasykit_cbb.mjs

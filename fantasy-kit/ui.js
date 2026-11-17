@@ -527,7 +527,10 @@
     }
     // on a phone the draft room keeps one value column: projected points or value, unless it's an auction
     if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", hide: opts.compact && !opts.auction ? "s" : undefined, title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
-    if (sport.key === "nhl") cols.push({ k: "nhlcap", label: "Cap hit", cls: "r num", hide: "s", title: "Real NHL cap hit this season; open the player for contract years and salary details", sort: (p) => p.contract && p.contract.capHit,
+    // Hard Cap: each player's real salary this season (the minimum, starred, while held rights wait on a new deal)
+    if (opts.salary) cols.push({ k: "sal", label: "Salary", cls: "r num", title: "Real salary this season: it counts against the league's line", sort: (p) => (p.sal == null ? -1 : p.sal),
+      html: (p) => (p.sal == null ? `<span class="ps">—</span>` : `${S.money(p.sal)}${p.pending ? `<sup title="Held rights: the minimum until his new deal">*</sup>` : p.sals && p.sals.length > 1 ? `<small class="ps"> ${p.sals.length}y</small>` : `<small class="ps"> exp</small>`}`) });
+    if (sport.key === "nhl" && !opts.salary) cols.push({ k: "nhlcap", label: "Cap hit", cls: "r num", hide: "s", title: "Real NHL cap hit this season; open the player for contract years and salary details", sort: (p) => p.contract && p.contract.capHit,
       html: (p) => p.contract && p.contract.capHit != null ? `${capMoney(p.contract.capHit)}${p.contract.estimated ? `<sup title="Estimated cap hit">est</sup>` : ""}` : `<span class="ps">—</span>` });
     // a one-week game or a showdown (sport.weekOf): the week's projected points
     const wkOf = pts ? sport.weekOf : null;
@@ -1288,7 +1291,7 @@
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
       const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
-      const cols = poolColumns(sport, { players: opts.players, group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() ? undefined : opts.money, value: opts.value });
+      const cols = poolColumns(sport, { players: opts.players, group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() ? undefined : opts.money, value: opts.value, salary: !!d.hardCap });
       rows = sortRows(rows, cols, ui.sort);
       const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
       const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);
@@ -1300,9 +1303,14 @@
       const packBar = pk ? moneyBar + `<div class="rl-bar"><span>${packOnly ? `${pat.j === 0 ? `Pack ${pat.q + 1}: ${pk.length} cards.${chaseLine}` : `Passed from ${esc(team(pw.from).name)}${pw.opener !== pw.from ? `, opened by ${esc(team(pw.opener).name)}` : ""}: ${pk.length} left.`} ${myTurn ? "Take one" : "You've picked"}, then it goes ${pat.q % 2 === 0 ? "left" : "right"}.` : "Showing everyone. You can only take a player from your pack."}</span><button class="btn xs" data-act="rlall">${packOnly ? "Show everyone" : "Only my pack"}</button></div>` : "";
       const rlBar = packBar || sn && sn.t ? packBar || `<div class="rl-bar"><span>${only ? `Showing ${esc(teamFull(sn.t))} players: the wheel's team for this pick.` : `Showing everyone. This pick has to come from ${esc(teamFull(sn.t))}.`}</span><button class="btn xs" data-act="rlall">${only ? "Show everyone" : `Only ${esc(sn.t)}`}</button></div>` : "";
       if (packOnly) return fitBar + rlBar + packGrid(rows, pat, myTurn, mine);
+      // Hard Cap: your payroll against the line, and what's left for each open spot
+      const capBar = d.hardCap && mine != null ? (() => {
+        const h = d.hardCap, pay = F.payroll(d, ctx, mine), open = Math.max(0, F.sizeOf ? F.sizeOf(d, mine) - F.rosters(d)[mine].length : 0), room = h.line - pay;
+        return `<div class="pkd-money hc-bar"><span><b>${S.money(room)}</b> room under the ${S.money(h.line)} line</span><span>${S.money(pay)} paid${open ? `, ${open} spot${open === 1 ? "" : "s"} to fill: about ${S.money(room / open)} each` : ""}</span><span class="ps">Players you can't fit are dimmed</span></div>`;
+      })() : "";
       const sortable = cols.filter((c) => c.sort && c.label && !c.raw);
       const sortSel = `<div class="psort show-m"><label for="fk-psort">Sort by</label><select id="fk-psort">${sortable.map((c) => `<option value="${esc(c.k)}"${ui.sort.k === c.k ? " selected" : ""}>${esc(c.title || c.label)}</option>`).join("")}</select><button type="button" class="btn xs ghost" data-act="sortdir" aria-label="Flip the order">${ui.sort.dir > 0 ? "Low to high" : "High to low"}</button></div>`;
-      return fitBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "", limit: ui.limit || 100, empty: "No one matches.",
+      return fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "", limit: ui.limit || 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
@@ -1797,7 +1805,7 @@
       const fp = e.target.closest("[data-fpos]");
       if (fp) { ui.f.pos = fp.dataset.fpos; if (fp.classList.contains("br-chip")) { ui.left = "players"; ui.mobileRight = false; render(); } else renderLeft(); return; }
       const th = e.target.closest("th[data-sort]");
-      if (th) { const cols = poolColumns(sport, { scoring: D().scoring, group: groupOf(sport, ui.f) }); ui.sort = nextSort(ui.sort, th.dataset.sort, cols); renderLeft(); return; }
+      if (th) { const cols = poolColumns(sport, { scoring: D().scoring, group: groupOf(sport, ui.f), salary: !!D().hardCap }); ui.sort = nextSort(ui.sort, th.dataset.sort, cols); renderLeft(); return; }
       const tb = e.target.closest("[data-tr-yes],[data-tr-no],[data-tr-cancel],[data-trade-with]");
       if (tb) {
         e.stopPropagation();
@@ -1927,7 +1935,7 @@
     });
     el.addEventListener("change", (e) => {
       if (e.target.id === "fk-show") { ui.show = e.target.value; renderLeft(); }
-      if (e.target.id === "fk-psort") { const k = e.target.value, c = poolColumns(sport, { scoring: D().scoring }).find((x) => x.k === k); ui.sort = { k, dir: c && c.asc ? 1 : -1 }; render(); return; }
+      if (e.target.id === "fk-psort") { const k = e.target.value, c = poolColumns(sport, { scoring: D().scoring, salary: !!D().hardCap }).find((x) => x.k === k); ui.sort = { k, dir: c && c.asc ? 1 : -1 }; render(); return; }
       if (e.target.id === "fk-statv" || e.target.id === "fk-statv2") { setView(sport, e.target.value); render(); }
       if (e.target.id === "fk-view") { ui.view = +e.target.value; render(); }
     });

@@ -2637,3 +2637,7 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 /* a small sample (ui.js sampleOf): a quiet tag by the name, and a line on the player card */
 .tag.ss{background:color-mix(in srgb,#D97706 14%,transparent);color:#9A5A04;border:0;font-weight:750;cursor:help}
 :root[data-theme="dark"] .tag.ss{color:#FBBF24;background:rgba(251,191,36,.14)}
+/* Hard Cap: payroll against the line (draft room and roster) */
+.hc-bar{background:var(--card,transparent)}
+.hc-bar.over{border-color:var(--loss,#c0392b)}
+.wrap.page>.hc-bar{margin:10px 0}

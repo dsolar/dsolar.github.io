@@ -2175,9 +2175,20 @@
     const irKept = held(L, teamId).filter((x) => !(drops || []).includes(x)).length;
     // a drop on its own always goes through (a dynasty roster cutting down can be over the limit)
     if (add && ros.length + 1 > maxRoster(L) + irKept) return { ok: false, why: ros.length > maxRoster(L) + irKept ? `Roster is over the limit: drop ${ros.length - maxRoster(L) - irKept + 1} first` : "Roster is full: pick someone to drop" };
+    // Hard Cap: an add has to fit under the line (the drops' salaries come off first). Everyone counts, IR included
+    const hc = L.settings.hardCap;
+    if (add && hc && ctx.byId[add]) {
+      const p = ctx.byId[add];
+      if (p.sal == null) return { ok: false, why: `${p.n} isn't on a standard contract` };
+      const pay = payroll(L, ctx, teamId, ros) + p.sal;
+      if (pay > hc.line) return { ok: false, why: `${S.money(p.sal)} would put you ${S.money(pay - hc.line)} over the ${S.money(hc.line)} line: drop salary first` };
+    }
     if (ctx.hooks.check) { const c = ctx.hooks.check(L, teamId, add ? ctx.byId[add] : null, drops, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
+  // Hard Cap: what a team pays (its roster, or the ids given), and its room under the line
+  const payroll = (L, ctx, teamId, ids) => (ids || L.rosters[teamId] || []).reduce((s, id) => s + ((ctx.byId[id] && ctx.byId[id].sal) || 0), 0);
+  const capRoom = (L, ctx, teamId) => (L.settings.hardCap ? L.settings.hardCap.line - payroll(L, ctx, teamId) : null);
   function dropOne(L, teamId, pid, now, keepTag) {
     // a white elephant tag stays with a player through trades, but a drop clears it: whoever adds him gets him plain
     if (!keepTag && L.etags && L.etags[pid]) { delete L.etags[pid]; if (L.pmult) delete L.pmult[pid]; }
@@ -2616,6 +2627,13 @@
     // the team taking more players than it sends picks who to drop when it accepts, so an offer can leave it over
     const toOver = after(t.to, t.get, t.give, t.dropsTo || []) - maxRoster(L) - irLeft(t.to, t.get);
     if (!off && toOver > 0 && t.status !== "pending" && t.id != null && L.trades.includes(t)) return { ok: false, why: `${L.teams[t.to].name} has to drop ${toOver} to take this trade`, needDrops: toOver };
+    // Hard Cap: each side ends up under the line, or at least no further over than it was
+    const hc = L.settings.hardCap;
+    if (hc) for (const [team, out, inn, drops] of [[t.from, t.give, t.get, t.dropsFrom || []], [t.to, t.get, t.give, t.dropsTo || []]]) {
+      const before = payroll(L, ctx, team), ids = L.rosters[team].filter((id) => !out.includes(id) && !drops.includes(id)).concat(inn);
+      const pay = payroll(L, ctx, team, ids);
+      if (pay > hc.line && pay > before) return { ok: false, why: `${L.teams[team].name} would be ${S.money(pay - hc.line)} over the ${S.money(hc.line)} line` };
+    }
     if (ctx.hooks.tradeCheck) { const c = ctx.hooks.tradeCheck(L, t, ctx); if (c && !c.ok) return c; }
     return { ok: true };
   }
@@ -2904,7 +2922,7 @@
     if (L.settings.playoffTie === "h2h") { const h = h2h(L, m.a, m.b); if (h < 0) return m.b; if (h > 0) return m.a; }
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
-  return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { payroll, capRoom, sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };

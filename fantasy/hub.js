@@ -69,7 +69,7 @@
         { i: "i-one", t: "One day", n: true, d: "Draft tonight's games with your group: the main slate, the late games or one game. A winner when the last game ends.", u: "fantasy-kit/week.html?s=nba", go: "Pick tonight's slate" },
         { i: "i-bolt", t: "Quick games", d: "Draft now, play this week's real games and crown a winner. Games before the draft don't count.", u: "fantasy-kit/leagues.html?w=1&s=nba", go: "Start a quick game" },
         { i: "i-star", t: "Showdown", d: "One game, a captain at 1.5x and five flex. Snake or a $50 auction.", u: "fantasy-kit/leagues.html?w=1&s=nba&slate=one", go: "Pick a game" },
-        { i: "i-cap", t: "Hard Cap", d: "Salary-cap dynasty on real NBA contracts: one hard line and a Prospect Board.", u: "hardcap/", go: "Open Hard Cap" }
+        { i: "i-cap", t: "Hard Cap", d: "A mode for any NBA or NHL league: real contracts under one salary line. Draft the player, carry the contract.", u: "fantasy-kit/leagues.html?hardcap=1", go: "Start a Hard Cap league" }
       ],
       demos: [["nba", "HH", "Head to head", "Hardwood Heads", "f=h"], ["nba:g", "LT", "Best ball guillotine", "Last Team Standing", "f=g"]]
     },
@@ -384,7 +384,7 @@
     var side = $("[data-side]");
     if (side && k === "cfb") side.innerHTML = '<a class="lgm cfb" href="' + ROOT + 'cfb/">' + field("cfb") + '<small>' + ic("i-cfb") + 'This Saturday</small><b>College Football Hub</b><span>Every FBS game with lines, FPI and playoff odds, the rankings, and the players behind them.</span><em class="go">Open the hub</em></a>';
     else if (side && k === "cbb") side.innerHTML = '<a class="lgm cbb" href="' + ROOT + 'cbb/">' + field("cbb") + '<small>' + ic("i-cbb") + 'Tonight in college hoops</small><b>CBB Hub</b><span>Every Division I game ranked by how watchable it is, with lines, team ratings and the matchups worth your night.</span><em class="go">Open the CBB Hub</em></a>';
-    else if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'hardcap/">' + field("nba") + "<small>" + ic("i-cap") + "League type</small><b>Hard Cap</b><span>Salary-cap dynasty on real NBA contracts: one hard line, and a Prospect Board for the next class.</span><em class=\"go\">Open Hard Cap</em></a>";
+    else if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'fantasy-kit/leagues.html?hardcap=1">' + field("nba") + "<small>" + ic("i-cap") + "League mode</small><b>Hard Cap</b><span>Real NBA contracts under one salary line, in any Draft Lab league. Draft the player, carry the contract.</span><em class=\"go\">Start a Hard Cap league</em></a>";
     $("[data-modes]").innerHTML = s.modes.map(function (m) {
       return '<a class="mode" href="' + ROOT + m.u + '"><span class="mi">' + ic(m.i) + "</span><b>" + esc(m.t) + (m.n ? ' <em class="new">New</em>' : "") + "</b><span>" + esc(m.d) + '</span><span class="go">' + esc(m.go) + " &rarr;</span></a>";
     }).join("");
@@ -430,7 +430,7 @@
     var el = $("[data-yours]"); if (!el) return;
     var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
     if (!on) return;
-    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171311-ui4";
+    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171331-ui4";
     s.onload = function () { if (window.FK && window.FK.home) window.FK.home.mount(el); };
     document.head.appendChild(s);
   }

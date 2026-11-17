@@ -254,6 +254,44 @@
     }
     return weeks;
   }
+  /* ---------- Hard Cap: real contracts under a salary line ---------- */
+  // A mode on a normal draft and league (NBA and NHL, the sports with real player contracts): every player carries
+  // his real salary (data/contracts-<sport>.json: { year, cap, min, players: { id: [this season, next, ...] } }), and
+  // a team's payroll has to stay under the league's line, a multiple of the real cap. The draft keeps room to fill
+  // the roster at the minimum; contracts carry from season to season in a dynasty, and one that runs out is re-signed
+  // at the player's new real deal or let go. The league's terms: hardCap { line, min, year, cap } (year: the season's
+  // first year, 2026 for 2026-27).
+  const HARDCAP = { nba: 1, nhl: 1 };
+  const hardCapOk = (k) => !!HARDCAP[typeof k === "string" ? k : k && k.key];
+  const hardCapOf = (x) => (x && (x.hardCap || (x.settings && x.settings.hardCap))) || null;
+  // Each player's salary for the league's season (p.sal, null with no contract) and what's left of his deal (p.sals).
+  // A player whose deal ran out and whose rights a team held into this season (hc.held) counts at the minimum until
+  // his real new deal shows up in the file (p.pending), then at that.
+  function addContracts(players, file, hc) {
+    if (!file || !file.players) return players;
+    const year = (hc && hc.year) || file.year, held = new Set(((hc && hc.held) || []).map(String));
+    const i = Math.max(0, year - file.year);
+    for (const p of players) {
+      const run = file.players[String(p.id)];
+      const left = run ? run.slice(i) : [];
+      p.sal = left.length ? left[0] : null;
+      p.sals = left;
+      if (p.sal == null && held.has(String(p.id))) { p.sal = (hc && hc.min) || file.min || 1e6; p.pending = true; }
+    }
+    return players;
+  }
+  // A Hard Cap league's pool: players with a real contract, and anyone already on a roster (keep: ids)
+  const capPool = (players, keep) => { const k = new Set([...(keep || [])].map(String)); return players.filter((p) => p.sal != null || k.has(String(p.id))); };
+  // Expiring at the end of a season: on a deal with nothing for next season
+  const expiring = (p) => !!p && Array.isArray(p.sals) && p.sals.length <= 1;
+  const money = (x) => { const a = Math.abs(x || 0), m = a / 1e6; if (!a) return "$0"; return `${x < 0 ? "-" : ""}$${m >= 100 ? m.toFixed(0) : m >= 10 ? m.toFixed(1) : m.toFixed(2)}M`; };
+  // The suggested line: the payroll of the players the league would roster, by rank, shared out evenly (to the half
+  // million), so a team that pays for stars has to find bargains. Never under the minimum roster times two.
+  function suggestLine(players, teams, spots, file) {
+    const pay = players.filter((p) => p.sal != null).sort((a, b) => (a.rank || 1e9) - (b.rank || 1e9)).slice(0, teams * spots).reduce((s, p) => s + p.sal, 0);
+    const floor = spots * ((file && file.min) || 1e6) * 2;
+    return Math.max(floor, Math.round(pay / Math.max(1, teams) / 5e5) * 5e5);
+  }
   // football's way of playing: one game a week, lineups that lock by game, per-game projections
   const football = (k) => { const key = k && k.key ? k.key : k; return key === "nfl" || key === "cfb"; };
 
@@ -1012,5 +1050,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { IDP_POS, IDP_SLOTS, usesIdp, addIdp, addIdpWeeks, leagueLogo, confLogo, football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { HARDCAP, hardCapOk, hardCapOf, addContracts, capPool, expiring, money, suggestLine, IDP_POS, IDP_SLOTS, usesIdp, addIdp, addIdpWeeks, leagueLogo, confLogo, football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

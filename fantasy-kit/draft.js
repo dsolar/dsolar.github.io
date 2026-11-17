@@ -98,6 +98,11 @@
       extra: {}, botOffers: opts.botOffers !== false, trades: [], via: {}, offered: {},
     };
     if (D.bank) for (const t of D.teams) t.bank = D.bank.perRound * rounds * 1000;
+    // Hard Cap (sports.js): real salaries under a line
+    if (opts.hardCap && opts.hardCap.line > 0) {
+      const h = opts.hardCap;
+      D.hardCap = { line: Math.round(h.line), min: Math.round(h.min || 1e6), year: h.year | 0, cap: h.cap || null, held: (h.held || []).slice() };
+    }
     if (type === "mystery") {
       const curve = (opts.curve || defaultCurve(m * rounds)).slice(0, m * rounds).map((v) => Math.round(v * 100) / 100);
       D.mystery = { reveal: REVEALS[opts.reveal] ? opts.reveal : "start", curve, tolerance: opts.tolerance == null ? 0.01 : opts.tolerance };
@@ -524,7 +529,21 @@
     const after = mine.concat(p);
     const open = D.lineup.length - assign(ctx.sport, after, D.lineup).filter(Boolean).length;
     if (open > size - after.length) return { ok: false, why: `Not enough spots left to fill your starting lineup` };
+    const hc = capRoom(D, ctx, teamId, p, after.length, size);
+    if (!hc.ok) return hc;
     if (ctx.hooks.check) { const c = ctx.hooks.check(D, team, p, ctx); if (c && !c.ok) return c; }
+    return { ok: true };
+  }
+  // Hard Cap: a team's payroll, and whether adding p leaves room under the line to fill the rest of the roster at
+  // the minimum salary. A player without a real contract can't be drafted.
+  const payroll = (D, ctx, teamId, ids) => (ids || rosters(D)[teamId]).reduce((s, id) => s + ((ctx.byId[id] && ctx.byId[id].sal) || 0), 0);
+  function capRoom(D, ctx, teamId, p, count, size) {
+    const h = D.hardCap;
+    if (!h) return { ok: true };
+    if (p.sal == null) return { ok: false, why: `${p.n} isn't on a standard contract` };
+    const pay = payroll(D, ctx, teamId) + p.sal, open = Math.max(0, size - count);
+    if (pay > h.line) return { ok: false, why: `${S.money(p.sal)} would put you ${S.money(pay - h.line)} over the ${S.money(h.line)} line` };
+    if (pay + open * h.min > h.line) return { ok: false, why: `That leaves ${S.money(h.line - pay)} for ${open} more spot${open === 1 ? "" : "s"}: not enough at the ${S.money(h.min)} minimum` };
     return { ok: true };
   }
 
@@ -854,6 +873,12 @@
       return w;
     }
     if (D.packs && !waits) w = fillsStarter ? w * (1.4 + (urgency ? 6 * urgency(S.positions(p)[0]) : 0)) + 1 + (urgency ? 20 * urgency(S.positions(p)[0]) : 0) : openStarters > 0 ? w * 0.02 : w;
+    // Hard Cap: a bot weighs the price against what's left per open spot. A bargain is worth a bit more, a contract
+    // that eats several spots' worth of room a lot less, the tighter the money the more so
+    if (D.hardCap && p.sal != null && w > 0) {
+      const room = D.hardCap.line - payroll(D, ctx, teamId), per = room / Math.max(1, left);
+      w *= Math.max(0.25, Math.min(1.25, Math.pow(Math.max(per, D.hardCap.min) / Math.max(p.sal, D.hardCap.min), 0.3)));
+    }
     if (r) w *= 0.85 + r() * 0.3;
     if (ctx.hooks.worth) w = ctx.hooks.worth(D, D.teams[teamId], p, w, ctx);
     return w;
@@ -1379,6 +1404,10 @@
       const open = D.lineup.length - assign(ctx.sport, ps, D.lineup).filter(Boolean).length;
       if (open > picks) return { ok: false, why: `${name} couldn't fill its starting lineup` };
       for (const [pos, max] of Object.entries(D.posMax || {})) if (ps.filter((q) => S.positions(q).every((x) => x === pos)).length > max) return { ok: false, why: `${name} would have more than ${max} at ${pos}` };
+      if (D.hardCap) {
+        const pay = ps.reduce((s, q) => s + (q.sal || 0), 0);
+        if (pay + picks * D.hardCap.min > D.hardCap.line) return { ok: false, why: `${name} would be over the ${S.money(D.hardCap.line)} line` };
+      }
     }
     if (ctx.hooks.tradeCheck) { const c = ctx.hooks.tradeCheck(D, t, ctx); if (c && !c.ok) return c; }
     return { ok: true };
@@ -1674,7 +1703,7 @@
     D.sealed.ran = now;
     return true;
   }
-  return { triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { payroll, capRoom, triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, prospectRound, prospectPicks, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

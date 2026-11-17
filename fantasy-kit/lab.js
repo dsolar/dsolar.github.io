@@ -60,14 +60,17 @@
     if (dayOn(c) && !ds) throw new Error(daySched && daySched.error ? "Couldn't reach tonight's schedule. Try again in a moment." : daySched ? "There are no games left tonight or tomorrow. Turn off one day to draft the season." : "Tonight's games are still loading. Try again in a moment.");
     const want = ds ? ds.lineup.lineup.slice() : sdOn(c) ? S.SHOWDOWN.lineup.slice() : hzOn(c) ? ONE_WEEK_NFL.slice() : (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
     const lineup = want.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
-    const players = data.players.filter((p) => (!sdOn(c) || p.t === c.sdA || p.t === c.sdH) && (!ds || ds.slate.teams.includes(p.t))).map((p) => Object.assign({}, p));
+    let players = data.players.filter((p) => (!sdOn(c) || p.t === c.sdA || p.t === c.sdH) && (!ds || ds.slate.teams.includes(p.t))).map((p) => Object.assign({}, p));
+    const hcf = hcOn(c) ? await loadHc(c.sport) : null;
+    if (hcOn(c) && !hcf) throw new Error("Couldn't load the contracts. Try again, or turn Hard Cap off.");
+    if (hcf) { S.addContracts(players, hcf, { year: hcf.year, min: hcf.min }); players = S.capPool(players); }
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
     const bench = ds ? ds.lineup.bench : sdOn(c) ? S.SHOWDOWN.bench : hzOn(c) ? 0 : c.bench == null ? sport.bench : c.bench;
     const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
     // a showdown of a real game on this week's or next week's schedule plays that week's projections
     const sdWk = sdOn(c) && sched ? (sched.weeks.find((w) => (w.games || []).some((g) => g.away === c.sdA && g.home === c.sdH)) || {}).week : null;
     V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, week: sdWk ? S.weekFor({ season: { showdown: { week: sdWk } } }, sport) : null, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
-    return { sport, players, lineup, scoring, bench, data, slate: ds ? ds.slate : null };
+    return { sport, players, lineup, scoring, bench, data, slate: ds ? ds.slate : null, hcf };
   }
 
   /* ---------- header ---------- */
@@ -99,12 +102,16 @@
   const CLOCKS = PICK_CLOCKS.concat(BANKS.map(([v, l]) => [v, `${l} bank`]));
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
   const fmtBank = (sec) => (sec % 60 ? `${sec} seconds` : `${sec / 60} minutes`);
-  const NUM = /^(teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day|elSteals|elFreeze|elTax|elGold)$/;
+  const NUM = /^(hc|teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day|elSteals|elFreeze|elTax|elGold)$/;
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
   const rlFits = (c) => ["snake", "linear", "3rr"].includes(c.type);
   const sdOn = (c) => c.sport === "nfl" && !!c.sd;
+  // Hard Cap (sports.js): real contracts under a salary line, NBA and NHL, drafted in turn
+  const hcOn = (c) => S.hardCapOk(c.sport) && rlFits(c) && !!c.hc && !c.day;
+  const hcFiles = {};
+  const loadHc = (k) => hcFiles[k] || (hcFiles[k] = fetch(`data/contracts-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
   // one day of basketball: tonight's (or tomorrow's) games from the schedule, as in a one-day league
   const dayOn = (c) => window.FK.sports.daily(c.sport) && !!c.day;
   let daySched = null, dayAsked = false;
@@ -240,6 +247,7 @@
         : `<div class="slg-l">${os.map((o) => { const on = cur && cur.key === o.key, head = o.when !== when ? (when = o.when) : ""; return `${head ? `<b class="slg-day">${esc(head)}</b>` : ""}<button type="button" class="slg${on ? " on" : ""}" data-dayk="${esc(o.key)}" aria-pressed="${!!on}"><b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`; }).join("")}</div>${cur ? `<p class="fl-h">${esc(cur.lineup.note)}.</p>` : ""}`;
       rows.push(K.toggle("day", "One day: tonight's games", "Draft only the players in a night's real games, with a one-day lineup, like a one-day league.", c.day, pickHtml));
     }
+    if (S.hardCapOk(c.sport) && rlFits(c) && !c.day) rows.push(K.toggle("hc", "Hard Cap", `Real ${S[c.sport].league} contracts under a salary line: every player carries his real salary, and you keep room to fill the roster at the minimum. The line is set from what this league's players are paid.`, c.hc));
     if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
     if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, gamePick));
     if (nfl && !sdOn(c)) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
@@ -355,6 +363,7 @@
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
       botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : `${P.sport.name} mock`,
       trades: c.trades !== 0, steals: c.type === "elephant" ? window.FK.setup.elephantSteals(c, (P.sport.scorings[P.scoring] || {}).type === "points") : undefined, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
+    if (P.hcf) { const h = P.hcf; D.hardCap = { line: S.suggestLine(P.players, n, P.lineup.length + P.bench, h), min: h.min, year: h.year, cap: h.cap, held: [] }; }
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
     if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };

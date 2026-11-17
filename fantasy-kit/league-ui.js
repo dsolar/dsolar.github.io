@@ -1302,6 +1302,14 @@
       const st = G.weekStart(L(), w);
       return `<div class="seg days" role="group" aria-label="Day">${Array.from({ length: 7 }, (_, k) => { const dt = new Date(st + k * 864e5 + 12 * 36e5); return `<button type="button" data-day="${k}" data-dw="${w}" aria-pressed="${k === day}"${today != null && k < today ? ' class="past"' : ""}><b>${dt.toLocaleDateString("en-US", { weekday: "short" })}</b><small>${today === k ? "Today" : dt.toLocaleDateString("en-US", { month: "short", day: "numeric" })}</small></button>`; }).join("")}</div>`;
     }
+    // Hard Cap: a player's salary beside his name, and a team's payroll against the line
+    const hcSal = (p) => (L().settings.hardCap && p && p.sal != null ? ` · ${S.money(p.sal)}${p.pending ? "*" : S.expiring(p) ? " exp" : ""}` : "");
+    function hcBar(id) {
+      const h = L().settings.hardCap;
+      if (!h) return "";
+      const pay = G.payroll(L(), ctx, id), room = h.line - pay, exp = L().rosters[id].map((x) => ctx.byId[x]).filter((p) => S.expiring(p));
+      return `<div class="pkd-money hc-bar${room < 0 ? " over" : ""}"><span><b>${S.money(pay)}</b> of the ${S.money(h.line)} line</span><span>${room < 0 ? `<b class="loss">${S.money(-room)} over</b>: no adds until you're back under` : `${S.money(room)} room`}</span>${exp.length ? `<span class="ps">${exp.length} contract${exp.length === 1 ? "" : "s"} expiring this season${L().settings.dynasty ? ": re-sign or let go when it ends" : ""}</span>` : ""}</div>`;
+    }
     function rosterPage(arg) {
       const id = arg !== "" && arg != null && L().teams[+arg] ? +arg : me() != null ? me() : 0;
       if (arg !== "" && arg != null && !L().teams[+arg]) badLink(`There's no team ${arg} in this league, so here's ${isMe(id) ? "yours" : T(id).name}.`);
@@ -1369,7 +1377,7 @@
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
         const drag = mine && alive && (!over() || G.offseason(L())) && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
         const zone = i != null ? (pl(p) ? "" : ` data-dz="s${i}"`) : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p && !pl(p) ? ` data-dzp="${esc(p.id)}"` : ""}`;
-        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
+        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${hcSal(p)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
           ${grp ? rvCols(grp).map((c) => `<td class="${c.cls || "r num"}">${p ? c.cell(p, onIR, onTaxi) : ""}</td>`).join("") : `<td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi && pts() ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>`}
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
@@ -1450,6 +1458,7 @@
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
       const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
       return `<div class="wrap page">${teamHead(id)}
+        ${hcBar(id)}
         ${G.daily(L()) && !over() ? dayTabs(w, day, today) : ""}
         <div class="row wk-bar" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">Week ${x}${x === L().week ? ", now" : ""}</button>`).join("")}</div>` : ""}
           ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}${w === L().week && frac(w) > 0 ? `: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}` : ""}</a>` : ""}
@@ -2211,7 +2220,7 @@
       const groups = sport.groups && !pts() ? Object.keys(sport.groups).map((g) => [g, U.groupLabel(sport, g)]) : [[null, "Players"]];
       const inGrp = (p, g) => !g || U.playerGroup(sport, p) === g;
       const tbl = (list, g, title) => {
-        const cols = U.poolColumns(sport, { players: opts.players, money: auctionLg(), value: pts(), group: g, scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions });
+        const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: g, scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions });
         const rows = U.sortRows(list, cols, ui.psort);
         return `<div class="stack" style="gap:6px;margin-top:14px"><h2 style="margin:0;font-size:15px">${title} <span class="ps">${rows.length}</span></h2>${U.table({ cols, rows, sort: ui.psort, dense: true, id: g ? `fk-watch-${g}` : "fk-watch", empty: "None yet.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
       };
@@ -2250,7 +2259,7 @@
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
-      const cols = U.poolColumns(sport, { players: opts.players, money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
+      const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() ? [] : [] });
       // Yahoo's columns beside ours: games played, last season's preseason and final ranks, and % rostered (another
       // site's, when the league came from one: L.ext)
       { const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, yr = Number(L().season) || "", grp = U.groupOf(sport, ui.pf);
@@ -2979,7 +2988,7 @@
           openTrade(seller, null, { get: (isFrom ? t.give : t.get).slice(), pickGet: ((isFrom ? t.pickGive : t.pickGet) || []).slice(), give: [], rivalOf: t.id, lockGet: true });
         }
         else if (d.trCounter) { const t = L().trades.find((x) => x.id === +d.trCounter); openTrade(t.from, null, { give: t.get.slice(), get: t.give.slice(), pickGive: (t.pickGet || []).slice(), pickGet: (t.pickGive || []).slice(), faabGive: t.faabGet, faabGet: t.faabGive, counterOf: t.id }); }
-        else if (d.sort) { const cols = U.poolColumns(sport, { players: opts.players, money: auctionLg(), value: pts(), scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
+        else if (d.sort) { const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
         return;
       }
       const pl = e.target.closest("[data-player]");

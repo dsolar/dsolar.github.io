@@ -74,7 +74,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, reseed: 0, confs: [], cbbEnd: "conf", cfbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, hcOn: 0, hcScale: "auto", confOn: 0, reseed: 0, confs: [], cbbEnd: "conf", cfbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -95,6 +95,22 @@
   // a salary cap game (one-week football, points): no draft, a lineup under a budget, players on any number of teams.
   // A sealed draft: everyone ranks players in private and the draft runs itself when the lists lock.
   const capOn = () => form.type === "cap" && slateOn();
+  // Hard Cap: real contracts under a salary line (sports.js). NBA and NHL season leagues, drafted in turn
+  const hcOk = () => S.hardCapOk(form.sport) && !oneWeek() && form.season !== "guillotine";
+  const hcOn = () => hcOk() && !!form.hcOn;
+  const HC_TYPES = ["snake", "linear", "3rr"];
+  const hcFiles = {};
+  function hcFile(k) {
+    if (!(k in hcFiles)) { hcFiles[k] = null; fetch(`data/contracts-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((j) => { hcFiles[k] = j || false; if (form.hcOn && view === "new") render(); }); }
+    return hcFiles[k] || null;
+  }
+  function hcHtml(sp) {
+    const f = hcFile(sp.key), cap = f && f.cap;
+    const at = (x) => (cap ? ` (${S.money(Math.round((cap * x) / 5e5) * 5e5)})` : "");
+    const scales = [["auto", "Suggested"], ["1", `1x the cap${at(1)}`], ["1.25", `1.25x${at(1.25)}`], ["1.5", `1.5x${at(1.5)}`], ["1.75", `1.75x${at(1.75)}`], ["2", `2x${at(2)}`]];
+    return `<div class="g2">${fld("Salary line", seg("hcScale", scales, String(form.hcScale || "auto"), "Salary line", { wrap: true }), form.hcScale === "auto" || !form.hcScale ? "Set when the league is made: what the players your league will roster are paid, shared out evenly, so every team has choices to make." : `A multiple of the real ${sp.league} cap${cap ? ` (${S.money(cap)})` : ""}.`)}</div>
+      <p class="ps" style="margin:6px 0 0">Every player carries his real ${sp.league} salary${f ? ` (${Object.keys(f.players).length} contracts, ${esc(f.season)})` : ""}. Draft, add and trade under the line, and keep room to fill the roster at the ${f ? S.money(f.min) : "league"} minimum.${form.kind === "dynasty" ? " Contracts carry over: one that runs out is re-signed at the player's new real deal or let go into the rookie and free agent draft." : " In a dynasty, contracts carry from year to year."}</p>`;
+  }
   // promotion and relegation: a second, lower league made with this one (pyramid.js). Redraft season leagues only:
   // managers move between the tiers, rosters don't
   const P = window.FK.pyramid;
@@ -133,6 +149,8 @@
     form.dtMode = "at"; form.dtAt = null;
     view = "new"; loadSlates();
   }
+  // leagues.html?hardcap=1: a Hard Cap league (the old Hard Cap app sends people here), basketball dynasty by default
+  if (params.get("hardcap")) { form.hcOn = 1; if (!S.hardCapOk(form.sport)) form.sport = "nba"; if (!params.get("s")) form.sport = "nba"; form.kind = "dynasty"; form.open = { carry: 1 }; view = "new"; }
   // leagues.html?w=1: start a one-week game (from the One week page, or a slate picked there)
   if (params.get("w")) {
     form.kind = "week"; if (!S.ALL[params.get("s")]) form.sport = "nfl"; view = "new"; oneWeekDefaults();
@@ -405,6 +423,7 @@
     const seasons = SEASONS[scoringType(sp)];
     if (!seasons.some(([k]) => k === form.season)) form.season = "h2h";
     if (form.season === "guillotine" && form.kind === "dynasty") form.kind = "redraft";
+    if (hcOn() && !HC_TYPES.includes(form.type)) form.type = "snake";
     if (!form.clocks || form.clocks !== auction) { form.clocks = auction; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800]; if (!ok.includes(form.clock)) form.clock = auction ? 15 : 90; }
     const V = values(sp), fmt = formatOf(), gl = form.season === "guillotine";
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
@@ -447,6 +466,7 @@
         ${slateHtml}
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}${sdHtml}
           ${showdown() || capOn() ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
+        ${hcOk() ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("hcOn", "Hard Cap", `Real ${sp.league} contracts under a salary line: draft the player, carry the contract`, !!form.hcOn, hcOn() ? hcHtml(sp) : "")}</div></section>` : ""}
         ${form.sport === "nfl" ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("confOn", "Conference limit", "No more than two starters from one FBS college conference, like the SEC or the Mountain West", form.confOn)}</div></section>` : ""}
         ${ladOk() ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("ladOn", "Ladder", "No schedule: each week you challenge a team above you, and if you win you swap places. The ladder is the standings.", !!form.ladOn,
           `<div class="g2">${fld("Starting order", seg("ladSeed", [[2, "2 seeding weeks"], [1, "1 week"], [3, "3 weeks"], [0, "Draft order"]], ladSeed(), "Starting order", { wrap: true }), ladSeed() ? `The first ${ladSeed() > 1 ? `${ladSeed()} weeks are` : "week is"} a free-for-all with no challenges: everyone plays for total ${scoringType(S[form.sport]) === "points" ? "points" : "roto points (each category ranked across the league)"}, and the total sets the ladder.` : auction() ? "An auction has no draft order, so the ladder starts in a random order." : "Whoever picks first starts at the bottom.")}
@@ -489,7 +509,7 @@
     const style = oneWeek() ? `${slt && slt.day ? "One day" : "One week"}${slt ? `: ${slt.label}, ${slt.day ? SL.dayName(slt.day).toLowerCase() : `week ${slt.week}`}` : slateOn() ? "" : ` (${form.when === "now" ? "this week" : "next week"})`}${showdown() ? ", captain at 1.5x" : ""}, ${fmtName}${form.bestball ? ", best ball" : ""}`
       : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${fmtName}${form.bestball ? ", best ball" : gl ? ", set lineups" : ""}`;
     return {
-      line: `${sp.name}, ${n} teams, ${sc}, ${capOn() ? `${F.capMoney(form.capBudget)} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${ladOn() ? ", ladder" : ""}${pyrOn() ? `, plus ${[8, 11, 18].includes(form.pyrTeams) ? "an" : "a"} ${form.pyrTeams}-team lower tier with promotion and relegation` : ""}${heist() ? " and a heist" : ""}${trivia() ? ", trivia to pick" : ""}${sp.key === "nfl" && form.confOn ? ", two starters a conference" : ""}. ${style}`,
+      line: `${sp.name}, ${n} teams, ${sc}, ${hcOn() ? "Hard Cap, " : ""}${capOn() ? `${F.capMoney(form.capBudget)} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${ladOn() ? ", ladder" : ""}${pyrOn() ? `, plus ${[8, 11, 18].includes(form.pyrTeams) ? "an" : "a"} ${form.pyrTeams}-team lower tier with promotion and relegation` : ""}${heist() ? " and a heist" : ""}${trivia() ? ", trivia to pick" : ""}${sp.key === "nfl" && form.confOn ? ", two starters a conference" : ""}. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
       draft: `${form.type === "elephant" ? window.FK.setup.elephantLine(form, scoringType(sp) === "points") + ", " : ""}${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${auction() ? `$${aucBudget()} budgets, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
@@ -575,7 +595,7 @@
   const auction = () => form.type === "auction";
   // the draft types a league can pick: every live format, a sealed draft, and for one-week football on points, a
   // salary cap game with no draft at all
-  const draftTypes = (sp) => Object.keys(F.FORMATS).concat(["sealed"], slateOn() && scoringType(sp) === "points" ? ["cap"] : []);
+  const draftTypes = (sp) => (hcOn() ? HC_TYPES.slice() : Object.keys(F.FORMATS).concat(["sealed"], slateOn() && scoringType(sp) === "points" ? ["cap"] : []));
   function capHtml() {
     const sl = curSlate();
     return `<div class="g2">${fld("Budget", seg("capBudget", [[50000, "$50,000"], [100, "$100"], [200, "$200"]], form.capBudget, "Budget"), "Stars cost about twice an even share, so you can't have them all.")}
@@ -864,7 +884,7 @@
   };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nhl: ["C", "LW", "RW", "D", "G"], nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(reseed|aBudget|ladSeed|chaseWeeks|nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(hcOn|reseed|aBudget|ladSeed|chaseWeeks|nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
@@ -945,9 +965,13 @@
       const lineup = slu ? slu.lineup.slice() : lineupOf(sport).filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
       const bench = capOn() ? 0 : slu ? slu.bench : benchOf(sport);
       const half = !oneWeek() && S.poolTeams ? S.poolTeams(form.sport, form.poolOnly) || confTeams() : null;
-      const players = data.players.filter((p) => (!slate || slate.teams.includes(p.t)) && (!half || half.includes(p.t))).map((p) => Object.assign({}, p));
+      let players = data.players.filter((p) => (!slate || slate.teams.includes(p.t)) && (!half || half.includes(p.t))).map((p) => Object.assign({}, p));
+      // Hard Cap: real salaries, and a pool of players on real contracts
+      const hcf = hcOn() ? await fetch(`data/contracts-${form.sport}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null) : null;
+      if (hcOn() && !hcf) throw new Error("Couldn't load the contracts. Try again, or turn Hard Cap off.");
+      if (hcf) { S.addContracts(players, hcf, { year: hcf.year, min: hcf.min }); players = S.capPool(players); }
       // prospect rounds: the prospect pool rides along with the league (D.extraPlayers)
-      const proOn = form.sport !== "nhl" && !(S[form.sport] && S[form.sport].college) && !oneWeek() && form.kind !== "redraft" && form.season !== "guillotine" && form.proRounds > 0;
+      const proOn = !hcOn() && form.sport !== "nhl" && !(S[form.sport] && S[form.sport].college) && !oneWeek() && form.kind !== "redraft" && form.season !== "guillotine" && form.proRounds > 0;
       let extraPros = null;
       if (proOn) {
         const src = await fetch(form.sport === "mlb" ? "data/prospects-mlb.json" : `../draft/${form.sport}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -975,6 +999,12 @@
       const copts = { sport, type: draftType(), prospects: proOn ? { rounds: form.proRounds, rule: form.proRule } : undefined, steals: draftType() === "elephant" ? window.FK.setup.elephantSteals(form, scoringType(sp0) === "points") : undefined, teams: n, sit: vampire != null ? [vampire] : undefined, seed: Math.floor(Math.random() * 2 ** 31), now: Date.now(), lineup, bench, scoring,
         botDelay: 2000, clock: auction ? 0 : form.clock, bidClock: auction ? form.clock : 15, nomClock: 30, budget: aucBudget(), name: form.name.trim(),
         trades: form.trades !== 0 && !noRoom() && !trivia(), curve: form.type === "mystery" ? F.pickCurve(players, total) : null, reveal: form.type === "mystery" ? form.reveal || "start" : undefined };
+      if (hcf) {
+        const spots = lineup.length + bench, sc = parseFloat(form.hcScale);
+        const line = Number.isFinite(sc) && sc > 0 && hcf.cap ? Math.round((hcf.cap * sc) / 5e5) * 5e5 : S.suggestLine(players, n, spots, hcf);
+        if (line < spots * hcf.min * 1.5) throw new Error(`A ${S.money(line)} line can't fill ${spots} roster spots. Pick a higher line.`);
+        copts.hardCap = { line, min: hcf.min, year: hcf.year, cap: hcf.cap };
+      }
       const D = F.create(copts);
       D.teams.forEach((t, i) => (t.color = (i * 5) % 12));
       if (form.type === "pack") F.dealPacks(D, players, sport);

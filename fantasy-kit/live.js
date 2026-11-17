@@ -69,6 +69,8 @@
     const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(D.season && D.season.bestBall && D.season.format !== "guillotine");
     let dataP = early && early.k === k ? early.p : getJSON(`data/${k}.json`);
     weeksP = getJSON(`data/weeks-${k}.json`);
+    // a Hard Cap league: every player's real contract (data/contracts-<sport>.json)
+    const hcP = S.hardCapOf(L) || S.hardCapOf(D) ? getJSON(`data/contracts-${k}.json`).catch(() => null) : null;
     // an IDP league plays defenders too: their players and weekly lines have their own files
     if (k === "nfl" && S.usesIdp(D)) {
       dataP = Promise.all([dataP, getJSON("data/nfl-idp.json").catch(() => null)]).then(([d, x]) => S.addIdp(d, x));
@@ -87,6 +89,13 @@
     { const el = (L && L.settings.elig) || (D.season && D.season.elig); if (el && k === "mlb") S.applyElig(players, el); }
     // players the feed doesn't carry (a prospect, someone hurt all year) come with the league itself (doc.extraPlayers)
     { const hide = new Set((L && L.hidePlayers) || D.hidePlayers || []); if (hide.size) players = players.filter((p) => !hide.has(p.id)); }
+    // Hard Cap: salaries for this season, and a pool of players on real contracts (plus anyone already rostered)
+    if (hcP) {
+      const hcf = await hcP, hc = S.hardCapOf(L) || S.hardCapOf(D);
+      if (!hcf) return fatal("Couldn't load the contracts.", `<span class="muted">Reload the page to try again.</span>`);
+      S.addContracts(players, hcf, hc);
+      players = S.capPool(players, L ? L.rosters.flat() : F.rosters(D).flat());
+    }
     // (prospects too: S.withExtras marks a prospect who's already in the player file instead of adding him twice)
     S.withExtras(players, { extraPlayers: (L && L.extraPlayers) || D.extraPlayers });
     if (L || bb) await loadWeeks();
@@ -949,9 +958,24 @@
     return `<div class="card"><div class="mod-h"><h2>Next season</h2>${k && L.next ? `<button type="button" class="btn sm" data-live="open-keepers" style="margin-left:auto">Deadline</button>` : ""}</div><div class="bd stack">
       <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? (lock ? `Keepers locked ${esc(whenTxt(keepDue()))}.` : `Keeper picks are open until ${esc(whenTxt(keepDue()))}.`) : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
       ${k ? `<ul class="seatl">${rows}</ul>` : ""}
+      ${expiringHtml()}
       ${L.settings.dynasty ? "" : L.settings.draftOrder === "lottery" ? lotteryLine() : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
       ${practiceLine()}
       <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
+  }
+  // Hard Cap dynasty: contracts that run out this season. Each one is re-signed (his rights held into next season,
+  // at his new real deal, the minimum until it's out) unless his manager lets him go into the rookie and free agent
+  // draft. Managers set their own; the commissioner can set anyone's. Bots let go of anyone they wouldn't roster.
+  function expiringHtml() {
+    if (!L.settings.hardCap || !L.settings.dynasty) return "";
+    const ctx = lctx(), go = new Set(((L.next && L.next.letGo) || []).map(String));
+    const mineOnly = !info.commish;
+    const teams = L.teams.filter((t) => !mineOnly || t.id === info.me);
+    const rows = teams.flatMap((t) => L.rosters[t.id].map((pid) => ctx.byId[pid]).filter((p) => S.expiring(p)).map((p) => [t, p]));
+    if (!rows.length) return `<p class="small" style="margin:0"><b>Contracts:</b> ${mineOnly ? "none of yours run out" : "nobody's contract runs out"} this season.</p>`;
+    const can = (t) => info.commish || t.id === info.me;
+    return `<div class="stack" style="gap:6px"><p class="small" style="margin:0"><b>Expiring contracts.</b> Checked players are re-signed at their new real deal (the ${S.money(L.settings.hardCap.min)} minimum until it's out). Uncheck to let one go into the draft.</p>
+      <ul class="seatl hc-exp">${rows.map(([t, p]) => `<li><label class="check grow"><input type="checkbox" data-hc-keep="${esc(p.id)}"${go.has(String(p.id)) ? "" : " checked"}${can(t) ? "" : " disabled"}><span><b>${esc(p.n)}</b><small>${esc(t.name)} · ${S.money(p.sal)} this season${p.rank ? ` · #${p.rank}` : ""}</small></span></label></li>`).join("")}</ul></div>`;
   }
   // before the draw: each lottery team's chance at the first pick, worst record first
   function lotteryOdds() {
@@ -1273,6 +1297,13 @@
     if (lv && lv.dataset.live === "lottery" && info.commish) runLottery();
     if (lv && lv.dataset.live === "practice") { e.preventDefault(); practiceOpen(false); }
     if (lv && lv.dataset.live === "practice-new") { e.preventDefault(); U.confirm("Start the practice draft over?", "It rebuilds the board from the league's keepers and draft order as they stand now.", "Start over", () => practiceOpen(true)); }
+    const hk = e.target.closest("[data-hc-keep]");
+    if (hk && L && seasonOver()) {
+      const pid = hk.dataset.hcKeep, go = new Set(((L.next && L.next.letGo) || []).map(String));
+      if (hk.checked) go.delete(pid); else go.add(pid);
+      L.next = Object.assign({ opened: now(), picks: {} }, L.next || {}, { letGo: [...go] });
+      push();
+    }
     const kt = e.target.closest("[data-kp-team]");
     if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");

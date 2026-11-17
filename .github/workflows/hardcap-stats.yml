@@ -1,4 +1,4 @@
-# Pulls NBA box scores and season lines from ESPN into hardcap/stats.json for Hard Cap, the dynasty league.
+# Pulls NBA box scores, season lines, rosters and contracts from ESPN and Basketball-Reference into hardcap/stats.json. (Hard Cap the app is retired: it is a Draft Lab mode now; this data feeds the NBA hub, Draft Lab and the Big Board.)
 # Runs every morning and late afternoon from October through June (box scores, then a fresh injury report),
 # when the script or this file changes, or by hand.
 name: Hard Cap stats
