@@ -504,7 +504,7 @@
         </section>
         <section class="nl-sec"><h2 class="nl-h">The draft</h2>
           <div class="nl-dr">${pickCards("type", draftTypes(sp).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k], DRAFTS[k] || ""]), form.type, "Draft format")}
-          ${triviaOk() ? toggle("tvOn", "Trivia draft", `On the clock, answer an easy ${{ nfl: "football", nba: "basketball", mlb: "baseball" }[sp.key] || "sports"} question first: four choices, 15 seconds. Miss it and your pick moves to the end of the round`, form.tvOn) : ""}
+          ${triviaOk() ? toggle("tvOn", "Trivia draft", `On the clock, answer an easy ${{ nfl: "football", nba: "basketball", mlb: "baseball", cbb: "college basketball", cfb: "college football" }[sp.key] || "sports"} question first: four choices, 15 seconds. Miss it and your pick moves to the end of the round`, form.tvOn) : ""}
           ${!rlOk() && rlPick() && collegeOnly() ? `<p class="fl-h">Team roulette needs ${RL_SCHOOLS} schools or fewer. ${slateOn() ? "Pick fewer games" : "Narrow the player pool to a conference or two in Fine-tune"} to turn it on.</p>` : ""}
           ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.college ? "school" : `${sp.league} team`} you have to draft from`, form.rlOn,
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
@@ -642,8 +642,8 @@
   const rlSchools = () => { if (slateOn()) { const sl = curSlate(); return sl ? sl.teams.length : Infinity; } const t = confTeams(); return t ? t.length : Infinity; };
   const rlPick = () => ["snake", "linear", "3rr"].includes(form.type) && !showdown();
   const rlOk = () => rlPick() && (!collegeOnly() || rlSchools() <= RL_SCHOOLS);
-  // a trivia draft: a draft that goes pick by pick, in a sport with a question bank (football, basketball, baseball)
-  const triviaOk = () => ["nfl", "nba", "mlb"].includes(form.sport) && ["snake", "linear", "3rr"].includes(form.type);
+  // a trivia draft: a draft that goes pick by pick, in a sport with a question bank (every sport but hockey)
+  const triviaOk = () => ["nfl", "nba", "mlb", "cbb", "cfb"].includes(form.sport) && ["snake", "linear", "3rr"].includes(form.type);
   const trivia = () => triviaOk() && !!form.tvOn;
   const seasonsFor = (sp) => SEASONS[scoringType(sp)];
   // the fine-tune list: [key, title, what it covers, current value, body]
