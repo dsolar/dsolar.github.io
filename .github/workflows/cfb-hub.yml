@@ -1,0 +1,65 @@
+name: College football hub
+on:
+  schedule:
+    - cron: "41 4,11,18 * * *"
+    - cron: "11,41 16-23 * * 6"
+  push:
+    branches: [main]
+    paths:
+      - cfb/*.html
+      - cfb/*.js
+      - cfb/*.css
+      - tools/cfb_build.py
+      - tools/cfb_extras.py
+      - tests/cfb*
+      - .github/workflows/cfb-hub.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: college-football-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build current college football data
+        run: python3 tools/cfb_build.py
+      - name: Ratings, lines, Heisman ladder and the season simulation
+        if: hashFiles('tools/cfb_extras.py') != ''
+        run: python3 tools/cfb_extras.py
+      - name: Check JavaScript
+        if: hashFiles('cfb/app.js') != ''
+        run: |
+          node --check cfb/model.js
+          node --check cfb/app.js
+          node --check assets/hubswitch.js
+          node --check assets/projects.js
+      - name: Verify calculations and actual data
+        if: hashFiles('tests/cfb-model.test.cjs') != ''
+        run: node --test tests/cfb-model.test.cjs
+      - name: Install DOM test dependency
+        if: hashFiles('tests/cfb-ui.test.cjs') != ''
+        run: npm install --no-package-lock --no-save --prefix "$RUNNER_TEMP/cfb-qa" jsdom@26.1.0
+      - name: Check navigation, filters and player cards
+        if: hashFiles('tests/cfb-ui.test.cjs') != ''
+        env:
+          NODE_PATH: ${{ runner.temp }}/cfb-qa/node_modules
+        run: node --test tests/cfb-ui.test.cjs
+      - name: Save current college football snapshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cfb/data
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "Update college football ratings, lines and playoff odds"
+          git pull --rebase
+          git push
