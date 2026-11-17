@@ -578,6 +578,8 @@
       else if (!S.positions(p).includes(st.pos)) return false;
     }
     if (st.team && p.t !== st.team) return false;
+    // college: one conference (the pool file's teams carry each school's)
+    if (st.conf) { const ts = sport.data && sport.data.teams, t = ts && !Array.isArray(ts) ? ts[p.t] : null; if (!t || t.conf !== st.conf) return false; }
     return true;
   }
   // football has no stat groups: the position itself picks the columns (a TE filter drops passing and rushing)

@@ -107,6 +107,8 @@
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
+  // the power conferences first in a college conference list, then the rest A to Z
+  const RANK_POWERS = { cbb: ["ACC", "Big Ten", "Big 12", "SEC", "Big East"], cfb: ["SEC", "Big Ten", "Big 12", "ACC"] };
   const rlFits = (c) => ["snake", "linear", "3rr"].includes(c.type);
   const sdOn = (c) => c.sport === "nfl" && !!c.sd;
   // Hard Cap (sports.js): real contracts under a salary line, NBA and NHL, drafted in turn
@@ -441,7 +443,13 @@
       { k: "dyn", label: "Outlook", cls: "r num", hide: "s", title: "How age moves his value over the next five seasons: above 1 he's still climbing, below 1 he's fading", sort: (p) => p.dyn || 1, html: (p) => (p.dyn && p.dyn !== 1 ? `<span class="${p.dyn > 1 ? "win" : "loss"}">&times;${p.dyn.toFixed(2)}</span>` : `<span class="ps">&times;1</span>`) },
     ] : [];
     const cols = U.poolColumns(sp, { players: P.players, group: U.groupOf(sp, rank.f), scoring: P.scoring, extra });
-    const teams = [...new Set(P.players.map((p) => p.t))].sort();
+    // college: a conference picker, and the school list narrows to it (by school name, not the abbreviation)
+    const tinfo = (sp.college && sp.data && sp.data.teams && !Array.isArray(sp.data.teams)) ? sp.data.teams : null;
+    const confs = tinfo ? [...new Set(P.players.map((p) => tinfo[p.t] && tinfo[p.t].conf).filter(Boolean))].sort((a, b) => ((RANK_POWERS[sp.key] || []).indexOf(a) + 1 || 99) - ((RANK_POWERS[sp.key] || []).indexOf(b) + 1 || 99) || a.localeCompare(b)) : [];
+    if (rank.f.conf && !confs.includes(rank.f.conf)) rank.f.conf = "";
+    const tname = (t) => (tinfo && tinfo[t] && tinfo[t].n) || t;
+    const teams = [...new Set(P.players.filter((p) => !rank.f.conf || (tinfo[p.t] && tinfo[p.t].conf === rank.f.conf)).map((p) => p.t))].sort((a, b) => tname(a).localeCompare(tname(b)));
+    if (rank.f.team && !teams.includes(rank.f.team)) rank.f.team = "";
     const rows = U.sortRows(P.players.filter((p) => U.passes(sp, p, rank.f)), cols, rank.sort);
     const mine = rank.mode === "board", B = U.board.of(sp.key, P.players);
     // signed in, the board comes from your account: redraw once if another device changed it
@@ -455,7 +463,7 @@
         ${U.viewSelect(sp, "r-statv")}${U.setSwitch(sp)}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
         <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "nhl" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
-      <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
+      <div class="tools">${U.search(rank.f)}${confs.length ? `<label class="sr" for="fk-conf">Conference</label><select id="fk-conf" class="${rank.f.conf ? "set" : ""}"><option value="">All conferences</option>${confs.map((x) => opt(x, x, rank.f.conf || "")).join("")}</select>` : ""}<label class="sr" for="fk-team">${tinfo ? "School" : `${esc(sp.league)} team`}</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">${tinfo ? (rank.f.conf ? `All ${esc(rank.f.conf)} schools` : "All schools") : `All ${esc(sp.league)} teams`}</option>${teams.map((t) => opt(t, tname(t), rank.f.team)).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
       ${rank.mode === "prospects" ? (sp.key === "mlb" ? await mlbProspectsView(sp, P) : await prospectsView(sp)) : mine ? myBoard(sp, P, B) : U.table({ cols, rows, sort: rank.sort, dense: true, limit: 300, rowAttr: (p) => `data-player="${esc(p.id)}"`, empty: "No one matches." })}
       <p class="ps">${rank.dyn ? "Dynasty: each player's value over the next five seasons, from an age curve for his position, blended with outside dynasty consensus where it ranks him. " : ""}${await freshness(sp)}${sp.data.lines && sp.data.lines.pbat ? `Values come from ${esc(sp.data.lines.pbat.label.replace(/, batting$/, ""))} projections from FanGraphs; the stat columns show last season. ` : ""}${sp.market ? `ESPN and ESPN $ are ESPN's rank and the average price in real ESPN auctions, for comparison. ` : ""}Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
     if (rank.focus) { const f = $(rank.focus, app); rank.focus = null; if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); } }
@@ -514,6 +522,7 @@
       else if (id === "r-statv") U.setView(sp, e.target.value);
       else if (id === "fk-pos") rank.f.pos = e.target.value;
       else if (id === "fk-team") rank.f.team = e.target.value;
+      else if (id === "fk-conf") { rank.f.conf = e.target.value; rank.f.team = ""; }
       else return;
       rankingsPage();
     };
