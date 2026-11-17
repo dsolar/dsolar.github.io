@@ -43,6 +43,7 @@
     const v = await C.rpc("fk_view", { p_id: l.id, p_since: null }).catch(() => null);
     const D = v && v.draft, L = v && v.league, me = v && v.me;
     if (!L || me == null || !L.schedule || ["guillotine", "roto", "total"].includes(L.settings.format)) return null;
+    if (FK.league.totalWeeks && L.week > FK.league.totalWeeks(L)) return null;
     const k = l.sport;
     files[k] = files[k] || Promise.all([json(`data/${k}.json`), json(`data/weeks-${k}.json`), C.live ? C.live(k).catch(() => null) : null]);
     const [data, weeks0, live] = await files[k];
@@ -76,7 +77,8 @@
     el.innerHTML = `<div class="sec-h"><div><h2>Your leagues</h2><p>This week's matchups, live while games are on.</p></div><a href="${KIT}leagues.html">All your leagues &rarr;</a></div>
       <div class="ym">${list.map((l) => `<a class="ym-c" href="${KIT}play.html?id=${encodeURIComponent(l.id)}" data-ym="${esc(l.id)}">${icon(l.sport)}<span class="ym-m"><b>${esc(l.name)}</b><small>${esc(statusOf(l))}</small><span class="ym-s" data-ys></span></span></a>`).join("")}</div>`;
     el.hidden = false;
-    const scored = list.filter((l) => l.phase === "season" && l.card && l.card.format !== "guillotine").slice(0, MAX_SCORED);
+    // leagues still playing (a finished season shows its finish, not its last matchup)
+    const scored = list.filter((l) => l.phase === "season" && l.card && l.card.format !== "guillotine" && !/^(Finished|Season over)/.test(statusOf(l))).slice(0, MAX_SCORED);
     if (!scored.length) return;
     try { for (const f of ["draft.js", "rules.js", "league.js", "season.js"]) await need(f); } catch (e) { return; }
     for (const l of scored) {
