@@ -5,6 +5,21 @@
   var root = new URL("../", script.src).pathname;
   var bar = document.querySelector("[data-ds-navigation]");
   if (!bar) return;
+  // Draft Lab (fantasy/, fantasy-kit/) has its own header, with a small link home and the account button in it
+  // (fantasy-kit/ui.js shell, fantasy/hub.js): no site bar there, just the site's account, drawn into that header's
+  // #ds-account slot whenever the header renders an empty one
+  if (bar.hasAttribute("data-ds-own")) {
+    document.documentElement.style.setProperty("--ds-navigation-height", "0px");
+    document.body.classList.add("ds-own-header");
+    var own = function () { var slot = document.getElementById("ds-account"); if (slot && !slot.firstElementChild) window.dispatchEvent(new Event("dsolar:nav-render")); };
+    var queued = false;
+    new MutationObserver(function () { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; own(); }); }).observe(document.body, { childList: true, subtree: true });
+    if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
+      var a0 = document.createElement("script"); a0.src = new URL("../", script.src).pathname + "assets/account.js?v=20261117-own"; a0.defer = true;
+      a0.onload = own; document.head.appendChild(a0);
+    } else own();
+    return;
+  }
   var esc = function (s) {
     return String(s).replace(/[&<>"']/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];

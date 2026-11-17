@@ -2641,3 +2641,12 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .hc-bar{background:var(--card,transparent)}
 .hc-bar.over{border-color:var(--loss,#c0392b)}
 .wrap.page>.hc-bar{margin:10px 0}
+/* Draft Lab's header is the page's only header: a small David Solar mark back to the main site, then the brand */
+.fk-site{display:inline-flex;align-items:center;flex:none;opacity:.8;margin-right:-2px;padding:4px 10px 4px 0;border-right:1px solid rgba(255,255,255,.18)}
+.fk-site:hover,.fk-site:focus-visible{opacity:1}
+.fk-site img{width:26px;height:26px;display:block}
+.fk-who .ds-account{margin-left:2px}
+@media (max-width:760px){.fk-site{padding-right:8px}.fk-site img{width:22px;height:22px}}
+.lgm-brand{display:flex;align-items:center;gap:10px}
+.lgm-brand .fk-site img{width:20px;height:20px}
+@media (max-width:760px){.lgm:not(.slim) .lgm-brand .fk-site{border-right:0;padding-right:0}}

@@ -183,9 +183,10 @@
         return '<a href="' + h + '"' + (t[0] === "home" ? ' aria-current="page"' : "") + ">" + esc(t[1]) + "</a>";
       };
       el.insertAdjacentHTML("beforebegin", '<header class="fk-top hub-top"><div class="fk-mast fk-band inline"><div class="wrap">' +
+        '<a class="fk-site" href="' + ROOT + '" title="davidsolar.dev" aria-label="David Solar, home"><img src="' + ROOT + 'assets/nav-mark.svg" alt="" width="26" height="26"></a>' +
         '<a class="fk-brand" href="' + ROOT + 'fantasy/"><img src="' + KIT + 'mark.svg" alt=""><b class="disp">Draft Lab</b></a>' +
         '<nav class="mast-nav" aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav>" + (N.findHtml ? N.findHtml(KIT) : "") +
-        '<div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark</button></div></div></div></header>');
+        '<div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark</button><div class="ds-account" id="ds-account"></div></div></div></div></header>');
     }
     // the sport row rides in the sticky header, so it stays put under the masthead
     var top = $(".hub-top"); if (top && el.parentNode !== top) top.appendChild(el);
@@ -430,7 +431,7 @@
     var el = $("[data-yours]"); if (!el) return;
     var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
     if (!on) return;
-    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171331-ui4";
+    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171340";
     s.onload = function () { if (window.FK && window.FK.home) window.FK.home.mount(el); };
     document.head.appendChild(s);
   }
