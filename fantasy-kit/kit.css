@@ -2671,3 +2671,4 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .pc-tbl th:first-child,.pc-tbl td:first-child{padding-left:0}
 .pc-h .pc-logo{width:44px;height:44px;margin-right:4px}
 @media (max-width:520px){.pc-h .pc-logo{display:none}}
+.pc-h:has(.pc-logo){padding-right:56px}
