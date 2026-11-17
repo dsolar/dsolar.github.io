@@ -62,7 +62,7 @@ Scoring presets live in `sport.scorings`:
 - **Baseball:** `roto5` and `yoenis`, the Yoenis league's 8x8
 - **Hockey:** `cats10`, `bangers` (hits and blocks added), and `points`, plus custom scoring. Category leagues default to three goalie appearances per week; a team below its configured minimum loses goalie categories. Daily and weekly starters lock at their own game times. A goalie cannot fill a skater UTIL slot.
 
-For an existing shared backend, apply `tools/fantasykit_nhl.sql` once to extend the sport allowlist. Deploy `fk-live` with both `index.ts` and `nhl.mjs`, preserving its existing JWT setting. The Fantasy Kit workflow refreshes hockey player pools and scoring; the NHL hub workflow refreshes fantasy contracts after its own daily build. No paid contract key is needed.
+For an existing shared backend, apply `tools/fantasykit_nhl.sql` once to extend the sport allowlist. `fk-live` (and every function under `supabase/functions/`) deploys itself: a push to main that changes a function's folder runs `.github/workflows/supabase-functions.yml`, which deploys that function from the repo with `--no-verify-jwt`, so commit function changes rather than deploying them by hand (a hand deploy is overwritten by the next push, and a hand deploy of an old copy undoes someone else's work). The Fantasy Kit workflow refreshes hockey player pools and scoring; the NHL hub workflow refreshes fantasy contracts after its own daily build. No paid contract key is needed.
 
 To add a preset, add an entry. A category is one of three kinds:
 
