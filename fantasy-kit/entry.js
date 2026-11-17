@@ -13,10 +13,14 @@
   const { sports: S, draft: F, ui: U } = window.FK;
   const { esc, $ } = U;
   const fm = (x) => (Math.round(x * 10) / 10).toFixed(1);
-  const wk = (p) => (p ? (p.v || 0) / 17 : 0);
+  // a player's value is on a season scale (value.js): one game, or one week, is v over the scoring's games (17 for a
+  // football season, 72 or 31 for basketball's per-game scoring)
+  let GAMES = 17;
+  const wk = (p) => (p ? (p.v || 0) / GAMES : 0);
 
   function entryRoom(opts) {
     const { el, sport } = opts;
+    { const sc0 = sport && sport.scorings ? sport.scorings[opts.draft().scoring] || sport.scorings.custom || Object.values(sport.scorings)[0] : null; GAMES = (sc0 && sc0.games) || 17; }
     const D = () => opts.draft(), me = () => (opts.me ? opts.me() : null), now = () => (opts.now ? opts.now() : Date.now());
     const cap = () => !!D().cap;
     const ui = { q: "", pos: "", sort: cap() ? "price" : "rank", right: false, entry: null, saved: null, loaded: false, busy: false, why: "" };
