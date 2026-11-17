@@ -60,7 +60,7 @@
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
     // the ladder: challenge teams above you, win and swap rungs (league.js)
-    if (s.ladder && s.format !== "guillotine" && s.format !== "roto" && s.format !== "total") settings.ladder = { reach: Math.max(1, Math.min(3, Number(s.ladder.reach) || 2)) };
+    if (s.ladder && s.format !== "guillotine" && s.format !== "roto" && s.format !== "total") settings.ladder = { reach: Math.max(1, Math.min(3, Number(s.ladder.reach) || 2)), seed: Math.max(0, Math.min(3, Math.floor(Number(s.ladder.seed) || 0))) };
     // the split: the table splits in half after this week (league.js applySplit)
     if (s.split && s.split.after) settings.split = { after: s.split.after, names: Array.isArray(s.split.names) ? s.split.names.slice(0, 2) : undefined };
     // promotion and relegation: which tier of which pyramid (pyramid.js)

@@ -277,6 +277,15 @@ owns which team, the invite code and the save order. It also stamps each team's 
   and football shows a position's own (EPA/dropback and CPOE for quarterbacks, target share and aDOT for receivers)
   once one is picked. A rate stat ranks only with a quarter of the pool's most volume (per-game lines count games too);
   below that it shows grayed and sorts last. Player cards add an Advanced section with his values this season.
+  League setup asks Categories or Points first. Categories opens the picker in place: Start-from cards (the sport's
+  own sets by a plain name, plus the presets) and the categories in three groups, Stats, Combos (two or more stats
+  added together, `c.combo`, worked out in `catCatalog`) and Advanced. A set stays its preset key until a category is
+  changed, then the league keeps its own list (`cc`). An auction's budget is any amount (`form.aBudget`, $200 default).
+- **Ladder seeding** (`settings.ladder.seed`, 0 to 3, default 2 in setup): the first weeks are a free-for-all with no
+  challenges; the ladder follows the running total (points, or each week's roto points in a category league) and is
+  set after the last seeding week. With no seeding it starts from the draft order upside down, or a random order after
+  an auction.
+- **Your leagues** groups by sport once you're in more than one, with a chip per sport (the pick sticks per browser).
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
   after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the
   taxi squad (`settings.prospects`, at least that many taxi spots, keeper leagues included). The pool rides with the

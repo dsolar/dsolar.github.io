@@ -1157,6 +1157,10 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .lg-band h1{margin:0 !important}
 .su{width:100%}
 .su .lgl{margin-top:14px}
+.su .lg-sports{margin-top:16px}
+.su .lg-sports .ps{font-weight:700;margin-left:2px}
+.su .lg-grp{display:flex;align-items:center;gap:8px;margin:22px 0 0;font-size:15px;font-weight:800}
+.su .lg-grp svg{width:20px;height:20px}
 .lg-band p{margin:0 0 10px !important}
 .lg-band+.card{margin-top:14px}
 .lg-sp{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;color:#fff;background:#1E6631}

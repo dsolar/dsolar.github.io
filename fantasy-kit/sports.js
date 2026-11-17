@@ -547,10 +547,15 @@
   };
   // Every category a custom league can pick: the presets' and the extras. With data attached, only the ones its
   // columns can make.
+  // Combos: two or more stats added together (PTS+REB+AST, R+RBI, HIT+BLK, scrimmage yards), a group of their own in
+  // the pickers. A category is one when its name adds stats up, or it's one of football's yardage totals.
+  const COMBO_KEYS = new Set(["scrim", "tot_yd"]);
+  const isCombo = (c) => !c.adv && (/[A-Za-z]\+[A-Za-z]/.test(c.label) || COMBO_KEYS.has(c.k));
   function catCatalog(sport, o = {}) {
     const seen = new Map();
     for (const sc of Object.values(ALL[sport.key].scorings)) if (sc.type === "cats") for (const c of sc.cats) if (!seen.has(c.k)) seen.set(c.k, c);
     for (const c of EXTRA_CATS[sport.key] || []) if (!seen.has(c.k)) seen.set(c.k, c);
+    for (const c of seen.values()) if (c.combo == null) c.combo = isCombo(c);
     return [...seen.values()].filter((c) => o.all || catOk(sport, c));
   }
   function customScoring(sport, spec) {

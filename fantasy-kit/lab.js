@@ -202,7 +202,7 @@
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
           <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
               auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (dsl ? dsl.lineup.lineup.length + dsl.lineup.bench : sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
-            ${auction ? K.fld("Budget per team", K.seg("budget", [100, 200, 260, 300, 1000].map((x) => [x, `$${x}`]), c.budget, "Budget per team", { wrap: true })) : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
+            ${auction ? K.fld("Budget per team", `<div class="row" style="flex-wrap:wrap">${K.numIn("budget", c.budget, { pre: "$", min: 10, max: 100000, label: "Budget per team" })}<span class="qk">${[100, 200, 260, 1000].map((x) => `<button type="button" data-bset="${x}" aria-pressed="${x === c.budget}">$${x}</button>`).join("")}</span></div>`, "Any amount, the same for every team.") : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
           <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div><div></div></div>
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
           ${elephant ? window.FK.setup.elephantFields(c, (sport.scorings[scoring] || {}).type === "points") : ""}
@@ -250,6 +250,7 @@
       const k = el.dataset.f, v = el.type === "checkbox" ? (el.checked ? 1 : 0) : el.value;
       cfg[k] = NUM.test(k) ? Number(v) : v;
     });
+    if (!(cfg.budget >= 10)) cfg.budget = 200;
     const nm = $("#s-name"); if (nm) cfg.name = nm.value;
     // a time bank: the bank's own control picks how big
     const bk = root.querySelector("input[data-f=bank]:checked");
@@ -278,6 +279,8 @@
         cfg[st.dataset.stp] = vals[Math.min(vals.length - 1, Math.max(0, vals.indexOf(Number(inp.value)) + Number(st.dataset.d)))];
         save(`#${st.id}`); return;
       }
+      const bs = e.target.closest("[data-bset]");
+      if (bs) { setupGrab(); cfg.budget = Number(bs.dataset.bset); save(`[data-bset="${bs.dataset.bset}"]`); return; }
       const row = e.target.closest("[data-row]");
       if (row) { setupGrab(); open[row.dataset.row] = !open[row.dataset.row]; save(`[data-row="${row.dataset.row}"]`); return; }
       if (e.target.closest("[data-dayretry]")) { setupGrab(); daySched = null; dayAsked = false; save(); return; }
