@@ -362,10 +362,18 @@ def main():
         players_old = {}
     pool, perr = {}, None
     try:
-        page, pages = 1, 1
-        while page <= pages and page <= 14:
-            rows, pg = parse_byathlete(get(f"{W}/common/v3/sports/football/college-football/statistics/byathlete?{Q}&isqualified=false&limit=1000&page={page}&sort=passing.passingYards:desc&season={year}&seasontype=2", 60), teams)
-            pool.update(rows); pages = int(pg.get("pages") or 1); page += 1
+        # The feed only fills the category asked for, so each category is its own request (merged by player).
+        for cat, sort, cap in (("offense:passing", "passing.passingYards", 2), ("offense:rushing", "rushing.rushingYards", 3),
+                               ("offense:receiving", "receiving.receivingYards", 3), ("defense", "defensive.totalTackles", 4)):
+            page, pages = 1, 1
+            while page <= pages and page <= cap:
+                rows, pg = parse_byathlete(get(f"{W}/common/v3/sports/football/college-football/statistics/byathlete?{Q}&isqualified=false&limit=1000&page={page}&category={cat}&sort={sort}:desc&season={year}&seasontype=2", 60), teams)
+                for k, r in rows.items():
+                    if k in pool:
+                        pool[k]["s"].update(r["s"])
+                    else:
+                        pool[k] = r
+                pages = int(pg.get("pages") or 1); page += 1
         pool = {k: p for k, p in pool.items() if involved(p)}
         if len(pool) < 1500:
             raise ValueError(f"Only {len(pool)} players with a season line")
