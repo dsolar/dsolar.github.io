@@ -1,12 +1,10 @@
 {
- "ok": false,
- "problems": [
-  "market-nba.json: fp failed, using numbers 0.0 days old"
- ],
+ "ok": true,
+ "problems": [],
  "files": {
   "nfl.json": {
    "players": 577,
-   "updated": "2026-11-17T19:52:36+00:00",
+   "updated": "2026-11-17T20:03:47+00:00",
    "lines": [
     "tot",
     "proj",
@@ -24,7 +22,7 @@
   },
   "mlb.json": {
    "players": 1331,
-   "updated": "2026-11-17T19:52:36+00:00",
+   "updated": "2026-11-17T20:03:47+00:00",
    "lines": [
     "bat",
     "pit",
@@ -34,7 +32,7 @@
   },
   "nhl.json": {
    "players": 881,
-   "updated": "2026-11-17T19:53:03.636Z",
+   "updated": "2026-11-17T20:04:07.639Z",
    "lines": [
     "sk",
     "goalie",
@@ -44,47 +42,46 @@
   },
   "nfl-idp.json": {
    "players": 551,
-   "updated": "2026-11-17T19:52:36+00:00"
+   "updated": "2026-11-17T20:03:47+00:00"
   },
   "dynasty-nfl.json": {
    "players": 394,
-   "updated": "2026-11-17T19:53:05+00:00"
+   "updated": "2026-11-17T20:04:10+00:00"
   },
   "dynasty-nba.json": {
    "players": 359,
-   "updated": "2026-11-17T19:13:46+00:00"
+   "updated": "2026-11-17T20:04:10+00:00"
   },
   "dynasty-mlb.json": {
    "players": 1195,
-   "updated": "2026-11-17T19:53:05+00:00"
+   "updated": "2026-11-17T20:04:10+00:00"
   },
   "market-nfl.json": {
    "players": 575,
-   "updated": "2026-11-17T19:53:16+00:00",
+   "updated": "2026-11-17T20:04:21+00:00",
    "fp": {
     "ok": true,
-    "at": "2026-11-17T19:53:16+00:00"
+    "at": "2026-11-17T20:04:21+00:00"
    },
    "tr": {
     "ok": true,
-    "at": "2026-11-17T19:53:16+00:00"
+    "at": "2026-11-17T20:04:21+00:00"
    }
   },
   "market-nba.json": {
    "players": 614,
-   "updated": "2026-11-17T19:53:16+00:00",
+   "updated": "2026-11-17T20:04:21+00:00",
    "fp": {
-    "ok": false,
-    "at": "2026-11-17T19:13:59+00:00",
-    "failed": "2026-11-17T19:53:16+00:00"
+    "ok": true,
+    "at": "2026-11-17T20:04:21+00:00"
    }
   },
   "market-mlb.json": {
    "players": 1194,
-   "updated": "2026-11-17T19:53:16+00:00",
+   "updated": "2026-11-17T20:04:21+00:00",
    "fp": {
     "ok": true,
-    "at": "2026-11-17T19:53:16+00:00"
+    "at": "2026-11-17T20:04:21+00:00"
    }
   },
   "draft/nfl.json": {
