@@ -116,7 +116,17 @@ def get(url):
 
 
 # ---------- NBA ----------
-NBA_COLS = ["gp", "eg", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "ast", "stl", "blk", "tov"]
+# new columns on the end, for the extra categories: offensive and defensive rebounds, fouls, 3-pointers tried, plus/minus,
+# double-doubles and triple-doubles (Hard Cap's file has them; defensive rebounds are total minus offensive)
+NBA_COLS = ["gp", "eg", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "ast", "stl", "blk", "tov", "oreb", "dreb", "pf", "tpa", "pm", "dd", "td"]
+
+
+def hc_val(arr, ix, c):
+    """One column of a Hard Cap line, by name; 0 for a column an older line doesn't have."""
+    if c == "dreb":
+        return hc_val(arr, ix, "reb") - hc_val(arr, ix, "oreb")
+    i = ix.get(c)
+    return (arr[i] or 0) if arr and i is not None and i < len(arr) else 0
 LETTER_POS = {"G": ["PG", "SG"], "F": ["SF", "PF"], "C": ["C"]}
 
 
@@ -148,8 +158,8 @@ def nba():
             if c == "eg":                     # effective games: this season plus last season's weight
                 line.append(ga + k)
                 continue
-            va = a[ix[c]] if a else 0
-            vb = b[ix[c]] if b else 0
+            va = hc_val(a, ix, c)
+            vb = hc_val(b, ix, c)
             line.append(round((va * ga + vb * k) / (ga + k), 2))
         p = bio.get(pid, {})
         nm = (names.get(pid) or [p.get("n") or pid.replace("-", " ").title()])[0]
@@ -194,7 +204,8 @@ def sleeper_nba(out):
             continue
         g = lambda k: round(float(st.get(k) or 0), 2)
         vals = {"gp": 0, "eg": 0, "min": round(float(st.get("sp") or 0) / 60, 1), "fgm": g("fgm"), "fga": g("fga"), "ftm": g("ftm"), "fta": g("fta"),
-                "tpm": g("tpm"), "pts": g("pts"), "reb": g("reb"), "ast": g("ast"), "stl": g("stl"), "blk": g("blk"), "tov": g("to")}
+                "tpm": g("tpm"), "pts": g("pts"), "reb": g("reb"), "ast": g("ast"), "stl": g("stl"), "blk": g("blk"), "tov": g("to"),
+                "oreb": g("oreb"), "dreb": g("dreb") or round(g("reb") - g("oreb"), 2), "pf": g("pf"), "tpa": g("tpa"), "pm": g("pm"), "dd": g("dd"), "td": g("td")}
         row["l"]["ppg"] = [vals[c] for c in NBA_COLS]
         if not row.get("age") and pl.get("birth_date"):
             a = age_on(pl["birth_date"])
@@ -230,7 +241,7 @@ def nba_weeks():
         out = {}
         for pid, v in lines.items():
             g = v[ix["gp"]]
-            out[pid] = [g, g] + [round(v[ix[c]], 1) if c in ix else 0 for c in NBA_COLS[2:]]
+            out[pid] = [g, g] + [round(hc_val(v, ix, c), 1) for c in NBA_COLS[2:]]
         weeks[k] = {"start": start.isoformat(), "end": end.isoformat(),
                     "final": bool(upd and last and last >= end and upd >= after_night(end)), "lines": out}
     write_weeks("nba", {"sport": "nba", "season": season_label(st), "updated": st.get("updated") or NOW,
@@ -636,7 +647,10 @@ def mlb_weeks():
 
 # ---------- NFL ----------
 NFL_COLS = ["g", "pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", "rush_td", "rec", "rec_tgt", "rec_yd", "rec_td", "fum_lost",
-            "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr"]
+            "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr",
+            # Sleeper's stat keys, on the end, for the extra categories and custom points
+            "pass_att", "pass_cmp", "pass_fd", "rush_fd", "rec_fd", "pass_2pt", "rush_2pt", "rec_2pt", "fum", "fgm_50p", "xpmiss",
+            "fum_rec", "fum_force", "safe", "def_st_td", "yds_allow"]
 PROJ_COLS = ["pts_std", "pts_half_ppr", "pts_ppr"]
 NFL_POS = ["QB", "RB", "WR", "TE", "K", "DEF"]
 POS_Q = "".join(f"&position%5B%5D={p}" for p in NFL_POS)
@@ -807,7 +821,8 @@ def nfl_weeks(season, state):
         sep1 = date(season, 9, 1)
         tue1 = sep1 + timedelta(days=(0 - sep1.weekday()) % 7 + 1)   # the Tuesday after Labor Day
     old = load("fantasy-kit/data/weeks-nfl.json") or {}
-    weeks = old.get("weeks", {}) if str(old.get("season")) == str(season) else {}
+    # new columns: fetch every week again
+    weeks = old.get("weeks", {}) if str(old.get("season")) == str(season) and old.get("cols") == NFL_COLS else {}
     now = datetime.now(timezone.utc)
     for w in range(1, min(cur, 18) + 1):
         k = str(w)

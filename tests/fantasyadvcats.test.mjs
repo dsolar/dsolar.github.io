@@ -83,3 +83,28 @@ test('rotisserie with K/9 and ISO: season totals from the parts, scaled', () => 
   assert.ok(Math.abs(st[0].vals.k9 - want) < 1e-9, 'season K/9 is nine times all strikeouts over all innings');
   assert.ok(st[0].vals.k9 > 4 && st[0].vals.k9 < 16, `a believable K/9 (${st[0].vals.k9.toFixed(2)})`);
 });
+
+test('football category leagues: a custom set scores week by week, with per-game simulated weeks', () => {
+  const spec = { type: 'cats', cats: ['pass_yd', 'pass_td', 'pass_int', 'rush_yd', 'rec', 'skill_td', 'ypc', 'catch', 'scrim'] };
+  const s = league('nfl', { format: 'h2h', tally: 'cats', weeks: 3, playoffTeams: 0 }, spec);
+  const sc = G.scoring(s.L, s.ctx);
+  assert.equal(sc.type, 'cats');
+  assert.deepEqual(sc.cats.map((c) => c.k), spec.cats);
+  assert.ok(s.players.every((p) => Number.isFinite(p.v)));
+  const x = G.teamWeek(s.L, s.ctx, 0, 1, 1);
+  assert.ok(x.cats.pass_yd > 100 && x.cats.pass_yd < 500, `one quarterback's week of passing (${Math.round(x.cats.pass_yd)})`);
+  assert.ok(x.cats.ypc > 2 && x.cats.ypc < 8, `a believable yards per carry (${x.cats.ypc.toFixed(2)})`);
+  Z.catchUp(s.L, s.ctx, s.L.start + 3 * WEEK + 1);
+  const g = s.L.results[1][0];
+  assert.equal(g.sa + g.sb + g.ties, 9, 'nine categories decided the game');
+});
+
+test('every sport can pick categories and put a value on many more stats', () => {
+  for (const k of ['nba', 'nfl', 'mlb', 'nhl']) {
+    const all = S.catCatalog(S.ALL[k]);
+    assert.ok(all.length >= 25, `${k}: ${all.length} categories`);
+    assert.ok(all.filter((c) => c.adv).length >= 5, `${k}: advanced ones`);
+    assert.equal(new Set(all.map((c) => c.k)).size, all.length, `${k}: no repeated keys`);
+    assert.ok(S.POINT_STATS[k].length >= 18, `${k}: ${S.POINT_STATS[k].length} stats to value`);
+  }
+});

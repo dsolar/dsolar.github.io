@@ -644,7 +644,9 @@
     const out = {};
     for (const [line, def] of Object.entries(ctx.sport.data.lines)) {
       if (!p.l[line] || wk[line] == null) continue;
-      const f = wk[line] * form * frac;
+      // football's line is the season so far: a week is one game of it
+      const g = ctx.sport.key === "nfl" ? S.stat(ctx.sport, p, line, "g") || 0 : 0;
+      const f = ctx.sport.key === "nfl" ? (g > 0 ? form * frac / g : 0) : wk[line] * form * frac;
       const base = ctx.sport.key === "nhl" && V.rateLine ? V.rateLine(ctx.sport, p, line) : p.l[line];
       out[line] = def.cols.map((c, i) => (/^(avg|obp|ops|era|whip|fg|ft|gaa|svp)$/.test(c) ? base[i] : base[i] * f));
     }

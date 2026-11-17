@@ -46,7 +46,9 @@ BBREF = "https://www.basketball-reference.com/leagues/NBA_{season}_advanced.html
 TEAM = {"GS": "GSW", "NY": "NYK", "SA": "SAS", "NO": "NOP", "UTAH": "UTA", "WSH": "WAS", "BKN": "BRK", "CHA": "CHO",
         "PHX": "PHO"}
 # Order of the numbers in every weekly line and every per-game line.
-COLS = ["gp", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "oreb", "ast", "stl", "blk", "tov", "pf"]
+# New columns go on the end (Hard Cap's engine reads the first fifteen by position): 3-pointers tried, plus/minus,
+# double-doubles and triple-doubles, for the Fantasy Kit's extra categories.
+COLS = ["gp", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "oreb", "ast", "stl", "blk", "tov", "pf", "tpa", "pm", "dd", "td"]
 MAX_GAMES_PER_RUN = 140          # keeps a cold start polite; the next run picks up the rest
 
 
@@ -137,12 +139,14 @@ def box_lines(summary, notes):
                 if mins <= 0:
                     continue
                 fgm, fga = made_att(g("FG"))
-                tpm, _ = made_att(g("3PT"))
+                tpm, tpa = made_att(g("3PT"))
                 ftm, fta = made_att(g("FT"))
                 reb = num(g("REB"))
                 oreb = num(g("OREB"))
-                line = [1, round(mins, 1), fgm, fga, ftm, fta, tpm, num(g("PTS")), reb, oreb, num(g("AST")),
-                        num(g("STL")), num(g("BLK")), num(g("TO")), num(g("PF"))]
+                pts, ast, stl, blk = num(g("PTS")), num(g("AST")), num(g("STL")), num(g("BLK"))
+                tens = sum(1 for x in (pts, reb, ast, stl, blk) if x >= 10)
+                line = [1, round(mins, 1), fgm, fga, ftm, fta, tpm, pts, reb, oreb, ast,
+                        stl, blk, num(g("TO")), num(g("PF")), tpa, num(g("+/-")), 1 if tens >= 2 else 0, 1 if tens >= 3 else 0]
                 a = row.get("athlete", {})
                 out[slug(a.get("displayName"))] = [a.get("displayName"), ab, line]
     if not out:
@@ -211,7 +215,9 @@ def pull_avg(season, notes):
                                                r("avgFreeThrowsMade"), r("avgFreeThrowsAttempted"),
                                                r("avgThreePointFieldGoalsMade"), r("avgPoints"), reb,
                                                r("avgOffensiveRebounds"), r("avgAssists"), r("avgSteals"),
-                                               r("avgBlocks"), r("avgTurnovers"), r("avgFouls")]
+                                               r("avgBlocks"), r("avgTurnovers"), r("avgFouls"),
+                                               r("avgThreePointFieldGoalsAttempted"), r("avgPlusMinus") if vals.get("avgPlusMinus") is not None else round(num(vals.get("plusMinus")) / gp, 2),
+                                               round(num(vals.get("doubleDouble")) / gp, 3), round(num(vals.get("tripleDouble")) / gp, 3)]
         page += 1
     if out and all(v[2] == 0 for v in out.values()):
         notes.append(f"avg {season}: field goals made missing; fields seen: {sorted(set(k for c in schema.values() for k in c))[:80]}")
@@ -380,7 +386,7 @@ def main():
 
     # Season lines. Last season's never changes, so it is fetched once.
     for yr in (end - 1, end):
-        if str(yr) in data["avg"] and yr != end:
+        if str(yr) in data["avg"] and yr != end and all(len(v) >= len(COLS) for v in data["avg"][str(yr)].values()):
             continue
         try:
             lines = pull_avg(yr, notes)
@@ -467,6 +473,35 @@ def main():
                 notes.append(f"starts {gid}: {type(e).__name__}: {e}"[:200])
             added += 1
         d += timedelta(days=1)
+
+    # Weeks counted before the newer columns (3PA, plus/minus, double- and triple-doubles): count that week's games
+    # again and swap the week in only once every game came back, so a week is never left half counted. A week that
+    # can't be redone this run keeps its lines, padded with zeros, and is tried again next run.
+    if opener:
+        budget = 300
+        short = sorted((k for k, ls in data["wk"].items() if any(len(v) < len(COLS) for v in ls.values())), key=int)
+        for k in short:
+            gids = [g for g, dd in data["games"].items() if str(week_of(date.fromisoformat(dd), opener)) == k]
+            if not gids or len(gids) > budget:
+                break
+            fresh, ok = {}, True
+            for gid in gids:
+                budget -= 1
+                summary = get_any(SUMMARY, notes, f"recount {gid}", id=gid)
+                lines = box_lines(summary, notes) if summary is not None else None
+                if not lines:
+                    ok = False
+                    break
+                for pid, (pname, team, line) in lines.items():
+                    cur = fresh.get(pid) or [0] * len(COLS)
+                    fresh[pid] = [round(a + b, 1) for a, b in zip(cur, line)]
+            if ok and fresh:
+                data["wk"][k] = fresh
+                notes.append(f"recounted week {k} with the new columns ({len(gids)} games)")
+        for ls in data["wk"].values():
+            for pid, v in ls.items():
+                if len(v) < len(COLS):
+                    ls[pid] = v + [0] * (len(COLS) - len(v))
 
     # Games counted before starters were tracked: fetch them once (a few dozen a run) so starts cover the season
     back = [(g, dd) for g, dd in sorted(data["games"].items(), key=lambda x: x[1]) if g not in data.get("startsGames", {})]

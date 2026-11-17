@@ -66,7 +66,7 @@
     },
     nfl: {
       name: "Football", league: "NFL", season: [901, 107], draft: [801, 905],
-      tag: "Half PPR, PPR, standard or your own points, with position premiums, yardage bonuses and the guillotine front and center.",
+      tag: "Half PPR, PPR, standard, your own points or your own categories, with position premiums, yardage bonuses and the guillotine front and center.",
       blurb: "PPR to custom points, plus the guillotine.",
       presets: [["half", "Half PPR"], ["ppr", "PPR"], ["std", "Standard"]],
       modes: [

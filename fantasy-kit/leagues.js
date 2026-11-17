@@ -407,7 +407,7 @@
     const label = (k) => (oneWeek() && k === "allplay" ? ["Everyone vs. everyone", "Top score wins. Everyone is ranked"] : oneWeek() && k === "h2h" && !cats ? ["Head to head", "Beat the team you're paired with"]
       : cats && k === "h2h" ? ["Most categories", "Head to head: win more categories, win the week"] : cats && k === "h2hcats" ? ["Each category", "Head to head: a 6-4 week counts as 6 wins"] : FORMATS[k]);
     const formats = pickCards("format", formatsFor(sp).filter(formatFits).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format");
-    const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", SC_SUB.cp]], sp.key !== "nfl" ? [["cc", "Custom categories", SC_SUB.cc]] : []);
+    const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", SC_SUB.cp], ["cc", "Custom categories", SC_SUB.cc]]);
     const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"]];
     const rows = ROWS(sp).map(([k, title, sub, value, body]) => {
       const open = !!form.open[k];
@@ -458,7 +458,7 @@
     const sc = form.scoring === "cp" ? "Custom points" : form.scoring === "cc" ? `Custom categories (${(form.cats || []).length})` : (sp.scorings[form.scoring] || Object.values(sp.scorings)[0]).label.replace(/ \(.*\)$/, "");
     const bon = [];
     if (scoringType(sp) === "points") {
-      if (sp.key === "nfl" && form.scoring !== "cp" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
+      if (sp.key === "nfl" && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
       const sm = SX.summary(sxOf(), sp.key); if (sm) bon.push(sm);
     }
     const clock = form.clock >= 3600 ? `${form.clock / 3600} hr` : form.clock >= 60 ? `${form.clock === 90 ? "90 sec" : form.clock / 60 + " min"}` : `${form.clock} sec`;
@@ -577,7 +577,7 @@
     const V = values(sp), gl = form.season === "guillotine", rows = [];
     if (form.kind !== "redraft" && !oneWeek()) rows.push(["carry", form.kind === "dynasty" ? "Dynasty" : "Keepers", form.kind === "dynasty" ? "Rookie draft, taxi squad, future picks" : "How many and what they cost", V.carry, () => carryBody()]);
     if (vampOk() && form.vampOn) rows.push(["vampire", "Vampire", "Who it is and how it bites", V.vampire, () => vampireBody()]);
-    rows.push(["scoring", "Scoring details", sp.key === "nfl" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
+    rows.push(["scoring", "Scoring details", sp.key === "nfl" && form.scoring !== "cc" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
     if (heist()) rows.push(["heist", "Heist", "Shields, steals, jinxes and its clock", V.heist, () => heistBody()]);
     if (!slateOn() && !heist()) rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
     if (!oneWeek()) rows.push(["pool", "Player pool", `Every team, or ${{ mlb: "AL or NL", nfl: "AFC or NFC", nba: "East or West", nhl: "East or West" }[sp.key]} only`, V.pool, () => poolBody(sp)]);
@@ -630,12 +630,12 @@
   // The extras on any points scoring, as the spec sports.js reads: the editor's rows plus football's passing TD control
   function scoringExtras(sp) {
     if (scoringType(sp) !== "points") return null;
-    const ptd = sp.key === "nfl" && form.scoring !== "cp" && form.ptd && form.ptd !== 4 ? { "*": { pass_td: form.ptd - 4 } } : null;
+    const ptd = sp.key === "nfl" && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd && form.ptd !== 4 ? { "*": { pass_td: form.ptd - 4 } } : null;
     return SX.toSpec(sxOf(), sp.key, ptd);
   }
   function extrasFields(sp) {
     if (scoringType(sp) !== "points") return "";
-    const ptd = sp.key === "nfl" && form.scoring !== "cp" ? group("Passing touchdowns", `<div class="tg-x" style="padding:0">${seg("ptd", [[4, "4 pts"], [5, "5 pts"], [6, "6 pts"]], form.ptd, "Passing touchdown points")}</div>`, "Four points is standard.") : "";
+    const ptd = sp.key === "nfl" && form.scoring !== "cp" && form.scoring !== "cc" ? group("Passing touchdowns", `<div class="tg-x" style="padding:0">${seg("ptd", [[4, "4 pts"], [5, "5 pts"], [6, "6 pts"]], form.ptd, "Passing touchdown points")}</div>`, "Four points is standard.") : "";
     return ptd + SX.html(sp, sxOf(), window.FK.setup);
   }
   // Who moves under the extras: worked out after the form draws, from the sport's player file
@@ -666,7 +666,9 @@
     }
     if (form.scoring === "cc") {
       const all = S.catCatalog(sp);
-      const on = form.cats || (form.cats = (Object.values(sp.scorings).find((x) => x.type === "cats") || { cats: [] }).cats.map((c) => c.k));
+      // football has no category preset: start from the usual offensive eight
+      const on = form.cats || (form.cats = sp.key === "nfl" ? ["pass_yd", "pass_td", "pass_int", "rush_yd", "rush_td", "rec", "rec_yd", "rec_td"]
+        : (Object.values(sp.scorings).find((x) => x.type === "cats") || { cats: [] }).cats.map((c) => c.k));
       const chip = (c) => `<button type="button" data-cat="${esc(c.k)}" aria-pressed="${on.includes(c.k)}"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</button>`;
       const std = all.filter((c) => !c.adv), adv = all.filter((c) => c.adv);
       return group(`Categories (${on.length} chosen)`, `<div class="chips presets" role="group" aria-label="Categories">${std.map(chip).join("")}</div>`
