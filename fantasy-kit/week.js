@@ -8,6 +8,7 @@
   const { sports: S, ui: U, cloud: C, slates: SL } = window.FK;
   const { icon, FIELD } = window.FK.setup;
   const { esc, $ } = U;
+  const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
   const theme = U.theme("fk-lab");
   const top = $("#top"), app = $("#app");
   const link = C.fromLink();
@@ -18,10 +19,10 @@
   const nba = () => S.daily(sport);
 
   function header() {
-    top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["leagues", "Your leagues"], ["week", "Quick games"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: "week",
+    top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
+      tabs: N.TABS, tab: "week",
       right: `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
-      hrefOf: (t) => (t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : t === "league" ? "league.html" : "./#" + t) });
+      hrefOf: (t) => N.href(t) });
   }
   const day = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
   const weeks = () => ((data && data.weeks) || []).filter((w) => SL.list(w).length);

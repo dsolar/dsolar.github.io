@@ -4,6 +4,7 @@
   "use strict";
   const { sports: S, value: V, draft: F, ui: U, cloud: C } = window.FK;
   const { esc, $ } = U;
+  const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
   const theme = U.theme("fk-lab");
   const params = new URLSearchParams(location.search);
   const joinId = params.get("join"), joinCode = params.get("code") || "";
@@ -142,10 +143,10 @@
   }
 
   function header() {
-    top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
-      tabs: [["leagues", "Your leagues"], ["week", "Quick games"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["league", "Demo league"]], tab: view === "new" && oneWeek() ? "week" : "leagues",
+    top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
+      tabs: N.TABS, tab: view === "new" && oneWeek() ? "week" : "leagues",
       right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
-      hrefOf: (t) => (t === "leagues" ? "leagues.html" : t === "week" ? "week.html" : t === "league" ? "league.html" : "./#" + t) });
+      hrefOf: (t) => N.href(t) });
   }
   const page = (html) => { app.innerHTML = `<div class="wrap page">${html}</div>`; U.pushBox($("#lg-push")); };
   const fail = (msg) => `<div class="banner loss" role="alert"><b>${esc(msg)}</b></div>`;

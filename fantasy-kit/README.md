@@ -1,5 +1,7 @@
 # Fantasy Kit
 
+**One product, one nav.** Draft Lab is the whole fantasy product: its home page and sport pages live in `fantasy/` (hub.js), and the draft room, leagues and quick games in `fantasy-kit/`. Every page shows the same masthead and sections from `nav.js` (`FK.nav.TABS`: Home, Your leagues, Mock draft, Rankings, Quick games, Demo league; `FK.nav.href`), and the brand goes to the home page (`FK.nav.HOME`, `fantasy/`). The home and sport pages add the sport row below it. Add a section in `nav.js` and in the first-paint headers of `index.html`, `leagues.html` and `week.html`.
+
 The shared parts of every fantasy league page on davidsolar.dev: player data for basketball, football, baseball and hockey, player values, a draft engine, a season engine, and the screens that sit on top of them. The look blends Yahoo and ESPN density for tables with Sleeper polish for matchups, trades and the draft room, in light and dark.
 
 - **Draft Lab** (`index.html`, `lab.js`): mock drafts against bots.

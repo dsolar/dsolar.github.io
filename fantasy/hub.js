@@ -134,15 +134,28 @@
     paint();
   }
 
-  /* ---------- the fantasy bar ---------- */
+  /* ---------- Draft Lab's header, then the sport pages ---------- */
+  // The same masthead and sections as every Draft Lab page (fantasy-kit/nav.js), with Home current, and below it the
+  // sport pages as their own row.
   function bar() {
     var el = $("[data-fbar]"); if (!el) return;
+    var N = window.FK && window.FK.nav;
+    if (N && !$(".fk-top")) {
+      var tab = function (t) {
+        var h = t[0] === "home" ? ROOT + "fantasy/" : N.href(t[0], { kit: KIT, sport: page === "overview" ? "" : page });
+        return '<a href="' + h + '"' + (t[0] === "home" ? ' aria-current="page"' : "") + ">" + esc(t[1]) + "</a>";
+      };
+      el.insertAdjacentHTML("beforebegin", '<header class="fk-top hub-top"><div class="fk-mast fk-band"><div class="wrap">' +
+        '<a class="fk-brand" href="' + ROOT + 'fantasy/"><img src="' + KIT + 'mark.svg" alt=""><b class="disp">Draft Lab</b></a>' +
+        '<span class="grow"></span><div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark mode</button></div></div></div>' +
+        '<div class="fk-nav"><div class="wrap"><nav aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav></div></div></header>");
+    }
     var link = function (k, label, icon, href) {
       return '<a class="t ' + k + '" href="' + href + '"' + (page === k ? ' aria-current="page"' : "") + ">" + ic(icon) + label + "</a>";
     };
-    el.innerHTML = '<div class="wrap">' + link("overview", "Overview", "i-home", ROOT + "fantasy/") + '<span class="sep" aria-hidden="true"></span>' +
-      ORDER.map(function (k) { return link(k, SPORTS[k].name, "i-" + k, ROOT + "fantasy/" + k + "/"); }).join("") +
-      '<div class="end"><a href="' + KIT + '">Draft Lab</a><a href="' + KIT + 'leagues.html">Your leagues</a><button class="btn fh-theme" type="button" id="theme">Dark mode</button></div></div>';
+    el.setAttribute("aria-label", "Sports");
+    el.innerHTML = '<div class="wrap">' + link("overview", "All sports", "i-home", ROOT + "fantasy/") + '<span class="sep" aria-hidden="true"></span>' +
+      ORDER.map(function (k) { return link(k, SPORTS[k].name, "i-" + k, ROOT + "fantasy/" + k + "/"); }).join("") + "</div>";
     var current = $('[aria-current="page"]', el); if (current) current.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 

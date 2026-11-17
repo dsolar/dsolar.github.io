@@ -51,9 +51,10 @@
   function menu(id, visible) {
     if (id === "fantasy") {
       return group("Draft & manage", [
-        { title: "Fantasy overview", url: "fantasy/" },
+        { title: "Draft Lab", line: "Every sport, league and tool", url: "fantasy/" },
         { title: "Your leagues", url: "fantasy-kit/leagues.html" },
-        { title: "Draft Lab", line: "Mock drafts & player rankings", url: "fantasy-kit/" }
+        { title: "Mock draft", line: "Draft against bots in any format", url: "fantasy-kit/" },
+        { title: "Rankings", line: "Values for your scoring", url: "fantasy-kit/#rankings" }
       ]) + group("League pages", visible.filter(function (p) { return p.type === "Fantasy Leagues" && p.url !== "fantasy/"; }));
     }
     if (id === "games") {

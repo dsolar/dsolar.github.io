@@ -74,8 +74,8 @@
 </style>
 
 <link rel="stylesheet" href="../assets/navigation.css?v=20261112">
-<script src="../assets/projects.js?v=20261115-nhl" defer></script>
-<script src="../assets/navigation.js?v=20261113-hubs" defer></script>
+<script src="../assets/projects.js?v=20261117-dl" defer></script>
+<script src="../assets/navigation.js?v=20261117-dl" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -86,9 +86,9 @@
 <!-- The header, drawn before the scripts arrive: what leagues.js draws (header()). The page under it depends on who's
      signed in, so it waits for leagues.js. Keep the header in step. -->
 <header class="fk-top" id="top"><div class="fk-mast fk-band"><div class="wrap">
-        <a class="fk-brand" href="./"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
+        <a class="fk-brand" href="../fantasy/"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
         <span class="grow"></span><div class="fk-who"><button class="btn sm ghost" data-theme="">Dark</button></div></div></div>
-      <div class="fk-nav"><div class="wrap"><nav aria-label="Sections"><a href="leagues.html" aria-current="page">Your leagues</a><a href="week.html">Quick games</a><a href="./#draft">Mock draft</a><a href="./#rankings">Rankings</a><a href="league.html">Demo league</a></nav></div></div>
+      <div class="fk-nav"><div class="wrap"><nav aria-label="Sections"><a href="../fantasy/">Home</a><a href="leagues.html" aria-current="page">Your leagues</a><a href="./#draft">Mock draft</a><a href="./#rankings">Rankings</a><a href="week.html">Quick games</a><a href="league.html?s=nfl">Demo league</a></nav></div></div>
 </header>
 <main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading…</div></main>
 <script>
@@ -105,7 +105,7 @@
 /* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
    stylesheets are in (an inline script waits for them): the first screen above paints without the JavaScript
    sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
-["sports.js?v=20261117-cbb1", "value.js?v=20261116-adv3", "rules.js?v=20261117deal", "scoring-ui.js?v=20261116-nhl1", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261117-adv1", "pyramid.js?v=20261116pyr", "setup.js?v=20261116-cbb1", "cloud.js?v=20261116lu", "slates.js?v=20261116-cbb1", "leagues.js?v=20261117-cbb1"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+["nav.js?v=20261117-nav1", "sports.js?v=20261117-cbb1", "value.js?v=20261116-adv3", "rules.js?v=20261117deal", "scoring-ui.js?v=20261116-nhl1", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261117-adv1", "pyramid.js?v=20261116pyr", "setup.js?v=20261116-cbb1", "cloud.js?v=20261116lu", "slates.js?v=20261116-cbb1", "leagues.js?v=20261117-nav1"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
 </script>
 </body>
 </html>

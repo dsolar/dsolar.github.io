@@ -5,6 +5,7 @@
   "use strict";
   const { sports: S, value: V, draft: F, league: G, ui: U } = window.FK;
   const { esc, $ } = U;
+  const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
   const store = U.store("fk-demo");
   const theme = U.theme("fk-lab");
   const DAY = 864e5, WEEK = 7 * DAY, HOUR = 36e5;
@@ -141,10 +142,10 @@
     const leagues = S.SEASON_SPORTS.flatMap((s) => [[s, false], [s, true]]).filter(([s, g]) => !(s.key === sportKey && g === guil));
     app = U.leagueApp({
       top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => save(), me: () => 0, now: () => Date.now(), frac, hooks: hooks(),
-      brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
+      brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, crest: U.leagueCrest(U.leagueBrand(L.name, L.settings.brand), "sm") },
         leagues.map(([s, g]) => ({ href: `?s=${s.key}&f=${g ? "g" : "h"}`, name: nameOf(s.key, g), sub: `${s.name}, ${g ? "best ball guillotine" : "head to head"}`, crest: U.leagueCrest(U.leagueBrand(nameOf(s.key, g)), "sm") })),
-        `<a href="./">Draft Lab<small>Mock drafts and rankings</small></a><a href="../fantasy/">All fantasy<small>Every league and tool, by sport</small></a>`),
+        `<a href="${N.HOME}">Draft Lab home<small>Every sport, league and tool</small></a><a href="./#draft">Mock draft<small>Draft against bots in any format</small></a>`),
       right: () => `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       draftHref: "./#draft",
       commishTools,

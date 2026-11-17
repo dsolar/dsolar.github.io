@@ -132,16 +132,16 @@ window.PROJECTS = [
     cover: { image: "assets/covers/calendar.webp", bg: "#17130E", band: "#FFC53D" }
   },
   {
-    title: "Fantasy",
-    line: "Every league and draft tool, by sport",
+    title: "Draft Lab",
+    line: "Mock drafts, rankings and leagues for every sport",
     type: "Fantasy Leagues",
     featured: true,
     released: "2026-11",
     url: "fantasy/",
     action: "Pick a sport",
     question: "What if every league I play in ran on the same draft room and the same season engine?",
-    summary: "The hub for the basketball, football, baseball and hockey leagues, with mock drafts against bots, rankings and demo leagues for each sport.",
-    facts: [["4", "sports on one kit"], ["9", "draft formats, from snake to sealed lists"], ["8", "demo leagues that play in real time"]],
+    summary: "Fantasy basketball, football, baseball, hockey and college hoops on one draft room and season engine: mock drafts against bots, rankings for your scoring, demo leagues, and real leagues with friends.",
+    facts: [["5", "sports on one kit"], ["9", "draft formats, from snake to sealed lists"], ["8", "demo leagues that play in real time"]],
     stack: ["JavaScript", "Python", "GitHub Actions"],
     cover: { image: "assets/covers/fantasy.svg", bg: "#13233A", band: "#F6C445" }
   },
