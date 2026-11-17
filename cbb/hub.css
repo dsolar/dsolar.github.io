@@ -148,3 +148,13 @@ details.org .seeds{padding:6px 0}
   table.odds td.tm,table.t.rt td.tm{position:sticky;left:0;background:var(--card);z-index:1;max-width:120px;overflow:hidden;text-overflow:ellipsis}
   table.odds th:first-child,table.t.rt th:first-child{position:sticky;left:0;background:var(--card);z-index:1}
 }
+/* full schedule + leaders */
+.scroll.sched{max-height:560px;overflow-y:auto}
+.scroll.sched thead th{position:sticky;top:0;background:var(--card);z-index:1}
+.nd1{color:var(--muted);font-weight:500}
+.pill.cf2{font-size:9px;padding:2px 4px}
+.leaders{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.leaders .panel{margin:0}
+ol.rlist.ldr li{padding:5px 12px}
+ol.rlist.ldr .rk{min-width:16px}
+table.t.pt td.on{font-weight:700;background:var(--paper-2)}

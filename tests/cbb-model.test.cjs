@@ -62,3 +62,13 @@ test("the season simulation is internally consistent",()=>{
  for(const o of v){for(let k=1;k<7;k++)assert.ok(o.r[k]<=o.r[k-1]+1e-9);assert.ok(o.r[0]<=o.in+1e-9&&o.aq<=o.in+1e-9);}
  assert.equal(s.bracket.length,4);assert.equal(s.bracket.flat().length,64);assert.equal(s.bracket.flat().flatMap(x=>x.teams).length,76);
 });
+test("the schedule covers the season and the simulation used it",()=>{
+ const s=JSON.parse(fs.readFileSync(path.join(__dirname,"../cbb/data/schedule.json"),"utf8")),x=JSON.parse(fs.readFileSync(path.join(__dirname,"../cbb/data/extras.json"),"utf8"));
+ assert.ok(s.games.length>4000);assert.equal(new Set(s.games.map(g=>g.id)).size,s.games.length);
+ for(const g of s.games)if(g.state==="pre")assert.equal(g.hs,null);
+ assert.ok(x.season.scheduled>=28,"most conferences play their real schedules");
+});
+test("game score rewards efficient production",()=>{
+ const a={stats:{pts:20,reb:5,ast:3,stl:1,blk:0,tov:2,pf:2,fgm:8,fga:14,ftm:4,fta:5}},b={stats:{pts:20,reb:5,ast:3,stl:1,blk:0,tov:2,pf:2,fgm:7,fga:22,ftm:4,fta:5}};
+ assert.ok(M.gameScore(a)>M.gameScore(b));assert.equal(M.gameScore({stats:{pts:0,reb:0,ast:0}}),null);
+});

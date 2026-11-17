@@ -6,7 +6,9 @@ Sections: Today (a line, total, win probability and watchability score on every 
 ## Connected sources
 - Haslametrics: adjusted team offense and defense, tempo, shooting profile, movement/history, selected game performance highlights, future fixtures, and the current 76-team "deserves" bracket.
 - ESPN BPI: predictive ratings, offense/defense, Strength of Record, season and conference projections, current records and conference membership.
-- ESPN common roster feed: current players, coaches, class, positions and reported points/rebounds/assists/FG%.
+- ESPN common roster feed: current players, coaches, class and positions.
+- ESPN player stats feed (statistics/byathlete, 8 pages of 1,000): every player's season line, merged onto the roster pool each run; TS% and eFG% computed from totals.
+- ESPN team schedules (365 requests, refreshed every 6 hours) in cbb/data/schedule.json: every game of the season with venue, conference flag and final scores. The season simulation plays this real remaining schedule.
 - ESPN scoreboard: published game snapshots, plus browser live refresh with snapshot fallback.
 - Existing NBA Big Board: matching college prospects carry an attributed draft rank and date.
 

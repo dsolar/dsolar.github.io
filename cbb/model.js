@@ -19,6 +19,13 @@ function line(home,away,neutral,avg){
  const pace=(ht+at)/2,edge=neutral?0:HOME_EDGE/2,hp=ho*ad/avg*pace/100+edge,ap=ao*hd/avg*pace/100-edge,m=hp-ap;
  return {homePts:round(hp),awayPts:round(ap),spread:round(m),total:round(hp+ap),homeProb:round(phi(m/SPREAD_SD),3),pace:round(pace)};
 }
+// Game Score per game (Hollinger, rebounds weighted 0.45). Mirrors production() in tools/cbb_extras.py.
+function gameScore(p){
+ const s=p&&p.stats||{},g=k=>num(s[k]),pts=g("pts"),reb=g("reb"),ast=g("ast");
+ if(!(pts||reb||ast))return null;
+ if(g("fga")!==null&&g("fgm")!==null)return round((pts||0)+0.4*g("fgm")-0.7*g("fga")-0.4*((g("fta")||0)-(g("ftm")||0))+0.45*(reb||0)+(g("stl")||0)+0.7*(ast||0)+0.7*(g("blk")||0)-0.4*(g("pf")||0)-(g("tov")||0));
+ return round(0.7*((pts||0)+0.6*(reb||0)+0.9*(ast||0)));
+}
 function ranked(teams,source="haslam"){
  const field=source+"Rank";
  return teams.slice().sort((a,b)=>{const x=num(a[field]),y=num(b[field]);return (x===null)-(y===null)||(x!==null&&y!==null?x-y:0)||(em(b)??-1e6)-(em(a)??-1e6)||a.name.localeCompare(b.name);});
@@ -113,5 +120,5 @@ function gamesFromESPN(data,byId,season){
  }
  return out;
 }
-return {HOME_EDGE,SPREAD_SD,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
+return {gameScore,HOME_EDGE,SPREAD_SD,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });

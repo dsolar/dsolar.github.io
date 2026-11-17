@@ -9,7 +9,7 @@ const safe = x => /^https?:\/\//.test(x || "") ? esc(x) : "#";
 const fin = M.finite;
 const f1 = (x, d = 1) => fin(x) ? Number(x).toFixed(d) : "—";
 const sg = (x, d = 1) => fin(x) ? (x > 0 ? "+" : x < 0 ? "−" : "") + Math.abs(Number(x)).toFixed(d) : "—";
-const pct = x => fin(x) ? (x >= 0.995 && x < 1 ? ">99" : x <= 0.005 && x > 0 ? "<1" : Math.round(x * 100)) + "%" : "—";
+const pct = x => fin(x) ? (x >= 0.995 ? ">99" : x <= 0.005 && x > 0 ? "<1" : Math.round(x * 100)) + "%" : "—";
 const half = x => (Math.round(Math.abs(x) * 2) / 2).toFixed(1);
 const int = x => fin(x) ? String(Math.round(x)) : "—";
 function read(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }
@@ -201,30 +201,31 @@ function teams(q) {
 
 function teamPage(q) {
   const t = byId[q.get("id")]; if (!t) return '<p class="callout">Team not found. <a href="#/teams">All teams</a></p>';
-  const m = t.metrics, roster = (rosters[t.id] || []).slice().sort((a, b) => (stat(b, "pts") ?? -1) - (stat(a, "pts") ?? -1));
-  const sched = D.games.filter(g => g.home === t.id || g.away === t.id).sort((a, b) => (a.at || a.day).localeCompare(b.at || b.day));
+  const m = t.metrics, roster = (rosters[t.id] || []).slice().sort((a, b) => (stat(b, "min") ?? -1) - (stat(a, "min") ?? -1) || (stat(b, "pts") ?? -1) - (stat(a, "pts") ?? -1));
+  ensureSched();
+  const liveById = Object.fromEntries(D.games.map(g => [g.id, g]));
+  const sched = (SCHED && SCHED.games.length ? SCHED.games.filter(g => g.home === t.id || g.away === t.id).map(g => { const x = liveById[g.id]; return x ? { ...g, ...x, conf: g.conf } : { ...g, homeScore: g.hs, awayScore: g.as }; }) : D.games.filter(g => g.home === t.id || g.away === t.id)).sort((a, b) => (a.at || a.day + "T23").localeCompare(b.at || b.day + "T23"));
   const hl = t.highlights || {}, quads = t.haslamQuads || {};
   const vsOpts = D.teams.filter(x => x.id !== t.id).sort((a, b) => a.short.localeCompare(b.short));
   const schedRows = sched.map(g => {
-    const home = g.home === t.id, o = byId[home ? g.away : g.home], l = g.state === "pre" ? lineFor(g) : loggedLine(g);
+    const home = g.home === t.id, oid = home ? g.away : g.home, o = byId[oid], l = o ? (g.state === "pre" ? lineFor(g) : loggedLine(g)) : null;
     const p = l ? (home ? l.homeProb : 1 - l.homeProb) : null, mine = l ? (home ? l.spread : -l.spread) : null;
     let res = "";
     if (g.state === "post" && fin(g.homeScore)) { const us = home ? g.homeScore : g.awayScore, them = home ? g.awayScore : g.homeScore; res = '<b class="' + (us > them ? "pos" : "neg") + '">' + (us > them ? "W " : "L ") + int(us) + "-" + int(them) + "</b>"; }
     else if (g.state === "in") res = '<span class="live">● ' + int(home ? g.homeScore : g.awayScore) + "-" + int(home ? g.awayScore : g.homeScore) + "</span>";
-    return '<tr><td>' + dLabel(g.day, { weekday: "short" }) + '</td><td class="tm">' + '<span class="at">' + (g.neutral ? "vs" : home ? "" : "@") + "</span>" + teamLink(o, { rank: true }) + "</td><td>" + (mine === null ? "—" : Math.abs(mine) < 0.5 ? "PK" : (mine > 0 ? "−" : "+") + half(mine)) + "</td><td>" + pct(p) + "</td><td>" + (res || (g.state === "pre" ? tip(g) : "")) + "</td></tr>";
+    return '<tr><td>' + dLabel(g.day, { weekday: "short" }) + '</td><td class="tm">' + '<span class="at">' + (g.neutral ? "vs" : home ? "" : "@") + "</span>" + (o ? teamLink(o, { rank: true }) : '<span class="nd1">' + esc(SCHED && SCHED.other && SCHED.other[oid] || "Non-D1") + "</span>") + (g.conf ? ' <span class="pill cf2">Conf</span>' : "") + "</td><td>" + (mine === null ? "—" : Math.abs(mine) < 0.5 ? "PK" : (mine > 0 ? "−" : "+") + half(mine)) + "</td><td>" + pct(p) + "</td><td>" + (res || (g.state === "pre" ? (g.at ? tip(g) : "TBA") : g.state === "off" ? "Postponed" : "")) + "</td></tr>";
   }).join("");
   return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)</div></div>" +
     '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
-    tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) : "—", "Make NCAA"], [odds(t.id) && odds(t.id).mode ? odds(t.id).mode : "—", "Likely seed"]]) +
+    tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [odds(t.id) && fin(odds(t.id).w) ? Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) : proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) : "—", "Make NCAA"], [odds(t.id) && odds(t.id).mode ? odds(t.id).mode : "—", "Likely seed"]]) +
     '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
-    '<div class="two"><div class="panel"><h3>Schedule <small>hub line and win probability</small></h3><div class="scroll"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="5" class="note">No games in this week\'s snapshot.</td></tr>') + "</tbody></table></div></div>" +
-    '<div class="panel"><h3>Résumé so far</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
+    '<div class="two"><div class="panel"><h3>Schedule <small>' + (odds(t.id) && fin(odds(t.id).w) ? "projected " + Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) + " · " : "") + 'hub line and win %</small></h3><div class="scroll sched"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="5" class="note">Schedule loading…</td></tr>') + "</tbody></table></div></div>" +
+    '<div><div class="panel"><h3>Résumé so far</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
     ["best", "worst", "latest"].filter(k => hl[k]).map(k => { const h = hl[k]; return '<p class="tldr"><b>' + { best: "Best game", worst: "Worst game", latest: "Latest" }[k] + ":</b> " + (h.us > h.them ? "W " : "L ") + int(h.us) + "-" + int(h.them) + " " + (h.venue === "H" ? "vs" : h.venue === "A" ? "at" : "vs") + " " + esc(h.opponent) + " (" + esc(h.date) + ")</p>"; }).join("") +
-    '<p class="note">Quadrants are Haslametrics\' own hNET quadrants, not the NCAA\'s official NET.</p></div></div></div>' +
-    outlook(t) +
-    '<h2 class="sec">Roster</h2><div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Player</th><th>Pos</th><th>Yr</th><th>Ht</th><th>PTS</th><th>REB</th><th>AST</th><th>FG%</th></tr></thead><tbody>' +
-    roster.map(p => "<tr><td class=\"l\">" + playerLink(p) + badges(p) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td>" + esc(p.height || "") + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "fgPct")) + "</td></tr>").join("") + "</tbody></table></div></div>";
+    '<p class="note">Quadrants are Haslametrics\' own hNET quadrants, not the NCAA\'s official NET.</p></div></div>' + outlook(t) + '</div></div>' +
+    '<h2 class="sec">Roster</h2><div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Player</th><th>Pos</th><th>Yr</th><th>Ht</th><th>GP</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TS%</th><th>GmSc</th></tr></thead><tbody>' +
+    roster.map(p => "<tr><td class=\"l\">" + playerLink(p) + badges(p) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td>" + esc(p.height || "") + "</td><td>" + f1(stat(p, "gp"), 0) + "</td><td>" + f1(stat(p, "min")) + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "stl")) + "</td><td>" + f1(stat(p, "blk")) + "</td><td>" + f1(stat(p, "ts")) + "</td><td><b>" + f1(M.gameScore(p)) + "</b></td></tr>").join("") + "</tbody></table></div></div>";
 }
 
 function outlook(t) {
@@ -234,20 +235,35 @@ function outlook(t) {
     '<div class="ladder">' + steps.map(([lab, x]) => '<div class="lr"><span>' + lab + '</span><i><b style="width:' + (x * 100).toFixed(1) + '%"></b></i><em>' + pct(x) + "</em></div>").join("") + "</div></div></div>";
 }
 
+const PSTATS = [["gp", "GP", 0], ["min", "MIN", 1], ["pts", "PTS", 1], ["reb", "REB", 1], ["ast", "AST", 1], ["stl", "STL", 1], ["blk", "BLK", 1], ["tov", "TOV", 1], ["ts", "TS%", 1], ["threePct", "3P%", 1], ["gs", "GmSc", 1]];
+const pval = (p, k) => k === "gs" ? M.gameScore(p) : k === "board" ? (fin(p.draftRank) ? -p.draftRank : null) : stat(p, k);
+function qualified(p, k) {
+  const gp = stat(p, "gp"), min = stat(p, "min");
+  if (k === "ts") return (stat(p, "fga") || 0) >= 8 && (min || 0) >= 20 && (gp === null || gp >= Math.max(2, maxGp * 0.6));
+  if (k === "threePct") return (stat(p, "threeAtt") || 0) >= 3 && (gp === null || gp >= Math.max(2, maxGp * 0.6));
+  if (k === "tov") return (min || 0) >= 15;
+  return gp === null || gp >= Math.max(2, maxGp * 0.6);
+}
+let maxGp = 0;
 function players(q) {
-  const s = (q.get("q") || "").toLowerCase(), conf = q.get("conf") || "", pool = q.get("pool") || "all", sort = q.get("sort") || "pts", n = Number(q.get("n")) || 60;
+  const s = (q.get("q") || "").toLowerCase(), conf = q.get("conf") || "", pool = q.get("pool") || "all", sort = q.get("sort") || "pts", n = Number(q.get("n")) || 60, mode = q.get("view") || "leaders";
   let ps = D.players.filter(p => (!conf || p.conference === conf) && (!s || (p.name + " " + p.team).toLowerCase().includes(s)));
   if (pool === "naismith") ps = ps.filter(p => naiRank[p.id]);
   if (pool === "board") ps = ps.filter(p => fin(p.draftRank));
   if (pool === "fresh") ps = ps.filter(p => /^fr/i.test(p.year || ""));
-  const key = { pts: p => stat(p, "pts"), reb: p => stat(p, "reb"), ast: p => stat(p, "ast"), fg: p => stat(p, "fgPct"), prod: p => hasGames(p) ? (stat(p, "pts") || 0) + 0.6 * (stat(p, "reb") || 0) + 0.9 * (stat(p, "ast") || 0) : null, board: p => fin(p.draftRank) ? -p.draftRank : null, team: p => byId[p.teamId] && fin(byId[p.teamId].haslamRank) ? -byId[p.teamId].haslamRank : null }[sort] || (p => stat(p, "pts"));
-  ps.sort((a, b) => { const x = key(a), y = key(b); return (x == null) - (y == null) || (x == null ? 0 : y - x) || a.name.localeCompare(b.name); });
-  if (sort === "fg") ps = ps.filter(p => (stat(p, "pts") || 0) >= 8).concat(ps.filter(p => !((stat(p, "pts") || 0) >= 8)));
-  const th = "<tr><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th>Yr</th>" + sortTh("pts", "PTS", sort) + sortTh("reb", "REB", sort) + sortTh("ast", "AST", sort) + sortTh("fg", "FG%", sort, "Players with 8+ points a game first") + sortTh("prod", "Prod", sort, "Points + 0.6 rebounds + 0.9 assists, the production half of the Naismith ladder") + sortTh("board", "Board", sort, "NBA Big Board rank") + sortTh("team", "Team rk", sort) + "</tr>";
-  return '<h2 class="sec">Players</h2><p class="lede">Every rostered Division I player with this season\'s line from ESPN, Naismith watch-list players and NBA Big Board prospects tagged.</p>' +
-    '<div class="controls"><label>Find a player<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Name or school"></label>' + confSelect(conf) + seg("pool", [["all", "All"], ["naismith", "Naismith list"], ["board", "Big Board"], ["fresh", "Freshmen"]], pool) + "</div>" +
-    '<div class="panel"><div class="scroll"><table class="t"><thead>' + th + "</thead><tbody>" +
-    ps.slice(0, n).map(p => { const t = byId[p.teamId]; return "<tr><td class=\"l\">" + playerLink(p) + badges(p) + '</td><td class="tm">' + teamLink(t) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "fgPct")) + "</td><td>" + f1(hasGames(p) ? (stat(p, "pts") || 0) + 0.6 * (stat(p, "reb") || 0) + 0.9 * (stat(p, "ast") || 0) : null) + "</td><td>" + (fin(p.draftRank) ? "#" + p.draftRank : "") + "</td><td>" + int(t && t.haslamRank) + "</td></tr>"; }).join("") +
+  const head = '<h2 class="sec">Players</h2><p class="lede">Every Division I player\'s season line from ESPN: minutes, scoring, rebounding, playmaking, defense and efficiency. True shooting (TS%) folds threes and free throws into one shooting number; Game Score (GmSc) sums a player\'s whole box score into one per-game figure. Naismith watch-list players and NBA Big Board prospects are tagged.</p>' +
+    '<div class="controls"><label>Find a player<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Name or school"></label>' + confSelect(conf) + seg("pool", [["all", "All"], ["naismith", "Naismith list"], ["board", "Big Board"], ["fresh", "Freshmen"]], pool) + seg("view", [["leaders", "Leaders"], ["table", "Table"]], mode) + "</div>";
+  if (mode === "leaders") {
+    const board = (k, lab, d, low) => { const rows = ps.filter(p => pval(p, k) !== null && hasGames(p) && qualified(p, k)).sort((a, b) => low ? pval(a, k) - pval(b, k) : pval(b, k) - pval(a, k)).slice(0, 10);
+      return '<div class="panel"><h3>' + lab + '</h3><ol class="rlist ldr">' + rows.map((p, i) => '<li><b class="rk">' + (i + 1) + "</b>" + playerLink(p) + '<span class="grow sub">' + esc(p.team) + '</span><span class="num"><b>' + f1(pval(p, k), d) + "</b></span></li>").join("") + "</ol></div>"; };
+    return head + '<div class="leaders">' + board("gs", "Game Score", 1) + board("pts", "Points", 1) + board("reb", "Rebounds", 1) + board("ast", "Assists", 1) + board("stl", "Steals", 1) + board("blk", "Blocks", 1) + board("ts", "True shooting %", 1) + board("threePct", "3-point % (3+ attempts a game)", 1) + board("min", "Minutes", 1) + "</div>" +
+      '<p class="note">Leaders need ' + Math.max(2, Math.ceil(maxGp * 0.6)) + "+ games. True shooting needs 8+ shots and 20+ minutes a game. " + esc(D.notes && D.notes.players || "") + "</p>";
+  }
+  ps.sort((a, b) => { const x = pval(a, sort), y = pval(b, sort); return (x == null) - (y == null) || (x == null ? 0 : y - x) || a.name.localeCompare(b.name); });
+  if (["ts", "threePct"].includes(sort)) ps = ps.filter(p => qualified(p, sort)).concat(ps.filter(p => !qualified(p, sort)));
+  const th = "<tr><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th>Yr</th>" + PSTATS.map(([k, l]) => sortTh(k, l, sort)).join("") + sortTh("board", "Board", sort) + "</tr>";
+  return head + '<div class="panel"><div class="scroll"><table class="t pt"><thead>' + th + "</thead><tbody>" +
+    ps.slice(0, n).map(p => { const t = byId[p.teamId]; return "<tr><td class=\"l\">" + playerLink(p) + badges(p) + '</td><td class="tm">' + teamLink(t) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td>" + PSTATS.map(([k, , d]) => "<td" + (k === sort ? ' class="on"' : "") + ">" + f1(pval(p, k), d) + "</td>").join("") + "<td>" + (fin(p.draftRank) ? "#" + p.draftRank : "") + "</td></tr>"; }).join("") +
     "</tbody></table></div></div>" + (ps.length > n ? '<p><button class="btn" data-more="n" data-n="' + (n + 120) + '">Show more (' + (ps.length - n) + " left)</button></p>" : "") +
     '<p class="note">' + esc(D.notes && D.notes.players || "") + "</p>";
 }
@@ -257,8 +273,8 @@ function naismith() {
   const N = X.naismith, lad = N.ladder.filter(r => byPlayer[r.id]), top = lad[0] && byPlayer[lad[0].id];
   const move = r => r.prev ? (r.prev - r.rank > 0 ? '<span class="pos">▲' + (r.prev - r.rank) + "</span>" : r.prev - r.rank < 0 ? '<span class="neg">▼' + (r.rank - r.prev) + "</span>" : '<span class="note">–</span>') : '<span class="note">new</span>';
   const maxS = Math.max(...lad.map(r => r.score || 0), 1), minS = Math.min(...lad.map(r => r.score ?? 0), 0);
-  const hist = !!N.since, row = (r, i) => { const p = byPlayer[r.id], t = byId[p.teamId]; return "<tr><td><b>" + (r.rank || i + 1) + "</b></td>" + (hist ? "<td>" + move(r) + "</td>" : "") + "<td class=\"l\">" + playerLink(p) + (fin(p.draftRank) ? ' <span class="pill bb">Board #' + p.draftRank + "</span>" : "") + '</td><td class="tm">' + teamLink(t, { rank: true }) + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "fgPct")) + "</td><td>" + sg(M.em(t)) + '</td><td><span class="bar">' + (r.score === null ? '<span class="note">no games</span>' : f1(r.score, 2)) + '<i><b style="width:' + (r.score === null ? 0 : Math.max(3, (r.score - minS) / (maxS - minS) * 100)) + '%"></b></i></span></td></tr>'; };
-  const th = "<tr><th>#</th>" + (hist ? "<th></th>" : "") + "<th class=l>Player</th><th class=l>Team</th><th>Yr</th><th>PTS</th><th>REB</th><th>AST</th><th>FG%</th><th>Team net</th><th>Ladder</th></tr>";
+  const hist = !!N.since, row = (r, i) => { const p = byPlayer[r.id], t = byId[p.teamId]; return "<tr><td><b>" + (r.rank || i + 1) + "</b></td>" + (hist ? "<td>" + move(r) + "</td>" : "") + "<td class=\"l\">" + playerLink(p) + (fin(p.draftRank) ? ' <span class="pill bb">Board #' + p.draftRank + "</span>" : "") + '</td><td class="tm">' + teamLink(t, { rank: true }) + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "ts")) + "</td><td><b>" + f1(M.gameScore(p)) + "</b></td><td>" + sg(M.em(t)) + '</td><td><span class="bar">' + (r.score === null ? '<span class="note">no games</span>' : f1(r.score, 2)) + '<i><b style="width:' + (r.score === null ? 0 : Math.max(3, (r.score - minS) / (maxS - minS) * 100)) + '%"></b></i></span></td></tr>'; };
+  const th = "<tr><th>#</th>" + (hist ? "<th></th>" : "") + "<th class=l>Player</th><th class=l>Team</th><th>Yr</th><th>PTS</th><th>REB</th><th>AST</th><th>TS%</th><th>GmSc</th><th>Team net</th><th>Ladder</th></tr>";
   const byConf = {}; lad.forEach(r => { const c = byPlayer[r.id].conference; byConf[c] = (byConf[c] || 0) + 1; });
   return '<h2 class="sec">Naismith Watch</h2><p class="lede">The ' + esc(N.list.toLowerCase()) + ' for the ' + esc(N.award) + ' (' + esc(N.source) + ", " + dLabel(N.announced) + '), ranked by the hub\'s ladder: what each player is producing, how good his team is, and his NBA draft stock. <a href="' + safe(N.url) + '" target="_blank" rel="noopener">Official list ↗</a></p>' +
     (top ? '<div class="verdict">' + face(top, 44) + " <b>" + esc(top.name) + "</b> leads the ladder: " + f1(stat(top, "pts")) + " points, " + f1(stat(top, "reb")) + " rebounds and " + f1(stat(top, "ast")) + " assists a game for " + esc(top.team) + " (Haslametrics #" + int(byId[top.teamId].haslamRank) + ").<small>" + (N.since ? "Movement since " + dLabel(N.since) + "." : "Movement arrows start once the ladder has a week of history.") + "</small></div>" : "") +
@@ -268,6 +284,11 @@ function naismith() {
     '<p class="note">' + esc(N.method) + " " + esc(N.note) + "</p>";
 }
 
+let SCHED = null, schedLoading = null;
+function ensureSched() {
+  if (SCHED || schedLoading) return;
+  schedLoading = fetch("data/schedule.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(x => { SCHED = x && x.games ? x : { games: [] }; if (route().page === "team") render(); }).catch(() => { SCHED = { games: [] }; });
+}
 function ensureBoard() {
   if (BOARD || boardLoading) return boardLoading;
   boardLoading = fetch("../draft/nba.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(b => { BOARD = b || { players: [] }; if (["prospects"].includes(route().page) || $("#card").open) render(); }).catch(() => { BOARD = { players: [] }; });
@@ -378,7 +399,7 @@ function openPlayer(id) {
   const t = byId[p.teamId], b = BOARD ? (BOARD.players || []).find(x => M.key(x.n) === M.key(p.name)) : null, n = X && X.naismith.ladder.find(r => r.id === id), g = nextGame(p.teamId);
   let ng = ""; if (g) { const home = g.home === p.teamId, o = byId[home ? g.away : g.home], l = g.state === "pre" ? lineFor(g) : null; ng = '<p class="tldr"><b>Next:</b> ' + dLabel(g.day, { weekday: "short" }) + " " + (home ? "vs " : "at ") + '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>" + (l ? " · " + favLine(l, byId[g.home], byId[g.away]) + ", " + esc(t.short) + " " + pct(home ? l.homeProb : 1 - l.homeProb) : "") + "</p>"; }
   $("#cardBody").innerHTML = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t) + " " + esc(t.short) + " · " + esc([p.pos, p.year, p.height, p.weight].filter(Boolean).join(" · ")) + (p.jersey ? " · #" + esc(p.jersey) : "") + "</div><div>" + badges(p) + "</div></div></div>" +
-    '<div class="card-b"><div class="kv"><div><b>' + f1(stat(p, "pts")) + "</b><span>PTS</span></div><div><b>" + f1(stat(p, "reb")) + "</b><span>REB</span></div><div><b>" + f1(stat(p, "ast")) + "</b><span>AST</span></div><div><b>" + f1(stat(p, "fgPct")) + "</b><span>FG%</span></div>" + (fin(stat(p, "threePct")) ? "<div><b>" + f1(stat(p, "threePct")) + "</b><span>3P%</span></div>" : "") + "</div>" + ng +
+    '<div class="card-b"><div class="kv">' + [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null).map(([k, l, d]) => "<div><b>" + f1(pval(p, k), d === 0 ? 0 : 1) + "</b><span>" + l + "</span></div>").join("") + "</div>" + ng +
     (n ? '<p class="card-sec">Naismith Watch</p><p class="tldr">On the watch list. Hub ladder <b>#' + n.rank + "</b> of 50" + (n.prev ? " (" + (n.prev > n.rank ? "up " + (n.prev - n.rank) : n.prev < n.rank ? "down " + (n.rank - n.prev) : "no change") + " since " + dLabel(X.naismith.since) + ")" : "") + '. <a href="#/naismith">Ladder →</a></p>' : "") +
     (b ? '<p class="card-sec">NBA Big Board</p><div class="kv"><div><b>#' + b.rank + "</b><span>Consensus</span></div><div><b>" + b.hi + "–" + b.lo + "</b><span>Range</span></div><div><b>" + b.on + "</b><span>Boards</span></div>" + (fin(b.age) ? "<div><b>" + f1(b.age) + "</b><span>Age</span></div>" : "") + "</div>" + (b.stats && b.stats.length ? '<p class="tldr">' + b.stats.map(s => esc(s[0]) + " " + esc(s[1])).join(" · ") + '</p>' : "") + '<p class="tldr">' + spark(b.hist) + ' <a href="../draft/">See him on the Big Board →</a></p>' : fin(p.draftRank) ? '<p class="card-sec">NBA Big Board</p><p class="tldr">Consensus #' + p.draftRank + ' · <a href="../draft/">Big Board →</a></p>' : "") +
     '<p class="note"><a href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN player page ↗</a> · Season line: ' + esc(p.source || "ESPN") + "</p></div>";
@@ -400,6 +421,7 @@ function index() {
   D.teams.forEach(t => { pctNet[t.id] = M.percentile(D.teams, t, "margin") || 0; pctTempo[t.id] = M.percentile(D.teams, t, "tempo") || 50; });
   D.teams.filter(t => fin(t.metrics.adjO)).sort((a, b) => b.metrics.adjO - a.metrics.adjO).forEach((t, i) => rankO[t.id] = i + 1);
   D.teams.filter(t => fin(t.metrics.adjD)).sort((a, b) => a.metrics.adjD - b.metrics.adjD).forEach((t, i) => rankD[t.id] = i + 1);
+  maxGp = Math.max(0, ...D.players.map(p => stat(p, "gp") || 0));
   naiRank = {}; if (X && X.naismith) X.naismith.ladder.forEach(r => naiRank[r.id] = r.rank);
 }
 async function load() {

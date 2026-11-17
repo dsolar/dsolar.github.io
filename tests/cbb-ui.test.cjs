@@ -2,7 +2,7 @@ const test=require("node:test"),assert=require("node:assert/strict"),fs=require(
 const ROOT=path.join(__dirname,".."),html=fs.readFileSync(path.join(ROOT,"cbb/index.html"),"utf8").replace(/<script[^>]*src=[^>]*><\/script>/g,"");
 const core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
 const data=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/hub.json"),"utf8")),extras=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/extras.json"),"utf8"));
-const board=JSON.parse(fs.readFileSync(path.join(ROOT,"draft/nba.json"),"utf8"));
+const board=JSON.parse(fs.readFileSync(path.join(ROOT,"draft/nba.json"),"utf8")),sched=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/schedule.json"),"utf8"));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
 async function until(fn){for(let i=0;i<100;i++){if(fn())return;await pause(10);}assert.fail("UI condition did not settle");}
 async function boot(hash="#/today",live=null){
@@ -12,7 +12,7 @@ async function boot(hash="#/today",live=null){
  w.HTMLDialogElement.prototype.close=function(){this.removeAttribute("open");};
  w.AbortSignal.timeout=()=>new w.AbortController().signal;
  w.fetch=async url=>{url=String(url);if(url.includes("espn.com")){if(!live)throw Error("offline test");return {ok:true,json:async()=>structuredClone(live)};}
-  const body=url.includes("draft/nba")?board:url.includes("extras")?extras:data;return {ok:true,json:async()=>structuredClone(body)};};
+  const body=url.includes("draft/nba")?board:url.includes("extras")?extras:url.includes("schedule")?sched:data;return {ok:true,json:async()=>structuredClone(body)};};
  const ready=new Promise(resolve=>w.document.addEventListener("cbb:ready",resolve,{once:true}));
  w.eval(core);w.eval(app);await ready;await pause(0);return w;
 }
@@ -94,5 +94,12 @@ test("the hub is registered once and the sport switcher keeps page intent",async
   w.eval(fs.readFileSync(path.join(ROOT,"assets/hubswitch.js"),"utf8"));w.document.dispatchEvent(new w.Event("DOMContentLoaded"));await pause(10);
   const nav=w.document.querySelector(".hubswitch");assert.ok(nav);assert.equal(nav.querySelector('[data-hub="cbb"]').getAttribute("aria-current"),"page");
   assert.ok(nav.querySelector('[data-hub="nhl"]').href.endsWith("/nhl/#/standings"));
+ }finally{w.close();}
+});
+test("team pages show the full season schedule and players have leaderboards",async()=>{
+ const t=data.teams[0],n=sched.games.filter(g=>g.home===t.id||g.away===t.id).length,w=await boot("#/team?id="+t.id);try{
+  await until(()=>w.document.querySelectorAll(".sched tbody tr").length===n);assert.ok(n>20,"a full season");
+  await go(w,"#/players");assert.ok(w.document.querySelectorAll(".leaders .panel").length>=8);
+  await go(w,"#/players?view=table&sort=gs");assert.ok(w.document.querySelector('th[data-sort="gs"].on'));
  }finally{w.close();}
 });
