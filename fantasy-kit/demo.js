@@ -17,6 +17,8 @@
   const sportKey = S.ALL[params.get("s")] && !S.ALL[params.get("s")].dailyOnly ? params.get("s") : store.get("last", S.inSeason());
   const fmt = params.get("f") === "g" ? "g" : params.get("f") === "h" ? "h" : params.get("s") ? "h" : store.get("lastf", "h");
   const guil = fmt === "g";
+  // ?play=mock: the finished one-day or one-week mock from the mock draft, played out live on its real games
+  const playing = params.get("play") === "mock";
   const KEY = sportKey + (guil ? ":g" : "");
   const nameOf = (k, g) => (g ? GNAMES : NAMES)[k];
   store.set("last", sportKey); store.set("lastf", fmt);
@@ -221,6 +223,7 @@
   const lineupNow = () => { const have = new Set(data.players.flatMap((p) => p.pos)); return sport.lineup.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x))); };
   // Live scores and bot replies: refresh every few seconds while the page is open.
   setInterval(() => {
+    if (playing) return;
     if (!L || U.dialogOpen() || document.querySelector('details[open]') || (document.activeElement && document.activeElement.id === 'fk-q')) return;
     const offersNow = () => L.trades.filter((t) => t.status === "pending" && t.to === 0).map((t) => t.id);
     const before = { week: L.week, offers: offersNow(), mine: L.trades.filter((t) => t.from === 0).map((t) => t.status).join() };
@@ -235,11 +238,76 @@
 
   // Another tab saved this league: take its copy, so two tabs don't overwrite each other's moves.
   window.addEventListener("storage", (e) => {
-    if (e.key !== "fk-demo:" + KEY || !L || !app) return;
+    if (playing || e.key !== "fk-demo:" + KEY || !L || !app) return;
     const next = store.get(KEY, null);
     if (next && next.v === 1) { L = next; app.refresh(); }
   });
-  load().then(mount).then(() => {
+  /* ---------- a one-day or one-week mock, played out live ----------
+     The mock draft's finished slate or showdown draft becomes a one-week league on this device (season.js begin, as a
+     real one-day or one-week league starts), scored from the real games as they're played: the slate's own box scores
+     (fk-live ?games=) and the weekly live feed, every minute while the page is open. Head to head or everyone vs
+     everyone, as the mock was set up. Your seat is team 0; bots set their lineups. */
+  async function playMock() {
+    const Z = window.FK.season, C = window.FK.cloud;
+    const m = U.store("fk-lab").get("mock", null), D0 = m && m.D;
+    const s0 = D0 && D0.season;
+    const ok = D0 && D0.phase === "done" && s0 && s0.oneWeek && (s0.slate || (s0.showdown && s0.showdown.id)) && S[D0.sport];
+    if (!ok) {
+      $("#app").innerHTML = `<div class="wrap page"><div class="card"><div class="bd stack"><p style="margin:0"><b>No finished one-day or one-week mock on this device.</b></p><p class="ps" style="margin:0">Turn on One day (basketball, college hoops) or One week (football) in the mock draft, draft it, then play it out here on the real games.</p><div><a class="btn go" href="/fantasy/mock/#setup">Set up a mock</a></div></div></div></div>`;
+      return;
+    }
+    const k = D0.sport;
+    data = await fetch(`data/${k}.json`, { cache: "no-cache" }).then((r) => r.json());
+    sport = S.withScoring(S.attach(Object.assign({}, S[k]), data), D0.scoringSpec);
+    players = data.players.map((p) => Object.assign({}, p));
+    V.evaluate(sport, players, { teams: D0.teams.length, lineup: D0.lineup, bench: D0.bench, scoring: D0.scoring, week: S.weekFor({ season: s0 }, sport), oneDay: !!S.dayOf({ season: s0 }) });
+    weeks = await fetch(`data/weeks-${k}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+    if (weeks && String(weeks.season) !== String(data.season)) weeks = null;
+    if (!weeks) weeks = { sport: k, season: String(data.season), line: "tot", cols: (sport.data && sport.data.lines && sport.data.lines.tot && sport.data.lines.tot.cols) || [], weeks: {} };
+    const key = `mock:${D0.sport}:${D0.seed}:${D0.created}`;
+    L = store.get("night", null);
+    if (!L || L.mockKey !== key) {
+      L = Z.begin(JSON.parse(JSON.stringify(D0)), sport, { now: Math.max(D0.done || 0, Date.now()), real: weeks, name: D0.name === "Mock draft" ? `${S[k].short || S[k].name} mock` : D0.name });
+      L.mockKey = key; L.settings.real = true;
+      L.teams.forEach((t, i) => (t.color = D0.teams[i] && D0.teams[i].color != null ? D0.teams[i].color : i % 12));
+    }
+    const hk = { real: weeks };
+    const ctxN = () => G.context(L, players, sport, hk);
+    const saveN = () => store.set("night", L);
+    const fracN = (w) => Math.max(0, Math.min(1, (Date.now() - G.weekStart(L, w)) / Math.max(HOUR, G.weekStart(L, w + 1) - G.weekStart(L, w))));
+    const step = () => { const moved = Z.catchUp(L, ctxN(), Date.now()); if (moved) saveN(); return moved; };
+    step(); saveN();
+    document.title = `${L.name} | Draft Lab`;
+    app = U.leagueApp({
+      top: $("#top"), el: $("#app"), sport, players, league: () => L, save: saveN, me: () => 0, now: () => Date.now(), frac: fracN, hooks: hk,
+      brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
+      switcher: () => U.switcher({ name: L.name, crest: U.leagueCrest(U.leagueBrand(L.name, L.settings.brand), "sm") }, [],
+        `<a href="/fantasy/mock/#setup">New mock<small>Draft another one</small></a><a href="/fantasy/leagues/">My leagues<small>Real leagues with friends</small></a>`),
+      right: () => `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
+      draftHref: "/fantasy/mock/#draft",
+      commishTools: () => `<div class="head"><h1 class="disp">Your mock</h1><span class="ps">It only lives on this device.</span></div><div class="card"><div class="bd stack"><p class="small" style="margin:0">It plays out on the real games as they happen, and it's final once the last one ends. Draft another any time.</p><div><a class="btn go" href="/fantasy/mock/#setup">New mock</a></div></div></div>`,
+    });
+    // the slate's box scores and the live feed, every minute while the page is open
+    let t = null;
+    const poll = async () => {
+      clearTimeout(t);
+      if (!document.hidden && C) {
+        const ids = Z.slateGames && Z.slateGames(L);
+        const lv = ids && k === "cbb" ? null : await C.live(k).catch(() => null);
+        const kicked = G.setKicks(L, lv);
+        const gm = ids ? await C.games(k, ids).catch(() => null) : null;
+        const gch = !!(gm && Z.mergeGames(weeks, gm));
+        const lch = Z.mergeLive(weeks, lv);
+        if (step() || kicked) saveN();
+        if ((gch || lch || kicked) && !U.dialogOpen()) app.refresh();
+      }
+      t = setTimeout(poll, document.hidden ? 5 * 60e3 : 60e3);
+    };
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) poll(); });
+    poll();
+  }
+  if (playing) playMock().catch((e) => { $("#app").innerHTML = `<div class="wrap page"><div class="banner loss"><b>Couldn't load your mock.</b> <span class="muted">${esc(e.message)}</span></div></div>`; console.error(e); });
+  else load().then(mount).then(() => {
     // Draft Lab's "Play a season with it" lands here with ?mock=1
     if (params.get("mock") === "1") { history.replaceState(null, "", location.pathname + `?s=${sportKey}&f=${fmt}` + location.hash); if (mockDone()) useMock(); }
   }).catch((e) => { $("#app").innerHTML = `<div class="wrap page"><div class="banner loss"><b>Couldn't load the league.</b> <span class="muted">${esc(e.message)}</span></div></div>`; console.error(e); });

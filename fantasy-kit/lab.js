@@ -58,7 +58,7 @@
     const sport = S.attach(Object.assign({}, S[c.sport]), data);
     const have = new Set(data.players.flatMap((p) => p.pos));
     const ds = dayOn(c) ? daySlate(c) : null;
-    if (dayOn(c) && !ds) throw new Error(daySched && daySched.error ? "Couldn't reach tonight's schedule. Try again in a moment." : daySched ? "There are no games left tonight or tomorrow. Turn off one day to draft the season." : "Tonight's games are still loading. Try again in a moment.");
+    if (dayOn(c) && !ds) throw new Error(scheds[c.sport] && scheds[c.sport].error ? "Couldn't reach the schedule. Try again in a moment." : scheds[c.sport] ? (S.daily(c.sport) ? "There are no games left tonight or tomorrow. Turn off one day to draft the season." : "There are no games left this week or next. Turn off one week to draft the season.") : "Tonight's games are still loading. Try again in a moment.");
     const want = ds ? ds.lineup.lineup.slice() : sdOn(c) ? S.SHOWDOWN.lineup.slice() : hzOn(c) ? ONE_WEEK_NFL.slice() : (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
     const lineup = want.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
     let players = data.players.filter((p) => (!sdOn(c) || p.t === c.sdA || p.t === c.sdH) && (!ds || ds.slate.teams.includes(p.t))).map((p) => Object.assign({}, p));
@@ -114,25 +114,44 @@
   const hcFiles = {};
   const loadHc = (k) => hcFiles[k] || (hcFiles[k] = fetch(`data/contracts-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
   // one day of basketball: tonight's (or tomorrow's) games from the schedule, as in a one-day league
-  const dayOn = (c) => window.FK.sports.daily(c.sport) && !!c.day;
-  let daySched = null, dayAsked = false;
-  function dayOptions(now = Date.now()) {
-    const SL = window.FK.slates;
-    if (!daySched || !SL) return null;
-    const out = [];
-    for (const w of (daySched.weeks || []).filter(SL.isDay).slice(0, 2)) {
-      const when = SL.dayName(w.day, now);
+  // A slate mock, like a one-day or one-week league: basketball and college hoops play a night's games (the "day"
+  // switch), football a week's (full, Sunday or primetime; one game is the showdown switch). After the draft it plays
+  // out on the real games (fantasy/demo/?play=mock), head to head or everyone vs everyone.
+  const SLATE_SPORTS = ["nba", "cbb", "nfl"];
+  const dayOn = (c) => SLATE_SPORTS.includes(c.sport) && !!c.day && !(c.sport === "nfl" && c.sd);
+  const slateMock = (c) => dayOn(c) || sdOn(c);
+  // a finished mock that can play out on real games: a slate's, or a showdown of a real game
+  const playable = (D) => !!(D && D.season && D.season.oneWeek && !D.season.heist && (D.season.slate || (D.season.showdown && D.season.showdown.id)));
+  // teams: head to head pairs everyone off (an even number, 2 to 20); everyone vs everyone ranks 2 to 16
+  const slateTeams = (c) => (c.fmt1 === "allplay" ? [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16] : [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]);
+  const teamVals = (c) => (slateMock(c) ? slateTeams(c) : [4, 6, 8, 10, 12, 14, 16]);
+  const scheds = {}, slateAsked = {};
+  function askSched(k) {
+    if (slateAsked[k] || !window.FK.cloud) return;
+    slateAsked[k] = true;
+    window.FK.cloud.slates(k).then((d) => { scheds[k] = d || { weeks: [] }; if ($("#app #setup")) setupPage(); });
+  }
+  function dayOptions(k, now = Date.now()) {
+    const SL = window.FK.slates, sch = scheds[k];
+    if (!sch || !SL) return null;
+    const daily = S.daily(k), out = [];
+    for (const w of (sch.weeks || []).filter((w) => !!SL.isDay(w) === daily).slice(0, 2)) {
+      const when = daily ? SL.dayName(w.day, now) : `Week ${w.week}`;
       for (const o of SL.list(w, now)) {
         if (o.kind === "custom") continue;
-        if (o.kind === "one") { for (const g of SL.open(w, now)) out.push({ key: `${w.day}|one|${g.id}`, when, label: SL.label(g), sub: `${SL.tip(g.at)}, a captain and five flex`, w, kind: "one", ids: [g.id] }); continue; }
-        out.push({ key: `${w.day}|${o.kind}|`, when, label: o.label, sub: o.sub, w, kind: o.kind, ids: null });
+        if (o.kind === "one") {
+          if (!daily) continue;   // football's one game is the showdown switch
+          for (const g of SL.open(w, now)) out.push({ key: `${w.day}|one|${g.id}`, when, label: SL.label(g), sub: `${SL.tip(g.at)}, a captain and five flex`, w, kind: "one", ids: [g.id] });
+          continue;
+        }
+        out.push({ key: `${daily ? w.day : "w" + w.week}|${o.kind}|`, when, label: o.label, sub: o.sub, w, kind: o.kind, ids: null });
       }
     }
     return out;
   }
   // the slate the mock plays: { slate, lineup } or null while the schedule loads
   function daySlate(c) {
-    const os = dayOptions();
+    const os = dayOptions(c.sport);
     if (!os || !os.length) return null;
     const o = os.find((x) => x.key === c.dayK) || os[0];
     const sl = window.FK.slates.pick(o.w, o.kind, o.ids);
@@ -208,7 +227,7 @@
       <form class="nl-body" id="setup" novalidate>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}</section>
         <section class="nl-sec nl-ess">
-          <div class="g2">${K.fld("Teams", K.stepper("teams", [4, 6, 8, 10, 12, 14, 16], c.teams, (x) => `${x} teams`, "Teams"))}
+          <div class="g2">${K.fld("Teams", K.stepper("teams", teamVals(c), c.teams, (x) => `${x} teams`, "Teams"))}
             ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
           <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
@@ -222,7 +241,7 @@
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><div class="nr-l">${roster}</div></section>
         <section class="nl-sec mk-how">${tip("How the bots draft", `They value players over the replacement at each position and fill starters before the bench${c.sport === "nfl" ? ", saving kickers and defenses for last" : c.sport === "mlb" ? ", balancing hitters and pitchers as they go" : ""}. In an auction they bid by proxy up to a price set by their budget and needs.`)}
           ${tip("Your seat", "Queue players before you start. If your clock runs out, the first queued player who fits is your pick.")}
-          ${tip("After the draft", `Play a season with your team in a demo league: <a href="/fantasy/demo/?s=${esc(c.sport)}&f=h">head to head</a> or <a href="/fantasy/demo/?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
+          ${tip("After the draft", slateMock(c) ? `Play it out live: your team against the bots on the real games, ${c.fmt1 === "allplay" ? "everyone ranked by score" : "head to head"}, final when the last game ends.` : `Play a season with your team in a demo league: <a href="/fantasy/demo/?s=${esc(c.sport)}&f=h">head to head</a> or <a href="/fantasy/demo/?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
         <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
           <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
       </form></div></div>`;
@@ -240,18 +259,22 @@
       <details class="sd-any"><summary>Or any two teams</summary><div class="row" style="gap:8px;flex-wrap:wrap;margin-top:8px">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div></details>`
       : `${real ? "" : `<p class="ps" style="margin:0 0 6px">Loading this week's games…</p>`}<div class="row" style="gap:8px;flex-wrap:wrap">${sel("sdA", c.sdA)}<span class="ps">at</span>${sel("sdH", c.sdH)}</div>`;
     const rows = [];
-    if (c.sport === "nba") {
-      if (c.day && !dayAsked && window.FK.cloud) { dayAsked = true; window.FK.cloud.slates("nba").then((d) => { daySched = d || { weeks: [] }; if ($("#app #setup")) setupPage(); }); }
-      const os = c.day ? dayOptions() : null, cur = c.day ? daySlate(c) : null;
+    // head to head or everyone vs everyone, for a mock that plays out on real games
+    const fmtPick = K.fld("After the draft", K.seg("fmt1", [["h2h", "Head to head"], ["allplay", "Everyone vs everyone"]], c.fmt1 === "allplay" ? "allplay" : "h2h", "After the draft"), c.fmt1 === "allplay" ? "Top score wins. Everyone is ranked." : "Teams pair off, and you play the team you're paired with.");
+    if (SLATE_SPORTS.includes(c.sport) && !(nfl && c.sd)) {
+      const daily = S.daily(c.sport), tonight = daily ? "tonight's" : "this week's";
+      if (c.day) askSched(c.sport);
+      const sch = scheds[c.sport], os = c.day ? dayOptions(c.sport) : null, cur = c.day ? daySlate(c) : null;
       let when = "";
-      const pickHtml = !c.day ? "" : daySched && daySched.error ? `<p class="ps" style="margin:0">Couldn't reach tonight's schedule. <button type="button" class="btn sm" data-dayretry>Try again</button></p>` : !os ? `<p class="ps" style="margin:0">Loading tonight's games…</p>` : !os.length ? `<p class="ps" style="margin:0">No games left tonight or tomorrow.</p>`
-        : `<div class="slg-l">${os.map((o) => { const on = cur && cur.key === o.key, head = o.when !== when ? (when = o.when) : ""; return `${head ? `<b class="slg-day">${esc(head)}</b>` : ""}<button type="button" class="slg${on ? " on" : ""}" data-dayk="${esc(o.key)}" aria-pressed="${!!on}"><b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`; }).join("")}</div>${cur ? `<p class="fl-h">${esc(cur.lineup.note)}.</p>` : ""}`;
-      rows.push(K.toggle("day", "One day: tonight's games", "Draft only the players in a night's real games, with a one-day lineup, like a one-day league.", c.day, pickHtml));
+      const pickHtml = !c.day ? "" : `${fmtPick}${sch && sch.error ? `<p class="ps" style="margin:0">Couldn't reach ${tonight} schedule. <button type="button" class="btn sm" data-dayretry>Try again</button></p>` : !os ? `<p class="ps" style="margin:0">Loading ${tonight} games…</p>` : !os.length ? `<p class="ps" style="margin:0">${daily ? "No games left tonight or tomorrow." : "No games left this week or next."}</p>`
+        : `<div class="slg-l">${os.map((o) => { const on = cur && cur.key === o.key, head = o.when !== when ? (when = o.when) : ""; return `${head ? `<b class="slg-day">${esc(head)}</b>` : ""}<button type="button" class="slg${on ? " on" : ""}" data-dayk="${esc(o.key)}" aria-pressed="${!!on}"><b>${esc(o.label)}</b><small>${esc(o.sub)}</small></button>`; }).join("")}</div>${cur ? `<p class="fl-h">${esc(cur.lineup.note)}.</p>` : ""}`}`;
+      rows.push(daily ? K.toggle("day", "One day: tonight's games", "Draft only the players in a night's real games, with a one-day lineup, then play it out live, like a one-day league.", c.day, pickHtml)
+        : K.toggle("day", "One week: this week's games", "Draft only the players in a week's real games (the full week, Sunday or primetime), with a one-week lineup, then play it out live.", c.day, pickHtml));
     }
     if (S.hardCapOk(c.sport) && rlFits(c) && !c.day) rows.push(K.toggle("hc", "Hard Cap", `Real ${S[c.sport].league} contracts under a salary line: every player carries his real salary, and you keep room to fill the roster at the minimum. The line is set from what this league's players are paid.`, c.hc));
     if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
-    if (nfl) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, gamePick));
-    if (nfl && !sdOn(c)) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
+    if (nfl && !c.day) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, `${c.sd ? fmtPick : ""}${gamePick}`));
+    if (nfl && !sdOn(c) && !c.day) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
     return rows.length ? `<section class="nl-sec"><h2 class="nl-h">Twists</h2><div class="nl-bb">${rows.join("")}</div></section>` : "";
   }
   function setupGrab() {
@@ -270,6 +293,8 @@
   }
   function setupPage(focusSel) {
     document.body.classList.remove("fk-room");
+    // a team count the format allows (head to head pairs off; a slate mock can go down to two)
+    { const ok = teamVals(cfg); if (!ok.includes(cfg.teams)) cfg.teams = ok.reduce((a, x) => (Math.abs(x - cfg.teams) < Math.abs(a - cfg.teams) ? x : a), ok[0]); }
     if (cfg.slot > cfg.teams) cfg.slot = 0;
     app.innerHTML = setupView();
     if (focusSel) { const el = $(focusSel); if (el && !el.disabled) el.focus({ preventScroll: true }); }
@@ -295,7 +320,7 @@
       if (bs) { setupGrab(); cfg.budget = Number(bs.dataset.bset); save(`[data-bset="${bs.dataset.bset}"]`); return; }
       const row = e.target.closest("[data-row]");
       if (row) { setupGrab(); open[row.dataset.row] = !open[row.dataset.row]; save(`[data-row="${row.dataset.row}"]`); return; }
-      if (e.target.closest("[data-dayretry]")) { setupGrab(); daySched = null; dayAsked = false; save(); return; }
+      if (e.target.closest("[data-dayretry]")) { setupGrab(); delete scheds[cfg.sport]; delete slateAsked[cfg.sport]; save(); return; }
       const dk = e.target.closest("[data-dayk]");
       if (dk) { setupGrab(); cfg.dayK = dk.dataset.dayk; save(`[data-dayk="${dk.dataset.dayk}"]`); return; }
       const sdg = e.target.closest("[data-sdg]");
@@ -368,8 +393,14 @@
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
     if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };
-    if (sdOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, showdown: { teams: [c.sdA, c.sdH], label: `${c.sdA} @ ${c.sdH}` } };
-    if (P.slate) D.season = { format: "h2h", weeks: 1, oneWeek: true, slate: P.slate };
+    // a slate or showdown mock can play out on its real games afterward (fantasy/demo/?play=mock): head to head, or
+    // everyone vs everyone (fmt1)
+    const tally = c.fmt1 === "allplay" ? "allplay" : "game";
+    if (sdOn(c)) {
+      const g = sched && sched.weeks.flatMap((w) => (w.games || []).map((x) => Object.assign({ wk: w.week }, x))).find((x) => x.away === c.sdA && x.home === c.sdH && Date.parse(x.at) > Date.now());
+      D.season = { format: "h2h", tally, weeks: 1, playoffTeams: 0, waiverDays: 0, oneWeek: true, showdown: Object.assign({ teams: [c.sdA, c.sdH], label: `${c.sdA} @ ${c.sdH}` }, g ? { id: g.id, at: Date.parse(g.at), week: g.wk } : {}) };
+    }
+    if (P.slate) D.season = { format: "h2h", tally, weeks: 1, playoffTeams: 0, waiverDays: 0, oneWeek: true, slate: P.slate };
     if (hzOn(c)) D.season = { format: "h2h", weeks: 1, oneWeek: true, heist: { shields: 3, steals: 1, jinxes: 1, clock: 60 } };
     D.teams.forEach((t, i) => (t.color = (i * 5) % 12));      // each team its own color, as in a league
     D.teams[0].owner = "You";
@@ -390,7 +421,7 @@
       // with the room open in two tabs, only the one you're looking at runs the clock and the bots
       get drive() { return !document.hidden; },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
-      extra: () => `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
+      extra: () => `${playable(mock.D) ? `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&play=mock">Play it out live</a>` : mock.D.season && mock.D.season.oneWeek ? "" : `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a>`}<button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });
   }
 
