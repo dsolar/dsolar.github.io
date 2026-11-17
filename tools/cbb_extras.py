@@ -8,7 +8,7 @@ Runs after tools/cbb_build.py and needs no network:
     (refreshed each run until tipoff), then grades the line once the game is final.
 The line formula mirrors CBB.line() in cbb/model.js; tests/cbb-model.test.cjs checks the two agree.
 """
-import json, math, re, sys, unicodedata
+import json, math, random, re, sys, time, unicodedata
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -137,6 +137,161 @@ def ladder(players, teams, watch):
     return on, knocking, missing
 
 
+# ---------- season and tournament simulation ----------
+SELECTION_SUNDAY = "2027-03-14"
+FIELD, AT_LARGE_OPEN, AQ_OPEN = 76, 12, 12
+REGION_ORDER = [1, 16, 8, 9, 5, 12, 4, 13, 6, 11, 3, 14, 7, 10, 2, 15]
+
+
+def build_bracket(field, aq_set, strength):
+    """64 slots from a 76-team field: the 12 weakest automatic qualifiers and the 12 weakest at-large teams
+    pair off in the Opening Round. Slots go down the S-curve onto four regions."""
+    order = sorted(field, key=lambda i: -strength[i])
+    aqs = [i for i in order if i in aq_set]
+    ats = [i for i in order if i not in aq_set]
+    pairs = [(aqs[-AQ_OPEN:][k], aqs[-AQ_OPEN:][k + 1]) for k in range(0, AQ_OPEN, 2)] + [(ats[-AT_LARGE_OPEN:][k], ats[-AT_LARGE_OPEN:][k + 1]) for k in range(0, AT_LARGE_OPEN, 2)]
+    paired = {i for p in pairs for i in p}
+    slots = [((i,), strength[i]) for i in order if i not in paired] + [(p, (strength[p[0]] + strength[p[1]]) / 2) for p in pairs]
+    slots.sort(key=lambda x: -x[1])
+    regions = [dict() for _ in range(4)]
+    for k, (teams, _) in enumerate(slots[:64]):
+        line_, pos = divmod(k, 4)
+        regions[pos if line_ % 2 == 0 else 3 - pos][line_ + 1] = teams
+    return regions
+
+
+def simulate(teams, avg, sims, seed, today):
+    rng = random.Random(seed)
+    gauss, rand = rng.gauss, rng.random
+    T = [t for t in teams if num(t.get("metrics", {}).get("adjO")) is not None and t.get("conference")]
+    n = len(T)
+    tempo = mean([num(t["metrics"].get("tempo")) for t in T])
+    average = {"metrics": {"adjO": avg, "adjD": avg, "tempo": tempo}}
+    base = [line(t, average, True, avg)["spread"] for t in T]
+    cache = {}
+
+    def S(i, j):
+        k = i * n + j
+        v = cache.get(k)
+        if v is None:
+            v = cache[k] = line(T[i], T[j], True, avg)["spread"]
+        return v
+
+    days = max(0, (datetime.fromisoformat(SELECTION_SUNDAY).date() - today).days)
+    drift = 3.0 * math.sqrt(min(days, 120) / 120)  # how far a rating can still move before March, in points per game
+    confs = {}
+    for i, t in enumerate(T):
+        confs.setdefault(t["conference"], []).append(i)
+    left, played = [0] * n, [0] * n
+    for i, t in enumerate(T):
+        p, r = t.get("projection") or {}, t.get("record") or {}
+        total = (num(p.get("confWins")) or 0) + (num(p.get("confLosses")) or 0)
+        done = (num(r.get("cw")) or 0) + (num(r.get("cl")) or 0)
+        played[i] = int(num(r.get("cw")) or 0)
+        left[i] = max(0, int(round(total - done)))
+    for c, m in confs.items():  # a conference without a schedule length uses its median
+        known = sorted(left[i] for i in m if left[i])
+        for i in m:
+            if not left[i] and known:
+                left[i] = known[len(known) // 2]
+    M = {c: [[S(i, j) if i != j else 0 for j in m] for i in m] for c, m in confs.items()}
+    reg, aq, made, wsum = [0] * n, [0] * n, [0] * n, [0.0] * n
+    rounds = [[0] * 7 for _ in range(n)]
+    seeds = [[0] * 17 for _ in range(n)]
+    SD, H = SPREAD_SD, HOME_EDGE
+
+    def play(i, j, off):
+        return i if S(i, j) + off[i] - off[j] + gauss(0, SD) > 0 else j
+
+    for _ in range(sims):
+        off = [gauss(0, drift) for _ in range(n)]
+        strength = [base[i] + off[i] for i in range(n)]
+        aq_set = set()
+        for c, m in confs.items():
+            k, mat = len(m), M[c]
+            wins = [played[i] for i in m]
+            gp = [0] * k
+            slots = [li for li in range(k) for _ in range(left[m[li]])]
+            rng.shuffle(slots)
+            if len(slots) % 2:
+                slots.pop()
+            for x in range(0, len(slots) - 1, 2):
+                a, b = slots[x], slots[x + 1]
+                if a == b:  # swap with a later slot to avoid a team playing itself
+                    for y in range(x + 2, len(slots)):
+                        if slots[y] != a:
+                            slots[x + 1], slots[y] = slots[y], slots[x + 1]
+                            b = slots[x + 1]
+                            break
+                    else:
+                        continue
+                ia, ib = m[a], m[b]
+                margin = mat[a][b] + off[ia] - off[ib] + (H if rand() < 0.5 else -H)
+                if margin + gauss(0, SD) > 0:
+                    wins[a] += 1
+                else:
+                    wins[b] += 1
+                gp[a] += 1
+                gp[b] += 1
+            best = max(wins)
+            for li in range(k):
+                i = m[li]
+                wsum[i] += wins[li]
+                if wins[li] == best:
+                    reg[i] += 1
+            order = sorted(range(k), key=lambda li: (-wins[li], rand()))[:8]
+            bracket = [m[order[x]] for x in (0, 7, 3, 4, 1, 6, 2, 5)] if len(order) == 8 else [m[x] for x in order]
+            while len(bracket) > 1:
+                bracket = [play(bracket[x], bracket[x + 1], off) for x in range(0, len(bracket) - 1, 2)] + ([bracket[-1]] if len(bracket) % 2 else [])
+            aq_set.add(bracket[0])
+        pool = sorted((i for i in range(n) if i not in aq_set), key=lambda i: -strength[i])
+        field = list(aq_set) + pool[:FIELD - len(aq_set)]
+        for i in aq_set:
+            aq[i] += 1
+        regions = build_bracket(field, aq_set, strength)
+        champs = []
+        for reg_ in regions:
+            line_up = []
+            for sd in REGION_ORDER:
+                ts = reg_.get(sd, ())
+                for i in ts:
+                    made[i] += 1
+                    seeds[i][sd] += 1
+                w = play(ts[0], ts[1], off) if len(ts) == 2 else ts[0]
+                rounds[w][0] += 1
+                line_up.append(w)
+            for r in range(1, 5):
+                line_up = [play(line_up[x], line_up[x + 1], off) for x in range(0, len(line_up), 2)]
+                for w in line_up:
+                    rounds[w][r] += 1
+            champs.append(line_up[0])
+        f1, f2 = play(champs[0], champs[3], off), play(champs[1], champs[2], off)
+        rounds[f1][5] += 1
+        rounds[f2][5] += 1
+        rounds[play(f1, f2, off)][6] += 1
+    out = {}
+    for i, t in enumerate(T):
+        cnt = seeds[i]
+        mode = max(range(1, 17), key=lambda s_: cnt[s_]) if made[i] else None
+        out[t["id"]] = {"reg": round(reg[i] / sims, 4), "cw": round(wsum[i] / sims, 1), "aq": round(aq[i] / sims, 4), "in": round(made[i] / sims, 4),
+                        "seed": round(sum(s_ * cnt[s_] for s_ in range(17)) / made[i], 1) if made[i] else None, "mode": mode,
+                        "top4": round(sum(cnt[1:5]) / sims, 4), "r": [round(x / sims, 4) for x in rounds[i]]}
+        total = left[i] + played[i] + int(num((t.get("record") or {}).get("cl")) or 0)
+        out[t["id"]]["cl"] = round(total - out[t["id"]]["cw"], 1)
+    # The bracket if the season ended with today's ratings: favorite to win each conference tournament takes the bid
+    idx = {t["id"]: i for i, t in enumerate(T)}
+    fav = {c: max(m, key=lambda i: (aq[i], base[i])) for c, m in confs.items()}
+    aq_set = set(fav.values())
+    pool = sorted((i for i in range(n) if i not in aq_set), key=lambda i: -base[i])
+    field = list(aq_set) + pool[:FIELD - len(aq_set)]
+    regions = build_bracket(field, aq_set, base)
+    projected = [[{"seed": sd, "teams": [T[i]["id"] for i in reg_.get(sd, ())]} for sd in REGION_ORDER] for reg_ in regions]
+    last_in = [T[i]["id"] for i in pool[:FIELD - len(aq_set)][-6:]]
+    first_out = [T[i]["id"] for i in pool[FIELD - len(aq_set):FIELD - len(aq_set) + 6]]
+    return {"sims": sims, "drift": round(drift, 2), "selectionSunday": SELECTION_SUNDAY, "teams": out, "bracket": projected, "lastIn": last_in, "firstOut": first_out,
+            "method": f"{sims:,} seasons. Each run nudges every team's rating by a random amount (up to about {drift:.1f} points a game, shrinking toward Selection Sunday), plays each team's remaining conference games against randomly drawn league opponents with home court split evenly, then an eight-team conference tournament for the automatic bid. The other {FIELD - 32} spots go to the strongest teams left, the 12 weakest automatic qualifiers and 12 weakest at-large teams play in the Opening Round, seeds follow the S-curve, and the 76-team tournament is played out on neutral courts."}
+
+
 def ny_today():
     return datetime.now(ZoneInfo("America/New_York")).date()
 
@@ -201,11 +356,19 @@ def main():
         rows = [v for v in graded if lo <= max(v["homeProb"], 1 - v["homeProb"]) < hi]
         record["buckets"].append({"label": label, "games": len(rows), "right": sum(v["correct"] for v in rows),
                                   "expected": round(mean([max(v["homeProb"], 1 - v["homeProb"]) for v in rows]) * 100, 1) if rows else None})
-    out = {"schema": 1, "updated": stamp, "today": today.isoformat(), "leagueAvgEff": round(avg, 2) if avg else None,
+    t0 = time.time()
+    sims = int(next((a.split("=")[1] for a in sys.argv[1:] if a.startswith("--sims=")), 4000))
+    try:
+        season = simulate(teams, avg, sims, int(today.strftime("%Y%m%d")), today)
+        season["seconds"] = round(time.time() - t0, 1)
+    except Exception as e:  # keep the last good simulation rather than publishing none
+        print("Simulation failed:", e, file=sys.stderr)
+        season = prior.get("season")
+    out = {"schema": 1, "updated": stamp, "season": season, "today": today.isoformat(), "leagueAvgEff": round(avg, 2) if avg else None,
            "homeEdge": HOME_EDGE, "spreadSd": SPREAD_SD, "naismith": naismith,
            "lines": {"since": min([v["day"] for v in log.values()], default=None), "games": log}, "record": record}
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n")
-    print(json.dumps({"naismith": len(on), "unmatched": missing, "knocking": len(knocking), "lines": len(log), "graded": record["games"]}))
+    print(json.dumps({"naismith": len(on), "unmatched": missing, "knocking": len(knocking), "lines": len(log), "graded": record["games"], "sims": season and season.get("sims"), "seconds": season and season.get("seconds")}))
 
 
 if __name__ == "__main__":

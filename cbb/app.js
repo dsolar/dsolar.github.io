@@ -48,6 +48,16 @@ function teamSelect(param, value, label) { return '<label>' + label + '<select d
 function sortTh(key, label, cur, title) { return '<th class="sort' + (cur === key ? " on" : "") + '" data-sort="' + key + '"' + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + (cur === key ? " ▾" : "") + "</th>"; }
 function star(t) { const on = faves.has(t.id); return '<button class="star" type="button" data-fav="' + esc(t.id) + '" aria-pressed="' + on + '" title="' + (on ? "Following" : "Follow") + '">' + (on ? "★" : "☆") + "</button>"; }
 
+/* ---------- season simulation ---------- */
+const SIM = () => X && X.season && X.season.teams ? X.season : null;
+const odds = id => { const S_ = SIM(); return S_ ? S_.teams[id] : null; };
+const ROUNDS = ["R64", "R32", "Sweet 16", "Elite 8", "Final Four", "Title game", "Champion"];
+function titleStrip(n) {
+  const S_ = SIM(); if (!S_) return "";
+  const top = Object.entries(S_.teams).sort((a, b) => b[1].r[6] - a[1].r[6]).slice(0, n || 8);
+  return '<div class="cupstrip">' + top.map(([id, o]) => { const t = byId[id]; return '<a href="#/team?id=' + esc(id) + '">' + logo(t) + "<div><b>" + pct(o.r[6]) + "</b><span>" + esc(t.short) + "</span></div></a>"; }).join("") + "</div>";
+}
+
 /* ---------- lines ---------- */
 function lineFor(g) { return M.line(byId[g.home], byId[g.away], !!g.neutral, avg); }
 function loggedLine(g) { return X && X.lines && X.lines.games ? X.lines.games[g.id] : null; }
@@ -112,7 +122,7 @@ function today(q) {
     '<div class="two" style="margin-top:16px">' +
     '<div class="panel"><h3>Prospects in action <small><a href="../draft/">NBA Big Board ↗</a></small></h3>' + (pros.length ? '<ul class="rlist">' + pros.slice(0, 10).map(p => "<li>" + '<span class="pill bb">#' + p.draftRank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.team) + " " + vs(p.teamId) + '</span><span class="num">' + f1(stat(p, "pts")) + " ppg</span></li>").join("") + "</ul>" : '<p class="body note">No Big Board prospects play this day.</p>') + "</div>" +
     '<div class="panel"><h3>Naismith candidates playing <small><a href="#/naismith">Full ladder →</a></small></h3>' + (nais.length ? '<ul class="rlist">' + nais.map(r => { const p = byPlayer[r.id]; return "<li>" + '<span class="pill nai">#' + r.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.team) + " " + vs(p.teamId) + '</span><span class="num">' + f1(stat(p, "pts")) + " ppg</span></li>"; }).join("") + "</ul>" : '<p class="body note">No watch-list players play this day.</p>') + "</div>" +
-    "</div>";
+    "</div>" + (SIM() ? '<div class="panel"><h3>National title odds <small><a href="#/bracket">Tournament odds →</a></small></h3><div class="body">' + titleStrip(8) + "</div></div>" : "");
 }
 
 const RCOLS = [
@@ -120,7 +130,7 @@ const RCOLS = [
   ["net", "Net", t => M.em(t)], ["adjO", "Off", t => M.num(t.metrics.adjO)], ["adjD", "Def", t => M.num(t.metrics.adjD), true],
   ["tempo", "Pace", t => M.num(t.metrics.tempo)], ["three", "3PA%", t => M.num(t.metrics.threeShare)], ["rim", "Rim%", t => M.num(t.metrics.rimShare)],
   ["tp", "3P%", t => M.num(t.metrics.threePct)], ["otp", "Opp 3P%", t => M.num(t.metrics.oppThreePct), true],
-  ["projw", "Proj", t => t.projection && M.num(t.projection.wins)], ["conf", "Conf %", t => M.num(t.metrics.confTitle)], ["move", "7-day", t => M.num(t.change7)]
+  ["projw", "Proj", t => t.projection && M.num(t.projection.wins)], ["conf", "Conf %", t => M.num(t.metrics.confTitle)], ["ncaa", "NCAA", t => odds(t.id) ? odds(t.id).in : null], ["move", "7-day", t => M.num(t.change7)]
 ];
 function ratings(q) {
   const conf = q.get("conf") || "", s = (q.get("q") || "").toLowerCase(), sort = q.get("sort") || "haslam", mode = q.get("view") || "table";
@@ -140,11 +150,11 @@ function ratings(q) {
       '<td><span class="chip ' + tier(M.percentile(D.teams, t, "adjO")) + '">' + f1(m.adjO) + '</span> <small class="rr">' + (rankO[t.id] || "") + "</small></td>" +
       '<td><span class="chip ' + tier(M.percentile(D.teams, t, "adjD", true)) + '">' + f1(m.adjD) + '</span> <small class="rr">' + (rankD[t.id] || "") + "</small></td>" +
       "<td>" + f1(m.tempo) + "</td><td>" + f1(m.threeShare) + "</td><td>" + f1(m.rimShare) + "</td><td>" + f1(m.threePct) + "</td><td>" + f1(m.oppThreePct) + "</td>" +
-      "<td>" + proj(t) + "</td><td>" + (fin(m.confTitle) ? Math.round(m.confTitle) + "%" : "—") + '</td><td class="' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (mv ? (mv > 0 ? "▲" : "▼") + Math.abs(mv) : "–") + "</td></tr>";
+      "<td>" + proj(t) + "</td><td>" + (fin(m.confTitle) ? Math.round(m.confTitle) + "%" : "—") + "</td><td>" + (odds(t.id) ? pct(odds(t.id).in) : "—") + '</td><td class="' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (mv ? (mv > 0 ? "▲" : "▼") + Math.abs(mv) : "–") + "</td></tr>";
   }).join("");
   return head + '<div class="panel"><div class="scroll"><table class="t rt"><thead>' + th + "</thead><tbody>" + body + "</tbody></table></div></div>" +
     (show.length < ts.length ? '<p><button class="btn" data-more="all">Show all ' + ts.length + " teams</button></p>" : "") +
-    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. 7-day: Haslametrics rank change this week.</p>";
+    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => fin(t.metrics.adjO) && fin(t.metrics.adjD));
@@ -165,17 +175,18 @@ function scatter(ts, focus) {
 
 function conferences(q) {
   const cs = M.conferences(D.teams), bids = {};
-  if (D.march) for (const s of D.march.slots) for (const id of s.teamIds) { const c = byId[id] && byId[id].conference; if (c) bids[c] = (bids[c] || 0) + 1; }
+  if (SIM()) for (const [id, o] of Object.entries(SIM().teams)) { const c = byId[id] && byId[id].conference; if (c) bids[c] = (bids[c] || 0) + o.in; }
+  else if (D.march) for (const s of D.march.slots) for (const id of s.teamIds) { const c = byId[id] && byId[id].conference; if (c) bids[c] = (bids[c] || 0) + 1; }
   const pick = q.get("conf") || cs[0].name, c = cs.find(x => x.name === pick) || cs[0];
-  const teams = c.teams.slice().sort((a, b) => (M.num(b.metrics.confTitle) ?? -1) - (M.num(a.metrics.confTitle) ?? -1) || (a.haslamRank || 999) - (b.haslamRank || 999));
-  return '<h2 class="sec">Conference strength</h2><p class="lede">Average efficiency margin of each league\'s rated teams, its top three, and how many teams Haslametrics\' current bracket puts in the 76-team field.</p>' +
-    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Conference</th><th>Avg net</th><th>Top-3 net</th><th>Best team</th><th>Teams</th><th>Bids</th></tr></thead><tbody>' +
-    cs.map((x, i) => '<tr class="go' + (x.name === c.name ? " sel" : "") + '" data-href="#/conferences?conf=' + encodeURIComponent(x.name) + '"><td><span class="rk">' + (i + 1) + "</span> <b>" + esc(x.name) + '</b></td><td class="' + (x.average > 0 ? "pos" : "neg") + '">' + sg(x.average) + "</td><td>" + sg(x.top3) + '</td><td class="tm">' + (x.leader ? logo(x.leader) + '<span class="nm">' + esc(x.leader.short) + "</span>" : "—") + "</td><td>" + x.teams.length + "</td><td>" + (bids[x.name] || 0) + "</td></tr>").join("") +
+  const teams = c.teams.slice().sort((a, b) => ((odds(b.id) || {}).reg ?? M.num(b.metrics.confTitle) / 100 ?? -1) - ((odds(a.id) || {}).reg ?? M.num(a.metrics.confTitle) / 100 ?? -1) || (a.haslamRank || 999) - (b.haslamRank || 999));
+  return '<h2 class="sec">Conference strength</h2><p class="lede">Average efficiency margin of each league\'s rated teams, its top three, and how many NCAA bids the league averages across the hub\'s simulated seasons.</p>' +
+    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Conference</th><th>Avg net</th><th>Top-3 net</th><th>Best team</th><th>Teams</th><th>Proj bids</th></tr></thead><tbody>' +
+    cs.map((x, i) => '<tr class="go' + (x.name === c.name ? " sel" : "") + '" data-href="#/conferences?conf=' + encodeURIComponent(x.name) + '"><td><span class="rk">' + (i + 1) + "</span> <b>" + esc(x.name) + '</b></td><td class="' + (x.average > 0 ? "pos" : "neg") + '">' + sg(x.average) + "</td><td>" + sg(x.top3) + '</td><td class="tm">' + (x.leader ? logo(x.leader) + '<span class="nm">' + esc(x.leader.short) + "</span>" : "—") + "</td><td>" + x.teams.length + "</td><td><b>" + f1(bids[x.name] || 0) + "</b></td></tr>").join("") +
     "</tbody></table></div></div>" +
-    '<h2 class="sec" id="race">' + esc(c.name) + " race</h2><p class=\"lede\">BPI projected conference and overall records, and each team's chance to win the regular-season title.</p>" +
+    '<h2 class="sec" id="race">' + esc(c.name) + " race</h2><p class=\"lede\">From the hub's season simulation: projected conference record, chance to win (or share) the regular-season title, chance to win the conference tournament and its automatic bid, and chance to make the NCAA tournament. ESPN BPI's title odds are alongside for comparison.</p>" +
     '<div class="controls"><label>Conference<select data-param="conf">' + cs.map(x => "<option" + (x.name === c.name ? " selected" : "") + ">" + esc(x.name) + "</option>").join("") + "</select></label></div>" +
-    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Team</th><th>Conf</th><th>Overall</th><th>Proj conf</th><th>Proj overall</th><th>Title odds</th><th>Net</th><th>Rk</th></tr></thead><tbody>' +
-    teams.map(t => { const ct = M.num(t.metrics.confTitle); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></td><td>" + crec(t) + "</td><td>" + rec(t) + "</td><td>" + (t.projection && fin(t.projection.confWins) ? Math.round(t.projection.confWins) + "-" + Math.round(t.projection.confLosses) : "—") + "</td><td>" + proj(t) + '</td><td><span class="bar">' + (fin(ct) ? Math.round(ct) + "%" : "—") + '<i><b style="width:' + Math.min(100, ct || 0) + '%"></b></i></span></td><td>' + sg(M.em(t)) + "</td><td>" + int(t.haslamRank) + "</td></tr>"; }).join("") +
+    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Team</th><th>Conf</th><th>Overall</th><th>Proj conf</th><th>Reg-season title</th><th>Auto bid</th><th>Make NCAA</th><th>BPI title</th><th>Net</th><th>Rk</th></tr></thead><tbody>' +
+    teams.map(t => { const ct = M.num(t.metrics.confTitle), o = odds(t.id); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></td><td>" + crec(t) + "</td><td>" + rec(t) + "</td><td>" + (o ? Math.round(o.cw) + "-" + Math.round(o.cl) : "—") + '</td><td><span class="bar">' + (o ? pct(o.reg) : "—") + '<i><b style="width:' + (o ? o.reg * 100 : 0) + '%"></b></i></span></td><td>' + (o ? pct(o.aq) : "—") + "</td><td>" + (o ? pct(o.in) : "—") + '</td><td class="note">' + (fin(ct) ? Math.round(ct) + "%" : "—") + "</td><td>" + sg(M.em(t)) + "</td><td>" + int(t.haslamRank) + "</td></tr>"; }).join("") +
     "</tbody></table></div></div>";
 }
 
@@ -204,15 +215,23 @@ function teamPage(q) {
   }).join("");
   return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)</div></div>" +
     '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
-    tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [proj(t), "Proj record"], [fin(m.confTitle) ? Math.round(m.confTitle) + "%" : "—", "Conf title"]]) +
+    tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) : "—", "Make NCAA"], [odds(t.id) && odds(t.id).mode ? odds(t.id).mode : "—", "Likely seed"]]) +
     '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
     '<div class="two"><div class="panel"><h3>Schedule <small>hub line and win probability</small></h3><div class="scroll"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="5" class="note">No games in this week\'s snapshot.</td></tr>') + "</tbody></table></div></div>" +
     '<div class="panel"><h3>Résumé so far</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
     ["best", "worst", "latest"].filter(k => hl[k]).map(k => { const h = hl[k]; return '<p class="tldr"><b>' + { best: "Best game", worst: "Worst game", latest: "Latest" }[k] + ":</b> " + (h.us > h.them ? "W " : "L ") + int(h.us) + "-" + int(h.them) + " " + (h.venue === "H" ? "vs" : h.venue === "A" ? "at" : "vs") + " " + esc(h.opponent) + " (" + esc(h.date) + ")</p>"; }).join("") +
     '<p class="note">Quadrants are Haslametrics\' own hNET quadrants, not the NCAA\'s official NET.</p></div></div></div>' +
+    outlook(t) +
     '<h2 class="sec">Roster</h2><div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Player</th><th>Pos</th><th>Yr</th><th>Ht</th><th>PTS</th><th>REB</th><th>AST</th><th>FG%</th></tr></thead><tbody>' +
     roster.map(p => "<tr><td class=\"l\">" + playerLink(p) + badges(p) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td>" + esc(p.height || "") + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "fgPct")) + "</td></tr>").join("") + "</tbody></table></div></div>";
+}
+
+function outlook(t) {
+  const o = odds(t.id); if (!o) return "";
+  const steps = [["Make the field", o.in], ...o.r.slice(1).map((x, k) => [ROUNDS[k + 1], x])];
+  return '<div class="panel"><h3>March outlook <small><a href="#/bracket">All tournament odds →</a></small></h3><div class="body"><div class="kv"><div><b>' + pct(o.reg) + "</b><span>Reg-season title</span></div><div><b>" + Math.round(o.cw) + "-" + Math.round(o.cl) + "</b><span>Proj conf record</span></div><div><b>" + pct(o.aq) + "</b><span>Auto bid</span></div><div><b>" + (o.seed ? f1(o.seed) : "—") + "</b><span>Avg seed</span></div><div><b>" + pct(o.top4) + "</b><span>Top-4 seed</span></div></div>" +
+    '<div class="ladder">' + steps.map(([lab, x]) => '<div class="lr"><span>' + lab + '</span><i><b style="width:' + (x * 100).toFixed(1) + '%"></b></i><em>' + pct(x) + "</em></div>").join("") + "</div></div></div>";
 }
 
 function players(q) {
@@ -312,17 +331,28 @@ function matchup(q) {
     '<div class="panel"><h3>' + esc(a.short) + ' go-to players</h3><ul class="rlist">' + keyMen(a) + '</ul></div><div class="panel"><h3>' + esc(b.short) + ' go-to players</h3><ul class="rlist">' + keyMen(b) + "</ul></div></div></div>";
 }
 
-function bracket() {
-  const m = D.march; if (!m) return '<p class="callout">No bracket in this snapshot.</p>';
-  const lines = []; for (let s = 1; s <= 16; s++) lines.push([s, m.slots.filter(x => x.seed === s)]);
-  const cell = sl => '<div class="slot' + (sl.teamIds.length > 1 ? " ff" : "") + '">' + sl.teamIds.map(id => { const t = byId[id]; return t ? '<a href="#/team?id=' + esc(id) + '">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></a>" : ""; }).join('<span class="or">/</span>') + "</div>";
-  const out = (m.firstOut || []).map(x => byId[x.teamId || x] || byId[x.id]).filter(Boolean);
-  const bids = {}; m.slots.forEach(s => s.teamIds.forEach(id => { const c = byId[id] && byId[id].conference; if (c) bids[c] = (bids[c] || 0) + 1; }));
-  return '<h2 class="sec">Bracket</h2><p class="lede">' + esc(m.source) + '\'s current "deserves" field (' + dLabel(m.updated) + "): the 76 teams it would put in the tournament today, by seed line. Pairs play in the Opening Round. Regions aren't assigned this early.</p>" +
-    '<div class="panel"><div class="seeds">' + lines.map(([s, sl]) => '<div class="sl"><b class="sd">' + s + "</b>" + sl.map(cell).join("") + "</div>").join("") + "</div></div>" +
-    '<div class="two">' + (out.length ? '<div class="panel"><h3>First teams out</h3><ul class="rlist">' + out.map(t => "<li>" + teamLink(t, { rank: true }) + '<span class="grow sub">' + esc(t.conference) + "</span><span>" + rec(t) + "</span></li>").join("") + "</ul></div>" : "") +
-    '<div class="panel"><h3>Bids by conference</h3><ul class="rlist">' + Object.entries(bids).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([c, n]) => '<li><span class="grow">' + esc(c) + '</span><span class="bar">' + n + '<i><b style="width:' + n / 12 * 100 + '%"></b></i></span></li>').join("") + "</ul></div></div>" +
-    '<p class="note">' + esc(m.note || "") + "</p>";
+function bracket(q) {
+  const S_ = SIM(), m = D.march;
+  if (!S_) return '<p class="callout">Tournament odds arrive with the next data update.</p>';
+  const conf = q.get("conf") || "", show = q.get("show") || "field", sort = q.get("sort") || "title";
+  const cols = { title: o => o.r[6], f4: o => o.r[4], e8: o => o.r[3], s16: o => o.r[2], r32: o => o.r[1], in: o => o.in, aq: o => o.aq, seed: o => o.seed === null ? null : -o.seed };
+  let rows = Object.entries(S_.teams).filter(([id, o]) => (!conf || byId[id].conference === conf) && (show === "all" || conf || (show === "bubble" ? o.in >= 0.15 && o.in <= 0.85 && o.aq < o.in * 0.6 : o.in >= 0.5)));
+  const key = cols[sort] || cols.title;
+  rows.sort((a, b) => { const x = key(a[1]), y = key(b[1]); return (x == null) - (y == null) || (y ?? 0) - (x ?? 0) || b[1].in - a[1].in; });
+  const cell = x => x >= 0.995 ? '<td class="hot">>99%</td>' : x < 0.001 ? '<td class="note">–</td>' : '<td style="--p:' + Math.min(1, x * 1.6).toFixed(2) + '" class="heat">' + (x < 0.01 ? "<1%" : Math.round(x * 100) + "%") + "</td>";
+  const tr = ([id, o]) => { const t = byId[id]; return '<tr class="go" data-href="#/team?id=' + esc(id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference) + " · " + rec(t) + "</small></td><td>" + (o.mode ? "<b>" + o.mode + '</b> <small class="rr">' + f1(o.seed) + "</small>" : "–") + "</td>" + cell(o.in) + cell(o.aq) + o.r.slice(1).map(cell).join("") + "</tr>"; };
+  const region = (r, k) => '<div class="region"><h4>' + ["East", "South", "Midwest", "West"][k] + "</h4>" + r.map(sl => '<div class="bs"><b class="sd">' + sl.seed + "</b>" + sl.teams.map(id => { const t = byId[id], o = odds(id); return '<a href="#/team?id=' + esc(id) + '">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small>' + (o && o.r[6] >= 0.001 ? pct(o.r[6]) : "") + "</small></a>"; }).join("") + "</div>").join("") + "</div>";
+  const bubble = (ids, lab) => '<div class="panel"><h3>' + lab + '</h3><ul class="rlist">' + ids.map(id => { const t = byId[id], o = odds(id); return "<li>" + teamLink(t, { rank: true }) + '<span class="grow sub">' + esc(t.conference) + " · " + rec(t) + '</span><span class="num">' + pct(o && o.in) + "</span></li>"; }).join("") + "</ul></div>";
+  return '<h2 class="sec">Tournament odds</h2><p class="lede">The rest of the season played out ' + S_.sims.toLocaleString("en-US") + ' times, through conference tournaments, selection and the 76-team tournament. Each team\'s chance to make the field, earn its conference\'s automatic bid and reach every round. Updated ' + dLabel(X.updated) + ".</p>" +
+    titleStrip(8) +
+    '<div class="controls">' + confSelect(conf) + seg("show", [["field", "Contenders"], ["bubble", "Bubble"], ["all", "All 365"]], show) + "</div>" +
+    '<div class="panel"><div class="scroll"><table class="t odds"><thead><tr><th class=l>Team</th>' + sortTh("seed", "Seed", sort, "Most likely seed, with the average seed when in the field") + sortTh("in", "Make it", sort) + sortTh("aq", "Auto bid", sort) + sortTh("r32", "R32", sort) + sortTh("s16", "Sweet 16", sort) + sortTh("e8", "Elite 8", sort) + sortTh("f4", "Final Four", sort) + "<th>Title game</th>" + sortTh("title", "Champion", sort) + "</tr></thead><tbody>" +
+    (rows.length ? rows.map(tr).join("") : '<tr><td colspan="10" class="note">No teams match.</td></tr>') + "</tbody></table></div></div>" +
+    '<h2 class="sec">Projected bracket</h2><p class="lede">If the season ended with today\'s ratings: the favorite in each conference tournament takes the automatic bid, the next 44 strongest teams get at-large spots, and seeds follow the S-curve. Pairs play in the Opening Round. Percentages are title odds.</p>' +
+    '<div class="regions">' + S_.bracket.map(region).join("") + "</div>" +
+    '<div class="two">' + bubble(S_.lastIn, "Last in") + bubble(S_.firstOut, "First out") + "</div>" +
+    (m ? '<details class="org"><summary>Haslametrics\' field today (' + dLabel(m.updated) + ')</summary><div class="seeds">' + Array.from({ length: 16 }, (_, k) => k + 1).map(sd => '<div class="sl"><b class="sd">' + sd + "</b>" + m.slots.filter(x => x.seed === sd).map(sl => '<div class="slot' + (sl.teamIds.length > 1 ? " ff" : "") + '">' + sl.teamIds.map(id => { const t = byId[id]; return t ? '<a href="#/team?id=' + esc(id) + '">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></a>" : ""; }).join("") + "</div>").join("") + "</div>").join("") + "</div></details>" : "") +
+    '<p class="note">' + esc(S_.method) + " Regions are named for layout only; the real committee also weighs résumé, which this strength-first selection doesn't.</p>";
 }
 
 function method() {
@@ -334,6 +364,7 @@ function method() {
     "<h3>Keeping score</h3><p>Every few hours the updater logs the hub's line for each scheduled game, refreshing it until tipoff, then grades it against the final. Nothing is graded with hindsight ratings.</p>" +
     (r && r.games ? '<div class="panel"><h3>Hub record <small>since ' + dLabel(X.lines.since) + "</small></h3>" + tiles([[r.right + "-" + (r.games - r.right), "Picking winners"], [Math.round(r.right / r.games * 100) + "%", "Right"], [f1(r.avgMiss), "Avg spread miss"], [f1(r.avgTotalMiss), "Avg total miss"]]) + '<table class="t"><thead><tr><th class=l>Confidence</th><th>Games</th><th>Right</th><th>Expected</th></tr></thead><tbody>' + r.buckets.map(b => "<tr><td>" + esc(b.label) + "</td><td>" + b.games + "</td><td>" + (b.games ? Math.round(b.right / b.games * 100) + "%" : "—") + "</td><td>" + (fin(b.expected) ? b.expected + "%" : "—") + "</td></tr>").join("") + "</tbody></table></div>" : '<p class="callout">The hub started logging lines on ' + dLabel(X && X.lines.since || D.today) + ". Its record appears once those games go final.</p>") +
     (upsets.length ? '<div class="panel"><h3>Biggest upsets of the hub\'s lines</h3><ul class="rlist">' + upsets.map(v => { const h = byId[v.home], a = byId[v.away], winner = v.final[0] > v.final[1] ? h : a; return "<li>" + logo(winner) + '<span class="grow"><b>' + esc(winner.short) + "</b> beat " + esc((winner === h ? a : h).short) + " " + int(Math.max(...v.final)) + "-" + int(Math.min(...v.final)) + '<span class="sub">' + dLabel(v.day) + " · hub had them at " + pct(winner === h ? v.homeProb : 1 - v.homeProb) + "</span></span></li>"; }).join("") + "</ul></div>" : "") +
+    "<h3>Season simulation</h3><p>" + esc(SIM() ? SIM().method : "") + " Conference schedules are drawn at random within each league, so real schedule imbalance isn't captured, and every league plays an eight-team conference tournament.</p>" +
     "<h3>Watchability</h3><p>A 0-100 score for each game: half from the two teams' national rank in efficiency margin, up to 30 for a close line, a little for pace, and bonuses for NBA Big Board top-60 prospects, Naismith watch-list players, conference games and games in progress.</p>" +
     "<h3>Naismith ladder</h3><p>" + esc(X ? X.naismith.method : "") + " The official watch list comes from the Atlanta Tipoff Club; players can play their way on and off it.</p>" +
     "<h3>Sources</h3><ul>" + src.map(s => '<li><a href="' + safe(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a>: " + esc(s.status === "linked" ? "linked, not connected. " + (s.note || "") : "connected" + (s.updated ? ", updated " + dLabel(s.updated) : "") + (s.coverage ? " (" + s.coverage + ")" : "")) + "</li>").join("") +

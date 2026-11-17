@@ -73,8 +73,13 @@ test("Naismith Watch ranks all 50 listed players and prospects come from the Big
   const n=data.players.filter(p=>Number.isFinite(p.draftRank)).length;assert.equal(w.document.querySelectorAll("#view tbody tr").length,n);
  }finally{w.close();}
 });
-test("the bracket shows 16 seed lines from the provider's field",async()=>{
- const w=await boot("#/bracket");try{assert.equal(w.document.querySelectorAll(".sl").length,16);assert.equal(w.document.querySelectorAll(".slot").length,64);}finally{w.close();}
+test("the bracket shows tournament odds, a 64-slot projected bracket and the provider's field",async()=>{
+ const w=await boot("#/bracket");try{
+  assert.equal(w.document.querySelectorAll(".regions .bs").length,64);assert.equal(w.document.querySelectorAll(".sl").length,16);assert.equal(w.document.querySelectorAll(".slot").length,64);
+  assert.ok(w.document.querySelectorAll("table.odds tbody tr").length>=40);
+  w.document.querySelector('[data-seg="show"][data-v="all"]').click();await pause(20);assert.equal(w.document.querySelectorAll("table.odds tbody tr").length,Object.keys(extras.season.teams).length);
+  await go(w,"#/team?id="+data.teams[0].id);assert.ok(w.document.querySelector(".ladder"));
+ }finally{w.close();}
 });
 test("a live scoreboard response updates scores",async()=>{
  const g=data.games.find(x=>x.state==="pre"),live={leagues:[{season:{year:data.season}}],events:[{id:"live-fixture",date:g.at,season:{year:data.season},competitions:[{competitors:[{id:g.home,homeAway:"home",score:"121"},{id:g.away,homeAway:"away",score:"119"}],status:{type:{state:"in",shortDetail:"2nd 0:31"}}}]}]};

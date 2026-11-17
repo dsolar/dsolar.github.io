@@ -52,3 +52,13 @@ test("the Naismith ladder covers the whole official list",()=>{
  assert.ok(x.naismith.knocking.every(r=>!r.watch));
 });
 test("win probability is 50% at a pick'em and symmetric",()=>{assert.equal(M.round(M.phi(0),3),0.5);assert.equal(M.round(M.phi(1)+M.phi(-1),6),1);assert.ok(Math.abs(M.phi(1)-0.8413)<0.001);});
+test("the season simulation is internally consistent",()=>{
+ const x=JSON.parse(fs.readFileSync(path.join(__dirname,"../cbb/data/extras.json"),"utf8")),s=x.season,v=Object.values(s.teams);
+ const sum=f=>v.reduce((a,o)=>a+f(o),0);
+ assert.ok(Math.abs(sum(o=>o.in)-76)<0.01,"76 teams make the field each season");
+ assert.ok(Math.abs(sum(o=>o.aq)-32)<0.01,"one automatic bid per conference");
+ assert.ok(Math.abs(sum(o=>o.r[0])-64)<0.01,"64 teams reach the round of 64");
+ assert.ok(Math.abs(sum(o=>o.r[6])-1)<0.001,"one champion");
+ for(const o of v){for(let k=1;k<7;k++)assert.ok(o.r[k]<=o.r[k-1]+1e-9);assert.ok(o.r[0]<=o.in+1e-9&&o.aq<=o.in+1e-9);}
+ assert.equal(s.bracket.length,4);assert.equal(s.bracket.flat().length,64);assert.equal(s.bracket.flat().flatMap(x=>x.teams).length,76);
+});
