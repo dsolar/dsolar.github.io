@@ -270,40 +270,19 @@ window.PROJECTS = [
     cover: { image: "assets/covers/nhl-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
-    "title": "College Basketball Hub",
-    "hub": true,
-    "line": "Team strength, player scouting and the road to March",
-    "tag": "Follow the season",
-    "type": "Simulations",
-    "released": "2026-11",
-    "url": "cbb/",
-    "action": "Explore college hoops",
-    "question": "Which games matter tonight, and how do I get to know all these teams?",
-    "summary": "A daily guide to men's Division I: Haslametrics and ESPN BPI rankings, conference races, a searchable roster pool, team comparisons, game scores and an attributed 76-team bracket forecast.",
-    "facts": [
-      [
-        "365",
-        "Division I teams"
-      ],
-      [
-        "5,500+",
-        "roster players"
-      ],
-      [
-        "76",
-        "teams in the projected field"
-      ]
-    ],
-    "stack": [
-      "JavaScript",
-      "Python",
-      "GitHub Actions"
-    ],
-    "cover": {
-      "image": "assets/covers/cbb-hub.svg",
-      "bg": "#F5F2EA",
-      "band": "#153D32"
-    }
+    title: "CBB Hub",
+    hub: true,
+    line: "A line on every game, team ratings, Naismith Watch and prospects",
+    tag: "Updated three times a day",
+    type: "Simulations",
+    released: "2026-11",
+    url: "cbb/",
+    action: "Open the hub",
+    question: "Who wins tonight, by how much, and who's the best player in college basketball?",
+    summary: "Men's Division I with a line, win probability and total on every game from adjusted efficiency and pace, a spread machine for any two teams on any court, efficiency ratings and an offense-vs-defense chart for all 365 teams, conference races, the Naismith Trophy watch list ranked by production and team strength, the NBA Big Board's college prospects with their next games, and a record of how the hub's lines do.",
+    facts: [["365", "teams rated"], ["50", "Naismith candidates ranked"], ["130+", "NBA prospects tracked"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { image: "assets/covers/cbb-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
     title: "Big Board",

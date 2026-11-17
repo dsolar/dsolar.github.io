@@ -8,6 +8,17 @@ const round=(x,n=1)=>finite(x)?Math.round(Number(x)*10**n)/10**n:null;
 const key=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
 const teamMetric=(t,k)=>num(t&&t.metrics&&t.metrics[k]);
 const em=t=>{const o=teamMetric(t,"adjO"),d=teamMetric(t,"adjD");return o!==null&&d!==null?o-d:null;};
+const HOME_EDGE=3,SPREAD_SD=11;
+const phi=z=>{const t=1/(1+0.3275911*Math.abs(z)/Math.SQRT2),y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z/2);return 0.5*(1+(z<0?-y:y));};
+const leagueAvg=teams=>mean(teams.map(t=>teamMetric(t,"adjO")));
+// Projected score from adjusted efficiency and tempo. tools/cbb_extras.py logs the same line before each game.
+function line(home,away,neutral,avg){
+ if(!home||!away)return null;
+ const ho=teamMetric(home,"adjO"),hd=teamMetric(home,"adjD"),ao=teamMetric(away,"adjO"),ad=teamMetric(away,"adjD"),ht=teamMetric(home,"tempo"),at=teamMetric(away,"tempo");
+ if([ho,hd,ao,ad,ht,at,avg].some(x=>x===null||x===undefined))return null;
+ const pace=(ht+at)/2,edge=neutral?0:HOME_EDGE/2,hp=ho*ad/avg*pace/100+edge,ap=ao*hd/avg*pace/100-edge,m=hp-ap;
+ return {homePts:round(hp),awayPts:round(ap),spread:round(m),total:round(hp+ap),homeProb:round(phi(m/SPREAD_SD),3),pace:round(pace)};
+}
 function ranked(teams,source="haslam"){
  const field=source+"Rank";
  return teams.slice().sort((a,b)=>{const x=num(a[field]),y=num(b[field]);return (x===null)-(y===null)||(x!==null&&y!==null?x-y:0)||(em(b)??-1e6)-(em(a)??-1e6)||a.name.localeCompare(b.name);});
@@ -102,5 +113,5 @@ function gamesFromESPN(data,byId,season){
  }
  return out;
 }
-return {finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
+return {HOME_EDGE,SPREAD_SD,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });

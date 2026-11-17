@@ -1,1 +1,53 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 650"><rect width="1000" height="650" fill="#f5f2ea"/><rect x="56" y="52" width="888" height="546" rx="14" fill="#153d32"/><g fill="none" stroke="#c9d8b5" stroke-width="3" opacity=".25"><rect x="430" y="76" width="560" height="498" rx="2"/><path d="M710 76v498M430 220h130v200H430M990 220H860v200h130"/><circle cx="710" cy="325" r="66"/><circle cx="560" cy="320" r="64"/><circle cx="860" cy="320" r="64"/><path d="M430 110h30a205 205 0 0 1 0 420h-30M990 110h-30a205 205 0 0 0 0 420h30"/></g><text x="98" y="132" fill="#f0c65c" font-family="Arial,sans-serif" font-weight="700" font-size="15" letter-spacing="4">THE ROAD TO MARCH</text><g font-family="Arial,sans-serif" font-weight="800" font-size="73" fill="#fffef9"><text x="94" y="255">COLLEGE</text><text x="94" y="339">BASKETBALL</text></g><text x="98" y="391" fill="#c9d8c9" font-family="Arial,sans-serif" font-size="20">Know the teams. Find your players.</text><rect x="98" y="453" width="225" height="62" rx="4" fill="#f0c65c"/><text x="120" y="492" fill="#153d32" font-family="Arial,sans-serif" font-size="19" font-weight="700">FOLLOW THE SEASON</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 780">
+  <!-- CBB Hub cover: illustration only, so it never shows stale lines. Same system as the other hub covers. -->
+  <rect width="1040" height="780" fill="#F5F4F0"/>
+  <rect width="1040" height="12" fill="#C60C30"/>
+  <g font-family="Arial Narrow, Arial, Helvetica, sans-serif" font-weight="700">
+    <!-- section pills -->
+    <rect x="60" y="62" width="560" height="56" rx="28" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+    <rect x="70" y="70" width="112" height="40" rx="20" fill="#002244"/><text x="126" y="97" fill="#fff" font-size="19" text-anchor="middle">TODAY</text>
+    <text x="246" y="97" fill="#56637A" font-size="19" text-anchor="middle">RATINGS</text>
+    <text x="368" y="97" fill="#56637A" font-size="19" text-anchor="middle">MATCHUP</text>
+    <text x="510" y="97" fill="#56637A" font-size="19" text-anchor="middle">NAISMITH</text>
+
+    <!-- half court -->
+    <g transform="translate(60 160)">
+      <rect width="600" height="300" rx="12" fill="#fff" stroke="#9AA5B4" stroke-width="4"/>
+      <g fill="none" stroke="#002244" stroke-width="3">
+        <rect x="230" y="2" width="140" height="150"/>
+        <circle cx="300" cy="152" r="52"/>
+        <path d="M110 2 v70 a190 190 0 0 0 380 0 v-70"/>
+        <path d="M250 298 a50 50 0 0 1 100 0"/>
+      </g>
+      <rect x="230" y="2" width="140" height="150" fill="#C60C30" opacity=".08"/>
+      <line x1="270" y1="30" x2="330" y2="30" stroke="#002244" stroke-width="4"/>
+      <circle cx="300" cy="44" r="12" fill="none" stroke="#C60C30" stroke-width="4"/>
+      <!-- shots: makes and misses -->
+      <g fill="#17663A"><circle cx="300" cy="78" r="9"/><circle cx="262" cy="104" r="9"/><circle cx="150" cy="150" r="9"/><circle cx="440" cy="196" r="9"/><circle cx="300" cy="248" r="9"/></g>
+      <g stroke="#C60C30" stroke-width="4" stroke-linecap="round"><path d="M352 92l14 14M366 92l-14 14"/><path d="M466 70l14 14M480 70l-14 14"/><path d="M196 222l14 14M210 222l-14 14"/></g>
+    </g>
+
+    <!-- tonight's line card -->
+    <g transform="translate(700 160)">
+      <rect width="280" height="300" rx="12" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+      <text x="22" y="40" fill="#56637A" font-size="16" letter-spacing="2">TONIGHT'S LINE</text>
+      <circle cx="40" cy="86" r="16" fill="#E3E7EC"/><rect x="66" y="78" width="96" height="16" rx="4" fill="#D9DCE1"/><text x="258" y="94" fill="#002244" font-size="24" text-anchor="end">72%</text>
+      <circle cx="40" cy="134" r="16" fill="#E3E7EC"/><rect x="66" y="126" width="80" height="16" rx="4" fill="#D9DCE1"/><text x="258" y="142" fill="#002244" font-size="24" text-anchor="end">28%</text>
+      <rect x="22" y="176" width="236" height="16" rx="8" fill="#C60C30"/><rect x="22" y="176" width="170" height="16" rx="8" fill="#002244"/>
+      <rect x="22" y="222" width="236" height="56" rx="10" fill="#002244"/>
+      <text x="140" y="258" fill="#fff" font-size="22" text-anchor="middle">−6.5 · O/U 148.5</text>
+    </g>
+
+    <!-- Naismith ladder strip -->
+    <g transform="translate(60 500)">
+      <rect width="920" height="210" rx="12" fill="#fff" stroke="#D9DCE1" stroke-width="2"/>
+      <text x="24" y="40" fill="#56637A" font-size="16" letter-spacing="2">NAISMITH WATCH</text>
+      <g>
+        <text x="24" y="86" fill="#002244" font-size="20">1</text><circle cx="66" cy="80" r="14" fill="#E3E7EC"/><rect x="92" y="72" width="200" height="16" rx="4" fill="#D9DCE1"/><rect x="310" y="72" width="64" height="16" rx="5" fill="#F6E7B8"/><rect x="600" y="74" width="296" height="12" rx="6" fill="#E3E7EC"/><rect x="600" y="74" width="290" height="12" rx="6" fill="#002244"/>
+        <text x="24" y="132" fill="#002244" font-size="20">2</text><circle cx="66" cy="126" r="14" fill="#E3E7EC"/><rect x="92" y="118" width="170" height="16" rx="4" fill="#D9DCE1"/><rect x="280" y="118" width="64" height="16" rx="5" fill="#D3E6FA"/><rect x="600" y="120" width="296" height="12" rx="6" fill="#E3E7EC"/><rect x="600" y="120" width="232" height="12" rx="6" fill="#002244"/>
+        <text x="24" y="178" fill="#002244" font-size="20">3</text><circle cx="66" cy="172" r="14" fill="#E3E7EC"/><rect x="92" y="164" width="220" height="16" rx="4" fill="#D9DCE1"/><rect x="600" y="166" width="296" height="12" rx="6" fill="#E3E7EC"/><rect x="600" y="166" width="196" height="12" rx="6" fill="#002244"/>
+        <path d="M540 74l8 12h-16z" fill="#17663A"/><path d="M540 132l8-12h-16z" fill="#C60C30"/><path d="M540 166l8 12h-16z" fill="#17663A"/>
+      </g>
+    </g>
+  </g>
+</svg>

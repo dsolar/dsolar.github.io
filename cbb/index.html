@@ -2,61 +2,70 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>College Basketball Hub | David Solar</title>
-<meta name="description" content="Get into college basketball: games worth watching, analytical team rankings, conference races, player scouting and the road to March.">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
+<title>CBB Hub | David Solar</title>
+<meta name="description" content="Men's college basketball: a line on every game, efficiency ratings for all 365 teams, a spread machine for any matchup, Naismith Watch and the NBA Big Board's prospects.">
 <meta property="og:type" content="website">
-<meta property="og:title" content="College Basketball Hub">
-<meta property="og:description" content="Know the teams. Find your players. Follow the road to March.">
 <meta property="og:url" content="https://davidsolar.dev/cbb/">
-<meta name="theme-color" content="#153d32">
+<meta property="og:title" content="CBB Hub">
+<meta property="og:description" content="A line on every game, ratings for every team, Naismith Watch and the draft prospects to see before March.">
 <link rel="canonical" href="https://davidsolar.dev/cbb/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#002244">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@500;600;700;800&family=Besley:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
-<link rel="stylesheet" href="hub.css?v=20261116-cbb1">
+<link rel="stylesheet" href="../mlb/hub.css?v=20261113r">
+<link rel="stylesheet" href="hub.css?v=20261116-cbb2">
 <script src="../assets/analytics.js" defer></script>
-<script src="../assets/projects.js?v=20261116-cbb1" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261112">
+<script src="../assets/projects.js?v=20261116-cbb2" defer></script>
 <script src="../assets/navigation.js?v=20261113-hubs" defer></script>
-<script src="model.js?v=20261116-cbb1" defer></script>
-<script src="app.js?v=20261116-cbb1" defer></script>
+<script src="model.js?v=20261116-cbb2" defer></script>
+<script src="app.js?v=20261116-cbb2" defer></script>
 </head>
 <body>
-<a class="ds-skip" href="#view">Skip to college basketball</a>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
-<a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
-<a href="../simulations/">Hubs &amp; Tools</a>
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../simulations/">← Simulations</a>
+  <a href="../#projects">Explore all projects</a>
 </nav>
+
 <main class="wrap">
-<header class="mast">
-<div class="mast-copy"><p class="kicker">COLLEGE BASKETBALL · <span id="season-label">THE ROAD TO MARCH</span></p>
-<h1>Know the game.<br><em>Follow the madness.</em></h1>
-<p class="sub">The teams worth knowing. The players worth watching. The numbers that explain what happens next.</p>
-<div class="mast-links"><a class="primary" href="#/today">Find tonight’s games <span aria-hidden="true">↗</span></a><a href="#/rankings">Explore the rankings <span aria-hidden="true">→</span></a></div>
-</div>
-<div class="court-board" aria-hidden="true">
-<span class="board-tag">EVERY GAME TELLS YOU SOMETHING</span>
-<svg viewBox="0 0 400 290" fill="none"><rect x="12" y="16" width="376" height="254" rx="4"/><path d="M200 16v254"/><circle cx="200" cy="143" r="37"/><path d="M12 82h93v122H12M388 82h-93v122h93"/><circle cx="105" cy="143" r="36"/><circle cx="295" cy="143" r="36"/><path d="M12 31h46a116 116 0 0 1 0 224H12M388 31h-46a116 116 0 0 0 0 224h46M31 122v42M369 122v42"/><circle cx="44" cy="143" r="10"/><circle cx="356" cy="143" r="10"/></svg>
-<div class="court-caption"><b>November to April.</b><span>One season. Hundreds of stories.</span></div>
-</div>
-</header>
-<div class="season-strip" id="season-strip" aria-label="Season at a glance"><span>Men’s Division I</span><span>Loading the season…</span></div>
-<div class="hub-toolbar">
-<nav class="tabs" aria-label="College basketball sections">
-<a href="#/today" data-tab="today">Today</a><a href="#/rankings" data-tab="rankings">Rankings</a><a href="#/conferences" data-tab="conferences">Conferences</a><a href="#/teams" data-tab="teams">Teams</a><a href="#/players" data-tab="players">Players</a><a href="#/march" data-tab="march">Road to March</a><a href="#/sources" data-tab="sources">The analytics</a>
-</nav>
-<label class="advanced-switch"><input type="checkbox" id="advanced"><span>Advanced</span></label>
-</div>
-<div id="load-state" role="status" aria-live="polite"></div>
-<section id="view" tabindex="-1" aria-label="College basketball content"><div class="empty">Loading the courtside guide…</div></section>
-<footer class="hub-foot"><div><strong>College basketball, explained.</strong><span id="data-foot">Every number carries its source.</span></div><a href="#/sources">Sources &amp; methodology →</a><a href="../draft/">NBA Draft Big Board ↗</a></footer>
+  <header class="mast">
+    <div>
+      <p class="kicker" id="kicker">College basketball · 2026-27</p>
+      <h1>CBB <span>Hub</span></h1>
+      <p class="sub">A line on every game, efficiency ratings for all 365 teams, a spread machine for any matchup, the Naismith race, and the NBA Big Board's prospects to see before they turn pro.</p>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Sections">
+    <a href="#/today" data-tab="today">Today</a>
+    <a href="#/ratings" data-tab="ratings">Ratings</a>
+    <a href="#/matchup" data-tab="matchup">Matchup</a>
+    <a href="#/conferences" data-tab="conferences">Conferences</a>
+    <a href="#/teams" data-tab="teams">Teams</a>
+    <a href="#/players" data-tab="players">Players</a>
+    <a href="#/naismith" data-tab="naismith">Naismith</a>
+    <a href="#/prospects" data-tab="prospects">Prospects</a>
+    <a href="#/bracket" data-tab="bracket">Bracket</a>
+    <a href="#/method" data-tab="method">How it works</a>
+  </nav>
+
+  <section id="view" aria-live="polite" tabindex="-1"><p class="loading">Loading the season…</p></section>
+
+  <p class="foot" id="foot"></p>
 </main>
-<dialog id="player-card" aria-labelledby="player-title"><button class="close" type="button" aria-label="Close player card">×</button><div id="player-body"></div></dialog>
-<dialog id="learn-card" aria-labelledby="learn-title"><button class="close" type="button" aria-label="Close explanation">×</button><div id="learn-body"></div></dialog>
-<noscript><p class="wrap">This hub needs JavaScript for its filters and team pages. Explore <a href="https://haslametrics.com/">Haslametrics</a>, <a href="https://barttorvik.com/">Bart Torvik</a>, or the <a href="https://www.ncaa.com/sports/basketball-men/d1">NCAA basketball guide</a>.</p></noscript>
-<script src="../assets/hubswitch.js?v=20261116-cbb1"></script>
-</body></html>
+
+<dialog id="card" aria-label="Player">
+  <button class="x" type="button" aria-label="Close" data-close>×</button>
+  <div id="cardBody"></div>
+</dialog>
+
+<noscript><p class="wrap">This hub needs JavaScript. Explore <a href="https://haslametrics.com/">Haslametrics</a>, <a href="https://barttorvik.com/">Bart Torvik</a> or the <a href="https://www.ncaa.com/sports/basketball-men/d1">NCAA basketball guide</a>.</p></noscript>
+<script src="../assets/hubswitch.js?v=20261116-cbb2"></script>
+</body>
+</html>

@@ -1,5 +1,7 @@
-# College Basketball Hub
-Men's Division I, first release, at /cbb/. A buildless site using the shared David Solar navigation.
+# CBB Hub
+Men's Division I at /cbb/. A buildless hub on the shared hub styles (../mlb/hub.css) like the MLB, NBA, NFL and NHL hubs.
+
+Sections: Today (a line, total, win probability and watchability score on every game), Ratings (sortable table plus an offense-vs-defense chart), Matchup (spread machine for any two teams and court), Conferences, Teams, Players, Naismith Watch, Prospects (NBA Big Board college players), Bracket and How it works.
 
 ## Connected sources
 - Haslametrics: adjusted team offense and defense, tempo, shooting profile, movement/history, selected game performance highlights, future fixtures, and the current 76-team "deserves" bracket.
@@ -11,7 +13,7 @@ Men's Division I, first release, at /cbb/. A buildless site using the shared Dav
 KenPom, Bart Torvik, EvanMiya, ShotQuality, CBB Analytics and Hoop Explorer are linked specialist resources. They are not represented as connected feeds. Do not label a locally computed score with a provider's proprietary metric name. KenPom's public-display terms require separate permission for broad integration.
 
 ## Update
-Run python3 tools/cbb_build.py. It refreshes ratings and game snapshots; rosters refresh after 20 hours, or with --rosters. The GitHub Actions job runs three times daily and after relevant source changes. It commits only normalized cbb/data. Source failures retain the last good values and original timestamps; invalid, incomplete core data cannot replace the existing pool.
+Run python3 tools/cbb_build.py, then python3 tools/cbb_extras.py (no network; writes cbb/data/extras.json with the Naismith ladder, the hub's logged pregame lines and its record). Update cbb/data/naismith-watch.json by hand when the Atlanta Tipoff Club publishes a new list. It refreshes ratings and game snapshots; rosters refresh after 20 hours, or with --rosters. The GitHub Actions job runs three times daily and after relevant source changes. It commits only normalized cbb/data. Source failures retain the last good values and original timestamps; invalid, incomplete core data cannot replace the existing pool.
 
 --seed-cache is only a development option for source snapshots created during initial integration. The production branch does not carry those raw source-check files.
 
