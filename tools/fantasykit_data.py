@@ -252,8 +252,10 @@ MLB_TEAMS = {
     "Seattle Mariners": "SEA", "St. Louis Cardinals": "STL", "Tampa Bay Rays": "TB", "Texas Rangers": "TEX", "Toronto Blue Jays": "TOR",
     "Washington Nationals": "WSH",
 }
-BAT_COLS = ["g", "pa", "ab", "r", "h", "hr", "rbi", "sb", "tb", "avg", "obp", "ops"]
-PIT_COLS = ["g", "gs", "ip", "w", "l", "sv", "hld", "k", "er", "bb", "h", "era", "whip", "qs"]
+# One column list for the season lines, the projections and the real weeks, so a week's line reads with the season's
+# columns. New columns go on the end: the parts of the advanced categories (wOBA, ISO, BB%, K%, FIP, K-BB%).
+BAT_COLS = ["g", "pa", "ab", "r", "h", "hr", "rbi", "sb", "tb", "avg", "obp", "ops", "bb", "hbp", "sf", "2b", "3b", "so", "ibb", "cs"]
+PIT_COLS = ["g", "gs", "ip", "w", "l", "sv", "hld", "k", "er", "bb", "h", "era", "whip", "qs", "outs", "hr", "hbp", "bf"]
 OF = {"LF", "CF", "RF"}
 MLB_ORDER = ["C", "1B", "2B", "3B", "SS", "OF", "UT", "SP", "RP"]
 
@@ -331,6 +333,7 @@ def mlb():
         row["pos"] = row["pos"] + (["SP"] if sp else ["RP"])
         line = [p.get(c, 0) for c in PIT_COLS]
         line[PIT_COLS.index("ip")] = round(ip_real(p.get("ip", 0)), 2)
+        line[PIT_COLS.index("outs")] = round(ip_real(p.get("ip", 0)) * 3)
         row["l"]["pit"] = line
     for pid, row in by.items():
         if ab.get(pid, 0) < 130 and ip.get(pid, 0) < 50:
@@ -404,6 +407,7 @@ def mlb_prev():
         if q:
             line = [q.get(c, 0) for c in PIT_COLS]
             line[PIT_COLS.index("ip")] = round(ip_real(q.get("ip", 0)), 2)
+            line[PIT_COLS.index("outs")] = round(ip_real(q.get("ip", 0)) * 3)
             l0["pit"] = line
         if l0:
             p["l0"] = l0
@@ -465,7 +469,9 @@ def steamer(by, ab, ip):
             continue
         line = [round(num(r, "G"), 1), round(num(r, "PA"), 1), round(num(r, "AB"), 1), round(num(r, "R"), 1), round(num(r, "H"), 1), round(num(r, "HR"), 1),
                 round(num(r, "RBI"), 1), round(num(r, "SB"), 1), round(num(r, "1B") + 2 * num(r, "2B") + 3 * num(r, "3B") + 4 * num(r, "HR"), 1),
-                round(num(r, "AVG"), 3), round(num(r, "OBP"), 3), round(num(r, "OPS"), 3)]
+                round(num(r, "AVG"), 3), round(num(r, "OBP"), 3), round(num(r, "OPS"), 3),
+                round(num(r, "BB"), 1), round(num(r, "HBP"), 1), round(num(r, "SF"), 1), round(num(r, "2B"), 1), round(num(r, "3B"), 1),
+                round(num(r, "SO"), 1), round(num(r, "IBB"), 1), round(num(r, "CS"), 1)]
         row = by.get(pid)
         if not row and num(r, "PA") >= 250:
             pos = str(r.get("minpos") or "UT").split("/")[0]
@@ -484,7 +490,9 @@ def steamer(by, ab, ip):
             continue
         line = [round(num(r, "G"), 1), round(num(r, "GS"), 1), round(num(r, "IP"), 1), round(num(r, "W"), 1), round(num(r, "L"), 1), round(num(r, "SV"), 1),
                 round(num(r, "HLD"), 1), round(num(r, "SO"), 1), round(num(r, "ER"), 1), round(num(r, "BB"), 1), round(num(r, "H"), 1),
-                round(num(r, "ERA"), 2), round(num(r, "WHIP"), 3), round(num(r, "QS"), 1)]
+                round(num(r, "ERA"), 2), round(num(r, "WHIP"), 3), round(num(r, "QS"), 1),
+                round(num(r, "IP") * 3), round(num(r, "HR"), 1), round(num(r, "HBP"), 1),
+                round(num(r, "TBF") or (num(r, "IP") * 3 + num(r, "H") + num(r, "BB") + num(r, "HBP")), 1)]
         row = by.get(pid)
         if not row and num(r, "IP") >= 50:
             team = str(r.get("Team") or "FA")
@@ -504,17 +512,19 @@ def steamer(by, ab, ip):
 
 # Real weeks: every regular-season box score, added up Monday to Sunday.
 MLB_API = "https://statsapi.mlb.com/api/v1/"
-WK_BAT = BAT_COLS + ["bb", "hbp", "sf"]           # the parts the rates come from ride along
-WK_PIT = PIT_COLS + ["outs"]
+WK_BAT = BAT_COLS                                 # the parts the rates come from are in the season columns
+WK_PIT = PIT_COLS
 
 
 BOX_FIELDS = ",".join(["teams", "away", "home", "players", "person", "id", "stats", "batting", "pitching", "plateAppearances", "atBats", "runs", "hits",
                        "homeRuns", "rbi", "stolenBases", "totalBases", "baseOnBalls", "hitByPitch", "sacFlies", "inningsPitched", "gamesStarted",
-                       "wins", "losses", "saves", "holds", "strikeOuts", "earnedRuns"])
+                       "wins", "losses", "saves", "holds", "strikeOuts", "earnedRuns", "doubles", "triples", "intentionalWalks", "caughtStealing",
+                       "battersFaced"])
 
 
 def mlb_boxes(pk):
-    """One game's lines: {player id: {"b": [g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf], "p": [g, gs, outs, w, l, sv, hld, k, er, bb, h, qs]}}."""
+    """One game's lines: {player id: {"b": [g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf, 2b, 3b, so, ibb, cs],
+    "p": [g, gs, outs, w, l, sv, hld, k, er, bb, h, qs, hr, hbp, bf]}}."""
     # only the fields we read (a whole box score is ~100 KB); if the filter ever comes back empty, take it all
     box = get(f"{MLB_API}game/{pk}/boxscore?fields={BOX_FIELDS}")
     if not any(((box.get("teams") or {}).get(s) or {}).get("players") for s in ("away", "home")):
@@ -528,13 +538,15 @@ def mlb_boxes(pk):
             row = {}
             if b and (b.get("plateAppearances") or b.get("atBats") or b.get("runs") or b.get("stolenBases")):
                 row["b"] = [1, b.get("plateAppearances", 0), b.get("atBats", 0), b.get("runs", 0), b.get("hits", 0), b.get("homeRuns", 0),
-                            b.get("rbi", 0), b.get("stolenBases", 0), b.get("totalBases", 0), b.get("baseOnBalls", 0), b.get("hitByPitch", 0), b.get("sacFlies", 0)]
+                            b.get("rbi", 0), b.get("stolenBases", 0), b.get("totalBases", 0), b.get("baseOnBalls", 0), b.get("hitByPitch", 0), b.get("sacFlies", 0),
+                            b.get("doubles", 0), b.get("triples", 0), b.get("strikeOuts", 0), b.get("intentionalWalks", 0), b.get("caughtStealing", 0)]
             if q and q.get("inningsPitched") not in (None, ""):
                 whole, _, part = str(q["inningsPitched"]).partition(".")
                 outs = int(whole or 0) * 3 + int(part or 0)
                 gs = 1 if q.get("gamesStarted") else 0
                 row["p"] = [1, gs, outs, q.get("wins", 0), q.get("losses", 0), q.get("saves", 0), q.get("holds", 0), q.get("strikeOuts", 0),
-                            q.get("earnedRuns", 0), q.get("baseOnBalls", 0), q.get("hits", 0), 1 if gs and outs >= 18 and q.get("earnedRuns", 0) <= 3 else 0]
+                            q.get("earnedRuns", 0), q.get("baseOnBalls", 0), q.get("hits", 0), 1 if gs and outs >= 18 and q.get("earnedRuns", 0) <= 3 else 0,
+                            q.get("homeRuns", 0), q.get("hitByPitch", 0), q.get("battersFaced", 0)]
             if row:
                 out[pid] = row
     return out
@@ -546,13 +558,13 @@ def mlb_lines(acc):
     for pid, a in acc.items():
         row = {}
         if "b" in a:
-            g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf = a["b"]
+            g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf, d2, d3, so, ibb, cs = a["b"]
             obp = (h + bb + hbp) / (ab + bb + hbp + sf) if ab + bb + hbp + sf else 0
-            row["bat"] = [g, pa, ab, r, h, hr, rbi, sb, tb, round(h / ab, 3) if ab else 0, round(obp, 3), round(obp + (tb / ab if ab else 0), 3), bb, hbp, sf]
+            row["bat"] = [g, pa, ab, r, h, hr, rbi, sb, tb, round(h / ab, 3) if ab else 0, round(obp, 3), round(obp + (tb / ab if ab else 0), 3), bb, hbp, sf, d2, d3, so, ibb, cs]
         if "p" in a:
-            g, gs, outs, w, l, sv, hld, k, er, bb, h, qs = a["p"]
+            g, gs, outs, w, l, sv, hld, k, er, bb, h, qs, hra, hbp, bf = a["p"]
             ip = outs / 3
-            row["pit"] = [g, gs, round(ip, 2), w, l, sv, hld, k, er, bb, h, round(er * 9 / ip, 2) if ip else 0, round((bb + h) / ip, 2) if ip else 0, qs, outs]
+            row["pit"] = [g, gs, round(ip, 2), w, l, sv, hld, k, er, bb, h, round(er * 9 / ip, 2) if ip else 0, round((bb + h) / ip, 2) if ip else 0, qs, outs, hra, hbp, bf]
         out[pid] = row
     return out
 
@@ -573,7 +585,8 @@ def mlb_weeks():
     opener = date.fromisoformat(dates[0]["date"])
     monday = opener - timedelta(days=opener.weekday())
     old = load("fantasy-kit/data/weeks-mlb.json", {}) or {}
-    keep = old.get("weeks", {}) if str(old.get("season")) == str(year) else {}
+    same = (old.get("lines") or {}) == {"bat": WK_BAT, "pit": WK_PIT}     # new columns: fetch every week again
+    keep = old.get("weeks", {}) if str(old.get("season")) == str(year) and same else {}
     by_week = {}
     for d in dates:
         dd = date.fromisoformat(d["date"])
@@ -586,7 +599,7 @@ def mlb_weeks():
     # daily lines for leagues with daily lineups (days-mlb.json): each day of the current week and the one before,
     # so a week can still be scored day by day after it ends
     old_days = load("fantasy-kit/data/days-mlb.json", {}) or {}
-    old_days = old_days.get("weeks", {}) if str(old_days.get("season")) == str(year) else {}
+    old_days = old_days.get("weeks", {}) if str(old_days.get("season")) == str(year) and (old_days.get("lines") or {}) == {"bat": WK_BAT, "pit": WK_PIT} else {}
     recent = sorted(by_week, key=int)[-2:]
     days_out = {}
     for k in sorted(by_week, key=int):

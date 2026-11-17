@@ -741,10 +741,10 @@
     for (const c of sc.cats) {
       const line = c.line || "pg";
       const has = lines.filter((s) => s && s[line]);
-      const ix = (col) => ctx.sport.cols[line][col];
-      if (c.num) { const n = sum(has.map((s) => s[line][ix(c.num)])), d = sum(has.map((s) => s[line][ix(c.den)])); cats[c.k] = d ? n / d : 0; parts[c.k] = [n, d]; }
-      else if (c.rate) { const wt = sum(has.map((s) => s[line][ix(c.w)])), x = sum(has.map((s) => s[line][ix(c.rate)] * s[line][ix(c.w)])); cats[c.k] = wt ? x / wt : 0; parts[c.k] = [x, wt]; }
-      else cats[c.k] = sum(has.map((s) => s[line][ix(c.col)]));
+      const cm = ctx.sport.cols[line], v = (s, col) => S.lineVal(s[line], cm, col);
+      if (c.num) { const n = sum(has.map((s) => v(s, c.num))), d = sum(has.map((s) => v(s, c.den))); cats[c.k] = S.ratioVal(c, n, d); parts[c.k] = [n, d]; }
+      else if (c.rate) { const wt = sum(has.map((s) => v(s, c.w))), x = sum(has.map((s) => v(s, c.rate) * v(s, c.w))); cats[c.k] = wt ? x / wt : 0; parts[c.k] = [x, wt]; }
+      else cats[c.k] = sum(has.map((s) => v(s, c.col)));
     }
     const gi = ctx.sport.cols.goalie && ctx.sport.cols.goalie.gp;
     const goalieGames = gi != null ? sum(lines.filter((s) => s && s.goalie).map((s) => s.goalie[gi] || 0)) : 0;
@@ -801,7 +801,7 @@
   function catSpread(c, pj) {
     if (c.num || c.rate) {
       const all = (pj.parts[c.k] || [0, 0])[1], left = (pj.restParts[c.k] || [0, 0])[1];
-      return all > 0 && left > 0 ? (UNIT[c.k] != null ? UNIT[c.k] : 0.5) * Math.sqrt(left) / all : 0;
+      return all > 0 && left > 0 ? (UNIT[c.k] != null ? UNIT[c.k] : c.unit != null ? c.unit : 0.5) * (c.mult || 1) * Math.sqrt(left) / all : 0;
     }
     return Math.sqrt(Math.max(0, pj.rest[c.k] || 0) * (DISP[c.col] || 2));
   }
@@ -1023,7 +1023,7 @@
         teams[t.id] = { cats: x.cats || {}, parts: x.parts || {} };
         L.lineups[w][t.id] = x.lineup || lineupFor(L, ctx, t.id, w);
       }
-      L.results[w] = { roto: teams, cats: sc.cats.map((c) => ({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) })) };
+      L.results[w] = { roto: teams, cats: sc.cats.map((c) => Object.assign({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) }, c.num && c.mult ? { mult: c.mult } : {}, c.num && c.add ? { add: c.add } : {})) };
       L.week = w + 1;
       if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
       runDue(L, ctx, now);
@@ -1401,7 +1401,7 @@
     cats = cats || [];
     const rows = L.teams.map((t) => {
       const v = {};
-      for (const c of cats) { const a = tot[t.id][c.k]; v[c.k] = c.ratio ? (a && a[1] ? a[0] / a[1] : 0) : a || 0; }
+      for (const c of cats) { const a = tot[t.id][c.k]; v[c.k] = c.ratio ? (a && a[1] ? S.ratioVal(c, a[0], a[1]) : 0) : a || 0; }
       return { team: t.id, vals: v, catPts: {}, pts: 0, w: 0, l: 0, t: 0, pa: 0, form: [], streak: "" };
     });
     for (const c of cats) {
@@ -1452,7 +1452,7 @@
     const sc = scoring(L, ctx);
     const rows = {};
     for (const t of L.teams) { const x = teamWeek(L, ctx, t.id, L.week, frac); rows[t.id] = { cats: x.cats || {}, parts: x.parts || {} }; }
-    return { rows, cats: sc.cats.map((c) => ({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) })) };
+    return { rows, cats: sc.cats.map((c) => Object.assign({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) }, c.num && c.mult ? { mult: c.mult } : {}, c.num && c.add ? { add: c.add } : {})) };
   }
   // Guillotine standings: teams still alive by points this season, then the chopped, last one out first.
   function survival(L) {

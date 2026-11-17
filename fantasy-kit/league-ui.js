@@ -1832,7 +1832,7 @@
     // o.total, a totals row under each table
     const sumParts = (rows) => { const o = {}; for (const r of rows) for (const [k, v] of Object.entries(r[3] || {})) o[k] = (o[k] || 0) + v; return o; };
     function partBoxes(m, rowsOf, o = {}) {
-      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp && typeof c.col === "string");
       const cell = (st, c) => { const v = boxVal(st, c.col); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; };
       const box = (team) => {
         const rows = rowsOf(team) || [];
@@ -1963,7 +1963,7 @@
         if (wk && (wk[m.a] || wk[m.b])) return importedBoxes(w, m, wk);
         return `<div class="card"><div class="bd"><p class="ps" style="margin:0">This week came over from ${esc(L().imported.from || "another site")} as each team's category totals (above), so there's no player-by-player box score for it.</p></div></div>`;
       }
-      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp);
+      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp && typeof c.col === "string");
       // daily lineups: everyone who started at least one day, his line from just those days
       if (G.hasDays(L(), ctx, w)) {
         const dbox = (team) => {
@@ -2401,7 +2401,7 @@
         const log = ((j && j.stats) || []).find((x) => x.type && x.type.displayName === "gameLog"), sp = ((j && j.stats) || []).find((x) => x.type && x.type.displayName === "statSplits");
         const games = ((log && log.splits) || []).slice().sort((a, b) => (a.date < b.date ? 1 : -1));
         if (!games.length) { el.innerHTML = `<p class="ps" style="margin:0">No ${season} games for him yet.</p>`; return; }
-        const cols = [{ col: "g", label: "G", fmt: (v) => String(v) }].concat(grp === "pit" ? [{ col: "gs", label: "GS", fmt: (v) => String(v) }] : [], U.statColumns(sport, L().scoring).filter((c) => c.group === grp));
+        const cols = [{ col: "g", label: "G", fmt: (v) => String(v) }].concat(grp === "pit" ? [{ col: "gs", label: "GS", fmt: (v) => String(v) }] : [], U.statColumns(sport, L().scoring).filter((c) => c.group === grp && typeof c.col === "string"));
         const fmt = (c, v) => (v == null ? "-" : c.fmt ? c.fmt(v) : String(Math.round(v)));
         // the windows: back from today in season, back from his last game once it's over
         const last = Date.parse(games[0].date + "T12:00:00Z"), end = over() || now() - last > 3 * 864e5 ? last : now();

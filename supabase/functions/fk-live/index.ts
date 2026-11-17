@@ -218,8 +218,9 @@ const MLB_TEAMS: Record<string, string> = {
   "San Francisco Giants": "SF", "Seattle Mariners": "SEA", "St. Louis Cardinals": "STL", "Tampa Bay Rays": "TB", "Texas Rangers": "TEX", "Toronto Blue Jays": "TOR",
   "Washington Nationals": "WSH",
 };
-const WK_BAT = ["g", "pa", "ab", "r", "h", "hr", "rbi", "sb", "tb", "avg", "obp", "ops", "bb", "hbp", "sf"];
-const WK_PIT = ["g", "gs", "ip", "w", "l", "sv", "hld", "k", "er", "bb", "h", "era", "whip", "qs", "outs"];
+// the same columns as tools/fantasykit_data.py: the advanced categories' parts on the end
+const WK_BAT = ["g", "pa", "ab", "r", "h", "hr", "rbi", "sb", "tb", "avg", "obp", "ops", "bb", "hbp", "sf", "2b", "3b", "so", "ibb", "cs"];
+const WK_PIT = ["g", "gs", "ip", "w", "l", "sv", "hld", "k", "er", "bb", "h", "era", "whip", "qs", "outs", "hr", "hbp", "bf"];
 const MLB = "https://statsapi.mlb.com/api/v1/";
 async function mlb() {
   const today = nyDate(), start = mondayOf(today), end = addDays(start, 6);
@@ -244,10 +245,12 @@ async function mlb() {
     const out: Record<string, { b?: number[]; p?: number[] }> = {};
     for (const side of ["away", "home"]) for (const pl of Object.values(box?.teams?.[side]?.players || {}) as any[]) {
       const id = String(pl.person?.id), b = pl.stats?.batting || {}, q = pl.stats?.pitching || {}, row: { b?: number[]; p?: number[] } = {};
-      if (b.plateAppearances || b.atBats || b.runs || b.stolenBases) row.b = [1, b.plateAppearances || 0, b.atBats || 0, b.runs || 0, b.hits || 0, b.homeRuns || 0, b.rbi || 0, b.stolenBases || 0, b.totalBases || 0, b.baseOnBalls || 0, b.hitByPitch || 0, b.sacFlies || 0];
+      if (b.plateAppearances || b.atBats || b.runs || b.stolenBases) row.b = [1, b.plateAppearances || 0, b.atBats || 0, b.runs || 0, b.hits || 0, b.homeRuns || 0, b.rbi || 0, b.stolenBases || 0, b.totalBases || 0, b.baseOnBalls || 0, b.hitByPitch || 0, b.sacFlies || 0,
+        b.doubles || 0, b.triples || 0, b.strikeOuts || 0, b.intentionalWalks || 0, b.caughtStealing || 0];
       if (q.inningsPitched != null && q.inningsPitched !== "") {
         const [w, part] = String(q.inningsPitched).split("."), outs = (Number(w) || 0) * 3 + (Number(part) || 0), gs = q.gamesStarted ? 1 : 0;
-        row.p = [1, gs, outs, q.wins || 0, q.losses || 0, q.saves || 0, q.holds || 0, q.strikeOuts || 0, q.earnedRuns || 0, q.baseOnBalls || 0, q.hits || 0, gs && outs >= 18 && (q.earnedRuns || 0) <= 3 ? 1 : 0];
+        row.p = [1, gs, outs, q.wins || 0, q.losses || 0, q.saves || 0, q.holds || 0, q.strikeOuts || 0, q.earnedRuns || 0, q.baseOnBalls || 0, q.hits || 0, gs && outs >= 18 && (q.earnedRuns || 0) <= 3 ? 1 : 0,
+          q.homeRuns || 0, q.hitByPitch || 0, q.battersFaced || 0];
       }
       if (row.b || row.p) out[id] = row;
     }
@@ -258,7 +261,8 @@ async function mlb() {
   const acc: Record<string, { b?: number[]; p?: number[] }> = {};
   for (const l of per) for (const [id, row] of Object.entries(l || {})) {
     const a = (acc[id] ||= {});
-    for (const k of ["b", "p"] as const) if (row[k]) a[k] = a[k] ? a[k]!.map((x, i) => x + row[k]![i]) : row[k]!.slice();
+    // a game cached before the columns grew is shorter: missing parts count 0
+    for (const k of ["b", "p"] as const) if (row[k]) { const x = a[k] || [], y = row[k]!; a[k] = Array.from({ length: Math.max(x.length, y.length) }, (_, i) => (x[i] || 0) + (y[i] || 0)); }
   }
   return { sport: "mlb", season: start.slice(0, 4), start, end, lines: { bat: WK_BAT, pit: WK_PIT }, players: mlbLines(acc), boxes: Object.fromEntries(games.map((g, i) => [g.id, mlbLines(per[i] || {})])), teams, games: byTeam };
 }
@@ -303,12 +307,12 @@ function mlbLines(acc: Record<string, { b?: number[]; p?: number[] }>) {
   for (const [id, a] of Object.entries(acc)) {
     const row: { bat?: number[]; pit?: number[] } = {};
     if (a.b) {
-      const [g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf] = a.b, den = ab + bb + hbp + sf, obp = den ? (h + bb + hbp) / den : 0;
-      row.bat = [g, pa, ab, r, h, hr, rbi, sb, tb, ab ? r3(h / ab) : 0, r3(obp), r3(obp + (ab ? tb / ab : 0)), bb, hbp, sf];
+      const [g, pa, ab, r, h, hr, rbi, sb, tb, bb, hbp, sf, d2 = 0, d3 = 0, so = 0, ibb = 0, cs = 0] = a.b, den = ab + bb + hbp + sf, obp = den ? (h + bb + hbp) / den : 0;
+      row.bat = [g, pa, ab, r, h, hr, rbi, sb, tb, ab ? r3(h / ab) : 0, r3(obp), r3(obp + (ab ? tb / ab : 0)), bb, hbp, sf, d2, d3, so, ibb, cs];
     }
     if (a.p) {
-      const [g, gs, outs, w, l, sv, hld, k, er, bb, h, qs] = a.p, ip = outs / 3;
-      row.pit = [g, gs, r2(ip), w, l, sv, hld, k, er, bb, h, ip ? r2(er * 9 / ip) : 0, ip ? r2((bb + h) / ip) : 0, qs, outs];
+      const [g, gs, outs, w, l, sv, hld, k, er, bb, h, qs, hra = 0, hbp = 0, bf = 0] = a.p, ip = outs / 3;
+      row.pit = [g, gs, r2(ip), w, l, sv, hld, k, er, bb, h, ip ? r2(er * 9 / ip) : 0, ip ? r2((bb + h) / ip) : 0, qs, outs, hra, hbp, bf];
     }
     lines[id] = row;
   }

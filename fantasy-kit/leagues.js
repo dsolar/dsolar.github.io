@@ -667,8 +667,11 @@
     if (form.scoring === "cc") {
       const all = S.catCatalog(sp);
       const on = form.cats || (form.cats = (Object.values(sp.scorings).find((x) => x.type === "cats") || { cats: [] }).cats.map((c) => c.k));
-      return group(`Categories (${on.length} chosen)`, `<div class="chips presets" role="group" aria-label="Categories">${all.map((c) => `<button type="button" data-cat="${esc(c.k)}" aria-pressed="${on.includes(c.k)}">${esc(c.label)}</button>`).join("")}</div>`,
-        `Pick at least two.${all.some((c) => c.low) ? " Some, like turnovers and ERA, are better low." : ""}`);
+      const chip = (c) => `<button type="button" data-cat="${esc(c.k)}" aria-pressed="${on.includes(c.k)}"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</button>`;
+      const std = all.filter((c) => !c.adv), adv = all.filter((c) => c.adv);
+      return group(`Categories (${on.length} chosen)`, `<div class="chips presets" role="group" aria-label="Categories">${std.map(chip).join("")}</div>`
+        + (adv.length ? `<p class="ps" style="margin:12px 0 6px"><b>Advanced</b>: rates and formulas that add up week by week, like the rest</p><div class="chips presets" role="group" aria-label="Advanced categories">${adv.map(chip).join("")}</div>` : ""),
+        `Pick at least two. Hover one for what it counts.${all.some((c) => c.low) ? " Some, like turnovers, ERA and FIP, are better low." : ""}`);
     }
     return "";
   }

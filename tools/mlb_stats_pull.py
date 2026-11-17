@@ -24,11 +24,14 @@ API = "https://statsapi.mlb.com/api/v1/"
 UA = "davidsolar-yoenis/1.0 (+https://davidsolar.dev/yoenis/)"
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mlb")
 
+# the parts of the advanced stats ride along (doubles, triples, walks and so on, for wOBA, ISO, BB% and K%)
 HIT = {"gamesPlayed": "g", "plateAppearances": "pa", "atBats": "ab", "runs": "r", "hits": "h", "homeRuns": "hr",
-       "rbi": "rbi", "stolenBases": "sb", "totalBases": "tb", "avg": "avg", "obp": "obp", "slg": "slg", "ops": "ops"}
+       "rbi": "rbi", "stolenBases": "sb", "totalBases": "tb", "avg": "avg", "obp": "obp", "slg": "slg", "ops": "ops",
+       "doubles": "2b", "triples": "3b", "baseOnBalls": "bb", "intentionalWalks": "ibb", "hitByPitch": "hbp", "sacFlies": "sf",
+       "strikeOuts": "so", "caughtStealing": "cs"}
 PIT = {"gamesPlayed": "g", "gamesStarted": "gs", "inningsPitched": "ip", "wins": "w", "losses": "l", "saves": "sv",
        "holds": "hld", "strikeOuts": "k", "era": "era", "whip": "whip", "earnedRuns": "er", "baseOnBalls": "bb",
-       "hits": "h", "qualityStarts": "qs"}
+       "hits": "h", "qualityStarts": "qs", "homeRuns": "hr", "hitByPitch": "hbp", "battersFaced": "bf"}
 
 
 def get(path):

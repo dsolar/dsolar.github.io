@@ -380,7 +380,7 @@
   function prevStat(sport, p, c) {
     const P = { l: (p && p.l0) || {} }, line = c.line;
     if (!line || !P.l[line]) return null;
-    if (c.ratio) { const n = S.stat(sport, P, line, c.ratio[0]), d = S.stat(sport, P, line, c.ratio[1]); return d ? n / d : null; }
+    if (c.ratio) { const n = S.stat(sport, P, line, c.ratio[0]), d = S.stat(sport, P, line, c.ratio[1]); return d ? S.ratioVal(c, n, d) : null; }
     return S.stat(sport, P, line, c.col);
   }
   function statCell(sport, p, c) {
@@ -389,7 +389,7 @@
     if (sport.statView === "prev" && c.line && !c.fpts) return prevStat(sport, p, c);
     const line = c.line ? lineOf(sport, p, c.line) : c.line;
     if (line !== c.line && !(p.l && p.l[line])) return null;
-    if (c.ratio) { const n = S.stat(sport, p, line, c.ratio[0]), d = S.stat(sport, p, line, c.ratio[1]); return d ? n / d : null; }
+    if (c.ratio) { const n = S.stat(sport, p, line, c.ratio[0]), d = S.stat(sport, p, line, c.ratio[1]); return d ? S.ratioVal(c, n, d) : null; }
     return S.stat(sport, p, line, c.col);
   }
   // the switch itself, a small select; the choice sticks per sport in this browser
@@ -422,8 +422,10 @@
     const sc = sport.scorings && sport.scorings[scoring];
     if (sport.key !== "mlb" || !sc || sc.type !== "cats" || !sport.cols) return sport.columns;
     const col = (c) => c.col || c.rate;
-    const ok = (c) => c.line && sport.cols[c.line] && col(c) in sport.cols[c.line];
-    const mk = (c) => ({ line: c.line, col: col(c), label: c.label, group: c.line, fmt: c.fmt || ((x) => (x == null ? "" : Math.round(x).toString())), hide: MLB_CORE.has(c.k) ? undefined : "s" });
+    // a formula category (wOBA, K/9) shows as a ratio of its parts; a sum (SV+HLD) as the sum
+    const ok = (c) => c.line && sport.cols[c.line] && S.catOk(sport, c);
+    const mk = (c) => Object.assign({ line: c.line, label: c.label, group: c.line, fmt: c.fmt || ((x) => (x == null ? "" : Math.round(x).toString())), hide: MLB_CORE.has(c.k) ? undefined : "s" },
+      c.num ? { ratio: [c.num, c.den], mult: c.mult, add: c.add, k: c.k } : { col: col(c) }, c.title ? { title: c.title } : {});
     const bat = sc.cats.filter((c) => c.line === "bat" && ok(c)).map(mk), pit = sc.cats.filter((c) => c.line === "pit" && ok(c)).map(mk);
     const ip = sport.columns.find((c) => c.col === "ip");
     return bat.concat(ip ? [ip] : [], pit);
@@ -1348,7 +1350,7 @@
       // sortable by any category (best first), or by roto points, the default
       const sk = ui.projSort && sc.cats.some((c) => c.k === ui.projSort) ? sc.cats.find((c) => c.k === ui.projSort) : null;
       const order = rows.map((r, i) => i).sort((a, b) => (sk ? (pts[b].by[sk.k] || 0) - (pts[a].by[sk.k] || 0) || pts[b].tot - pts[a].tot : pts[b].tot - pts[a].tot));
-      const fmtC = (c, v) => (v == null ? "-" : c.num || c.rate === "avg" || c.rate === "obp" || c.rate === "ops" ? v.toFixed(3).replace(/^0/, "") : c.rate ? v.toFixed(2) : sport.key === "mlb" ? String(Math.round(v)) : v.toFixed(1));
+      const fmtC = (c, v) => (v == null ? "-" : c.fmt ? c.fmt(v) : c.num || c.rate === "avg" || c.rate === "obp" || c.rate === "ops" ? v.toFixed(3).replace(/^0/, "") : c.rate ? v.toFixed(2) : sport.key === "mlb" ? String(Math.round(v)) : v.toFixed(1));
       const n = d.teams.length;
       return `<div style="overflow:auto;flex:1;min-height:0">${head}<div class="table-wrap" style="border:0;border-radius:0"><table class="t dense proj"><thead><tr><th class="r">#</th><th>Team</th>${sc.cats.map((c) => `<th class="r sortable${sk === c ? " on" : ""}" data-act="projsort" data-k="${esc(c.k)}" title="Sort by ${esc(c.label)}" aria-sort="${sk === c ? "descending" : "none"}">${esc(c.label)}</th>`).join("")}<th class="r sortable${sk ? "" : " on"}" data-act="projsort" data-k="" title="Sort by roto points" aria-sort="${sk ? "none" : "descending"}">Roto</th></tr></thead><tbody>
         ${order.map((i, j) => { const r = rows[i]; return `<tr${isMe(r.t) ? ' class="me"' : ""}><td class="r num">${j + 1}</td><td class="nm"><span class="row" style="gap:6px">${teamAv(r.t, "sm")}<span class="ell">${esc(r.t.name)}</span></span></td>${sc.cats.map((c) => { const p = pts[i].by[c.k]; return `<td class="r num${p != null && p >= n - 0.5 ? " win" : p != null && p <= 1.5 ? " loss" : ""}" title="${p != null ? `${p} roto points` : ""}">${fmtC(c, r.tot[c.k])}</td>`; }).join("")}<td class="r num"><b>${Math.round(pts[i].tot * 10) / 10}</b></td></tr>`; }).join("")}

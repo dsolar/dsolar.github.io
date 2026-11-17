@@ -220,7 +220,8 @@
     var sp = S.ALL[k], stats = S.POINT_STATS[k] || [], def = S.POINT_DEFAULTS[k] || {}, cats = S.catCatalog(sp);
     var val = function (v) { return v == null ? "" : "<em>" + (v > 0 ? "+" : "") + (Math.round(v * 100) / 100) + "</em>"; };
     var pointsChips = stats.map(function (s) { return '<span class="chip">' + esc(s[1]) + " " + val(def[s[0]]) + "</span>"; }).join("");
-    var catChips = cats.map(function (c) { return '<span class="chip' + (c.low ? " low" : "") + '">' + esc(c.label) + (c.low ? " <em title=\"Lower is better\">&darr;</em>" : "") + "</span>"; }).join("");
+    var chipOf = function (c) { return '<span class="chip' + (c.low ? " low" : "") + '"' + (c.title ? ' title="' + esc(c.title) + '"' : "") + ">" + esc(c.label) + (c.low ? " <em title=\"Lower is better\">&darr;</em>" : "") + "</span>"; };
+    var catChips = cats.filter(function (c) { return !c.adv; }).map(chipOf).join(""), advChips = cats.filter(function (c) { return c.adv; }).map(chipOf).join("");
     var catsOk = cats.length > 0;
     var wins = catsOk ? [
       ["Head to head, points", "Play one team a week. More points wins."],
@@ -236,7 +237,8 @@
     ];
     el.innerHTML = '<div class="mod-h"><div><span class="kick">Scoring</span><h2>Score it your way</h2></div><a class="more" href="' + KIT + "leagues.html?s=" + k + '">Set up scoring &rarr;</a></div>' +
       '<div class="score"><div><h3>Points</h3><p>Give any stat any value. These are the starting values' + (k === "nfl" ? ", and you can add position premiums like a TE premium and yardage bonuses on top" : "") + ".</p><div class=\"chips\">" + pointsChips + "</div></div>" +
-      (catsOk ? "<div><h3>Categories</h3><p>Pick any of these, as many as you want. Rate stats are weighted by playing time.</p><div class=\"chips\">" + catChips + "</div></div>"
+      (catsOk ? "<div><h3>Categories</h3><p>Pick any of these, as many as you want. Rate stats are weighted by playing time.</p><div class=\"chips\">" + catChips + "</div>" +
+          (advChips ? '<h4 class="adv-h">Advanced</h4><div class="chips">' + advChips + "</div>" : "") + "</div>"
         : "<div><h3>Extras</h3><p>On top of any points scoring. Football leagues score in points; category leagues aren't built for football yet.</p><div class=\"chips\">" +
           [["TE premium", "+0.5 a catch"], ["6-point passing TDs", ""], ["100-yard rushing game", "+3"], ["100-yard receiving game", "+3"], ["300-yard passing game", "+3"], ["Points by position", ""]].map(function (x) { return '<span class="chip">' + esc(x[0]) + (x[1] ? " <em>" + esc(x[1]) + "</em>" : "") + "</span>"; }).join("") + "</div></div>") +
       '<div><h3>How you win</h3><p>From most to least common.</p><ol class="wins">' + wins.map(function (w) { return "<li><div><b>" + esc(w[0]) + "</b><span>" + esc(w[1]) + "</span></div></li>"; }).join("") +

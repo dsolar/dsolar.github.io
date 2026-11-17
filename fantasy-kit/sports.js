@@ -24,13 +24,33 @@
   const f2 = (v) => (v == null ? "-" : v.toFixed(2));
   const f0 = (v) => (v == null ? "-" : String(Math.round(v)));
 
-  // Reads a stat. Each sport carries its data's column lists after FK.sports.attach(sport, data).
+  // Reads a stat. Each sport carries its data's column lists after FK.sports.attach(sport, data). `col` is a column's
+  // name, or a weighted sum of columns ({ col: weight }) for the formula categories (wOBA's parts, steals plus
+  // blocks); a sum the data can't make (a column it doesn't have) is null.
   function stat(sport, p, line, col) {
     const l = p && p.l && p.l[line];
     if (!l) return null;
-    const i = sport.cols[line] ? sport.cols[line][col] : -1;
+    const cm = sport.cols[line];
+    if (col && typeof col === "object") {
+      let t = 0;
+      for (const [c, w] of Object.entries(col)) { const i = cm ? cm[c] : null; if (i == null || i < 0) return null; t += (l[i] || 0) * w; }
+      return t;
+    }
+    const i = cm ? cm[col] : -1;
     return i == null || i < 0 ? null : l[i];
   }
+  // The same on a raw line (a week's box-score array) with its column map; a column the line lacks counts as 0.
+  const lineVal = (row, cm, col) => {
+    if (!row || !cm) return 0;
+    if (col && typeof col === "object") { let t = 0; for (const [c, w] of Object.entries(col)) t += ((cm[c] != null ? row[cm[c]] : 0) || 0) * w; return t; }
+    return (cm[col] != null ? row[cm[col]] : 0) || 0;
+  };
+  // A ratio category from its parts: makes over attempts, or a formula's sum over its volume, scaled (K/9 is 9 times
+  // strikeouts per inning) and shifted (FIP's constant).
+  const ratioVal = (c, n, d) => (d ? (c.mult || 1) * n / d + (c.add || 0) : 0);
+  // The columns a category reads, so a pick list can leave out the ones a sport's data can't make yet.
+  const catCols = (c) => [c.col, c.num, c.den, c.rate, c.w].filter((x) => x != null).flatMap((x) => (typeof x === "object" ? Object.keys(x) : [x]));
+  const catOk = (sport, c) => !sport.cols || catCols(c).every((x) => sport.cols[c.line || "pg"] && sport.cols[c.line || "pg"][x] != null);
 
   /* ---------- basketball ---------- */
   const nba = {
@@ -283,12 +303,53 @@
     nhl: Object.assign({}, nhl.scorings.points.weights),
   };
   // Every category any of a sport's presets uses, plus a few common extras.
-  const EXTRA_CATS = { mlb: [{ k: "obp", label: "OBP", line: "bat", rate: "obp", w: "pa", fmt: r3 }] };
-  function catCatalog(sport) {
+  // Categories no preset uses, for custom category leagues: the advanced ones are formulas over the box-score
+  // columns (num and den can be weighted sums; mult and add scale the ratio), so they add up across players and weeks
+  // exactly like FG% does. adv marks them for the pick list. wOBA uses FanGraphs' recent linear weights.
+  const pct1 = (v) => (v == null ? "-" : (v * 100).toFixed(1) + "%");
+  const EXTRA_CATS = {
+    nba: [
+      { k: "ts", label: "TS%", num: { pts: 1 }, den: { fga: 2, fta: 0.88 }, fmt: r3, adv: true, title: "True shooting: points per shot, free throws counted" },
+      { k: "efg", label: "eFG%", num: { fgm: 1, tpm: 0.5 }, den: "fga", fmt: r3, adv: true, title: "Effective field goal percentage: a three counts as 1.5 makes" },
+      { k: "ato", label: "A/TO", num: "ast", den: "tov", fmt: f2, unit: 1.2, adv: true, title: "Assists per turnover" },
+      { k: "stocks", label: "STL+BLK", col: { stl: 1, blk: 1 }, title: "Steals plus blocks" },
+      { k: "pra", label: "PTS+REB+AST", col: { pts: 1, reb: 1, ast: 1 }, title: "Points, rebounds and assists" },
+      { k: "min", label: "MIN", col: "min", title: "Minutes" },
+    ],
+    mlb: [
+      { k: "obp", label: "OBP", line: "bat", rate: "obp", w: "pa", fmt: r3 },
+      { k: "slg", label: "SLG", line: "bat", num: "tb", den: "ab", fmt: r3, unit: 0.6, title: "Slugging percentage" },
+      { k: "iso", label: "ISO", line: "bat", num: { tb: 1, h: -1 }, den: "ab", fmt: r3, unit: 0.45, adv: true, title: "Isolated power: extra bases per at-bat" },
+      { k: "woba", label: "wOBA", line: "bat", num: { bb: 0.689, ibb: -0.689, hbp: 0.72, h: 0.882, "2b": 0.372, "3b": 0.708, hr: 1.168 }, den: { ab: 1, bb: 1, ibb: -1, sf: 1, hbp: 1 }, fmt: r3, unit: 0.5, adv: true, title: "Weighted on-base average: each way of reaching base weighted by the runs it's worth" },
+      { k: "bbp", label: "BB%", line: "bat", num: "bb", den: "pa", fmt: pct1, unit: 0.28, adv: true, title: "Walks per plate appearance" },
+      { k: "kp", label: "K%", line: "bat", num: "so", den: "pa", low: true, fmt: pct1, unit: 0.42, adv: true, title: "Strikeouts per plate appearance (lower is better)" },
+      { k: "xbh", label: "XBH", line: "bat", col: { "2b": 1, "3b": 1, hr: 1 }, title: "Extra-base hits" },
+      { k: "bb", label: "BB", line: "bat", col: "bb", title: "Walks" },
+      { k: "nsb", label: "NSB", line: "bat", col: { sb: 1, cs: -1 }, title: "Net stolen bases: steals minus caught stealing" },
+      { k: "k9", label: "K/9", line: "pit", num: "k", den: "ip", mult: 9, fmt: f2, unit: 1, adv: true, title: "Strikeouts per nine innings" },
+      { k: "bb9", label: "BB/9", line: "pit", num: "bb", den: "ip", mult: 9, low: true, fmt: f2, unit: 0.6, adv: true, title: "Walks per nine innings (lower is better)" },
+      { k: "kbb", label: "K/BB", line: "pit", num: "k", den: "bb", fmt: f2, unit: 2, adv: true, title: "Strikeouts per walk" },
+      { k: "fip", label: "FIP", line: "pit", num: { hr: 13, bb: 3, hbp: 3, k: -2 }, den: "ip", add: 3.1, low: true, fmt: f2, unit: 4, adv: true, title: "Fielding independent pitching: ERA from strikeouts, walks and home runs alone (lower is better)" },
+      { k: "kbbp", label: "K-BB%", line: "pit", num: { k: 1, bb: -1 }, den: "bf", fmt: pct1, unit: 0.45, adv: true, title: "Strikeouts minus walks, per batter faced" },
+      { k: "svh", label: "SV+HLD", line: "pit", col: { sv: 1, hld: 1 }, title: "Saves plus holds" },
+      { k: "ip", label: "IP", line: "pit", col: "ip", fmt: f1, title: "Innings pitched" },
+    ],
+    nhl: [
+      { k: "pts", label: "PTS", line: "sk", col: "pts", title: "Points" },
+      { k: "ppg", label: "PPG", line: "sk", col: "ppg", title: "Power-play goals" },
+      { k: "shp", label: "SHP", line: "sk", col: "shp", title: "Shorthanded points" },
+      { k: "shpct", label: "SH%", line: "sk", num: "g", den: "sog", fmt: pct1, unit: 0.3, adv: true, title: "Shooting percentage: goals per shot" },
+      { k: "hb", label: "HIT+BLK", line: "sk", col: { hits: 1, blk: 1 }, title: "Hits plus blocked shots" },
+      { k: "saves", label: "SV", line: "goalie", col: "saves", title: "Saves" },
+    ],
+  };
+  // Every category a custom league can pick: the presets' and the extras. With data attached, only the ones its
+  // columns can make.
+  function catCatalog(sport, o = {}) {
     const seen = new Map();
     for (const sc of Object.values(ALL[sport.key].scorings)) if (sc.type === "cats") for (const c of sc.cats) if (!seen.has(c.k)) seen.set(c.k, c);
     for (const c of EXTRA_CATS[sport.key] || []) if (!seen.has(c.k)) seen.set(c.k, c);
-    return [...seen.values()];
+    return [...seen.values()].filter((c) => o.all || catOk(sport, c));
   }
   function customScoring(sport, spec) {
     const base = ALL[sport.key].scorings;
@@ -306,7 +367,8 @@
         weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true, ...extra, label: "Custom points" + extraLabel(spec) };
     }
     const cats = Object.values(base).find((x) => x.type === "cats");
-    const all = catCatalog(sport);
+    // every category the league picked, even one this data file can't make yet (it scores once the columns arrive)
+    const all = catCatalog(sport, { all: true });
     return Object.assign({}, cats, { label: "Custom categories", cats: (spec.cats || []).map((k) => all.find((c) => c.k === k)).filter(Boolean), custom: true });
   }
   // drop zeroes and junk from { pos: { stat: points } }
@@ -599,5 +661,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { lineVal, ratioVal, catCols, catOk, EXTRA_CATS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

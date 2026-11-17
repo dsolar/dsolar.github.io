@@ -247,6 +247,15 @@ owns which team, the invite code and the save order. It also stamps each team's 
   categories wins, or each category counts with `settings.tally: "cats"`), all-play for points (`tally: "allplay"`),
   rotisserie (`format: "roto"`, season totals ranked per category), total points (`format: "total"`, points leagues: no games or playoffs, every week's points add up, most points wins; `L.results[w].total` holds each team's week, and `FK.league.totalLive` the week in progress), and best ball guillotine. Roster rules:
   `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
+- **Advanced categories** (custom category leagues): `FK.sports.EXTRA_CATS` adds TS%, eFG%, A/TO, STL+BLK and PTS+REB+AST
+  (basketball); SLG, ISO, wOBA, BB%, K%, XBH, BB, NSB, K/9, BB/9, K/BB, FIP, K-BB%, SV+HLD and IP (baseball); and PTS, PPG,
+  SHP, SH%, HIT+BLK and saves (hockey). A category's `col`, `num` and `den` can be a column or a weighted sum of columns
+  (`{ col: weight }`), and a ratio can carry `mult` (K/9 is 9) and `add` (FIP's constant), so formulas add up across
+  players and weeks exactly like FG%. `FK.sports.stat` reads a sum (null if a column is missing), `lineVal` does the same on
+  a raw week's line, `ratioVal` makes a ratio from its parts, and `catCatalog(sport)` leaves out what an attached data
+  file can't make yet (`{ all: true }` keeps everything). Baseball's lines carry the parts on the end of their columns:
+  `bb, hbp, sf, 2b, 3b, so, ibb, cs` for hitters and `outs, hr, hbp, bf` for pitchers, in the season, projection and real
+  week lines alike (tools/fantasykit_data.py, tools/mlb_stats_pull.py, fk-live).
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
   after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the
   taxi squad (`settings.prospects`, at least that many taxi spots, keeper leagues included). The pool rides with the

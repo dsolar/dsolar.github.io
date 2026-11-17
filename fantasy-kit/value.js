@@ -532,10 +532,11 @@
   // which line to read (a projection or the stats).
   function teamCats(sport, sc, ps, lineOf) {
     const out = {};
-    const get = (p, line, col) => { const ln = lineOf ? lineOf(p, line) : line, cols = sport.data.lines[ln] && sport.data.lines[ln].cols, row = p.l[ln]; const i = cols ? cols.indexOf(col) : -1; return row && i >= 0 ? row[i] || 0 : 0; };
+    const maps = {}, cmOf = (ln) => maps[ln] || (maps[ln] = sport.data.lines[ln] ? Object.fromEntries(sport.data.lines[ln].cols.map((c, i) => [c, i])) : null);
+    const get = (p, line, col) => { const ln = lineOf ? lineOf(p, line) : line, cm = cmOf(ln), row = p.l[ln]; return row && cm ? S.lineVal(row, cm, col) : 0; };
     for (const c of sc.cats || []) {
       const line = c.line || sc.line;
-      if (c.num) { const n = sum(ps.map((p) => get(p, line, c.num))), d = sum(ps.map((p) => get(p, line, c.den))); out[c.k] = d ? n / d : null; }
+      if (c.num) { const n = sum(ps.map((p) => get(p, line, c.num))), d = sum(ps.map((p) => get(p, line, c.den))); out[c.k] = d ? S.ratioVal(c, n, d) : null; }
       else if (c.rate) { const w = sum(ps.map((p) => get(p, line, c.w))); out[c.k] = w ? sum(ps.map((p) => get(p, line, c.rate) * get(p, line, c.w))) / w : null; }
       else out[c.k] = sum(ps.map((p) => get(p, line, c.col)));
     }
