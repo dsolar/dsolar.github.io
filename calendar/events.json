@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-16T20:40:46Z",
+ "updated": "2026-11-17T19:23:47Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,86 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "espn-401909994",
-   "date": "2026-11-16",
-   "time": "19:00",
-   "title": "Celtics vs Magic",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909994/magic-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkf4GkdFCxhF",
-   "date": "2026-11-16",
-   "time": "19:00",
-   "title": "Yung Gravy: The Joyrider Tour",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/yung-gravy-the-joyrider-tour-boston-massachusetts-11-16-2026/event/01006515C83A26C8",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18528163",
-    "2026-11-16-yung-gravy-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AA7zoy",
-   "date": "2026-11-16",
-   "time": "19:30",
-   "title": "An Evening With Goose",
-   "cat": "music",
-   "venue": "Ridgefield Playhouse",
-   "city": "Ridgefield, CT",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7zoy",
-   "source": "ticketmaster",
-   "drive_hours": 3.25,
-   "act": "Goose",
-   "aka": [
-    "sg-18762401"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-G5vVZ_3n_EpYc",
-   "date": "2026-11-16",
-   "time": "19:30",
-   "title": "Trey Anastasio Band",
-   "cat": "music",
-   "venue": "The Capitol Theatre",
-   "city": "Port Chester, NY",
-   "url": "https://www.ticketmaster.com/trey-anastasio-band-port-chester-new-york-11-16-2026/event/1D00652A999D6C2D",
-   "source": "ticketmaster",
-   "drive_hours": 3.75,
-   "act": "Trey Anastasio",
-   "aka": [
-    "sg-18593199"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PI8x",
-   "date": "2026-11-16",
-   "time": "20:00",
-   "title": "The War and Treaty",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PI8x",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18702249",
-    "2026-11-16-the-war-and-treaty-the-sinclair"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vvG17Z_GNygERh",
    "date": "2026-11-17",
@@ -419,10 +339,6 @@
    "aka": [
     "sg-18164314",
     "sg-18164315"
-   ],
-   "times": [
-    "19:30",
-    "20:00"
    ],
    "score": 2,
    "why": "big"
@@ -5084,6 +5000,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_pGkcoroIO",
+   "date": "2027-01-23",
+   "time": "20:00",
+   "title": "The Xscape Room Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/the-xscape-room-tour-boston-massachusetts-01-23-2027/event/0100656B51791A20",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7v-x",
    "date": "2027-01-23",
    "time": "20:00",
@@ -5827,6 +5755,21 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18727383"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkMp4x7Y",
+   "date": "2027-02-11",
+   "time": "19:00",
+   "title": "Reprise - Recreating Iconic Phish Shows (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/reprise-recreating-iconic-phish-shows-18-boston-massachusetts-02-11-2027/event/0100656DD6562130",
+   "source": "ticketmaster",
+   "aka": [
+    "tm-vv177Z_pGkMp4x7Y"
    ],
    "score": 0
   },
@@ -6586,6 +6529,23 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGklqR-Eh",
+   "date": "2027-02-27",
+   "time": "20:00",
+   "title": "GusterMania Live at MGM!",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/gustermania-live-at-mgm-boston-massachusetts-02-27-2027/event/0100656ADDBE19DB",
+   "source": "ticketmaster",
+   "act": "Guster",
+   "aka": [
+    "tm-vv177Z_pGklqR-Eh"
+   ],
+   "score": 2,
+   "why": "big"
+  },
+  {
    "id": "tm-vv1avZk4kOwvsZeGk",
    "date": "2027-02-27",
    "time": "21:00",
@@ -7199,6 +7159,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGkS9noqR",
+   "date": "2027-03-09",
+   "time": "19:00",
+   "title": "Gabriel Jacoby - gutta child tour",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/gabriel-jacoby-gutta-child-tour-boston-massachusetts-03-09-2027/event/0100656CD7A9176F",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4eGkdzjaYi",
    "date": "2027-03-10",
    "time": "18:30",
@@ -7401,6 +7373,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/kaitlin-butts-the-hello-honky-tonk-boston-massachusetts-03-12-2027/event/0100656CD35F0F54",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18781083"
+   ],
    "score": 0
   },
   {
@@ -7613,6 +7588,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/amira-elfeky-it-was-only-a-boston-massachusetts-03-14-2027/event/0100656BB9ACC878",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18781082"
+   ],
    "score": 0
   },
   {
@@ -7965,6 +7943,18 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGkwcD5re",
+   "date": "2027-03-20",
+   "time": "19:00",
+   "title": "Whitney Cummings: Large Language Mother Tour",
+   "cat": "comedy",
+   "venue": "Boch Center Shubert Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/whitney-cummings-large-language-mother-tour-boston-massachusetts-03-20-2027/event/0100656CADECB782",
+   "source": "ticketmaster",
+   "score": 1
+  },
+  {
    "id": "tm-Z7r9jZ1AAAZkK",
    "date": "2027-03-20",
    "time": "22:00",
@@ -7989,6 +7979,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_pGkl7LqnU",
+   "date": "2027-03-21",
+   "time": "19:00",
+   "title": "Midrift",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/midrift-boston-massachusetts-03-21-2027/event/0100656AC47DDAB6",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_pGklmEfOt",
    "date": "2027-03-21",
    "time": "19:00",
@@ -7998,6 +8000,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/pete-holmes-were-having-fun-boston-massachusetts-03-21-2027/event/0100656AEE9D4829",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18780734"
+   ],
    "score": 1
   },
   {
@@ -8130,6 +8135,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dj-shadow-celebrates-30-years-of-boston-massachusetts-03-25-2027/event/0100656DA4769CBE",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18780957"
+   ],
    "score": 0
   },
   {
@@ -8254,6 +8262,21 @@
    "score": 0
   },
   {
+   "id": "tm-vv177Z_pGkm0B_WN",
+   "date": "2027-03-27",
+   "time": "19:30",
+   "title": "Jhené Aiko Presents: Ark to Agartha - A Westside Whimsy Experience",
+   "cat": "music",
+   "venue": "TD Garden",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/jhene-aiko-presents-ark-to-agartha-boston-massachusetts-03-27-2027/event/0100656BA4E99F63",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18783874"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4AGkeJXnEm",
    "date": "2027-03-27",
    "time": "20:00",
@@ -8350,6 +8373,21 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18701776"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkMCN8zS",
+   "date": "2027-04-01",
+   "time": "19:00",
+   "title": "Sasha Keable - Act Right Tour",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/sasha-keable-act-right-tour-boston-massachusetts-04-01-2027/event/0100656DCE8D0E33",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18784459"
    ],
    "score": 0
   },
@@ -8476,6 +8514,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_pGkY9_hL1",
+   "date": "2027-04-03",
+   "time": "19:00",
+   "title": "CHVRCHES - LIVE 2027",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/chvrches-live-2027-boston-massachusetts-04-03-2027/event/0100656C1765B7CA",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_KGkB9E5TK",
    "date": "2027-04-03",
    "time": "19:00",
@@ -8503,6 +8553,18 @@
    "aka": [
     "sg-18724725"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4tGkeO56Zw",
+   "date": "2027-04-03",
+   "time": "20:00",
+   "title": "Santana - Planet of Free Will Global Tour 2027",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/santana-planet-of-free-will-global-boston-massachusetts-04-03-2027/event/01006569A02C7032",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -8597,6 +8659,21 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18756240"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGknzulT0",
+   "date": "2027-04-06",
+   "time": "18:00",
+   "title": "CHIODOS: ALL THE WORLD'S A STAGE",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/chiodos-all-the-worlds-a-stage-boston-massachusetts-04-06-2027/event/0100656AB836BFE4",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18784621"
    ],
    "score": 0
   },
@@ -8885,6 +8962,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv177Z_pGknl6QQP",
+   "date": "2027-04-11",
+   "time": "20:00",
+   "title": "Nathaniel Rateliff: Endless Horizon Tour",
+   "cat": "music",
+   "venue": "Boch Center Wang Theatre",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/nathaniel-rateliff-endless-horizon-tour-boston-massachusetts-04-11-2027/event/0100656AAB1DA6A5",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfyGkd_fMvi",
    "date": "2027-04-11",
    "time": "20:00",
@@ -8909,6 +8998,18 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/vincent-lima-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-11-8-pm/concert/18747201",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkMo6vpX",
+   "date": "2027-04-12",
+   "time": "19:00",
+   "title": "ASH - 1977 30th Anniversary Tour - North America 2027 (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/ash-1977-30th-anniversary-tour-north-boston-massachusetts-04-12-2027/event/0100656DD11C15BE",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -9197,6 +9298,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/rio-romeo-personal-slot-machine-tour-boston-massachusetts-04-19-2027/event/0100656AE3CE2888",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18781084"
+   ],
    "score": 0
   },
   {
@@ -9212,6 +9316,18 @@
    "aka": [
     "sg-18756379"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkS-PxMM",
+   "date": "2027-04-20",
+   "time": "19:00",
+   "title": "Racing Mount Pleasant",
+   "cat": "music",
+   "venue": "Paradise Rock Club presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/racing-mount-pleasant-boston-massachusetts-04-20-2027/event/0100656CE1962DF7",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -9242,6 +9358,18 @@
    "aka": [
     "sg-18727608"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18780309",
+   "date": "2027-04-21",
+   "time": "19:00",
+   "title": "BigXthaPlug",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/bigxthaplug-tickets/boston-massachusetts-royale-boston-2027-04-21-7-pm/concert/18780309",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -9284,6 +9412,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/justin-silva-boston-massachusetts-04-23-2027/event/0100656E9CBA6393",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18780733"
+   ],
    "score": 1
   },
   {
@@ -9432,6 +9563,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/cursive-happy-hollow-20th-anniversary-18-boston-massachusetts-04-25-2027/event/0100656AA860A15B",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18781081"
+   ],
    "score": 0
   },
   {
@@ -10026,31 +10160,59 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/76th-street-boston-massachusetts-05-15-2027/event/0100656BAF8FB4B5",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18781079"
+   ],
    "score": 0
   },
   {
-   "id": "sg-18759205",
+   "id": "tm-vv1AvZk4AGkeU-chc",
    "date": "2027-05-15",
    "time": "20:00",
    "title": "Vic DiBitetto",
    "cat": "comedy",
-   "venue": "Lynn Memorial Auditorium",
+   "venue": "Lynn Auditorium",
    "city": "Lynn, MA",
-   "url": "https://seatgeek.com/vic-dibitetto-tickets/comedy/2027-05-15-8-pm/18759205",
-   "source": "seatgeek",
-   "score": 1
+   "url": "https://www.ticketmaster.com/vic-dibitetto-lynn-massachusetts-05-15-2027/event/01006545B686D6ED",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18759205"
+   ],
+   "score": 0
   },
   {
-   "id": "sg-18687613",
+   "id": "tm-vv1AvZk4aGkdK57OC",
    "date": "2027-05-15",
    "time": "20:30",
-   "title": "Josh Johnson",
+   "title": "JOSH JOHNSON'S COMEDY BAND CAMP",
    "cat": "comedy",
    "venue": "Boch Center Wang Theatre",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/josh-johnson-tickets/comedy/2027-05-15-8-30-pm/18687613",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/josh-johnsons-comedy-band-camp-boston-massachusetts-05-15-2027/event/01006549D32C480E",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18687613"
+   ],
    "score": 1
+  },
+  {
+   "id": "tm-vv177Z_pGkMU5Er9",
+   "date": "2027-05-16",
+   "time": "19:00",
+   "title": "Kingfishr: Weight Of The Feather Tour 2027",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/kingfishr-weight-of-the-feather-tour-boston-massachusetts-05-16-2027/event/0100656DF62E7797",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18784656"
+   ],
+   "score": 0
   }
  ],
  "movies": [
@@ -10128,8 +10290,8 @@
  "sources": {
   "picks": 2,
   "venues": 1,
-  "espn": 69,
-  "ticketmaster": 498,
-  "seatgeek": 105
+  "espn": 68,
+  "ticketmaster": 511,
+  "seatgeek": 104
  }
 }
