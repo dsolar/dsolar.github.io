@@ -31,7 +31,9 @@ jobs:
         run: |
           fail=0
           for t in tests/fantasy*.test.mjs tests/gameday.test.mjs; do
-            if ! node --test "$t" > /tmp/out.txt 2>&1; then
+            if node --test "$t" > /tmp/out.txt 2>&1; then
+              echo "ok   $t ($(grep -E '^# pass' /tmp/out.txt | awk '{print $3}') passed)"
+            else
               echo "::error title=Draft Lab tests::$t failed"
               grep -E "^not ok|AssertionError|Error:" /tmp/out.txt | head -20
               fail=1
