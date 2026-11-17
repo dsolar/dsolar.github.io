@@ -505,7 +505,8 @@
         <section class="nl-sec"><h2 class="nl-h">The draft</h2>
           <div class="nl-dr">${pickCards("type", draftTypes(sp).map((k) => [k, DRAFT_SHORT[k] || F.FORMATS[k], DRAFTS[k] || ""]), form.type, "Draft format")}
           ${triviaOk() ? toggle("tvOn", "Trivia draft", `On the clock, answer an easy ${{ nfl: "football", nba: "basketball", mlb: "baseball" }[sp.key] || "sports"} question first: four choices, 15 seconds. Miss it and your pick moves to the end of the round`, form.tvOn) : ""}
-          ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.league} team you have to draft from`, form.rlOn,
+          ${!rlOk() && rlPick() && collegeOnly() ? `<p class="fl-h">Team roulette needs ${RL_SCHOOLS} schools or fewer. ${slateOn() ? "Pick fewer games" : "Narrow the player pool to a conference or two in Fine-tune"} to turn it on.</p>` : ""}
+          ${rlOk() ? toggle("rlOn", "Team roulette", `Each pick, a wheel picks the ${sp.college ? "school" : `${sp.league} team`} you have to draft from`, form.rlOn,
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
           ${noRoom() ? "" : fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}</div>
           ${capOn() ? capHtml() : sealedOn() ? lockHtml() : draftTimeHtml()}
@@ -635,9 +636,14 @@
       "Everyone ranks players in private until then. Then the draft runs itself in a snake order: each pick is the highest player left on that team's list.");
   }
   // team roulette works with drafts that go pick by pick (not a showdown: two teams make a dull wheel)
-  const rlOk = () => ["snake", "linear", "3rr"].includes(form.type) && !showdown();
-  // a trivia draft: any sport, a draft that goes pick by pick
-  const triviaOk = () => form.sport !== "nhl" && ["snake", "linear", "3rr"].includes(form.type);
+  // College: only with a pool of 40 schools or fewer (a conference or two, or a small slate). The wheel deals every
+  // school once before any repeats, so across all of D1 most picks would land on a school with nobody worth drafting.
+  const RL_SCHOOLS = 40;
+  const rlSchools = () => { if (slateOn()) { const sl = curSlate(); return sl ? sl.teams.length : Infinity; } const t = confTeams(); return t ? t.length : Infinity; };
+  const rlPick = () => ["snake", "linear", "3rr"].includes(form.type) && !showdown();
+  const rlOk = () => rlPick() && (!collegeOnly() || rlSchools() <= RL_SCHOOLS);
+  // a trivia draft: a draft that goes pick by pick, in a sport with a question bank (football, basketball, baseball)
+  const triviaOk = () => ["nfl", "nba", "mlb"].includes(form.sport) && ["snake", "linear", "3rr"].includes(form.type);
   const trivia = () => triviaOk() && !!form.tvOn;
   const seasonsFor = (sp) => SEASONS[scoringType(sp)];
   // the fine-tune list: [key, title, what it covers, current value, body]
@@ -1250,7 +1256,7 @@
     }
     const cf = e.target.closest("[data-conf]");
     if (cf) {
-      grab(); const k = cf.dataset.conf, cur = new Set(form.confs || []);
+      grab(); const k = cf.dataset.conf, cur = new Set(form.confs || []), rlWas = rlOk();
       if (!k) cur.clear();
       else if (k === "@power") { const P = powerOf(), was = P.every((c) => cur.has(c)) && cur.size === P.length; cur.clear(); if (!was) P.forEach((c) => cur.add(c)); }
       else if (cur.has(k)) cur.delete(k); else cur.add(k);
@@ -1258,7 +1264,8 @@
       // just the pool row and the summary line change, not the whole form (a full redraw of a college form is slow
       // on a phone, and these get tapped several times in a row)
       const body = $("#nr-pool"), sp = S[form.sport];
-      if (body && sp && sp.college) {
+      // (unless team roulette just came in or out of reach: then the draft section changes too)
+      if (body && sp && sp.college && rlOk() === rlWas) {
         body.innerHTML = confBody(sp);
         const v = $('.nr-h[data-row="pool"] .nr-v'); if (v) v.textContent = confLabel();
         const line = $(".nl-sum small"); if (line) line.textContent = values(sp).line;

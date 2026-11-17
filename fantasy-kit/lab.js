@@ -160,6 +160,9 @@
     return { key: o.key, slate: Object.assign(sl, lu.mult ? { mult: lu.mult } : {}), lineup: lu };
   }
   const hzOn = (c) => c.sport === "nfl" && !!c.hz && !c.sd;
+  // team roulette: drafts that go pick by pick, not a showdown. College only on a night of 40 schools or fewer: the
+  // wheel deals every school once before repeats, so across all of D1 most picks would land on nobody worth drafting.
+  const rlOn = (c) => { if (!rlFits(c) || sdOn(c)) return false; if (!(S[c.sport] && S[c.sport].college)) return true; const d = dayOn(c) ? daySlate(c) : null; return !!d && d.slate.teams.length <= 40; };
   function startPage() {
     document.body.classList.remove("fk-room");
     const sport = S[cfg.sport];
@@ -210,7 +213,7 @@
     const sc = (sport.scorings[scoring] || {}).label || "";
     const twHtml = twists(c);
     const dsl = dayOn(c) ? daySlate(c) : null;
-    const tw = [dsl ? `${window.FK.slates.dayName(dsl.slate.day).toLowerCase()}: ${dsl.slate.label.toLowerCase()}` : dayOn(c) ? "one day" : "", sdOn(c) ? `showdown, ${c.sdA || "?"} at ${c.sdH || "?"}` : "", rlFits(c) && c.rl && !sdOn(c) ? "team roulette" : "", hzOn(c) ? "a heist" : ""].filter(Boolean);
+    const tw = [dsl ? `${window.FK.slates.dayName(dsl.slate.day).toLowerCase()}: ${dsl.slate.label.toLowerCase()}` : dayOn(c) ? "one day" : "", sdOn(c) ? `showdown, ${c.sdA || "?"} at ${c.sdH || "?"}` : "", rlOn(c) && c.rl ? "team roulette" : "", hzOn(c) ? "a heist" : ""].filter(Boolean);
     const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${sdOn(c) ? 50 : c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}${tw.length ? `, ${tw.join(" and ")}` : ""}`;
     const formats = K.pickCards("type", Object.entries(F.FORMATS).map(([k, l]) => [k, K.DRAFT_SHORT[k] || l, K.DRAFTS[k] || ""]), c.type, "Draft format");
     const presets = Object.entries(sport.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), K.SC_SUB[k] || ""]);
@@ -272,7 +275,7 @@
         : K.toggle("day", "One week: this week's games", "Draft only the players in a week's real games (the full week, Sunday or primetime), with a one-week lineup, then play it out live.", c.day, pickHtml));
     }
     if (S.hardCapOk(c.sport) && rlFits(c) && !c.day) rows.push(K.toggle("hc", "Hard Cap", `Real ${S[c.sport].league} contracts under a salary line: every player carries his real salary, and you keep room to fill the roster at the minimum. The line is set from what this league's players are paid.`, c.hc));
-    if (rlFits(c) && !sdOn(c)) rows.push(K.toggle("rl", "Team roulette", "Each pick has to come from the pro team the wheel lands on. One re-spin each.", c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
+    if (rlOn(c)) rows.push(K.toggle("rl", "Team roulette", `Each pick has to come from the ${S[c.sport].college ? "school" : "pro team"} the wheel lands on. One re-spin each.`, c.rl, K.fld("The wheel spins", K.seg("rlRound", [[0, "Every pick"], [1, "Every round"]], c.rlRound ? 1 : 0, "The wheel spins"))));
     if (nfl && !c.day) rows.push(K.toggle("sd", "Showdown: one game", "Just the players in one game. A captain at 1.5x and five flex spots, no bench.", c.sd, `${c.sd ? fmtPick : ""}${gamePick}`));
     if (nfl && !sdOn(c) && !c.day) rows.push(K.toggle("hz", "Heist after the draft", "Shield three of your starters, steal one of your opponent's and jinx another. The one-week lineup, no bench.", c.hz));
     return rows.length ? `<section class="nl-sec"><h2 class="nl-h">Twists</h2><div class="nl-bb">${rows.join("")}</div></section>` : "";
@@ -392,7 +395,7 @@
     if (P.hcf) { const h = P.hcf; D.hardCap = { line: S.suggestLine(P.players, n, P.lineup.length + P.bench, h), min: h.min, year: h.year, cap: h.cap, held: [] }; }
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
-    if (rlFits(c) && c.rl && !sdOn(c)) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };
+    if (rlOn(c) && c.rl) D.roulette = { teams: [...new Set(P.players.map((p) => p.t).filter((t) => t && t !== "FA"))].sort(), each: c.rlRound ? "round" : "pick", respins: 1, spins: {}, used: {} };
     // a slate or showdown mock can play out on its real games afterward (fantasy/demo/?play=mock): head to head, or
     // everyone vs everyone (fmt1)
     const tally = c.fmt1 === "allplay" ? "allplay" : "game";
