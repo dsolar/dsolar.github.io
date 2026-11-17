@@ -20,6 +20,8 @@ OUT = ROOT / "cbb/data/extras.json"
 HOME_EDGE = 3.0   # points, split evenly between the two teams' projected scores
 SPREAD_SD = 11.0  # typical miss of a college basketball point spread, in points
 KEEP_DAYS = 120
+RESUME = 1.0      # selection score = rating (points per game vs average) + RESUME x Wins Above Bubble
+SWING_DAYS = 7    # games this far ahead get win/loss splits of every team's tournament odds
 
 
 def read(p, default=None):
@@ -198,20 +200,34 @@ def simulate(teams, avg, sims, seed, today, schedule=None):
             if not left[i] and known:
                 left[i] = known[len(known) // 2]
     M = {c: [[S(i, j) if i != j else 0 for j in m] for i in m] for c, m in confs.items()}
+    # Wins Above Bubble: each Division I result minus the chance a bubble-strength team (the 45th best rating) wins that game
+    ranked = sorted(range(n), key=lambda i: -base[i])
+    bubble = base[ranked[min(n - 1, 44)]]
+
+    def pbub(j, venue):  # venue 1 = the bubble team is at home, -1 = away, 0 = neutral
+        return phi((bubble - base[j] + venue * HOME_EDGE) / SPREAD_SD)
+
     # The real remaining schedule where we have it: every Division I game still to play, with its true venue
     idx = {t["id"]: i for i, t in enumerate(T)}
-    rem, outside, sleft = [], [0] * n, [0] * n
+    rem, outside, sleft, wab0 = [], [0] * n, [0] * n, [0.0] * n
     t0 = today.isoformat()
+    t7 = (today + timedelta(days=SWING_DAYS)).isoformat()
     for g in (schedule or {}).get("games", []):
+        i, j = idx.get(g["home"]), idx.get(g["away"])
+        v = 0 if g.get("neutral") else 1
+        if g.get("state") == "post" and not g.get("post") and i is not None and j is not None and num(g.get("hs")) is not None and num(g.get("as")) is not None:
+            hw = num(g["hs"]) > num(g["as"])
+            wab0[i] += hw - pbub(j, v)
+            wab0[j] += (not hw) - pbub(i, -v)
+            continue
         if g.get("state") != "pre" or g.get("post") or g["day"] < t0:
             continue
-        i, j = idx.get(g["home"]), idx.get(g["away"])
         if i is None and j is None:
             continue
         if i is None or j is None:  # a non-Division I opponent: counted as a win
             outside[i if j is None else j] += 1
             continue
-        rem.append((i, j, S(i, j) + (0 if g.get("neutral") else HOME_EDGE), bool(g.get("conf"))))
+        rem.append((i, j, S(i, j) + HOME_EDGE * v, bool(g.get("conf")), pbub(j, v), pbub(i, -v), g["id"], g["day"]))
         if g.get("conf"):
             sleft[i] += 1
             sleft[j] += 1
@@ -220,7 +236,10 @@ def simulate(teams, avg, sims, seed, today, schedule=None):
     for c, m in confs.items():
         for i in m:
             ctot[i] = played[i] + int(num((T[i].get("record") or {}).get("cl")) or 0) + (sleft[i] if use_sched[c] else left[i])
-    reg, aq, made, wsum, osum = [0] * n, [0] * n, [0] * n, [0.0] * n, [0.0] * n
+    reg, aq, made, wsum, osum, wabsum = [0] * n, [0] * n, [0] * n, [0.0] * n, [0.0] * n, [0.0] * n
+    W = [k for k, g in enumerate(rem) if g[7] <= t7]  # this week's games: track every team's odds after a win and after a loss
+    hwins, h_in_w, h_in_l, a_in_w, a_in_l = [0] * len(W), [0] * len(W), [0] * len(W), [0] * len(W), [0] * len(W)
+    res = [False] * len(rem)
     rounds = [[0] * 7 for _ in range(n)]
     seeds = [[0] * 17 for _ in range(n)]
     SD, H = SPREAD_SD, HOME_EDGE
@@ -232,14 +251,19 @@ def simulate(teams, avg, sims, seed, today, schedule=None):
         off = [gauss(0, drift) for _ in range(n)]
         strength = [base[i] + off[i] for i in range(n)]
         aq_set = set()
-        cw, ow = played[:], [0] * n
-        for i, j, m0, cf in rem:
-            w = i if m0 + off[i] - off[j] + gauss(0, SD) > 0 else j
+        cw, ow, wab = played[:], [0] * n, wab0[:]
+        for k, (i, j, m0, cf, ph, pa, _, _) in enumerate(rem):
+            hw = m0 + off[i] - off[j] + gauss(0, SD) > 0
+            res[k] = hw
+            w = i if hw else j
             ow[w] += 1
+            wab[i] += hw - ph
+            wab[j] += (not hw) - pa
             if cf:
                 cw[w] += 1
         for i in range(n):
             osum[i] += ow[i]
+            wabsum[i] += wab[i]
         for c, m in confs.items():
             k, mat = len(m), M[c]
             wins = [cw[i] if use_sched[c] else played[i] for i in m]
@@ -277,11 +301,29 @@ def simulate(teams, avg, sims, seed, today, schedule=None):
             while len(bracket) > 1:
                 bracket = [play(bracket[x], bracket[x + 1], off) for x in range(0, len(bracket) - 1, 2)] + ([bracket[-1]] if len(bracket) % 2 else [])
             aq_set.add(bracket[0])
-        pool = sorted((i for i in range(n) if i not in aq_set), key=lambda i: -strength[i])
+        sel = [strength[i] + RESUME * wab[i] for i in range(n)]
+        pool = sorted((i for i in range(n) if i not in aq_set), key=lambda i: -sel[i])
         field = list(aq_set) + pool[:FIELD - len(aq_set)]
         for i in aq_set:
             aq[i] += 1
-        regions = build_bracket(field, aq_set, strength)
+        # This week's games, both ways: flip the result and only the résumé moves (a win is worth exactly one WAB more
+        # than a loss), so the split shows what the result itself is worth, not what it reveals about the team
+        k_ = FIELD - len(aq_set)
+        fs = set(field)
+        cut_in, cut_out = sel[pool[k_ - 1]], sel[pool[k_]] if len(pool) > k_ else -1e9
+        for p_, k in enumerate(W):
+            i, j, hw = rem[k][0], rem[k][1], res[k]
+            hwins[p_] += hw
+            for t_, won, cw_, cl_ in ((i, hw, h_in_w, h_in_l), (j, not hw, a_in_w, a_in_l)):
+                if t_ in aq_set:
+                    cw_[p_] += 1
+                    cl_[p_] += 1
+                    continue
+                thr = cut_out if t_ in fs else cut_in
+                sw = sel[t_] + (0 if won else RESUME)
+                cw_[p_] += sw > thr
+                cl_[p_] += sw - RESUME > thr
+        regions = build_bracket(field, aq_set, sel)
         champs = []
         for reg_ in regions:
             line_up = []
@@ -308,7 +350,8 @@ def simulate(teams, avg, sims, seed, today, schedule=None):
         mode = max(range(1, 17), key=lambda s_: cnt[s_]) if made[i] else None
         out[t["id"]] = {"reg": round(reg[i] / sims, 4), "cw": round(wsum[i] / sims, 1), "aq": round(aq[i] / sims, 4), "in": round(made[i] / sims, 4),
                         "seed": round(sum(s_ * cnt[s_] for s_ in range(17)) / made[i], 1) if made[i] else None, "mode": mode,
-                        "top4": round(sum(cnt[1:5]) / sims, 4), "r": [round(x / sims, 4) for x in rounds[i]]}
+                        "top4": round(sum(cnt[1:5]) / sims, 4), "r": [round(x / sims, 4) for x in rounds[i]],
+                        "wab": round(wab0[i], 1), "wabEnd": round(wabsum[i] / sims, 1)}
         out[t["id"]]["cl"] = round(ctot[i] - out[t["id"]]["cw"], 1)
         r = t.get("record") or {}
         if rem:
@@ -320,14 +363,27 @@ def simulate(teams, avg, sims, seed, today, schedule=None):
     idx = {t["id"]: i for i, t in enumerate(T)}
     fav = {c: max(m, key=lambda i: (aq[i], base[i])) for c, m in confs.items()}
     aq_set = set(fav.values())
-    pool = sorted((i for i in range(n) if i not in aq_set), key=lambda i: -base[i])
+    sel0 = [base[i] + RESUME * wab0[i] for i in range(n)]
+    pool = sorted((i for i in range(n) if i not in aq_set), key=lambda i: -sel0[i])
     field = list(aq_set) + pool[:FIELD - len(aq_set)]
-    regions = build_bracket(field, aq_set, base)
+    regions = build_bracket(field, aq_set, sel0)
     projected = [[{"seed": sd, "teams": [T[i]["id"] for i in reg_.get(sd, ())]} for sd in REGION_ORDER] for reg_ in regions]
     last_in = [T[i]["id"] for i in pool[:FIELD - len(aq_set)][-6:]]
     first_out = [T[i]["id"] for i in pool[FIELD - len(aq_set):FIELD - len(aq_set) + 6]]
-    return {"sims": sims, "drift": round(drift, 2), "scheduled": sum(use_sched.values()), "remaining": len(rem), "selectionSunday": SELECTION_SUNDAY, "teams": out, "bracket": projected, "lastIn": last_in, "firstOut": first_out,
-            "method": f"{sims:,} seasons. Each run nudges every team's rating by a random amount (up to about {drift:.1f} points a game, shrinking toward Selection Sunday), plays every team's real remaining schedule at its real venues (a league whose schedule isn't posted yet draws random league opponents instead), then an eight-team conference tournament for the automatic bid. The other {FIELD - 32} spots go to the strongest teams left, the 12 weakest automatic qualifiers and 12 weakest at-large teams play in the Opening Round, seeds follow the S-curve, and the 76-team tournament is played out on neutral courts."}
+    swing = []
+    for p_, k in enumerate(W):
+        i, j, _, _, _, _, gid, day = rem[k]
+        nw, nl = hwins[p_], sims - hwins[p_]
+        if min(nw, nl) < 0.1 * sims:  # a near-certain result says little, and its rare upset sims are mostly rating noise
+            continue
+        h = [round(h_in_w[p_] / sims, 3), round(h_in_l[p_] / sims, 3)]
+        a = [round(a_in_w[p_] / sims, 3), round(a_in_l[p_] / sims, 3)]
+        big = max(h[0] - h[1], a[0] - a[1])
+        if big >= 0.02:
+            swing.append({"id": gid, "day": day, "home": T[i]["id"], "away": T[j]["id"], "hp": round(nw / sims, 3), "h": h, "a": a, "big": round(big, 3)})
+    swing.sort(key=lambda x: -x["big"])
+    return {"sims": sims, "drift": round(drift, 2), "scheduled": sum(use_sched.values()), "remaining": len(rem), "selectionSunday": SELECTION_SUNDAY, "teams": out, "bracket": projected, "lastIn": last_in, "firstOut": first_out, "swing": swing[:40], "bubbleRating": round(bubble, 2), "resume": RESUME,
+            "method": f"{sims:,} seasons. Each run nudges every team's rating by a random amount (up to about {drift:.1f} points a game, shrinking toward Selection Sunday), plays every team's real remaining schedule at its real venues (a league whose schedule isn't posted yet draws random league opponents instead), then an eight-team conference tournament for the automatic bid. The other {FIELD - 32} spots go to the best selection scores left: rating plus Wins Above Bubble (each result minus the chance a bubble team would have won the same game, the résumé number on the committee's team sheets), the 12 weakest automatic qualifiers and 12 weakest at-large teams play in the Opening Round, seeds follow the S-curve, and the 76-team tournament is played out on neutral courts."}
 
 
 def ny_today():
@@ -402,7 +458,13 @@ def main():
     except Exception as e:  # keep the last good simulation rather than publishing none
         print("Simulation failed:", e, file=sys.stderr)
         season = prior.get("season")
-    out = {"schema": 1, "updated": stamp, "season": season, "today": today.isoformat(), "leagueAvgEff": round(avg, 2) if avg else None,
+    # Bubble history: each team's chance to make the field by day, for movement and sparklines
+    bh = prior.get("bubbleHist") or {}
+    if season and season.get("teams"):
+        bh[today.isoformat()] = {k: v["in"] for k, v in season["teams"].items() if 0.005 < v["in"] < 0.995}
+    hcut = (today - timedelta(days=45)).isoformat()
+    bh = {d: v for d, v in sorted(bh.items()) if d >= hcut}
+    out = {"schema": 1, "updated": stamp, "season": season, "bubbleHist": bh, "today": today.isoformat(), "leagueAvgEff": round(avg, 2) if avg else None,
            "homeEdge": HOME_EDGE, "spreadSd": SPREAD_SD, "naismith": naismith,
            "lines": {"since": min([v["day"] for v in log.values()], default=None), "games": log}, "record": record}
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n")

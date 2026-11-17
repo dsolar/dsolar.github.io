@@ -93,6 +93,7 @@ function gameCard(g) {
 }
 
 /* ---------- pages ---------- */
+function tiles4(items) { return tiles(items).replace('class="stats"', 'class="stats q4"'); }
 function tiles(items) { return '<div class="stats">' + items.map(([v, l]) => '<div class="stat"><b>' + v + "</b><span>" + l + "</span></div>").join("") + "</div>"; }
 
 function today(q) {
@@ -217,7 +218,7 @@ function teamPage(q) {
   }).join("");
   return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)</div></div>" +
     '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
-    tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [odds(t.id) && fin(odds(t.id).w) ? Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) : proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) : "—", "Make NCAA"], [odds(t.id) && odds(t.id).mode ? odds(t.id).mode : "—", "Likely seed"]]) +
+    tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [odds(t.id) && fin(odds(t.id).w) ? Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) : proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) + (odds(t.id).mode ? ' <small>' + odds(t.id).mode + " seed</small>" : "") : "—", "Make NCAA"]]) +
     '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
     '<div class="two"><div class="panel"><h3>Schedule <small>' + (odds(t.id) && fin(odds(t.id).w) ? "projected " + Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) + " · " : "") + 'hub line and win %</small></h3><div class="scroll sched"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="5" class="note">Schedule loading…</td></tr>') + "</tbody></table></div></div>" +
@@ -231,7 +232,8 @@ function teamPage(q) {
 function outlook(t) {
   const o = odds(t.id); if (!o) return "";
   const steps = [["Make the field", o.in], ...o.r.slice(1).map((x, k) => [ROUNDS[k + 1], x])];
-  return '<div class="panel"><h3>March outlook <small><a href="#/bracket">All tournament odds →</a></small></h3><div class="body"><div class="kv"><div><b>' + pct(o.reg) + "</b><span>Reg-season title</span></div><div><b>" + Math.round(o.cw) + "-" + Math.round(o.cl) + "</b><span>Proj conf record</span></div><div><b>" + pct(o.aq) + "</b><span>Auto bid</span></div><div><b>" + (o.seed ? f1(o.seed) : "—") + "</b><span>Avg seed</span></div><div><b>" + pct(o.top4) + "</b><span>Top-4 seed</span></div></div>" +
+  const bk = bucketOf(o), bl = bk ? BUCKETS.find(b => b[0] === bk)[1] : null;
+  return '<div class="panel"><h3>March outlook ' + (bl ? '<a class="pill ' + (bk === "lock" ? "up" : bk === "long" ? "" : "warn") + '" href="#/bubble?conf=' + encodeURIComponent(t.conference) + '" title="Bubble watch">' + (bk === "lock" ? "Lock" : bl) + "</a> " : "") + '<small><a href="#/bracket">All tournament odds →</a></small></h3><div class="body"><div class="kv"><div><b>' + pct(o.reg) + "</b><span>Reg-season title</span></div><div><b>" + Math.round(o.cw) + "-" + Math.round(o.cl) + "</b><span>Proj conf record</span></div><div><b>" + pct(o.aq) + "</b><span>Auto bid</span></div><div><b>" + (o.seed ? f1(o.seed) : "—") + "</b><span>Avg seed</span></div><div><b>" + pct(o.top4) + "</b><span>Top-4 seed</span></div></div>" +
     '<div class="ladder">' + steps.map(([lab, x]) => '<div class="lr"><span>' + lab + '</span><i><b style="width:' + (x * 100).toFixed(1) + '%"></b></i><em>' + pct(x) + "</em></div>").join("") + "</div></div></div>";
 }
 
@@ -287,7 +289,7 @@ function naismith() {
 let SCHED = null, schedLoading = null;
 function ensureSched() {
   if (SCHED || schedLoading) return;
-  schedLoading = fetch("data/schedule.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(x => { SCHED = x && x.games ? x : { games: [] }; if (route().page === "team") render(); }).catch(() => { SCHED = { games: [] }; });
+  schedLoading = fetch("data/schedule.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(x => { SCHED = x && x.games ? x : { games: [] }; if (["team", "bubble"].includes(route().page)) render(); }).catch(() => { SCHED = { games: [] }; });
 }
 function ensureBoard() {
   if (BOARD || boardLoading) return boardLoading;
@@ -366,7 +368,7 @@ function bracket(q) {
   const bubble = (ids, lab) => '<div class="panel"><h3>' + lab + '</h3><ul class="rlist">' + ids.map(id => { const t = byId[id], o = odds(id); return "<li>" + teamLink(t, { rank: true }) + '<span class="grow sub">' + esc(t.conference) + " · " + rec(t) + '</span><span class="num">' + pct(o && o.in) + "</span></li>"; }).join("") + "</ul></div>";
   return '<h2 class="sec">Tournament odds</h2><p class="lede">The rest of the season played out ' + S_.sims.toLocaleString("en-US") + ' times, through conference tournaments, selection and the 76-team tournament. Each team\'s chance to make the field, earn its conference\'s automatic bid and reach every round. Updated ' + dLabel(X.updated) + ".</p>" +
     titleStrip(8) +
-    '<div class="controls">' + confSelect(conf) + seg("show", [["field", "Contenders"], ["bubble", "Bubble"], ["all", "All 365"]], show) + "</div>" +
+    '<div class="controls">' + confSelect(conf) + seg("show", [["field", "Contenders"], ["bubble", "Bubble"], ["all", "All 365"]], show) + '<a class="btn" href="#/bubble">Bubble watch →</a></div>' +
     '<div class="panel"><div class="scroll"><table class="t odds"><thead><tr><th class=l>Team</th>' + sortTh("seed", "Seed", sort, "Most likely seed, with the average seed when in the field") + sortTh("in", "Make it", sort) + sortTh("aq", "Auto bid", sort) + sortTh("r32", "R32", sort) + sortTh("s16", "Sweet 16", sort) + sortTh("e8", "Elite 8", sort) + sortTh("f4", "Final Four", sort) + "<th>Title game</th>" + sortTh("title", "Champion", sort) + "</tr></thead><tbody>" +
     (rows.length ? rows.map(tr).join("") : '<tr><td colspan="10" class="note">No teams match.</td></tr>') + "</tbody></table></div></div>" +
     '<h2 class="sec">Projected bracket</h2><p class="lede">If the season ended with today\'s ratings: the favorite in each conference tournament takes the automatic bid, the next 44 strongest teams get at-large spots, and seeds follow the S-curve. Pairs play in the Opening Round. Percentages are title odds.</p>' +
@@ -376,6 +378,85 @@ function bracket(q) {
     '<p class="note">' + esc(S_.method) + " Regions are named for layout only; the real committee also weighs résumé, which this strength-first selection doesn't.</p>";
 }
 
+/* ---------- bubble watch ---------- */
+const BUCKETS = [["lock", "Locks", 0.95, 1.01], ["should", "Should be in", 0.75, 0.95], ["work", "Work to do", 0.35, 0.75], ["long", "Long shots", 0.08, 0.35]];
+function bucketOf(o) {
+  if (!o) return null;
+  if (o.in >= 0.95) return "lock";
+  if (o.in < 0.08 || o.aq >= 0.6 * o.in) return null; // a one-bid league's path is its automatic bid, not the bubble
+  return BUCKETS.find(b => o.in >= b[2] && o.in < b[3])[0];
+}
+function bubbleHist() {
+  const H = (X && X.bubbleHist) || {}, days = Object.keys(H).sort(), last = days[days.length - 1];
+  if (!last || days.length < 2) return { H, days, ago: null };
+  const wk = new Date(Date.parse(last + "T12:00:00Z") - 7 * 864e5).toISOString().slice(0, 10);
+  return { H, days, ago: days.filter(d => d <= wk).pop() || days[0] };
+}
+function moveChip(id, hb) {
+  if (!hb.ago) return "";
+  const o = odds(id), was = hb.H[hb.ago][id]; if (!o || was === undefined) return "";
+  const d = Math.round((o.in - was) * 100);
+  return Math.abs(d) < 2 ? '<span class="mv">–</span>' : '<span class="mv ' + (d > 0 ? "up" : "dn") + '" title="Since ' + dLabel(hb.ago) + '">' + (d > 0 ? "▲" : "▼") + Math.abs(d) + "</span>";
+}
+function gameById(id) { return D.games.find(g => g.id === id) || (SCHED ? SCHED.games.find(g => g.id === id) : null); }
+function nextFor(id) {
+  const S_ = SIM(), g = nextGame(id); if (!g) return "";
+  const home = g.home === id, o = byId[home ? g.away : g.home]; if (!o) return "";
+  const l = lineFor(g), sw = (S_.swing || []).find(x => x.id === g.id), sp = sw ? (home ? sw.h : sw.a) : null;
+  return '<span class="nx">' + dLabel(g.day, { weekday: "short" }) + " " + (home ? "vs " : g.neutral ? "vs " : "at ") + esc(o.short) + (l ? " · " + pct(home ? l.homeProb : 1 - l.homeProb) : "") + (sp && sp[0] - sp[1] >= 0.02 ? ' · <b title="Chance to make the field after a win / a loss">' + pct(sp[0]) + " / " + pct(sp[1]) + "</b>" : "") + "</span>";
+}
+function bubbleRow(id, o, hb, tag) {
+  const t = byId[id];
+  return '<li class="br"><a class="tl" href="#/team?id=' + esc(id) + '">' + logo(t) + rk(t) + '<span class="nm">' + esc(t.short) + "</span></a>" + (tag || "") +
+    '<span class="sub">' + rec(t) + " · WAB " + sg(o.wab) + (o.mode ? " · " + o.mode + " seed" : "") + "</span>" +
+    '<span class="odd"><b>' + pct(o.in) + "</b>" + moveChip(id, hb) + "</span>" + nextFor(id) + "</li>";
+}
+function bubble(q) {
+  const S_ = SIM();
+  if (!S_) return '<p class="callout">Bubble watch arrives with the next data update.</p>';
+  ensureSched();
+  const conf = q.get("conf") || "", show = q.get("show") || "conf", hb = bubbleHist();
+  const rows = Object.entries(S_.teams).map(([id, o]) => [id, o, bucketOf(o)]).filter(r => r[2] && byId[r[0]] && (!conf || byId[r[0]].conference === conf));
+  const count = k => rows.filter(r => r[2] === k).length;
+  const lastIn = new Set((S_.lastIn || []).slice(-4)), firstOut = new Set((S_.firstOut || []).slice(0, 4));
+  const tag = id => lastIn.has(id) ? '<span class="pill warn">Last 4 in</span>' : firstOut.has(id) ? '<span class="pill">First 4 out</span>' : "";
+  const bids = {};
+  Object.entries(S_.teams).forEach(([id, o]) => { const c = byId[id] && byId[id].conference; if (c) bids[c] = (bids[c] || 0) + o.in; });
+  const topConfs = Object.entries(bids).sort((a, b) => b[1] - a[1]).filter(([, v]) => v >= 1.5);
+  const maxBids = topConfs.length ? topConfs[0][1] : 1;
+  let body = "";
+  if (show === "cut") {
+    const list = rows.filter(r => r[2] !== "lock").sort((a, b) => b[1].in - a[1].in);
+    const cut = list.findIndex(r => r[1].in < 0.5);
+    body = '<div class="panel"><h3>Around the cut line <small>chance to make the field</small></h3><ol class="rlist bub">' + list.map((r, k) => (k === cut ? '<li class="cutline"><span>Cut line · 50%</span></li>' : "") + bubbleRow(r[0], r[1], hb, tag(r[0]))).join("") + "</ol></div>";
+  } else {
+    const confs = [...new Set(rows.map(r => byId[r[0]].conference))].sort((a, b) => (bids[b] || 0) - (bids[a] || 0));
+    body = '<div class="bconfs">' + confs.map(c => {
+      const mine = rows.filter(r => byId[r[0]].conference === c).sort((a, b) => b[1].in - a[1].in);
+      if (!mine.some(r => r[2] !== "lock") && !conf) { if ((bids[c] || 0) < 1.5) return ""; }
+      const locks = mine.filter(r => r[2] === "lock");
+      return '<section class="panel bconf"><h3>' + esc(c) + " <small>" + f1(bids[c] || 0) + " bids expected</small></h3>" +
+        (locks.length ? '<div class="locks"><span class="bl">Locks</span>' + locks.map(([id]) => '<a href="#/team?id=' + esc(id) + '" title="' + pct(S_.teams[id].in) + '">' + logo(byId[id]) + '<span class="nm">' + esc(byId[id].short) + "</span></a>").join("") + "</div>" : "") +
+        BUCKETS.slice(1).map(([k, lab]) => { const rs = mine.filter(r => r[2] === k); return rs.length ? '<p class="bl">' + lab + '</p><ul class="rlist bub">' + rs.map(r => bubbleRow(r[0], r[1], hb, tag(r[0]))).join("") + "</ul>" : ""; }).join("") + "</section>";
+    }).join("") + "</div>";
+  }
+  const swing = (S_.swing || []).filter(g => !conf || byId[g.home].conference === conf || byId[g.away].conference === conf).slice(0, 12);
+  const swCard = g => {
+    const h = byId[g.home], a = byId[g.away], gm = gameById(g.id), l = gm ? lineFor(gm) : null, hp = l ? l.homeProb : g.hp;
+    const side = (t, p, sp) => '<div class="sw-t">' + logo(t) + '<a class="nm" href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + '</a><span class="pr">' + pct(p) + "</span>" +
+      (sp[0] - sp[1] >= 0.02 ? '<span class="ifs"><b>' + pct(sp[0]) + "</b> win · <b>" + pct(sp[1]) + "</b> loss</span>" : '<span class="ifs note">' + pct(odds(t.id) && odds(t.id).in) + " either way</span>") + "</div>";
+    return '<article class="swc"><header>' + dLabel(g.day, { weekday: "short" }) + (gm ? " · " + tip(gm) + (gm.at ? " ET" : "") + (gm.tv ? " · " + esc(gm.tv) : "") : "") + '<span class="pill">±' + Math.round(g.big * 100) + "</span></header>" +
+      side(a, 1 - hp, g.a) + side(h, hp, g.h) + "</article>";
+  };
+  return '<h2 class="sec">Bubble watch</h2><p class="lede">Every team whose at-large hopes are in play, from ' + S_.sims.toLocaleString("en-US") + " simulated seasons. Selection here blends each team's rating with Wins Above Bubble (WAB): each result minus the chance a bubble-strength team would have won the same game, the résumé number on the committee's team sheets. Teams in one-bid leagues are left out unless they're in either way. Updated " + dLabel(X.updated) + ".</p>" +
+    tiles4([[count("lock"), "Locks · 95%+"], [count("should"), "Should be in · 75-95%"], [count("work"), "Work to do · 35-75%"], [count("long"), "Long shots · 8-35%"]]) +
+    '<div class="controls">' + confSelect(conf) + seg("show", [["conf", "By conference"], ["cut", "Cut line"]], show) + '<a class="btn" href="#/bracket?show=bubble">Bracket odds →</a></div>' +
+    (swing.length ? '<h3 class="ch">Games that matter this week</h3><p class="note">Each team\'s chance to make the field after a win and after a loss. ±: the biggest swing in the game.</p><div class="swings">' + swing.slice(0, 6).map(swCard).join("") + "</div>" + (swing.length > 6 ? '<details class="more-sw"><summary>' + (swing.length - 6) + ' more games</summary><div class="swings">' + swing.slice(6).map(swCard).join("") + "</div></details>" : "") : "") +
+    body +
+    (!conf && topConfs.length ? '<div class="panel"><h3>Bids by conference <small>expected teams in the field</small></h3><div class="body"><div class="ladder">' + topConfs.map(([c, v]) => '<div class="lr"><span>' + esc(c) + '</span><i><b style="width:' + (v / maxBids * 100).toFixed(1) + '%"></b></i><em>' + f1(v) + "</em></div>").join("") + "</div></div></div>" : "") +
+    '<p class="note">WAB and the selection blend are the hub\'s estimate of how the committee reads a résumé (rating + ' + (S_.resume || 1) + " × WAB); the real committee also looks at quadrant records, road wins and the eye test. Movement compares with " + (hb.ago ? dLabel(hb.ago) : "the first day of tracking") + ".</p>";
+}
+
 function method() {
   const r = X && X.record, src = Object.values(D.sources || {});
   const graded = X ? Object.values(X.lines.games).filter(v => v.final).sort((a, b) => b.day.localeCompare(a.day)) : [];
@@ -383,9 +464,9 @@ function method() {
   return '<div class="method"><h2 class="sec">How it works</h2>' +
     "<h3>The line</h3><p>Each team's projected points are its adjusted offense times the opponent's adjusted defense, divided by the Division I average (" + f1(avg) + " points per 100 possessions), scaled to the two teams' average pace. Home court is worth " + M.HOME_EDGE + " points, split between the two scores. The margin becomes a win probability with a normal curve whose spread is " + M.SPREAD_SD + " points, about how far a typical college line misses. Ratings are Haslametrics' adjusted efficiency and tempo; early in the season they still lean on preseason priors.</p>" +
     "<h3>Keeping score</h3><p>Every few hours the updater logs the hub's line for each scheduled game, refreshing it until tipoff, then grades it against the final. Nothing is graded with hindsight ratings.</p>" +
-    (r && r.games ? '<div class="panel"><h3>Hub record <small>since ' + dLabel(X.lines.since) + "</small></h3>" + tiles([[r.right + "-" + (r.games - r.right), "Picking winners"], [Math.round(r.right / r.games * 100) + "%", "Right"], [f1(r.avgMiss), "Avg spread miss"], [f1(r.avgTotalMiss), "Avg total miss"]]) + '<table class="t"><thead><tr><th class=l>Confidence</th><th>Games</th><th>Right</th><th>Expected</th></tr></thead><tbody>' + r.buckets.map(b => "<tr><td>" + esc(b.label) + "</td><td>" + b.games + "</td><td>" + (b.games ? Math.round(b.right / b.games * 100) + "%" : "—") + "</td><td>" + (fin(b.expected) ? b.expected + "%" : "—") + "</td></tr>").join("") + "</tbody></table></div>" : '<p class="callout">The hub started logging lines on ' + dLabel(X && X.lines.since || D.today) + ". Its record appears once those games go final.</p>") +
+    (r && r.games ? '<div class="panel"><h3>Hub record <small>since ' + dLabel(X.lines.since) + "</small></h3>" + tiles4([[r.right + "-" + (r.games - r.right), "Picking winners"], [Math.round(r.right / r.games * 100) + "%", "Right"], [f1(r.avgMiss), "Avg spread miss"], [f1(r.avgTotalMiss), "Avg total miss"]]) + '<table class="t"><thead><tr><th class=l>Confidence</th><th>Games</th><th>Right</th><th>Expected</th></tr></thead><tbody>' + r.buckets.map(b => "<tr><td>" + esc(b.label) + "</td><td>" + b.games + "</td><td>" + (b.games ? Math.round(b.right / b.games * 100) + "%" : "—") + "</td><td>" + (fin(b.expected) ? b.expected + "%" : "—") + "</td></tr>").join("") + "</tbody></table></div>" : '<p class="callout">The hub started logging lines on ' + dLabel(X && X.lines.since || D.today) + ". Its record appears once those games go final.</p>") +
     (upsets.length ? '<div class="panel"><h3>Biggest upsets of the hub\'s lines</h3><ul class="rlist">' + upsets.map(v => { const h = byId[v.home], a = byId[v.away], winner = v.final[0] > v.final[1] ? h : a; return "<li>" + logo(winner) + '<span class="grow"><b>' + esc(winner.short) + "</b> beat " + esc((winner === h ? a : h).short) + " " + int(Math.max(...v.final)) + "-" + int(Math.min(...v.final)) + '<span class="sub">' + dLabel(v.day) + " · hub had them at " + pct(winner === h ? v.homeProb : 1 - v.homeProb) + "</span></span></li>"; }).join("") + "</ul></div>" : "") +
-    "<h3>Season simulation</h3><p>" + esc(SIM() ? SIM().method : "") + " Conference schedules are drawn at random within each league, so real schedule imbalance isn't captured, and every league plays an eight-team conference tournament.</p>" +
+    "<h3>Season simulation</h3><p>" + esc(SIM() ? SIM().method : "") + " Every league plays an eight-team conference tournament. Wins Above Bubble counts each finished game against Division I opponents: the result (1 or 0) minus the chance a team with the 45th-best rating would have won it at the same venue.</p>" +
     "<h3>Watchability</h3><p>A 0-100 score for each game: half from the two teams' national rank in efficiency margin, up to 30 for a close line, a little for pace, and bonuses for NBA Big Board top-60 prospects, Naismith watch-list players, conference games and games in progress.</p>" +
     "<h3>Naismith ladder</h3><p>" + esc(X ? X.naismith.method : "") + " The official watch list comes from the Atlanta Tipoff Club; players can play their way on and off it.</p>" +
     "<h3>Sources</h3><ul>" + src.map(s => '<li><a href="' + safe(s.url) + '" target="_blank" rel="noopener">' + esc(s.name) + "</a>: " + esc(s.status === "linked" ? "linked, not connected. " + (s.note || "") : "connected" + (s.updated ? ", updated " + dLabel(s.updated) : "") + (s.coverage ? " (" + s.coverage + ")" : "")) + "</li>").join("") +
@@ -407,7 +488,7 @@ function openPlayer(id) {
 }
 
 /* ---------- render + data ---------- */
-const PAGES = { today, ratings, matchup, conferences, teams, team: teamPage, players, naismith, prospects, bracket, method };
+const PAGES = { today, ratings, matchup, conferences, teams, team: teamPage, players, naismith, prospects, bracket, bubble, method };
 function render() {
   if (!D) return;
   const r = route(), fn = PAGES[r.page] || today, tab = r.page === "team" ? "teams" : PAGES[r.page] ? r.page : "today";

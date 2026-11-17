@@ -37,7 +37,7 @@
       return { standings: 1, teams: 1, contracts: 1, method: 1 }[route] ? route : null;
     }
     if (here === "cfb") return { ratings: "standings", conferences: "standings", playoff: "standings", week: "standings", teams: "teams", team: "teams", players: "value", heisman: "value", prospects: "value", method: "method" }[route] || null;
-    if (here === "cbb") return { ratings: "standings", conferences: "standings", bracket: "standings", today: "standings", teams: "teams", team: "teams", players: "value", naismith: "value", prospects: "value", method: "method" }[route] || null;
+    if (here === "cbb") return { ratings: "standings", conferences: "standings", bracket: "standings", bubble: "standings", today: "standings", teams: "teams", team: "teams", players: "value", naismith: "value", prospects: "value", method: "method" }[route] || null;
     // nfl: its Trade Value page is also where trades are built; Power Rankings sit with standings
     if (route === "trade") return "value";
     if (route === "cap" || route === "offseason") return "contracts";

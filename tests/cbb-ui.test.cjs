@@ -21,7 +21,7 @@ const text=w=>w.document.querySelector("#view").textContent;
 
 test("every section renders from the actual snapshot without inventing values",async()=>{
  const w=await boot();try{
-  for(const name of ["today","ratings","matchup","conferences","teams","players","naismith","prospects","bracket","method"]){
+  for(const name of ["today","ratings","matchup","conferences","teams","players","naismith","prospects","bracket","bubble","method"]){
    await go(w,"#/"+name);assert.ok(text(w).trim().length>300,name+" has useful content");assert.ok(!/\bundefined\b|\bNaN\b/.test(text(w)),name+" does not print missing values");
   }
   await go(w,"#/ratings?view=chart");assert.ok(w.document.querySelector("svg.sc-chart circle"));
@@ -79,6 +79,15 @@ test("the bracket shows tournament odds, a 64-slot projected bracket and the pro
   assert.ok(w.document.querySelectorAll("table.odds tbody tr").length>=40);
   w.document.querySelector('[data-seg="show"][data-v="all"]').click();await pause(20);assert.equal(w.document.querySelectorAll("table.odds tbody tr").length,Object.keys(extras.season.teams).length);
   await go(w,"#/team?id="+data.teams[0].id);assert.ok(w.document.querySelector(".ladder"));
+ }finally{w.close();}
+});
+test("bubble watch groups at-large hopefuls by conference, draws the cut line and shows swing games",async()=>{
+ const w=await boot("#/bubble");try{
+  assert.ok(w.document.querySelectorAll(".bconf").length>=4);assert.ok(w.document.querySelectorAll(".rlist.bub li.br").length>=10);
+  assert.ok(w.document.querySelectorAll(".swc").length>=1);assert.match(text(w),/Wins Above Bubble/);
+  w.document.querySelector('[data-seg="show"][data-v="cut"]').click();await pause(20);assert.ok(w.document.querySelector(".cutline"));
+  const ins=[...w.document.querySelectorAll(".rlist.bub li.br .odd b")].map(b=>parseInt(b.textContent));for(let k=1;k<ins.length;k++)assert.ok(ins[k]<=ins[k-1]);
+  for(const g of extras.season.swing){assert.ok(g.h[0]>=g.h[1]-1e-9&&g.a[0]>=g.a[1]-1e-9,"a win never hurts");}
  }finally{w.close();}
 });
 test("a live scoreboard response updates scores",async()=>{
