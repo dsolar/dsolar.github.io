@@ -60,6 +60,7 @@ const hasAdv = () => !!(C && C.advanced && Object.keys(C.advanced).length);
 const hasSP = () => !!(C && C.sp && Object.keys(C.sp).length);
 const e3 = x => fin(x) ? (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(2) : "—";
 const p1 = x => fin(x) ? (x * 100).toFixed(1) + "%" : "—";
+const ownLine = x => fin(x) ? (x > 50 ? 100 - x : x) : null; // snapshots before the fix stored yards to goal
 let advRank = {};
 function rankAdv() {
   advRank = {}; if (!hasAdv()) return;
@@ -233,7 +234,7 @@ function ratings(q) {
 const ACOLS = [
   ["net", "Net EPA", a => a.off.epa - a.def.epa, false, e3], ["oEpa", "Off EPA", a => a.off.epa, false, e3], ["dEpa", "Def EPA", a => a.def.epa, true, e3],
   ["oSr", "Off SR", a => a.off.sr, false, p1], ["dSr", "Def SR", a => a.def.sr, true, p1], ["oPass", "Pass EPA", a => a.off.passEpa, false, e3], ["oRush", "Rush EPA", a => a.off.rushEpa, false, e3],
-  ["oXpl", "Explosive", a => a.off.xpl, false, x => f1(x, 2)], ["dHav", "Havoc", a => a.def.havoc, false, p1], ["start", "Field pos", a => a.off.start, false, x => f1(x)], ["ppo", "Pts/trip", a => a.off.ppo, false, x => f1(x, 2)]
+  ["oXpl", "Explosive", a => a.off.xpl, false, x => f1(x, 2)], ["dHav", "Havoc", a => a.def.havoc, false, p1], ["start", "Field pos", a => ownLine(a.off.start), false, x => f1(x)], ["ppo", "Pts/trip", a => a.off.ppo, false, x => f1(x, 2)]
 ];
 function advTable(ts, sort) {
   const col = ACOLS.find(c => c[0] === sort) || ACOLS[0], n = D.teams.length;
@@ -241,7 +242,7 @@ function advTable(ts, sort) {
   const chip = (id, k, v, f) => '<span class="chip ' + tier(pctRank(advRank[id] && advRank[id][k], n)) + '">' + f(v) + "</span>";
   return '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class=l>Team</th><th>Hub</th>' + ACOLS.map(c => '<th class="sort' + (c[0] === col[0] ? " on" : "") + '" data-asort="' + c[0] + '">' + c[1] + (c[0] === col[0] ? " ▾" : "") + "</th>").join("") + "</tr></thead><tbody>" +
     ts.map(t => { const a = ADV(t.id); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference) + " · " + rec(t) + "</small></td><td>" + R(t.id).rank + "</td>" + ACOLS.map(c => "<td>" + (["net", "oEpa", "dEpa", "oSr", "dSr", "oPass", "oRush", "oXpl", "dHav"].includes(c[0]) ? chip(t.id, c[0], c[2](a), c[4]) : c[4](c[2](a))) + "</td>").join("") + "</tr>"; }).join("") +
-    "</tbody></table></div></div>" + '<p class="note">From CollegeFootballData, garbage time excluded. EPA: expected points added per play (offense: higher is better; defense: lower is better). SR: success rate. Explosive: average EPA on successful plays. Havoc: share of defensive plays with a tackle for loss, forced fumble, interception or pass breakup. Field pos: average starting yard line. Pts/trip: points per trip inside the 40.</p>';
+    "</tbody></table></div></div>" + '<p class="note">From CollegeFootballData, garbage time excluded. EPA: expected points added per play (offense: higher is better; defense: lower is better). SR: success rate. Explosive: average EPA on successful plays. Havoc: share of defensive plays with a tackle for loss, forced fumble, interception or pass breakup. Field pos: average starting yard line on offense (own territory). Pts/trip: points per trip inside the 40.</p>';
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => R(t.id)), base = X.base;
@@ -336,7 +337,7 @@ function efficiency(t) {
   if (!a && !sp) return "";
   const cell = (v, lab, k) => "<div><b>" + v + (k && rr[k] ? ' <small>#' + rr[k] + "</small>" : "") + "</b><span>" + lab + "</span></div>";
   return '<div class="panel"><h3>Efficiency <small>CollegeFootballData · garbage time excluded</small></h3><div class="body"><div class="kv">' +
-    (a ? cell(e3(a.off.epa), "Off EPA/play", "oEpa") + cell(e3(a.def.epa), "Def EPA/play", "dEpa") + cell(p1(a.off.sr), "Off success", "oSr") + cell(p1(a.def.sr), "Def success", "dSr") + cell(e3(a.off.passEpa), "Pass EPA", "oPass") + cell(e3(a.off.rushEpa), "Rush EPA", "oRush") + cell(p1(a.def.havoc), "Havoc", "dHav") + cell(f1(a.off.start), "Avg start") : "") +
+    (a ? cell(e3(a.off.epa), "Off EPA/play", "oEpa") + cell(e3(a.def.epa), "Def EPA/play", "dEpa") + cell(p1(a.off.sr), "Off success", "oSr") + cell(p1(a.def.sr), "Def success", "dSr") + cell(e3(a.off.passEpa), "Pass EPA", "oPass") + cell(e3(a.off.rushEpa), "Rush EPA", "oRush") + cell(p1(a.def.havoc), "Havoc", "dHav") + cell(f1(ownLine(a.off.start)), "Avg start (own yd line)") : "") +
     (sp ? cell(f1(sp.rating), "SP+" + (fin(sp.rank) ? " #" + sp.rank : "")) + cell(f1(sp.off), "SP+ off" + (fin(sp.offRank) ? " #" + sp.offRank : "")) + cell(f1(sp.def), "SP+ def" + (fin(sp.defRank) ? " #" + sp.defRank : "")) + (fin(sp.sow) ? cell(f1(sp.sow), "2nd-order wins") : "") : "") +
     (rc ? cell("#" + rc.rank, (C.recruiting.year) + " recruiting") : "") + (rp && fin(rp.pct) ? cell(p1(rp.pct), "Returning production") : "") +
     "</div></div></div>";

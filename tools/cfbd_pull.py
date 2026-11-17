@@ -61,12 +61,18 @@ class Client:
             return json.loads(resp.read().decode("utf-8"))
 
 
+def own_line(v):
+    """CFBD's average start is yards to the opponent's goal (about 70); the hub shows the offense's own yard line."""
+    v = num(v)
+    return None if v is None else round(100 - v if v > 50 else v, 1)
+
+
 def side(x):
     x = x or {}
     pp, rp, hv, fp = x.get("passingPlays") or {}, x.get("rushingPlays") or {}, x.get("havoc") or {}, x.get("fieldPosition") or {}
     return {"epa": r(x.get("ppa")), "sr": r(x.get("successRate")), "xpl": r(x.get("explosiveness")), "ppo": r(x.get("pointsPerOpportunity"), 2),
             "passEpa": r(pp.get("ppa")), "rushEpa": r(rp.get("ppa")), "passRate": r(pp.get("rate")), "stuff": r(x.get("stuffRate")),
-            "lineYds": r(x.get("lineYards"), 2), "havoc": r(hv.get("total")), "start": r(fp.get("averageStart"), 1), "plays": num(x.get("plays"))}
+            "lineYds": r(x.get("lineYards"), 2), "havoc": r(hv.get("total")), "start": own_line(fp.get("averageStart")), "plays": num(x.get("plays"))}
 
 
 def parse_advanced(rows, ids):
