@@ -73,7 +73,7 @@
     app.innerHTML = `<div class="wrap page">
       <div class="su sp-${sport}"><div class="nl-band wk-band">${FIELD[sport]}<div class="nl-bi">
         <div class="sg wr wk-sport" role="radiogroup" aria-label="Sport" style="margin-bottom:10px"><label class="sg-o"><input type="radio" name="wks" value="nfl"${nba() ? "" : " checked"} data-wks="nfl"><span>Football: one week</span></label><label class="sg-o"><input type="radio" name="wks" value="nba"${sport === "nba" ? " checked" : ""} data-wks="nba"><span>Basketball: one day</span></label><label class="sg-o"><input type="radio" name="wks" value="cbb"${sport === "cbb" ? " checked" : ""} data-wks="cbb"><span>College: one day</span></label></div>
-        <h1 class="disp">${sport === "cbb" ? "College: one day" : nba() ? "One day" : "One week"}</h1>
+        <h1 class="disp">Quick games</h1>
         <p>${sport === "cbb" ? "College basketball's daily fantasy, with your friends: the night's best games (picked by the CBB Hub), DraftKings scoring and a lineup of three guards, three forwards and two flex under a $50,000 cap. Or draft them with your group. Prices come from each player's season line and his team's projected points tonight." : nba() ? "Pick tonight's games, draft with your group in about ten minutes, and crown a winner when the last game ends. Then run it back tomorrow with the same people, and keep a running series." : "Pick the games, draft with your group in about ten minutes, play one real week of football and crown a winner. Then run it back next week with the same people, and keep a running series."}</p>
         <div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn go" href="leagues.html?w=1${nba() ? `&s=${sport}` : ""}">${nba() ? "Start a one-day game" : "Start a one-week game"}</a>${sport === "cbb" ? `<a class="btn" href="../cbb/">CBB Hub ↗</a>` : `<a class="btn" href="./?s=${sport}#draft">Mock one first</a>`}</div>
       </div></div></div>
@@ -99,7 +99,7 @@
     if (sp && sp.value !== sport) {
       sport = sp.value; wk = 0;
       history.replaceState(null, "", nba() ? `?s=${sport}` : location.pathname);
-      document.title = `${sport === "cbb" ? "College: one day" : nba() ? "One day" : "One week"} | Draft Lab`;
+      document.title = "Quick games | Draft Lab";
       render(); load();
     }
   });
@@ -109,7 +109,7 @@
   });
   if (link && link.error) U.toast(link.error, true);
   render();
-  if (nba()) document.title = `${sport === "cbb" ? "College: one day" : "One day"} | Draft Lab`;
+  document.title = "Quick games | Draft Lab";
   load();
   if (C.user()) C.rpc("fk_mine", {}).then((r) => { mine = Array.isArray(r) ? r : []; render(); }).catch(() => { mine = []; render(); });
 })();

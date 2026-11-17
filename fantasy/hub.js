@@ -1,4 +1,4 @@
-/* Fantasy hub: the overview (/fantasy/) and the sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/).
+/* Draft Lab's home page (/fantasy/) and its sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/, /cbb/).
 
    A page says what it is with <body data-page="overview" | "nba" | "nfl" | "mlb" | "nhl">, and this file fills in the parts
    marked with data-* containers. Load after kit.css, hub.css, faces.css and these scripts (in order):
@@ -37,6 +37,8 @@
     '<symbol id="i-seed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-9"/><path d="M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 14c0-3-2.5-5.5-6-5.5 0 3 2.5 5.5 6 5.5z"/></symbol>' +
     '<symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M14 9l2 2"/></symbol>' +
     '<symbol id="i-roto" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M3 9.3h18M3 14.6h18M9 4v16"/></symbol>' +
+    '<symbol id="i-cbb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="9" rx="1.5"/><rect x="9" y="7" width="6" height="5"/><path d="M7 12h10M8 12l1.5 9M16 12l-1.5 9M9 15h6M9.6 18h4.8M11 12l-.5 9M13 12l.5 9"/></symbol>' +
+    '<symbol id="f-cbb" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><rect x="20" y="20" width="420" height="240"/><rect x="262" y="96" width="178" height="88"/><circle cx="262" cy="140" r="44"/><path d="M440 40H342a100 100 0 0 0 0 200h98"/><circle cx="398" cy="140" r="9"/><path d="M411 122v36"/><circle cx="20" cy="140" r="44"/><circle cx="20" cy="140" r="14"/></symbol>' +
     '<symbol id="f-nba" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><rect x="20" y="20" width="420" height="240"/><rect x="250" y="88" width="190" height="104"/><circle cx="250" cy="140" r="52"/><path d="M440 34H330a118 118 0 0 0 0 212h110"/><circle cx="395" cy="140" r="9"/><path d="M408 120v40"/><circle cx="20" cy="140" r="44"/></symbol>' +
     '<symbol id="f-nfl" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2.5"><path d="M40 0v280M110 0v280M180 0v280M250 0v280M320 0v280M390 0v280"/><path d="M75 96v10M145 96v10M215 96v10M285 96v10M355 96v10M75 174v10M145 174v10M215 174v10M285 174v10M355 174v10" stroke-width="2"/><g fill="#fff" fill-opacity=".14" stroke="none" font-family="Archivo,Arial,sans-serif" font-weight="800" font-size="30"><text x="88" y="236">2 0</text><text x="158" y="236">3 0</text><text x="228" y="236">4 0</text><text x="298" y="236">5 0</text></g></symbol>' +
     '<symbol id="f-mlb" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><path d="M280 250 380 150 280 50 180 150z"/><path d="M280 250 60 30M280 250 500 30"/><path d="M140 110a200 200 0 0 1 280 0"/><circle cx="280" cy="158" r="14"/><rect x="374" y="144" width="12" height="12" transform="rotate(45 380 150)"/><rect x="274" y="44" width="12" height="12" transform="rotate(45 280 50)"/><rect x="174" y="144" width="12" height="12" transform="rotate(45 180 150)"/><path d="M272 250h16l-8 9z"/></symbol>' +
@@ -106,7 +108,20 @@
       demos: [["nhl", "FA", "Head to head", "Frozen Assets", "f=h"], ["nhl:g", "SI", "Best ball guillotine", "Sudden Death on Ice", "f=g"]]
     }
   };
-  var ORDER = ["nba", "nfl", "mlb", "nhl"];
+  SPORTS.cbb = {
+    name: "College hoops", league: "NCAA", season: [1101, 410], draft: [1015, 1101],
+    tag: "Every Division I player on real weekly box scores. Draft the whole country or just the conferences you follow, and decide whether March Madness counts.",
+    blurb: "Points or categories, any conferences, March included.",
+    presets: [["dk", "DraftKings"], ["points", "Points"], ["cats9", "Categories"]],
+    modes: [
+      { i: "i-one", t: "One night", d: "Draft tonight's best college games with your group: the full slate or one game. A winner when the last game ends.", u: "fantasy-kit/week.html?s=cbb", go: "Pick tonight's games" },
+      { i: "i-half", t: "Conference leagues", n: true, d: "Draft from one conference, a few, the power five or every school. Only their players can be drafted or added.", u: "fantasy-kit/leagues.html?s=cbb", go: "Pick your conferences" },
+      { i: "i-roto", t: "March, your way", d: "End before the conference tournaments, on Selection Sunday, or play through the NCAA tournament, where a player scores only while his team is alive.", u: "fantasy-kit/leagues.html?s=cbb", go: "Start a season league" },
+      { i: "i-bolt", t: "Quick games", d: "Draft now, play this week's real games and crown a winner on Sunday night.", u: "fantasy-kit/leagues.html?w=1&s=cbb", go: "Start a quick game" }
+    ],
+    demos: [["cbb", "BB", "Head to head", "Bracket Busters", "f=h"], ["cbb:g", "OD", "Best ball guillotine", "One and Done", "f=g"]]
+  };
+  var ORDER = ["nba", "nfl", "mlb", "nhl", "cbb"];
   var md = function (d) { return (d.getMonth() + 1) * 100 + d.getDate(); };
   var within = function (x, r) { return r[0] <= r[1] ? x >= r[0] && x <= r[1] : x >= r[0] || x <= r[1]; };
   var mdText = function (x) { return MONTHS[Math.floor(x / 100) - 1] + " " + (x % 100); };
@@ -181,7 +196,7 @@
   var avg = function (x) { return (x || 0).toFixed(3).replace(/^0/, ""); };
   function lineOf(k, sp, p) {
     var st = function (l, c) { return S.stat(sp, p, l, c) || 0; };
-    if (k === "nba") return f1(st("pg", "pts")) + " pts, " + f1(st("pg", "reb")) + " reb, " + f1(st("pg", "ast")) + " ast";
+    if (k === "nba" || k === "cbb") return f1(st("pg", "pts")) + " pts, " + f1(st("pg", "reb")) + " reb, " + f1(st("pg", "ast")) + " ast";
     if (k === "nfl") return f1(p.fpg) + " pts a game";
     if (k === "nhl") return p.pos.indexOf("G") >= 0 ? st("goalie", "w") + " W, " + st("goalie", "gaa").toFixed(2) + " GAA, " + avg(st("goalie", "svp")) + " SV%" : st("sk", "g") + " G, " + st("sk", "a") + " A, " + st("sk", "sog") + " SOG";
     var pitcher = p.pos.every(function (x) { return x === "SP" || x === "RP"; });
@@ -190,7 +205,7 @@
   }
   function face(k, p, size) {
     var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][p.t];
-    if (k === "nhl") return '<span class="ds-face has-face" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("")) + '</span><img src="' + esc(p.head) + '" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'has-face\');this.remove()"></span>';
+    if (k === "nhl" || k === "cbb") return '<span class="ds-face has-face" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("")) + '</span><img src="' + esc(p.head) + '" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'has-face\');this.remove()"></span>';
     var id = k === "nba" ? p.espn : k === "mlb" ? p.id : null;
     return window.DSFaces ? window.DSFaces.html({ sport: k, id: id, name: p.n, color: c || "#33415c", size: size }) : "";
   }
@@ -336,7 +351,8 @@
     board($("[data-board]"), k);
     demos($("[data-demos]"), k);
     var side = $("[data-side]");
-    if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'hardcap/">' + field("nba") + "<small>" + ic("i-cap") + "League type</small><b>Hard Cap</b><span>Salary-cap dynasty on real NBA contracts: one hard line, and a Prospect Board for the next class.</span><em class=\"go\">Open Hard Cap</em></a>";
+    if (side && k === "cbb") side.innerHTML = '<a class="lgm cbb" href="' + ROOT + 'cbb/">' + field("cbb") + '<small>' + ic("i-cbb") + 'Tonight in college hoops</small><b>CBB Hub</b><span>Every Division I game ranked by how watchable it is, with lines, team ratings and the matchups worth your night.</span><em class="go">Open the CBB Hub</em></a>';
+    else if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'hardcap/">' + field("nba") + "<small>" + ic("i-cap") + "League type</small><b>Hard Cap</b><span>Salary-cap dynasty on real NBA contracts: one hard line, and a Prospect Board for the next class.</span><em class=\"go\">Open Hard Cap</em></a>";
     $("[data-modes]").innerHTML = s.modes.map(function (m) {
       return '<a class="mode" href="' + ROOT + m.u + '"><span class="mi">' + ic(m.i) + "</span><b>" + esc(m.t) + (m.n ? ' <em class="new">New</em>' : "") + "</b><span>" + esc(m.d) + '</span><span class="go">' + esc(m.go) + " &rarr;</span></a>";
     }).join("");

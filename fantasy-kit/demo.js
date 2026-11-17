@@ -10,9 +10,9 @@
   const theme = U.theme("fk-lab");
   const DAY = 864e5, WEEK = 7 * DAY, HOUR = 36e5;
   const NAMES = {
-    nba: "Hardwood Heads", nfl: "Sunday Scaries", mlb: "Bullpen Mafia", nhl: "Frozen Assets",
+    nba: "Hardwood Heads", nfl: "Sunday Scaries", mlb: "Bullpen Mafia", nhl: "Frozen Assets", cbb: "Bracket Busters",
   };
-  const GNAMES = { nba: "Last Team Standing", nfl: "Off With Their Heads", mlb: "Sudden Death", nhl: "Sudden Death on Ice" };
+  const GNAMES = { nba: "Last Team Standing", nfl: "Off With Their Heads", mlb: "Sudden Death", nhl: "Sudden Death on Ice", cbb: "One and Done" };
   const params = new URLSearchParams(location.search);
   const sportKey = S.ALL[params.get("s")] && !S.ALL[params.get("s")].dailyOnly ? params.get("s") : store.get("last", S.inSeason());
   const fmt = params.get("f") === "g" ? "g" : params.get("f") === "h" ? "h" : params.get("s") ? "h" : store.get("lastf", "h");

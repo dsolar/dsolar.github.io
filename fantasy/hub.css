@@ -5,6 +5,10 @@
 .nba{--sp:#EA580C;--sp-ink:#B4430A;--sp-deep:#2A1308;--sp-mid:#5B260C}
 .nfl{--sp:#10A36B;--sp-ink:#047857;--sp-deep:#06231A;--sp-mid:#0C4430}
 .mlb{--sp:#3B6FF0;--sp-ink:#1D4ED8;--sp-deep:#0A1834;--sp-mid:#16336E}
+.cbb{--sp:#7C4DDB;--sp-ink:#5B2DB8;--sp-deep:#1C1236;--sp-mid:#3A2470}
+:root[data-theme="dark"] .cbb{--sp-ink:#BFA8FF}
+.fbar .t.cbb{--tc:var(--sp-ink)}
+.fbar .t.cbb[aria-current="page"]{background:var(--sp);color:#fff;--tc:#fff;box-shadow:0 4px 14px -6px var(--sp)}
 .nhl{--sp:#168AA4;--sp-ink:#09677D;--sp-deep:#092C3B;--sp-mid:#125D70}
 :root[data-theme="dark"] .nhl{--sp-ink:#76D9E8}
 .fbar .t.nhl{--tc:var(--sp-ink)}
@@ -165,6 +169,13 @@ a.mode:hover{border-color:var(--sp);transform:translateY(-2px)}
 /* ---------- overview: the four sport doors ---------- */
 .doors{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
 .door{position:relative;overflow:hidden;isolation:isolate;display:flex;flex-direction:column;border-radius:18px;color:#fff;text-decoration:none;background:linear-gradient(150deg,var(--sp-deep) 0%,var(--sp-mid) 100%);border-bottom:5px solid var(--sp);box-shadow:0 14px 30px -18px rgba(0,0,0,.5);transition:transform .18s,box-shadow .18s;min-height:100%}
+/* an odd door out (the fifth sport) runs the full width: its title on the left, its board on the right */
+@media (min-width:1061px){
+  .doors>.door:last-child:nth-child(odd){grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto 1fr}
+  .doors>.door:last-child:nth-child(odd) .door-board{grid-column:2;grid-row:1/3;margin:22px 22px 22px 0;align-self:center}
+  .doors>.door:last-child:nth-child(odd) .door-foot{grid-column:1;grid-row:2;align-self:end}
+  .doors>.door:last-child:nth-child(odd) .field{right:auto;left:30%}
+}
 .door:hover{transform:translateY(-3px);box-shadow:0 22px 40px -20px rgba(0,0,0,.6)}
 .door .field{right:-60px;top:-10px;transform:none;height:240px;opacity:.9}
 .door-top{padding:22px 22px 18px}
