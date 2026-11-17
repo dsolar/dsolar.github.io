@@ -62,11 +62,6 @@ jobs:
           echo "Deploying:${keep:- nothing}"
           echo "list=$keep" >> "$GITHUB_OUTPUT"
 
-      - uses: supabase/setup-cli@v1
-        if: steps.which.outputs.list != ''
-        with:
-          version: latest
-
       - name: Deploy
         if: steps.which.outputs.list != ''
         env:
@@ -74,6 +69,7 @@ jobs:
         run: |
           for f in $LIST; do
             echo "::group::$f"
-            supabase functions deploy "$f" --project-ref "$PROJECT_REF" --no-verify-jwt --use-api --yes
+            # the CLI from npm (setup-cli's "latest" lookup hits GitHub's rate limit); v3 asks before deploying, so --yes
+            npx --yes supabase@3 functions deploy "$f" --project-ref "$PROJECT_REF" --no-verify-jwt --use-api --yes
             echo "::endgroup::"
           done
