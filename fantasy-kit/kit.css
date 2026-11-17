@@ -2570,3 +2570,6 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 /* one-day page: three sports in the switcher and "College: one day" have to fit a phone */
 .wk-band .nl-bi{min-width:0}
 @media (max-width:640px){.wk-band h1{font-size:clamp(30px,10vw,44px);overflow-wrap:anywhere}.wk-sport .sg-o span{padding:6px 9px;font-size:12.5px}}
+/* the countdown ring: an hour or more reads "13h 34m" on two lines inside the ring */
+.ring span{max-width:40px;text-align:center;line-height:1.02}
+@media (max-width:640px){.en-t th,.en-t td{padding-left:6px;padding-right:6px}}

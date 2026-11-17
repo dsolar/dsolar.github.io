@@ -173,7 +173,7 @@
     return { dark: () => document.documentElement.dataset.theme === "dark", toggle() { const t = this.dark() ? "light" : "dark"; st.set("theme", t); apply(t); return t; } };
   }
   // how long until a draft set for a time: "2:14:05", "14:05", "0:42"
-  const startIn = (at) => { const ms = Math.max(0, at - Date.now()), h = Math.floor(ms / 36e5), m = Math.floor((ms % 36e5) / 6e4), sec = Math.floor((ms % 6e4) / 1e3); return h >= 24 ? `${Math.round(h / 24)}d` : h ? `${h}:${String(m).padStart(2, "0")}:${String(sec).padStart(2, "0")}` : `${m}:${String(sec).padStart(2, "0")}`; };
+  const startIn = (at) => { const ms = Math.max(0, at - Date.now()), h = Math.floor(ms / 36e5), m = Math.floor((ms % 36e5) / 6e4), sec = Math.floor((ms % 6e4) / 1e3); return h >= 24 ? `${Math.round(h / 24)}d` : h ? `${h}h ${m}m` : `${m}:${String(sec).padStart(2, "0")}`; };
   const drawStart = () => { const el = document.getElementById("fk-startin"); if (el) el.textContent = startIn(+el.dataset.at || 0); };
   const fmtLeft = (ms) => {
     if (!Number.isFinite(ms)) return "";
