@@ -1,0 +1,200 @@
+/* CFB Hub: on top of the MLB hub's styles (../mlb/hub.css). Shares its base with the CBB hub (copied from ../cbb/hub.css), plus the CFP bracket. */
+.hs{width:var(--s,28px);height:var(--s,28px);border-radius:50%;object-fit:cover;object-position:50% 15%;background:var(--paper-2);flex:none;display:inline-block;vertical-align:middle}
+.logo.lm{display:inline-grid;place-items:center;border-radius:50%;background:var(--paper-2);font:700 8px/1 var(--cond);color:var(--muted)}
+.rk{display:inline-block;min-width:18px;text-align:right;color:var(--faint);font:600 11.5px/1 var(--body);font-variant-numeric:tabular-nums}
+.tl{display:inline-flex;align-items:center;gap:6px;color:var(--ink);text-decoration:none;font-weight:600;min-width:0}
+.tl:hover .nm{text-decoration:underline}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--rule);border-radius:999px;padding:3px;gap:2px;flex-wrap:wrap}
+.seg button{border:0;background:none;padding:6px 12px;border-radius:999px;font:700 13px/1 var(--cond);letter-spacing:.04em;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.controls label .seg{margin-top:0}
+.controls .switch{flex-direction:row;font-size:13.5px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--muted);align-self:center}
+.controls .note{align-self:center}
+.controls a.btn{text-decoration:none;align-self:center}
+h3.ch{font:800 19px/1.1 var(--display);margin:18px 0 0}
+.stat b small{font:600 12px/1 var(--body);color:var(--faint)}
+.pill.nai{background:#F6E7B8;color:#7A5300}
+.pill.bb{background:var(--t-elite);color:var(--t-elite-i)}
+@media (prefers-color-scheme: dark){.pill.nai{background:#4A3B12;color:#F3D27A}}
+.live{color:var(--red);font-weight:700}
+.chip{display:inline-block;min-width:44px;text-align:center;padding:2px 5px;border-radius:5px;font-weight:600}
+table.t small.rr{color:var(--faint);font-size:11px;display:inline-block;min-width:22px;text-align:left}
+table.t small.cf{color:var(--faint);font-weight:500;font-size:11.5px;margin-left:2px}
+table.t.rt td.tm .nm{max-width:120px}
+table.t td.tm{display:table-cell;text-align:left}
+table.t td.tm>*{vertical-align:middle}
+table.t td.tm .logo{margin-right:6px}
+table.t td.l,table.t th.l{text-align:left}
+table.t tr.sel td{background:var(--paper-2)}
+.star{border:0;background:none;color:var(--gold);font-size:18px;line-height:1;padding:2px 4px;cursor:pointer}
+.thead h2 .star{font-size:22px;vertical-align:3px}
+
+/* today: game cards */
+.games{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:10px}
+.gm{background:var(--card);border:1px solid var(--rule);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.gm.is-live{border-color:var(--red)}
+.gm header{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:7px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--rule-2);min-height:32px}
+.gm header>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:14.5px}
+.gt .nm{font-weight:700;color:var(--ink);text-decoration:none;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gt .nm:hover{text-decoration:underline}
+.gt small{color:var(--faint);font-size:12px;margin-right:auto;padding-left:2px}
+.gt .fv{color:var(--gold);font-size:12px}
+.gt .sc{font:700 20px/1 var(--cond);min-width:34px;text-align:right;color:var(--muted)}
+.gt.won .sc,.gt.won .nm{color:var(--ink)}
+.gm:has(.gt.won) .gt:not(.won) .nm{color:var(--muted)}
+.gt .pr{font:600 14px/1 var(--cond);color:var(--muted);min-width:40px;text-align:right}
+.gt .pr.fav{color:var(--ink);font-weight:700}
+.gm footer{margin-top:auto;display:flex;align-items:center;gap:6px 12px;flex-wrap:wrap;padding:7px 12px;border-top:1px solid var(--rule-2);background:var(--paper-2);font-size:12.5px;color:var(--muted)}
+.gm footer b{color:var(--ink)}
+.gm footer a{margin-left:auto;font-weight:700;text-decoration:none;color:var(--red)}
+.gm .wi{display:inline-grid;place-items:center;min-width:26px;height:20px;border-radius:5px;background:var(--ink);color:var(--paper);font:700 12px/1 var(--cond)}
+
+/* ratings scatter */
+.sc-chart{width:100%;height:auto;display:block}
+.sc-chart .ax{stroke:var(--rule);stroke-width:1.5;stroke-dasharray:4 4}
+.sc-chart .q{font:700 12px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;fill:var(--faint)}
+.sc-chart .axl{font:600 12.5px/1 var(--body);fill:var(--muted)}
+.sc-chart .dot{fill:var(--muted);opacity:.45}
+.sc-chart .dot.on{fill:var(--red);opacity:.95}
+.sc-chart .dot.off{opacity:.18}
+.sc-chart a:hover .dot{opacity:1;fill:var(--ink)}
+.sc-chart .lbg{fill:var(--card);stroke:var(--rule)}
+.sc-chart .tl2{font:700 11.5px/1 var(--body);fill:var(--ink);paint-order:stroke;stroke:var(--card);stroke-width:3px}
+
+/* matchup */
+.verdict .hs{vertical-align:middle;margin-right:4px}
+.verdict small a{color:inherit}
+.wp{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;margin:0 0 14px;font-size:14px}
+.wp-l,.wp-r{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.wp-bar{position:relative;height:14px;border-radius:7px;overflow:hidden;display:flex}
+.wp-bar b{display:block;height:100%}
+.wp-bar i{display:block;height:100%;flex:1}
+table.tape td{text-align:center;width:38%}
+table.tape td.mid,table.tape th.mid{width:24%;color:var(--faint);font-size:12px;text-align:center;white-space:normal}
+table.tape th{text-align:center!important}
+table.tape td:first-child{text-align:center}
+table.tape td.edge{font-weight:800;background:var(--t-strong);color:var(--t-strong-i)}
+
+/* teams */
+.teamgrid .tg{display:flex;align-items:center;border:1px solid var(--rule);border-radius:10px;background:var(--card);padding-right:4px}
+.teamgrid .tg:hover{border-color:var(--ink)}
+.teamgrid .tg a{flex:1;border:0;background:none;min-width:0}
+
+/* prospects */
+.spark{vertical-align:middle;overflow:visible}
+.spark path{fill:none;stroke:var(--muted);stroke-width:1.6;stroke-linejoin:round}
+.spark.up path{stroke:var(--up)} .spark.dn path{stroke:var(--down)}
+td.ng{font-size:12.5px;color:var(--muted)}
+
+/* bracket */
+.seeds{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;padding:8px 12px}
+.sl{display:grid;grid-template-columns:28px repeat(4,minmax(0,1fr));gap:6px;align-items:center;padding:5px 0;border-bottom:1px solid var(--rule-2)}
+.sl .sd{font:800 18px/1 var(--cond);color:var(--red);text-align:center}
+.slot{display:flex;align-items:center;gap:3px;min-width:0;font-size:12.5px}
+.slot a{display:flex;align-items:center;gap:4px;color:var(--ink);text-decoration:none;font-weight:600;min-width:0}
+.slot a .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.slot .logo{width:18px;height:18px}
+.slot.ff{background:var(--paper-2);border-radius:6px;padding:2px 4px;flex-direction:column;align-items:flex-start;gap:1px}
+.slot .or{display:none}
+@media (max-width:900px){.seeds{grid-template-columns:1fr}}
+
+@media (max-width:640px){
+  .games{grid-template-columns:1fr}
+  .wp{grid-template-columns:1fr 1fr}
+  .wp-bar{grid-column:1/-1;order:3}
+  .wp-r{justify-content:flex-end}
+  .sl{grid-template-columns:22px repeat(2,minmax(0,1fr))}
+  .controls label .seg button{padding:6px 9px}
+}
+.stats{grid-template-columns:repeat(auto-fit,minmax(112px,1fr))}
+.at{display:inline-block;width:20px;color:var(--faint);font-size:12px}
+@media (max-width:640px){.gm footer{gap:4px 10px;flex-wrap:nowrap}.gm footer>span:first-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}.rlist .pill{font-size:9.5px}}
+
+/* tournament odds */
+.cupstrip{display:grid;grid-template-columns:repeat(auto-fill,minmax(128px,1fr));gap:8px;margin:10px 0 14px}
+.cupstrip a{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--rule);border-radius:10px;background:var(--card);color:var(--ink);text-decoration:none}
+.cupstrip a:hover{border-color:var(--ink)}
+.cupstrip b{display:block;font:700 18px/1 var(--cond)}
+.cupstrip span{font-size:12px;color:var(--muted)}
+.panel .body .cupstrip{margin:0}
+table.odds td.heat{background:color-mix(in srgb,var(--t-elite) calc(var(--p) * 100%),transparent);color:var(--ink)}
+table.odds td.hot{background:var(--t-elite);color:var(--t-elite-i);font-weight:700}
+table.odds td{min-width:58px}
+.regions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.region{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:8px 10px}
+.region h4{margin:2px 0 6px;font:700 12px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.bs{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:0 6px;padding:3px 0;border-top:1px solid var(--rule-2);font-size:12.5px}
+.bs:nth-child(odd of .bs){border-top-color:var(--rule)}
+.bs .sd{grid-row:span 2;font:800 14px/1 var(--cond);color:var(--red);text-align:center}
+.bs a{display:flex;align-items:center;gap:5px;color:var(--ink);text-decoration:none;font-weight:600;min-width:0;grid-column:2}
+.bs a .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.bs a small{color:var(--faint);font-weight:500;font-size:11px}
+.bs .logo{width:16px;height:16px}
+.ladder{display:grid;gap:5px;margin-top:4px}
+.lr{display:grid;grid-template-columns:110px 1fr 46px;align-items:center;gap:10px;font-size:13px}
+.lr span{color:var(--muted)}
+.lr i{height:10px;border-radius:5px;background:var(--paper-2);overflow:hidden;display:block}
+.lr i b{display:block;height:100%;background:var(--ink);border-radius:5px}
+.lr em{font-style:normal;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+details.org .seeds{padding:6px 0}
+@media (max-width:1000px){.regions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.regions{grid-template-columns:1fr}.lr{grid-template-columns:90px 1fr 42px}}
+@media (max-width:640px){
+  .cupstrip{display:flex;overflow-x:auto;scrollbar-width:none;gap:6px}
+  .cupstrip::-webkit-scrollbar{display:none}
+  .cupstrip a{flex:none;min-width:112px;padding:7px 9px}
+  table.odds small.cf,table.t.rt small.cf{display:none}
+  table.odds td.tm,table.t.rt td.tm{position:sticky;left:0;background:var(--card);z-index:1;max-width:120px;overflow:hidden;text-overflow:ellipsis}
+  table.odds th:first-child,table.t.rt th:first-child{position:sticky;left:0;background:var(--card);z-index:1}
+}
+/* full schedule + leaders */
+.scroll.sched{max-height:560px;overflow-y:auto}
+.scroll.sched thead th{position:sticky;top:0;background:var(--card);z-index:1}
+.nd1{color:var(--muted);font-weight:500}
+.pill.cf2{font-size:9px;padding:2px 4px}
+.leaders{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.leaders .panel{margin:0}
+ol.rlist.ldr li{padding:5px 12px}
+ol.rlist.ldr .rk{min-width:16px}
+table.t.pt td.on{font-weight:700;background:var(--paper-2)}
+
+/* ---------- CFB additions ---------- */
+.pill.hz{background:#F6E7B8;color:#7A5300}
+.pill.nfl{background:var(--t-elite);color:var(--t-elite-i)}
+.pill.aq{background:var(--ink);color:var(--paper);font-size:9px;padding:2px 5px}
+@media (prefers-color-scheme: dark){.pill.hz{background:#4A3B12;color:#F3D27A}}
+.mk{color:var(--faint);font-size:12px}
+.mk b{color:var(--muted)}
+.edge{font-weight:700}
+.edge.big{color:var(--red)}
+.gm .mkt{font-size:12px;color:var(--faint)}
+.gm .note2{padding:0 12px 6px;font-size:11.5px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.weeks{display:flex;gap:4px;flex-wrap:wrap}
+.cfp{display:grid;grid-template-columns:1.05fr 1fr .9fr .9fr;gap:12px;align-items:center;margin:6px 0 14px}
+.cfp .col{display:grid;gap:10px}
+.cfp .col.qf{gap:10px}
+.cfp h4{margin:0 0 2px;font:700 11.5px/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.mu{background:var(--card);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+.mu .tmr{display:grid;grid-template-columns:24px 22px minmax(0,1fr) auto;align-items:center;gap:6px;padding:6px 9px;font-size:13px;border-top:1px solid var(--rule-2)}
+.mu .tmr:first-child{border-top:0}
+.mu .tmr .sd{font:800 15px/1 var(--cond);color:var(--red);text-align:center}
+.mu .tmr a{color:var(--ink);font-weight:700;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mu .tmr a:hover{text-decoration:underline}
+.mu .tmr small{color:var(--faint);font-size:11px;font-variant-numeric:tabular-nums}
+.mu .tmr .logo{width:20px;height:20px}
+.mu .tmr.tbd{color:var(--faint);font-style:italic}
+.mu footer{padding:4px 9px;font-size:11px;color:var(--muted);background:var(--paper-2);border-top:1px solid var(--rule-2)}
+.cfp .champ{text-align:center;padding:12px;border:1px dashed var(--rule);border-radius:10px;background:var(--card)}
+.cfp .champ b{display:block;font:800 22px/1.1 var(--display)}
+.cfp .champ span{font-size:12px;color:var(--muted)}
+@media (max-width:900px){.cfp{grid-template-columns:1fr 1fr}.cfp .col.sf,.cfp .col.fin{grid-column:span 1}}
+@media (max-width:560px){.cfp{grid-template-columns:1fr}}
+.bubble{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:640px){.bubble{grid-template-columns:1fr}}
+.hzbar{display:inline-block;width:80px;height:8px;border-radius:4px;background:var(--paper-2);vertical-align:middle;overflow:hidden;margin-left:6px}
+.hzbar b{display:block;height:100%;background:var(--gold, #B8860B)}
+td.ln{font-size:12.5px;color:var(--muted);text-align:left!important;white-space:normal;min-width:180px}
+.mv{font-size:11.5px;font-weight:700}
+.mv.up{color:var(--up)} .mv.dn{color:var(--down)}
+@media (max-width:640px){.gm footer{flex-wrap:wrap}.gm footer a{margin-left:0}}

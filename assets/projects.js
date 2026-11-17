@@ -285,6 +285,21 @@ window.PROJECTS = [
     cover: { image: "assets/covers/cbb-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
+    title: "CFB Hub",
+    hub: true,
+    line: "Lines against the book, playoff odds, a projected bracket and the Heisman ladder",
+    tag: "Updated three times a day, every 30 minutes on Saturdays",
+    type: "Simulations",
+    released: "2026-11",
+    url: "cfb/",
+    action: "Open the hub",
+    question: "Who's getting into the 12-team playoff, and where does the hub disagree with the sportsbook this Saturday?",
+    summary: "FBS college football with a spread, total and win probability on every game next to the DraftKings line ESPN shows, power ratings for all 138 teams that blend ESPN FPI with the hub's own points model, a spread machine for any matchup, conference races and title-game odds, playoff odds and a projected 12-team bracket from 10,000 simulated seasons under the 2026 rules, a Heisman ladder, the NFL Big Board's college prospects, and a graded record of how the hub's lines do.",
+    facts: [["138", "FBS teams rated"], ["10,000", "seasons simulated"], ["185", "NFL prospects tracked"]],
+    stack: ["JavaScript", "Python", "GitHub Actions"],
+    cover: { image: "assets/covers/cfb-hub.svg", bg: "#F5F4F0", band: "#002244" }
+  },
+  {
     title: "Big Board",
     hub: true,
     line: "Every 2027 draft board, plus a mock draft",

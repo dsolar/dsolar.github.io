@@ -1,10 +1,10 @@
-/* Sport switcher for the hubs (mlb/, nba/, nfl/, nhl/, cbb/): MLB · NBA · NFL · NHL · CBB pills at the top of each hub's header.
+/* Sport switcher for the hubs (mlb/, nba/, nfl/, nhl/, cbb/, cfb/): MLB · NBA · NFL · NHL · CBB · CFB pills at the top of each hub's header.
    Switching keeps you on the same kind of page where the other hub has one (Trade Value to Trade Value, Free Agents
    to Free Agents, contracts to contracts), and otherwise lands on that hub's front page. */
 (function () {
   "use strict";
-  var HUBS = ["mlb", "nba", "nfl", "nhl", "cbb"];
-  var here = (location.pathname.match(/\/(mlb|nba|nfl|nhl|cbb)\/?/) || [])[1];
+  var HUBS = ["mlb", "nba", "nfl", "nhl", "cbb", "cfb"];
+  var here = (location.pathname.match(/\/(mlb|nba|nfl|nhl|cbb|cfb)\/?/) || [])[1];
   if (!here) return;
 
   // Each hub's address for a kind of page. Kinds: standings, teams, contracts, value, builder, fa, method
@@ -14,7 +14,8 @@
     nfl: { standings: "#/standings", teams: "#/teams", contracts: "#/cap", value: "#/trade", builder: "#/trade", fa: "#/fa", method: "#/method" },
     // its player ratings stand in for the other hubs' value boards
     nhl: { standings: "#/standings", teams: "#/teams", contracts: "#/contracts", value: "#/players", method: "#/method" },
-    cbb: { standings: "#/ratings", teams: "#/teams", value: "#/players", method: "#/method" }
+    cbb: { standings: "#/ratings", teams: "#/teams", value: "#/players", method: "#/method" },
+    cfb: { standings: "#/ratings", teams: "#/teams", value: "#/players", method: "#/method" }
   };
   // The kind of page this hub is showing now, from its address
   function kind() {
@@ -35,6 +36,7 @@
       if (route === "players") return "value";
       return { standings: 1, teams: 1, contracts: 1, method: 1 }[route] ? route : null;
     }
+    if (here === "cfb") return { ratings: "standings", conferences: "standings", playoff: "standings", week: "standings", teams: "teams", team: "teams", players: "value", heisman: "value", prospects: "value", method: "method" }[route] || null;
     if (here === "cbb") return { ratings: "standings", conferences: "standings", bracket: "standings", today: "standings", teams: "teams", team: "teams", players: "value", naismith: "value", prospects: "value", method: "method" }[route] || null;
     // nfl: its Trade Value page is also where trades are built; Power Rankings sit with standings
     if (route === "trade") return "value";

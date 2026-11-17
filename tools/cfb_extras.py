@@ -28,6 +28,7 @@ HFA = 2.5          # home-field edge in points, applied to the spread (split acr
 SD = 14.0          # typical miss of a college football point spread, in points
 DRIFT = 3.5        # season-long uncertainty in a team's true rating for the simulation, in points
 FPI_WEIGHT = 0.5   # share of the power rating from ESPN FPI; the rest from the hub's own points model
+REGRESS = 0.85     # raw ratings overstate the gaps between teams; power is pulled 15% toward average
 BLOWOUT = 24       # margins beyond this count at 40% in the points model
 RIDGE = 2.5        # games' worth of pull toward average in the points model
 FCS_PRIOR = (-11.0, 11.0)  # FCS opponents start 22 points worse than an average FBS team
@@ -346,7 +347,7 @@ def heisman(players, teams, R):
             continue
         winp = (rec.get("w") or 0) / gms if gms else 0.5
         cfp = (t.get("polls", {}).get("cfp") or t.get("polls", {}).get("ap") or {}).get("rank")
-        factor = 0.5 + 0.35 * winp + 0.15 * pct[p["teamId"]] + (0.12 if cfp and cfp <= 12 else 0.05 if cfp else 0)
+        factor = 0.35 + 0.45 * winp + 0.1 * pct[p["teamId"]] + (0.15 if cfp and cfp <= 12 else 0.07 if cfp else 0)
         rows.append({"id": p["id"], "name": p["name"], "teamId": p["teamId"], "pos": p.get("pos"), "kind": kind, "prod": round(prod, 2), "score": prod * factor})
     rows.sort(key=lambda r: -r["score"])
     top = rows[:40]
@@ -419,12 +420,12 @@ def main():
     for t in O:
         if t in teams:
             f = teams[t]["fpi"].get("fpi")
-            pw = FPI_WEIGHT * f + (1 - FPI_WEIGHT) * own[t] if f is not None else own[t]
+            pw = REGRESS * (FPI_WEIGHT * f + (1 - FPI_WEIGHT) * own[t] if f is not None else own[t])
         else:
-            pw = own[t]
+            pw = REGRESS * own[t]
         R[t] = {"power": round(pw, 2), "own": round(own[t], 2), "o": round(O[t], 2), "d": round(D[t], 2), "g": n.get(t, 0)}
     for t in fbs:
-        R.setdefault(t, {"power": teams[t]["fpi"].get("fpi") or 0, "own": 0, "o": 0, "d": 0, "g": 0})
+        R.setdefault(t, {"power": REGRESS * (teams[t]["fpi"].get("fpi") or 0), "own": 0, "o": 0, "d": 0, "g": 0})
     # Ranks and résumé
     order = sorted(fbs, key=lambda t: -R[t]["power"])
     for i, t in enumerate(order):
@@ -468,7 +469,7 @@ def main():
             r["prev"] = hh[ref_day].get(r["id"])
     lines, record = update_lines(old.get("lines"), hub, R, base, today)
     out = {"schema": 1, "updated": datetime.now(timezone.utc).isoformat(), "season": hub["season"], "today": today.isoformat(),
-           "hfa": HFA, "sd": SD, "base": round(base, 2), "stretch": round(stretch, 3), "fpiWeight": FPI_WEIGHT, "bar": round(bar, 2),
+           "hfa": HFA, "sd": SD, "base": round(base, 2), "stretch": round(stretch, 3), "fpiWeight": FPI_WEIGHT, "regress": REGRESS, "bar": round(bar, 2),
            "ratings": R, "history": hist, "season_sim": season,
            "heisman": {"ladder": lad, "since": ref_day, "history": hh},
            "lines": lines, "record": record, "seconds": round(time.time() - t0, 1)}
