@@ -393,6 +393,27 @@
     if (c.ratio) { const n = S.stat(sport, p, line, c.ratio[0]), d = S.stat(sport, p, line, c.ratio[1]); return d ? S.ratioVal(c, n, d) : null; }
     return S.stat(sport, p, line, c.col);
   }
+  // A rate stat's volume (its denominator) for a player, and the least volume that counts: a quarter of the pool's
+  // most, so a backup's 46 dropbacks don't top EPA/dropback. Below it the rate still shows, grayed, and sorts last.
+  // A per-game line (basketball's pg, its projection's ppg) counts volume over the season: per game times games.
+  const PER_GAME = /^p?pg$/;
+  function rateVol(sport, p, c) {
+    const P = sport.statView === "prev" ? { l: (p && p.l0) || {} } : p;
+    const line = sport.statView === "prev" ? c.line : c.line ? lineOf(sport, p, c.line) : c.line;
+    if (!P.l || !P.l[line]) return null;
+    const v = S.stat(sport, P, line, c.ratio[1]);
+    if (v == null || !PER_GAME.test(line)) return v;
+    const g = S.stat(sport, P, line, "gp");
+    return g == null ? v : v * g;
+  }
+  function rateFloor(sport, c, pool) {
+    // kept per player pool, so a smaller pool (one night's slate) works out its own
+    const store = (rateFloor.pools ||= new WeakMap());
+    if (!store.has(pool)) store.set(pool, {});
+    const key = `${sport.statView || ""}|${c.line}|${JSON.stringify(c.ratio[1])}`, cache = store.get(pool);
+    if (cache[key] == null) { let hi = 0; for (const p of pool) { const v = rateVol(sport, p, c); if (v > hi) hi = v; } cache[key] = hi * 0.25; }
+    return cache[key];
+  }
   // the switch itself, a small select; the choice sticks per sport in this browser
   const viewKey = (sport) => `fk-statview:${sport.key}`;
   function initView(sport) {
@@ -419,7 +440,43 @@
   // Baseball's stat columns follow the league's categories, so an 8x8 league sees H, TB, OPS, L, HLD and QS; a
   // category the data can't show (none today) is skipped. The usual five by five show on a phone, the rest from tablets up.
   const MLB_CORE = new Set(["r", "hr", "rbi", "sb", "avg", "w", "sv", "k", "era"]);
+  // Standard or advanced stat columns: the advanced ones are the sport's advanced categories (TS%, wOBA, EPA/play,
+  // FO%), so anyone can sort the pool by them before picking a league's categories. The choice sticks per sport.
+  const setKey = (sport) => `fk-statset:${sport.key}`;
+  const hasAdv = (sport) => !!(sport && sport.cols && S.catCatalog(sport).some((c) => c.adv));
+  function statSet(sport) {
+    if (!sport.statSet) { let v = null; try { v = localStorage.getItem(setKey(sport)); } catch (e) { /* no storage */ } sport.statSet = v === "adv" ? "adv" : "std"; }
+    return hasAdv(sport) ? sport.statSet : "std";
+  }
+  function setStatSet(sport, v) { sport.statSet = v === "adv" ? "adv" : "std"; try { localStorage.setItem(setKey(sport), sport.statSet); } catch (e) { /* no storage */ } }
+  function setSwitch(sport) {
+    if (!hasAdv(sport)) return "";
+    const v = statSet(sport);
+    return `<div class="seg stsw" role="group" aria-label="Stat columns">${[["std", "Standard"], ["adv", "Advanced"]].map(([k, l]) => `<button type="button" data-statset="${k}" aria-pressed="${v === k}">${l}</button>`).join("")}</div>`;
+  }
+  // football's advanced stats by the positions they describe; with no position picked, only the ones that fit everyone
+  const NFL_ADV_POS = {
+    QB: ["cmp_pct", "ypa", "aya", "anya", "td_pct", "int_pct", "epa_pass", "epa_db", "cpoe", "sack_pct", "epa_rush", "epa_car"],
+    RB: ["ypc", "epa_rush", "epa_car", "ypto", "catch", "ypt", "epa_rec", "epa_tgt", "tgt_share", "yac_r", "yac"],
+    WR: ["catch", "ypt", "ypr", "ypto", "epa_rec", "epa_tgt", "tgt_share", "air_share", "adot", "yac_r", "racr", "air_yd", "yac"],
+    TE: ["catch", "ypt", "ypr", "ypto", "epa_rec", "epa_tgt", "tgt_share", "air_share", "adot", "yac_r", "racr", "air_yd", "yac"],
+    K: ["fg_pct"],
+  };
+  const fmtInt = (x) => (x == null ? "" : Math.round(x).toString());
+  function advColumns(sport) {
+    let shown = 0;
+    return S.catCatalog(sport).filter((c) => c.adv).map((c) => {
+      const line = c.line || "pg";
+      const pos = sport.key === "nfl" ? Object.keys(NFL_ADV_POS).filter((x) => NFL_ADV_POS[x].includes(c.k)) : [];
+      // phones keep the first few that show with no position picked
+      const hide = pos.length || shown++ >= 4 ? "s" : undefined;
+      return Object.assign({ k: c.k, line, label: c.label, title: c.title || "", low: !!c.low, fmt: c.fmt || fmtInt, hide },
+        sport.groups ? { group: line } : {}, pos.length ? { pos, posOnly: true } : {},
+        c.num ? { ratio: [c.num, c.den], mult: c.mult, add: c.add } : { col: c.col || c.rate });
+    });
+  }
   function statColumns(sport, scoring) {
+    if (statSet(sport) === "adv") return advColumns(sport);
     const sc = sport.scorings && sport.scorings[scoring];
     if (sport.key !== "mlb" || !sc || sc.type !== "cats" || !sport.cols) return sport.columns;
     const col = (c) => c.col || c.rate;
@@ -476,7 +533,11 @@
       if (compact && (c.pos || c.group)) continue;
       if (opts.group && c.group && c.group !== opts.group) continue;
       if (opts.group && c.pos && !c.pos.includes(opts.group)) continue;
-      cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, sort: (p) => statCell(sport, p, c), html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
+      if (!opts.group && c.posOnly) continue;
+      // opts.players: the table's pool, for the least volume a rate stat needs to rank (a table without it ranks every rate)
+      const small = (p) => !!(c.ratio && opts.players) && (rateVol(sport, p, c) || 0) < rateFloor(sport, c, opts.players);
+      cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, asc: !!c.low, sort: (p) => (small(p) ? null : statCell(sport, p, c)),
+        html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : small(p) ? `<span class="ps" title="Small sample: too little volume to rank">${c.fmt(v)}</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
     if (opts.actions) cols.push({ k: "act", label: '<span class="sr">Actions</span>', raw: true, cls: "r act", html: opts.actions });
     return (opts.lead || []).concat(cols);
@@ -540,9 +601,20 @@
       }).join("");
       return `<div class="stack" style="gap:6px"><div class="ps"><b>${esc(def.label)}</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>`;
     }).join("");
+    // his advanced stats this season (football: the ones for his position), each from its category's formula
+    const adv = (() => {
+      if (!hasAdv(sport)) return "";
+      const mine = S.positions(p), cells = advColumns(sport).filter((c) => !c.pos || c.pos.some((x) => mine.includes(x))).filter((c) => !sport.groups || !c.group || p.l[c.line]).map((c) => {
+        let v;
+        if (c.ratio) { const n = S.stat(sport, p, c.line, c.ratio[0]), d = S.stat(sport, p, c.line, c.ratio[1]); v = d ? S.ratioVal(c, n, d) : null; }
+        else v = S.stat(sport, p, c.line, c.col);
+        return v == null || !Number.isFinite(v) ? "" : `<span title="${esc(c.title)}"><small>${esc(c.label)}</small><b>${c.fmt(v)}</b></span>`;
+      }).join("");
+      return cells ? `<div class="stack" style="gap:6px"><div class="ps"><b>Advanced</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>` : "";
+    })();
     // a league's card leads with the week and the league; the season lines fold away under one heading
     // opts.lines === false: the card already shows his season and projection its own way (a category league's lines)
-    const linesHtml = opts.lines === false ? "" : opts.fold && lines ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${lines}</div></details>` : lines;
+    const linesHtml = opts.lines === false ? adv : opts.fold && (lines || adv) ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${adv}${lines}</div></details>` : adv + lines;
     const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
     const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     // opts.logo: his pro team's logo at the right of the header
@@ -1196,7 +1268,7 @@
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
       const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
-      const cols = poolColumns(sport, { group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() ? undefined : opts.money, value: opts.value });
+      const cols = poolColumns(sport, { players: opts.players, group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() ? undefined : opts.money, value: opts.value });
       rows = sortRows(rows, cols, ui.sort);
       const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
       const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);
@@ -2020,7 +2092,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, setSwitch, setStatSet, statSet, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     groupLabel, playerGroup, slotGroup, contractPanel, capMoney, playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

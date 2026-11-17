@@ -390,7 +390,7 @@
       { k: "cons", label: "Cons", cls: "r num", title: "Outside dynasty consensus rank (FantasyPros, plus FantasyCalc for football)", sort: (p) => p.cons || 1e4, asc: true, html: (p) => (p.cons ? String(p.cons) : `<span class="ps">-</span>`) },
       { k: "dyn", label: "Outlook", cls: "r num", hide: "s", title: "How age moves his value over the next five seasons: above 1 he's still climbing, below 1 he's fading", sort: (p) => p.dyn || 1, html: (p) => (p.dyn && p.dyn !== 1 ? `<span class="${p.dyn > 1 ? "win" : "loss"}">&times;${p.dyn.toFixed(2)}</span>` : `<span class="ps">&times;1</span>`) },
     ] : [];
-    const cols = U.poolColumns(sp, { group: U.groupOf(sp, rank.f), scoring: P.scoring, extra });
+    const cols = U.poolColumns(sp, { players: P.players, group: U.groupOf(sp, rank.f), scoring: P.scoring, extra });
     const teams = [...new Set(P.players.map((p) => p.t))].sort();
     const rows = U.sortRows(P.players.filter((p) => U.passes(sp, p, rank.f)), cols, rank.sort);
     const mine = rank.mode === "board", B = U.board.of(sp.key, P.players);
@@ -402,7 +402,7 @@
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${(() => { const n = {}; P.lineup.forEach((x) => (n[x] = (n[x] || 0) + 1)); return Object.entries(n).map(([x, k]) => (k > 1 ? `${k} ${x}` : x)).join(", "); })()}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${S.SEASON_SPORTS.map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
-        ${U.viewSelect(sp, "r-statv")}
+        ${U.viewSelect(sp, "r-statv")}${U.setSwitch(sp)}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
         <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "nhl" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
       <div class="tools">${U.search(rank.f)}<label class="sr" for="fk-team">${esc(sp.league)} team</label><select id="fk-team" class="${rank.f.team ? "set" : ""}"><option value="">All ${esc(sp.league)} teams</option>${teams.map((t) => `<option${t === rank.f.team ? " selected" : ""}>${esc(t)}</option>`).join("")}</select></div>${U.posFilter(sp, rank.f.pos)}
@@ -419,6 +419,9 @@
     app.ondrop = (e) => { const li = e.target.closest && e.target.closest("[data-bid]"), id = e.dataTransfer.getData("text/plain"); if (!li || !id || li.dataset.bid === id) return; e.preventDefault(); moveTo(id, B.ids.indexOf(li.dataset.bid)); };
     app.ondragend = () => $$(".mb.drag,.mb.over", app).forEach((x) => x.classList.remove("drag", "over"));
     app.onclick = (e) => {
+      const ss = e.target.closest("[data-statset]");
+      // the stat columns change, so a sort on one of them goes back to the overall rank
+      if (ss) { U.setStatSet(sp, ss.dataset.statset); if (/^s\d+$/.test(rank.sort.k)) rank.sort = { k: "rank", dir: 1 }; rankingsPage(); return; }
       const rm = e.target.closest("[data-rmode]");
       if (rm) { rank.mode = rm.dataset.rmode; rankingsPage(); return; }
       const bu = e.target.closest("[data-bup],[data-bdown]");

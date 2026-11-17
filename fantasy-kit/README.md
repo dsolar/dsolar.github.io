@@ -272,6 +272,11 @@ owns which team, the invite code and the save order. It also stamps each team's 
   the end of a live line, and a week is only final once nflverse covers every team that played (or two days later).
   `FK.sports.CAT_PRESETS` holds one-click category setups per sport (Analytics, Efficiency, Sabermetrics, Per 36 and
   more), offered in league setup and listed on each sport page.
+  Player tables (Rankings, a league's Players page, the draft room) have a Standard/Advanced switch (`FK.ui.setSwitch`,
+  kept per sport in this browser): Advanced swaps the stat columns for the sport's advanced categories, each sortable,
+  and football shows a position's own (EPA/dropback and CPOE for quarterbacks, target share and aDOT for receivers)
+  once one is picked. A rate stat ranks only with a quarter of the pool's most volume (per-game lines count games too);
+  below that it shows grayed and sorts last. Player cards add an Advanced section with his values this season.
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
   after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the
   taxi squad (`settings.prospects`, at least that many taxi spots, keeper leagues included). The pool rides with the
