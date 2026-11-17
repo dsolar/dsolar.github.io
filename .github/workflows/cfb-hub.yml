@@ -11,6 +11,7 @@ on:
       - cfb/*.css
       - tools/cfb_build.py
       - tools/cfb_extras.py
+      - tools/cfbd_pull.py
       - tests/cfb*
       - .github/workflows/cfb-hub.yml
   workflow_dispatch:
@@ -33,6 +34,10 @@ jobs:
           python-version: "3.12"
       - name: Build current college football data
         run: python3 tools/cfb_build.py
+      - name: CollegeFootballData (EPA, SP+, opening and closing lines; once a day, skipped without the key)
+        env:
+          CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
+        run: python3 tools/cfbd_pull.py
       - name: Ratings, lines, Heisman ladder and the season simulation
         if: hashFiles('tools/cfb_extras.py') != ''
         run: python3 tools/cfb_extras.py
@@ -45,7 +50,9 @@ jobs:
           node --check assets/projects.js
       - name: Verify calculations and actual data
         if: hashFiles('tests/cfb-model.test.cjs') != ''
-        run: node --test tests/cfb-model.test.cjs
+        run: |
+          node --test tests/cfb-model.test.cjs
+          python3 -m unittest tests/cfb_cfbd_test.py
       - name: Install DOM test dependency
         if: hashFiles('tests/cfb-ui.test.cjs') != ''
         run: npm install --no-package-lock --no-save --prefix "$RUNNER_TEMP/cfb-qa" jsdom@26.1.0

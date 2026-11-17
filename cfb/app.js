@@ -17,7 +17,7 @@ const num0 = x => fin(x) ? Math.round(x).toLocaleString() : "—";
 function read(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }
 function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
 
-let D = null, X = null, P = null, byId = {}, byPlayer = {}, rosters = {}, liveStamp = null, heisRank = {};
+let D = null, X = null, P = null, C = null, byId = {}, byPlayer = {}, rosters = {}, liveStamp = null, heisRank = {};
 let faves = new Set(read("ds-cfb:favorites", []));
 
 /* ---------- small pieces ---------- */
@@ -50,6 +50,24 @@ function sortTh(key, label, cur, title) { return '<th class="sort' + (cur === ke
 function star(t) { const on = faves.has(t.id); return '<button class="star" type="button" data-fav="' + esc(t.id) + '" aria-pressed="' + on + '" title="' + (on ? "Following" : "Follow") + '">' + (on ? "★" : "☆") + "</button>"; }
 function tiles(items) { return '<div class="stats">' + items.map(([v, l]) => '<div class="stat"><b>' + v + "</b><span>" + l + "</span></div>").join("") + "</div>"; }
 function mv(x) { return fin(x) && x ? '<span class="mv ' + (x > 0 ? "up" : "dn") + '">' + (x > 0 ? "▲" : "▼") + Math.abs(x) + "</span>" : '<span class="mv">–</span>'; }
+
+/* ---------- CollegeFootballData (optional): EPA, SP+, opening and closing lines ---------- */
+const ADV = id => C && C.advanced ? C.advanced[id] : null;
+const SPR = id => C && C.sp ? C.sp[id] : null;
+const PEPA = id => C && C.playerEpa ? C.playerEpa[id] : null;
+const BOOK = id => C && C.lines ? C.lines[id] : null;
+const hasAdv = () => !!(C && C.advanced && Object.keys(C.advanced).length);
+const hasSP = () => !!(C && C.sp && Object.keys(C.sp).length);
+const e3 = x => fin(x) ? (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(2) : "—";
+const p1 = x => fin(x) ? (x * 100).toFixed(1) + "%" : "—";
+let advRank = {};
+function rankAdv() {
+  advRank = {}; if (!hasAdv()) return;
+  const ids = D.teams.map(t => t.id).filter(id => ADV(id));
+  const by = (k, f, asc) => ids.filter(id => fin(f(ADV(id)))).sort((a, b) => asc ? f(ADV(a)) - f(ADV(b)) : f(ADV(b)) - f(ADV(a))).forEach((id, i) => ((advRank[id] = advRank[id] || {})[k] = i + 1));
+  by("oEpa", a => a.off.epa); by("dEpa", a => a.def.epa, true); by("net", a => a.off.epa - a.def.epa); by("oSr", a => a.off.sr); by("dSr", a => a.def.sr, true);
+  by("oXpl", a => a.off.xpl); by("dHav", a => a.def.havoc); by("oPass", a => a.off.passEpa); by("oRush", a => a.off.rushEpa); by("dPass", a => a.def.passEpa, true); by("dRush", a => a.def.rushEpa, true);
+}
 
 /* ---------- simulation ---------- */
 const SIM = () => X && X.season_sim && X.season_sim.teams ? X.season_sim : null;
@@ -87,7 +105,7 @@ function gameCard(g) {
   else if (g.state === "pre" && fin(e) && Math.abs(e) >= 4) tag = '<span class="pill fill">Hub vs book</span>';
   else if (w >= 72 && !done) tag = '<span class="pill new">Must watch</span>';
   if (done && lg && lg.final) tag = lg.ats === "win" ? '<span class="pill up">Hub ✓ ATS</span>' : lg.ats === "loss" ? '<span class="pill">Hub ✗ ATS</span>' : lg.correct ? '<span class="pill up">Hub ✓</span>' : lg.upset ? '<span class="pill fill">Upset</span>' : "";
-  const foot = l ? "<span>Hub <b>" + favText(l.spread, h, a) + "</b></span><span>O/U <b>" + half(l.total) + "</b></span>" + (mk && fin(mk.spread) ? '<span class="mkt" title="' + esc(mk.book || "Sportsbook") + ' line shown by ESPN">Book ' + favText(mk.spread, h, a) + "</span>" : "") : '<span class="note">No line: FCS opponent without a rating</span>';
+  const foot = l ? "<span>Hub <b>" + favText(l.spread, h, a) + "</b></span><span>O/U <b>" + half(l.total) + "</b></span>" + (mk && fin(mk.spread) ? '<span class="mkt" title="' + esc(mk.book || "Sportsbook") + ' line shown by ESPN">Book ' + favText(mk.spread, h, a) + (BOOK(g.id) && fin(BOOK(g.id).open) && BOOK(g.id).open !== mk.spread ? " · opened " + favText(BOOK(g.id).open, h, a) : "") + "</span>" : "") : '<span class="note">No line: FCS opponent without a rating</span>';
   return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + "</header>" +
     (g.note ? '<div class="note2">' + esc(g.note) + "</div>" : "") +
     side(a, false, g.as) + side(h, true, g.hs) +
@@ -123,14 +141,14 @@ function week(q) {
   const wl = weekOptions().find(o => o[0] === wk);
   return '<h2 class="sec">' + (wk === "post" ? "Bowls & playoff" : "Week " + esc(wk)) + (wl && wk !== "post" ? ' <small class="note">' + esc((wl[1].split(" · ")[1]) || "") + "</small>" : "") + "</h2>" +
     '<p class="lede">Every FBS game with the hub\'s spread, total and win probability, next to the sportsbook line ESPN shows. Games are sorted by watchability: both teams\' quality, how close the line is, what\'s at stake for the playoff, and the polls.</p>' +
-    tiles([[all.length, "Games"], [ranked, "Ranked vs ranked"], [alerts, "Upset alerts"], [edges.filter(x => Math.abs(x.e) >= 3).length, "Hub 3+ pts off the book"], [r && r.games ? r.right + "-" + (r.games - r.right) : "New", "Hub record (SU)"], [r && (r.ats[0] + r.ats[1]) ? r.ats[0] + "-" + r.ats[1] + (r.ats[2] ? "-" + r.ats[2] : "") : "New", "Hub ATS"]]) +
+    tiles([[all.length, "Games"], [ranked, "Ranked vs ranked"], [alerts, "Upset alerts"], [edges.filter(x => Math.abs(x.e) >= 3).length, "Hub 3+ pts off the book"], [r && r.games ? r.right + "-" + (r.games - r.right) : "New", "Hub record (SU)"], (r && r.atsClose && (r.atsClose[0] + r.atsClose[1]) ? [r.atsClose[0] + "-" + r.atsClose[1] + (r.atsClose[2] ? "-" + r.atsClose[2] : ""), "Hub ATS vs close"] : [r && (r.ats[0] + r.ats[1]) ? r.ats[0] + "-" + r.ats[1] + (r.ats[2] ? "-" + r.ats[2] : "") : "New", "Hub ATS"])]) +
     '<div class="controls"><label>Week<select data-param="w">' + weekOptions().map(([v, l]) => '<option value="' + v + '"' + (v === wk ? " selected" : "") + ">" + esc(l) + (v === currentWeek() ? " · now" : "") + "</option>").join("") + "</select></label>" +
     '<label>Sort<select data-param="sort">' + [["watch", "Watchability"], ["time", "Kickoff"], ["close", "Closest line"], ["edge", "Hub vs book"]].map(([v, l]) => '<option value="' + v + '"' + (sort === v ? " selected" : "") + ">" + l + "</option>").join("") + "</select></label>" +
     seg("show", [["all", "All"], ["ranked", "Ranked"], ["conf", "Conference"], ["follow", "Following"]], show) +
     '<button class="btn" type="button" data-refresh>Refresh scores ↻</button><span class="note" id="stamp">' + (liveStamp ? "Scores checked " + dLabel(liveStamp, { hour: "numeric", minute: "2-digit" }) : "Snapshot " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" })) + "</span></div>" +
     (games.length ? '<div class="games">' + games.map(gameCard).join("") + "</div>" : '<p class="callout">' + (show === "follow" ? 'None of the teams you follow play this week. Follow teams with ☆ on the <a href="#/teams">Teams</a> tab.' : "No games here yet.") + "</p>") +
     '<div class="two" style="margin-top:16px">' +
-    '<div class="panel"><h3>Where the hub disagrees with the book <small>' + esc((edges[0] && edges[0].g.market && edges[0].g.market.book) || "Sportsbook") + " via ESPN</small></h3>" + (edges.length ? '<div class="scroll"><table class="t"><thead><tr><th class=l>Game</th><th>Book</th><th>Hub</th><th>Edge</th></tr></thead><tbody>' + edges.slice(0, 8).map(({ g, l, e }) => { const h = team(g.home), a = team(g.away), side = e > 0 ? h : a; return '<tr><td class="tm">' + esc(a.short) + " at " + esc(h.short) + "</td><td>" + favText(g.market.spread, h, a) + "</td><td>" + favText(l.spread, h, a) + '</td><td class="edge' + (Math.abs(e) >= 4 ? " big" : "") + '">' + esc(side.abbr || side.short) + " " + half(e) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="body note">No sportsbook lines posted for the games left this week.</p>') + "</div>" +
+    '<div class="panel"><h3>Where the hub disagrees with the book <small>' + esc((edges[0] && edges[0].g.market && edges[0].g.market.book) || "Sportsbook") + " via ESPN</small></h3>" + (edges.length ? '<div class="scroll"><table class="t"><thead><tr><th class=l>Game</th>' + (C && C.lines ? "<th>Open</th>" : "") + '<th>Book</th><th>Hub</th><th>Edge</th></tr></thead><tbody>' + edges.slice(0, 8).map(({ g, l, e }) => { const h = team(g.home), a = team(g.away), side = e > 0 ? h : a; return '<tr><td class="tm">' + esc(a.short) + " at " + esc(h.short) + "</td>" + (C && C.lines ? "<td class=note>" + (BOOK(g.id) ? favText(BOOK(g.id).open, h, a) : "—") + "</td>" : "") + "<td>" + favText(g.market.spread, h, a) + "</td><td>" + favText(l.spread, h, a) + '</td><td class="edge' + (Math.abs(e) >= 4 ? " big" : "") + '">' + esc(side.abbr || side.short) + " " + half(e) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="body note">No sportsbook lines posted for the games left this week.</p>') + "</div>" +
     '<div class="panel"><h3>Heisman contenders playing <small><a href="#/heisman">Full ladder →</a></small></h3>' + (hz.length ? '<ul class="rlist">' + hz.map(x => { const p = byPlayer[x.id]; return "<li>" + '<span class="pill hz">#' + x.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p ? p.team : "") + " " + vs(x.teamId) + "</span></li>"; }).join("") + "</ul>" : '<p class="body note">No ladder players this week.</p>') + "</div>" +
     "</div>" +
     '<div class="two"><div class="panel"><h3>NFL prospects in action <small><a href="../draft/">NFL Big Board ↗</a></small></h3>' + (pros.length ? '<ul class="rlist">' + pros.map(p => "<li>" + '<span class="pill nfl">#' + p.nfl.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.pos) + " · " + esc(p.team) + " " + vs(p.teamId) + "</span></li>").join("") + "</ul>" : '<p class="body note">No Big Board prospects play this week.</p>') + "</div>" +
@@ -186,7 +204,7 @@ function playoff(q) {
 /* ---------- ratings ---------- */
 const RCOLS = [
   ["rank", "Rk", t => R(t.id).rank, true], ["power", "Power", t => R(t.id).power], ["off", "Off", t => R(t.id).o], ["def", "Def", t => R(t.id).d, true],
-  ["fpi", "FPI", t => t.fpi.fpi], ["res", "Résumé", t => R(t.id).resRank, true], ["sor", "ESPN SOR", t => t.fpi.sorRank, true], ["sos", "SOS", t => R(t.id).sosRank, true],
+  ["fpi", "FPI", t => t.fpi.fpi], ["sp", "SP+", t => SPR(t.id) ? SPR(t.id).rating : null], ["res", "Résumé", t => R(t.id).resRank, true], ["sor", "ESPN SOR", t => t.fpi.sorRank, true], ["sos", "SOS", t => R(t.id).sosRank, true],
   ["proj", "Proj", t => odds(t.id) ? odds(t.id).w : null], ["champ", "Win conf", t => odds(t.id) ? odds(t.id).champ : null], ["cfp", "Make CFP", t => odds(t.id) ? odds(t.id).cfp : null], ["move", "7-day", t => R(t.id).move]
 ];
 function ratings(q) {
@@ -195,9 +213,10 @@ function ratings(q) {
   const col = RCOLS.find(c => c[0] === sort) || RCOLS[0];
   ts.sort((a, b) => { const x = col[2](a), y = col[2](b); return (x == null) - (y == null) || (x == null ? 0 : col[3] ? x - y : y - x) || R(a.id).rank - R(b.id).rank; });
   const n = D.teams.length, base = X.base;
-  const head = '<h2 class="sec">Power ratings</h2><p class="lede">All ' + n + ' FBS teams. Power is points better than an average FBS team on a neutral field: half ESPN\'s FPI, half the hub\'s own points model fit to every score this season. Off and Def are adjusted points scored and allowed per game against an average opponent. Résumé ranks wins above what an average top-25 team would expect against the same schedule.</p>' +
-    '<div class="controls">' + confSelect(conf) + '<label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Georgia, Boise…"></label>' + seg("view", [["table", "Table"], ["chart", "Offense vs defense"]], mode) + "</div>";
+  const head = '<h2 class="sec">Power ratings</h2><p class="lede">All ' + n + ' FBS teams. Power is points better than an average FBS team on a neutral field, blending ' + (X.spBlend ? "ESPN\'s FPI, SP+ and the hub\'s own points model (a third each)" : "ESPN\'s FPI and the hub\'s own points model (half each)") + ', fit to every score this season. Off and Def are adjusted points scored and allowed per game against an average opponent. Résumé ranks wins above what an average top-25 team would expect against the same schedule.</p>' +
+    '<div class="controls">' + confSelect(conf) + '<label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Georgia, Boise…"></label>' + seg("view", [["table", "Table"]].concat(hasAdv() ? [["adv", "Efficiency"]] : []).concat([["chart", "Offense vs defense"]]), mode) + "</div>";
   if (mode === "chart") return head + scatter(ts, conf || s);
+  if (mode === "adv" && hasAdv()) return head + advTable(ts, q.get("asort") || "net");
   const th = "<tr><th class=l>Team</th><th>Poll</th>" + RCOLS.map(c => sortTh(c[0], c[1], sort)).join("") + "</tr>";
   const body = ts.map(t => {
     const r = R(t.id), o = odds(t.id);
@@ -205,11 +224,24 @@ function ratings(q) {
       "<td>" + (pollRank(t) || "") + "</td><td><b>" + r.rank + '</b></td><td class="' + (r.power > 0 ? "pos" : "neg") + '"><b>' + sg(r.power) + "</b></td>" +
       '<td><span class="chip ' + tier(pctRank(r.oRank, n)) + '">' + f1(base + r.o) + '</span> <small class="rr">' + r.oRank + "</small></td>" +
       '<td><span class="chip ' + tier(pctRank(r.dRank, n)) + '">' + f1(base + r.d) + '</span> <small class="rr">' + r.dRank + "</small></td>" +
-      "<td>" + f1(t.fpi.fpi) + ' <small class="rr">' + int(t.fpi.rank) + "</small></td><td>" + r.resRank + "</td><td>" + int(t.fpi.sorRank) + "</td><td>" + r.sosRank + "</td>" +
+      "<td>" + f1(t.fpi.fpi) + ' <small class="rr">' + int(t.fpi.rank) + "</small></td><td>" + (SPR(t.id) ? f1(SPR(t.id).rating) + ' <small class="rr">' + int(SPR(t.id).rank) + "</small>" : "—") + "</td><td>" + r.resRank + "</td><td>" + int(t.fpi.sorRank) + "</td><td>" + r.sosRank + "</td>" +
       "<td>" + (o ? Math.round(o.w) + "-" + Math.round(o.l) : "—") + "</td><td>" + (o ? pct(o.champ) : "—") + "</td><td>" + (o ? pct(o.cfp) : "—") + "</td><td>" + mv(r.move) + "</td></tr>";
   }).join("");
   return head + '<div class="panel"><div class="scroll"><table class="t rt"><thead>' + th + "</thead><tbody>" + body + "</tbody></table></div></div>" +
-    '<p class="note">Poll: CFP ranking (AP before the committee\'s first release). FPI: ESPN Football Power Index and its rank. ESPN SOR: ESPN Strength of Record rank. SOS: average power of opponents played. Proj: the hub\'s projected record including a conference title game. 7-day: change in the hub\'s rank over the last week.</p>';
+    '<p class="note">Poll: CFP ranking (AP before the committee\'s first release). FPI: ESPN Football Power Index and its rank. SP+: Bill Connelly\'s SP+ via CollegeFootballData. ESPN SOR: ESPN Strength of Record rank. SOS: average power of opponents played. Proj: the hub\'s projected record including a conference title game. 7-day: change in the hub\'s rank over the last week.</p>';
+}
+const ACOLS = [
+  ["net", "Net EPA", a => a.off.epa - a.def.epa, false, e3], ["oEpa", "Off EPA", a => a.off.epa, false, e3], ["dEpa", "Def EPA", a => a.def.epa, true, e3],
+  ["oSr", "Off SR", a => a.off.sr, false, p1], ["dSr", "Def SR", a => a.def.sr, true, p1], ["oPass", "Pass EPA", a => a.off.passEpa, false, e3], ["oRush", "Rush EPA", a => a.off.rushEpa, false, e3],
+  ["oXpl", "Explosive", a => a.off.xpl, false, x => f1(x, 2)], ["dHav", "Havoc", a => a.def.havoc, false, p1], ["start", "Field pos", a => a.off.start, false, x => f1(x)], ["ppo", "Pts/trip", a => a.off.ppo, false, x => f1(x, 2)]
+];
+function advTable(ts, sort) {
+  const col = ACOLS.find(c => c[0] === sort) || ACOLS[0], n = D.teams.length;
+  ts = ts.filter(t => ADV(t.id)).sort((x, y) => { const a = col[2](ADV(x.id)), b = col[2](ADV(y.id)); return (a == null) - (b == null) || (col[3] ? a - b : b - a); });
+  const chip = (id, k, v, f) => '<span class="chip ' + tier(pctRank(advRank[id] && advRank[id][k], n)) + '">' + f(v) + "</span>";
+  return '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class=l>Team</th><th>Hub</th>' + ACOLS.map(c => '<th class="sort' + (c[0] === col[0] ? " on" : "") + '" data-asort="' + c[0] + '">' + c[1] + (c[0] === col[0] ? " ▾" : "") + "</th>").join("") + "</tr></thead><tbody>" +
+    ts.map(t => { const a = ADV(t.id); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference) + " · " + rec(t) + "</small></td><td>" + R(t.id).rank + "</td>" + ACOLS.map(c => "<td>" + (["net", "oEpa", "dEpa", "oSr", "dSr", "oPass", "oRush", "oXpl", "dHav"].includes(c[0]) ? chip(t.id, c[0], c[2](a), c[4]) : c[4](c[2](a))) + "</td>").join("") + "</tr>"; }).join("") +
+    "</tbody></table></div></div>" + '<p class="note">From CollegeFootballData, garbage time excluded. EPA: expected points added per play (offense: higher is better; defense: lower is better). SR: success rate. Explosive: average EPA on successful plays. Havoc: share of defensive plays with a tackle for loss, forced fumble, interception or pass breakup. Field pos: average starting yard line. Pts/trip: points per trip inside the 40.</p>';
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => R(t.id)), base = X.base;
@@ -245,7 +277,8 @@ function matchup(q) {
     '<div class="panel"><table class="t tape"><thead><tr><th>' + logo(a) + " " + esc(a.short) + '</th><th class="mid">Tale of the tape</th><th>' + esc(b.short) + " " + logo(b) + "</th></tr></thead><tbody>" +
     row("Record", rec(a), rec(b)) + row("Poll", pollRank(a) ? "#" + pollRank(a) : "—", pollRank(b) ? "#" + pollRank(b) : "—") +
     row("Hub power", ra.power, rb.power) + row("Hub rank", ra.rank, rb.rank, "low") + row("Adj. points scored", X.base + ra.o, X.base + rb.o) + row("Adj. points allowed", X.base + ra.d, X.base + rb.d, "low") +
-    row("ESPN FPI", a.fpi.fpi, b.fpi.fpi) + row("Résumé rank", ra.resRank, rb.resRank, "low") + row("Schedule rank", ra.sosRank, rb.sosRank, "low") +
+    row("ESPN FPI", a.fpi.fpi, b.fpi.fpi) + (SPR(a.id) && SPR(b.id) ? row("SP+", SPR(a.id).rating, SPR(b.id).rating) : "") +
+    (ADV(a.id) && ADV(b.id) ? row("Off EPA/play", e3(ADV(a.id).off.epa), e3(ADV(b.id).off.epa)) + row("Def EPA/play", e3(ADV(a.id).def.epa), e3(ADV(b.id).def.epa)) + row("Off success rate", p1(ADV(a.id).off.sr), p1(ADV(b.id).off.sr)) + row("Havoc", p1(ADV(a.id).def.havoc), p1(ADV(b.id).def.havoc)) : "") + row("Résumé rank", ra.resRank, rb.resRank, "low") + row("Schedule rank", ra.sosRank, rb.sosRank, "low") +
     row("Make CFP", odds(a.id) ? pct(odds(a.id).cfp) : "—", odds(b.id) ? pct(odds(b.id).cfp) : "—") + "</tbody></table></div>";
 }
 
@@ -298,6 +331,16 @@ function leaders(tid) {
     ["Ball hawks", best("dint", 1).slice(0, 2), p => int(st(p, "dint")) + " INT · " + int(st(p, "pd")) + " PD"]];
   return '<div class="panel"><h3>Leaders</h3><ul class="rlist">' + rows.filter(r => r[1].length).map(([lab, ps2, f]) => ps2.map(p => '<li><span class="sub" style="min-width:76px">' + lab + "</span>" + playerLink(p) + badges(p) + '<span class="grow"></span><span class="num sub">' + f(p) + "</span></li>").join("")).join("") + "</ul></div>";
 }
+function efficiency(t) {
+  const a = ADV(t.id), sp = SPR(t.id), rr = advRank[t.id] || {}, n = D.teams.length, rc = C && C.recruiting && C.recruiting.teams && C.recruiting.teams[t.id], rp = C && C.returning && C.returning.teams && C.returning.teams[t.id];
+  if (!a && !sp) return "";
+  const cell = (v, lab, k) => "<div><b>" + v + (k && rr[k] ? ' <small>#' + rr[k] + "</small>" : "") + "</b><span>" + lab + "</span></div>";
+  return '<div class="panel"><h3>Efficiency <small>CollegeFootballData · garbage time excluded</small></h3><div class="body"><div class="kv">' +
+    (a ? cell(e3(a.off.epa), "Off EPA/play", "oEpa") + cell(e3(a.def.epa), "Def EPA/play", "dEpa") + cell(p1(a.off.sr), "Off success", "oSr") + cell(p1(a.def.sr), "Def success", "dSr") + cell(e3(a.off.passEpa), "Pass EPA", "oPass") + cell(e3(a.off.rushEpa), "Rush EPA", "oRush") + cell(p1(a.def.havoc), "Havoc", "dHav") + cell(f1(a.off.start), "Avg start") : "") +
+    (sp ? cell(f1(sp.rating), "SP+" + (fin(sp.rank) ? " #" + sp.rank : "")) + cell(f1(sp.off), "SP+ off" + (fin(sp.offRank) ? " #" + sp.offRank : "")) + cell(f1(sp.def), "SP+ def" + (fin(sp.defRank) ? " #" + sp.defRank : "")) + (fin(sp.sow) ? cell(f1(sp.sow), "2nd-order wins") : "") : "") +
+    (rc ? cell("#" + rc.rank, (C.recruiting.year) + " recruiting") : "") + (rp && fin(rp.pct) ? cell(p1(rp.pct), "Returning production") : "") +
+    "</div></div></div>";
+}
 function teamPage(q) {
   const t = byId[q.get("id")]; if (!t) return '<p class="callout">Team not found. <a href="#/teams">All teams</a></p>';
   const r = R(t.id), o = odds(t.id), n = D.teams.length;
@@ -317,7 +360,7 @@ function teamPage(q) {
   return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)" + (t.polls.cfp ? " · CFP #" + t.polls.cfp.rank : "") + (t.polls.ap ? " · AP #" + t.polls.ap.rank : "") + "</div></div>" +
     '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
     tiles([["#" + r.rank, "Hub power " + sg(r.power)], [f1(X.base + r.o) + ' <small>#' + r.oRank + "</small>", "Adj. points scored"], [f1(X.base + r.d) + ' <small>#' + r.dRank + "</small>", "Adj. points allowed"], ["#" + int(t.fpi.rank), "ESPN FPI " + f1(t.fpi.fpi)], ["#" + r.resRank, "Hub résumé"], ["#" + r.sosRank, "Schedule played"], [o ? Math.round(o.w) + "-" + Math.round(o.l) : "—", "Proj record"], [o ? pct(o.cfp) : "—", "Make playoff"]]) +
-    '<p class="callout">' + esc(story(t)) + "</p>" +
+    '<p class="callout">' + esc(story(t)) + "</p>" + efficiency(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(x => '<option value="' + esc(x.id) + '">' + esc(x.short) + "</option>").join("") + "</select></label></div>" +
     '<div class="panel"><h3>Schedule <small>hub line, book line and win % · result and its résumé value</small></h3><div class="scroll"><table class="t"><thead><tr><th>Week</th><th class=l>Opponent</th><th>Hub</th><th>Book</th><th>Win</th><th>Result</th></tr></thead><tbody>' + schedRows + "</tbody></table></div></div>" +
     '<div class="two"><div>' + (o ? '<div class="panel"><h3>Season outlook <small><a href="#/playoff">All playoff odds →</a></small></h3><div class="body"><div class="kv"><div><b>' + Math.round(o.cw) + "-" + Math.round(o.cl) + "</b><span>Proj conf</span></div><div><b>" + pct(o.six) + "</b><span>Bowl eligible</span></div><div><b>" + (o.seed ? f1(o.seed) : "—") + "</b><span>Avg CFP seed</span></div><div><b>" + (fin(t.fpi.playoff) ? Math.round(t.fpi.playoff) + "%" : "—") + "</b><span>FPI playoff</span></div></div>" +
@@ -336,6 +379,8 @@ const CATS = {
 };
 function pv(p, k) {
   const g = x => st(p, x);
+  if (k === "epa") return PEPA(p.id) ? PEPA(p.id).epa : null;
+  if (k === "epaPlay") return PEPA(p.id) ? PEPA(p.id).perPlay : null;
   if (k === "cpct") return g("att") ? 100 * g("cmp") / g("att") : null;
   if (k === "ypc") return g("car") ? g("ryd") / g("car") : null;
   if (k === "ypr") return g("rec") ? g("wyd") / g("rec") : null;
@@ -345,16 +390,17 @@ function pv(p, k) {
 }
 function players(q) {
   if (!P) return '<p class="loading">Loading players…</p>';
-  const cat = CATS[q.get("cat")] ? q.get("cat") : "pass", C = CATS[cat], conf = q.get("conf") || "", s = M.key(q.get("q") || ""), sort = q.get("sort") || C.def, more = +(q.get("n") || 100);
+  const cat = CATS[q.get("cat")] ? q.get("cat") : "pass", CT = CATS[cat], conf = q.get("conf") || "", s = M.key(q.get("q") || ""), sort = q.get("sort") || CT.def, more = +(q.get("n") || 100);
   const pos = q.get("pos") || "";
-  let ps = P.players.filter(p => C.min(p) && (!conf || (byId[p.teamId] && byId[p.teamId].conference === conf)) && (!pos || p.pos === pos) && (!s || M.key(p.name + " " + p.team).includes(s)));
+  const cols = C && C.playerEpa && cat !== "def" ? CT.cols.concat([["epa", "EPA", 1], ["epaPlay", "EPA/play", 2]]) : CT.cols;
+  let ps = P.players.filter(p => CT.min(p) && (!conf || (byId[p.teamId] && byId[p.teamId].conference === conf)) && (!pos || p.pos === pos) && (!s || M.key(p.name + " " + p.team).includes(s)));
   const asc = sort === "int" || sort === "fuml";
   ps.sort((a, b) => { const x = pv(a, sort), y = pv(b, sort); return (x == null) - (y == null) || (asc ? x - y : y - x); });
-  const poss = [...new Set(P.players.filter(C.min).map(p => p.pos).filter(Boolean))].sort();
+  const poss = [...new Set(P.players.filter(CT.min).map(p => p.pos).filter(Boolean))].sort();
   return '<h2 class="sec">Players</h2><p class="lede">Season stats for every FBS player with a real workload, from ESPN. Heisman ladder and NFL Big Board players are tagged; open any player for his card.</p>' +
     '<div class="controls">' + seg("cat", Object.entries(CATS).map(([k, v]) => [k, v.label]), cat) + confSelect(conf) + '<label>Position<select data-param="pos"><option value="">All</option>' + poss.map(x => "<option" + (x === pos ? " selected" : "") + ">" + esc(x) + "</option>").join("") + '</select></label><label>Find a player<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Name or school"></label></div>' +
-    '<div class="panel"><div class="scroll"><table class="t pt"><thead><tr><th>#</th><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th>Yr</th>' + C.cols.map(([k, l]) => sortTh(k, l, sort)).join("") + "</tr></thead><tbody>" +
-    ps.slice(0, more).map((p, i) => { const t = byId[p.teamId]; return "<tr><td>" + (i + 1) + '</td><td class="l">' + playerLink(p) + badges(p) + '</td><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></td><td>" + esc(p.pos) + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td>" + C.cols.map(([k, , d]) => "<td" + (k === sort ? ' class="on"' : "") + ">" + (d ? f1(pv(p, k), d) : num0(pv(p, k))) + "</td>").join("") + "</tr>"; }).join("") +
+    '<div class="panel"><div class="scroll"><table class="t pt"><thead><tr><th>#</th><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th>Yr</th>' + cols.map(([k, l]) => sortTh(k, l, sort)).join("") + "</tr></thead><tbody>" +
+    ps.slice(0, more).map((p, i) => { const t = byId[p.teamId]; return "<tr><td>" + (i + 1) + '</td><td class="l">' + playerLink(p) + badges(p) + '</td><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></td><td>" + esc(p.pos) + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td>" + cols.map(([k, , d]) => "<td" + (k === sort ? ' class="on"' : "") + ">" + (d ? f1(pv(p, k), d) : num0(pv(p, k))) + "</td>").join("") + "</tr>"; }).join("") +
     "</tbody></table></div></div>" + (ps.length > more ? '<p><button class="btn" data-more="n" data-n="' + (more + 150) + '">Show more (' + (ps.length - more) + " left)</button></p>" : "");
 }
 
@@ -369,8 +415,8 @@ function heisman() {
   if (!X || !P) return '<p class="loading">Loading…</p>';
   const lad = X.heisman.ladder;
   return '<h2 class="sec">Heisman ladder</h2><p class="lede">The hub\'s ranking of the Heisman race: production per game (yards, touchdowns and turnovers for quarterbacks, yards and scores for runners and receivers, sacks, tackles for loss and takeaways for defenders) weighted by how good the team is and how it\'s winning, because voters reward stars on contenders. The leader is set to 100. It\'s a model of the race, not betting odds.</p>' +
-    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>#</th><th>7-day</th><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th class=l>Season</th><th>Per game</th><th>Ladder</th><th class=l>Next</th></tr></thead><tbody>' +
-    lad.slice(0, 30).map(x => { const p = byPlayer[x.id], t = byId[x.teamId]; if (!p) return ""; const d = fin(x.prev) ? x.prev - x.rank : null; return "<tr><td><b>" + x.rank + "</b></td><td>" + (x.prev ? mv(d) : X.heisman.since ? '<span class="pill new">New</span>' : '<span class="mv">–</span>') + '</td><td class="l">' + playerLink(p) + (p.nfl ? ' <span class="pill nfl">NFL #' + p.nfl.rank + "</span>" : "") + '</td><td class="tm">' + logo(t) + rk(t) + '<span class="nm">' + esc(t.short) + '</span> <small class="cf">' + rec(t) + "</small></td><td>" + esc(p.pos) + '</td><td class="ln">' + esc(M.statLine(p)) + "</td><td>" + f1(x.prod) + "</td><td><b>" + f1(x.score) + '</b><span class="hzbar"><b style="width:' + x.score + '%"></b></span></td><td class="ln">' + nextText(x.teamId) + "</td></tr>"; }).join("") +
+    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>#</th><th>7-day</th><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th class=l>Season</th>' + (C && C.playerEpa ? "<th>EPA</th>" : "") + '<th>Per game</th><th>Ladder</th><th class=l>Next</th></tr></thead><tbody>' +
+    lad.slice(0, 30).map(x => { const p = byPlayer[x.id], t = byId[x.teamId]; if (!p) return ""; const d = fin(x.prev) ? x.prev - x.rank : null; return "<tr><td><b>" + x.rank + "</b></td><td>" + (x.prev ? mv(d) : X.heisman.since ? '<span class="pill new">New</span>' : '<span class="mv">–</span>') + '</td><td class="l">' + playerLink(p) + (p.nfl ? ' <span class="pill nfl">NFL #' + p.nfl.rank + "</span>" : "") + '</td><td class="tm">' + logo(t) + rk(t) + '<span class="nm">' + esc(t.short) + '</span> <small class="cf">' + rec(t) + "</small></td><td>" + esc(p.pos) + '</td><td class="ln">' + esc(M.statLine(p)) + "</td>" + (C && C.playerEpa ? "<td>" + (PEPA(p.id) ? f1(PEPA(p.id).epa) : "—") + "</td>" : "") + "<td>" + f1(x.prod) + "</td><td><b>" + f1(x.score) + '</b><span class="hzbar"><b style="width:' + x.score + '%"></b></span></td><td class="ln">' + nextText(x.teamId) + "</td></tr>"; }).join("") +
     "</tbody></table></div></div>" + '<p class="note">7-day: places gained or lost since ' + (X.heisman.since ? dLabel(X.heisman.since) : "the first snapshot") + ". The ladder refreshes with each stat update.</p>";
 }
 
@@ -398,12 +444,14 @@ function method() {
   const r = X && X.record, S_ = SIM();
   return '<div class="method"><h2 class="sec">How it works</h2>' +
     "<h3>Power ratings</h3><p>Each team's power is points better than an average FBS team on a neutral field. Half of it is ESPN's Football Power Index. The other half is the hub's own points model, fit to every score of the season: each team gets an offense and a defense number (adjusted points scored and allowed against an average opponent), with margins past " + 24 + " points counted at 40% so blowouts don't run the table, and every team pulled a little toward average until it has played enough games. FCS opponents start 22 points below an average FBS team. The model is stretched to FPI's spread before the two are blended.</p>" +
+    (X && X.spBlend ? "<h3>SP+ in the blend</h3><p>With CollegeFootballData connected, power is a third each: ESPN FPI, Bill Connelly's SP+ and the hub's points model, then pulled 15% toward average.</p>" : "") +
     "<h3>Lines</h3><p>The spread is the difference in power plus " + (X ? X.hfa : 2.5) + " points for the home team (none at a neutral site). The total comes from the two offenses against the two defenses, adjusted so it agrees with the spread. Win probability treats the final margin as normally distributed around the spread with a " + (X ? X.sd : 14) + "-point standard deviation. Every line is logged before kickoff and graded once the game is final: straight up, and against the sportsbook line ESPN shows (DraftKings), picking the side the hub likes better than the book." + (r && r.games ? " Record so far: " + r.right + "-" + (r.games - r.right) + " straight up, " + r.ats[0] + "-" + r.ats[1] + (r.ats[2] ? "-" + r.ats[2] : "") + " against the spread, average miss " + f1(r.mae) + " points" + (r.marketMae ? " (the book: " + f1(r.marketMae) + ")" : "") + "." : " The record starts with this week's games.") + "</p>" +
     "<h3>Résumé</h3><p>For every game played, the hub asks how often an average top-25 team (the 25th-best power rating) would win that same game at the same site, and credits the actual result minus that chance. A road win over a top-10 team is worth close to a full win; beating an FCS team is worth almost nothing; losing to one costs almost a full win. This is the hub's own Strength of Record, shown beside ESPN's.</p>" +
     "<h3>Playoff simulation</h3><p>" + (S_ ? S_.sims.toLocaleString() : "10,000") + " seasons, each with every team's true strength nudged by a random amount (" + (S_ ? S_.drift : 3.5) + " points) so good and bad seasons stay correlated. Every remaining game is played. Conference standings come from conference record, then head-to-head or record among tied teams, then a draw weighted toward the stronger team (a stand-in for each league's deeper tiebreakers). The top two meet in the championship game (Sun Belt: the two division winners), at a neutral site or the higher seed's stadium where the league hosts it.</p>" +
     "<p>The committee is modeled with a score that mixes the final résumé, the team's power rating and where the committee ranks it today (the committee's view is sticky), with a small bonus for conference champions. The field follows the 2026 rules: the SEC, Big Ten, Big 12 and ACC champions are in, plus the highest-ranked champion from the other six conferences; Notre Dame is in if it ranks in the top 12; seven at-large teams fill the rest. Teams are seeded straight by ranking. Seeds 1-4 get byes; 5-8 host first-round games. The quarterfinals, semifinals and title game are played at neutral sites. Next season the field grows to 24 teams and conference championship games go away; this hub models this season's 12.</p>" +
     "<h3>Heisman ladder</h3><p>Production per game: for passers, yards, touchdowns, interceptions and yards per attempt, plus rushing; for runners and receivers, yards and touchdowns; for defenders, sacks, tackles for loss, takeaways and passes defended; return touchdowns for anyone. That is multiplied by a team factor built from winning percentage, the team's power and whether it is in the CFP top 12, then scaled so the leader is 100.</p>" +
-    "<h3>Sources</h3><ul><li>ESPN: FPI and Strength of Record, the AP, Coaches and CFP rankings, standings, every team's schedule and scores, the sportsbook lines ESPN displays, rosters and season stats. Updated three times a day and every 30 minutes on Saturdays.</li><li>The site's own <a href=\"../draft/\">NFL Big Board</a> for prospect ranks.</li><li>For deeper team analytics, explore <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a>, <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a> and <a href=\"https://www.sports-reference.com/cfb/\">Sports Reference</a>.</li></ul></div>";
+    "<h3>Closing-line grading</h3><p>Beating the closing line is the real test of a betting model: the close is the market's sharpest number. With CollegeFootballData's opening and closing lines, every game is also graded against the close, and the hub tracks closing-line value: when the hub disagreed with the opening line, did the market move toward the hub's number?" + (r && r.clv && r.clv[2] ? " So far the market moved the hub's way in " + r.clv[0] + " of " + r.clv[2] + " games (average " + sg(r.clvAvg, 2) + " points)." : "") + "</p>" +
+    "<h3>Sources</h3><ul><li>ESPN: FPI and Strength of Record, the AP, Coaches and CFP rankings, standings, every team's schedule and scores, the sportsbook lines ESPN displays, rosters and season stats. Updated three times a day and every 30 minutes on Saturdays.</li><li><a href=\"https://collegefootballdata.com/\">CollegeFootballData.com</a>: EPA and success rates (garbage time excluded), SP+, player EPA, opening and closing lines, recruiting, returning production and the transfer portal. Pulled once a day on the free tier.</li><li>The site's own <a href=\"../draft/\">NFL Big Board</a> for prospect ranks.</li><li>For deeper team analytics, explore <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a>, <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a> and <a href=\"https://www.sports-reference.com/cfb/\">Sports Reference</a>.</li></ul></div>";
 }
 
 /* ---------- player card ---------- */
@@ -420,6 +468,7 @@ function openPlayer(id) {
   $("#cardBody").innerHTML = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t) + " " + esc(t.short) + " · " + esc([p.pos, p.year, p.ht, p.wt].filter(Boolean).join(" · ")) + (p.jersey ? " · #" + esc(p.jersey) : "") + "</div><div>" + badges(p) + "</div></div></div>" +
     '<div class="card-b"><p class="tldr">' + int(st(p, "gp")) + " games" + (p.home ? " · From " + esc(p.home) : "") + "</p>" +
     groups.filter(x => x[2]).map(([lab, ks]) => '<p class="card-sec">' + lab + '</p><div class="kv">' + ks.filter(([k]) => pv(p, k) !== null).map(([k, l]) => "<div><b>" + (dec(k) ? f1(pv(p, k)) : num0(pv(p, k))) + "</b><span>" + l + "</span></div>").join("") + "</div>").join("") + ng +
+    (PEPA(p.id) ? '<p class="card-sec">Efficiency <small class="note">CollegeFootballData</small></p><div class="kv"><div><b>' + f1(PEPA(p.id).epa) + "</b><span>EPA added</span></div><div><b>" + e3(PEPA(p.id).perPlay) + "</b><span>EPA per play</span></div>" + (fin(PEPA(p.id).pass) ? "<div><b>" + f1(PEPA(p.id).pass) + "</b><span>Passing EPA</span></div>" : "") + (fin(PEPA(p.id).rush) ? "<div><b>" + f1(PEPA(p.id).rush) + "</b><span>Rushing EPA</span></div>" : "") + "</div>" : "") +
     (hz ? '<p class="card-sec">Heisman ladder</p><p class="tldr">No. <b>' + hz.rank + "</b> · ladder score " + f1(hz.score) + " · " + f1(hz.prod) + ' production per game. <a href="#/heisman">Ladder →</a></p>' : "") +
     (p.nfl ? '<p class="card-sec">NFL Big Board</p><div class="kv"><div><b>#' + p.nfl.rank + "</b><span>Consensus</span></div><div><b>" + p.nfl.hi + "–" + p.nfl.lo + "</b><span>Range</span></div><div><b>" + esc(p.nfl.on) + "</b><span>Boards</span></div><div><b>" + esc(p.nfl.pos) + '</b><span>Pos</span></div></div><p class="tldr">' + spark(p.nfl.hist) + ' <a href="../draft/">See him on the Big Board →</a></p>' : "") +
     '<p class="note"><a href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN player page ↗</a> · Season stats from ESPN</p></div>';
@@ -439,17 +488,19 @@ function index() {
   byPlayer = {}; rosters = {};
   if (P) P.players.forEach(p => { byPlayer[p.id] = p; (rosters[p.teamId] = rosters[p.teamId] || []).push(p); });
   heisRank = {}; if (X && X.heisman) X.heisman.ladder.forEach(x => heisRank[x.id] = x.rank);
+  rankAdv();
 }
 async function load() {
   try {
     const opt = { cache: "no-store" };
-    const [h, x, p] = await Promise.all([fetch("data/hub.json", opt), fetch("data/extras.json", opt).catch(() => null), fetch("data/players.json", opt).catch(() => null)]);
+    const [h, x, p, c] = await Promise.all([fetch("data/hub.json", opt), fetch("data/extras.json", opt).catch(() => null), fetch("data/players.json", opt).catch(() => null), fetch("data/cfbd.json", opt).catch(() => null)]);
     if (!h.ok) throw Error("Data snapshot unavailable");
     D = await h.json(); X = x && x.ok ? await x.json() : null; P = p && p.ok ? await p.json() : null;
+    try { C = c && c.ok ? await c.json() : null; if (C && C.season !== D.season) C = null; } catch (e) { C = null; }
     if (!X) throw Error("Ratings unavailable");
     index();
     $("#kicker").textContent = "College football · " + (D.seasonLabel || "") + (D.current && D.current.week ? " · Week " + D.current.week : "");
-    $("#foot").innerHTML = "Ratings blend <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a> with the hub's own points model. Polls, schedules, scores, sportsbook lines (as shown by ESPN), rosters and stats from ESPN. Prospects from the site's <a href=\"../draft/\">NFL Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ".";
+    $("#foot").innerHTML = "Ratings blend <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a> with the hub's own points model. Polls, schedules, scores, sportsbook lines (as shown by ESPN), rosters and stats from ESPN. " + (C ? "EPA, SP+ and opening lines from <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a>. " : "") + "Prospects from the site's <a href=\"../draft/\">NFL Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ".";
     render();
     document.dispatchEvent(new CustomEvent("cfb:ready"));
     if (route().page === "week") refreshLive(false);
@@ -484,7 +535,7 @@ view.addEventListener("change", e => {
   else if (el.matches("select[data-vs]") && el.value) go("matchup", { a: el.dataset.vs, b: el.value, site: "a" });
 });
 document.addEventListener("click", e => {
-  const el = e.target.closest("[data-player],[data-fav],[data-seg],[data-sort],[data-more],[data-refresh],[data-swap],[data-close],tr.go");
+  const el = e.target.closest("[data-player],[data-fav],[data-seg],[data-sort],[data-asort],[data-more],[data-refresh],[data-swap],[data-close],tr.go");
   if (!el) { if (e.target === $("#card")) $("#card").close(); return; }
   if (el.matches("a") || (e.target.closest("a") && !el.matches("[data-player]"))) return;
   if (el.hasAttribute("data-player")) { e.preventDefault(); openPlayer(el.dataset.player); return; }
@@ -492,6 +543,7 @@ document.addEventListener("click", e => {
   if (el.hasAttribute("data-fav")) { const id = el.dataset.fav; faves.has(id) ? faves.delete(id) : faves.add(id); save("ds-cfb:favorites", [...faves]); render(); return; }
   if (el.hasAttribute("data-seg")) { const extra = el.dataset.seg === "cat" ? { sort: null, pos: null } : {}; setParams({ [el.dataset.seg]: el.dataset.v, n: null, ...extra }); return; }
   if (el.hasAttribute("data-sort")) { setParams({ sort: el.dataset.sort }); return; }
+  if (el.hasAttribute("data-asort")) { setParams({ asort: el.dataset.asort }); return; }
   if (el.hasAttribute("data-more")) { setParams({ n: el.dataset.n }); return; }
   if (el.hasAttribute("data-refresh")) { refreshLive(true); return; }
   if (el.hasAttribute("data-swap")) { const q = route().q, s = q.get("site"); setParams({ a: q.get("b") || view.querySelector('[data-param="b"]').value, b: q.get("a") || view.querySelector('[data-param="a"]').value, site: s === "a" ? "b" : s === "b" ? "a" : s }); return; }

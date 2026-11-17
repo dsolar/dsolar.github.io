@@ -21,6 +21,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parents[1]
 HUB = ROOT / "cfb/data/hub.json"
 PLAYERS = ROOT / "cfb/data/players.json"
+CFBD = ROOT / "cfb/data/cfbd.json"  # CollegeFootballData.com: SP+, EPA, opening and closing lines (optional)
 OUT = ROOT / "cfb/data/extras.json"
 NY = ZoneInfo("America/New_York")
 
@@ -28,6 +29,7 @@ HFA = 2.5          # home-field edge in points, applied to the spread (split acr
 SD = 14.0          # typical miss of a college football point spread, in points
 DRIFT = 3.5        # season-long uncertainty in a team's true rating for the simulation, in points
 FPI_WEIGHT = 0.5   # share of the power rating from ESPN FPI; the rest from the hub's own points model
+SP_WEIGHT = 1 / 3  # when SP+ is available (CFBD), power is a third each: FPI, SP+ and the points model
 REGRESS = 0.85     # raw ratings overstate the gaps between teams; power is pulled 15% toward average
 BLOWOUT = 24       # margins beyond this count at 40% in the points model
 RIDGE = 2.5        # games' worth of pull toward average in the points model
@@ -359,7 +361,21 @@ def heisman(players, teams, R):
 
 
 # ---------- logged lines and the record ----------
-def update_lines(old, hub, R, base, today):
+def grade_close(ent):
+    """Against the closing line (CFBD): the side the hub liked better than the close, and closing-line value, i.e. how far
+    the market moved from the open toward the hub's number (points, positive = the market moved the hub's way)."""
+    m = ent["final"][0] - ent["final"][1]; close = ent["close"]
+    if ent["spread"] != close:
+        pick_home = ent["spread"] > close; cover = m - close
+        ent["atsClose"] = "push" if cover == 0 else ("win" if (cover > 0) == pick_home else "loss")
+    if ent.get("open") is not None and ent["spread"] != ent["open"]:
+        toward = 1 if ent["spread"] > ent["open"] else -1
+        ent["clv"] = round((close - ent["open"]) * toward, 1)
+
+
+
+def update_lines(old, hub, R, base, today, books=None):
+    books = books or {}
     log = dict((old or {}).get("games") or {})
     for g in hub["games"]:
         if g["home"] not in R or g["away"] not in R:
@@ -369,7 +385,15 @@ def update_lines(old, hub, R, base, today):
             l = line(g["home"], g["away"], g["neutral"], R, base)
             if l:
                 log[gid] = {"day": g["day"], "home": g["home"], "away": g["away"], **l, "market": g.get("market"), "logged": datetime.now(timezone.utc).isoformat()}
-        elif ent and g["state"] == "post" and g["hs"] is not None and not ent.get("final"):
+        ent = log.get(gid)
+        bk = books.get(gid)
+        if ent is not None and bk:  # opening and closing numbers from CFBD, kept even after the game is graded
+            ent["open"] = bk.get("open"); ent["close"] = bk.get("close"); ent["book"] = bk.get("book")
+            if ent.get("final") and ent.get("close") is not None and "atsClose" not in ent:
+                grade_close(ent)
+        if g["state"] == "pre":
+            continue
+        if ent and g["state"] == "post" and g["hs"] is not None and not ent.get("final"):
             m = g["hs"] - g["as"]; ent["final"] = [g["hs"], g["as"]]
             ent["correct"] = (ent["spread"] > 0) == (m > 0) if m != 0 and ent["spread"] != 0 else None
             ent["err"] = round(abs(m - ent["spread"]), 1)
@@ -382,7 +406,11 @@ def update_lines(old, hub, R, base, today):
                     ent["ats"] = "push" if cover == 0 else ("win" if (cover > 0) == pick_home else "loss")
                     ent["edge"] = round(ent["spread"] - mk["spread"], 1)
             ent["upset"] = ent["prob"] is not None and ((ent["prob"] > 0.5) != (m > 0))
+            if ent.get("close") is not None:
+                grade_close(ent)
     cutoff = (today - timedelta(days=200)).isoformat()
+    closed = [v for v in log.values() if v.get("final") and v.get("atsClose")]
+    clv = [v for v in log.values() if v.get("clv") is not None]
     log = {k: v for k, v in log.items() if v.get("day", "") >= cutoff}
     graded = [v for v in log.values() if v.get("final")]
     su = [v for v in graded if v.get("correct") is not None]
@@ -393,7 +421,10 @@ def update_lines(old, hub, R, base, today):
            "atsBig": [sum(v["ats"] == "win" for v in big), sum(v["ats"] == "loss" for v in big), sum(v["ats"] == "push" for v in big)],
            "mae": r1(sum(v["err"] for v in graded) / len(graded)) if graded else None,
            "marketMae": r1(sum(v["mErr"] for v in graded if v.get("mErr") is not None) / max(1, sum(1 for v in graded if v.get("mErr") is not None))) if any(v.get("mErr") is not None for v in graded) else None,
-           "since": min((v["day"] for v in graded), default=None)}
+           "since": min((v["day"] for v in graded), default=None),
+           "atsClose": [sum(v["atsClose"] == "win" for v in closed), sum(v["atsClose"] == "loss" for v in closed), sum(v["atsClose"] == "push" for v in closed)],
+           "clv": [sum(1 for v in clv if v["clv"] > 0), sum(1 for v in clv if v["clv"] < 0), len(clv)],
+           "clvAvg": r1(sum(v["clv"] for v in clv) / len(clv), 2) if clv else None}
     return {"games": log}, rec
 
 
@@ -416,11 +447,22 @@ def main():
     stretch = max(1.0, min(1.8, sdv(fv) / (sdv(ov) or 1))) if fv else 1.0
     own = {t: v * stretch for t, v in own.items()}
     O = {t: v * stretch for t, v in O.items()}; D = {t: v * stretch for t, v in D.items()}
+    cf = read(CFBD, {}) or {}
+    if cf.get("season") != hub["season"]:
+        cf = {}
+    sp = {t: v["rating"] for t, v in (cf.get("sp") or {}).items() if v.get("rating") is not None and t in teams}
+    use_sp = len(sp) >= 100
     R = {}
     for t in O:
         if t in teams:
             f = teams[t]["fpi"].get("fpi")
-            pw = REGRESS * (FPI_WEIGHT * f + (1 - FPI_WEIGHT) * own[t] if f is not None else own[t])
+            if use_sp and f is not None and t in sp:
+                blend = SP_WEIGHT * f + SP_WEIGHT * sp[t] + (1 - 2 * SP_WEIGHT) * own[t]
+            elif f is not None:
+                blend = FPI_WEIGHT * f + (1 - FPI_WEIGHT) * own[t]
+            else:
+                blend = own[t]
+            pw = REGRESS * blend
         else:
             pw = REGRESS * own[t]
         R[t] = {"power": round(pw, 2), "own": round(own[t], 2), "o": round(O[t], 2), "d": round(D[t], 2), "g": n.get(t, 0)}
@@ -467,9 +509,9 @@ def main():
     if ref_day and ref_day != today.isoformat():
         for r in lad:
             r["prev"] = hh[ref_day].get(r["id"])
-    lines, record = update_lines(old.get("lines"), hub, R, base, today)
+    lines, record = update_lines(old.get("lines"), hub, R, base, today, cf.get("lines") or {})
     out = {"schema": 1, "updated": datetime.now(timezone.utc).isoformat(), "season": hub["season"], "today": today.isoformat(),
-           "hfa": HFA, "sd": SD, "base": round(base, 2), "stretch": round(stretch, 3), "fpiWeight": FPI_WEIGHT, "regress": REGRESS, "bar": round(bar, 2),
+           "hfa": HFA, "sd": SD, "spBlend": use_sp, "base": round(base, 2), "stretch": round(stretch, 3), "fpiWeight": FPI_WEIGHT, "regress": REGRESS, "bar": round(bar, 2),
            "ratings": R, "history": hist, "season_sim": season,
            "heisman": {"ladder": lad, "since": ref_day, "history": hh},
            "lines": lines, "record": record, "seconds": round(time.time() - t0, 1)}

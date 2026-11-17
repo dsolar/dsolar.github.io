@@ -2,15 +2,16 @@ const test = require("node:test"), assert = require("node:assert/strict"), fs = 
 const ROOT = path.join(__dirname, ".."), html = fs.readFileSync(path.join(ROOT, "cfb/index.html"), "utf8").replace(/<script[^>]*src=[^>]*><\/script>/g, "");
 const core = fs.readFileSync(path.join(ROOT, "cfb/model.js"), "utf8"), app = fs.readFileSync(path.join(ROOT, "cfb/app.js"), "utf8");
 const data = JSON.parse(fs.readFileSync(path.join(ROOT, "cfb/data/hub.json"), "utf8")), extras = JSON.parse(fs.readFileSync(path.join(ROOT, "cfb/data/extras.json"), "utf8")), players = JSON.parse(fs.readFileSync(path.join(ROOT, "cfb/data/players.json"), "utf8"));
+const cfbdPath = path.join(ROOT, "cfb/data/cfbd.json"), cfbd = fs.existsSync(cfbdPath) ? JSON.parse(fs.readFileSync(cfbdPath, "utf8")) : null;
 const pause = ms => new Promise(r => setTimeout(r, ms));
 async function until(fn) { for (let i = 0; i < 100; i++) { if (fn()) return; await pause(10); } assert.fail("UI condition did not settle"); }
-async function boot(hash = "#/week") {
+async function boot(hash = "#/week", opts = {}) {
   const dom = new JSDOM(html, { url: "https://davidsolar.dev/cfb/" + hash, runScripts: "outside-only", pretendToBeVisual: true }), w = dom.window;
   w.scrollTo = () => {};
   w.HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   w.HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
   w.AbortSignal.timeout = () => new w.AbortController().signal;
-  w.fetch = async url => { url = String(url); if (url.includes("espn.com")) throw Error("offline test"); const body = url.includes("extras") ? extras : url.includes("players") ? players : data; return { ok: true, json: async () => structuredClone(body) }; };
+  w.fetch = async url => { url = String(url); if (url.includes("espn.com")) throw Error("offline test"); if (url.includes("cfbd")) { const c = opts.noCfbd ? null : cfbd; return c ? { ok: true, json: async () => structuredClone(c) } : { ok: false, json: async () => ({}) }; } const body = url.includes("extras") ? extras : url.includes("players") ? players : data; return { ok: true, json: async () => structuredClone(body) }; };
   const ready = new Promise(resolve => w.document.addEventListener("cfb:ready", resolve, { once: true }));
   w.eval(core); w.eval(app); await ready; await pause(0); return w;
 }
@@ -55,4 +56,18 @@ test("following a team persists locally and filters the team grid; player cards 
     await go(w, "#/heisman"); w.document.querySelector("[data-player]").click(); assert.ok(w.document.querySelector("#card").hasAttribute("open"));
     assert.ok(!/\bundefined\b|\bNaN\b/.test(w.document.querySelector("#cardBody").textContent));
   } finally { w.close(); }
+});
+
+test("the hub works without CollegeFootballData and adds its efficiency views when present", async () => {
+  const w = await boot("#/ratings", { noCfbd: true }); try {
+    assert.ok(!w.document.querySelector('[data-v="adv"]'), "no efficiency view without CFBD");
+    await go(w, "#/team?id=" + data.teams[0].id); assert.ok(!/Efficiency/.test(text(w)));
+  } finally { w.close(); }
+  if (!cfbd || !cfbd.advanced) return;
+  const v = await boot("#/ratings?view=adv"); try {
+    assert.ok(v.document.querySelectorAll("tbody tr").length > 100); assert.ok(!/\bundefined\b|\bNaN\b/.test(text(v)));
+    v.document.querySelector('[data-asort="oEpa"]').click(); assert.ok(v.location.hash.includes("asort=oEpa"));
+    for (const h of ["#/team?id=" + data.teams[0].id, "#/matchup", "#/players", "#/heisman", "#/week", "#/method"]) { await go(v, h); assert.ok(!/\bundefined\b|\bNaN\b/.test(text(v)), h); }
+    await go(v, "#/team?id=" + data.teams[0].id); assert.ok(/Efficiency/.test(text(v)));
+  } finally { v.close(); }
 });
