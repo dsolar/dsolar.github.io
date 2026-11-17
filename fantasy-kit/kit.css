@@ -2567,3 +2567,6 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 }
 @media (max-width:600px){.table-wrap table.t:has(tbody td.nm:first-child) thead th:first-child{position:sticky;left:0;z-index:3;background:var(--surface-2);box-shadow:6px 0 8px -7px rgba(0,0,0,.28)}}
 @media (min-width:601px){.seg.rv .sht{display:none}}
+/* one-day page: three sports in the switcher and "College: one day" have to fit a phone */
+.wk-band .nl-bi{min-width:0}
+@media (max-width:640px){.wk-band h1{font-size:clamp(30px,10vw,44px);overflow-wrap:anywhere}.wk-sport .sg-o span{padding:6px 9px;font-size:12.5px}}
