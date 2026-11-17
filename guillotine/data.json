@@ -4,7 +4,7 @@
  "week": 10,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-16T23:23:26Z",
+ "updated": "2026-11-17T04:27:19Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -12,7 +12,7 @@
    "manager": "Daid B",
    "faab": 197,
    "proj": 152.82,
-   "points": 150.22,
+   "points": 166.72,
    "scores": [
     135.46,
     161.16,
@@ -102,7 +102,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 11.3,
-     "next_proj": 13.58,
+     "next_proj": 13.52,
      "in_best": true
     },
     {
@@ -110,9 +110,10 @@
      "name": "Derrick Henry",
      "nfl": "BAL",
      "pos": "RB",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 16.5,
      "game": "Mon 8:15 pm",
      "opp": "vs LAC",
+     "yfinal": true,
      "season": {
       "g": 9,
       "wk": [
@@ -141,6 +142,8 @@
      "proj": 14.76,
      "rank": "RB11",
      "date": "2026-11-16",
+     "actual": 16.5,
+     "final": true,
      "next_proj": 14.91,
      "in_best": true
     },
@@ -181,7 +184,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 16.7,
-     "next_proj": 18.77,
+     "next_proj": 18.54,
      "in_best": true
     },
     {
@@ -297,7 +300,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.4,
-     "next_proj": 10.42,
+     "next_proj": 10.41,
      "in_best": true
     },
     {
@@ -491,7 +494,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 12.1,
-     "next_proj": 11.8
+     "next_proj": 12.59
     },
     {
      "slot": "BN",
@@ -527,7 +530,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.7,
-     "next_proj": 12.56
+     "next_proj": 12.62
     },
     {
      "slot": "BN",
@@ -565,7 +568,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 15.62,
-     "next_proj": 17.34
+     "next_proj": 17.29
     },
     {
      "slot": "IR",
@@ -606,12 +609,12 @@
      "next_proj": 0.0
     }
    ],
-   "points_final": 150.22,
+   "points_final": 166.72,
    "best": 148.5,
-   "best_next": 138.6,
-   "locked": 150.22,
-   "locked_proj": 133.77,
-   "games_final": 8
+   "best_next": 139.2,
+   "locked": 166.72,
+   "locked_proj": 148.53,
+   "games_final": 9
   },
   {
    "name": "A Warren Boston",
@@ -904,7 +907,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 23.2,
-     "next_proj": 12.45,
+     "next_proj": 12.53,
      "in_best": true
     },
     {
@@ -1159,12 +1162,12 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 10.04
+     "next_proj": 9.97
     }
    ],
    "points_final": 172.54,
    "best": 135.4,
-   "best_next": 147.7,
+   "best_next": 147.8,
    "locked": 172.54,
    "locked_proj": 135.41,
    "games_final": 9
@@ -1308,7 +1311,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 25.7,
-     "next_proj": 15.2,
+     "next_proj": 15.32,
      "in_best": true
     },
     {
@@ -1347,7 +1350,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 19.9,
-     "next_proj": 13.74,
+     "next_proj": 13.78,
      "in_best": true
     },
     {
@@ -1384,7 +1387,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 38.0,
-     "next_proj": 13.13,
+     "next_proj": 12.95,
      "in_best": true
     },
     {
@@ -1421,7 +1424,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 4.9,
-     "next_proj": 13.45,
+     "next_proj": 13.54,
      "in_best": true
     },
     {
@@ -1458,7 +1461,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 6.2,
-     "next_proj": 10.29,
+     "next_proj": 10.35,
      "in_best": true
     },
     {
@@ -1538,7 +1541,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 35.42,
-     "next_proj": 22.16
+     "next_proj": 21.83
     },
     {
      "slot": "BN",
@@ -1576,7 +1579,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 12.8,
-     "next_proj": 10.82
+     "next_proj": 11.27
     },
     {
      "slot": "BN",
@@ -1651,7 +1654,7 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 11.58
+     "next_proj": 11.56
     },
     {
      "slot": "BN",
@@ -1690,7 +1693,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 24.4,
-     "next_proj": 7.35
+     "next_proj": 7.34
     },
     {
      "slot": "BN",
@@ -1774,7 +1777,7 @@
    ],
    "points_final": 169.04,
    "best": 136.0,
-   "best_next": 130.4,
+   "best_next": 130.7,
    "locked": 169.04,
    "locked_proj": 135.62,
    "games_final": 9
@@ -1784,7 +1787,7 @@
    "manager": "Nate",
    "faab": 108,
    "proj": 136.15,
-   "points": 140.46,
+   "points": 148.86,
    "scores": [
     134.08,
     101.78,
@@ -1833,7 +1836,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 31.66,
-     "next_proj": 17.72,
+     "next_proj": 17.71,
      "in_best": true
     },
     {
@@ -1874,7 +1877,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 44.3,
-     "next_proj": 18.01,
+     "next_proj": 18.02,
      "in_best": true
     },
     {
@@ -1921,9 +1924,10 @@
      "name": "Zay Flowers",
      "nfl": "BAL",
      "pos": "WR",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 8.4,
      "game": "Mon 8:15 pm",
      "opp": "vs LAC",
+     "yfinal": true,
      "season": {
       "g": 8,
       "wk": [
@@ -1949,6 +1953,8 @@
      "proj": 13.24,
      "rank": "WR10",
      "date": "2026-11-16",
+     "actual": 8.4,
+     "final": true,
      "next_proj": 12.06,
      "in_best": true
     },
@@ -2026,7 +2032,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 11.9,
-     "next_proj": 15.7,
+     "next_proj": 15.69,
      "in_best": true
     },
     {
@@ -2213,7 +2219,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 11.6
+     "next_proj": 11.61
     },
     {
      "slot": "BN",
@@ -2259,9 +2265,10 @@
      "name": "Omarion Hampton",
      "nfl": "LAC",
      "pos": "RB",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 17.0,
      "game": "Mon 8:15 pm",
      "opp": "@ BAL",
+     "yfinal": true,
      "season": {
       "g": 8,
       "wk": [
@@ -2285,10 +2292,12 @@
        "rec_yd": 63
       }
      },
-     "proj": 7.15,
+     "proj": 7.14,
      "rank": "RB37",
      "date": "2026-11-16",
-     "next_proj": 8.18
+     "actual": 17.0,
+     "final": true,
+     "next_proj": 7.71
     },
     {
      "slot": "BN",
@@ -2331,12 +2340,12 @@
      "next_proj": 0.0
     }
    ],
-   "points_final": 140.46,
+   "points_final": 148.86,
    "best": 135.4,
    "best_next": 125.8,
-   "locked": 140.46,
-   "locked_proj": 122.14,
-   "games_final": 8
+   "locked": 148.86,
+   "locked_proj": 135.38,
+   "games_final": 9
   },
   {
    "name": "Holofernes",
@@ -2397,7 +2406,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 23.34,
-     "next_proj": 25.34,
+     "next_proj": 25.19,
      "in_best": true
     },
     {
@@ -2437,7 +2446,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 21.7,
-     "next_proj": 17.39,
+     "next_proj": 17.83,
      "in_best": true
     },
     {
@@ -2476,7 +2485,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 13.5,
-     "next_proj": 10.32,
+     "next_proj": 10.61,
      "in_best": true
     },
     {
@@ -2592,7 +2601,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 14.4,
-     "next_proj": 7.6
+     "next_proj": 7.59
     },
     {
      "slot": "TE",
@@ -2671,7 +2680,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 19.9,
-     "next_proj": 13.52,
+     "next_proj": 13.53,
      "in_best": true
     },
     {
@@ -2711,7 +2720,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 21.44,
-     "next_proj": 20.32,
+     "next_proj": 20.38,
      "in_best": true
     },
     {
@@ -2891,7 +2900,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 10.5
+     "next_proj": 10.49
     },
     {
      "slot": "IR",
@@ -2929,12 +2938,12 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 17.06
+     "next_proj": 17.12
     }
    ],
    "points_final": 155.18,
    "best": 136.3,
-   "best_next": 132.3,
+   "best_next": 132.6,
    "locked": 155.18,
    "locked_proj": 134.76,
    "games_final": 9
@@ -3074,7 +3083,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 7.2,
-     "next_proj": 18.71,
+     "next_proj": 18.55,
      "in_best": true
     },
     {
@@ -3113,7 +3122,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 24.7,
-     "next_proj": 12.48,
+     "next_proj": 12.49,
      "in_best": true
     },
     {
@@ -3193,7 +3202,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 17.4,
-     "next_proj": 11.52
+     "next_proj": 11.27
     },
     {
      "slot": "TE",
@@ -3311,7 +3320,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 27.78,
-     "next_proj": 20.74,
+     "next_proj": 20.66,
      "in_best": true
     },
     {
@@ -3526,7 +3535,7 @@
    ],
    "points_final": 152.24,
    "best": 134.2,
-   "best_next": 130.3,
+   "best_next": 129.9,
    "locked": 152.24,
    "locked_proj": 133.84,
    "games_final": 9
@@ -4610,7 +4619,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-16T23:23:28Z",
+  "updated": "2026-11-17T04:27:20Z",
   "players": 3046,
   "unmatched": []
  }

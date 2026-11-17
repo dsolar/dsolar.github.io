@@ -6141,7 +6141,7 @@
       "nfl": "BAL",
       "slot": "RB",
       "proj": 14.76,
-      "pts": null
+      "pts": 16.5
      },
      {
       "n": "CeeDee Lamb",
@@ -6507,7 +6507,7 @@
       "nfl": "BAL",
       "slot": "WR",
       "proj": 13.24,
-      "pts": null
+      "pts": 8.4
      },
      {
       "n": "Tetairoa McMillan",
@@ -6578,8 +6578,8 @@
       "pos": "RB",
       "nfl": "LAC",
       "slot": "BN",
-      "proj": 7.15,
-      "pts": null
+      "proj": 7.14,
+      "pts": 17
      },
      {
       "n": "Corey Kiner",
