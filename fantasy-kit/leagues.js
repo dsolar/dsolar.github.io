@@ -1,4 +1,4 @@
-/* Your leagues: sign in with an emailed link, see the shared leagues you're in, start one, or join from an invite
+/* My leagues: sign in with an emailed link, see the shared leagues you're in, start one, or join from an invite
    link (leagues.html?join=<id>&code=<invite>). The leagues themselves open in play.html. */
 (function () {
   "use strict";
@@ -212,15 +212,15 @@
     if (view === "new") return page(newForm());
     const mine = await C.rpc("fk_mine", {}).catch((e) => ({ error: e.message }));
     // on an invite, the join form is the page; your other leagues, if any, follow it quietly
-    if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
+    if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">My other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
-      <div class="su"><div class="nl-band lg-band dl-band"><div class="nl-bi"><span class="dl-eyebrow">Draft Lab</span><h1 class="disp">Your leagues</h1><p class="dl-lede">${esc(leagueSummary(mine))}</p>
+      <div class="su"><div class="nl-band lg-band dl-band"><div class="nl-bi"><span class="dl-eyebrow">Draft Lab</span><h1 class="disp">My leagues</h1><p class="dl-lede">${esc(leagueSummary(mine))}</p>
         <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" data-a="new">Start a league</button><a class="btn" href="/fantasy/quick/">Quick game</a></div></div>
         <div class="dl-me">${profChip()}<button type="button" class="si-link" data-a="account">${prof && prof.username ? `Signed in as ${esc(prof.username)} · sign-in settings` : "Set a username and password"}</button></div></div>
       <div id="lg-push"></div>
       ${mine.error ? fail(mine.error) : mine.length ? leagueList(mine) : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
   }
-  // The line under "Your leagues": how many, and what's happening in them now
+  // The line under "My leagues": how many, and what's happening in them now
   function leagueSummary(mine) {
     if (!Array.isArray(mine) || !mine.length) return "Start a league and send the invite link, or open the link your commissioner sent you.";
     const n = (k) => mine.filter((l) => l.phase === k).length, parts = [`${mine.length} league${mine.length === 1 ? "" : "s"}`];

@@ -872,7 +872,7 @@
        solo            true when nobody else is in the room (a mock): shows Sim to my pick and a bot speed control
        hooks           FK.draft hooks (a cap rule, a custom bot)
        brand           { name, mark } for the top bar; exit { href, label }; extra() html for the top bar when done */
-  /* ---------- phone alerts: the control on Your leagues and in a league's dialog (cloud.push does the work) ---------- */
+  /* ---------- phone alerts: the control on My leagues and in a league's dialog (cloud.push does the work) ---------- */
   // Fills el with this device's alert state and a button to change it. compact: one line, for a dialog.
   function pushBox(el, compact) {
     const C = FK.cloud;

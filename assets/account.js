@@ -69,7 +69,7 @@
     var u = me();
     slot.innerHTML = u
       ? '<button type="button" class="ds-acct-btn" aria-haspopup="true" aria-expanded="false"><span class="ds-acct-av" aria-hidden="true">' + esc(initials(u.name)) + '</span><span class="ds-acct-name">' + esc(u.name) + '</span><span class="ds-acct-sr">, your account</span></button>'
-        + '<div class="ds-acct-menu" hidden><p><b>' + esc(u.name) + "</b>" + esc(u.email) + '</p><a href="' + esc(root + "fantasy/leagues/") + '">Your leagues</a><a href="' + esc(root + "account/") + '">Account</a><button type="button" data-ds-out>Sign out</button></div>'
+        + '<div class="ds-acct-menu" hidden><p><b>' + esc(u.name) + "</b>" + esc(u.email) + '</p><a href="' + esc(root + "fantasy/leagues/") + '">My leagues</a><a href="' + esc(root + "account/") + '">Account</a><button type="button" data-ds-out>Sign out</button></div>'
       : '<button type="button" class="ds-acct-btn out" data-ds-in><span class="ds-acct-av" aria-hidden="true">?</span><span>Sign in</span></button>';
   }
   document.addEventListener("click", function (e) {

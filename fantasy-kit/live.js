@@ -30,7 +30,7 @@
   let rt = null;   // the realtime nudge socket (cloud.listen)
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
-  const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="/fantasy/leagues/">Your leagues</a></p></div>`; };
+  const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="/fantasy/leagues/">My leagues</a></p></div>`; };
   const seated = () => Object.keys(info.seats || {}).map(Number);
   const canAct = () => info && (info.me != null || info.commish);
   const teamName = (t) => { const doc = L || D; return doc && doc.teams[t] ? doc.teams[t].name : "A team"; };
@@ -53,7 +53,7 @@
   let weeksP = null, weeksReady = null;
   const loadWeeks = () => (weeksReady = weeksReady || (weeksP || Promise.resolve(null)).then((w) => (weeks = w && data && String(w.season) === String(data.season) ? w : null)));
   async function boot() {
-    if (!id) return fatal("This page needs a league link.", `<span class="muted">Open one from Your leagues.</span>`);
+    if (!id) return fatal("This page needs a league link.", `<span class="muted">Open one from My leagues.</span>`);
     const sk = `fk-sport:${id}`;
     let guess = null; try { guess = localStorage.getItem(sk); } catch (e) { /* private mode */ }
     const early = Object.hasOwn(S.ALL, guess) ? { k: guess, p: getJSON(`data/${guess}.json`) } : null;
@@ -145,7 +145,7 @@
     $("#app").innerHTML = `<div id="room"></div>${guestNote()}`;
     room = U.entryRoom({
       el: $("#room"), sport, players, draft: () => D, me: () => info.me, now,
-      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "/fantasy/leagues/", label: "Your leagues" },
+      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "/fantasy/leagues/", label: "My leagues" },
       tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
       load: () => C.rpc("fk_seal_get", { p_id: id, p_kind: kind }),
       save: async (entry) => { const r = await C.rpc("fk_seal_set", { p_id: id, p_kind: kind, p_data: entry }); if (r && r.ok) pull(); return r; },
@@ -177,7 +177,7 @@
     room = U.room({
       el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now, hooks: { trivia: triviaHook }, ...roomCols(),
       get commish() { return info.commish; }, get drive() { return driveOk(); },
-      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "/fantasy/leagues/", label: "Your leagues" },
+      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "/fantasy/leagues/", label: "My leagues" },
       tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
       // heist moves are sealed on the server until everyone's in or the clock runs out
       heist: {
@@ -317,7 +317,7 @@
       brand: { name: "Draft Lab", href: "/fantasy/leagues/", mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, crest: U.leagueCrest(U.leagueBrand(L.name, L.settings.brand), "sm") },
         mine.filter((m) => m.id !== id).map((m) => ({ href: `/fantasy/league/?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, crest: U.leagueCrest(U.leagueBrand(m.name, m.brand), "sm") })),
-        `<a href="/fantasy/leagues/">Your leagues<small>Start or join a league</small></a><a href="/fantasy/">Draft Lab<small>Mock drafts and rankings</small></a>`),
+        `<a href="/fantasy/leagues/">My leagues<small>Start or join a league</small></a><a href="/fantasy/">Draft Lab<small>Mock drafts and rankings</small></a>`),
       right: () => `${info.invite && openSeats() ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm ghost" data-live="league">League</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
       notice: () => guestNote() + duesNote() + startNote() + keeperNote(),

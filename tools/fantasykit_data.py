@@ -738,16 +738,51 @@ def get_csv(url):
         return list(csv.DictReader(io.StringIO(r.read().decode("utf-8"))))
 
 
+_NFL_IDS = None
+
+
+def nfl_id_rows():
+    """DynastyProcess's player id crosswalk (Sleeper, ESPN, nflverse and more), loaded once per run."""
+    global _NFL_IDS
+    if _NFL_IDS is None:
+        try:
+            _NFL_IDS = get_csv(NFL_IDS_URL)
+        except Exception as e:
+            print(f"Player id crosswalk didn't load: {type(e).__name__}: {e}")
+            _NFL_IDS = []
+    return _NFL_IDS
+
+
+def nfl_espn_map():
+    """Sleeper ids to ESPN's, from the crosswalk: Sleeper's own list leaves ESPN's id out for many players, and the
+    pages need it for headshots."""
+    out = {}
+    for r in nfl_id_rows():
+        s, e = (r.get("sleeper_id") or "").strip(), (r.get("espn_id") or "").strip().split(".")[0]
+        if s and e and s != "NA" and e != "NA" and e.isdigit():
+            out[s] = e
+    return out
+
+
+def add_espn(players):
+    """Fill in a missing ESPN id (for the photo) from the crosswalk."""
+    em = nfl_espn_map()
+    n = 0
+    for p in players:
+        if not p.get("espn") and em.get(str(p.get("id"))):
+            p["espn"] = em[str(p["id"])]
+            n += 1
+    if n:
+        print(f"ESPN ids from the crosswalk: {n}")
+
+
 def nfl_gsis_map(allp):
     """nflverse ids (gsis) to Sleeper's: Sleeper's own list first, DynastyProcess's crosswalk for anyone it lacks."""
     out = {}
-    try:
-        for r in get_csv(NFL_IDS_URL):
-            g, s = (r.get("gsis_id") or "").strip(), (r.get("sleeper_id") or "").strip()
-            if g and s and s != "NA":
-                out[g] = s
-    except Exception as e:
-        print(f"Player id crosswalk didn't load: {type(e).__name__}: {e}")
+    for r in nfl_id_rows():
+        g, s = (r.get("gsis_id") or "").strip(), (r.get("sleeper_id") or "").strip()
+        if g and s and s != "NA":
+            out[g] = s
     for pid, q in (allp or {}).items():
         g = str((q or {}).get("gsis_id") or "").strip()
         if g:
@@ -902,7 +937,8 @@ def nfl():
         for pid, p in by.items():
             if old.get(pid):
                 p["col"] = old[pid]
-    print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}, colleges: {sum(1 for p in by.values() if p.get('col'))}")
+    add_espn(by.values())
+    print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}, colleges: {sum(1 for p in by.values() if p.get('col'))}, ESPN ids: {sum(1 for p in by.values() if p.get('espn'))}")
     # nflverse's EPA and the rest, each player's weeks added up into his season line
     nv = nflverse(season, nfl_gsis_map(allp))
     if nv:
@@ -1009,6 +1045,7 @@ def nfl_idp(season, state, allp=None):
             p["col"] = q["college"]
         if q.get("espn_id"):
             p["espn"] = str(q["espn_id"])
+    add_espn(by.values())
     hi = NFL_COLS.index("pts_half_ppr")
     # in the pool: a defender with real IDP points so far, or projected for them the rest of the way or this week
     players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][hi] >= 15) or (p["l"].get("proj") and p["l"]["proj"][1] >= 15)

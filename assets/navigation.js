@@ -15,7 +15,7 @@
     var queued = false;
     new MutationObserver(function () { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; own(); }); }).observe(document.body, { childList: true, subtree: true });
     if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
-      var a0 = document.createElement("script"); a0.src = new URL("../", script.src).pathname + "assets/account.js?v=20261117-dl2"; a0.defer = true;
+      var a0 = document.createElement("script"); a0.src = new URL("../", script.src).pathname + "assets/account.js?v=20261117-dl3"; a0.defer = true;
       a0.onload = own; document.head.appendChild(a0);
     } else own();
     return;
@@ -67,7 +67,7 @@
     if (id === "fantasy") {
       return group("Draft & manage", [
         { title: "Draft Lab", line: "Every sport, league and tool", url: "fantasy/" },
-        { title: "Your leagues", url: "fantasy/leagues/" },
+        { title: "My leagues", url: "fantasy/leagues/" },
         { title: "Mock draft", line: "Draft against bots in any format", url: "fantasy/mock/" },
         { title: "Rankings", line: "Values for your scoring", url: "fantasy/rankings/" }
       ]) + group("League pages", visible.filter(function (p) { return p.type === "Fantasy Leagues" && p.url !== "fantasy/"; }));
@@ -133,7 +133,7 @@
   }
   // the site's account: sign in from any page, and the daily games' saves follow you (assets/account.js)
   if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
-    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261117-dl2"); acct.defer = true; document.head.appendChild(acct);
+    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261117-dl3"); acct.defer = true; document.head.appendChild(acct);
   }
   bar.addEventListener("click", function (event) {
     var button = event.target.closest("button");
