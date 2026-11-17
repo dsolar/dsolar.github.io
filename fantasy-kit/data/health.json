@@ -1,10 +1,12 @@
 {
- "ok": true,
- "problems": [],
+ "ok": false,
+ "problems": [
+  "market-nba.json: fp failed, using numbers 0.0 days old"
+ ],
  "files": {
   "nfl.json": {
    "players": 577,
-   "updated": "2026-11-17T19:13:22+00:00",
+   "updated": "2026-11-17T19:52:36+00:00",
    "lines": [
     "tot",
     "proj",
@@ -14,7 +16,7 @@
   },
   "nba.json": {
    "players": 647,
-   "updated": "2026-11-17T03:46:03Z",
+   "updated": "2026-11-17T19:21:57Z",
    "lines": [
     "pg",
     "ppg"
@@ -22,7 +24,7 @@
   },
   "mlb.json": {
    "players": 1331,
-   "updated": "2026-11-17T19:13:22+00:00",
+   "updated": "2026-11-17T19:52:36+00:00",
    "lines": [
     "bat",
     "pit",
@@ -31,8 +33,8 @@
    ]
   },
   "nhl.json": {
-   "players": 879,
-   "updated": "2026-11-17T19:13:44.093Z",
+   "players": 881,
+   "updated": "2026-11-17T19:53:03.636Z",
    "lines": [
     "sk",
     "goalie",
@@ -41,12 +43,12 @@
    ]
   },
   "nfl-idp.json": {
-   "players": 552,
-   "updated": "2026-11-17T19:13:22+00:00"
+   "players": 551,
+   "updated": "2026-11-17T19:52:36+00:00"
   },
   "dynasty-nfl.json": {
    "players": 394,
-   "updated": "2026-11-17T19:13:46+00:00"
+   "updated": "2026-11-17T19:53:05+00:00"
   },
   "dynasty-nba.json": {
    "players": 359,
@@ -54,43 +56,44 @@
   },
   "dynasty-mlb.json": {
    "players": 1195,
-   "updated": "2026-11-17T19:13:46+00:00"
+   "updated": "2026-11-17T19:53:05+00:00"
   },
   "market-nfl.json": {
    "players": 575,
-   "updated": "2026-11-17T19:13:59+00:00",
+   "updated": "2026-11-17T19:53:16+00:00",
    "fp": {
     "ok": true,
-    "at": "2026-11-17T19:13:59+00:00"
+    "at": "2026-11-17T19:53:16+00:00"
    },
    "tr": {
     "ok": true,
-    "at": "2026-11-17T19:13:59+00:00"
+    "at": "2026-11-17T19:53:16+00:00"
    }
   },
   "market-nba.json": {
    "players": 614,
-   "updated": "2026-11-17T19:13:59+00:00",
+   "updated": "2026-11-17T19:53:16+00:00",
    "fp": {
-    "ok": true,
-    "at": "2026-11-17T19:13:59+00:00"
+    "ok": false,
+    "at": "2026-11-17T19:13:59+00:00",
+    "failed": "2026-11-17T19:53:16+00:00"
    }
   },
   "market-mlb.json": {
    "players": 1194,
-   "updated": "2026-11-17T19:13:59+00:00",
+   "updated": "2026-11-17T19:53:16+00:00",
    "fp": {
     "ok": true,
-    "at": "2026-11-17T19:13:59+00:00"
+    "at": "2026-11-17T19:53:16+00:00"
    }
   },
   "draft/nfl.json": {
    "players": 228,
-   "updated": "2026-11-17T18:33:25+00:00"
+   "updated": "2026-11-17T19:22:57+00:00"
   },
   "draft/nba.json": {
    "players": 151,
-   "updated": "2026-11-17T18:33:25+00:00"
+   "updated": "2026-11-17T19:22:57+00:00"
   }
  }
 }
