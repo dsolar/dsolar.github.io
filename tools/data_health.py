@@ -18,7 +18,7 @@ NOW = datetime.now(timezone.utc)
 
 # file: (most days old it may be, fewest players, lines it must have)
 POOLS = {"nfl.json": (3, 300, ["tot", "proj"]), "nba.json": (3, 400, ["pg", "ppg"]), "mlb.json": (3, 800, ["bat", "pit", "pbat", "ppit"]), "nhl.json": (3, 600, ["sk", "goalie", "psk", "pgoalie"])}
-SIDE = {"dynasty-nfl.json": (8, 200), "dynasty-nba.json": (8, 200), "dynasty-mlb.json": (8, 400),
+SIDE = {"nfl-idp.json": (3, 150), "dynasty-nfl.json": (8, 200), "dynasty-nba.json": (8, 200), "dynasty-mlb.json": (8, 400),
         "market-nfl.json": (3, 300), "market-nba.json": (3, 300), "market-mlb.json": (3, 300)}
 # sources inside the market files that should be fresh (ESPN's draft market is only live before a season)
 MARKET_SOURCES = {"market-nfl.json": ["fp", "tr"], "market-nba.json": ["fp"], "market-mlb.json": ["fp"]}

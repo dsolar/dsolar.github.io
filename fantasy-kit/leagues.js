@@ -923,7 +923,10 @@
     busy = true; render();
     try {
       const r0 = await fetch(`data/${form.sport}.json`, { cache: "no-cache" });
-      const data = await r0.json();
+      // an IDP lineup drafts defenders too (data/nfl-idp.json)
+      const idpOn = form.sport === "nfl" && !oneWeek() && S.usesIdp(lineupOf(S[form.sport]));
+      const data = idpOn ? S.addIdp(await r0.json(), await fetch("data/nfl-idp.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null)) : await r0.json();
+      if (idpOn && !data.idp) throw new Error("Couldn't load the defensive players. Try again, or take the IDP spots out of the lineup.");
       // a custom scoring rides along as plain data (D.scoringSpec) and becomes the sport's "custom" scoring
       const sp0 = S[form.sport], ex = form.scoring !== "cc" ? scoringExtras(sp0) : null;
       const spec = form.scoring === "cp" ? Object.assign({ type: "points", weights: Object.fromEntries(Object.entries(form.weights || S.POINT_DEFAULTS[form.sport]).filter(([, v]) => v)) }, ex || {})
@@ -963,7 +966,8 @@
       }
       if (!capOn() && total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
       const bb = !!form.bestball && form.season !== "guillotine" && !capOn();
-      const wk = bb ? await fetch(`data/weeks-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null;
+      const getW = (f) => fetch(`data/${f}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
+      const wk = bb ? (idpOn ? S.addIdpWeeks(await getW(`weeks-${form.sport}`), await getW("weeks-nfl-idp")) : await getW(`weeks-${form.sport}`)) : null;
       V.evaluate(sport, players, { teams: n, lineup, bench, scoring, week: slate ? S.weekFor({ season: { slate } }, sport) : null, oneDay: !!(slate && slate.day), bestBall: bb, weeks: wk && String(wk.season) === String(data.season) ? wk : null, dynasty: form.keepers === -1 && form.season !== "guillotine", dynastyRanks: form.keepers === -1 && form.season !== "guillotine" ? await fetch(`data/dynasty-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null });
       const auction = form.type === "auction";
       // the vampire (the commissioner, or a random team) sits out the draft

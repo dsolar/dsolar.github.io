@@ -63,6 +63,15 @@ async function loadData(sport: string) {
   pools[sport] = { at: Date.now(), data };
   return data;
 }
+// An IDP league (DL/LB/DB/IDP lineup slots) also plays defenders: their players and weekly lines are in their own
+// files, nfl-idp.json and weeks-nfl-idp.json, merged in here (S.addIdp, S.addIdpWeeks)
+async function loadIdp(name: string) {
+  const c = pools[name];
+  if (c && Date.now() - c.at < 10 * 60e3) return c.data;
+  const data = await fetch(`${SITE}data/${name}.json?t=${Math.floor(Date.now() / 600e3)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  pools[name] = { at: Date.now(), data };
+  return data;
+}
 
 // Real weekly box scores (fantasy-kit/data/weeks-<sport>.json), for leagues scored on real games. None for a sport
 // out of season, or when the file is for another season than the player data.
@@ -123,8 +132,9 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       // a live draft someone saved in the last minute has a page driving it (the five-minute sweep leaves it alone;
       // a nudge for that league, right after a save, is how the server keeps its bots moving)
       if (!one && !L && now - l.updated < 60e3) { out.skip = "busy"; return out; }
-      const data = await loadData(l.sport);
       const doc = L ? L.draft || D : D;
+      const idp = l.sport === "nfl" && S.usesIdp && S.usesIdp(doc);
+      const data = idp ? S.addIdp(await loadData(l.sport), await loadIdp("nfl-idp")) : await loadData(l.sport);
       const sport = S.withScoring(S.attach(Object.assign({}, S[l.sport]), data), doc.scoringSpec);
       // a showdown plays one game: its two teams are the whole player pool
       const players = data.players.filter((p: any) => !S.inPool || S.inPool(L || D, p)).map((p: any) => Object.assign({}, p));
@@ -132,7 +142,7 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       const xs = (L && L.extraPlayers) || (D && D.extraPlayers);
       if (Array.isArray(xs)) { if (S.withExtras) S.withExtras(players, { extraPlayers: xs }); else { const have = new Set(players.map((p: any) => p.id)); for (const x of xs) if (!have.has(x.id)) players.push(Object.assign({ l: {}, rank: 9999 }, x)); } }
       const dyn = (L && L.settings && L.settings.dynasty) || (doc.season && doc.season.dynasty);
-      const weeks = await loadWeeks(l.sport, data.season);
+      const weeks = idp ? S.addIdpWeeks(await loadWeeks(l.sport, data.season), await loadIdp("weeks-nfl-idp")) : await loadWeeks(l.sport, data.season);
       // best ball values upside and depth; a guillotine keeps normal ranks
       const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(doc.season && doc.season.bestBall && doc.season.format !== "guillotine");
       V.evaluate(sport, players, { teams: doc.teams.length, lineup: doc.lineup, bench: doc.bench, scoring: doc.scoring, budget: doc.auction ? doc.auction.budget : 200, week: S.weekFor ? S.weekFor(L || D, sport) : null, oneDay: !!(S.dayOf && S.dayOf(L || D)), dynasty: !!dyn, dynastyRanks: dyn ? await loadDynasty(l.sport) : null, bestBall: bb, weeks: bb ? weeks : null });

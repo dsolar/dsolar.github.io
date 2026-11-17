@@ -67,8 +67,13 @@
     const dyn = !!((D.season && D.season.dynasty) || (L && L.settings.dynasty));
     // best ball (but not a guillotine, which keeps normal ranks) values upside and depth
     const bb = L ? !!L.settings.bestBall && L.settings.format !== "guillotine" : !!(D.season && D.season.bestBall && D.season.format !== "guillotine");
-    const dataP = early && early.k === k ? early.p : getJSON(`data/${k}.json`);
+    let dataP = early && early.k === k ? early.p : getJSON(`data/${k}.json`);
     weeksP = getJSON(`data/weeks-${k}.json`);
+    // an IDP league plays defenders too: their players and weekly lines have their own files
+    if (k === "nfl" && S.usesIdp(D)) {
+      dataP = Promise.all([dataP, getJSON("data/nfl-idp.json").catch(() => null)]).then(([d, x]) => S.addIdp(d, x));
+      weeksP = Promise.all([weeksP, getJSON("data/weeks-nfl-idp.json").catch(() => null)]).then(([w, x]) => S.addIdpWeeks(w, x));
+    }
     // daily lineups score day by day: the last two weeks' daily box scores ride along with the weeks file
     if (L && L.settings.daily) weeksP = Promise.all([weeksP, getJSON(`data/days-${k}.json`).catch(() => null)]).then(([w, dd]) => { if (w && dd && String(dd.season) === String(w.season)) w.days = dd; return w; });
     const extras = Promise.all([getJSON(`data/market-${k}.json`), dyn ? dynastyRanks(k) : null, dyn ? getJSON(`../draft/${k}.json`) : null]);

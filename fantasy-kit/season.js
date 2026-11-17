@@ -200,7 +200,8 @@
     // columns the feed doesn't carry (football's nflverse stats, past the end of its lines) keep the file's values
     const tail = (o, n) => (Array.isArray(n) ? (Array.isArray(o) && o.length > n.length ? n.concat(o.slice(n.length)) : n)
       : n && typeof n === "object" ? Object.fromEntries(Object.entries(n).map(([k, v]) => [k, tail(o && o[k], v)])) : n);
-    if (wk) { const was = wk.lines || {}; wk.lines = Object.fromEntries(Object.entries(live.players || {}).map(([id, l]) => [id, tail(was[id], l)])); }
+    // players the feed doesn't carry at all (an IDP league's defenders, from the data runs) keep their file lines
+    if (wk) { const was = wk.lines || {}; wk.lines = Object.assign({}, was, Object.fromEntries(Object.entries(live.players || {}).map(([id, l]) => [id, tail(was[id], l)]))); }
     else (weeks.weeks = weeks.weeks || {})["live"] = { start: live.start, end: live.end, final: false, lines: live.players || {} };
     weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, boxes: live.boxes || null, players: live.players || {}, stale: !!live.stale, errors: live.errors || [], feed: feed.slice(-300) };
     return before !== live.updated || wasStale !== !!live.stale;

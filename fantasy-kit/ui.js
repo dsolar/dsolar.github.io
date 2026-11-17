@@ -2058,14 +2058,14 @@
   const PRESETS = {
     nhl: [["Standard", "C C LW LW RW RW D D D D G G"], ["Flexible forwards", "F F F F F F D D D D G G"], ["Shallow", "C LW RW D D G UTIL UTIL"], ["Deep", "C C LW LW RW RW F F D D D D G G UTIL"]],
     nba: [["Standard", "PG SG G SF PF F C UTIL UTIL UTIL"], ["Two centers", "PG SG G SF PF F C C UTIL UTIL"], ["Shallow", "PG SG SF PF C UTIL UTIL"], ["Deep", "PG SG G SF PF F C C UTIL UTIL UTIL UTIL"]],
-    nfl: [["Standard", "QB RB RB WR WR WR TE FLEX K DEF"], ["Superflex", "QB RB RB WR WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR WR TE FLEX K DEF"], ["2 WR", "QB RB RB WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR WR TE FLEX FLEX DEF"]],
+    nfl: [["Standard", "QB RB RB WR WR WR TE FLEX K DEF"], ["IDP", "QB RB RB WR WR WR TE FLEX K DEF DL DL LB LB DB DB IDP"], ["Superflex", "QB RB RB WR WR WR TE FLEX SFLEX K DEF"], ["2 QB", "QB QB RB RB WR WR WR TE FLEX K DEF"], ["2 WR", "QB RB RB WR WR TE FLEX K DEF"], ["No kicker", "QB RB RB WR WR WR TE FLEX FLEX DEF"]],
     mlb: [["Standard", "C 1B 2B 3B SS OF OF OF UTIL UTIL SP SP RP RP P P P P"], ["Corner and middle", "C 1B 2B 3B SS MI CI OF OF OF OF OF UTIL P P P P P P P P P"], ["Shallow", "C 1B 2B 3B SS OF OF OF UTIL SP SP SP RP RP"]],
   };
-  const SLOT_NAMES = { G: "Guard", F: "Forward", UTIL: "Utility", FLEX: "Flex", SFLEX: "Superflex", MI: "Middle infield", CI: "Corner infield", P: "Pitcher" };
+  const SLOT_NAMES = { G: "Guard", F: "Forward", UTIL: "Utility", FLEX: "Flex", SFLEX: "Superflex", IDP: "Defensive flex", MI: "Middle infield", CI: "Corner infield", P: "Pitcher" };
   const POS_NAMES = {
     nhl: { C: "Center", LW: "Left wing", RW: "Right wing", D: "Defenseman", G: "Goalie", W: "Wing" },
     nba: { PG: "Point guard", SG: "Shooting guard", SF: "Small forward", PF: "Power forward", C: "Center" },
-    nfl: { QB: "Quarterback", RB: "Running back", WR: "Wide receiver", TE: "Tight end", K: "Kicker", DEF: "Team defense" },
+    nfl: { QB: "Quarterback", RB: "Running back", WR: "Wide receiver", TE: "Tight end", K: "Kicker", DEF: "Team defense", DL: "Defensive lineman", LB: "Linebacker", DB: "Defensive back" },
     mlb: { C: "Catcher", "1B": "First base", "2B": "Second base", "3B": "Third base", SS: "Shortstop", OF: "Outfield", SP: "Starting pitcher", RP: "Relief pitcher" },
   };
   const slotDesc = (sport, k) => { const v = sport.slots[k]; if (v !== "*" && v.length === 1 && (!SLOT_NAMES[k] || sport.key === "nhl")) return (POS_NAMES[sport.key] || {})[k] || k; return `${(POS_NAMES[sport.key] || {})[k] || SLOT_NAMES[k] || k}: ${v === "*" ? "any player" : v.join(", ")}`; };

@@ -163,9 +163,12 @@
   const nfl = {
     key: "nfl", name: "Football", short: "NFL", league: "NFL", unit: "game",
     positions: ["QB", "RB", "WR", "TE", "K", "DEF"],
-    colors: { QB: 5, RB: 3, WR: 1, TE: 4, K: 6, DEF: 2 },
-    // CPT and UTIL take anyone, kickers and defenses too: a showdown's captain and its flex spots
-    slots: { QB: ["QB"], RB: ["RB"], WR: ["WR"], TE: ["TE"], FLEX: ["RB", "WR", "TE"], SFLEX: ["QB", "RB", "WR", "TE"], CPT: ["QB", "RB", "WR", "TE", "K", "DEF"], UTIL: ["QB", "RB", "WR", "TE", "K", "DEF"], K: ["K"], DEF: ["DEF"], BN: "*" },
+    colors: { QB: 5, RB: 3, WR: 1, TE: 4, K: 6, DEF: 2, DL: 7, LB: 8, DB: 2 },
+    // CPT and UTIL take anyone, kickers and defenses too: a showdown's captain and its flex spots. DL, LB, DB and IDP
+    // (any of the three) are individual defensive players: their players come with the league (nfl-idp.json, merged
+    // in by S.addIdp), and positions gains them then
+    slots: { QB: ["QB"], RB: ["RB"], WR: ["WR"], TE: ["TE"], FLEX: ["RB", "WR", "TE"], SFLEX: ["QB", "RB", "WR", "TE"], CPT: ["QB", "RB", "WR", "TE", "K", "DEF"], UTIL: ["QB", "RB", "WR", "TE", "K", "DEF"], K: ["K"], DEF: ["DEF"],
+      DL: ["DL"], LB: ["LB"], DB: ["DB"], IDP: ["DL", "LB", "DB"], BN: "*" },
     lineup: ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX", "K", "DEF"],
     bench: 6,
     posMax: { QB: 3, RB: 7, WR: 7, TE: 3, K: 1, DEF: 1 },
@@ -205,7 +208,8 @@
     "pass_att", "pass_cmp", "fum", "fgm_50p", "xpmiss", "fum_rec", "def_st_td", "yds_allow", "ret_td"];
   const cfb = Object.assign({}, nfl, {
     key: "cfb", name: "College football", short: "NCAAF", league: "NCAA", college: true,
-    slots: nfl.slots, lineup: nfl.lineup.slice(), posMax: Object.assign({}, nfl.posMax), late: nfl.late.slice(),
+    // no individual defensive players in college: the NFL's slots without them
+    slots: Object.fromEntries(Object.entries(nfl.slots).filter(([k]) => !["DL", "LB", "DB", "IDP"].includes(k))), lineup: nfl.lineup.slice(), posMax: Object.assign({}, nfl.posMax), late: nfl.late.slice(),
     catsTemplate: Object.assign({}, nfl.catsTemplate, { games: 12 }),
     scorings: {
       half: { label: "Half PPR", type: "points", line: "tot", col: "pts_half_ppr", games: 12 },
@@ -213,6 +217,43 @@
       std: { label: "Standard", type: "points", line: "tot", col: "pts_std", games: 12 },
     },
   });
+  // Individual defensive players. A lineup with any of these slots is an IDP league: its pool adds the defenders in
+  // fantasy-kit/data/nfl-idp.json (addIdp) and its weeks their lines in weeks-nfl-idp.json (addIdpWeeks, a shorter
+  // column list expanded into the weeks file's own).
+  const IDP_POS = ["DL", "LB", "DB"], IDP_SLOTS = ["DL", "LB", "DB", "IDP"];
+  const usesIdp = (x) => { const lu = Array.isArray(x) ? x : x && (x.lineup || (x.settings && x.settings.lineup)); return Array.isArray(lu) && lu.some((s) => IDP_SLOTS.includes(s)); };
+  function addIdp(data, idp) {
+    if (!data || !idp || !Array.isArray(idp.players) || String(idp.season) !== String(data.season)) return data;
+    const have = new Set((data.players || []).map((p) => String(p.id)));
+    // the defenders' lines in the pool's own columns, matched by name (the two files come from one run, but a page
+    // may hold an older pool), and only the lines the pool has
+    const maps = {};
+    for (const [k, li] of Object.entries(idp.lines || {})) {
+      const to = data.lines && data.lines[k];
+      if (!to || !Array.isArray(to.cols) || !Array.isArray(li.cols)) continue;
+      maps[k] = to.cols.join() === li.cols.join() ? null : to.cols.map((c) => li.cols.indexOf(c));
+    }
+    const fit = (p) => Object.assign({}, p, { l: Object.fromEntries(Object.entries(p.l || {}).filter(([k]) => k in maps)
+      .map(([k, line]) => [k, maps[k] && Array.isArray(line) ? maps[k].map((j) => (j >= 0 ? line[j] || 0 : 0)) : line])) });
+    return Object.assign({}, data, { players: (data.players || []).concat(idp.players.filter((p) => !have.has(String(p.id))).map(fit)), idp: true });
+  }
+  function addIdpWeeks(weeks, idpw) {
+    if (!weeks || !idpw || String(idpw.season) !== String(weeks.season) || !Array.isArray(weeks.cols)) return weeks;
+    // a copy: the weeks file may be cached and shared with leagues that don't play defenders
+    const map = idpw.cols.map((c) => weeks.cols.indexOf(c));
+    weeks = Object.assign({}, weeks, { weeks: Object.assign({}, weeks.weeks) });
+    for (const [k, w] of Object.entries(idpw.weeks || {})) {
+      const t0 = weeks.weeks[k]; if (!t0) continue;
+      const t = weeks.weeks[k] = Object.assign({}, t0, { lines: Object.assign({}, t0.lines) });
+      for (const [id, short] of Object.entries(w.lines || {})) {
+        if (t.lines[id]) continue;
+        const line = weeks.cols.map(() => 0);
+        map.forEach((j, i) => { if (j >= 0) line[j] = short[i] || 0; });
+        t.lines[id] = line;
+      }
+    }
+    return weeks;
+  }
   // football's way of playing: one game a week, lineups that lock by game, per-game projections
   const football = (k) => { const key = k && k.key ? k.key : k; return key === "nfl" || key === "cfb"; };
 
@@ -348,6 +389,8 @@
 
   // Links a sport to the columns of its data file, so stat() can read the compact arrays.
   function attach(sport, data) {
+    // an IDP league's pool brings defenders: replacement levels and position filters need their positions
+    if (data && data.idp && !IDP_POS.every((x) => sport.positions.includes(x))) sport.positions = sport.positions.concat(IDP_POS.filter((x) => !sport.positions.includes(x)));
     sport.cols = {};
     for (const [line, def] of Object.entries(data.lines || {})) sport.cols[line] = Object.fromEntries(def.cols.map((c, i) => [c, i]));
     sport.data = { season: data.season, prev: data.prev || null, updated: data.updated, source: data.source, lines: data.lines };
@@ -389,7 +432,11 @@
       ["fga", "Field goals tried"], ["fgm_50p", "Field goals of 50+ yards"], ["xpmiss", "Extra points missed"], ["fum_rec", "Fumble recoveries"],
       ["ff", "Forced fumbles"], ["safe", "Safeties"], ["def_st_td", "Special teams TDs"], ["yds_allow", "Yards allowed"],
       ["epa_pass", "Passing EPA"], ["epa_rush", "Rushing EPA"], ["epa_rec", "Receiving EPA"], ["pass_sacked", "Times sacked"],
-      ["air_rec", "Receiving air yards"], ["yac_rec", "Yards after catch"]],
+      ["air_rec", "Receiving air yards"], ["yac_rec", "Yards after catch"],
+      // individual defensive players (IDP leagues)
+      ["idp_tkl_solo", "Solo tackles (IDP)"], ["idp_tkl_ast", "Assisted tackles (IDP)"], ["idp_sack", "Sacks (IDP)"], ["idp_tkl_loss", "Tackles for loss (IDP)"],
+      ["idp_qb_hit", "QB hits (IDP)"], ["idp_int", "Interceptions (IDP)"], ["idp_ff", "Forced fumbles (IDP)"], ["idp_fum_rec", "Fumble recoveries (IDP)"],
+      ["idp_pass_def", "Passes defended (IDP)"], ["idp_def_td", "Defensive TDs (IDP)"], ["idp_safe", "Safeties (IDP)"]],
     get cfb() { return this.nfl.filter(([k]) => CFB_COLS.includes(k)).concat([["ret_td", "Return TDs"]]); },
     mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
       ["pit.ip", "Innings pitched"], ["pit.w", "Wins"], ["pit.l", "Losses"], ["pit.sv", "Saves"], ["pit.hld", "Holds"], ["pit.k", "Strikeouts"], ["pit.er", "Earned runs"],
@@ -404,7 +451,9 @@
   };
   const POINT_DEFAULTS = {
     nba: { pts: 1, reb: 1.2, ast: 1.5, stl: 3, blk: 3, tov: -1, tpm: 0.5 },
-    nfl: { pass_yd: 0.04, pass_td: 4, pass_int: -2, rush_yd: 0.1, rush_td: 6, rec: 0.5, rec_yd: 0.1, rec_td: 6, fum_lost: -2, fgm: 3, xpm: 1, def_td: 6, def_int: 2, def_sack: 1 },
+    nfl: { pass_yd: 0.04, pass_td: 4, pass_int: -2, rush_yd: 0.1, rush_td: 6, rec: 0.5, rec_yd: 0.1, rec_td: 6, fum_lost: -2, fgm: 3, xpm: 1, def_td: 6, def_int: 2, def_sack: 1,
+      // IDP, the same values tools/fantasykit_data.py builds a defender's points from
+      idp_tkl_solo: 1, idp_tkl_ast: 0.5, idp_sack: 2, idp_tkl_loss: 1, idp_qb_hit: 0.5, idp_int: 3, idp_ff: 2, idp_fum_rec: 2, idp_pass_def: 1, idp_def_td: 6, idp_safe: 2 },
     mlb: { "bat.r": 1, "bat.tb": 1, "bat.rbi": 1, "bat.sb": 1, "pit.ip": 3, "pit.w": 2, "pit.l": -2, "pit.sv": 5, "pit.hld": 2, "pit.k": 1, "pit.er": -2, "pit.bb": -1, "pit.h": -1 },
     nhl: Object.assign({}, nhl.scorings.points.weights),
     cbb: Object.assign({}, cbb.scorings.dk.weights),
@@ -449,6 +498,13 @@
     // college football: the NFL's categories its box scores can make (no targets, first downs, two-point tries or EPA)
     get cfb() { return this.nfl.filter((c) => catCols(c).every((x) => CFB_COLS.includes(x))); },
     nfl: [
+      // individual defensive players (IDP leagues)
+      { k: "idp_tkl", label: "Tackles", line: "tot", col: { idp_tkl_solo: 1, idp_tkl_ast: 1 }, title: "Tackles, solo and assisted (IDP)" },
+      { k: "idp_sack", label: "IDP sacks", line: "tot", col: "idp_sack", title: "Sacks by individual defenders" },
+      { k: "idp_tfl", label: "TFL", line: "tot", col: "idp_tkl_loss", title: "Tackles for loss (IDP)" },
+      { k: "idp_int", label: "IDP INT", line: "tot", col: "idp_int", title: "Interceptions by individual defenders" },
+      { k: "idp_pd", label: "Passes def", line: "tot", col: "idp_pass_def", title: "Passes defended (IDP)" },
+      { k: "idp_take", label: "IDP takeaways", line: "tot", col: { idp_int: 1, idp_fum_rec: 1, idp_ff: 1 }, title: "Interceptions, fumble recoveries and forced fumbles (IDP)" },
       { k: "pass_yd", label: "Pass yds", line: "tot", col: "pass_yd", title: "Passing yards" },
       { k: "pass_td", label: "Pass TD", line: "tot", col: "pass_td", title: "Passing touchdowns" },
       { k: "pass_int", label: "INT", line: "tot", col: "pass_int", low: true, title: "Interceptions thrown (lower is better)" },
@@ -956,5 +1012,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { leagueLogo, confLogo, football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { IDP_POS, IDP_SLOTS, usesIdp, addIdp, addIdpWeeks, leagueLogo, confLogo, football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

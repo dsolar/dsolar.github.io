@@ -52,6 +52,9 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      - name: Pipeline tests
+        run: python3 -m unittest tests/fantasykit_idp_test.py
+
       - name: Build the player pools
         run: python3 tools/fantasykit_data.py
 

@@ -46,8 +46,14 @@
     if (FK.league.totalWeeks && L.week > FK.league.totalWeeks(L)) return null;
     const k = l.sport;
     files[k] = files[k] || Promise.all([json(`data/${k}.json`), json(`data/weeks-${k}.json`), C.live ? C.live(k).catch(() => null) : null]);
-    const [data, weeks0, live] = await files[k];
+    let [data, weeks0, live] = await files[k];
     if (!data || !Array.isArray(data.players)) return null;
+    // an IDP league plays defenders too: their own files, merged in
+    if (k === "nfl" && S.usesIdp(D)) {
+      files.idp = files.idp || Promise.all([json("data/nfl-idp.json"), json("data/weeks-nfl-idp.json")]);
+      const [xp, xw] = await files.idp;
+      data = S.addIdp(data, xp); weeks0 = S.addIdpWeeks(weeks0, xw);
+    }
     const weeks = weeks0 && String(weeks0.season) === String(data.season) ? JSON.parse(JSON.stringify(weeks0)) : null;
     if (weeks && live && Z.mergeLive) Z.mergeLive(weeks, live);
     const sport = S.withScoring(S.attach(Object.assign({}, S[k]), data), D.scoringSpec);

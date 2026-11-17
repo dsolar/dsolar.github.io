@@ -668,6 +668,10 @@ NFL_COLS = ["g", "pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", "rush_
             # Sleeper's stat keys, on the end, for the extra categories and custom points
             "pass_att", "pass_cmp", "pass_fd", "rush_fd", "rec_fd", "pass_2pt", "rush_2pt", "rec_2pt", "fum", "fgm_50p", "xpmiss",
             "fum_rec", "ff", "safe", "def_st_td", "yds_allow",
+            # individual defensive players (IDP, nfl_idp below): Sleeper's defensive stats. A defender's pts_* columns
+            # carry his IDP points (idp_pts), so every scoring scores him; the live feed stops short of these too
+            "idp_tkl_solo", "idp_tkl_ast", "idp_sack", "idp_tkl_loss", "idp_qb_hit", "idp_int", "idp_ff", "idp_fum_rec",
+            "idp_pass_def", "idp_def_td", "idp_safe",
             # nflverse's play-by-play stats, on the end (NFLV_COLS): Sleeper has none of these, so the live feed stops short
             # of them and the page keeps the file's values (season.js mergeLive). They arrive overnight, not live.
             "epa_pass", "epa_rush", "epa_rec", "pass_sacked", "sack_yd", "air_rec", "yac_rec", "cpoe_x", "tm_tgt", "tm_air"]
@@ -676,6 +680,39 @@ NFLV_URL = "https://github.com/nflverse/nflverse-data/releases/download/stats_pl
 NFL_IDS_URL = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv"
 PROJ_COLS = ["pts_std", "pts_half_ppr", "pts_ppr"]
 NFL_POS = ["QB", "RB", "WR", "TE", "K", "DEF"]
+# IDP: Sleeper's defenders by its own positions, folded into three fantasy ones
+IDP_COLS = ["idp_tkl_solo", "idp_tkl_ast", "idp_sack", "idp_tkl_loss", "idp_qb_hit", "idp_int", "idp_ff", "idp_fum_rec", "idp_pass_def", "idp_def_td", "idp_safe"]
+IDP_POINTS = {"idp_tkl_solo": 1, "idp_tkl_ast": 0.5, "idp_sack": 2, "idp_tkl_loss": 1, "idp_qb_hit": 0.5, "idp_int": 3, "idp_ff": 2,
+              "idp_fum_rec": 2, "idp_pass_def": 1, "idp_def_td": 6, "idp_safe": 2}
+IDP_MAP = {"DE": "DL", "DT": "DL", "NT": "DL", "DL": "DL", "EDGE": "DL", "LB": "LB", "ILB": "LB", "OLB": "LB", "MLB": "LB",
+           "CB": "DB", "S": "DB", "SS": "DB", "FS": "DB", "DB": "DB"}
+IDP_Q = "".join(f"&position%5B%5D={p}" for p in ["DL", "LB", "DB"])
+
+
+def idp_pts(s):
+    """A defender's IDP points from Sleeper's stat keys: 1 a solo tackle, 0.5 an assist, 2 a sack, 1 a tackle for loss,
+    0.5 a QB hit, 3 an interception, 2 a forced fumble or recovery, 1 a pass defended, 6 a TD, 2 a safety."""
+    return sum((s.get(k, 0) or 0) * w for k, w in IDP_POINTS.items())
+
+
+def idp_pos(pl):
+    pos = IDP_MAP.get(pl.get("position") or "")
+    if pos:
+        return pos
+    for fp in pl.get("fantasy_positions") or []:
+        if fp in ("DL", "LB", "DB"):
+            return fp
+    return None
+
+
+def idp_line(s, g=None):
+    """A defender's line in NFL_COLS, his IDP points in the three pts_* columns on top of anything Sleeper gave him."""
+    line = [g if g is not None else (s.get("gp") or s.get("gms_active") or 0)] + [round(s.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]
+    extra = idp_pts(s)
+    for c in ("pts_std", "pts_half_ppr", "pts_ppr"):
+        i = NFL_COLS.index(c)
+        line[i] = round(line[i] + extra, 2)
+    return line
 POS_Q = "".join(f"&position%5B%5D={p}" for p in NFL_POS)
 
 
@@ -891,6 +928,128 @@ def nfl():
                             "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17},
                             **{f"wk{w}": {"label": f"Week {w} projection", "cols": NFL_COLS, "proj": True, "week": w, **week_dates(state, season, w)} for w in wk_lines}},
                   "players": players})
+    try:
+        nfl_idp(season, state, allp)
+    except Exception as e:
+        print(f"IDP didn't build: {type(e).__name__}: {e}")
+
+
+# ---------- individual defensive players (IDP) ----------
+# Their own files, so a league without IDP slots loads nothing more: nfl-idp.json (defenders in NFL_COLS, the same
+# lines as nfl.json, merged into the pool by an IDP league) and weeks-nfl-idp.json (each week's defender lines in a
+# short column list, IDP_WEEK_COLS, expanded into NFL_COLS by the pages; final when weeks-nfl.json's week is).
+IDP_WEEK_COLS = ["g", "pts_std", "pts_half_ppr", "pts_ppr"] + IDP_COLS
+
+
+def nfl_idp(season, state, allp=None):
+    week = int(state.get("week") or 0) if state.get("season_type") in (None, "regular") else 0
+    stats = nfl_rows(f"https://api.sleeper.com/stats/nfl/{season}?season_type=regular{IDP_Q}")
+    proj = nfl_rows(f"https://api.sleeper.com/projections/nfl/{season}?season_type=regular{IDP_Q}")
+    if len(stats) + len(proj) < 100:
+        print("IDP: Sleeper didn't answer, kept the last files")
+        return
+    by = {}
+
+    def row_for(r):
+        pl = r.get("player") or {}
+        pos = idp_pos(pl)
+        if not pos:
+            return None
+        pid = str(r.get("player_id"))
+        name = f"{pl.get('first_name', '')} {pl.get('last_name', '')}".strip() or pid
+        p = by.setdefault(pid, {"id": pid, "n": name, "t": r.get("team") or pl.get("team") or "FA", "pos": [pos], "l": {}})
+        if pl.get("injury_status"):
+            p["inj"] = pl["injury_status"]
+        a = age_on(pl.get("birth_date")) if pl.get("birth_date") else pl.get("age")
+        if a:
+            p["age"] = a
+        if pl.get("years_exp") is not None:
+            p["exp"] = pl["years_exp"]
+        return p
+
+    for r in stats:
+        p = row_for(r)
+        if p:
+            p["l"]["tot"] = idp_line(r.get("stats") or {})
+    left = list(range(week + 1, 19)) if week else []
+    ros, wk_lines = {}, {}
+    for w in ([week] if week else []) + left:
+        got = {}
+        for r in nfl_rows(f"https://api.sleeper.com/projections/nfl/{season}/{w}?season_type=regular{IDP_Q}"):
+            p = row_for(r)
+            if not p:
+                continue
+            st = r.get("stats") or {}
+            line = idp_line(st, round(st.get("gp", 1) or 0, 2))
+            if w <= week + 1:
+                got[p["id"]] = line
+            if w == week:
+                continue
+            acc = ros.setdefault(p["id"], [0.0] * len(PROJ_COLS))
+            for i, c in enumerate(PROJ_COLS):
+                acc[i] += line[NFL_COLS.index(c)]
+        if w <= week + 1 and len(got) >= 100:
+            wk_lines[w] = got
+    use_ros = len(ros) >= 100
+    for r in proj:
+        p = row_for(r)
+        if p:
+            line = idp_line(r.get("stats") or {})
+            p["l"]["proj"] = [round(line[NFL_COLS.index(c)], 1) for c in PROJ_COLS]
+    if use_ros:
+        for p in by.values():
+            p["l"]["proj"] = [round(x, 1) for x in ros.get(p["id"], [0.0] * len(PROJ_COLS))]
+    for w, got in wk_lines.items():
+        for pid, line in got.items():
+            if pid in by:
+                by[pid]["l"][f"wk{w}"] = line
+    for pid, p in by.items():
+        q = (allp or {}).get(pid) or {}
+        if q.get("college"):
+            p["col"] = q["college"]
+        if q.get("espn_id"):
+            p["espn"] = str(q["espn_id"])
+    hi = NFL_COLS.index("pts_half_ppr")
+    # in the pool: a defender with real IDP points so far, or projected for them the rest of the way or this week
+    players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][hi] >= 15) or (p["l"].get("proj") and p["l"]["proj"][1] >= 15)
+               or any(len(p["l"].get(f"wk{w}") or []) > hi and p["l"][f"wk{w}"][hi] >= 2 for w in wk_lines)]
+    write("nfl-idp", {"sport": "nfl", "idp": True, "season": str(season), "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com), IDP",
+                      "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS},
+                                "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17},
+                                **{f"wk{w}": {"label": f"Week {w} projection", "cols": NFL_COLS, "proj": True, "week": w, **week_dates(state, season, w)} for w in wk_lines}},
+                      "points": IDP_POINTS, "players": players})
+    nfl_idp_weeks(season, state, {p["id"] for p in players})
+
+
+def nfl_idp_weeks(season, state, ids):
+    """Each week's defender lines, for the defenders in the pool, in IDP_WEEK_COLS. A week is final when
+    weeks-nfl.json's is; final weeks already in the file aren't fetched again."""
+    nfl_w = (load("fantasy-kit/data/weeks-nfl.json") or {}).get("weeks", {})
+    old = load("fantasy-kit/data/weeks-nfl-idp.json") or {}
+    weeks = old.get("weeks", {}) if str(old.get("season")) == str(season) and old.get("cols") == IDP_WEEK_COLS else {}
+    idx = [NFL_COLS.index(c) for c in IDP_WEEK_COLS]
+    for k, w in sorted(nfl_w.items(), key=lambda x: int(x[0]) if x[0].isdigit() else 99):
+        if not k.isdigit():
+            continue
+        if weeks.get(k, {}).get("final"):
+            continue
+        rows = nfl_rows(f"https://api.sleeper.com/stats/nfl/{season}/{k}?season_type=regular{IDP_Q}")
+        lines = {}
+        for r in rows:
+            pid = str(r.get("player_id"))
+            if pid not in ids or not idp_pos(r.get("player") or {}):
+                continue
+            st = r.get("stats") or {}
+            line = idp_line(st)
+            if line[0] or any(line[1:]):
+                lines[pid] = [line[i] for i in idx]
+        if not lines and weeks.get(k, {}).get("lines"):
+            continue
+        weeks[k] = {"start": w.get("start"), "end": w.get("end"), "final": bool(w.get("final")), "lines": lines}
+    path = os.path.join(OUT, "weeks-nfl-idp.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"sport": "nfl", "idp": True, "season": str(season), "updated": NOW, "source": "Sleeper", "line": "tot", "cols": IDP_WEEK_COLS, "weeks": weeks}, f, separators=(",", ":"))
+    print(f"Wrote {path}: {len(weeks)} weeks")
 
 
 def week_dates(state, season, w):
