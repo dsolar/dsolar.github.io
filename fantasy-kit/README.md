@@ -245,7 +245,7 @@ owns which team, the invite code and the save order. It also stamps each team's 
 - **Scoring and formats.** Custom points (a value for every stat) or custom categories ride along as
   `D.scoringSpec` and become the sport's "custom" scoring (`FK.sports.withScoring`). Formats: head to head (most
   categories wins, or each category counts with `settings.tally: "cats"`), all-play for points (`tally: "allplay"`),
-  rotisserie (`format: "roto"`, season totals ranked per category), and best ball guillotine. Roster rules:
+  rotisserie (`format: "roto"`, season totals ranked per category), total points (`format: "total"`, points leagues: no games or playoffs, every week's points add up, most points wins; `L.results[w].total` holds each team's week, and `FK.league.totalLive` the week in progress), and best ball guillotine. Roster rules:
   `waivers: "rolling"`, `ir`, `maxAdds` (pickups a week) and `posMax` (most players at a main position).
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
   after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the

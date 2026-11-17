@@ -1092,9 +1092,9 @@
       <div class="row3">
         ${medianOk ? sel("median", "Median game", [[0, "Off"], [1, "On"]], s.median ? 1 : 0) : ""}
         ${sel("bestBall", "Lineups", [[0, "Set each week"], [1, "Best ball"]], s.bestBall ? 1 : 0)}
-        ${started || s.format === "roto" ? "" : sel("weeks", "Regular season", [6, 8, 10, 12, 13, 14, 15, 16, 17].concat(sport.key === "mlb" || sport.key === "nba" || sport.key === "nhl" ? [18, 19, 20, 21, 22, 23, 24] : []).map((x) => [x, `${x} weeks`]), s.weeks)}
+        ${started || s.format === "roto" || s.format === "total" ? "" : sel("weeks", "Regular season", [6, 8, 10, 12, 13, 14, 15, 16, 17].concat(sport.key === "mlb" || sport.key === "nba" || sport.key === "nhl" ? [18, 19, 20, 21, 22, 23, 24] : []).map((x) => [x, `${x} weeks`]), s.weeks)}
       </div>
-      ${inPlayoffs || s.format === "roto" ? `<p class="ps" style="margin:0">${s.format === "roto" ? "" : "The playoffs have started, so their rules are set."}</p>` : `<div class="row3">
+      ${inPlayoffs || s.format === "roto" || s.format === "total" ? `<p class="ps" style="margin:0">${s.format === "roto" || s.format === "total" ? "" : "The playoffs have started, so their rules are set."}</p>` : `<div class="row3">
         ${sel("playoffTeams", "Playoff teams", [0, 2, 3, 4, 6, 8, 10, 12, 16].filter((x) => x <= n).map((x) => [x, x ? `${x} teams` : "No playoffs"]), s.playoffTeams)}
         ${sel("playoffLegs", "Playoff rounds", [["1", "One week each"], ["final2", "Two-week final"], ["all2", "Two weeks each"]], s.playoffLegs || "1")}
         ${sel("consolation", "Also play", [["none", "Nothing else"], ["third", "A third-place game"], ["bracket", "A consolation bracket"]], s.consolation || "none")}

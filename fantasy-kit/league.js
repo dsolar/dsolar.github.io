@@ -49,7 +49,7 @@
     s.bench = opts.bench != null ? opts.bench : D ? D.bench : sport.bench;
     const guillotine = s.format === "guillotine";
     if (guillotine) { s.chops = Math.max(1, s.chops); s.weeks = Math.ceil((n - 1) / s.chops); s.playoffTeams = 0; s.playoffWeeks = 0; }
-    else if (s.format === "roto") { s.playoffTeams = 0; s.playoffWeeks = 0; }
+    else if (flat(s)) { s.playoffTeams = 0; s.playoffWeeks = 0; }
     else { s.playoffTeams = Math.min(s.playoffTeams, n); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0; s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0); }
     const seed = opts.seed != null ? opts.seed : D ? D.seed + 1 : Math.floor(Math.random() * 2 ** 31);
     const rosters = D ? F.rosters(D) : (opts.rosters || teams.map(() => []));
@@ -60,7 +60,7 @@
       name: opts.name || "Fantasy League", season: opts.season || "", seed, created: opts.now || Date.now(), start: opts.start || opts.now || Date.now(),
       settings: s, teams, rosters: rosters.map((r) => r.slice()), ir: teams.map(() => []), lineups: {},
       taxi: teams.map((t, i) => (D && D.taxi && D.taxi[i] ? D.taxi[i].filter((id) => rosters[i].includes(id)) : [])),
-      schedule: guillotine || s.format === "roto" ? Array.from({ length: s.weeks }, () => []) : roundRobin(n, s.weeks, rng(seed + 7)), results: {}, week: 1,
+      schedule: guillotine || flat(s) ? Array.from({ length: s.weeks }, () => []) : roundRobin(n, s.weeks, rng(seed + 7)), results: {}, week: 1,
       tx: [], trades: [], claims: [], waivers: {}, watch: {}, draft: D || null, nextId: 1,
       alive: teams.map((t) => t.id), chopped: [], waiverRuns: {},
     };
@@ -70,14 +70,14 @@
       for (const id of out) games.push([id, games.length ? games[w % games.length][0] : teams.find((t) => t.id !== id).id]);
     });
     // divisions: teams split evenly, in team order (0, 1, 2 in divisions A, B, C, then around again)
-    if (!guillotine && s.format !== "roto" && s.divisions >= 2 && n >= 2 * s.divisions) {
+    if (!guillotine && !flat(s) && s.divisions >= 2 && n >= 2 * s.divisions) {
       L.divs = teams.map((t) => t.id % s.divisions);
       L.divNames = (s.divNames || DIV_NAMES[s.divisions] || []).slice(0, s.divisions);
     } else s.divisions = 0;
-    if (s.median && (guillotine || s.format === "roto" || s.tally === "allplay" || s.tally === "cats")) s.median = false;
+    if (s.median && (guillotine || flat(s) || s.tally === "allplay" || s.tally === "cats")) s.median = false;
     // the split (Scotland's): after week `after` the table splits in half and each half plays only itself
     // a ladder replaces the schedule: no divisions, split, median or pick your opponent
-    if (s.ladder && (guillotine || s.format === "roto" || s.tally === "allplay" || n < 3)) delete s.ladder;
+    if (s.ladder && (guillotine || flat(s) || s.tally === "allplay" || n < 3)) delete s.ladder;
     if (s.ladder) { s.divisions = 0; delete L.divs; delete s.split; delete s.pyo; s.median = false; }
     if (s.split && !splitOk(s, n)) delete s.split;
     // the playoffs come from the top half
@@ -87,12 +87,12 @@
     if (D && D.promoted) L.promoted = Object.assign({}, D.promoted);
     if (D && D.futurePicks && Object.keys(D.futurePicks).length) L.picks = Object.assign({}, D.futurePicks);
     // a vampire league: the vampire's claim is always first
-    if (s.vampire && teams[s.vampire.team] && !guillotine && s.format !== "roto") { L.bites = []; vampireFirst(L); } else delete s.vampire;
+    if (s.vampire && teams[s.vampire.team] && !guillotine && !flat(s)) { L.bites = []; vampireFirst(L); } else delete s.vampire;
     if (D) log(L, D.done || L.created, { type: "draft", team: -1, text: `Draft complete: ${F.made(D).length} picks` });
     // pick your opponent: no divisions, head to head only; week 2's picks open now
-    if (s.pyo && (guillotine || s.format === "roto")) delete s.pyo;
+    if (s.pyo && (guillotine || flat(s))) delete s.pyo;
     if (s.pyo) { s.divisions = 0; delete L.divs; delete s.split; pyoOpen(L, null, 2, L.created); }
-    for (const k of ["robin", "conquest", "crown", "hangover"]) if (s[k] && (guillotine || s.format === "roto")) delete s[k];
+    for (const k of ["robin", "conquest", "crown", "hangover"]) if (s[k] && (guillotine || flat(s))) delete s[k];
     // one raid twist at a time, none in a dynasty (rules.js; optional where it isn't loaded)
     const RL = RLIST;
     if (RL) { const gone = RL.cleanSettings(s); if (gone.includes("vampire")) { delete L.bites; } }
@@ -241,6 +241,10 @@
   const isGuillotine = (L) => L.settings.format === "guillotine";
   // Rotisserie: no weekly games; season totals in each category, ranked, the best team getting n points.
   const isRoto = (L) => L.settings.format === "roto";
+  // Total points: no weekly games either; every point scored all season adds up, and the most points wins the league.
+  const isTotal = (L) => L.settings.format === "total";
+  // formats with no schedule, no playoffs and none of the head-to-head twists
+  const flat = (s) => s.format === "roto" || s.format === "total";
   const isAlive = (L, teamId) => !isGuillotine(L) || (L.alive || []).includes(teamId);
   const totalWeeks = (L) => L.settings.weeks + L.settings.playoffWeeks;
   // A one-day league (settings.span) has one short week: from its start to span.end, three hours after its last tip
@@ -864,7 +868,7 @@
   }
   // Every game of a week, final or (for the current week) in progress at `frac` of the week.
   function matchups(L, ctx, w, frac = 1) {
-    if (isGuillotine(L) || isRoto(L)) return [];
+    if (isGuillotine(L) || isRoto(L) || isTotal(L)) return [];
     const games = w <= L.settings.weeks ? L.schedule[w - 1] : playoffGames(L, ctx, w);
     return games.map((pair, i) => {
       const [a, b] = pair, kind = pair.kind || (w > L.settings.weeks ? "title" : null);
@@ -1020,6 +1024,21 @@
         L.lineups[w][t.id] = x.lineup || lineupFor(L, ctx, t.id, w);
       }
       L.results[w] = { roto: teams, cats: sc.cats.map((c) => ({ k: c.k, low: !!c.low, ratio: !!(c.num || c.rate) })) };
+      L.week = w + 1;
+      if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
+      runDue(L, ctx, now);
+      return { ok: true };
+    }
+    if (isTotal(L)) {
+      // every team's points for the week, ranked; the season table adds them up
+      L.lineups[w] = L.lineups[w] || {};
+      const rows = L.teams.map((t) => {
+        const x = teamWeek(L, ctx, t.id, w, 1);
+        L.lineups[w][t.id] = x.lineup || lineupFor(L, ctx, t.id, w);
+        return { team: t.id, score: Math.round((x.total || 0) * 100) / 100, players: x.players || {} };
+      });
+      rows.slice().sort((a, b) => b.score - a.score || a.team - b.team).forEach((r, i) => (r.rank = i + 1));
+      L.results[w] = { total: rows };
       L.week = w + 1;
       if (L.week > totalWeeks(L)) { closeSeason(L, now); return { ok: true, over: true }; }
       runDue(L, ctx, now);
@@ -1306,6 +1325,7 @@
     if (L.imported && L.imported.standings && !Object.keys(L.results || {}).length) return L.imported.standings.map((r) => Object.assign({ pf: r.w, pa: r.l, streak: "", form: [], pct: (r.w + r.t / 2) / Math.max(1, r.w + r.l + r.t) }, r));
     if (isGuillotine(L)) return survival(L);
     if (isRoto(L)) return rotoStandings(L, upTo, live);
+    if (isTotal(L)) return totalStandings(L, upTo, live);
     const last = Math.min(upTo || L.settings.weeks, L.settings.weeks);
     const rows = L.teams.map((t) => ({ team: t.id, w: 0, l: 0, t: 0, pf: 0, pa: 0, streak: "", form: [] }));
     const tally = L.settings.tally || "game";
@@ -1396,6 +1416,35 @@
     const out = rows.sort((a, b) => b.pts - a.pts || a.team - b.team);
     out.forEach((r, i) => { r.rank = i + 1; r.pf = r.pts; r.pct = n > 1 ? r.pts / (cats.length * n || 1) : 0; r.gb = out[0].pts - r.pts; r.inPlayoffs = false; });
     return out;
+  }
+  // Total points standings: every team's points all season, most first. `live` is { rows: { team: points } } for the
+  // week in progress, or null. Behind is points back of the leader; the tiebreak is the best single week.
+  function totalStandings(L, upTo, live) {
+    const last = Math.min(upTo || L.settings.weeks, L.settings.weeks);
+    const rows = L.teams.map((t) => ({ team: t.id, pf: 0, pa: 0, pts: 0, weeks: [], top: 0, high: 0, last: null, now: null, w: 0, l: 0, t: 0, pct: 0, form: [], streak: "" }));
+    for (let w = 1; w <= last; w++) {
+      const res = L.results[w] && L.results[w].total;
+      if (!res) continue;
+      for (const r of res) {
+        const R = rows[r.team]; if (!R) continue;
+        R.pf += r.score; R.weeks.push(r.score); R.last = r.score;
+        if (r.score > R.high) R.high = r.score;
+        if (r.rank === 1) R.top++;
+      }
+    }
+    if (live && live.rows) for (const R of rows) { const x = live.rows[R.team] || 0; R.now = x; R.pf += x; }
+    for (const R of rows) { R.pf = Math.round(R.pf * 100) / 100; R.pts = R.pf; }
+    const out = rows.sort((a, b) => b.pf - a.pf || b.high - a.high || a.team - b.team);
+    const lead = out[0] ? out[0].pf : 0;
+    out.forEach((r, i) => { r.rank = i + 1; r.gb = Math.round((lead - r.pf) * 100) / 100; r.inPlayoffs = false; });
+    return out;
+  }
+  // The week in progress, for live total points standings.
+  function totalLive(L, ctx, frac) {
+    if (!isTotal(L) || L.week > totalWeeks(L)) return null;
+    const rows = {};
+    for (const t of L.teams) rows[t.id] = Math.round((teamWeek(L, ctx, t.id, L.week, frac).total || 0) * 100) / 100;
+    return { rows };
   }
   // The week in progress, for live roto standings.
   function rotoLive(L, ctx, frac) {
@@ -1579,7 +1628,7 @@
     if (L.imported && L.imported.final) return Object.assign({}, L.imported.final);
     if (isGuillotine(L)) return { champion: champion(L) };
     const st = standings(L);
-    if (isRoto(L) || !L.settings.playoffTeams) return { champion: L.week > totalWeeks(L) && st[0] ? st[0].team : null };
+    if (isRoto(L) || isTotal(L) || !L.settings.playoffTeams) return { champion: L.week > totalWeeks(L) && st[0] ? st[0].team : null };
     const ps = postseason(L), last = ps[ps.length - 1], fin = last && last.main[0] && last.main[0].res;
     // every playoff team's final place, when they all played for one
     if (L.settings.consolation === "places" && last) {
@@ -1603,6 +1652,7 @@
       const res = L.results[w];
       if (!res || res.roto) continue;
       const po = w > L.settings.weeks;
+      if (res.total) { for (const r of res.total) { top("high", r.score, { team: r.team, name: name(r.team), week: w }, hi); top("low", r.score, { team: r.team, name: name(r.team), week: w }, lo); } continue; }
       if (res.block) { for (const r of res.block) { top("high", r.score, { team: r.team, name: name(r.team), week: w }, hi); top("low", r.score, { team: r.team, name: name(r.team), week: w }, lo); } continue; }
       for (const g of res) {
         if (!g.cats) {
@@ -1719,7 +1769,7 @@
       if (v == null) return { ok: false, why: `That isn't a valid value for ${k}` };
       if (JSON.stringify(s[k]) === JSON.stringify(v)) continue;
       if (k === "weeks" && L.week > 1) return { ok: false, why: "The season's length can only change before week 1" };
-      if (k === "weeks" && (s.format === "roto" || isGuillotine(L))) return { ok: false, why: "This league's length is set by its format" };
+      if (k === "weeks" && (flat(s) || isGuillotine(L))) return { ok: false, why: "This league's length is set by its format" };
       if (PLAYOFF_RULES.includes(k) && L.week > s.weeks) return { ok: false, why: "The playoffs have started" };
       if (k === "median" && (s.format !== "h2h" || s.tally === "allplay" || s.tally === "cats")) return { ok: false, why: "The median game is for head-to-head leagues with one win a week" };
       changed.push(k); s[k] = v;
@@ -1836,7 +1886,7 @@
   // week, a player picked up later doesn't count), who climbed the standings and the streaks. Head-to-head leagues
   // only; null for a week that isn't final.
   function recap(L, ctx, w) {
-    if (isGuillotine(L) || isRoto(L) || !L.results[w] || !L.results[w].length) return null;
+    if (isGuillotine(L) || isRoto(L) || isTotal(L) || !L.results[w] || !L.results[w].length) return null;
     const pts = scoring(L, ctx).type === "points";
     const res = L.results[w], round = (x) => Math.round(x * 100) / 100;
     const games = res.map((g, i) => ({ i, a: g.a, b: g.b, sa: g.sa, sb: g.sb, w: g.w, kind: g.kind || null, ties: g.ties || 0, margin: round(Math.abs(g.sa - g.sb)) }));
@@ -2706,7 +2756,7 @@
     if (L.settings.playoffTie === "h2h") { const h = h2h(L, m.a, m.b); if (h < 0) return m.b; if (h > 0) return m.a; }
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
-  return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
+  return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };

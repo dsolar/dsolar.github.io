@@ -35,7 +35,7 @@
     // the commissioner's choices from the start-a-league form (D.season), with defaults for anything left out.
     // A guillotine is best ball unless the form says otherwise (bestBall: false), so managers set lineups.
     const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: s.bestBall !== false, waiverAt: 60, faab: s.faab || 1000 }
-      : { format: s.format === "roto" ? "roto" : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
+      : { format: s.format === "roto" || s.format === "total" ? s.format : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" || s.format === "total" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
         playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
         deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: ["none", "commish"].includes(s.review) ? s.review : "vote", reviewHours: s.reviewHours || 24, vetoShare: s.vetoShare || 0.5,
         waiverDays: s.waiverDays != null ? s.waiverDays : 2, gameLock: s.gameLock || (sport && sport.key === "nfl" ? "week" : "off"), faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
@@ -60,17 +60,17 @@
     if (s.bestBall && s.format !== "guillotine") settings.bestBall = true;
     if (s.divisions) settings.divisions = s.divisions;
     // the ladder: challenge teams above you, win and swap rungs (league.js)
-    if (s.ladder && s.format !== "guillotine" && s.format !== "roto") settings.ladder = { reach: Math.max(1, Math.min(3, Number(s.ladder.reach) || 2)) };
+    if (s.ladder && s.format !== "guillotine" && s.format !== "roto" && s.format !== "total") settings.ladder = { reach: Math.max(1, Math.min(3, Number(s.ladder.reach) || 2)) };
     // the split: the table splits in half after this week (league.js applySplit)
     if (s.split && s.split.after) settings.split = { after: s.split.after, names: Array.isArray(s.split.names) ? s.split.names.slice(0, 2) : undefined };
     // promotion and relegation: which tier of which pyramid (pyramid.js)
     if (s.pyramid && s.format !== "guillotine" && !s.oneWeek) settings.pyramid = Object.assign({}, s.pyramid);
     // a vampire league (football, head to head): which team is the vampire, and its swap rules
-    if (s.vampire && s.format !== "guillotine" && s.format !== "roto") settings.vampire = { team: s.vampire.team, samePos: !!s.vampire.samePos, double: !!s.vampire.double };
+    if (s.vampire && s.format !== "guillotine" && s.format !== "roto" && s.format !== "total") settings.vampire = { team: s.vampire.team, samePos: !!s.vampire.samePos, double: !!s.vampire.double };
     // the twists: pick your opponent, Robin Hood, Conquest, Kingslayer and The Hangover (head to head), the top-score
     // bonus (guillotine)
     const cl = (v, lo, hi, d) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : d);
-    if (s.format !== "guillotine" && s.format !== "roto") {
+    if (s.format !== "guillotine" && s.format !== "roto" && s.format !== "total") {
       if (s.pyo) settings.pyo = true;
       if (s.robin) settings.robin = { protect: cl(s.robin.protect, 0, 8, 2), like: !!s.robin.like };
       if (s.conquest) settings.conquest = { protect: cl(s.conquest.protect, 0, 8, 3), like: !!s.conquest.like };
@@ -431,6 +431,12 @@
           const gone = (res.chopped || []).map(teamName).join(" and ");
           for (const r of res.block) add(r.team, "week", r.out ? `you were chopped in week ${w}` : `you survived week ${w}`,
             r.out ? `You scored ${fmtS(r.score)}, the lowest this week. Thanks for playing.` : `You scored ${fmtS(r.score)} and finished ${ord(r.rank)}. ${gone} ${(res.chopped || []).length > 1 ? "were" : "was"} chopped, and their players are up for bids.`);
+        } else if (res && res.total) {
+          const st = G.totalStandings(Object.assign({}, cl, { results: Object.fromEntries(Object.entries(cl.results).filter(([k]) => +k <= +w)) }), +w);
+          for (const r of res.total) {
+            const row = st.find((x) => x.team === r.team);
+            add(r.team, "week", `week ${w}: ${fmtS(r.score)} points`, `You scored ${fmtS(r.score)}, ${ord(r.rank)} of ${res.total.length} this week. You're ${ord(row.rank)} on the season with ${fmtS(row.pf)}${row.rank > 1 ? `, ${fmtS(row.gb)} behind first` : ""}.`);
+          }
         } else if (res && res.roto) {
           const st = G.rotoStandings(Object.assign({}, cl, { results: Object.fromEntries(Object.entries(cl.results).filter(([k]) => +k <= +w)) }), +w);
           for (const r of st) add(r.team, "week", `week ${w} standings`, `You're ${ord(r.rank)} of ${st.length} with ${fmtS(r.pts)} roto points${r.rank > 1 ? `, ${fmtS(r.gb)} behind first` : ""}.`);

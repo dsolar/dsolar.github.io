@@ -227,9 +227,11 @@
       ["Head to head, each category", "Every category is its own win or loss, like 6-3-0."],
       ["Rotisserie", "Season totals, ranked category by category."],
       ["Head to head, most categories", "Win more categories than your opponent for one win."],
+      ["Total points", "No matchups: every point all season adds up, and the most points wins."],
       ["All-play", "Your points against every team, every week, like going 9-2."]
     ] : [
       ["Head to head", "Play one team a week. More points wins."],
+      ["Total points", "No matchups: every point all season adds up, and the most points wins."],
       ["All-play", "Your points against every team, every week, like going 9-2."]
     ];
     el.innerHTML = '<div class="mod-h"><div><span class="kick">Scoring</span><h2>Score it your way</h2></div><a class="more" href="' + KIT + "leagues.html?s=" + k + '">Set up scoring &rarr;</a></div>' +
