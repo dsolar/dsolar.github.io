@@ -8,7 +8,7 @@
    FK.trivia:
      BANK                         the football questions: { id, q, a (the answer), w (three wrong answers) }
      BANKS                        every sport's: { nfl, nba, mlb, cbb, cfb }
-     make(sport, players, seed, used)  a question for a pick: { id, q, opts: [4 strings], c (the right one's index) }
+     make(sport, players, seed, used, never)  a question for a pick (never: ids this manager has had): { id, q, opts: [4 strings], c (the right one's index) }
 */
 (function (root, factory) {
   const m = factory(root.FK ? root.FK.sports : typeof require !== "undefined" ? require("./sports.js") : null);
@@ -329,6 +329,7 @@
     // only pitcher or not: who catches or plays first is too fuzzy, and Ohtani is both
     mlb: () => [["pitcher", (p) => !/Ohtani/.test(p.n) && S.positions(p).some((x) => x === "SP" || x === "RP"), (p) => !/Ohtani/.test(p.n) && !S.positions(p).some((x) => x === "SP" || x === "RP")]],
   };
+  // (one id a position: the question reads the same whoever the answer is, so a manager gets it once)
   function posQ(sport, players, r) {
     const kinds = POS_Q[sport.key] ? POS_Q[sport.key]() : null;
     if (!kinds) return null;
@@ -336,24 +337,29 @@
     const right = top.filter(is), wrong = top.filter(isnt);
     if (!right.length || wrong.length < 3) return null;
     const a = right[Math.floor(r() * Math.min(12, right.length))];
-    return { id: `pos:${a.id}`, q: `Which of these players is a ${pos}?`, a: a.n, w: shuffle(wrong.slice(0, 30), r).slice(0, 3).map((p) => p.n) };
+    return { id: `pos:${pos}`, q: `Which of these players is a ${pos}?`, a: a.n, w: shuffle(wrong.slice(0, 30), r).slice(0, 3).map((p) => p.n) };
   }
 
   // A question for one pick: the same on every page for the same seed. Skips ones already asked (used).
-  function make(sport, players, seed, used) {
-    const r = rng(seed), seen = new Set(used || []);
-    for (let tries = 0; tries < 80; tries++) {
-      // a long draft can run through them all: then a question can come around again
+  // never (the questions this manager has already had) is never asked again. used (the draft's recent questions) is
+  // only avoided: a long draft can run through them, and then someone else's question can come around to you.
+  function make(sport, players, seed, used, never) {
+    const r = rng(seed), seen = new Set(used || []), no = new Set(never || []);
+    for (let tries = 0; tries < 200; tries++) {
       if (tries === 60) seen.clear();
       // college: mostly the written questions (college players come and go), and now and then a player's school
       const roll = r(), kind = sport.college ? (roll < 0.75 ? "bank" : "team") : roll < 0.55 ? "bank" : roll < 0.75 ? "school" : roll < 0.9 ? "team" : "pos";
       const bank = BANKS[sport.key];
       const x = kind === "bank" ? (bank ? bank[Math.floor(r() * bank.length)] : null) : kind === "school" ? schoolQ(sport, players, r) : kind === "team" ? teamQ(sport, players, r) : posQ(sport, players, r);
-      if (!x || seen.has(x.id)) continue;
+      if (!x || seen.has(x.id) || no.has(x.id)) continue;
       const opts = shuffle([x.a].concat(x.w), r);
       return { id: x.id, q: x.q, opts, c: opts.indexOf(x.a) };
     }
-    return null;
+    // the dice keep landing on asked ones: any written question this manager hasn't had (or none, and no question)
+    const left = (BANKS[sport.key] || []).filter((x) => !no.has(x.id));
+    if (!left.length) return null;
+    const x = left[Math.floor(r() * left.length)], opts = shuffle([x.a].concat(x.w), r);
+    return { id: x.id, q: x.q, opts, c: opts.indexOf(x.a) };
   }
   return { BANK, BANKS, make };
 });

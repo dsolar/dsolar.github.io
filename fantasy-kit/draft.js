@@ -735,7 +735,8 @@
   }
 
   /* ---------- a trivia draft ---------- */
-  // D.trivia { sec, cur, ok: { pick: 1 }, bumped: { pick: 1 }, used: [question ids], log: [] }: before each pick the
+  // D.trivia { sec, cur, ok: { pick: 1 }, bumped: { pick: 1 }, used: [question ids], mine: { team: [question ids] },
+  // log: [] }: no manager ever gets the same question twice. Before each pick the
   // team on the clock answers an easy multiple-choice question (ctx.hooks.trivia(D, k) makes it). Right, and the pick
   // clock starts fresh. Wrong, or out of time, and the pick moves to the end of the round: everyone after it in the
   // round moves up one. A pick that was moved has no question. Bots get about four in five right; a manager on
@@ -752,10 +753,15 @@
     if (!t.owner || t.auto) return false;                      // bots answer on their own; autodraft skips them
     const make = ctx && ctx.hooks && ctx.hooks.trivia;
     const q = make ? make(D, k) : null;
-    if (!q) { T.ok[k] = 1; return false; }
+    // never the same question to the same manager twice (mine: every question each team has been asked; drafts from
+    // before it kept only the log)
+    const team = D.order[k], mine = (T.mine && T.mine[team]) || [];
+    const asked = (x) => mine.includes(x.id) || (T.log || []).some((e) => e.team === team && e.q === x.q);
+    if (!q || asked(q)) { T.ok[k] = 1; return false; }
     // a couple of seconds' grace for the question to reach the manager's page
     T.cur = { k, team: D.order[k], at: now, ends: now + (T.sec || 15) * 1000 + 2500, id: q.id, q: q.q, opts: q.opts, c: q.c, ans: null };
     T.used = (T.used || []).concat(q.id).slice(-200);
+    T.mine = Object.assign({}, T.mine, { [team]: mine.concat(q.id) });
     return true;
   }
   function triviaAnswer(D, ctx, teamId, choice, now) {

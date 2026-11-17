@@ -209,3 +209,37 @@ test('salary cap prices: $50,000 in $100 steps, a hurt player priced as if healt
   assert.equal(F.capMoney(7800), '$7,800'); assert.equal(F.capMoney(-300), '-$300'); assert.equal(F.capMoney(50000), '$50,000');
   if (D.lineup[0] !== 'CPT') { const D2 = { cap: { budget: 50000, prices: { a: 7300 } } }; assert.equal(F.capCost(D2, { id: 'a' }, 'CPT'), 11000); }
 });
+
+test('trivia draft: no manager is ever asked the same question twice, even in a long college draft', () => {
+  const T = require('../fantasy-kit/trivia.js');
+  for (const key of ['cfb', 'cbb', 'nfl']) {
+    const data = JSON.parse(readFileSync(new URL(`../fantasy-kit/data/${key}.json`, import.meta.url), 'utf8'));
+    const sport = S.attach(Object.assign({}, S[key]), data);
+    const players = data.players.map((p) => ({ ...p }));
+    const lineup = Object.keys(sport.slots).slice(0, 8), bench = 17;   // 25 rounds: more than the written questions split up
+    V.evaluate(sport, players, { teams: 4, lineup, bench, scoring: Object.keys(sport.scorings)[0] });
+    const D = F.create({ sport, teams: 4, seed: 11, now, lineup, bench, scoring: Object.keys(sport.scorings)[0], botDelay: 0, clock: 60, trades: false });
+    D.trivia = { sec: 15, ok: {}, bumped: {}, used: [], log: [] };
+    D.teams.forEach((t, i) => (t.owner = `M${i}`));
+    // a hook that ignores who's been asked what: the draft itself still never repeats one to a manager
+    const blind = (d, k) => T.make(sport, players, (d.seed * 31 + k * 7919) >>> 0, d.trivia.used);
+    const ctx = F.context(D, players, sport, { trivia: key === 'nfl' ? blind : (d, k) => T.make(sport, players, (d.seed * 31 + k * 7919) >>> 0, d.trivia.used, (d.trivia.mine || {})[d.order[k]]) });
+    F.start(D, now);
+    const asked = {};
+    let t = now, questions = 0;
+    for (let n = 0; n < 2000 && D.phase === 'live'; n++) {
+      t += 1000; F.tick(D, ctx, t);
+      const c = F.onClock(D, t); if (!c) continue;
+      if (c.trivia) {
+        const mine = (asked[c.team] = asked[c.team] || new Set());
+        assert.ok(!mine.has(c.trivia.q), `${key}: ${D.teams[c.team].owner} got "${c.trivia.q}" twice`);
+        mine.add(c.trivia.q); questions++;
+        assert.equal(F.triviaAnswer(D, ctx, c.team, c.trivia.c, t).right, true);
+      }
+      const ok = F.pick(D, ctx, c.team, ctx.available.find((p) => F.canAdd(D, ctx, c.team, p).ok)?.id || ctx.available[0].id, t);
+      if (!ok.ok && !c.trivia) F.tick(D, ctx, t + 61000);
+    }
+    assert.equal(D.phase, 'done', `${key}: the draft finished`);
+    assert.ok(questions >= 80, `${key}: most picks had a question (${questions})`);
+  }
+});

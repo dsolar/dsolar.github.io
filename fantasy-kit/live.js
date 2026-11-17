@@ -25,7 +25,7 @@
     const el = document.createElement("script"); el.src = `${file}?v=${VER}`; el.onload = ok; el.onerror = () => { delete loading[file]; no(new Error(`Couldn't load ${file}`)); };
     document.head.appendChild(el);
   }));
-  const triviaHook = (d, k) => (window.FK.trivia ? window.FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used) : null);
+  const triviaHook = (d, k) => (window.FK.trivia ? window.FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used, (d.trivia.mine || {})[d.order[k]]) : null);
   const hooks = () => ({ real: weeks, prospects, trivia: triviaHook, get lineups() { return lineups; } });
   let rt = null;   // the realtime nudge socket (cloud.listen)
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;

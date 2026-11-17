@@ -169,7 +169,7 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
       let changed = false;
       if (!L) {
         // a trivia draft's next question, when the clock is the one that puts a pick up
-        const trivia = FK.trivia ? (d: any, k: number) => FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used) : undefined;
+        const trivia = FK.trivia ? (d: any, k: number) => FK.trivia.make(sport, players, ((d.seed || 1) * 31 + k * 7919) >>> 0, d.trivia.used, (d.trivia.mine || {})[d.order[k]]) : undefined;
         const dctx = F.context(D, players, sport, { trivia });
         // a heist's moves are sealed on the server: once it's due, open them so it can settle
         if (D.phase === "heist" && F.heistSealed && F.heistSealed(D) && F.heistDue(D, now)) {
