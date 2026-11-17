@@ -13,7 +13,10 @@
     mlb: `<circle cx="12" cy="12" r="10"/><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"/>` };
   ICON.cbb = ICON.nba;
   ICON.cfb = `<path d="M6 3v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M12 13v8M9 21h6"/>`;
-  const icon = (k, cls) => `<svg class="${cls || "sp-ic"}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${ICON[k]}</svg>`;
+  // a sport's mark: its league's logo for the pros (ESPN's image server), the drawn icon for college and as the fallback
+  const LEAGUE_LOGO = (k) => (["nba", "nfl", "mlb", "nhl"].includes(k) ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/${k}.png&w=64&h=64` : null);
+  const svgIcon = (k, cls) => `<svg class="${cls || "sp-ic"}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${ICON[k]}</svg>`;
+  const icon = (k, cls) => (LEAGUE_LOGO(k) ? `<span class="${cls || "sp-ic"} sp-logo" aria-hidden="true"><img src="${LEAGUE_LOGO(k)}" alt="" loading="lazy" onerror="this.parentNode.outerHTML=this.parentNode.dataset.svg" ></span>`.replace('<span class="', `<span data-svg='${svgIcon(k, cls).replace(/'/g, "&#39;")}' class="`) : svgIcon(k, cls));
   const DRAFTS = { cap: "No draft: build a lineup under a budget. Anyone can pick anyone", sealed: "Rank players in private. The draft runs itself from everyone's list when they lock", pack: "Rip open a pack with a star in it, take one, pass the rest. All at once", snake: "The order flips every round", linear: "The same order every round", "3rr": "A snake, with round three flipped again", auction: "A $200 budget and live bidding on every player",
     mystery: "Each team gets a random package of picks of equal value", elephant: "A snake where your turn can steal a drafted player" };
   const RANGE_FMT = {};

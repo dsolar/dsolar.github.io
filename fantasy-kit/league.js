@@ -992,7 +992,7 @@
   // What a team's starters have left this week, from the live feed (ctx.hooks.real.live.teams: each pro team's
   // games played, in progress and left): expected points still to come, their variance, and starter-games played
   // and left. A game in progress counts as half played. null without the feed for this week.
-  const GAMES = { nba: 82, cbb: 31, nfl: 17, mlb: 162, nhl: 82 }, SPREAD = { nba: 0.38, cbb: 0.45, nfl: 0.62, mlb: 1.0, nhl: 0.65 };
+  const GAMES = { nba: 82, cbb: 31, nfl: 17, cfb: 12, mlb: 162, nhl: 82 }, SPREAD = { nba: 0.38, cbb: 0.45, nfl: 0.62, cfb: 0.62, mlb: 1.0, nhl: 0.65 };
   function outlook(L, ctx, teamId, w) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
     // a one-day league reads its own games' states; anything else, the live feed's week

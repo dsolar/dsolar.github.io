@@ -2603,3 +2603,37 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 }
 /* the sport row, pinned under the masthead on the home and sport pages */
 .hub-top .fbar{box-shadow:var(--shadow)}
+/* a league's logo in place of the drawn sport icon */
+.sp-logo{display:inline-grid;place-items:center;flex:none}
+.sp-logo img{width:100%;height:100%;object-fit:contain;display:block}
+.sp-logo{width:1.25em;height:1.25em}
+.chips.confs button{display:inline-flex;align-items:center;gap:6px}
+.chips.confs .cf-logo{width:18px;height:18px;object-fit:contain;background:#fff;border-radius:4px;padding:1px}
+/* phones: scrolling down tucks the site bar away (nav.js), and the Draft Lab bar moves up into its place */
+@media (max-width:760px){
+  .ds-bar.ds-navigation{transition:transform .2s ease}
+  .fk-top{transition:top .2s ease}
+  body.fk-tuck .ds-bar.ds-navigation{transform:translateY(-100%)}
+  body.fk-tuck:has(.ds-navigation) .fk-top{top:0}
+}
+@media (prefers-reduced-motion:reduce){.ds-bar.ds-navigation,.fk-top{transition:none}}
+/* player search in the masthead (nav.js findHtml) */
+.fk-find{position:relative;flex:none;margin:0}
+.fk-find input{width:170px;height:34px;padding:0 12px 0 32px;border-radius:999px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B6C2D0' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E") no-repeat 10px 50%/15px;color:#F2F5F8;font:inherit;font-size:13.5px}
+.fk-find input::placeholder{color:#B6C2D0}
+.fk-find input:focus{outline:2px solid var(--brand);outline-offset:1px;background-color:rgba(255,255,255,.14)}
+.fk-find-r{position:absolute;right:0;top:calc(100% + 6px);z-index:60;width:300px;max-width:calc(100vw - 24px);margin:0;padding:6px;list-style:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:0 18px 40px -16px rgba(0,0,0,.45)}
+.fk-find-r a{display:flex;flex-direction:column;padding:8px 10px;border-radius:8px;color:var(--ink);text-decoration:none}
+.fk-find-r a:hover,.fk-find-r a:focus{background:var(--surface-3);outline:none}
+.fk-find-r b{font-size:14px}.fk-find-r small{font-size:12px;color:var(--muted)}
+.fk-find-r .none{padding:10px;font-size:13px;color:var(--muted)}
+@media (max-width:860px){.fk-find input{width:130px}}
+@media (max-width:420px){.fk-find input{width:42px;padding-right:0;color:transparent}.fk-find input:focus{width:170px;color:#F2F5F8}.fk-find input::placeholder{color:transparent}.fk-find input:focus::placeholder{color:#B6C2D0}}
+/* the results sit inside the dark masthead, so they carry their own colors rather than the band's */
+.fk-find-r{--fr-bg:#fff;--fr-ink:#111827;--fr-muted:#5B6575;--fr-hover:#EEF1F5;background:var(--fr-bg);color:var(--fr-ink);border-color:rgba(0,0,0,.1)}
+:root[data-theme="dark"] .fk-find-r{--fr-bg:#1B2433;--fr-ink:#EEF2F7;--fr-muted:#9AA7B6;--fr-hover:#273245}
+.fk-find-r a{color:var(--fr-ink)}.fk-find-r small,.fk-find-r .none{color:var(--fr-muted)}
+.fk-find-r a:hover,.fk-find-r a:focus{background:var(--fr-hover)}
+/* a small sample (ui.js sampleOf): a quiet tag by the name, and a line on the player card */
+.tag.ss{background:color-mix(in srgb,#D97706 14%,transparent);color:#9A5A04;border:0;font-weight:750;cursor:help}
+:root[data-theme="dark"] .tag.ss{color:#FBBF24;background:rgba(251,191,36,.14)}

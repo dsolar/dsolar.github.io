@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="kit.css?v=20261117-nav2">
+<link rel="stylesheet" href="kit.css?v=20261117-ui3">
 <link rel="stylesheet" href="../assets/faces.css?v=20261109c">
 <link rel="stylesheet" href="start.css?v=20261117-nav2">
 <script src="../assets/analytics.js" defer></script>
@@ -97,7 +97,7 @@ body.fk-room .ds-bar{display:none}
      with the same markup, so nothing moves. Keep the three in step. -->
 <header class="fk-top" id="top"><div class="fk-mast fk-band inline"><div class="wrap">
         <a class="fk-brand" href="../fantasy/"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
-        <nav class="mast-nav" aria-label="Sections"><a href="../fantasy/">Home</a><a href="leagues.html">Your leagues</a><a href="#draft" aria-current="page">Mock draft</a><a href="#rankings">Rankings</a><a href="week.html">Quick games</a><a href="league.html?s=nfl">Demo league</a></nav><div class="fk-who"><button class="btn sm ghost" data-act="theme">Dark</button></div></div></div>
+        <nav class="mast-nav" aria-label="Sections"><a href="../fantasy/">Home</a><a href="leagues.html">Your leagues</a><a href="#draft" aria-current="page">Mock draft</a><a href="#rankings">Rankings</a><a href="week.html">Quick games</a><a href="league.html?s=nfl">Demo league</a></nav><form class="fk-find" role="search" data-kit="" onsubmit="return false"><label class="sr" for="fk-find-q">Find a player</label><input id="fk-find-q" type="search" placeholder="Find a player" autocomplete="off" spellcheck="false" aria-controls="fk-find-r" aria-expanded="false"><ul id="fk-find-r" class="fk-find-r" role="listbox" hidden></ul></form><div class="fk-who"><button class="btn sm ghost" data-act="theme">Dark</button></div></div></div>
 </header>
 <main id="app"><div class="wrap page">
       <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
@@ -148,7 +148,7 @@ body.fk-room .ds-bar{display:none}
 /* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
    stylesheets are in (an inline script waits for them): the first screen above paints without ~640K of JavaScript
    sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
-["nav.js?v=20261117-nav2", "sports.js?v=20261117-nav2", "value.js?v=20261116-adv3", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261117-nav2", "setup.js?v=20261117-nav2", "cloud.js?v=20261116lu", "slates.js?v=20261116-cbb1", "lab.js?v=20261117-nav2"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+["nav.js?v=20261117-ui3", "sports.js?v=20261117-ui3", "value.js?v=20261117-ui3", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261117-ui3", "setup.js?v=20261117-ui3", "cloud.js?v=20261116lu", "slates.js?v=20261116-cbb1", "lab.js?v=20261117-ui3"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
 </script>
 </body>
 </html>

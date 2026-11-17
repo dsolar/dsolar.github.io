@@ -17,6 +17,8 @@
   let mock = store.get("mock", null);            // { cfg, D }
   const cache = {};
   let roomCtl = null;
+  // ?p=<id> (from the header's player search) opens that player's card once the rankings are up
+  let openPlayer = new URLSearchParams(location.search).get("p");
   const rank = { sport: cfg.sport, scoring: "", f: { q: "", pos: cfg.sport === "nhl" ? "g:sk" : "", team: "" }, sort: { k: "rank", dir: 1 }, mode: "default" };
 
   async function loadSport(key) {
@@ -72,7 +74,7 @@
   function header(tab) {
     const right = `<button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
-      tabs: N.TABS, inline: true, tab, right,
+      tabs: N.TABS, inline: true, find: N.findHtml(""), tab, right,
       hrefOf: (t, sub) => (t === "draft" || t === "rankings" ? "#" + t + (sub ? "/" + sub : "") : N.href(t, { sport: cfg.sport })) });
   }
   document.addEventListener("click", (e) => {
@@ -414,6 +416,12 @@
       <p class="ps">${rank.dyn ? "Dynasty: each player's value over the next five seasons, from an age curve for his position, blended with outside dynasty consensus where it ranks him. " : ""}${await freshness(sp)}${sp.data.lines && sp.data.lines.pbat ? `Values come from ${esc(sp.data.lines.pbat.label.replace(/, batting$/, ""))} projections from FanGraphs; the stat columns show last season. ` : ""}${sp.market ? `ESPN and ESPN $ are ESPN's rank and the average price in real ESPN auctions, for comparison. ` : ""}Ranks are value over the replacement player at each position, for the league size and lineup above. Auction values split ${c.teams} budgets of $${c.budget}.</p></div>`;
     if (rank.focus) { const f = $(rank.focus, app); rank.focus = null; if (f) { f.focus(); f.scrollIntoView({ block: "nearest" }); } }
     else if (focus) { const f = document.getElementById(focus); if (f) { f.focus(); if (f.type === "search") f.setSelectionRange(f.value.length, f.value.length); } }
+    if (openPlayer) {
+      const p = P.players.find((x) => String(x.id) === String(openPlayer));
+      openPlayer = null;
+      history.replaceState(null, "", location.pathname + (qs ? `?s=${qs}` : "") + location.hash);
+      if (p) U.dialog(U.playerCard(sp, p, { scoring: P.scoring }), null, { wide: true });
+    }
     // your board: move a player past the next one showing, to a spot, or by dragging; tier breaks
     const visible = () => B.ids.filter((id) => { const p = P.players.find((x) => x.id === id); return p && U.passes(sp, p, rank.f); });
     const keep = () => { U.board.save(sp.key, B); rankingsPage(); };

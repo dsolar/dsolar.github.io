@@ -823,7 +823,16 @@
   const inkOn = (hex) => { const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255; return 0.299 * r + 0.587 * g + 0.114 * b > 160 ? "#111" : "#fff"; };
   // Team logos from ESPN's image server, as on the Big Board: its code for each team where it differs from ours.
   const ESPN_CODES = { nba: { BRK: "bkn", CHO: "cha", PHO: "phx", GSW: "gs", NOP: "no", SAS: "sa", UTA: "utah", WAS: "wsh", NYK: "ny" },
-    nfl: { WAS: "wsh" }, mlb: { CWS: "chw", ATH: "oak" } };
+    nfl: { WAS: "wsh" }, mlb: { CWS: "chw", ATH: "ath" }, nhl: { TBL: "tb", NJD: "nj", LAK: "la", SJS: "sj", UTA: "utah" } };
+  // league logos from the same server (it has none for the NCAA, so college keeps its drawn icon), and conference
+  // logos by ESPN's file name for each conference, as the pool files name them
+  const leagueLogo = (sportKey, px = 64) => (["nba", "nfl", "mlb", "nhl"].includes(sportKey) ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/${sportKey}.png&w=${px}&h=${px}` : null);
+  const CONF_FILES = { SEC: "sec", ACC: "acc", "Big Ten": "big_ten", "Big 12": "big_12", "Big East": "big_east", "A-10": "atlantic_10", American: "american",
+    "Sun Belt": "sun_belt", "Sun Belt - East": "sun_belt", "Sun Belt - West": "sun_belt", CAA: "caa", "Mountain West": "mountain_west", "Big West": "big_west",
+    Southland: "southland", Horizon: "horizon", MAC: "mac", SWAC: "swac", MVC: "missouri_valley", "Big Sky": "big_sky", SoCon: "southern", WCC: "west_coast",
+    CUSA: "conference_usa", Patriot: "patriot", "Pac-12": "pac_12", "Big South": "big_south", UAC: "uac", OVC: "ovc", "Am. East": "america_east", NEC: "nec",
+    Summit: "summit", Ivy: "ivy", "Atlantic Sun": "atlantic_sun", MEAC: "meac", Metro: "maac", "FBS Indep.": "independents" };
+  const confLogo = (name, px = 40) => (CONF_FILES[name] ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/ncaa_conf/500/${CONF_FILES[name]}.png&w=${px}&h=${px}` : null);
   const LOGOS = {};
   const teamLogo = (sportKey, abbr, px = 28) => LOGOS[sportKey] ? (LOGOS[sportKey][abbr] ? `https://a.espncdn.com/combiner/i?img=${LOGOS[sportKey][abbr].replace(/^https:\/\/a\.espncdn\.com/, "")}&w=${px}&h=${px}` : null) : (TEAM_COLORS[sportKey] && TEAM_COLORS[sportKey][abbr]
     ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${sportKey}/500/${(ESPN_CODES[sportKey] || {})[abbr] || String(abbr).toLowerCase()}.png&w=${px}&h=${px}` : null);
@@ -947,5 +956,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { leagueLogo, confLogo, football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

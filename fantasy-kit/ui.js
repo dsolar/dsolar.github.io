@@ -317,7 +317,7 @@
       : opts.inline && opts.tabs && opts.tabs.length ? `<div class="fk-mast fk-band inline"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         <nav class="mast-nav" aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav>
-        <div class="fk-who">${opts.right || ""}</div></div></div>`
+        ${opts.find || ""}<div class="fk-who">${opts.right || ""}</div></div></div>`
       : `<div class="fk-mast fk-band"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>`}
@@ -505,7 +505,7 @@
     const cols = [
       // a prospect with no big-league value shows his place on the prospect board (P12) and sorts after everyone
       { k: "rank", label: "Rk", cls: "r num", title: "Overall rank by value over replacement (P: prospect rank)", sort: (p) => (p.pro && p.prk && !(p.v > 0) ? 1e5 + p.prk : p.rank), asc: true, html: (p) => (p.pro && p.prk && !(p.v > 0) ? `<span class="ps" title="Prospect rank">P${p.prk}</span>` : `<span class="ps">${p.rank}</span>`) },
-      { k: "name", label: "Player", td: "nm", sort: (p) => p.n, asc: true, html: (p) => pname(sport, p) },
+      { k: "name", label: "Player", td: "nm", sort: (p) => p.n, asc: true, html: (p) => pname(sport, p) + sampleTag(sport, p) },
       { k: "prank", label: "Pos rk", cls: "r ps", hide: "s", title: "Rank at his position", sort: (p) => parseInt(String(p.prank).replace(/\D+/g, ""), 10), asc: true, html: (p) => esc(p.prank) },
     ];
     // compact (the draft room): with no position picked, only what compares across positions; a position's own stats
@@ -595,6 +595,19 @@
     fgm_: "FGM", xpm: "XPM", def_td: "Def TD", def_int: "Def INT", def_sack: "Sacks", pts_allow: "Pts allowed", pts_std: "Std pts", pts_half_ppr: "Half PPR", pts_ppr: "PPR" };
   const label = (c) => LABELS[c] || c.toUpperCase();
   // The player card. opts: { actions (html), note (html), scoring, status (html) }
+  // A small sample: his games on his main line are under 40% of the most anyone in the pool has played (value.js
+  // gamesMax), once the season is four games in. { g, of } or null. Rates from a few games swing a lot.
+  function sampleOf(sport, p) {
+    const gm = sport && sport.gMax; if (!gm || !p || !p.l) return null;
+    let best = null;
+    for (const [k, x] of Object.entries(gm)) {
+      if (!p.l[k]) continue;
+      const g = S.stat(sport, p, k, x.col) || 0;
+      if (!best || g / x.hi > best.g / best.of) best = { g, of: x.hi };
+    }
+    return best && best.of >= 4 && best.g > 0 && best.g < 0.4 * best.of ? best : null;
+  }
+  const sampleTag = (sport, p) => { const s = sampleOf(sport, p); return s ? ` <span class="tag ss" title="Small sample: ${s.g} of ${s.of} games so far">${s.g} G</span>` : ""; };
   function playerCard(sport, p, opts = {}) {
     const sc = sport.scorings[opts.scoring] || Object.values(sport.scorings)[0];
     const kd = S.positions(p).some((x) => x === "K" || x === "DEF");
@@ -627,6 +640,7 @@
     const lg = opts.logo && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
     return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
+      ${(() => { const s = sampleOf(sport, p); return s ? `<p class="small pc-ss" style="margin:0 0 12px"><span class="tag ss">Small sample</span> ${s.g} of ${s.of} games so far, so his rates can still move a lot.</p>` : ""; })()}
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
       <div class="stack">${opts.extra || ""}${zs}${contractPanel(sport, p)}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
   }
@@ -2098,7 +2112,7 @@
     const start = () => { new MutationObserver(kick).observe(document.body, { childList: true, subtree: true }); window.addEventListener("resize", kick); kick(); };
     if (document.body) start(); else document.addEventListener("DOMContentLoaded", start);
   }
-  FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, setSwitch, setStatSet, statSet, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
+  FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, setSwitch, setStatSet, statSet, sampleOf, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
     groupLabel, playerGroup, slotGroup, contractPanel, capMoney, playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };

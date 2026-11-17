@@ -223,3 +223,9 @@ test('auto-start: a team that turns it on gets its best lineup each week, unless
   G.autoStart(L, ctx, now + 2000);
   assert.deepEqual(L.lineups[L.week][2], mine);
 });
+
+test('reseeding chosen at setup reaches the league (season.reseed -> settings.reseed)', () => {
+  const on = league({ playoffTeams: 6, reseed: true }).L, off = league({ playoffTeams: 6 }).L;
+  assert.equal(on.settings.reseed, true);
+  assert.ok(!off.settings.reseed);
+});

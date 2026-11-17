@@ -267,7 +267,20 @@
   }
   function evaluate(sport, players, league = {}) {
     const kept = swapProjections(sport, players, league);
-    try { return evaluate_(sport, players, league); } finally { if (kept) for (const [p, l] of kept) p.l = l; }
+    try { return evaluate_(sport, players, league); } finally { if (kept) for (const [p, l] of kept) p.l = l; gamesMax(sport, players); }
+  }
+  // The most games anyone in this pool has played on each of the player file's own lines (not projections), so a
+  // page can flag a small sample against it (ui.js sampleOf): sport.gMax = { line: games }.
+  const ownLines = (sport) => Object.entries((sport.data && sport.data.lines) || {}).filter(([k, d]) => !d.proj && !d.ros && d.week == null && !/^p(bat|pit|sk|goalie)$/.test(k)).map(([k]) => k);
+  function gamesMax(sport, players) {
+    const out = {};
+    for (const k of ownLines(sport)) {
+      const cols = sport.cols && sport.cols[k], col = cols ? (cols.gp != null ? "gp" : cols.g != null ? "g" : null) : null;
+      if (!col) continue;
+      let hi = 0; for (const p of players) { const g = p.l && p.l[k] ? S.stat(sport, p, k, col) || 0 : 0; if (g > hi) hi = g; }
+      if (hi) out[k] = { col, hi };
+    }
+    sport.gMax = out;
   }
   function evaluate_(sport, players, league) {
     const sc = scoringOf(sport, league);

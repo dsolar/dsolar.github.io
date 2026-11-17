@@ -74,7 +74,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, confs: [], cbbEnd: "conf", cfbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, reseed: 0, confs: [], cbbEnd: "conf", cfbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -144,7 +144,7 @@
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
-      tabs: N.TABS, inline: true, tab: view === "new" && oneWeek() ? "week" : "leagues",
+      tabs: N.TABS, inline: true, find: N.findHtml(""), tab: view === "new" && oneWeek() ? "week" : "leagues",
       right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => N.href(t) });
   }
@@ -495,7 +495,7 @@
       roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       heist: `${form.hzShields} shield${form.hzShields === 1 ? "" : "s"}, ${form.hzSteals} steal${form.hzSteals === 1 ? "" : "s"}, ${form.hzJinxes} jinx${form.hzJinxes === 1 ? "" : "es"}, ${form.hzClock} sec`,
       season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" && form.season !== "total" ? `, ${form.divs} divisions` : ""}${!gl && !form.divs && ["h2h", "h2hcats"].includes(form.season) && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2 ? `, splits after week ${form.splitAfter}` : ""}`,
-      playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks${chaseOn() ? ", the chase" : ""}` : "None",
+      playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks${chaseOn() ? ", the chase" : ""}${reseedOk() && form.reseed ? ", reseeded" : ""}` : "None",
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverDays}-day waivers` : `Rolling, ${form.waiverDays}-day waivers`,
       trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
       carry: (form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Up to ${form.keepN} keepers` : "Redraft") + (form.kind !== "redraft" && form.proRounds > 0 ? `, ${form.proRounds} prospect round${form.proRounds > 1 ? "s" : ""}` : ""),
@@ -753,9 +753,10 @@
     const players = (on.length ? on.flatMap((c) => m[c]) : Object.keys(teams)).reduce((a, t) => a + (counts[t] || 0), 0);
     const need = form.teams * (lineupOf(sp).length + benchOf(sp));
     const P = powerOf(), power = P.every((c) => m[c]) && isPower(on);
-    const chip = (k, label, pressed, n) => `<button type="button" data-conf="${esc(k)}" aria-pressed="${pressed}">${esc(label)}${n != null ? ` <span class="ct">${n}</span>` : ""}</button>`;
+    const chip = (k, label, pressed, n, logo) => `<button type="button" data-conf="${esc(k)}" aria-pressed="${pressed}">${logo || ""}${esc(label)}${n != null ? ` <span class="ct">${n}</span>` : ""}</button>`;
     const quick = `<div class="chips confs">${chip("", "Every school", !on.length)}${P.length ? chip("@power", `Power ${P.length === 4 ? "four" : "five"}`, power) : ""}</div>`;
-    const list = `<div class="chips confs" role="group" aria-label="Conferences">${names.map((c) => chip(c, c, on.includes(c), m[c].length)).join("")}</div>`;
+    const clogo = (c) => { const src = S.confLogo && S.confLogo(c); return src ? `<img class="cf-logo" src="${src}" alt="" loading="lazy" onerror="this.remove()">` : ""; };
+    const list = `<div class="chips confs" role="group" aria-label="Conferences">${names.map((c) => chip(c, c, on.includes(c), m[c].length, clogo(c))).join("")}</div>`;
     const deep = players && need > players * 0.6;
     const all = Object.keys(teams).length, level = sp.key === "cfb" ? "FBS" : "Division I";
     const hint = on.length
@@ -810,6 +811,7 @@
         ${chaseOk() ? `<div class="g2">${fld("The final", seg("pfinal", [["game", "Head to head"], ["chase", "The chase"]], chaseOn() ? "chase" : "game", "The final", { wrap: true }), chaseOn() ? `The last four race for the highest total, no matchups${po > 4 ? `: the rounds before it narrow ${po} teams to four` : ""}. The totals set first through fourth.` : "Two teams, one matchup.")}
           ${chaseOn() ? fld("The chase lasts", seg("chaseWeeks", [[2, "Two weeks"], [1, "One week"], [3, "Three weeks"]], form.chaseWeeks || 2, "The chase lasts", { wrap: true })) : ""}</div>` : ""}
         ${po >= 2 ? `<div class="g2">${chaseOn() ? (po > 4 ? fld("Rounds before the chase", seg("legs", [["1", "One week"], ["all2", "Two weeks"]], form.legs === "all2" ? "all2" : "1", "Rounds before the chase", { wrap: true })) : "") : fld("Each round lasts", seg("legs", [["1", "One week"], ["final2", "Two-week final"], ["all2", "Two weeks"]], form.legs, "Playoff rounds", { wrap: true }))}
+        ${reseedOk() ? fld("After each round", seg("reseed", [[0, "Keep the bracket"], [1, "Reseed"]], form.reseed ? 1 : 0, "After each round", { wrap: true }), form.reseed ? "The best seed left always plays the worst seed left, so the top seeds never meet before they have to." : "A fixed bracket: the paths are set when the playoffs start.") : ""}
         ${fld("Also play", seg("cons", [["none", "Nothing else"]].concat(po >= 3 && !chaseOn() ? [["third", "Third place"]] : [], n - po >= 2 ? [["bracket", "Consolation"]] : []), chaseOn() && form.cons === "third" ? "none" : form.cons, "Also play", { wrap: true }))}</div>` : ""}`;
   }
   function waiversBody() {
@@ -854,13 +856,15 @@
   // the chase (a points race among the last four): points scoring, four or more playoff teams
   const chaseOk = () => scoringType(S[form.sport]) === "points" && Math.min(form.playoffs, form.teams) >= 4;
   const chaseOn = () => chaseOk() && form.pfinal === "chase";
+  // reseeding changes something only with three or more rounds of games (six playoff teams or more)
+  const reseedOk = () => h2hLike() && Math.min(form.playoffs, form.teams) >= 6;
   const playoffWeeks = (po) => {
     if (chaseOn()) { const pre = po <= 4 ? 0 : Math.ceil(Math.log2(po)) - 2; return pre * (form.legs === "all2" ? 2 : 1) + (form.chaseWeeks || 2); }
     const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R;
   };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nhl: ["C", "LW", "RW", "D", "G"], nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(aBudget|ladSeed|chaseWeeks|nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(reseed|aBudget|ladSeed|chaseWeeks|nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
@@ -1034,7 +1038,7 @@
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: oneWeek() ? 0 : form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: n <= 2 && form.review === "vote" ? "none" : form.review, waiverDays: form.waiverDays, gameLock: form.gameLock || (form.sport === "nfl" ? "week" : "off"), reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
         playoffTeams: fmt === "roto" || fmt === "total" || oneWeek() ? 0 : Math.min(form.playoffs, n), playoffLegs: form.legs,
         consolation: form.cons === "third" && (Math.min(form.playoffs, n) < 3 || chaseOn()) ? "none" : form.cons === "bracket" && n - Math.min(form.playoffs, n) < 2 ? "none" : form.cons,
-        ...(chaseOn() ? { playoffFinal: "chase", chaseWeeks: form.chaseWeeks || 2 } : {}) });
+        ...(chaseOn() ? { playoffFinal: "chase", chaseWeeks: form.chaseWeeks || 2 } : {}), ...(reseedOk() && form.reseed ? { reseed: true } : {}) });
       if (rematch) {
         D.teams.forEach((t, i) => { const o = rematch.teams[i]; if (o) Object.assign(t, o); });
         const r = await C.rpc("fk_rematch", { p_id: rematch.id, p_draft: D, p_name: form.name }).catch((e) => ({ error: e.message }));

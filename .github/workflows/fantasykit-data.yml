@@ -27,6 +27,7 @@ on:
       - tools/dynasty_pull.py
       - tools/market_pull.py
       - tools/data_health.py
+      - tools/fantasykit_search.py
       - .github/workflows/fantasykit-data.yml
   workflow_dispatch:
 
@@ -70,6 +71,10 @@ jobs:
 
       - name: Pull ESPN ranks, ADP and auction prices
         run: python3 tools/market_pull.py
+        continue-on-error: true
+
+      - name: Build the player search index
+        run: python3 tools/fantasykit_search.py
         continue-on-error: true
 
       - name: Check the data

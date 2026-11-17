@@ -38,6 +38,7 @@
       : { format: s.format === "roto" || s.format === "total" ? s.format : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" || s.format === "total" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
         playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
         ...(s.playoffFinal === "chase" ? { playoffFinal: "chase", chaseWeeks: Math.max(1, Math.min(3, Math.floor(Number(s.chaseWeeks) || 2))) } : {}),
+        ...(s.reseed ? { reseed: true } : {}),
         deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: ["none", "commish"].includes(s.review) ? s.review : "vote", reviewHours: s.reviewHours || 24, vetoShare: s.vetoShare || 0.5,
         waiverDays: s.waiverDays != null ? s.waiverDays : 2, gameLock: s.gameLock || (sport && (sport.key === "nfl" || sport.key === "cfb") ? "week" : "off"), faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
     // roster rules from the form: IR spots, a weekly pickup limit, position limits

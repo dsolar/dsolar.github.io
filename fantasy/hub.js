@@ -47,6 +47,11 @@
     '</defs></svg>';
   document.body.insertAdjacentHTML("afterbegin", SPRITE);
   var ic = function (id) { return '<svg class="ic" aria-hidden="true"><use href="#' + id + '"/></svg>'; };
+  // a sport's mark: its league's logo for the pros, the drawn icon for college (and if the logo won't load)
+  var mark = function (k) {
+    var src = S && S.leagueLogo ? S.leagueLogo(k) : null;
+    return src ? '<img class="ic lg-logo" src="' + src + '" alt="" aria-hidden="true" loading="lazy" onerror="this.outerHTML=this.dataset.ic" data-ic="' + esc(ic("i-" + k)) + '">' : ic("i-" + k);
+  };
   var field = function (k) { return '<svg class="field" viewBox="0 0 420 280" aria-hidden="true"><use href="#f-' + k + '"/></svg>'; };
 
   /* ---------- the sports ---------- */
@@ -179,13 +184,13 @@
       };
       el.insertAdjacentHTML("beforebegin", '<header class="fk-top hub-top"><div class="fk-mast fk-band inline"><div class="wrap">' +
         '<a class="fk-brand" href="' + ROOT + 'fantasy/"><img src="' + KIT + 'mark.svg" alt=""><b class="disp">Draft Lab</b></a>' +
-        '<nav class="mast-nav" aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav>" +
+        '<nav class="mast-nav" aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav>" + (N.findHtml ? N.findHtml(KIT) : "") +
         '<div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark</button></div></div></div></header>');
     }
     // the sport row rides in the sticky header, so it stays put under the masthead
     var top = $(".hub-top"); if (top && el.parentNode !== top) top.appendChild(el);
     var link = function (k, label, icon, href) {
-      return '<a class="t ' + k + '" href="' + href + '"' + (page === k ? ' aria-current="page"' : "") + ">" + ic(icon) + label + "</a>";
+      return '<a class="t ' + k + '" href="' + href + '"' + (page === k ? ' aria-current="page"' : "") + ">" + (SPORTS[k] ? mark(k) : ic(icon)) + label + "</a>";
     };
     el.setAttribute("aria-label", "Sports");
     el.innerHTML = '<div class="wrap">' + link("overview", "All sports", "i-home", ROOT + "fantasy/") + '<span class="sep" aria-hidden="true"></span>' +
@@ -222,20 +227,18 @@
     if (pitcher) return p.pos.indexOf("RP") >= 0 && st("pit", "sv") > st("pit", "w") ? st("pit", "sv") + " SV, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA" : st("pit", "w") + " W, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA";
     return st("bat", "hr") + " HR, " + st("bat", "sb") + " SB, " + avg(st("bat", "avg"));
   }
-  // a player's face: his photo; for a college player without one, his school's logo; else his initials in the team color
-  var HEADS = { cbb: "mens-college-basketball", cfb: "college-football" };
+  // a player's face: his photo; without one, his team's or school's logo; else his initials in the team color
+  var HEADS = { nba: "nba", nfl: "nfl", cbb: "mens-college-basketball", cfb: "college-football" };
   function face(k, p, size) {
     var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][p.t];
-    if (k === "nhl" || HEADS[k]) {
-      var logo = S.teamLogo ? S.teamLogo(k, p.t) : null, def = (p.pos || [])[0] === "DEF";
-      var src = def ? logo : k === "nhl" ? p.head : p.espn ? "https://a.espncdn.com/combiner/i?img=/i/headshots/" + HEADS[k] + "/players/full/" + p.espn + ".png&w=180&h=131" : logo;
-      var toLogo = logo && !def ? "if(!this.dataset.l){this.dataset.l=1;this.parentNode.classList.remove('espn');this.parentNode.classList.add('lgo');this.src='" + esc(logo) + "'}else{this.parentNode.classList.remove('has-face','lgo');this.remove()}" : "this.parentNode.classList.remove('has-face');this.remove()";
-      var cls = src === logo ? " lgo" : k !== "nhl" ? " espn" : "";
-      return '<span class="ds-face has-face' + cls + '" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("").slice(0, 3)) + "</span>" +
-        (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" onerror="' + toLogo + '">' : "") + "</span>";
-    }
-    var id = k === "nba" ? p.espn : k === "mlb" ? p.id : null;
-    return window.DSFaces ? window.DSFaces.html({ sport: k, id: id, name: p.n, color: c || "#33415c", size: size }) : "";
+    var logo = S.teamLogo && p.t && p.t !== "FA" ? S.teamLogo(k, p.t, 96) : null, def = (p.pos || [])[0] === "DEF";
+    var photo = def ? null : k === "nhl" ? p.head : k === "mlb" && p.id ? "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/" + p.id + "/headshot/67/current"
+      : HEADS[k] && p.espn ? "https://a.espncdn.com/combiner/i?img=/i/headshots/" + HEADS[k] + "/players/full/" + p.espn + ".png&w=180&h=131" : null;
+    var src = photo || logo;
+    var toLogo = photo && logo ? "if(!this.dataset.l){this.dataset.l=1;this.parentNode.classList.remove('espn');this.parentNode.classList.add('lgo');this.src='" + esc(logo) + "'}else{this.parentNode.classList.remove('has-face','lgo');this.remove()}" : "this.parentNode.classList.remove('has-face','lgo');this.remove()";
+    var cls = !photo && logo ? " lgo" : photo && HEADS[k] ? " espn" : "";
+    return '<span class="ds-face' + (src ? " has-face" : "") + cls + '" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("").slice(0, 3)) + "</span>" +
+      (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" onerror="' + toLogo + '">' : "") + "</span>";
   }
   var team = function (k, abbr) { var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][abbr]; return '<span class="tm"><i style="background:' + (c || "#8894a4") + '"></i>' + esc(abbr || "FA") + "</span>"; };
   var posName = function (sp, p) { return (p.pos || []).filter(function (x) { return x !== "UT" || p.pos.length === 1; }).join("/"); };
@@ -372,7 +375,7 @@
     var defScoring = S.ALL[k].scorings[s.presets[0][0]];
     hero.className = "hero sport " + k;
     hero.innerHTML = field(k) + '<div class="wrap"><span class="eyebrow">Fantasy ' + esc(s.name.toLowerCase()) + "</span>" +
-      '<h1 class="disp"><span class="badge-ic">' + ic("i-" + k) + "</span>" + esc(s.short) + '</h1><p class="lede">' + esc(s.tag) + '</p><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span>" +
+      '<h1 class="disp"><span class="badge-ic">' + mark(k) + "</span>" + esc(s.short) + '</h1><p class="lede">' + esc(s.tag) + '</p><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span>" +
       '<div class="cta"><a class="btn sp-go" href="' + KIT + "?s=" + k + '#home">Mock a ' + s.name.toLowerCase() + ' draft</a><a class="btn" href="' + KIT + "?s=" + k + '#rankings">Rankings</a><a class="btn" href="' + KIT + "leagues.html?s=" + k + '">Start a league</a></div>' +
       '<div class="facts"><div><small>Season</small><b>' + mdText(s.season[0]) + " to " + mdText(s.season[1]) + "</b></div><div><small>Draft season</small><b>" + MONTHS_L[Math.floor(s.draft[0] / 100) - 1] +
       "</b></div><div><small>Default scoring</small><b>" + esc(defScoring ? defScoring.label : "Points") + "</b></div></div></div>";
@@ -394,7 +397,7 @@
   function doors(el) {
     el.innerHTML = ORDER.map(function (k) {
       var s = SPORTS[k], st = statusOf(k);
-      return '<a class="door ' + k + '" href="' + ROOT + "fantasy/" + k + '/">' + field(k) + '<div class="door-top"><div class="row"><span class="badge-ic">' + ic("i-" + k) + '</span><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span></div>" +
+      return '<a class="door ' + k + '" href="' + ROOT + "fantasy/" + k + '/">' + field(k) + '<div class="door-top"><div class="row"><span class="badge-ic">' + mark(k) + '</span><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span></div>" +
         '<h3 class="disp">' + esc(s.short) + "</h3><p>" + esc(s.blurb) + '</p></div><div class="door-board"><div class="h"><span>Top of the board</span><span>$</span></div><ol data-door="' + k + '"><li class="ph" style="display:block">Loading...</li></ol></div>' +
         '<div class="door-foot"><span>Open ' + s.name.toLowerCase() + '</span><span class="arr">&rarr;</span></div></a>';
     }).join("");
@@ -422,7 +425,17 @@
         return '<div class="cal-row ' + k + '"><span class="lbl">' + ic("i-" + k) + esc(s.short) + '</span><div class="track">' + segs(s.draft, "draft", "") + segs(s.season, "", "Season") + (k === ORDER[ORDER.length - 1] ? '<span class="today" style="left:' + now.toFixed(2) + '%"></span>' : '<span class="today nolabel" style="left:' + now.toFixed(2) + '%"></span>') + '</div></div>';
       }).join("") + '<div class="cal-key"><span><i class="d"></i>Draft season</span><span><i></i>Fantasy season</span></div>';
   }
+  // your leagues and this week's matchups, for someone signed in (fantasy-kit/home.js loads only then)
+  function yours() {
+    var el = $("[data-yours]"); if (!el) return;
+    var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
+    if (!on) return;
+    var s = document.createElement("script"); s.src = KIT + "home.js?v=20261117-ui3";
+    s.onload = function () { if (window.FK && window.FK.home) window.FK.home.mount(el); };
+    document.head.appendChild(s);
+  }
   function overview() {
+    yours();
     doors($("[data-doors]"));
     calendar($("[data-cal]"));
     var mineEl = $("[data-mine]");

@@ -305,3 +305,25 @@ a.mode:hover{border-color:var(--sp);transform:translateY(-2px)}
 /* a school's logo in place of a missing photo */
 .ds-face.lgo{background:#fff}
 .ds-face.lgo img{object-fit:contain;padding:12%;transform:none}
+
+/* league logos where the sport's icon was: on a white chip so every logo reads on any background */
+.ic.lg-logo{object-fit:contain;background:#fff;border-radius:6px;padding:2px;box-sizing:border-box}
+.badge-ic .ic.lg-logo{width:72%;height:72%;border-radius:8px}
+
+/* your leagues, at the top of the home page when signed in */
+.ym{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.ym-c{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow);text-decoration:none;color:var(--ink)}
+.ym-c:hover{border-color:var(--muted)}
+.ym-lg{width:30px;height:30px;object-fit:contain;flex:none;background:#fff;border-radius:7px;padding:2px;box-sizing:border-box}
+.ym-sp{display:grid;place-items:center;font-size:9px;font-weight:900;background:var(--surface-3);color:var(--muted)}
+.ym-m{display:flex;flex-direction:column;min-width:0;gap:2px}
+.ym-m b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ym-m small{color:var(--muted);font-size:12.5px}
+.ym-s:empty{display:none}
+.ym-s{display:flex;flex-direction:column;margin-top:6px}
+.ym-sc{font-weight:900;font-size:20px;font-variant-numeric:tabular-nums}
+.ym-sc i{font-style:normal;color:var(--muted);margin:0 5px}
+.ym-sc.up{color:#15803D}.ym-sc.down{color:#B91C1C}
+:root[data-theme="dark"] .ym-sc.up{color:#4ADE80}:root[data-theme="dark"] .ym-sc.down{color:#F87171}
+.ym-vs{font-size:12.5px;color:var(--muted)}
+.ym-live{font-style:normal;font-weight:800;color:#DC2626;font-size:11px;text-transform:uppercase;letter-spacing:.06em}

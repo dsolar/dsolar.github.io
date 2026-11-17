@@ -20,7 +20,7 @@
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
-      tabs: N.TABS, inline: true, tab: "week",
+      tabs: N.TABS, inline: true, find: N.findHtml(""), tab: "week",
       right: `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => N.href(t) });
   }
