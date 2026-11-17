@@ -51,7 +51,8 @@ const nyDate = (t = Date.now()) => new Intl.DateTimeFormat("en-CA", { timeZone: 
 const addDays = (iso: string, n: number) => { const d = new Date(iso + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const mondayOf = (iso: string) => { const d = new Date(iso + "T12:00:00Z"); return addDays(iso, -((d.getUTCDay() + 6) % 7)); };
 const slug = (n: string) => n.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-const sumInto = (acc: Record<string, number[]>, id: string, row: number[]) => { const a = acc[id]; acc[id] = a ? a.map((x, i) => x + (row[i] || 0)) : row.slice(); };
+// rows can differ in length (a game kept before the columns grew): the longer one sets it, missing parts count 0
+const sumInto = (acc: Record<string, number[]>, id: string, row: number[]) => { const a = acc[id] || []; acc[id] = Array.from({ length: Math.max(a.length, row.length) }, (_, i) => (a[i] || 0) + (row[i] || 0)); };
 type Teams = Record<string, { played: number; live: number; left: number }>;
 // each pro team's games this week, for the matchup page: when, against whom, where it stands
 type Game = { id: string; at: string; state: string; detail: string; opp: string; home: boolean; us: number | null; them: number | null };
@@ -91,13 +92,17 @@ function nbaBox(s: any) {
       if (a.didNotPlay || !a.stats?.length) continue;
       const v = (k: string) => a.stats[ix(k)] ?? "0";
       const pair = (k: string) => String(v(k)).split("-").map((x) => Number(x) || 0);
-      const [fgm, fga] = pair("FG"), [tpm] = pair("3PT"), [ftm, fta] = pair("FT");
-      out[slug(a.athlete?.displayName || "")] = [1, 1, Number(v("MIN")) || 0, fgm, fga, ftm, fta, tpm, Number(v("PTS")) || 0, Number(v("REB")) || 0, Number(v("AST")) || 0, Number(v("STL")) || 0, Number(v("BLK")) || 0, Number(v("TO")) || 0];
+      const [fgm, fga] = pair("FG"), [tpm, tpa] = pair("3PT"), [ftm, fta] = pair("FT");
+      const n = (k: string) => Number(v(k)) || 0, pts = n("PTS"), reb = n("REB"), ast = n("AST"), stl = n("STL"), blk = n("BLK");
+      const oreb = n("OREB"), tens = [pts, reb, ast, stl, blk].filter((x) => x >= 10).length;
+      out[slug(a.athlete?.displayName || "")] = [1, 1, n("MIN"), fgm, fga, ftm, fta, tpm, pts, reb, ast, stl, blk, n("TO"),
+        oreb, Math.max(0, reb - oreb), n("PF"), tpa, n("+/-"), tens >= 2 ? 1 : 0, tens >= 3 ? 1 : 0];
     }
   }
   return out;
 }
-const NBA_COLS = ["gp", "eg", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "ast", "stl", "blk", "tov"];
+// the same columns as tools/fantasykit_data.py's NBA_COLS
+const NBA_COLS = ["gp", "eg", "min", "fgm", "fga", "ftm", "fta", "tpm", "pts", "reb", "ast", "stl", "blk", "tov", "oreb", "dreb", "pf", "tpa", "pm", "dd", "td"];
 const NBA_TEAM: Record<string, string> = { GS: "GSW", NY: "NYK", SA: "SAS", NO: "NOP", UTAH: "UTA", WSH: "WAS", BKN: "BRK", CHA: "CHO", PHX: "PHO" };
 async function nba() {
   const today = nyDate(), start = mondayOf(today), end = addDays(start, 6);
