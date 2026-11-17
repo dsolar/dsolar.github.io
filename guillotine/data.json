@@ -4,7 +4,7 @@
  "week": 10,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-17T04:27:19Z",
+ "updated": "2026-11-17T07:25:57Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -62,7 +62,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 8.1,
-     "next_proj": 18.48,
+     "next_proj": 18.28,
      "in_best": true
     },
     {
@@ -142,9 +142,9 @@
      "proj": 14.76,
      "rank": "RB11",
      "date": "2026-11-16",
-     "actual": 16.5,
      "final": true,
-     "next_proj": 14.91,
+     "actual": 16.5,
+     "next_proj": 14.76,
      "in_best": true
     },
     {
@@ -221,7 +221,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 9.1,
-     "next_proj": 15.63,
+     "next_proj": 15.44,
      "in_best": true
     },
     {
@@ -340,7 +340,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 32.1,
-     "next_proj": 9.59,
+     "next_proj": 9.6,
      "in_best": true
     },
     {
@@ -380,7 +380,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 35.42,
-     "next_proj": 22.48,
+     "next_proj": 22.62,
      "in_best": true
     },
     {
@@ -494,7 +494,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 12.1,
-     "next_proj": 12.59
+     "next_proj": 11.92
     },
     {
      "slot": "BN",
@@ -530,7 +530,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.7,
-     "next_proj": 12.62
+     "next_proj": 12.64
     },
     {
      "slot": "BN",
@@ -568,7 +568,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 15.62,
-     "next_proj": 17.29
+     "next_proj": 17.28
     },
     {
      "slot": "IR",
@@ -611,7 +611,7 @@
    ],
    "points_final": 166.72,
    "best": 148.5,
-   "best_next": 139.2,
+   "best_next": 138.1,
    "locked": 166.72,
    "locked_proj": 148.53,
    "games_final": 9
@@ -671,7 +671,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 10.98,
-     "next_proj": 16.4,
+     "next_proj": 16.36,
      "in_best": true
     },
     {
@@ -753,7 +753,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 6.6,
-     "next_proj": 13.27,
+     "next_proj": 13.28,
      "in_best": true
     },
     {
@@ -790,7 +790,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 4.5,
-     "next_proj": 12.86,
+     "next_proj": 12.79,
      "in_best": true
     },
     {
@@ -988,7 +988,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 33.16,
-     "next_proj": 25.38,
+     "next_proj": 25.07,
      "in_best": true
     },
     {
@@ -1023,7 +1023,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 13.03
+     "next_proj": 13.01
     },
     {
      "slot": "BN",
@@ -1055,7 +1055,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 15.78
+     "next_proj": 15.83
     },
     {
      "slot": "BN",
@@ -1126,7 +1126,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 17.84
+     "next_proj": 17.93
     },
     {
      "slot": "IR",
@@ -1167,7 +1167,7 @@
    ],
    "points_final": 172.54,
    "best": 135.4,
-   "best_next": 147.8,
+   "best_next": 147.5,
    "locked": 172.54,
    "locked_proj": 135.41,
    "games_final": 9
@@ -1461,7 +1461,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 6.2,
-     "next_proj": 10.35,
+     "next_proj": 10.52,
      "in_best": true
     },
     {
@@ -1501,7 +1501,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 31.7,
-     "next_proj": 14.5,
+     "next_proj": 14.46,
      "in_best": true
     },
     {
@@ -1579,7 +1579,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 12.8,
-     "next_proj": 11.27
+     "next_proj": 10.94
     },
     {
      "slot": "BN",
@@ -1732,7 +1732,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 1.4,
-     "next_proj": 6.68
+     "next_proj": 6.75
     },
     {
      "slot": "IR",
@@ -1777,7 +1777,7 @@
    ],
    "points_final": 169.04,
    "best": 136.0,
-   "best_next": 130.7,
+   "best_next": 130.5,
    "locked": 169.04,
    "locked_proj": 135.62,
    "games_final": 9
@@ -1953,9 +1953,9 @@
      "proj": 13.24,
      "rank": "WR10",
      "date": "2026-11-16",
-     "actual": 8.4,
      "final": true,
-     "next_proj": 12.06,
+     "actual": 8.4,
+     "next_proj": 11.87,
      "in_best": true
     },
     {
@@ -1993,7 +1993,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 5.0,
-     "next_proj": 12.38,
+     "next_proj": 12.27,
      "in_best": true
     },
     {
@@ -2111,7 +2111,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 24.3,
-     "next_proj": 12.68,
+     "next_proj": 12.58,
      "in_best": true
     },
     {
@@ -2219,7 +2219,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 11.61
+     "next_proj": 11.62
     },
     {
      "slot": "BN",
@@ -2258,7 +2258,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 0.3,
-     "next_proj": 10.86
+     "next_proj": 10.7
     },
     {
      "slot": "BN",
@@ -2295,9 +2295,9 @@
      "proj": 7.14,
      "rank": "RB37",
      "date": "2026-11-16",
-     "actual": 17.0,
      "final": true,
-     "next_proj": 7.71
+     "actual": 17.0,
+     "next_proj": 8.12
     },
     {
      "slot": "BN",
@@ -2342,7 +2342,7 @@
    ],
    "points_final": 148.86,
    "best": 135.4,
-   "best_next": 125.8,
+   "best_next": 125.4,
    "locked": 148.86,
    "locked_proj": 135.38,
    "games_final": 9
@@ -2406,7 +2406,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 23.34,
-     "next_proj": 25.19,
+     "next_proj": 25.18,
      "in_best": true
     },
     {
@@ -2446,7 +2446,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 21.7,
-     "next_proj": 17.83,
+     "next_proj": 17.87,
      "in_best": true
     },
     {
@@ -2485,7 +2485,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 13.5,
-     "next_proj": 10.61,
+     "next_proj": 10.62,
      "in_best": true
     },
     {
@@ -2562,7 +2562,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 28.6,
-     "next_proj": 18.0,
+     "next_proj": 17.86,
      "in_best": true
     },
     {
@@ -2641,7 +2641,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 2.8,
-     "next_proj": 12.07,
+     "next_proj": 12.17,
      "in_best": true
     },
     {
@@ -2792,7 +2792,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 18.04
+     "next_proj": 18.05
     },
     {
      "slot": "BN",
@@ -2900,7 +2900,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 10.49
+     "next_proj": 10.48
     },
     {
      "slot": "IR",
@@ -2938,7 +2938,7 @@
      "proj": 0.0,
      "actual": 0.0,
      "final": true,
-     "next_proj": 17.12
+     "next_proj": 17.1
     }
    ],
    "points_final": 155.18,
@@ -3002,7 +3002,7 @@
      "date": "2026-11-12",
      "final": true,
      "actual": 22.76,
-     "next_proj": 21.28,
+     "next_proj": 21.19,
      "in_best": true
     },
     {
@@ -3202,7 +3202,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 17.4,
-     "next_proj": 11.27
+     "next_proj": 11.19
     },
     {
      "slot": "TE",
@@ -3241,7 +3241,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 4.0,
-     "next_proj": 10.47,
+     "next_proj": 10.55,
      "in_best": true
     },
     {
@@ -3391,7 +3391,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 9.82
+     "next_proj": 9.81
     },
     {
      "slot": "BN",
@@ -3422,7 +3422,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 9.06
+     "next_proj": 9.05
     },
     {
      "slot": "BN",
@@ -3454,7 +3454,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 20.76
+     "next_proj": 20.72
     },
     {
      "slot": "BN",
@@ -3493,7 +3493,7 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 8.4,
-     "next_proj": 10.25
+     "next_proj": 10.26
     },
     {
      "slot": "IR",
@@ -3530,12 +3530,12 @@
      "date": "2026-11-15",
      "final": true,
      "actual": 4.9,
-     "next_proj": 7.73
+     "next_proj": 7.74
     }
    ],
    "points_final": 152.24,
    "best": 134.2,
-   "best_next": 129.9,
+   "best_next": 129.8,
    "locked": 152.24,
    "locked_proj": 133.84,
    "games_final": 9
@@ -4619,7 +4619,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-17T04:27:20Z",
+  "updated": "2026-11-17T07:26:01Z",
   "players": 3046,
   "unmatched": []
  }
