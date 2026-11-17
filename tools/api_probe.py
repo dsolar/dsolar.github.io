@@ -34,25 +34,16 @@ def probe(name, url, keep=None):
 Q = "region=us&lang=en&contentorigin=espn"
 W = "https://site.web.api.espn.com/apis"
 S = W + "/site/v2/sports/football/college-football"
-probe("fpi", W + "/fitt/v3/sports/football/college-football/powerindex?" + Q + "&limit=1000&season=2026&group=80",
-      lambda d: {"categories": d.get("categories"), "count": len(d.get("teams", [])), "first": (d.get("teams") or [None])[0], "updated": d.get("lastUpdated")})
-probe("scoreboard", S + "/scoreboard?" + Q + "&groups=80&limit=1000",
-      lambda d: {"week": d.get("week"), "season": d.get("season"), "count": len(d.get("events", [])), "calendar": (d.get("leagues") or [{}])[0].get("calendar"), "first": (d.get("events") or [None])[0]})
-probe("scoreboard_wk3", S + "/scoreboard?" + Q + "&groups=80&limit=1000&week=3&seasontype=2&dates=2026",
-      lambda d: {"count": len(d.get("events", [])), "one": (d.get("events") or [None])[0]})
-probe("rankings", S + "/rankings?" + Q,
-      lambda d: [{"name": r.get("name"), "type": r.get("type"), "date": r.get("date"), "headline": r.get("headline"), "n": len(r.get("ranks", [])), "top": r.get("ranks", [])[:2]} for r in d.get("rankings", [])])
-probe("standings", W + "/v2/sports/football/college-football/standings?" + Q + "&group=80&season=2026&level=3",
-      lambda d: str(d)[:4000])
-probe("schedule", S + "/teams/194/schedule?" + Q + "&season=2026", lambda d: {"events": len(d.get("events", [])), "first": (d.get("events") or [None])[0]})
-probe("roster", W + "/common/v3/sports/football/college-football/teams/194/roster?" + Q + "&season=2026",
-      lambda d: {"keys": list(d.keys()), "groups": [(g.get("position"), len(g.get("athletes", []))) for g in d.get("positionGroups", [])], "one": ((d.get("positionGroups") or [{}])[0].get("athletes") or [None])[0], "coach": d.get("coach")})
-probe("byathlete_pass", W + "/common/v3/sports/football/college-football/statistics/byathlete?" + Q + "&isqualified=false&limit=1000&page=1&category=passing&sort=passing.passingYards:desc&season=2026&seasontype=2&groups=80",
-      lambda d: {"categories": d.get("categories"), "pagination": d.get("pagination"), "count": len(d.get("athletes", [])), "athletes": d.get("athletes", [])[:2]})
-probe("byathlete_def", W + "/common/v3/sports/football/college-football/statistics/byathlete?" + Q + "&isqualified=false&limit=1000&page=1&category=defensive&sort=defensive.totalTackles:desc&season=2026&seasontype=2&groups=80",
-      lambda d: {"categories": [c.get("name") for c in d.get("categories", [])], "pagination": d.get("pagination"), "count": len(d.get("athletes", [])), "athlete": d.get("athletes", [])[:1]})
-probe("teams", S + "/teams?" + Q + "&groups=80&limit=500", lambda d: {"n": len(((d.get("sports") or [{}])[0].get("leagues") or [{}])[0].get("teams", [])), "one": (((d.get("sports") or [{}])[0].get("leagues") or [{}])[0].get("teams") or [None])[0]})
-probe("summary", S + "/summary?" + Q + "&event=401752700", lambda d: {"keys": list(d.keys()), "predictor": d.get("predictor"), "pickcenter": d.get("pickcenter")})
+B = W + "/common/v3/sports/football/college-football/statistics/byathlete?" + Q + "&season=2026&seasontype=2"
+k = lambda d: {"categories": [(c.get("name"), c.get("names")) for c in d.get("categories", [])], "pagination": d.get("pagination"), "count": len(d.get("athletes", [])), "athlete": d.get("athletes", [])[:1]}
+probe("ba_offpass", B + "&isqualified=false&limit=1000&page=1&category=offense:passing&sort=passing.passingYards:desc", k)
+probe("ba_offpass_g", B + "&isqualified=false&limit=1000&page=1&category=offense:passing&sort=passing.passingYards:desc&conference=80", k)
+probe("ba_plain", B + "&isqualified=false&limit=1000&page=1&sort=passing.passingYards:desc", k)
+probe("ba_rush", B + "&isqualified=false&limit=1000&page=1&category=offense:rushing&sort=rushing.rushingYards:desc", k)
+probe("ba_def", B + "&isqualified=false&limit=1000&page=1&category=defense&sort=defensive.totalTackles:desc", k)
+probe("ba_q", B + "&isqualified=true&limit=50&page=1&category=offense:passing&sort=passing.passingYards:desc", k)
+probe("rank_wk", S + "/rankings?" + Q + "&season=2026&seasontype=2&week=12", lambda d: [(r.get("name"), r.get("type"), len(r.get("ranks", []))) for r in d.get("rankings", [])])
+probe("post", S + "/scoreboard?" + Q + "&groups=80&limit=1000&seasontype=3&week=1&dates=2025", lambda d: {"count": len(d.get("events", [])), "names": [(e.get("name"), (e.get("competitions") or [{}])[0].get("notes")) for e in d.get("events", [])[:50]]})
 
 with open("tools/api_probe_out.json", "w") as f:
     json.dump(out, f, indent=1, default=str)
