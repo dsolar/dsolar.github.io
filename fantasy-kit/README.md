@@ -283,6 +283,13 @@ owns which team, the invite code and the save order. It also stamps each team's 
   Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
   still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
   team's ungraduated taxi prospects kept in them.
+- **Safety nets.** `tests/fantasycombos.test.mjs` plays random mixes of formats, twists, draft types and sports
+  (keepers and dynasty into a second season) and checks the league ends whole: every team ranked, a champion, no
+  player on two rosters, rosters in size (`FK_COMBOS=2000` for a long run). `tests/fantasysize.test.mjs` keeps a full
+  12-team daily baseball season, every lineup saved every day, under 60% of the 1.5 MB save cap (it's about 550 KB).
+  The **Draft Lab tests** workflow runs every engine test on each push and writes the last passing commit to
+  `fantasy-kit/stable.json`; the league clock (`fk-clock`) loads the engine from GitHub at that commit, falling back to
+  the live site, so a broken push can't stop every league's clock. Its response says which engine it ran (`engine`).
 - **Deal or No Deal** (`settings.deal = { max }`, any points season but roto): every regular-season week
   `FK.league.runDeals` offers each team a guaranteed score, 86 to 94% of its lineup's projection, new every morning.
   `dealTake` before the week's first game (`dealDue`: `L.kick`, else Thursday night for football, Monday afternoon

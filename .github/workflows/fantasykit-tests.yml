@@ -1,0 +1,54 @@
+# Runs the Draft Lab engine tests on every push that touches the engine, and records the last commit that passed in
+# fantasy-kit/stable.json. The league clock (supabase/functions/fk-clock) runs that commit's engine, so a push that
+# breaks the engine can't break every league's clock: the pages pick it up, the clock waits for a green run.
+name: Draft Lab tests
+
+on:
+  push:
+    branches: [main]
+    paths: ["fantasy-kit/*.js", "fantasy-kit/data/*.json", "tests/fantasy*.test.mjs", "tests/gameday.test.mjs", ".github/workflows/fantasykit-tests.yml"]
+  workflow_dispatch:
+
+# a newer push replaces a run still going
+concurrency:
+  group: fantasykit-tests
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Engine tests
+        run: |
+          fail=0
+          for t in tests/fantasy*.test.mjs tests/gameday.test.mjs; do
+            if ! node --test "$t" > /tmp/out.txt 2>&1; then
+              echo "::error title=Draft Lab tests::$t failed"
+              grep -E "^not ok|AssertionError|Error:" /tmp/out.txt | head -20
+              fail=1
+            fi
+          done
+          exit $fail
+
+      - name: Mark this engine as tested
+        run: |
+          sha=$(git rev-parse HEAD)
+          printf '{"sha":"%s","at":"%s"}\n' "$sha" "$(date -u +%FT%TZ)" > fantasy-kit/stable.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fantasy-kit/stable.json
+          git commit -q -m "Draft Lab: engine ${sha:0:7} passed its tests" || exit 0
+          for i in 1 2 3 4 5; do
+            git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0
+            sleep $((i * 5))
+          done
+          exit 1

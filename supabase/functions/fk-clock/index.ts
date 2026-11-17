@@ -21,23 +21,40 @@ async function rpc(fn: string, body: unknown) {
 }
 
 // The engine changes at most a few times a day; keep it, and each sport's player data, for ten minutes.
-let engine: { at: number; FK: any } | null = null;
+// It's the last commit whose engine passed its tests (fantasy-kit/stable.json, written by the Draft Lab tests
+// workflow), fetched from GitHub at that commit, so a push that breaks the engine doesn't break every league's clock.
+// No stable.json, or GitHub down: the live site's copy, as before.
+const RAW = "https://raw.githubusercontent.com/dsolar/dsolar.github.io/";
+let engine: { at: number; FK: any; sha: string | null } | null = null;
 const pools: Record<string, { at: number; data: any }> = {};
-async function loadEngine() {
-  if (engine && Date.now() - engine.at < 10 * 60e3) return engine.FK;
-  const bust = `?t=${Math.floor(Date.now() / 600e3)}`;
+async function stableSha(): Promise<string | null> {
+  try {
+    const r = await fetch(`${SITE}stable.json?t=${Math.floor(Date.now() / 300e3)}`);
+    const j = r.ok ? await r.json() : null;
+    return j && /^[0-9a-f]{7,40}$/.test(j.sha || "") ? j.sha : null;
+  } catch { return null; }
+}
+async function loadFrom(base: string, bust: string) {
   const g: any = { FK: {} };
   for (const f of ["sports", "value", "draft", "trivia", "rules", "league", "season"]) {
     try {
-      const r = await fetch(`${SITE}${f}.js${bust}`);
+      const r = await fetch(`${base}${f}.js${bust}`);
       if (!r.ok) throw new Error(`${f}.js: ${r.status}`);
       const src = await r.text();
       // the files are UMD: with no module or require around, each one adds itself to root.FK
       new Function("module", "require", src).call(g, undefined, undefined);
     } catch (e) { if (f !== "trivia" && f !== "rules") throw e; }   // trivia questions and the rules list are optional: the rest runs without them
   }
-  engine = { at: Date.now(), FK: g.FK };
   return g.FK;
+}
+async function loadEngine() {
+  if (engine && Date.now() - engine.at < 10 * 60e3) return engine.FK;
+  const sha = await stableSha();
+  let FK: any = null, used: string | null = null;
+  if (sha) { try { FK = await loadFrom(`${RAW}${sha}/fantasy-kit/`, ""); used = sha; } catch { FK = null; } }
+  if (!FK) FK = await loadFrom(SITE, `?t=${Math.floor(Date.now() / 600e3)}`);
+  engine = { at: Date.now(), FK, sha: used };
+  return FK;
 }
 async function loadData(sport: string) {
   const c = pools[sport];
@@ -325,5 +342,5 @@ Deno.serve(async (req) => {
   const leagues = await tickLeagues(token).catch((e) => ({ error: String(e.message || e) }));
   if ((leagues as any).error === "no") return new Response("Not the clock", { status: 401 });
   const mail = await sendMail(token).catch((e) => ({ error: String(e.message || e) }));
-  return new Response(JSON.stringify({ ...leagues, mail }), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ ...leagues, mail, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
 });
