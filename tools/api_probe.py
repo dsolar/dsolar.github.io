@@ -35,15 +35,16 @@ Q = "region=us&lang=en&contentorigin=espn"
 S = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball"
 W = "https://site.web.api.espn.com/apis"
 probe("schedule_site", S + "/teams/150/schedule?season=2027", lambda d: {"events": len(d.get("events", [])), "first": (d.get("events") or [None])[0], "last": (d.get("events") or [None])[-1]})
-probe("schedule_web", W + "/site/v2/sports/basketball/mens-college-basketball/teams/150/schedule?" + Q + "&season=2027", lambda d: {"events": len(d.get("events", []))})
+probe("schedule_web", W + "/site/v2/sports/basketball/mens-college-basketball/teams/150/schedule?" + Q + "&season=2027", lambda d: {"events": len(d.get("events", [])), "first": (d.get("events") or [None])[0], "late": (d.get("events") or [None])[-1]})
 probe("byathlete", W + "/common/v3/sports/basketball/mens-college-basketball/statistics/byathlete?" + Q + "&isqualified=false&limit=3&page=1&sort=offensive.avgPoints:desc&season=2027&seasontype=2",
-      lambda d: {k: v for k, v in d.items() if k != "athletes"} | {"athletes": d.get("athletes", [])[:2]})
+      lambda d: {"categories": d.get("categories"), "athletes": d.get("athletes", [])[:2]})
 probe("byathlete_big", W + "/common/v3/sports/basketball/mens-college-basketball/statistics/byathlete?" + Q + "&isqualified=false&limit=1000&page=1&sort=offensive.avgPoints:desc&season=2027&seasontype=2",
       lambda d: {"count": len(d.get("athletes", [])), "pagination": d.get("pagination") or d.get("requestedSeason")})
 probe("byathlete_group", W + "/common/v3/sports/basketball/mens-college-basketball/statistics/byathlete?" + Q + "&isqualified=false&limit=1000&page=1&sort=offensive.avgPoints:desc&season=2027&seasontype=2&groups=50",
       lambda d: {"count": len(d.get("athletes", [])), "pagination": d.get("pagination")})
 probe("athlete_stats", W + "/common/v3/sports/basketball/mens-college-basketball/athletes/5103630/stats?" + Q, lambda d: {k: v for k, v in d.items() if k in ("categories", "filters")})
-probe("team_stats", S + "/teams/150/statistics?season=2027", lambda d: str(d)[:3000])
+probe("schedule_web_fiu", W + "/site/v2/sports/basketball/mens-college-basketball/teams/2229/schedule?" + Q + "&season=2027", lambda d: {"events": len(d.get("events", [])), "first": (d.get("events") or [None])[0]})
+#probe("team_stats", S + "/teams/150/statistics?season=2027", lambda d: str(d)[:3000])
 
 with open("tools/api_probe_out.json", "w") as f:
     json.dump(out, f, indent=1, default=str)
