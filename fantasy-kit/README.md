@@ -262,6 +262,15 @@ owns which team, the invite code and the save order. It also stamps each team's 
   fum_rec, ff, safe, def_st_td, yds_allow`. Football has no category preset: custom category leagues start
   from `nfl.catsTemplate` (season totals so far; a simulated week is one game of them). `POINT_STATS` lists every
   stat a custom points league can put a value on.
+  Football's last columns come from nflverse's weekly player stats (`NFLV_COLS`: `epa_pass, epa_rush, epa_rec,
+  pass_sacked, sack_yd, air_rec, yac_rec, cpoe_x, tm_tgt, tm_air`), matched to Sleeper ids through Sleeper's `gsis_id`
+  and DynastyProcess's crosswalk, and laid over every week and the season line each run. CPOE, target share and air
+  yards share are stored as counts (completions over expected, the team's targets and air yards in his games) so they
+  add up like any ratio: EPA, EPA/play, EPA/dropback, CPOE, ANY/A, Sack%, target share, aDOT, YAC/rec and RACR. They
+  arrive overnight, not live: fk-live's lines stop short of them and `season.mergeLive` keeps the file's values past
+  the end of a live line, and a week is only final once nflverse covers every team that played (or two days later).
+  `FK.sports.CAT_PRESETS` holds one-click category setups per sport (Analytics, Efficiency, Sabermetrics, Per 36 and
+  more), offered in league setup and listed on each sport page.
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
   after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the
   taxi squad (`settings.prospects`, at least that many taxi spots, keeper leagues included). The pool rides with the
