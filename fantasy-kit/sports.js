@@ -99,6 +99,43 @@
     ],
   };
 
+  /* ---------- college basketball (one-day games only) ---------- */
+  // Draft Lab's daily college game: the CBB Hub's player pool (fantasy-kit/data/cbb.json, tools/cbb_dfs.py), guards and
+  // forwards as DraftKings lists them (a center plays forward), and DraftKings' college scoring. dailyOnly: it offers
+  // one-day games (salary cap, drafts on a night's slate), not season leagues or mock drafts.
+  const cbb = {
+    key: "cbb", name: "College hoops", league: "NCAA", unit: "game", dailyOnly: true,
+    positions: ["G", "F"],
+    colors: { G: 1, F: 4 },
+    slots: { G: ["G"], F: ["F"], UTIL: "*", CPT: "*", BN: "*" },
+    lineup: ["G", "G", "G", "F", "F", "F", "UTIL", "UTIL"],
+    bench: 1,
+    posMax: {},
+    late: [],
+    sample: { line: "pg", col: "eg", k: 3 },
+    scorings: {
+      dk: {
+        label: "DraftKings points", type: "points", line: "pg", per: "game", games: 31,
+        weights: { pts: 1, tpm: 0.5, reb: 1.25, ast: 1.5, stl: 2, blk: 2, tov: -0.5, dd: 1.5, td: 3 },
+      },
+    },
+    columns: [
+      { line: "pg", col: "gp", label: "GP", fmt: f0 },
+      { line: "pg", col: "min", label: "MIN", fmt: f1, hide: "s" },
+      { line: "pg", col: "pts", label: "PTS", fmt: f1 },
+      { line: "pg", col: "reb", label: "REB", fmt: f1 },
+      { line: "pg", col: "ast", label: "AST", fmt: f1 },
+      { line: "pg", col: "stl", label: "STL", fmt: f1, hide: "s" },
+      { line: "pg", col: "blk", label: "BLK", fmt: f1, hide: "s" },
+      { line: "pg", col: "tpm", label: "3PM", fmt: f1, hide: "s" },
+      { line: "pg", label: "FG%", ratio: ["fgm", "fga"], fmt: r3, hide: "s" },
+      { line: "pg", col: "tov", label: "TO", fmt: f1, hide: "s" },
+    ],
+  };
+  // sports with a one-day game: tonight's games, scored on the night's box scores
+  const DAILY = ["nba", "cbb"];
+  const daily = (k) => DAILY.includes(k && k.key ? k.key : k);
+
   /* ---------- football ---------- */
   const nfl = {
     key: "nfl", name: "Football", league: "NFL", unit: "game",
@@ -261,7 +298,9 @@
     ],
   };
 
-  const ALL = { nba, nfl, mlb, nhl };
+  const ALL = { nba, nfl, mlb, nhl, cbb };
+  // the sports a season league, a mock draft or a rankings page offers (college hoops is one-day only)
+  const SEASON_SPORTS = Object.values(ALL).filter((s) => !s.dailyOnly);
 
   // Links a sport to the columns of its data file, so stat() can read the compact arrays.
   function attach(sport, data) {
@@ -269,6 +308,11 @@
     for (const [line, def] of Object.entries(data.lines || {})) sport.cols[line] = Object.fromEntries(def.cols.map((c, i) => [c, i]));
     sport.data = { season: data.season, prev: data.prev || null, updated: data.updated, source: data.source, lines: data.lines };
     sport.hasAge = (data.players || []).some((p) => p.age);
+    // a pool that carries its own teams (college: 365 schools) brings their colors and logos with it
+    if (data.teams && !Array.isArray(data.teams)) {
+      TEAM_COLORS[sport.key] = Object.assign(TEAM_COLORS[sport.key] || {}, Object.fromEntries(Object.entries(data.teams).filter(([, t]) => t && t.c).map(([k, t]) => [k, t.c])));
+      LOGOS[sport.key] = Object.assign(LOGOS[sport.key] || {}, Object.fromEntries(Object.entries(data.teams).filter(([, t]) => t && t.logo).map(([k, t]) => [k, t.logo])));
+    }
     return sport;
   }
 
@@ -292,6 +336,7 @@
       ["fgm", "Field goals made"], ["fga", "Field goals tried"], ["ftm", "Free throws made"], ["fta", "Free throws tried"],
       ["tpa", "3-pointers tried"], ["oreb", "Offensive rebounds"], ["dreb", "Defensive rebounds"], ["pf", "Personal fouls"], ["dd", "Double-doubles"],
       ["td", "Triple-doubles"], ["pm", "Plus/minus"], ["min", "Minutes"]],
+    get cbb() { return this.nba; },
     nfl: [["pass_yd", "Passing yards"], ["pass_td", "Passing TDs"], ["pass_int", "Interceptions thrown"], ["rush_att", "Carries"], ["rush_yd", "Rushing yards"], ["rush_td", "Rushing TDs"],
       ["rec", "Receptions"], ["rec_yd", "Receiving yards"], ["rec_td", "Receiving TDs"], ["fum_lost", "Fumbles lost"], ["fgm", "Field goals made"], ["xpm", "Extra points made"],
       ["def_td", "Defensive TDs"], ["def_int", "Interceptions caught"], ["def_sack", "Sacks"], ["pts_allow", "Points allowed"],
@@ -316,6 +361,7 @@
     nfl: { pass_yd: 0.04, pass_td: 4, pass_int: -2, rush_yd: 0.1, rush_td: 6, rec: 0.5, rec_yd: 0.1, rec_td: 6, fum_lost: -2, fgm: 3, xpm: 1, def_td: 6, def_int: 2, def_sack: 1 },
     mlb: { "bat.r": 1, "bat.tb": 1, "bat.rbi": 1, "bat.sb": 1, "pit.ip": 3, "pit.w": 2, "pit.l": -2, "pit.sv": 5, "pit.hld": 2, "pit.k": 1, "pit.er": -2, "pit.bb": -1, "pit.h": -1 },
     nhl: Object.assign({}, nhl.scorings.points.weights),
+    cbb: Object.assign({}, cbb.scorings.dk.weights),
   };
   // Every category any of a sport's presets uses, plus a few common extras.
   // Categories no preset uses, for custom category leagues: the advanced ones are formulas over the box-score
@@ -323,6 +369,7 @@
   // exactly like FG% does. adv marks them for the pick list. wOBA uses FanGraphs' recent linear weights.
   const pct1 = (v) => (v == null ? "-" : (v * 100).toFixed(1) + "%");
   const EXTRA_CATS = {
+    get cbb() { return this.nba; },
     nba: [
       { k: "oreb", label: "OREB", col: "oreb", title: "Offensive rebounds" },
       { k: "dreb", label: "DREB", col: "dreb", title: "Defensive rebounds" },
@@ -649,7 +696,7 @@
   // regular season start to the end of the fantasy season. The default sport is the one whose fantasy season matters
   // most right now: football from August drafts until its fantasy playoffs end in early January, then basketball,
   // then baseball from its March drafts through July.
-  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928], nhl: [929, 415] };
+  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928], nhl: [929, 415], cbb: [1101, 410] };
   const DEFAULT_SPORT = [[801, 107, "nfl"], [108, 314, "nba"], [315, 731, "mlb"]];
   const mmdd = (d) => (d.getMonth() + 1) * 100 + d.getDate();
   const within = (x, [a, b]) => (a <= b ? x >= a && x <= b : x >= a || x <= b);
@@ -684,7 +731,8 @@
   // Team logos from ESPN's image server, as on the Big Board: its code for each team where it differs from ours.
   const ESPN_CODES = { nba: { BRK: "bkn", CHO: "cha", PHO: "phx", GSW: "gs", NOP: "no", SAS: "sa", UTA: "utah", WAS: "wsh", NYK: "ny" },
     nfl: { WAS: "wsh" }, mlb: { CWS: "chw", ATH: "oak" } };
-  const teamLogo = (sportKey, abbr, px = 28) => (TEAM_COLORS[sportKey] && TEAM_COLORS[sportKey][abbr]
+  const LOGOS = {};
+  const teamLogo = (sportKey, abbr, px = 28) => LOGOS[sportKey] ? (LOGOS[sportKey][abbr] ? `https://a.espncdn.com/combiner/i?img=${LOGOS[sportKey][abbr].replace(/^https:\/\/a\.espncdn\.com/, "")}&w=${px}&h=${px}` : null) : (TEAM_COLORS[sportKey] && TEAM_COLORS[sportKey][abbr]
     ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${sportKey}/500/${(ESPN_CODES[sportKey] || {})[abbr] || String(abbr).toLowerCase()}.png&w=${px}&h=${px}` : null);
   // A team's chip: its color, and whichever of white or near-black reads better on it. When neither reaches 4.5:1
   // (a mid blue like Carolina's), the color is darkened a little until white text does.
@@ -805,5 +853,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { cbb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

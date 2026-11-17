@@ -12,12 +12,14 @@
 //
 // Two more reads for one-day games:
 //   ?sport=nba&slates=1          today's and tomorrow's NBA games (New York days), each { id, at, away, home, state }
+//   ?sport=cbb&slates=1          tonight's and tomorrow's featured college games (cbb.mjs)
 //   ?sport=nba&games=id1,id2     those games' box scores and states, { games: { id: { state, lines } } }, whatever week
 //                                they're in, so a one-day league can score its own games and know when they're final
 //
 // A result is kept about a minute (table fk_live), so the feeds get a request or two a minute however many pages are
 // open, and a finished game's lines are kept for good (table fk_live_games) so they're only fetched once.
 import { NHL_LINES, gameState as nhlState, boxLines as nhlBox, mergeLines as nhlMerge, finishLines as nhlFinish } from "./nhl.mjs";
+import { CBB_COLS, cbbBox, cbbSummary, cbbSlates } from "./cbb.mjs";
 
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -385,7 +387,7 @@ async function nbaSlates() {
 // columns. Games in this week come from the week's feed (kept a minute); a game from an earlier week (a Sunday night
 // game read on Monday) from the finished games kept for good, or from ESPN. A postponed game reads "off".
 async function gamesFor(sport: string, ids: string[]) {
-  const wk = await liveData(sport).catch(() => null);
+  const wk = sport === "cbb" ? null : await liveData(sport).catch(() => null);
   const out: Record<string, { state: string; lines: unknown }> = {};
   const state: Record<string, string> = {};
   for (const gs of Object.values((wk && wk.games) || {}) as Game[][]) for (const g of gs) state[g.id] = g.state;
@@ -405,6 +407,17 @@ async function gamesFor(sport: string, ids: string[]) {
         if (stt === "post") fresh.push({ gid: id, day: nyDate(Date.parse(s.header?.competitions?.[0]?.date || "") || Date.now()), final: true, lines });
       });
       await keep(sport, fresh);
+    } else if (sport === "cbb") {
+      const fresh: any[] = [];
+      await pool(rest.filter((id) => !out[id]), 4, async (id) => {
+        const s: any = await cbbSummary(getJSON, id);
+        if (!s) return;
+        const st = s.header?.competitions?.[0]?.status?.type || {}, lines = cbbBox(s);
+        const stt = /postpon|cancel/i.test(st.description || "") ? "off" : st.state || "pre";
+        out[id] = { state: stt, lines };
+        if (stt === "post") fresh.push({ gid: id, day: nyDate(Date.parse(s.header?.competitions?.[0]?.date || "") || Date.now()), final: true, lines });
+      });
+      await keep(sport, fresh);
     } else if (sport === "nhl") {
       const fresh: any[] = [];
       await pool(rest.filter((id) => !out[id]), 4, async (id) => {
@@ -416,7 +429,7 @@ async function gamesFor(sport: string, ids: string[]) {
       await keep(sport, fresh);
     }
   }
-  const cols = wk ? (wk.lines ? { lines: wk.lines } : { line: wk.line, cols: wk.cols }) : sport === "nba" ? { line: "pg", cols: NBA_COLS } : sport === "nhl" ? { lines: NHL_LINES } : {};
+  const cols = wk ? (wk.lines ? { lines: wk.lines } : { line: wk.line, cols: wk.cols }) : sport === "nba" ? { line: "pg", cols: NBA_COLS } : sport === "cbb" ? { line: "pg", cols: CBB_COLS } : sport === "nhl" ? { lines: NHL_LINES } : {};
   return { sport, ...cols, games: out, updated: new Date().toISOString() };
 }
 
@@ -453,12 +466,14 @@ Deno.serve(async (req) => {
   const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
   if (sport === "nfl" && q.get("slates")) return json(await nflSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "nba" && q.get("slates")) return json(await nbaSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
+  // college hoops plays one-day games only: its featured slates and named games' box scores, no weekly feed
+  if (sport === "cbb" && q.get("slates")) return json(await cbbSlates(getJSON).catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "mlb" && q.get("lineups")) {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(q.get("date") || "") ? q.get("date") : null;
     errors.length = 0;
     return json(await mlbLineups(date).catch((e) => ({ days: {}, error: String(e) })), { "cache-control": "max-age=90" });
   }
-  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl, mlb or nhl" }, {}, 400);
+  if (!BUILD[sport] && !(sport === "cbb" && q.get("games"))) return json({ error: "sport must be nba, nfl, mlb or nhl (or cbb with games)" }, {}, 400);
   if (q.get("games")) {
     const ids = [...new Set(String(q.get("games")).split(",").map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)))].slice(0, 20);
     return json(await gamesFor(sport, ids).catch((e) => ({ games: {}, error: String(e) })), { "cache-control": "max-age=30" });

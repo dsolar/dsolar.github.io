@@ -24,7 +24,7 @@
   function gauss(r) { const u = Math.max(1e-9, r()), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 
   // How a season line turns into one week: basketball plays about 3.4 games a week, baseball and football split a season.
-  const WEEK = { nba: { pg: 3.4, weeks: 24 }, nfl: { tot: 1 / 17, weeks: 17 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 }, nhl: { sk: 1 / 28, goalie: 1 / 28, weeks: 28 } };
+  const WEEK = { nba: { pg: 3.4, weeks: 24 }, cbb: { pg: 2, weeks: 18 }, nfl: { tot: 1 / 17, weeks: 17 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 }, nhl: { sk: 1 / 28, goalie: 1 / 28, weeks: 28 } };
   const COLORS = 12;
 
   const DEFAULTS = { format: "h2h", bestBall: false, weeks: 14, playoffTeams: 4, faab: 100, minBid: 0, waivers: "faab", waiverHours: 48, waiverAt: null,
@@ -898,7 +898,7 @@
   // What a team's starters have left this week, from the live feed (ctx.hooks.real.live.teams: each pro team's
   // games played, in progress and left): expected points still to come, their variance, and starter-games played
   // and left. A game in progress counts as half played. null without the feed for this week.
-  const GAMES = { nba: 82, nfl: 17, mlb: 162, nhl: 82 }, SPREAD = { nba: 0.38, nfl: 0.62, mlb: 1.0, nhl: 0.65 };
+  const GAMES = { nba: 82, cbb: 31, nfl: 17, mlb: 162, nhl: 82 }, SPREAD = { nba: 0.38, cbb: 0.45, nfl: 0.62, mlb: 1.0, nhl: 0.65 };
   function outlook(L, ctx, teamId, w) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
     // a one-day league reads its own games' states; anything else, the live feed's week

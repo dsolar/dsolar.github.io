@@ -8,7 +8,7 @@
   const { esc, $ } = U;
   const theme = U.theme("fk-lab");
   const WEEK = 7 * 864e5;
-  const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0, nhl: 7 };
+  const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0, nhl: 7, cbb: 5 };
   const id = new URLSearchParams(location.search).get("id");
   const link = C.fromLink();
   const now = () => C.now();

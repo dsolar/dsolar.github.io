@@ -103,7 +103,7 @@
   const rlFits = (c) => ["snake", "linear", "3rr"].includes(c.type);
   const sdOn = (c) => c.sport === "nfl" && !!c.sd;
   // one day of basketball: tonight's (or tomorrow's) games from the schedule, as in a one-day league
-  const dayOn = (c) => c.sport === "nba" && !!c.day;
+  const dayOn = (c) => window.FK.sports.daily(c.sport) && !!c.day;
   let daySched = null, dayAsked = false;
   function dayOptions(now = Date.now()) {
     const SL = window.FK.slates;
@@ -126,7 +126,7 @@
     const o = os.find((x) => x.key === c.dayK) || os[0];
     const sl = window.FK.slates.pick(o.w, o.kind, o.ids);
     if (!sl) return null;
-    const lu = window.FK.slates.lineup(sl.games.length, c.teams, "nba");
+    const lu = window.FK.slates.lineup(sl.games.length, c.teams, c.sport);
     return { key: o.key, slate: Object.assign(sl, lu.mult ? { mult: lu.mult } : {}), lineup: lu };
   }
   const hzOn = (c) => c.sport === "nfl" && !!c.hz && !c.sd;
@@ -137,7 +137,7 @@
     app.innerHTML = `<div class="wrap page">
       <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
       ${mock ? `<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">${mock.D.phase === "done" ? "Your draft is in the books." : "Your seat is still here."}</h2><p>${esc(S[mock.D.sport] ? S[mock.D.sport].name : "")} · ${esc(K.DRAFT_SHORT[mock.D.type] || mock.D.type)} · ${mock.D.teams.length} teams. ${mock.D.phase === "done" ? "See your roster and results." : "Continue your saved draft on this device."}</p></div><a class="btn go" href="#draft">${mock.D.phase === "done" ? "View your results" : "Continue your draft"}</a></section>` : ""}
-      <div class="start-sports" role="group" aria-label="Choose a sport">${Object.values(S.ALL).map(s => `<button type="button" class="btn" data-entry-sport="${s.key}" aria-pressed="${s.key === cfg.sport}">${K.icon(s.key)} ${esc(s.name)}</button>`).join("")}</div>
+      <div class="start-sports" role="group" aria-label="Choose a sport">${S.SEASON_SPORTS.map(s => `<button type="button" class="btn" data-entry-sport="${s.key}" aria-pressed="${s.key === cfg.sport}">${K.icon(s.key)} ${esc(s.name)}</button>`).join("")}</div>
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team ${esc(sport.name.toLowerCase())} snake draft. ${esc(scoring)}, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
         <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
@@ -189,7 +189,7 @@
     const tip = (t, b) => `<div class="mk-tip"><b>${esc(t)}</b><p>${b}</p></div>`;
     return `<div class="wrap page"><a class="start-back" href="#home">← Back to quick start</a><div class="su sp-${sport.key}">
       <div class="nl-band">${K.FIELD[sport.key]}<div class="nl-bi">
-        <div class="nl-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((x) => `<label class="nl-sp"><input type="radio" name="sport" value="${x.key}"${x.key === c.sport ? " checked" : ""}>${K.icon(x.key)}<span>${esc(x.name)}</span></label>`).join("")}</div>
+        <div class="nl-sports" role="radiogroup" aria-label="Sport">${S.SEASON_SPORTS.map((x) => `<label class="nl-sp"><input type="radio" name="sport" value="${x.key}"${x.key === c.sport ? " checked" : ""}>${K.icon(x.key)}<span>${esc(x.name)}</span></label>`).join("")}</div>
         <h1 class="disp">Mock a ${esc(sport.name.toLowerCase())} draft</h1>
         <p>Draft against bots that know positions, budgets and the clock, with real player data. It saves on this device, so you can leave and come back.</p>
       </div></div>
@@ -400,7 +400,7 @@
     const focus = document.activeElement && document.activeElement.id;
     app.innerHTML = `<div class="wrap page">
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${(() => { const n = {}; P.lineup.forEach((x) => (n[x] = (n[x] || 0) + 1)); return Object.entries(n).map(([x, k]) => (k > 1 ? `${k} ${x}` : x)).join(", "); })()}` : ""}.</span></div>
-      <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${Object.values(S.ALL).map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
+      <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${S.SEASON_SPORTS.map((s) => opt(s.key, s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
         ${U.viewSelect(sp, "r-statv")}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>

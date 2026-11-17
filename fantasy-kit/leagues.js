@@ -9,8 +9,8 @@
   const joinId = params.get("join"), joinCode = params.get("code") || "";
   const top = $("#top"), app = $("#app");
   const link = C.fromLink();
-  const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0, nhl: 7 };
-  const BLURB = { nba: "Points or categories", nfl: "PPR, half or standard", mlb: "Roto or points", nhl: "Points, 10-cat or hits + blocks" };
+  const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0, nhl: 7, cbb: 5 };
+  const BLURB = { nba: "Points or categories", nfl: "PPR, half or standard", mlb: "Roto or points", nhl: "Points, 10-cat or hits + blocks", cbb: "One-day games, DraftKings scoring" };
   let sent = null, busy = false, view = "list";
   // signing in: siMode is "password" (username or email and a password), "signup", "forgot" or "link" (an emailed
   // link). confirmTo: a new account waiting on its confirmation email; resetTo: a reset link was asked for.
@@ -30,7 +30,7 @@
     // a feed that couldn't be reached ({ error }) is asked again from Try again (data-a="slates-retry")
     C.slates(k).then((d) => { slatesFor[k] = d && Array.isArray(d.weeks) ? d : { weeks: [], error: true }; render(); });
   }
-  const SLATE_SPORTS = ["nfl", "nba"];
+  const SLATE_SPORTS = ["nfl", "nba", "cbb"];
   // how many players each pro team has (data/<sport>.json), so a slate offers only the team counts its players can
   // fill: one football game's two teams have 30 or so, enough for five teams of six but not six
   const proCounts = {}, proAsked = {};
@@ -56,7 +56,7 @@
   const slWeeks = () => ((slData() && slData().weeks) || []).filter((w) => SL.list(w, slRef()).length);
   const slWeek = () => { const ws = slWeeks(); return ws[Math.min(form.slWeek || 0, Math.max(0, ws.length - 1))] || null; };
   const slateOn = () => oneWeek() && SLATE_SPORTS.includes(form.sport);
-  const dayOn = () => slateOn() && form.sport === "nba";
+  const dayOn = () => slateOn() && S.daily(form.sport);
   function curSlate() {
     const w = slWeek(); if (!w) return null;
     const kind = form.slKind || "full";
@@ -336,7 +336,7 @@
   // first, a season or one week; then for a season, what carries over to the next one
   const MODES = [["season", "A season", "Lineups, waivers, trades and playoffs, all season long"], ["week", "Quick game", "Draft, play one real night or week, crown a winner"]];
   // the mode card's name for basketball, where a one-week game is one night
-  const modeName = (k) => (k === "week" && form.sport === "nba" ? ["One day", "Draft tonight's games, crown a winner by midnight"] : null);
+  const modeName = (k) => (k === "week" && S.daily(form.sport) ? ["One day", "Draft tonight's games, crown a winner by midnight"] : null);
   const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"]];
   // a one-week league: head to head only, and it plays the week that's on or the next one
   const oneWeek = () => form.kind === "week";
@@ -394,7 +394,7 @@
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
     // every league type can be picked: one that a format doesn't allow switches the format instead (below, on click)
-    const modes = pickCards("mode", MODES.map((m) => (modeName(m[0]) ? [m[0]].concat(modeName(m[0])) : m)), oneWeek() ? "week" : "season", form.sport === "nba" ? "A season or one day" : "A season or one week");
+    const modes = pickCards("mode", MODES.map((m) => (modeName(m[0]) ? [m[0]].concat(modeName(m[0])) : m)), oneWeek() ? "week" : "season", S.daily(form.sport) ? "A season or one day" : "A season or one week");
     const kinds = oneWeek() ? "" : pickCards("kind", KINDS, form.kind, "League type");
     // a one-week league plays the week that's on, or the next one when too little of this week is left (or for
     // baseball, whose stats can't be split midweek)
@@ -415,8 +415,8 @@
     }).join("");
     return `<div class="su sp-${sp.key}">
       <div class="nl-band">${FIELD[sp.key]}<div class="nl-bi">
-        <div class="nl-sports" role="radiogroup" aria-label="Sport">${Object.values(S.ALL).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.name)}</span></label>`).join("")}</div>
-        <h1 class="disp">${dayOn() ? "Start a one-day basketball game" : oneWeek() ? `Start a one-week ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
+        <div class="nl-sports" role="radiogroup" aria-label="Sport">${(oneWeek() ? Object.values(S.ALL) : S.SEASON_SPORTS).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.name)}</span></label>`).join("")}</div>
+        <h1 class="disp">${dayOn() ? `Start a one-day ${form.sport === "cbb" ? "college basketball" : "basketball"} game` : oneWeek() ? `Start a one-week ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
         <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
@@ -1053,7 +1053,7 @@
     if (row) { grab(); const k = row.dataset.row; form.open = form.open[k] ? {} : { [k]: 1 }; render().then(() => { const h = $(`.su [data-row="${k}"]`); if (h) { h.focus({ preventScroll: true }); const r = h.getBoundingClientRect(); if (r.top < 70 || r.top > innerHeight - 160) h.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
     if (e.target.closest("[data-pack]")) { grab(); chaosPack(); redraw(); return; }
     const md = e.target.closest("[data-mode]");
-    if (md) { grab(); const k = md.dataset.mode === "week" ? "week" : form.lastKind || "redraft"; if (k === "week") oneWeekDefaults(); setKind(k); redraw(`n-pick-mode-${md.dataset.mode}`); return; }
+    if (md) { grab(); const k = md.dataset.mode === "week" ? "week" : form.lastKind || "redraft"; if (k === "week") oneWeekDefaults(); else if (S.ALL[form.sport] && S.ALL[form.sport].dailyOnly) { form.sport = "nba"; form.lineup = ""; form.bench = null; form.scoring = ""; } setKind(k); redraw(`n-pick-mode-${md.dataset.mode}`); return; }
     const ty = e.target.closest("button[data-type]");
     if (ty) { grab(); form.type = ty.dataset.type; if (form.type === "elephant") form.open = { draft: 1 }; derive(); redraw(`n-pick-type-${form.type}`); return; }
     const sk = e.target.closest("[data-slkind]");
@@ -1126,6 +1126,8 @@
     // a shorter season can't keep a deadline past its end; go back to the default for the new length
     if (form.weeks !== was.weeks && form.deadline != null && form.deadline >= form.weeks) form.deadline = null;
     // a new sport starts from its own lineup; a new season format from its own budget
+    // college hoops is one-day only
+    if (form.sport !== was.sport && S.ALL[form.sport] && S.ALL[form.sport].dailyOnly && !oneWeek()) { oneWeekDefaults(); setKind("week"); }
     if (form.sport !== was.sport) { form.lineup = ""; form.bench = null; form.scoring = ""; form.weights = null; form.cats = null; form.posMax = {}; form.sx = SX.empty(); form.poolOnly = ""; }
     if (form.season !== was.season) form.faab = null;
     redraw(e.target.id);

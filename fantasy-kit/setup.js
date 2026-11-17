@@ -11,6 +11,7 @@
     nhl: `<path d="M5 3l7 13 7-2 1 4-9 3-3-3L2 6"/><ellipse cx="18" cy="6" rx="4" ry="2"/><path d="M14 6v3c0 1.1 8 1.1 8 0V6"/>`,
     nfl: `<ellipse cx="12" cy="12" rx="10.6" ry="6.4" transform="rotate(-40 12 12)"/><path d="M9.2 14.8l5.6-5.6M9.8 12.8l1.4 1.4M11.3 11.3l1.4 1.4M12.8 9.8l1.4 1.4"/>`,
     mlb: `<circle cx="12" cy="12" r="10"/><path d="M6.2 4.2c2 2.2 3 4.8 3 7.8s-1 5.6-3 7.8M17.8 4.2c-2 2.2-3 4.8-3 7.8s1 5.6 3 7.8"/>` };
+  ICON.cbb = ICON.nba;
   const icon = (k, cls) => `<svg class="${cls || "sp-ic"}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">${ICON[k]}</svg>`;
   const DRAFTS = { cap: "No draft: build a lineup under a budget. Anyone can pick anyone", sealed: "Rank players in private. The draft runs itself from everyone's list when they lock", pack: "Rip open a pack with a star in it, take one, pass the rest. All at once", snake: "The order flips every round", linear: "The same order every round", "3rr": "A snake, with round three flipped again", auction: "A $200 budget and live bidding on every player",
     mystery: "Each team gets a random package of picks of equal value", elephant: "A snake where your turn can steal a drafted player" };
@@ -99,5 +100,6 @@
   // a draft's steals settings from those fields
   const elephantSteals = (f, points) => ({ perTeam: +f.elSteals || 3, freeze: +f.elFreeze || 2, tax: points ? (+f.elTax || 100) / 100 : 1, golden: points ? (+f.elGold || 100) / 100 : 1 });
   const elephantLine = (f, points) => `${+f.elSteals || 3} steals${points && +f.elTax < 100 ? `, stolen ${+f.elTax}%` : ""}${points && +f.elGold > 100 ? `, golden ${+f.elGold}%` : ""}`;
+  FIELD.cbb = FIELD.nba;
   return { elephantFields, ELEPHANT_DEF, elephantSteals, elephantLine, SC_SUB, DRAFT_SHORT, esc, ICON, icon, DRAFTS, RANGE_FMT, opt, fid, seg, cards, stepper, toggle, range, numIn, fld, group, noLimit, STYLE_ART, art, pickCards, FIELD };
 });

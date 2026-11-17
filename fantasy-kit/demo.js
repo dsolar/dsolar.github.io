@@ -13,7 +13,7 @@
   };
   const GNAMES = { nba: "Last Team Standing", nfl: "Off With Their Heads", mlb: "Sudden Death", nhl: "Sudden Death on Ice" };
   const params = new URLSearchParams(location.search);
-  const sportKey = S.ALL[params.get("s")] ? params.get("s") : store.get("last", S.inSeason());
+  const sportKey = S.ALL[params.get("s")] && !S.ALL[params.get("s")].dailyOnly ? params.get("s") : store.get("last", S.inSeason());
   const fmt = params.get("f") === "g" ? "g" : params.get("f") === "h" ? "h" : params.get("s") ? "h" : store.get("lastf", "h");
   const guil = fmt === "g";
   const KEY = sportKey + (guil ? ":g" : "");
@@ -138,7 +138,7 @@
   const frac = (w) => Math.max(0, Math.min(1, (Date.now() - G.weekStart(L, w)) / WEEK));
 
   function mount() {
-    const leagues = Object.values(S.ALL).flatMap((s) => [[s, false], [s, true]]).filter(([s, g]) => !(s.key === sportKey && g === guil));
+    const leagues = S.SEASON_SPORTS.flatMap((s) => [[s, false], [s, true]]).filter(([s, g]) => !(s.key === sportKey && g === guil));
     app = U.leagueApp({
       top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => save(), me: () => 0, now: () => Date.now(), frac, hooks: hooks(),
       brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },

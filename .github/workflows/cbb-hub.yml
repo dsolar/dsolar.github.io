@@ -10,9 +10,11 @@ on:
       - cbb/*.css
       - tools/cbb_build.py
       - tools/cbb_extras.py
+      - tools/cbb_dfs.py
       - cbb/data/naismith-watch.json
       - tests/cbb*.cjs
       - tests/cbb*.py
+      - tests/fantasycbb.test.mjs
       - .github/workflows/cbb-hub.yml
   workflow_dispatch:
 permissions:
@@ -40,6 +42,8 @@ jobs:
         run: python3 tools/cbb_build.py
       - name: Naismith ladder and the hub's logged lines
         run: python3 tools/cbb_extras.py
+      - name: Draft Lab college pool and featured slates
+        run: python3 tools/cbb_dfs.py
       - name: Check JavaScript
         run: |
           node --check cbb/model.js
@@ -50,6 +54,7 @@ jobs:
         run: |
           python3 -m unittest discover -s tests -p 'cbb_*test.py'
           node --test tests/cbb-model.test.cjs
+          node --test tests/fantasycbb.test.mjs
       - name: Install DOM test dependency
         if: hashFiles('tests/cbb-ui.test.cjs') != ''
         run: npm install --no-package-lock --no-save --prefix "$RUNNER_TEMP/cbb-qa" jsdom@26.1.0
@@ -62,7 +67,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add cbb/data
+          git add cbb/data fantasy-kit/data/cbb.json fantasy-kit/data/weeks-cbb.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Update college basketball ratings, rosters, lines and Naismith ladder"
           git pull --rebase

@@ -273,6 +273,7 @@
     const k = sport && sport.key;
     if (k === "nhl" && p.head && /^https:\/\/assets\.nhle\.com\//.test(p.head)) return { src: p.head };
     if (k === "mlb" && /^\d{5,7}$/.test(String(p.id))) return { src: `https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/${p.id}/headshot/67/current` };
+    if (k === "cbb" && p.espn) return { src: `https://a.espncdn.com/combiner/i?img=/i/headshots/mens-college-basketball/players/full/${p.espn}.png&w=180&h=131`, espn: true };
     if ((k === "nba" || k === "nfl") && p.espn) return { src: `https://a.espncdn.com/combiner/i?img=/i/headshots/${k}/players/full/${p.espn}.png&w=180&h=131`, espn: true };
     return null;
   };

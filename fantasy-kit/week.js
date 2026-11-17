@@ -13,8 +13,9 @@
   const link = C.fromLink();
   let data = null, mine = null, wk = 0;
   const params = new URLSearchParams(location.search);
-  let sport = params.get("s") === "nba" ? "nba" : "nfl";
-  const nba = () => sport === "nba";
+  let sport = ["nba", "cbb"].includes(params.get("s")) ? params.get("s") : "nfl";
+  // basketball and college hoops play one day; football one week
+  const nba = () => S.daily(sport);
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: "./", mark: `<img src="mark.svg" alt="">` },
@@ -24,7 +25,7 @@
   }
   const day = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
   const weeks = () => ((data && data.weeks) || []).filter((w) => SL.list(w).length);
-  const start = (q) => `leagues.html?w=1&${q}${wk ? "&wk=1" : ""}${nba() ? "&s=nba" : ""}`;
+  const start = (q) => `leagues.html?w=1&${q}${wk ? "&wk=1" : ""}${nba() ? `&s=${sport}` : ""}`;
 
   function slateCards(w) {
     const list = SL.list(w).filter((x) => x.kind !== "one" && x.kind !== "custom");
@@ -36,7 +37,7 @@
         <p class="ps wk-lu">${esc(lu.note)}.</p><a class="btn go" href="${start(`slate=${x.kind}`)}">${esc({ full: nba() ? (x.label === "Main slate" ? "Start a main slate game" : "Start a rest-of-the-night game") : x.label === "Full week" ? "Start a full-week game" : "Start a rest-of-the-week game", sunday: "Start a Sunday game", prime: "Start a primetime game", early: "Start an early game", late: "Start a late game" }[x.kind])}</a></article>`;
     }).join("")}
       <article class="card wk-c"><div class="wk-ch"><h3>Pick your games</h3><span class="ps">${nba() ? "Your team's game, a marquee matchup, the West Coast games: any games you like" : "Your team's game, a rivalry, the late window: any games you like"}</span></div>
-        <p class="ps wk-lu">Two or three games use a captain at 1.5x and five flex. Four or more, ${nba() ? "real positions: PG, SG, SF, PF, C, a guard, a forward and a flex" : "a regular lineup"}.</p><a class="btn" href="${start("slate=custom")}">Pick the games</a></article></div>`;
+        <p class="ps wk-lu">Two or three games use a captain at 1.5x and five flex. Four or more, ${sport === "cbb" ? "three guards, three forwards and two flex" : nba() ? "real positions: PG, SG, SF, PF, C, a guard, a forward and a flex" : "a regular lineup"}.</p><a class="btn" href="${start("slate=custom")}">Pick the games</a></article></div>`;
   }
   function showdowns(w) {
     const gs = SL.open(w);
@@ -51,7 +52,7 @@
     for (const l of ones) { const k = l.series || l.id; if (!by[k] || (l.seriesN || 1) > (by[k].seriesN || 1)) by[k] = l; }
     const list = Object.values(by).sort((a, b) => Date.parse(b.updated) - Date.parse(a.updated));
     if (!list.length) return `<div class="card"><div class="bd stack"><p style="margin:0"><b>No one-week games yet.</b></p><p class="ps" style="margin:0">Start one above and send the link to your group.</p></div></div>`;
-    const status = (l) => { const c = l.card || {}; return l.phase === "live" ? "Drafting now" : l.phase === "season" ? (c.week > (c.weeks || 1) ? "Final" : l.sport === "nba" ? "Playing tonight" : "Playing this week") : l.phase === "done" ? "Draft done" : "Draft room open"; };
+    const status = (l) => { const c = l.card || {}; return l.phase === "live" ? "Drafting now" : l.phase === "season" ? (c.week > (c.weeks || 1) ? "Final" : S.daily(l.sport) ? "Playing tonight" : "Playing this week") : l.phase === "done" ? "Draft done" : "Draft room open"; };
     return `<div class="card"><div class="mod-h"><h2>Your one-week games</h2></div><ul class="feed wk-mine">${list.map((l) => `<li><a class="row" href="play.html?id=${esc(l.id)}" style="gap:10px;text-decoration:none;color:inherit;min-width:0"><span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span><span class="grow" style="min-width:0"><b class="ell" style="display:block">${esc(l.name)}</b><small>${l.seriesN > 1 ? `Game ${l.seriesN}, ` : ""}${l.slate ? esc(l.slate) + ", " : ""}${esc(status(l))}</small></span></a><a class="btn sm" href="play.html?id=${esc(l.id)}">Open</a></li>`).join("")}</ul></div>`;
   }
   function render() {
@@ -65,12 +66,12 @@
       : `${weekTabs}${slateCards(w)}<div class="cols2" style="margin-top:14px"><div class="stack">${showdowns(w)}</div><div class="stack">${mineCard()}</div></div>`;
     app.innerHTML = `<div class="wrap page">
       <div class="su sp-${sport}"><div class="nl-band wk-band">${FIELD[sport]}<div class="nl-bi">
-        <div class="sg wk-sport" role="radiogroup" aria-label="Sport" style="margin-bottom:10px"><label class="sg-o"><input type="radio" name="wks" value="nfl"${nba() ? "" : " checked"} data-wks="nfl"><span>Football: one week</span></label><label class="sg-o"><input type="radio" name="wks" value="nba"${nba() ? " checked" : ""} data-wks="nba"><span>Basketball: one day</span></label></div>
-        <h1 class="disp">${nba() ? "One day" : "One week"}</h1>
-        <p>${nba() ? "Pick tonight's games, draft with your group in about ten minutes, and crown a winner when the last game ends. Then run it back tomorrow with the same people, and keep a running series." : "Pick the games, draft with your group in about ten minutes, play one real week of football and crown a winner. Then run it back next week with the same people, and keep a running series."}</p>
-        <div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn go" href="leagues.html?w=1${nba() ? "&s=nba" : ""}">${nba() ? "Start a one-day game" : "Start a one-week game"}</a><a class="btn" href="./?s=${sport}#draft">Mock one first</a></div>
+        <div class="sg wk-sport" role="radiogroup" aria-label="Sport" style="margin-bottom:10px"><label class="sg-o"><input type="radio" name="wks" value="nfl"${nba() ? "" : " checked"} data-wks="nfl"><span>Football: one week</span></label><label class="sg-o"><input type="radio" name="wks" value="nba"${sport === "nba" ? " checked" : ""} data-wks="nba"><span>Basketball: one day</span></label><label class="sg-o"><input type="radio" name="wks" value="cbb"${sport === "cbb" ? " checked" : ""} data-wks="cbb"><span>College: one day</span></label></div>
+        <h1 class="disp">${sport === "cbb" ? "College: one day" : nba() ? "One day" : "One week"}</h1>
+        <p>${sport === "cbb" ? "College basketball's daily fantasy, with your friends: the night's best games (picked by the CBB Hub), DraftKings scoring and a lineup of three guards, three forwards and two flex under a $50,000 cap. Or draft them with your group. Prices come from each player's season line and his team's projected points tonight." : nba() ? "Pick tonight's games, draft with your group in about ten minutes, and crown a winner when the last game ends. Then run it back tomorrow with the same people, and keep a running series." : "Pick the games, draft with your group in about ten minutes, play one real week of football and crown a winner. Then run it back next week with the same people, and keep a running series."}</p>
+        <div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn go" href="leagues.html?w=1${nba() ? `&s=${sport}` : ""}">${nba() ? "Start a one-day game" : "Start a one-week game"}</a>${sport === "cbb" ? `<a class="btn" href="../cbb/">CBB Hub ↗</a>` : `<a class="btn" href="./?s=${sport}#draft">Mock one first</a>`}</div>
       </div></div></div>
-      <section style="margin-top:18px"><h2 class="nl-h" style="margin:0 0 10px">${nba() ? "Tonight's games" : "This week's games"}</h2>${games}</section>
+      <section style="margin-top:18px"><h2 class="nl-h" style="margin:0 0 10px">${sport === "cbb" ? "Tonight's featured games" : nba() ? "Tonight's games" : "This week's games"}</h2>${games}</section>
       <div class="mk-how" style="margin-top:18px">
         <div class="mk-tip"><b>Pick the games</b><p>${nba() ? "The main slate, the early or late games, one game or your own picks. The lineup fits the slate, so two games never ask for five real positions." : "The whole week, Sunday's day games, the night games, one game or your own picks. The lineup fits the slate, so three games never ask for three receivers."}</p></div>
         <div class="mk-tip"><b>Everyone vs. everyone</b><p>With a group, the top score wins and everyone is ranked. Or pair off head to head, add a heist, or go best ball.</p></div>
@@ -91,8 +92,8 @@
     const sp = e.target.closest("[data-wks]");
     if (sp && sp.value !== sport) {
       sport = sp.value; wk = 0;
-      history.replaceState(null, "", sport === "nba" ? "?s=nba" : location.pathname);
-      document.title = `${nba() ? "One day" : "One week"} | Draft Lab`;
+      history.replaceState(null, "", nba() ? `?s=${sport}` : location.pathname);
+      document.title = `${sport === "cbb" ? "College: one day" : nba() ? "One day" : "One week"} | Draft Lab`;
       render(); load();
     }
   });
@@ -102,7 +103,7 @@
   });
   if (link && link.error) U.toast(link.error, true);
   render();
-  if (nba()) document.title = "One day | Draft Lab";
+  if (nba()) document.title = `${sport === "cbb" ? "College: one day" : "One day"} | Draft Lab`;
   load();
   if (C.user()) C.rpc("fk_mine", {}).then((r) => { mine = Array.isArray(r) ? r : []; render(); }).catch(() => { mine = []; render(); });
 })();

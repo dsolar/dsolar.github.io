@@ -123,14 +123,21 @@
     if (n <= 3) return { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 1, mult: { CPT: 1.5 }, note: "A captain at 1.5x, five flex of any position and one bench spot" };
     return { lineup: ["PG", "SG", "SF", "PF", "C", "G", "F", "UTIL"], bench: 1, mult: null, note: "PG, SG, SF, PF, C, a guard, a forward and a flex, one bench spot" };
   }
+  // College, as DraftKings sets it: three guards, three forwards and two flex (a center plays forward); one to three
+  // games are a showdown like the pros'.
+  function cbbLineup(n) {
+    if (n <= 3) return nbaLineup(n);
+    return { lineup: ["G", "G", "G", "F", "F", "F", "UTIL", "UTIL"], bench: 1, mult: null, note: "Three guards, three forwards and two flex, one bench spot" };
+  }
   function lineup(n, teams, sport) {
     if (sport === "nba") return nbaLineup(n);
+    if (sport === "cbb") return cbbLineup(n);
     if (n <= 1) return { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 }, note: "A captain at 1.5x and five flex of any position, no bench" };
     if (n <= 3) return { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 1, mult: { CPT: 1.5 }, note: "A captain at 1.5x, five flex of any position and one bench spot" };
     const qb = teams > 2 * n ? "SFLEX" : "QB";
     if (n <= 7) return { lineup: [qb, "RB", "RB", "WR", "WR", "TE", "FLEX"], bench: 1, mult: null, note: `${qb === "QB" ? "QB" : "Superflex"}, 2 RB, 2 WR, TE and a flex, one bench spot` };
     return { lineup: [qb, "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"], bench: 2, mult: null, note: `${qb === "QB" ? "QB" : "Superflex"}, 2 RB, 3 WR, TE and a flex, two bench spots` };
   }
-  const word = (sport) => (sport === "nba" ? "tips off" : "kicks off");
+  const word = (sport) => (sport === "nba" || sport === "cbb" ? "tips off" : "kicks off");
   return { open, list, pick, lineup, et, kick, label, night, sunday, isDay, dayName, tip, word, early, late };
 });
