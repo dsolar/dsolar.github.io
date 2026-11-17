@@ -93,11 +93,11 @@ def parse_sp(rows, ids):
 def parse_player_epa(rows, ids):
     out = {}
     for row in rows or []:
-        pid = str(row.get("id") or "")
-        if not pid:
+        pid, tid = str(row.get("id") or ""), ids.get(row.get("team"))
+        if not pid or not tid:  # CFBD includes FCS players; the hub covers FBS
             continue
         a, t = row.get("averagePPA") or {}, row.get("totalPPA") or {}
-        out[pid] = {"epa": r(t.get("all"), 1), "pass": r(t.get("pass"), 1), "rush": r(t.get("rush"), 1), "perPlay": r(a.get("all")), "teamId": ids.get(row.get("team"))}
+        out[pid] = {"epa": r(t.get("all"), 1), "pass": r(t.get("pass"), 1), "rush": r(t.get("rush"), 1), "perPlay": r(a.get("all")), "teamId": tid}
     return out
 
 
@@ -175,7 +175,7 @@ def main():
         out["sp"] = s
     def players():
         p = parse_player_epa(c.get("/ppa/players/season", year=year, threshold=50, excludeGarbageTime=True), ids)
-        if len(p) < 200:
+        if len(p) < 150:
             raise ValueError(f"only {len(p)} players")
         out["playerEpa"] = p
     def lines():
