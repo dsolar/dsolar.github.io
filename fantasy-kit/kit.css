@@ -919,6 +919,7 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 /* ---------- start a league ---------- */
 .su{--sp:#246B35;--sp-t:#1F6130;--sp-soft:rgba(36,107,53,.1);--sp-ink:#fff;--band-a:#1E6631;--band-b:#134222;max-width:1040px;margin:0 auto}
 .su.sp-nba{--sp:#B04A1A;--sp-t:#A2440F;--sp-soft:rgba(176,74,26,.1);--band-a:#B4511F;--band-b:#7A2F0E}
+.su.sp-cbb{--sp:#1F4E8C;--sp-t:#1D4A85;--sp-soft:rgba(31,78,140,.1);--band-a:#22528F;--band-b:#0F2B52}
 .su.sp-mlb{--sp:#24519C;--sp-t:#1F4789;--sp-soft:rgba(36,81,156,.1);--band-a:#21498F;--band-b:#132C5A}
 .su.sp-nhl{--sp:#168AA4;--sp-t:#09677D;--sp-soft:rgba(22,138,164,.1);--band-a:#125D70;--band-b:#092C3B}
 :root[data-theme="dark"] .su.sp-nhl{--sp-t:#76D9E8;--sp-soft:rgba(118,217,232,.13)}
@@ -935,6 +936,7 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .pc-contract-links a{font-weight:700;color:var(--accent)}
 :root[data-theme="dark"] .su{--sp-t:#74D184;--sp-soft:rgba(116,209,132,.12)}
 :root[data-theme="dark"] .su.sp-nba{--sp-t:#FF9A5E;--sp-soft:rgba(255,154,94,.12)}
+:root[data-theme="dark"] .su.sp-cbb{--sp-t:#8FB8F0;--sp-soft:rgba(143,184,240,.12)}
 :root[data-theme="dark"] .su.sp-mlb{--sp-t:#8DB2F2;--sp-soft:rgba(141,178,242,.13)}
 /* the header: the sport's field, drawn in chalk */
 .nl-band{position:relative;overflow:hidden;border-radius:18px;margin:14px 0 0;background:linear-gradient(120deg,var(--band-a),var(--band-b));color:#fff;isolation:isolate}
@@ -1158,7 +1160,7 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .lg-band p{margin:0 0 10px !important}
 .lg-band+.card{margin-top:14px}
 .lg-sp{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;color:#fff;background:#1E6631}
-.lg-sp.sp-nba{background:#B4511F}.lg-sp.sp-mlb{background:#21498F}
+.lg-sp.sp-nba{background:#B4511F}.lg-sp.sp-cbb{background:#22528F}.lg-sp.sp-mlb{background:#21498F}
 .lg-sp .sp-ic{width:24px;height:24px}
 .si-steps{margin:0 0 4px;padding-left:20px;display:grid;gap:6px;font-size:14.5px;line-height:1.45}
 .nl-bi .si-card .si-steps li{color:var(--ink)}
