@@ -136,7 +136,9 @@
     ],
     demos: [["cfb", "SS", "Head to head", "Saturday Spoilers", "f=h"], ["cfb:g", "UF", "Best ball guillotine", "Upset Fever", "f=g"]]
   };
-  var ORDER = ["nba", "nfl", "mlb", "nhl", "cbb", "cfb"];
+  var ORDER = ["nba", "nfl", "nhl", "mlb", "cbb", "cfb"];
+  var SHORT = { nba: "NBA", nfl: "NFL", nhl: "NHL", mlb: "MLB", cbb: "NCAAB", cfb: "NCAAF" };
+  Object.keys(SPORTS).forEach(function (k) { SPORTS[k].short = SHORT[k]; });
   var md = function (d) { return (d.getMonth() + 1) * 100 + d.getDate(); };
   var within = function (x, r) { return r[0] <= r[1] ? x >= r[0] && x <= r[1] : x >= r[0] || x <= r[1]; };
   var mdText = function (x) { return MONTHS[Math.floor(x / 100) - 1] + " " + (x % 100); };
@@ -154,7 +156,7 @@
   function theme() {
     var btn = $("#theme"); if (!btn) return;
     var root = document.documentElement;
-    var paint = function () { btn.textContent = root.dataset.theme === "dark" ? "Light mode" : "Dark mode"; };
+    var paint = function () { btn.textContent = root.dataset.theme === "dark" ? "Light" : "Dark"; };
     btn.addEventListener("click", function () {
       var dark = root.dataset.theme !== "dark";
       if (dark) root.dataset.theme = "dark"; else delete root.dataset.theme;
@@ -175,17 +177,19 @@
         var h = t[0] === "home" ? ROOT + "fantasy/" : N.href(t[0], { kit: KIT, sport: page === "overview" ? "" : page });
         return '<a href="' + h + '"' + (t[0] === "home" ? ' aria-current="page"' : "") + ">" + esc(t[1]) + "</a>";
       };
-      el.insertAdjacentHTML("beforebegin", '<header class="fk-top hub-top"><div class="fk-mast fk-band"><div class="wrap">' +
+      el.insertAdjacentHTML("beforebegin", '<header class="fk-top hub-top"><div class="fk-mast fk-band inline"><div class="wrap">' +
         '<a class="fk-brand" href="' + ROOT + 'fantasy/"><img src="' + KIT + 'mark.svg" alt=""><b class="disp">Draft Lab</b></a>' +
-        '<span class="grow"></span><div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark mode</button></div></div></div>' +
-        '<div class="fk-nav"><div class="wrap"><nav aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav></div></div></header>");
+        '<nav class="mast-nav" aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav>" +
+        '<div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark</button></div></div></div></header>');
     }
+    // the sport row rides in the sticky header, so it stays put under the masthead
+    var top = $(".hub-top"); if (top && el.parentNode !== top) top.appendChild(el);
     var link = function (k, label, icon, href) {
       return '<a class="t ' + k + '" href="' + href + '"' + (page === k ? ' aria-current="page"' : "") + ">" + ic(icon) + label + "</a>";
     };
     el.setAttribute("aria-label", "Sports");
     el.innerHTML = '<div class="wrap">' + link("overview", "All sports", "i-home", ROOT + "fantasy/") + '<span class="sep" aria-hidden="true"></span>' +
-      ORDER.map(function (k) { return link(k, SPORTS[k].name, "i-" + k, ROOT + "fantasy/" + k + "/"); }).join("") + "</div>";
+      ORDER.map(function (k) { return link(k, SPORTS[k].short, "i-" + k, ROOT + "fantasy/" + k + "/"); }).join("") + "</div>";
     var current = $('[aria-current="page"]', el); if (current) current.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
 
@@ -218,9 +222,18 @@
     if (pitcher) return p.pos.indexOf("RP") >= 0 && st("pit", "sv") > st("pit", "w") ? st("pit", "sv") + " SV, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA" : st("pit", "w") + " W, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA";
     return st("bat", "hr") + " HR, " + st("bat", "sb") + " SB, " + avg(st("bat", "avg"));
   }
+  // a player's face: his photo; for a college player without one, his school's logo; else his initials in the team color
+  var HEADS = { cbb: "mens-college-basketball", cfb: "college-football" };
   function face(k, p, size) {
     var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][p.t];
-    if (k === "nhl" || k === "cbb" || k === "cfb") return '<span class="ds-face has-face" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("")) + '</span><img src="' + esc(p.head) + '" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'has-face\');this.remove()"></span>';
+    if (k === "nhl" || HEADS[k]) {
+      var logo = S.teamLogo ? S.teamLogo(k, p.t) : null, def = (p.pos || [])[0] === "DEF";
+      var src = def ? logo : k === "nhl" ? p.head : p.espn ? "https://a.espncdn.com/combiner/i?img=/i/headshots/" + HEADS[k] + "/players/full/" + p.espn + ".png&w=180&h=131" : logo;
+      var toLogo = logo && !def ? "if(!this.dataset.l){this.dataset.l=1;this.parentNode.classList.remove('espn');this.parentNode.classList.add('lgo');this.src='" + esc(logo) + "'}else{this.parentNode.classList.remove('has-face','lgo');this.remove()}" : "this.parentNode.classList.remove('has-face');this.remove()";
+      var cls = src === logo ? " lgo" : k !== "nhl" ? " espn" : "";
+      return '<span class="ds-face has-face' + cls + '" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("").slice(0, 3)) + "</span>" +
+        (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" onerror="' + toLogo + '">' : "") + "</span>";
+    }
     var id = k === "nba" ? p.espn : k === "mlb" ? p.id : null;
     return window.DSFaces ? window.DSFaces.html({ sport: k, id: id, name: p.n, color: c || "#33415c", size: size }) : "";
   }
@@ -358,8 +371,8 @@
     var hero = $("[data-hero]");
     var defScoring = S.ALL[k].scorings[s.presets[0][0]];
     hero.className = "hero sport " + k;
-    hero.innerHTML = field(k) + '<div class="wrap"><span class="eyebrow">Fantasy ' + esc(s.league) + "</span>" +
-      '<h1 class="disp"><span class="badge-ic">' + ic("i-" + k) + "</span>" + esc(s.name) + '</h1><p class="lede">' + esc(s.tag) + '</p><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span>" +
+    hero.innerHTML = field(k) + '<div class="wrap"><span class="eyebrow">Fantasy ' + esc(s.name.toLowerCase()) + "</span>" +
+      '<h1 class="disp"><span class="badge-ic">' + ic("i-" + k) + "</span>" + esc(s.short) + '</h1><p class="lede">' + esc(s.tag) + '</p><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span>" +
       '<div class="cta"><a class="btn sp-go" href="' + KIT + "?s=" + k + '#home">Mock a ' + s.name.toLowerCase() + ' draft</a><a class="btn" href="' + KIT + "?s=" + k + '#rankings">Rankings</a><a class="btn" href="' + KIT + "leagues.html?s=" + k + '">Start a league</a></div>' +
       '<div class="facts"><div><small>Season</small><b>' + mdText(s.season[0]) + " to " + mdText(s.season[1]) + "</b></div><div><small>Draft season</small><b>" + MONTHS_L[Math.floor(s.draft[0] / 100) - 1] +
       "</b></div><div><small>Default scoring</small><b>" + esc(defScoring ? defScoring.label : "Points") + "</b></div></div></div>";
@@ -382,7 +395,7 @@
     el.innerHTML = ORDER.map(function (k) {
       var s = SPORTS[k], st = statusOf(k);
       return '<a class="door ' + k + '" href="' + ROOT + "fantasy/" + k + '/">' + field(k) + '<div class="door-top"><div class="row"><span class="badge-ic">' + ic("i-" + k) + '</span><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span></div>" +
-        '<h3 class="disp">' + esc(s.name) + "</h3><p>" + esc(s.blurb) + '</p></div><div class="door-board"><div class="h"><span>Top of the board</span><span>$</span></div><ol data-door="' + k + '"><li class="ph" style="display:block">Loading...</li></ol></div>' +
+        '<h3 class="disp">' + esc(s.short) + "</h3><p>" + esc(s.blurb) + '</p></div><div class="door-board"><div class="h"><span>Top of the board</span><span>$</span></div><ol data-door="' + k + '"><li class="ph" style="display:block">Loading...</li></ol></div>' +
         '<div class="door-foot"><span>Open ' + s.name.toLowerCase() + '</span><span class="arr">&rarr;</span></div></a>';
     }).join("");
     ORDER.forEach(function (k) {
@@ -406,7 +419,7 @@
     el.innerHTML = '<div class="cal-axis"><span></span><div class="cal-months">' + MONTHS.map(function (m) { return "<span>" + m + "</span>"; }).join("") + "</div></div>" +
       ORDER.map(function (k) {
         var s = SPORTS[k];
-        return '<div class="cal-row ' + k + '"><span class="lbl">' + ic("i-" + k) + esc(s.name) + '</span><div class="track">' + segs(s.draft, "draft", "") + segs(s.season, "", "Season") + (k === ORDER[ORDER.length - 1] ? '<span class="today" style="left:' + now.toFixed(2) + '%"></span>' : '<span class="today nolabel" style="left:' + now.toFixed(2) + '%"></span>') + '</div></div>';
+        return '<div class="cal-row ' + k + '"><span class="lbl">' + ic("i-" + k) + esc(s.short) + '</span><div class="track">' + segs(s.draft, "draft", "") + segs(s.season, "", "Season") + (k === ORDER[ORDER.length - 1] ? '<span class="today" style="left:' + now.toFixed(2) + '%"></span>' : '<span class="today nolabel" style="left:' + now.toFixed(2) + '%"></span>') + '</div></div>';
       }).join("") + '<div class="cal-key"><span><i class="d"></i>Draft season</span><span><i></i>Fantasy season</span></div>';
   }
   function overview() {

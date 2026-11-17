@@ -144,7 +144,7 @@
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
-      tabs: N.TABS, tab: view === "new" && oneWeek() ? "week" : "leagues",
+      tabs: N.TABS, inline: true, tab: view === "new" && oneWeek() ? "week" : "leagues",
       right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => N.href(t) });
   }
@@ -208,9 +208,9 @@
     if (sports.length < 2) return `<div class="lgl">${mine.map(card).join("")}</div>`;
     let cur = ""; try { cur = localStorage.getItem(LG_SPORT_KEY) || ""; } catch (e) { /* no storage */ }
     if (cur && !counts[cur]) cur = "";
-    const chips = `<div class="chips lg-sports" role="group" aria-label="Sport">${[["", "All sports", mine.length]].concat(sports.map((k) => [k, S.ALL[k].name, counts[k]])).map(([k, n, c]) => `<button type="button" data-lgsport="${k}" aria-pressed="${k === cur}">${esc(n)} <span class="ps">${c}</span></button>`).join("")}</div>`;
+    const chips = `<div class="chips lg-sports" role="group" aria-label="Sport">${[["", "All sports", mine.length]].concat(sports.map((k) => [k, S.ALL[k].short || S.ALL[k].name, counts[k]])).map(([k, n, c]) => `<button type="button" data-lgsport="${k}" aria-pressed="${k === cur}">${esc(n)} <span class="ps">${c}</span></button>`).join("")}</div>`;
     const body = cur ? `<div class="lgl">${mine.filter((l) => l.sport === cur).map(card).join("")}</div>`
-      : sports.map((k) => `<h2 class="lg-grp">${icon(k)}<span>${esc(S.ALL[k].name)}</span></h2><div class="lgl">${mine.filter((l) => l.sport === k).map(card).join("")}</div>`).join("");
+      : sports.map((k) => `<h2 class="lg-grp">${icon(k)}<span>${esc(S.ALL[k].short || S.ALL[k].name)}</span></h2><div class="lgl">${mine.filter((l) => l.sport === k).map(card).join("")}</div>`).join("");
     return chips + body;
   }
   // One league in the list, in its own colors: the crest, the league and your team, where the season is, and the
@@ -431,7 +431,7 @@
     }).join("");
     return `<div class="su sp-${sp.key}">
       <div class="nl-band">${FIELD[sp.key]}<div class="nl-bi">
-        <div class="nl-sports" role="radiogroup" aria-label="Sport">${(oneWeek() ? Object.values(S.ALL) : S.SEASON_SPORTS).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.name)}</span></label>`).join("")}</div>
+        <div class="nl-sports" role="radiogroup" aria-label="Sport">${(oneWeek() ? Object.values(S.ALL) : S.SEASON_SPORTS).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.short || s.name)}</span></label>`).join("")}</div>
         <h1 class="disp">${dayOn() ? `Start a one-day ${form.sport === "cbb" ? "college basketball" : "basketball"} game` : oneWeek() ? `Start a one-week ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
         <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
       </div></div>

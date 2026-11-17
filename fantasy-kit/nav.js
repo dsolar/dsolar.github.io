@@ -10,7 +10,7 @@
 (function (root) {
   "use strict";
   var TABS = [["home", "Home"], ["leagues", "Your leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["week", "Quick games"], ["league", "Demo league"]];
-  var SPORTS = [["nba", "Basketball"], ["nfl", "Football"], ["mlb", "Baseball"], ["nhl", "Hockey"], ["cbb", "College hoops"], ["cfb", "College football"]];
+  var SPORTS = [["nba", "NBA"], ["nfl", "NFL"], ["nhl", "NHL"], ["mlb", "MLB"], ["cbb", "NCAAB"], ["cfb", "NCAAF"]];
   var HOME = "../fantasy/";
   function href(tab, o) {
     o = o || {};

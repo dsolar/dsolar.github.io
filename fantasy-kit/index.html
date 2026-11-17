@@ -26,9 +26,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="kit.css?v=20261117-cfb1">
+<link rel="stylesheet" href="kit.css?v=20261117-nav2">
 <link rel="stylesheet" href="../assets/faces.css?v=20261109c">
-<link rel="stylesheet" href="start.css?v=20261111d">
+<link rel="stylesheet" href="start.css?v=20261117-nav2">
 <script src="../assets/analytics.js" defer></script>
 <style>
 /* Draft Lab is the Fantasy Kit with its default brand: stadium navy and scoreboard amber. */
@@ -95,10 +95,9 @@ body.fk-room .ds-bar{display:none}
 <!-- The first screen, drawn before the scripts arrive: what lab.js draws for the start page (startPage() and
      header()) for a first visit in football season. The script below fits it to this visitor, and lab.js replaces it
      with the same markup, so nothing moves. Keep the three in step. -->
-<header class="fk-top" id="top"><div class="fk-mast fk-band"><div class="wrap">
+<header class="fk-top" id="top"><div class="fk-mast fk-band inline"><div class="wrap">
         <a class="fk-brand" href="../fantasy/"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
-        <span class="grow"></span><div class="fk-who"><button class="btn sm ghost" data-act="theme">Dark</button></div></div></div>
-      <div class="fk-nav"><div class="wrap"><nav aria-label="Sections"><a href="../fantasy/">Home</a><a href="leagues.html">Your leagues</a><a href="#draft" aria-current="page">Mock draft</a><a href="#rankings">Rankings</a><a href="week.html">Quick games</a><a href="league.html?s=nfl">Demo league</a></nav></div></div>
+        <nav class="mast-nav" aria-label="Sections"><a href="../fantasy/">Home</a><a href="leagues.html">Your leagues</a><a href="#draft" aria-current="page">Mock draft</a><a href="#rankings">Rankings</a><a href="week.html">Quick games</a><a href="league.html?s=nfl">Demo league</a></nav><div class="fk-who"><button class="btn sm ghost" data-act="theme">Dark</button></div></div></div>
 </header>
 <main id="app"><div class="wrap page">
       <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
@@ -149,7 +148,7 @@ body.fk-room .ds-bar{display:none}
 /* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
    stylesheets are in (an inline script waits for them): the first screen above paints without ~640K of JavaScript
    sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
-["nav.js?v=20261117-cfb1", "sports.js?v=20261117-cfb1", "value.js?v=20261116-adv3", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261117-cfb1", "setup.js?v=20261116-cbb1", "cloud.js?v=20261116lu", "slates.js?v=20261116-cbb1", "lab.js?v=20261117-cfb1"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+["nav.js?v=20261117-nav2", "sports.js?v=20261117-nav2", "value.js?v=20261116-adv3", "draft.js?v=20261116-nhl1", "../assets/faces.js?v=20261109c", "ui.js?v=20261117-nav2", "setup.js?v=20261117-nav2", "cloud.js?v=20261116lu", "slates.js?v=20261116-cbb1", "lab.js?v=20261117-nav2"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
 </script>
 </body>
 </html>

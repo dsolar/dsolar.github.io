@@ -54,7 +54,7 @@
 
   /* ---------- basketball ---------- */
   const nba = {
-    key: "nba", name: "Basketball", league: "NBA", unit: "game",
+    key: "nba", name: "Basketball", short: "NBA", league: "NBA", unit: "game",
     positions: ["PG", "SG", "SF", "PF", "C"],
     colors: { PG: 1, SG: 2, SF: 3, PF: 4, C: 5 },
     slots: { PG: ["PG"], SG: ["SG"], G: ["PG", "SG"], SF: ["SF"], PF: ["PF"], F: ["SF", "PF"], C: ["C"], UTIL: "*", CPT: "*", BN: "*" },   // CPT: a one-day captain
@@ -105,7 +105,7 @@
   // score real Monday-Sunday weeks (weeks-cbb.json, tools/fantasykit_cbb.mjs) and can keep the pool to chosen
   // conferences (settings.confs). The season runs November to the national title game; a league can stop sooner.
   const cbb = {
-    key: "cbb", name: "College hoops", league: "NCAA", unit: "game", college: true,
+    key: "cbb", name: "College hoops", short: "NCAAB", league: "NCAA", unit: "game", college: true,
     positions: ["G", "F"],
     colors: { G: 1, F: 4 },
     slots: { G: ["G"], F: ["F"], UTIL: "*", CPT: "*", BN: "*" },
@@ -161,7 +161,7 @@
 
   /* ---------- football ---------- */
   const nfl = {
-    key: "nfl", name: "Football", league: "NFL", unit: "game",
+    key: "nfl", name: "Football", short: "NFL", league: "NFL", unit: "game",
     positions: ["QB", "RB", "WR", "TE", "K", "DEF"],
     colors: { QB: 5, RB: 3, WR: 1, TE: 4, K: 6, DEF: 2 },
     // CPT and UTIL take anyone, kickers and defenses too: a showdown's captain and its flex spots
@@ -204,7 +204,7 @@
     "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr",
     "pass_att", "pass_cmp", "fum", "fgm_50p", "xpmiss", "fum_rec", "def_st_td", "yds_allow", "ret_td"];
   const cfb = Object.assign({}, nfl, {
-    key: "cfb", name: "College football", league: "NCAA", college: true,
+    key: "cfb", name: "College football", short: "NCAAF", league: "NCAA", college: true,
     slots: nfl.slots, lineup: nfl.lineup.slice(), posMax: Object.assign({}, nfl.posMax), late: nfl.late.slice(),
     catsTemplate: Object.assign({}, nfl.catsTemplate, { games: 12 }),
     scorings: {
@@ -227,7 +227,7 @@
     pit: { col: "ip", full: (sport, p) => (p.pos.includes("SP") ? 175 : 65), k: 60 },
   };
   const mlb = {
-    key: "mlb", name: "Baseball", league: "MLB", unit: "season",
+    key: "mlb", name: "Baseball", short: "MLB", league: "MLB", unit: "season",
     positions: ["C", "1B", "2B", "3B", "SS", "OF", "UT", "SP", "RP"],
     colors: { C: 6, "1B": 4, "2B": 2, "3B": 5, SS: 3, OF: 1, UT: 6, SP: 7, RP: 8 },
     slots: { C: ["C"], "1B": ["1B"], "2B": ["2B"], "3B": ["3B"], SS: ["SS"], MI: ["2B", "SS"], CI: ["1B", "3B"], OF: ["OF"], UTIL: HIT, SP: ["SP"], RP: ["RP"], P: ["SP", "RP"], BN: "*" },
@@ -307,7 +307,7 @@
     { k: "so", label: "SO", line: "goalie", col: "so" },
   ];
   const nhl = {
-    key: "nhl", name: "Hockey", league: "NHL", unit: "season", gamesCol: "gp",
+    key: "nhl", name: "Hockey", short: "NHL", league: "NHL", unit: "season", gamesCol: "gp",
     positions: ["C", "LW", "RW", "D", "G"],
     colors: { C: 1, LW: 3, RW: 4, D: 0, G: 5 },
     slots: { C: ["C"], LW: ["LW"], RW: ["RW"], W: ["LW", "RW"], F: ["C", "LW", "RW"], D: ["D"], G: ["G"], UTIL: SKATERS, BN: "*" },
@@ -342,7 +342,7 @@
     ],
   };
 
-  const ALL = { nba, nfl, mlb, nhl, cbb, cfb };
+  const ALL = { nba, nfl, nhl, mlb, cbb, cfb };   // the order sports are listed in
   // the sports a season league, a mock draft or a rankings page offers
   const SEASON_SPORTS = Object.values(ALL).filter((s) => !s.dailyOnly);
 

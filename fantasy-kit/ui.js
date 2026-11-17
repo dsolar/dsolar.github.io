@@ -301,7 +301,8 @@
   const teamName = (t, opts = {}) => `<span class="row" style="gap:9px">${teamAv(t, opts.size || "sm")}<span class="ell"><b>${esc(t.name)}</b>${opts.you ? ` <span class="tag you">You</span>` : ""}${opts.owner !== false && t.owner && !(opts.you && /^you$/i.test(t.owner)) ? ` <span class="ps">${esc(t.owner)}</span>` : ""}${opts.badge || ""}</span></span>`;
 
   /* ---------- shell ---------- */
-  // opts: { brand: { name, href, mark }, title (html beside the brand), tabs: [[key, label, badge]], tab,
+  // opts: { brand: { name, href, mark }, title (html beside the brand), tabs: [[key, label, badge]], tab, inline (the
+  //         tabs on the masthead's own line, Draft Lab's site pages),
   //         subs: [[key, label, badge]], sub, hrefOf(tab, sub), right (html) }
   const CHAT_ICON = `<svg class="nav-ic" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 4h12a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H9l-4 3v-3H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
   function shell(opts) {
@@ -313,10 +314,14 @@
     return `${m ? `<div class="fk-mast fk-band lgm${opts.slim ? " slim" : ""} c${opts.mast.brand.color}" style="--lc:${brandC(opts.mast.brand)}${opts.mast.brand.bg ? `;--band:${opts.mast.brand.bg}` : ""}"><div class="wrap lgm-in">
         ${m.crest}<div class="lgm-id"><div class="lgm-top"><a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>${opts.title || ""}</div>${opts.slim ? "" : m.body}</div>
         <div class="lgm-side"><div class="fk-who">${opts.right || ""}</div>${opts.slim ? "" : m.champs}</div></div></div>`
+      : opts.inline && opts.tabs && opts.tabs.length ? `<div class="fk-mast fk-band inline"><div class="wrap">
+        <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
+        <nav class="mast-nav" aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav>
+        <div class="fk-who">${opts.right || ""}</div></div></div>`
       : `<div class="fk-mast fk-band"><div class="wrap">
         <a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}</div></div></div>`}
-      ${opts.tabs && opts.tabs.length ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}${opts.navEnd ? `<a class="nav-end" href="${esc(opts.navEnd[0])}"${opts.navEnd[3] ? ' aria-current="page"' : ""}>${CHAT_ICON}${esc(opts.navEnd[1])}${badge(opts.navEnd[2])}</a>` : ""}</nav></div></div>` : ""}
+      ${opts.tabs && opts.tabs.length && !(opts.inline && !m) ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}${opts.navEnd ? `<a class="nav-end" href="${esc(opts.navEnd[0])}"${opts.navEnd[3] ? ' aria-current="page"' : ""}>${CHAT_ICON}${esc(opts.navEnd[1])}${badge(opts.navEnd[2])}</a>` : ""}</nav></div></div>` : ""}
       ${opts.subs && opts.subs.length ? `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b]) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</div></nav>` : ""}
       ${opts.tabbar && opts.tabs && opts.tabs.length ? `<nav class="fk-tabbar" aria-label="Sections, phone" style="--n:${opts.tabs.length}">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${TAB_ICON[k] || TAB_ICON.league}<span>${esc(SHORT_TAB[k] || n)}</span>${b ? `<i class="tb-n">${b}</i>` : ""}</a>`).join("")}</nav>` : ""}`;
   }

@@ -298,3 +298,10 @@ a.mode:hover{border-color:var(--sp);transform:translateY(-2px)}
 .rset b{font-size:14px}
 .rset span{font-size:12.5px;color:var(--muted);line-height:1.35}
 .rset i{font-style:normal;font-size:11.5px;font-weight:650;color:var(--muted);line-height:1.4;margin-top:2px}
+
+/* the sport row in the sticky header: shorter, with the short names */
+.hub-top .fbar .wrap{min-height:48px}
+.hub-top .fbar .t{padding:6px 13px;font-size:14px}
+/* a school's logo in place of a missing photo */
+.ds-face.lgo{background:#fff}
+.ds-face.lgo img{object-fit:contain;padding:12%;transform:none}
