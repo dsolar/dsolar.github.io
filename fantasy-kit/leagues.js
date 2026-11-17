@@ -39,7 +39,10 @@
     const k = form.sport;
     if (proAsked[k]) return;
     proAsked[k] = true;
-    fetch(`data/${k}.json`, { cache: "no-cache" }).then((r) => r.json()).then((d) => { const c = {}; for (const p of d.players || []) c[p.t] = (c[p.t] || 0) + 1; proCounts[k] = c; if (d.teams && !Array.isArray(d.teams)) proTeams[k] = d.teams; render(); }).catch(() => {});
+    // college: the small teams file (each school's conference and player count, data/teams-<sport>.json) instead of
+    // the whole player pool, which is a megabyte; the pool itself is only fetched when the league is made
+    const small = S[k] && S[k].college ? fetch(`data/teams-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null);
+    small.then((t) => (t && t.teams && t.counts ? { teams: t.teams, counts: t.counts } : fetch(`data/${k}.json`, { cache: "no-cache" }).then((r) => r.json()))).then((d) => { const c = d.counts || {}; if (!d.counts) for (const p of d.players || []) c[p.t] = (c[p.t] || 0) + 1; proCounts[k] = c; if (d.teams && !Array.isArray(d.teams)) proTeams[k] = d.teams; render(); }).catch(() => {});
   }
   // the players a slate drafts from, and the most teams that can each fill a roster from them (null: no limit known)
   function slateRoom() {
@@ -389,6 +392,11 @@
   // the mode card's name for basketball, where a one-week game is one night
   const modeName = (k) => (k === "week" && S.daily(form.sport) ? ["One day", "Draft tonight's games, crown a winner by midnight"] : null);
   const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"]];
+  // college rosters turn over every year (graduation, the draft, the portal), so a college league is a fresh draft
+  // each season: no keepers, no dynasty
+  const collegeOnly = () => !!(S[form.sport] && S[form.sport].college);
+  // best ball counts each week's best scores, which only adds up in points: a category week has no single best lineup
+  const bbOn = (sp) => !!form.bestball && scoringType(sp) === "points";
   // a one-week league: head to head only, and it plays the week that's on or the next one
   const oneWeek = () => form.kind === "week";
   const WEEK_OK = ["h2h", "h2hcats", "allplay"];
@@ -447,7 +455,8 @@
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
     // every league type can be picked: one that a format doesn't allow switches the format instead (below, on click)
     const modes = pickCards("mode", MODES.map((m) => (modeName(m[0]) ? [m[0]].concat(modeName(m[0])) : m)), oneWeek() ? "week" : "season", S.daily(form.sport) ? "A season or one day" : "A season or one week");
-    const kinds = oneWeek() ? "" : pickCards("kind", KINDS, form.kind, "League type");
+    if (collegeOnly() && (form.kind === "keeper" || form.kind === "dynasty")) form.kind = "redraft";
+    const kinds = oneWeek() || collegeOnly() ? "" : pickCards("kind", KINDS, form.kind, "League type");
     // a one-week league plays the week that's on, or the next one when too little of this week is left (or for
     // baseball, whose stats can't be split midweek)
     const wc = weekChoices(sp), tooLate = wc.left < 30 * 36e5;
@@ -482,7 +491,7 @@
         <section class="nl-sec"><h2 class="nl-h">What are you starting?</h2>${modes}${kinds ? `<div style="margin-top:12px">${kinds}</div>` : ""}${whenHtml}</section>
         ${slateHtml}
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}${sdHtml}
-          ${showdown() || capOn() ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
+          ${showdown() || capOn() || scoringType(sp) !== "points" ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         ${hcOk() ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("hcOn", "Hard Cap", `Real ${sp.league} contracts under a salary line: draft the player, carry the contract`, !!form.hcOn, hcOn() ? hcHtml(sp) : "")}</div></section>` : ""}
         ${form.sport === "nfl" ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("confOn", "Conference limit", "No more than two starters from one FBS college conference, like the SEC or the Mountain West", form.confOn)}</div></section>` : ""}
         ${ladOk() ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("ladOn", "Ladder", "No schedule: each week you challenge a team above you, and if you win you swap places. The ladder is the standings.", !!form.ladOn,
@@ -524,7 +533,7 @@
     const slt = slateOn() ? curSlate() : null;
     const fmtName = oneWeek() && formatOf() === "allplay" ? "everyone vs. everyone" : scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : "";
     const style = oneWeek() ? `${slt && slt.day ? "One day" : "One week"}${slt ? `: ${slt.label}, ${slt.day ? SL.dayName(slt.day).toLowerCase() : `week ${slt.week}`}` : slateOn() ? "" : ` (${form.when === "now" ? "this week" : "next week"})`}${showdown() ? ", captain at 1.5x" : ""}, ${fmtName}${form.bestball ? ", best ball" : ""}`
-      : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${fmtName}${form.bestball ? ", best ball" : gl ? ", set lineups" : ""}`;
+      : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${fmtName}${bbOn(sp) ? ", best ball" : gl ? ", set lineups" : ""}`;
     return {
       line: `${sp.name}, ${n} teams, ${sc}, ${hcOn() ? "Hard Cap, " : ""}${capOn() ? `${F.capMoney(form.capBudget)} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${ladOn() ? ", ladder" : ""}${pyrOn() ? `, plus ${[8, 11, 18].includes(form.pyrTeams) ? "an" : "a"} ${form.pyrTeams}-team lower tier with promotion and relegation` : ""}${heist() ? " and a heist" : ""}${trivia() ? ", trivia to pick" : ""}${sp.key === "nfl" && form.confOn ? ", two starters a conference" : ""}. ${style}`,
       scoring: bon.length ? bon.join(", ") : form.scoring === "cp" ? "Custom points" : "No bonuses",
@@ -1006,7 +1015,7 @@
         if (haveN < k) throw new Error(`There aren't enough ${pos} for this lineup: ${n} teams need ${k}, and the pool has ${haveN}.`);
       }
       if (!capOn() && total > players.length) throw new Error(`${n} teams with ${lineup.length + bench} roster spots need ${total} players, and the pool has ${players.length}.`);
-      const bb = !!form.bestball && form.season !== "guillotine" && !capOn();
+      const bb = bbOn(sport) && form.season !== "guillotine" && !capOn();
       const getW = (f) => fetch(`data/${f}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
       const wk = bb ? (idpOn ? S.addIdpWeeks(await getW(`weeks-${form.sport}`), await getW("weeks-nfl-idp")) : await getW(`weeks-${form.sport}`)) : null;
       V.evaluate(sport, players, { teams: n, lineup, bench, scoring, week: slate ? S.weekFor({ season: { slate } }, sport) : null, oneDay: !!(slate && slate.day), bestBall: bb, weeks: wk && String(wk.season) === String(data.season) ? wk : null, dynasty: form.keepers === -1 && form.season !== "guillotine", dynastyRanks: form.keepers === -1 && form.season !== "guillotine" ? await fetch(`data/dynasty-${form.sport}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null });
@@ -1060,7 +1069,7 @@
       if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
       if (sd) Object.assign(D.season, { showdown: { id: sd.id, teams: [sd.away, sd.home], at: sd.at, week: sd.week, label: `${sd.away} @ ${sd.home}` }, ir: 0, when: "now" });
       else if (slate) Object.assign(D.season, { slate: Object.assign({}, slate, slu && slu.mult ? { mult: slu.mult } : {}), ir: 0, when: slate.day || (slWeeks()[0] && slWeeks()[0].week === slate.week) ? "now" : "next" });
-      if (form.bestball && !sd && !capOn()) D.season.bestBall = true;
+      if (bbOn(sport) && !sd && !capOn()) D.season.bestBall = true;
       else if (gl) D.season.bestBall = false;
       if (form.season === "h2h" && form.median && scoringType(sport) === "points") D.season.median = true;
       if (vampire != null) D.season.vampire = { team: vampire, samePos: form.vlike === 1, double: form.vdouble === 1 };
@@ -1083,7 +1092,7 @@
       if (form.sport === "cbb" && !oneWeek()) D.season.collegeEnd = form.cbbEnd;
       if (form.sport === "cfb" && !oneWeek()) D.season.collegeEnd = form.cfbEnd;
       if (extraPros) D.extraPlayers = extraPros;
-      if (form.sport === "nhl") Object.assign(D.season, { daily: !form.bestball && (form.nhlDaily == null || !!form.nhlDaily), minGoalieGames: scoringType(sport) === "cats" && fmt !== "roto" ? (form.minGoalieGames == null ? 3 : form.minGoalieGames) : 0 });
+      if (form.sport === "nhl") Object.assign(D.season, { daily: !bbOn(sport) && (form.nhlDaily == null || !!form.nhlDaily), minGoalieGames: scoringType(sport) === "cats" && fmt !== "roto" ? (form.minGoalieGames == null ? 3 : form.minGoalieGames) : 0 });
       if (heist()) Object.assign(D.season, { heist: { shields: form.hzShields, steals: form.hzSteals, jinxes: form.hzJinxes, clock: form.hzClock }, ir: 0 });
       if (oneWeek()) Object.assign(D.season, { weeks: 1, when: D.season.when || (form.when === "next" || form.sport === "mlb" || form.sport === "nhl" ? "next" : "now"), oneWeek: true });
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: oneWeek() ? 0 : form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: n <= 2 && form.review === "vote" ? "none" : form.review, waiverDays: form.waiverDays, gameLock: form.gameLock || (form.sport === "nfl" ? "week" : "off"), reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
@@ -1246,6 +1255,16 @@
       else if (k === "@power") { const P = powerOf(), was = P.every((c) => cur.has(c)) && cur.size === P.length; cur.clear(); if (!was) P.forEach((c) => cur.add(c)); }
       else if (cur.has(k)) cur.delete(k); else cur.add(k);
       form.confs = [...cur];
+      // just the pool row and the summary line change, not the whole form (a full redraw of a college form is slow
+      // on a phone, and these get tapped several times in a row)
+      const body = $("#nr-pool"), sp = S[form.sport];
+      if (body && sp && sp.college) {
+        body.innerHTML = confBody(sp);
+        const v = $('.nr-h[data-row="pool"] .nr-v'); if (v) v.textContent = confLabel();
+        const line = $(".nl-sum small"); if (line) line.textContent = values(sp).line;
+        const back = $(`.su [data-conf="${k}"]`); if (back) back.focus();
+        return;
+      }
       render().then(() => { const back = $(`.su [data-conf="${k}"]`); if (back) back.focus(); });
       return;
     }

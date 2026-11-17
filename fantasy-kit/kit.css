@@ -2663,3 +2663,11 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .dl-me{display:grid;justify-items:end;gap:6px;padding:0 28px 26px}
 .dl-me .si-link{color:#B9C5D4;font-size:12.5px}
 @media (max-width:700px){.lg-band.dl-band{grid-template-columns:1fr}.dl-me{justify-items:start;padding:0 20px 20px}.lg-band.dl-band .nl-bi{padding:20px 20px 4px}}
+/* the player card's stat lines: one compact row each, scrolling sideways on a phone */
+.pc-line{display:grid;gap:6px;min-width:0}
+.pc-tbl{width:auto;min-width:100%}
+.t.pc-tbl th{font-size:10.5px;font-weight:750;color:var(--muted);text-transform:none;letter-spacing:0;white-space:nowrap;padding:4px 8px;background:none}
+.pc-tbl td{font-size:14.5px;font-weight:700;padding:5px 8px;white-space:nowrap}
+.pc-tbl th:first-child,.pc-tbl td:first-child{padding-left:0}
+.pc-h .pc-logo{width:44px;height:44px;margin-right:4px}
+@media (max-width:520px){.pc-h .pc-logo{display:none}}

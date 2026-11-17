@@ -2123,10 +2123,12 @@
     }
 
     /* ---------- Players ---------- */
+    // the day a player on waivers clears (11/20), Eastern time like the waiver runs
+    const clearDay = (pid) => { const t = G.clearAt(L(), pid); return t ? new Date(t).toLocaleDateString("en-US", { timeZone: "America/New_York", month: "numeric", day: "numeric" }) : ""; };
     function statusOf(p) {
       const own = ctx.own[p.id];
       if (own != null) return `<a href="${teamHref(own)}" class="row" style="gap:6px;text-decoration:none;color:inherit">${teamAv(T(own), "sm")}<span class="ps">${esc(T(own).abbr)}</span></a>`;
-      if (G.onWaivers(L(), p.id, now())) return `<span class="tag gold" title="On waivers until ${G.waiverWhen(G.clearAt(L(), p.id))}">W</span>`;
+      if (G.onWaivers(L(), p.id, now())) return `<span class="tag gold" title="On waivers until ${G.waiverWhen(G.clearAt(L(), p.id))}">W${clearDay(p.id) ? ` ${clearDay(p.id)}` : ""}</span>`;
       if (G.isLocked(L(), p, L().week, now())) return `<span class="tag gold" title="Game started; claims wait until next week">Locked</span>`;
       return `<span class="tag win">FA</span>`;
     }
@@ -2414,6 +2416,9 @@
         nums = topCats(p, 4).map((c) => `<div><small>${esc(c.label)}</small><b>${Math.round(catVal(a, c) + catVal(b, c))}</b></div>`).join("");
       }
       const left = gs && gs.length > 1 ? `<span class="ps">${gs.filter((g) => g.state !== "post").length} of ${gs.length} games left</span>` : "";
+      // nothing but this week's projection (no schedule to show, no points yet): that's one number, and it goes in
+      // the card's top row instead of a box of its own
+      if (pts() && !games && !(W.cur && W.cur.so > 0) && W.avg == null && !p.inj) return "";
       return `<div class="pc-wk"><div class="pc-wk-h"><b>Week ${w}${pts() ? "" : ", projected"}</b>${left}${p.inj ? `<span class="tag inj">${esc(p.inj)}</span>` : ""}</div>${games ? `<div class="pc-gms">${games}</div>` : ""}<div class="pc-wk-n">${nums}</div></div>`;
     }
     // Everything that's happened to him in this league, newest first
@@ -2640,7 +2645,7 @@
         else if (own === mid && canMove()) actions += `${L().settings.trades !== false && !over() ? `<button class="btn" data-card="block">${G.blockOf(L(), ctx, mid).includes(pid) ? "Take off the block" : "Put on the block"}</button>` : ""}<button class="btn warn" data-card="drop">Drop</button>`;
         else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
       }
-      const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold">On waivers</span>` : `<span class="tag win">Free agent</span>`;
+      const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold" title="Claims run ${esc(G.waiverWhen(G.clearAt(L(), pid)))}">On waivers until ${clearDay(pid)}</span>` : `<span class="tag win">Free agent</span>`;
       // the headline numbers: rank and position, then how he's scoring here (season average, the last three weeks),
       // how often his team starts him, and what he'd go for in an auction
       const W = pts() ? weeksOf(p) : null, last3 = W && W.done.length >= 4 ? W.done.slice(-3).reduce((t, x) => t + x.v, 0) / 3 : null;
@@ -2662,7 +2667,9 @@
       // a category league leads with his season in the league's own categories; a season brought in from another
       // site has no weekly lines here, so there's no week-by-week table for it
       const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id));
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: weekPanel(p, W || {}), extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div><div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
+      const wkp = weekPanel(p, W || {});
+      if (!wkp && pts() && W && W.cur && W.cur.pj != null && !over()) stats.splice(2, 0, [`Week ${curWeek()}`, fmtS(W.cur.pj)]);
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: wkp, extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div><div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
       if (mlbOn) { playerNews(p, Dl.querySelector(".pc-news")); mlbSplits(p, Dl.querySelector(".pc-mlb")); }
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();

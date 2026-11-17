@@ -432,6 +432,15 @@
     sport.cols = {};
     for (const [line, def] of Object.entries(data.lines || {})) sport.cols[line] = Object.fromEntries(def.cols.map((c, i) => [c, i]));
     sport.data = { season: data.season, prev: data.prev || null, updated: data.updated, source: data.source, lines: data.lines };
+    // the columns no player in the pool has a number in (a feed that doesn't carry plus-minus or offensive rebounds,
+    // say): the player card leaves them out instead of showing everyone a zero
+    sport.empty = {};
+    for (const [k, li] of Object.entries((data && data.lines) || {})) {
+      if (!li || !Array.isArray(li.cols)) continue;
+      const seen = li.cols.map(() => false);
+      for (const p of (data && data.players) || []) { const l = p.l && p.l[k]; if (Array.isArray(l)) for (let i = 0; i < seen.length; i++) if (!seen[i] && l[i]) seen[i] = true; }
+      sport.empty[k] = new Set(li.cols.filter((c, i) => !seen[i]));
+    }
     sport.hasAge = (data.players || []).some((p) => p.age);
     // a pool that carries its own teams (college: 365 schools) brings their colors and logos with it
     if (data.teams && !Array.isArray(data.teams)) {

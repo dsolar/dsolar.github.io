@@ -43,7 +43,7 @@ jobs:
       - name: Naismith ladder and the hub's logged lines
         run: python3 tools/cbb_extras.py
       - name: Draft Lab college pool and featured slates
-        run: python3 tools/cbb_dfs.py
+        run: python3 tools/cbb_dfs.py && python3 tools/fantasykit_teams.py cbb
       - name: Check JavaScript
         run: |
           node --check cbb/model.js
@@ -67,7 +67,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add cbb/data fantasy-kit/data/cbb.json fantasy-kit/data/weeks-cbb.json
+          git add cbb/data fantasy-kit/data/cbb.json fantasy-kit/data/weeks-cbb.json fantasy-kit/data/teams-cbb.json
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Update college basketball ratings, rosters, lines and Naismith ladder"
           git pull --rebase

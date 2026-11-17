@@ -81,7 +81,7 @@ jobs:
         continue-on-error: true
 
       - name: Build the player search index
-        run: python3 tools/fantasykit_search.py
+        run: python3 tools/fantasykit_search.py && python3 tools/fantasykit_teams.py
         continue-on-error: true
 
       - name: Check the data

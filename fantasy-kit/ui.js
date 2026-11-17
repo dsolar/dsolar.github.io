@@ -601,6 +601,8 @@
     pass_yd: "Pass yd", pass_td: "Pass TD", pass_int: "INT", rush_att: "Rush", rush_yd: "Rush yd", rush_td: "Rush TD", rec: "Rec", rec_tgt: "Targets", rec_yd: "Rec yd", rec_td: "Rec TD", fum_lost: "Fum",
     fgm_: "FGM", xpm: "XPM", def_td: "Def TD", def_int: "Def INT", def_sack: "Sacks", pts_allow: "Pts allowed", pts_std: "Std pts", pts_half_ppr: "Half PPR", pts_ppr: "PPR" };
   const label = (c) => LABELS[c] || c.toUpperCase();
+  // a college player's class
+  const YR = { Fr: "freshman", So: "sophomore", Jr: "junior", Se: "senior", Sr: "senior", Gr: "graduate student", RS: "redshirt" };
   // The player card. opts: { actions (html), note (html), scoring, status (html) }
   // A small sample: his games on his main line are under 40% of the most anyone in the pool has played (value.js
   // gamesMax), once the season is four games in. { g, of } or null. Rates from a few games swing a lot.
@@ -618,34 +620,43 @@
   function playerCard(sport, p, opts = {}) {
     const sc = sport.scorings[opts.scoring] || Object.values(sport.scorings)[0];
     const kd = S.positions(p).some((x) => x === "K" || x === "DEF");
+    // each stat line as one compact row: a label over each number, the columns the pool has numbers in, a per-game
+    // line to one decimal throughout
+    const tbl = (title, cells) => (cells.length ? `<div class="pc-line"><div class="ps"><b>${esc(title)}</b>, ${esc(sport.data.season)}</div><div class="table-wrap"><table class="t dense pc-tbl"><thead><tr>${cells.map(([l, , t]) => `<th class="r"${t ? ` title="${esc(t)}"` : ""}>${esc(l)}</th>`).join("")}</tr></thead><tbody><tr>${cells.map(([, v]) => `<td class="r num">${v}</td>`).join("")}</tr></tbody></table></div></div>` : "");
     const lines = Object.entries(sport.data.lines || {}).filter(([k]) => p.l[k]).map(([k, def]) => {
-      const cells = def.cols.filter((c) => c !== "eg").map((c) => {
+      const empty = (sport.empty && sport.empty[k]) || new Set(), perGame = /per game/i.test(def.label || "") || /^p?pg$/.test(k);
+      const cells = def.cols.filter((c) => c !== "eg" && !empty.has(c)).map((c) => {
         const v = S.stat(sport, p, k, c);
-        if (v == null || (S.football(sport) && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return "";
-        const f = /^(avg|obp|ops|slg|svp)$/.test(c) ? S.fmt.r3 : /^(era|whip|gaa)$/.test(c) ? S.fmt.f2 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
-        return `<span><small>${esc(label(c))}</small><b>${f(v)}</b></span>`;
-      }).join("");
-      return `<div class="stack" style="gap:6px"><div class="ps"><b>${esc(def.label)}</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>`;
-    }).join("");
+        if (v == null || (S.football(sport) && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return null;
+        const f = /^(avg|obp|ops|slg|svp)$/.test(c) ? S.fmt.r3 : /^(era|whip|gaa)$/.test(c) ? S.fmt.f2 : /^(gp|g|gs)$/.test(c) ? S.fmt.f0 : perGame ? S.fmt.f1 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
+        return [label(c), f(v)];
+      }).filter(Boolean);
+      return tbl(def.label, cells);
+    }).filter(Boolean);
     // his advanced stats this season (football: the ones for his position), each from its category's formula
     const adv = (() => {
       if (!hasAdv(sport)) return "";
-      const mine = S.positions(p), cells = advColumns(sport).filter((c) => !c.pos || c.pos.some((x) => mine.includes(x))).filter((c) => !sport.groups || !c.group || p.l[c.line]).map((c) => {
+      // (an advanced stat built on a column the feed doesn't carry would only ever show a zero)
+      const colsOf = (c) => [c.col, c.num, c.den].concat(c.ratio || []).flatMap((x) => (!x ? [] : typeof x === "string" ? [x] : Object.keys(x)));
+      const missing = (c) => { const e = sport.empty && sport.empty[c.line]; return !!e && colsOf(c).some((x) => e.has(x)); };
+      const mine = S.positions(p), cells = advColumns(sport).filter((c) => !c.pos || c.pos.some((x) => mine.includes(x))).filter((c) => !sport.groups || !c.group || p.l[c.line]).filter((c) => !missing(c)).map((c) => {
         let v;
         if (c.ratio) { const n = S.stat(sport, p, c.line, c.ratio[0]), d = S.stat(sport, p, c.line, c.ratio[1]); v = d ? S.ratioVal(c, n, d) : null; }
         else v = S.stat(sport, p, c.line, c.col);
-        return v == null || !Number.isFinite(v) ? "" : `<span title="${esc(c.title)}"><small>${esc(c.label)}</small><b>${c.fmt(v)}</b></span>`;
-      }).join("");
-      return cells ? `<div class="stack" style="gap:6px"><div class="ps"><b>Advanced</b>, ${esc(sport.data.season)}</div><div class="sgrid">${cells}</div></div>` : "";
+        return v == null || !Number.isFinite(v) ? null : [c.label, c.fmt(v), c.title];
+      }).filter(Boolean);
+      return tbl("Advanced", cells);
     })();
     // a league's card leads with the week and the league; the season lines fold away under one heading
     // opts.lines === false: the card already shows his season and projection its own way (a category league's lines)
-    const linesHtml = opts.lines === false ? adv : opts.fold && (lines || adv) ? `<details class="pc-more"><summary>Season stats and projections</summary><div class="stack">${adv}${lines}</div></details>` : adv + lines;
+    // folded (a league's card, which leads with the week): his main line stays open, the rest folds under one heading
+    const more = lines.slice(1).join("") + adv;
+    const linesHtml = opts.lines === false ? adv : opts.fold ? `${lines[0] || ""}${more ? `<details class="pc-more"><summary>More stats</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + adv;
     const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
     const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     // opts.logo: his pro team's logo at the right of the header
     const lg = opts.logo && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
-    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
+    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.school ? ` ${esc(p.school)}` : ""}${p.yr && YR[p.yr] ? `, ${YR[p.yr]}` : ""}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
       ${(() => { const s = sampleOf(sport, p); return s ? `<p class="small pc-ss" style="margin:0 0 12px"><span class="tag ss">Small sample</span> ${s.g} of ${s.of} games so far, so his rates can still move a lot.</p>` : ""; })()}
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
