@@ -6,6 +6,7 @@
 //
 //   basketball  ESPN's scoreboard and box scores, Monday to Sunday weeks, player ids as name slugs (like Hard Cap)
 //   college     every Division I game on ESPN's college scoreboard, ids as ESPN athlete ids, pool players only
+//   college football  every FBS game on ESPN's scoreboard (cfb.mjs), Monday to Sunday, ESPN athlete ids, defenses by abbreviation
 //   football    Sleeper's live weekly stats (the same feed as weeks-nfl.json), game states from ESPN's scoreboard
 //   baseball    MLB's Stats API schedule and box scores, Monday to Sunday weeks
 //
@@ -21,6 +22,7 @@
 // open, and a finished game's lines are kept for good (table fk_live_games) so they're only fetched once.
 import { NHL_LINES, gameState as nhlState, boxLines as nhlBox, mergeLines as nhlMerge, finishLines as nhlFinish } from "./nhl.mjs";
 import { CBB_COLS, cbbBox, cbbSummary, cbbSlates } from "./cbb.mjs";
+import { CFB_COLS, CFB_ESPN, cfbBox, addInto as cfbAdd } from "./cfb.mjs";
 
 const URL_ = Deno.env.get("SUPABASE_URL")!;
 const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -177,6 +179,46 @@ async function cbb() {
   const acc: Record<string, number[]> = {};
   for (const l of lines) for (const [id, row] of Object.entries(l || {})) sumInto(acc, id, row as number[]);
   return { sport: "cbb", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: CBB_COLS, players: acc, partial: partial || undefined,
+    boxes: Object.fromEntries(games.map((g, i) => [g.id, lines[i]]).filter(([, l]) => l)), teams, games: sched };
+}
+
+/* ---------- college football ---------- */
+// This week's FBS games (about 70 on a Saturday). A finished game's lines are kept, so a request fetches only games in
+// progress and ones that finished since. Players outside the pool (fantasy-kit/data/cfb.json) are left out.
+async function cfb() {
+  const today = nyDate(), start = mondayOf(today), end = addDays(start, 6);
+  const y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)), season = String(m >= 6 ? y : y - 1);
+  const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
+  const [boards, poolFile]: any[] = await Promise.all([
+    pool(days, 4, (d) => getJSON(`${CFB_ESPN}/scoreboard?dates=${d.replace(/-/g, "")}&groups=80&limit=300`).catch(() => ({ events: [] }))),
+    getJSON(`https://davidsolar.dev/fantasy-kit/data/cfb.json`).catch(() => null)]);
+  const ids = new Set(((poolFile && poolFile.players) || []).map((p: any) => String(p.id)));
+  const keepId = (id: string) => !ids.size || ids.has(id);
+  const teams: Teams = {}, games: { id: string; day: string; state: string }[] = [], sched: Games = {};
+  boards.forEach((b: any, i: number) => {
+    for (const e of b.events || []) {
+      const t = e.status?.type || {}; if (/postpon|cancel/i.test(`${t.name || ""} ${t.description || ""}`)) continue;
+      const state = t.state || "pre";
+      espnGames(sched, e, {});
+      for (const c of e.competitions?.[0]?.competitors || []) tally(teams, c.team?.abbreviation, state);
+      if (state !== "pre") games.push({ id: String(e.id), day: days[i], state });
+    }
+  });
+  const have = await cached("cfb", games.map((g) => g.id)), fresh: any[] = [];
+  const lines = await pool(games, 6, async (g) => {
+    if (have[g.id]) return have[g.id];
+    const s: any = await getJSON(`${CFB_ESPN}/summary?event=${g.id}`).catch(() => null);
+    if (!s) return null;
+    const b = cfbBox(s), out: Record<string, number[]> = {};
+    for (const [id, l] of Object.entries(b.lines)) if (keepId(id)) out[id] = l as number[];
+    for (const [ab, l] of Object.entries(b.def)) if (keepId(ab)) out[ab] = l as number[];
+    fresh.push({ gid: g.id, day: g.day, final: g.state === "post", lines: out });
+    return out;
+  });
+  await keep("cfb", fresh);
+  const acc: Record<string, number[]> = {};
+  for (const l of lines) cfbAdd(acc, l || {});
+  return { sport: "cfb", season, start, end, line: "tot", cols: CFB_COLS, players: acc,
     boxes: Object.fromEntries(games.map((g, i) => [g.id, lines[i]]).filter(([, l]) => l)), teams, games: sched };
 }
 
@@ -482,7 +524,7 @@ async function gamesFor(sport: string, ids: string[]) {
   return { sport, ...cols, games: out, updated: new Date().toISOString() };
 }
 
-const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb, nhl, cbb };
+const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb, nhl, cbb, cfb };
 // the week's feed for a sport: the kept copy if it's under a minute old, else built fresh and kept; a feed that's down
 // gives the last copy marked stale
 async function liveData(sport: string) {
@@ -522,7 +564,7 @@ Deno.serve(async (req) => {
     errors.length = 0;
     return json(await mlbLineups(date).catch((e) => ({ days: {}, error: String(e) })), { "cache-control": "max-age=90" });
   }
-  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl, mlb, nhl or cbb" }, {}, 400);
+  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl, mlb, nhl, cbb or cfb" }, {}, 400);
   if (q.get("games")) {
     const ids = [...new Set(String(q.get("games")).split(",").map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)))].slice(0, 20);
     return json(await gamesFor(sport, ids).catch((e) => ({ games: {}, error: String(e) })), { "cache-control": "max-age=30" });

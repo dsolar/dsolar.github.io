@@ -10,9 +10,9 @@
   const theme = U.theme("fk-lab");
   const DAY = 864e5, WEEK = 7 * DAY, HOUR = 36e5;
   const NAMES = {
-    nba: "Hardwood Heads", nfl: "Sunday Scaries", mlb: "Bullpen Mafia", nhl: "Frozen Assets", cbb: "Bracket Busters",
+    nba: "Hardwood Heads", nfl: "Sunday Scaries", mlb: "Bullpen Mafia", nhl: "Frozen Assets", cbb: "Bracket Busters", cfb: "Saturday Spoilers",
   };
-  const GNAMES = { nba: "Last Team Standing", nfl: "Off With Their Heads", mlb: "Sudden Death", nhl: "Sudden Death on Ice", cbb: "One and Done" };
+  const GNAMES = { nba: "Last Team Standing", nfl: "Off With Their Heads", mlb: "Sudden Death", nhl: "Sudden Death on Ice", cbb: "One and Done", cfb: "Upset Fever" };
   const params = new URLSearchParams(location.search);
   const sportKey = S.ALL[params.get("s")] && !S.ALL[params.get("s")].dailyOnly ? params.get("s") : store.get("last", S.inSeason());
   const fmt = params.get("f") === "g" ? "g" : params.get("f") === "h" ? "h" : params.get("s") ? "h" : store.get("lastf", "h");
@@ -61,7 +61,10 @@
   // night; basketball weeks start Monday). Out of season, a replay lined up with Mondays, five weeks in.
   const WEEK1 = { nfl: new Date(2026, 8, 8).getTime(), nba: new Date(2026, 9, 19).getTime() };
   function calendar(now) {
-    const first = sportKey === "nhl" && weeks ? Object.values(weeks.weeks).sort((a, b) => a.start.localeCompare(b.start))[0] : null;
+    // hockey and college: week 1 is the weeks file's first week that starts on a Monday (college football's week 1 is a
+    // long opening stretch, so its demo starts with week 3)
+    const monday = (w) => new Date(w.start + "T12:00:00Z").getUTCDay() === 1;
+    const first = ["nhl", "cbb", "cfb"].includes(sportKey) && weeks ? Object.values(weeks.weeks).filter(monday).sort((a, b) => a.start.localeCompare(b.start))[0] : null;
     const s = first ? Date.parse(first.start + "T13:00:00Z") : WEEK1[sportKey];
     if (s && now - s >= WEEK && now - s < 24 * WEEK) return { start: s, replay: false };
     const d = new Date(now); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
@@ -86,6 +89,8 @@
     const settings = guil ? { format: "guillotine", bestBall: true, waiverAt: 60, immune: { 0: played } }
       : { weeks: 14, playoffTeams: 4, deadline: 11, tradeReview: "vote", reviewHours: 0.03, vetoShare: 0.5, waiverDays: 2 };
     if (sportKey === "nhl") settings.minGoalieGames = 3;
+    // college football's demo ends with the conference championships: ten weeks from mid-September, then the playoffs
+    if (sportKey === "cfb" && !guil) Object.assign(settings, { weeks: 10, deadline: 8 });
     const lg = G.create({ sport, draft: D, name: nameOf(sportKey, guil), season: data.season + (cal.replay ? " replay" : ""), now: start, start, scoring: D.scoring, settings });
     lg.demo = 2;
     lg.teams.forEach((t, i) => (t.color = [0, 1, 2, 3, 4, 5, 6, 7, 11, 9, 8, 10][i % 12]));

@@ -1,4 +1,4 @@
-/* Draft Lab's home page (/fantasy/) and its sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/, /cbb/).
+/* Draft Lab's home page (/fantasy/) and its sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/, /cbb/, /cfb/).
 
    A page says what it is with <body data-page="overview" | "nba" | "nfl" | "mlb" | "nhl">, and this file fills in the parts
    marked with data-* containers. Load after kit.css, hub.css, faces.css and these scripts (in order):
@@ -41,6 +41,8 @@
     '<symbol id="f-cbb" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><rect x="20" y="20" width="420" height="240"/><rect x="262" y="96" width="178" height="88"/><circle cx="262" cy="140" r="44"/><path d="M440 40H342a100 100 0 0 0 0 200h98"/><circle cx="398" cy="140" r="9"/><path d="M411 122v36"/><circle cx="20" cy="140" r="44"/><circle cx="20" cy="140" r="14"/></symbol>' +
     '<symbol id="f-nba" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><rect x="20" y="20" width="420" height="240"/><rect x="250" y="88" width="190" height="104"/><circle cx="250" cy="140" r="52"/><path d="M440 34H330a118 118 0 0 0 0 212h110"/><circle cx="395" cy="140" r="9"/><path d="M408 120v40"/><circle cx="20" cy="140" r="44"/></symbol>' +
     '<symbol id="f-nfl" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2.5"><path d="M40 0v280M110 0v280M180 0v280M250 0v280M320 0v280M390 0v280"/><path d="M75 96v10M145 96v10M215 96v10M285 96v10M355 96v10M75 174v10M145 174v10M215 174v10M285 174v10M355 174v10" stroke-width="2"/><g fill="#fff" fill-opacity=".14" stroke="none" font-family="Archivo,Arial,sans-serif" font-weight="800" font-size="30"><text x="88" y="236">2 0</text><text x="158" y="236">3 0</text><text x="228" y="236">4 0</text><text x="298" y="236">5 0</text></g></symbol>' +
+    '<symbol id="f-cfb" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".15" stroke-width="2.5"><path d="M40 0v280M110 0v280M180 0v280M250 0v280M320 0v280M390 0v280"/><path d="M75 96v10M145 96v10M215 96v10M285 96v10M355 96v10M75 174v10M145 174v10M215 174v10M285 174v10M355 174v10" stroke-width="2"/><g fill="#fff" fill-opacity=".14" stroke="none" font-family="Archivo,Arial,sans-serif" font-weight="800" font-size="30"><text x="88" y="236">2 0</text><text x="158" y="236">3 0</text><text x="228" y="236">4 0</text><text x="298" y="236">5 0</text></g></symbol>' +
+    '<symbol id="i-cfb" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v8a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M12 13v8M9 21h6"/></symbol>' +
     '<symbol id="f-mlb" viewBox="0 0 420 280" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="2.5"><path d="M280 250 380 150 280 50 180 150z"/><path d="M280 250 60 30M280 250 500 30"/><path d="M140 110a200 200 0 0 1 280 0"/><circle cx="280" cy="158" r="14"/><rect x="374" y="144" width="12" height="12" transform="rotate(45 380 150)"/><rect x="274" y="44" width="12" height="12" transform="rotate(45 280 50)"/><rect x="174" y="144" width="12" height="12" transform="rotate(45 180 150)"/><path d="M272 250h16l-8 9z"/></symbol>' +
     '</defs></svg>';
   document.body.insertAdjacentHTML("afterbegin", SPRITE);
@@ -121,7 +123,20 @@
     ],
     demos: [["cbb", "BB", "Head to head", "Bracket Busters", "f=h"], ["cbb:g", "OD", "Best ball guillotine", "One and Done", "f=g"]]
   };
-  var ORDER = ["nba", "nfl", "mlb", "nhl", "cbb"];
+  SPORTS.cfb = {
+    name: "College football", league: "NCAA", season: [822, 131], draft: [801, 829],
+    tag: "Every FBS quarterback, back, receiver, tight end, kicker and defense on real weekly box scores. Draft the whole country or just your conferences, and choose whether the playoff counts.",
+    blurb: "PPR to custom points, any conferences, the playoff if you want it.",
+    presets: [["half", "Half PPR"], ["ppr", "PPR"], ["std", "Standard"]],
+    modes: [
+      { i: "i-half", t: "Conference leagues", n: true, d: "Draft from one conference, a few, the power four or all of FBS. Only their players can be drafted or added.", u: "fantasy-kit/leagues.html?s=cfb", go: "Pick your conferences" },
+      { i: "i-roto", t: "Rivalry week to the title game", d: "Stop after rivalry week, after the conference championships, or play through the bowls and the playoff, where a player scores only while his team is alive.", u: "fantasy-kit/leagues.html?s=cfb", go: "Start a season league" },
+      { i: "i-bolt", t: "Quick games", d: "Draft now, play this Saturday's real games and crown a winner by Sunday.", u: "fantasy-kit/leagues.html?w=1&s=cfb", go: "Start a quick game" },
+      { i: "i-key", t: "Keepers", d: "Keep a few players into next season, if they're still in school. Graduation is the toughest keeper rule there is.", u: "fantasy-kit/leagues.html?s=cfb", go: "Start a keeper league" }
+    ],
+    demos: [["cfb", "SS", "Head to head", "Saturday Spoilers", "f=h"], ["cfb:g", "UF", "Best ball guillotine", "Upset Fever", "f=g"]]
+  };
+  var ORDER = ["nba", "nfl", "mlb", "nhl", "cbb", "cfb"];
   var md = function (d) { return (d.getMonth() + 1) * 100 + d.getDate(); };
   var within = function (x, r) { return r[0] <= r[1] ? x >= r[0] && x <= r[1] : x >= r[0] || x <= r[1]; };
   var mdText = function (x) { return MONTHS[Math.floor(x / 100) - 1] + " " + (x % 100); };
@@ -197,7 +212,7 @@
   function lineOf(k, sp, p) {
     var st = function (l, c) { return S.stat(sp, p, l, c) || 0; };
     if (k === "nba" || k === "cbb") return f1(st("pg", "pts")) + " pts, " + f1(st("pg", "reb")) + " reb, " + f1(st("pg", "ast")) + " ast";
-    if (k === "nfl") return f1(p.fpg) + " pts a game";
+    if (k === "nfl" || k === "cfb") return f1(p.fpg) + " pts a game";
     if (k === "nhl") return p.pos.indexOf("G") >= 0 ? st("goalie", "w") + " W, " + st("goalie", "gaa").toFixed(2) + " GAA, " + avg(st("goalie", "svp")) + " SV%" : st("sk", "g") + " G, " + st("sk", "a") + " A, " + st("sk", "sog") + " SOG";
     var pitcher = p.pos.every(function (x) { return x === "SP" || x === "RP"; });
     if (pitcher) return p.pos.indexOf("RP") >= 0 && st("pit", "sv") > st("pit", "w") ? st("pit", "sv") + " SV, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA" : st("pit", "w") + " W, " + st("pit", "k") + " K, " + st("pit", "era").toFixed(2) + " ERA";
@@ -205,7 +220,7 @@
   }
   function face(k, p, size) {
     var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][p.t];
-    if (k === "nhl" || k === "cbb") return '<span class="ds-face has-face" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("")) + '</span><img src="' + esc(p.head) + '" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'has-face\');this.remove()"></span>';
+    if (k === "nhl" || k === "cbb" || k === "cfb") return '<span class="ds-face has-face" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("")) + '</span><img src="' + esc(p.head) + '" alt="" loading="lazy" onerror="this.parentNode.classList.remove(\'has-face\');this.remove()"></span>';
     var id = k === "nba" ? p.espn : k === "mlb" ? p.id : null;
     return window.DSFaces ? window.DSFaces.html({ sport: k, id: id, name: p.n, color: c || "#33415c", size: size }) : "";
   }
@@ -351,7 +366,8 @@
     board($("[data-board]"), k);
     demos($("[data-demos]"), k);
     var side = $("[data-side]");
-    if (side && k === "cbb") side.innerHTML = '<a class="lgm cbb" href="' + ROOT + 'cbb/">' + field("cbb") + '<small>' + ic("i-cbb") + 'Tonight in college hoops</small><b>CBB Hub</b><span>Every Division I game ranked by how watchable it is, with lines, team ratings and the matchups worth your night.</span><em class="go">Open the CBB Hub</em></a>';
+    if (side && k === "cfb") side.innerHTML = '<a class="lgm cfb" href="' + ROOT + 'cfb/">' + field("cfb") + '<small>' + ic("i-cfb") + 'This Saturday</small><b>College Football Hub</b><span>Every FBS game with lines, FPI and playoff odds, the rankings, and the players behind them.</span><em class="go">Open the hub</em></a>';
+    else if (side && k === "cbb") side.innerHTML = '<a class="lgm cbb" href="' + ROOT + 'cbb/">' + field("cbb") + '<small>' + ic("i-cbb") + 'Tonight in college hoops</small><b>CBB Hub</b><span>Every Division I game ranked by how watchable it is, with lines, team ratings and the matchups worth your night.</span><em class="go">Open the CBB Hub</em></a>';
     else if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'hardcap/">' + field("nba") + "<small>" + ic("i-cap") + "League type</small><b>Hard Cap</b><span>Salary-cap dynasty on real NBA contracts: one hard line, and a Prospect Board for the next class.</span><em class=\"go\">Open Hard Cap</em></a>";
     $("[data-modes]").innerHTML = s.modes.map(function (m) {
       return '<a class="mode" href="' + ROOT + m.u + '"><span class="mi">' + ic(m.i) + "</span><b>" + esc(m.t) + (m.n ? ' <em class="new">New</em>' : "") + "</b><span>" + esc(m.d) + '</span><span class="go">' + esc(m.go) + " &rarr;</span></a>";

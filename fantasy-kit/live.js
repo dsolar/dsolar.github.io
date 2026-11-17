@@ -190,7 +190,8 @@
     if (D.steals) out.push(`${D.steals.perTeam} steals a team, frozen after ${D.steals.freeze}${F.taxOf && F.taxOf(D) < 1 ? `; a stolen player scores ${Math.round(F.taxOf(D) * 100)}%` : ""}${F.goldenOf && F.goldenOf(D) > 1 ? `, a make-up pick ${Math.round(F.goldenOf(D) * 100)}%` : ""}`);
     if (s.poolOnly && S.POOL_NAMES) out.push(`${S.POOL_NAMES[s.poolOnly]}: only those players can be drafted`);
     if (Array.isArray(s.confs) && s.confs.length) out.push(`Players from ${s.confs.length <= 4 ? s.confs.join(", ") : `${s.confs.length} conferences`} only`);
-    if (s.collegeEnd) out.push({ reg: "Ends before the conference tournaments", conf: "Ends on Selection Sunday: conference tournaments count", ncaa: "Runs through the NCAA tournament" }[s.collegeEnd]);
+    if (s.collegeEnd) out.push((D.sport === "cfb" ? { reg: "Ends after rivalry week", conf: "Ends after the conference championships", cfp: "Runs through the bowls and the playoff" }
+      : { reg: "Ends before the conference tournaments", conf: "Ends on Selection Sunday: conference tournaments count", ncaa: "Runs through the NCAA tournament" })[s.collegeEnd]);
     if (s.format === "guillotine") out.push("Guillotine: the lowest score each week is cut");
     else if (s.weeks) out.push(`${s.weeks} weeks${s.playoffTeams ? `, then ${s.playoffTeams}-team playoffs` : ""}`);
     if (s.dynasty) out.push(`Dynasty: everyone carries over, ${s.dynasty.rounds}-round rookie draft`);

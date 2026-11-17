@@ -74,7 +74,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, confs: [], cbbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, confs: [], cbbEnd: "conf", cfbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -109,8 +109,8 @@
   const draftType = () => (form.type === "cap" || form.type === "sealed" ? "snake" : form.type);
   // with no draft, every team can start the slate's quarterbacks, so it's never a superflex
   const slateLU = () => { const sl = slateOn() && !heist() ? curSlate() : null; return sl ? SL.lineup(sl.games.length, capOn() ? 2 : form.teams, form.sport) : null; };
-  const lineupOf = (sp) => (heist() ? ONE_WEEK_NFL.slice() : slateLU() ? slateLU().lineup.slice() : form.lineup ? form.lineup.split(" ") : oneWeek() && sp.key === "nfl" ? ONE_WEEK_NFL.slice() : sp.lineup.slice()).filter((x) => sp.slots[x] && x !== "BN");
-  const benchOf = (sp) => (heist() || capOn() ? 0 : slateLU() ? slateLU().bench : form.bench != null ? form.bench : oneWeek() && sp.key === "nfl" ? 2 : oneWeek() && sp.oneDayBench != null ? sp.oneDayBench : sp.bench);
+  const lineupOf = (sp) => (heist() ? ONE_WEEK_NFL.slice() : slateLU() ? slateLU().lineup.slice() : form.lineup ? form.lineup.split(" ") : oneWeek() && S.football(sp) ? ONE_WEEK_NFL.slice() : sp.lineup.slice()).filter((x) => sp.slots[x] && x !== "BN");
+  const benchOf = (sp) => (heist() || capOn() ? 0 : slateLU() ? slateLU().bench : form.bench != null ? form.bench : oneWeek() && S.football(sp) ? 2 : oneWeek() && sp.oneDayBench != null ? sp.oneDayBench : sp.bench);
   if (S.ALL[params.get("s")]) { form.sport = params.get("s"); view = "new"; }
   if (params.get("new")) view = "new";
   // leagues.html?rematch=<id>: run a one-week game back, next week, with the same managers in the same seats
@@ -477,7 +477,7 @@
     const sc = form.scoring === "cp" ? "Custom points" : scoringType(sp) === "cats" ? `${catsOn(sp).length} categories` : sc0.label === "Points" ? "Standard points" : sc0.label.replace(/ \(.*\)$/, "");
     const bon = [];
     if (scoringType(sp) === "points") {
-      if (sp.key === "nfl" && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
+      if (S.football(sp) && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
       const sm = SX.summary(sxOf(), sp.key); if (sm) bon.push(sm);
     }
     const clock = form.clock >= 3600 ? `${form.clock / 3600} hr` : form.clock >= 60 ? `${form.clock === 90 ? "90 sec" : form.clock / 60 + " min"}` : `${form.clock} sec`;
@@ -499,7 +499,7 @@
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverDays}-day waivers` : `Rolling, ${form.waiverDays}-day waivers`,
       trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
       carry: (form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Up to ${form.keepN} keepers` : "Redraft") + (form.kind !== "redraft" && form.proRounds > 0 ? `, ${form.proRounds} prospect round${form.proRounds > 1 ? "s" : ""}` : ""),
-      pool: sp.key === "cbb" ? confLabel() : form.poolOnly && poolHalves(sp).includes(form.poolOnly) ? S.POOL_NAMES[form.poolOnly] : "Every team",
+      pool: sp.college ? confLabel() : form.poolOnly && poolHalves(sp).includes(form.poolOnly) ? S.POOL_NAMES[form.poolOnly] : "Every team",
       vampire: form.vampOn ? (form.vampWho === "me" ? "You're the vampire" : "A random team") : "Off",
     };
   }
@@ -599,10 +599,10 @@
     const V = values(sp), gl = form.season === "guillotine", rows = [];
     if (form.kind !== "redraft" && !oneWeek()) rows.push(["carry", form.kind === "dynasty" ? "Dynasty" : "Keepers", form.kind === "dynasty" ? "Rookie draft, taxi squad, future picks" : "How many and what they cost", V.carry, () => carryBody()]);
     if (vampOk() && form.vampOn) rows.push(["vampire", "Vampire", "Who it is and how it bites", V.vampire, () => vampireBody()]);
-    if (scoringType(sp) !== "cats") rows.push(["scoring", "Scoring details", sp.key === "nfl" && form.scoring !== "cc" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
+    if (scoringType(sp) !== "cats") rows.push(["scoring", "Scoring details", S.football(sp) && form.scoring !== "cc" ? "Bonuses, TE premium, custom points" : form.scoring === "cp" ? "Points for each stat" : "Categories and custom scoring", V.scoring, () => scoringBody(sp)]);
     if (heist()) rows.push(["heist", "Heist", "Shields, steals, jinxes and its clock", V.heist, () => heistBody()]);
     if (!slateOn() && !heist()) rows.push(["roster", "Roster", "Starting lineup, bench, IR, position limits", V.roster, () => rosterStep(sp)]);
-    if (!oneWeek()) rows.push(["pool", "Player pool", sp.key === "cbb" ? "Every school, or the conferences you pick" : `Every team, or ${{ mlb: "AL or NL", nfl: "AFC or NFC", nba: "East or West", nhl: "East or West" }[sp.key]} only`, V.pool, () => (sp.key === "cbb" ? confBody(sp) : poolBody(sp))]);
+    if (!oneWeek()) rows.push(["pool", "Player pool", sp.college ? "Every school, or the conferences you pick" : `Every team, or ${{ mlb: "AL or NL", nfl: "AFC or NFC", nba: "East or West", nhl: "East or West" }[sp.key]} only`, V.pool, () => (sp.college ? confBody(sp) : poolBody(sp))]);
     if (!noRoom()) rows.push(["draft", "Draft room", form.type === "mystery" ? "When packages open, trades during the draft" : form.type === "elephant" ? "Steals, the steal tax, the golden pick" : auction() ? "Each team's budget" : "Trades during the draft", V.draft, () => draftBody()]);
     if (!oneWeek()) rows.push(["season", "Season", form.season === "guillotine" ? "Length" : "Length and divisions", V.season, () => seasonBody(sp)]);
     if (h2hLike() && !oneWeek()) rows.push(["playoffs", "Playoffs", "Teams, rounds, consolation", V.playoffs, () => playoffsBody()]);
@@ -614,7 +614,7 @@
   const PRO_SRC = { mlb: "FanGraphs' top prospects", nfl: "next year's class on the Big Board", nba: "next year's class on the Big Board" };
   function prospectFields() {
     const sp = S[form.sport], on = form.proRounds > 0;
-    if (sp.key === "nhl" || sp.key === "cbb") return "";
+    if (sp.key === "nhl" || sp.college) return "";
     const strict = { mlb: "Never played in the majors", nfl: "College players only", nba: "College and international players only" }[sp.key];
     const loose = { mlb: "Rookie-eligible: under 130 at-bats or 50 innings", nfl: "Prospects plus this season's rookies", nba: "Prospects plus this season's rookies" }[sp.key];
     return `<div class="g2" style="margin-top:12px">${fld("Prospect rounds", stepper("proRounds", [0, 1, 2, 3, 4, 5, 6], form.proRounds, (x) => (x ? `${x} round${x > 1 ? "s" : ""}` : "None"), "Prospect rounds"), on ? `After the main draft, from ${PRO_SRC[sp.key]}. Every pick goes to the taxi squad, which gets at least ${form.proRounds} spot${form.proRounds > 1 ? "s" : ""}.` : "Add rounds after the main draft for prospects only, straight to the taxi squad.")}
@@ -662,12 +662,12 @@
   // The extras on any points scoring, as the spec sports.js reads: the editor's rows plus football's passing TD control
   function scoringExtras(sp) {
     if (scoringType(sp) !== "points") return null;
-    const ptd = sp.key === "nfl" && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd && form.ptd !== 4 ? { "*": { pass_td: form.ptd - 4 } } : null;
+    const ptd = S.football(sp) && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd && form.ptd !== 4 ? { "*": { pass_td: form.ptd - 4 } } : null;
     return SX.toSpec(sxOf(), sp.key, ptd);
   }
   function extrasFields(sp) {
     if (scoringType(sp) !== "points") return "";
-    const ptd = sp.key === "nfl" && form.scoring !== "cp" && form.scoring !== "cc" ? group("Passing touchdowns", `<div class="tg-x" style="padding:0">${seg("ptd", [[4, "4 pts"], [5, "5 pts"], [6, "6 pts"]], form.ptd, "Passing touchdown points")}</div>`, "Four points is standard.") : "";
+    const ptd = S.football(sp) && form.scoring !== "cp" && form.scoring !== "cc" ? group("Passing touchdowns", `<div class="tg-x" style="padding:0">${seg("ptd", [[4, "4 pts"], [5, "5 pts"], [6, "6 pts"]], form.ptd, "Passing touchdown points")}</div>`, "Four points is standard.") : "";
     return ptd + SX.html(sp, sxOf(), window.FK.setup);
   }
   // Who moves under the extras: worked out after the form draws, from the sport's player file
@@ -694,7 +694,7 @@
   const CAT_SET_NAME = { cats9: "Standard", roto5: "Classic 5x5", yoenis: "Expanded", cats10: "Standard", bangers: "Bangers" };
   // the categories picked now: a ready-made set's until one is changed, then the league's own list
   function catsOn(sp) {
-    if (form.scoring === "cc") return form.cats || (form.cats = sp.key === "nfl" ? ["pass_yd", "pass_td", "pass_int", "rush_yd", "rush_td", "rec", "rec_yd", "rec_td"]
+    if (form.scoring === "cc") return form.cats || (form.cats = S.football(sp) ? ["pass_yd", "pass_td", "pass_int", "rush_yd", "rush_td", "rec", "rec_yd", "rec_td"]
       : (Object.values(sp.scorings).find((x) => x.type === "cats") || { cats: [] }).cats.map((c) => c.k));
     const cur = sp.scorings[form.scoring];
     return cur && cur.type === "cats" ? cur.cats.map((c) => c.k) : [];
@@ -717,7 +717,7 @@
     if (form.scoring === "cp") {
       const w = form.weights || (form.weights = Object.assign({}, S.POINT_DEFAULTS[sp.key]));
       return group("Points for each stat", `<div class="wts">${S.POINT_STATS[sp.key].map(([key, l]) => `<label class="wt"><span>${esc(l)}</span><input type="number" step="0.01" data-w="${esc(key)}" value="${w[key] != null ? w[key] : 0}" aria-label="Points for ${esc(l)}"></label>`).join("")}</div>`,
-        sp.key === "nfl" ? "Per yard, catch, touchdown and so on. Points allowed counts each point a defense gives up, so use a small negative number." : sp.key === "mlb" ? "Hitting and pitching stats from each player's line. Total bases count singles 1, doubles 2, triples 3 and homers 4." : "Per stat, per game.");
+        S.football(sp) ? "Per yard, catch, touchdown and so on. Points allowed counts each point a defense gives up, so use a small negative number." : sp.key === "mlb" ? "Hitting and pitching stats from each player's line. Total bases count singles 1, doubles 2, triples 3 and homers 4." : "Per stat, per game.");
     }
     return "";
   }
@@ -731,33 +731,36 @@
     return fld("Players from", seg("poolOnly", [["", "Every team"]].concat(halves.map((h) => [h, S.POOL_NAMES[h]])), cur, "Player pool", { wrap: true }), hint);
   }
   // college: the conferences a league drafts from (form.confs; none picked is every school). The pool file's teams
-  // carry each school's conference. Power conferences first, then the rest A to Z.
-  const POWER = ["ACC", "Big Ten", "Big 12", "SEC", "Big East"];
+  // carry each school's conference. The power conferences first, then the rest A to Z.
+  const POWERS = { cbb: ["ACC", "Big Ten", "Big 12", "SEC", "Big East"], cfb: ["SEC", "Big Ten", "Big 12", "ACC"] };
+  const powerOf = () => POWERS[form.sport] || [];
   function confMap() {
     loadPros();
-    const teams = proTeams.cbb; if (!teams) return null;
+    const teams = proTeams[form.sport]; if (!teams) return null;
     const m = {};
     for (const [abbr, t] of Object.entries(teams)) if (t && t.conf) (m[t.conf] = m[t.conf] || []).push(abbr);
     return m;
   }
-  const confNames = (m) => Object.keys(m).sort((a, b) => ((POWER.indexOf(a) + 1 || 99) - (POWER.indexOf(b) + 1 || 99)) || a.localeCompare(b));
-  const confsOn = () => { const m = form.sport === "cbb" && !oneWeek() ? confMap() : null; return m ? (form.confs || []).filter((c) => m[c]) : []; };
+  const confNames = (m) => Object.keys(m).sort((a, b) => ((powerOf().indexOf(a) + 1 || 99) - (powerOf().indexOf(b) + 1 || 99)) || a.localeCompare(b));
+  const confsOn = () => { const m = S[form.sport] && S[form.sport].college && !oneWeek() ? confMap() : null; return m ? (form.confs || []).filter((c) => m[c]) : []; };
   const confTeams = () => { const m = confMap(), on = confsOn(); return m && on.length ? on.flatMap((c) => m[c]) : null; };
-  const confLabel = () => { const on = confsOn(); return !on.length ? "Every school" : on.length === POWER.length && POWER.every((c) => on.includes(c)) ? "Power conferences" : on.length <= 3 ? on.join(", ") : `${on.length} conferences`; };
+  const isPower = (on) => { const P = powerOf(); return P.length && on.length === P.length && P.every((c) => on.includes(c)); };
+  const confLabel = () => { const on = confsOn(); return !on.length ? "Every school" : isPower(on) ? `Power ${powerOf().length === 4 ? "four" : "five"}` : on.length <= 3 ? on.join(", ") : `${on.length} conferences`; };
   function confBody(sp) {
     const m = confMap();
     if (!m) return `<p class="fl-h">Loading the conferences…</p>`;
-    const on = confsOn(), names = confNames(m), counts = proCounts.cbb || {};
-    const players = (on.length ? on.flatMap((c) => m[c]) : Object.keys(proTeams.cbb)).reduce((a, t) => a + (counts[t] || 0), 0);
+    const on = confsOn(), names = confNames(m), counts = proCounts[form.sport] || {}, teams = proTeams[form.sport];
+    const players = (on.length ? on.flatMap((c) => m[c]) : Object.keys(teams)).reduce((a, t) => a + (counts[t] || 0), 0);
     const need = form.teams * (lineupOf(sp).length + benchOf(sp));
-    const power = POWER.every((c) => m[c]) && on.length === POWER.length && POWER.every((c) => on.includes(c));
+    const P = powerOf(), power = P.every((c) => m[c]) && isPower(on);
     const chip = (k, label, pressed, n) => `<button type="button" data-conf="${esc(k)}" aria-pressed="${pressed}">${esc(label)}${n != null ? ` <span class="ct">${n}</span>` : ""}</button>`;
-    const quick = `<div class="chips confs">${chip("", "Every school", !on.length)}${chip("@power", "Power conferences", power)}</div>`;
+    const quick = `<div class="chips confs">${chip("", "Every school", !on.length)}${P.length ? chip("@power", `Power ${P.length === 4 ? "four" : "five"}`, power) : ""}</div>`;
     const list = `<div class="chips confs" role="group" aria-label="Conferences">${names.map((c) => chip(c, c, on.includes(c), m[c].length)).join("")}</div>`;
     const deep = players && need > players * 0.6;
+    const all = Object.keys(teams).length, level = sp.key === "cfb" ? "FBS" : "Division I";
     const hint = on.length
-      ? `Only players from ${on.length === 1 ? esc(on[0]) : `these ${on.length} conferences`} can be drafted or added: ${on.flatMap((c) => m[c]).length} schools, about ${players} players for ${need} roster spots.${need > players ? ` <b>Not enough players:</b> pick more conferences, fewer teams or a smaller roster.` : deep ? " <b>Deep:</b> most rotation players get drafted, so the waiver wire will be thin." : ""}`
-      : `All ${Object.keys(proTeams.cbb).length} Division I schools. Pick one conference or several to keep the pool to the teams you follow.`;
+      ? `Only players from ${on.length === 1 ? esc(on[0]) : `these ${on.length} conferences`} can be drafted or added: ${on.flatMap((c) => m[c]).length} schools, about ${players} players for ${need} roster spots.${need > players ? ` <b>Not enough players:</b> pick more conferences, fewer teams or a smaller roster.` : deep ? " <b>Deep:</b> most regulars get drafted, so the waiver wire will be thin." : ""}`
+      : `All ${all} ${level} schools. Pick one conference or several to keep the pool to the teams you follow.`;
     return fld("Players from", quick + list, hint);
   }
   function rosterStep(sp) {
@@ -784,7 +787,9 @@
       after ? `After week ${after} the table splits in half. The top ${Math.ceil(n / 2)} play only each other for the title${po ? `, and the playoffs come from them${po > Math.ceil(n / 2) ? ` (${Math.ceil(n / 2)} playoff teams, not ${po})` : ""}` : ""}; the bottom ${Math.floor(n / 2)} play only each other and can't finish above them. Records carry over.` : "Like Scotland's league: partway through, the top half and bottom half each play only themselves.") : "";
     const cend = sp.key === "cbb" ? fld("Season ends", seg("cbbEnd", [["reg", "Before conference tournaments"], ["conf", "After conference tournaments"], ["ncaa", "After the NCAA tournament"]], form.cbbEnd || "conf", "Season ends", { wrap: true }),
       form.cbbEnd === "ncaa" ? "March Madness counts: a player scores only while his team is still in, so a deep run is worth a lot and a first-round exit leaves him with nothing." : form.cbbEnd === "reg" ? `The last week ends ${endLabel()}, the weekend before most conference tournaments.` : `The last week ends on Selection Sunday, ${endLabel()}: conference tournaments count, the NCAA tournament doesn't.`) : "";
-    return cend + length + divs + split;
+    const fend = sp.key === "cfb" ? fld("Season ends", seg("cfbEnd", [["reg", "After rivalry week"], ["conf", "After conference championships"], ["cfp", "After the national title game"]], form.cfbEnd || "conf", "Season ends", { wrap: true }),
+      form.cfbEnd === "cfp" ? "Bowls and the playoff count: a player scores only while his team is still playing, so a deep playoff run is worth a lot and most rosters thin out in December." : form.cfbEnd === "reg" ? `The last week ends ${endLabel()}, after rivalry week: no conference championships.` : `The last week ends ${endLabel()}, after the conference championships. Bowls and the playoff don't count.`) : "";
+    return cend + fend + length + divs + split;
   }
   function pyramidBody() {
     const n = form.teams, n2 = form.pyrTeams, mode = form.pyrMode === "playoff" ? "playoff" : "swap", mk = P.maxK(n, n2, mode), k = pyrK();
@@ -833,13 +838,17 @@
   // the weeks left in the real season from the first week this league would play (next Monday, Tuesday for football),
   // so a league started in November can't run into February. null when the season hasn't started (no cap).
   // college hoops ends where the league says: before the conference tournaments, after them, or after the NCAA's
-  const endOf = () => { const end = S.seasonEnd(form.sport, Date.now()); return end && form.sport === "cbb" && S.collegeEnd ? Math.min(end, S.collegeEnd(form.cbbEnd, Date.now())) : end; };
+  const endOf = () => {
+    const end = S.seasonEnd(form.sport, Date.now()); if (!end || !S.collegeEnd) return end;
+    return form.sport === "cbb" ? Math.min(end, S.collegeEnd(form.cbbEnd, Date.now(), "cbb")) : form.sport === "cfb" ? Math.min(end, S.collegeEnd(form.cfbEnd, Date.now(), "cfb")) : end;
+  };
   function weeksLeft() {
     const end = endOf(); if (!end) return null;
     const d = new Date(), want = form.sport === "nfl" ? 2 : 1;
     d.setUTCHours(13, 0, 0, 0);
     do d.setUTCDate(d.getUTCDate() + 1); while (d.getUTCDay() !== want);
-    return Math.max(1, Math.floor((end - d.getTime()) / 6048e5));
+    // a season that ends on a Sunday night still has that last week: count a week that's a day short as a week
+    return Math.max(1, Math.floor((end - d.getTime() + 864e5) / 6048e5));
   }
   const endLabel = () => { const e = endOf(); return e ? new Date(e).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""; };
   // the chase (a points race among the last four): points scoring, four or more playoff teams
@@ -931,7 +940,7 @@
       const half = !oneWeek() && S.poolTeams ? S.poolTeams(form.sport, form.poolOnly) || confTeams() : null;
       const players = data.players.filter((p) => (!slate || slate.teams.includes(p.t)) && (!half || half.includes(p.t))).map((p) => Object.assign({}, p));
       // prospect rounds: the prospect pool rides along with the league (D.extraPlayers)
-      const proOn = form.sport !== "nhl" && form.sport !== "cbb" && !oneWeek() && form.kind !== "redraft" && form.season !== "guillotine" && form.proRounds > 0;
+      const proOn = form.sport !== "nhl" && !(S[form.sport] && S[form.sport].college) && !oneWeek() && form.kind !== "redraft" && form.season !== "guillotine" && form.proRounds > 0;
       let extraPros = null;
       if (proOn) {
         const src = await fetch(form.sport === "mlb" ? "data/prospects-mlb.json" : `../draft/${form.sport}.json`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
@@ -1017,6 +1026,7 @@
       if (!oneWeek() && poolHalves(S[form.sport]).includes(form.poolOnly)) D.season.poolOnly = form.poolOnly;
       if (confTeams()) Object.assign(D.season, { pool: confTeams(), confs: confsOn() });
       if (form.sport === "cbb" && !oneWeek()) D.season.collegeEnd = form.cbbEnd;
+      if (form.sport === "cfb" && !oneWeek()) D.season.collegeEnd = form.cfbEnd;
       if (extraPros) D.extraPlayers = extraPros;
       if (form.sport === "nhl") Object.assign(D.season, { daily: !form.bestball && (form.nhlDaily == null || !!form.nhlDaily), minGoalieGames: scoringType(sport) === "cats" && fmt !== "roto" ? (form.minGoalieGames == null ? 3 : form.minGoalieGames) : 0 });
       if (heist()) Object.assign(D.season, { heist: { shields: form.hzShields, steals: form.hzSteals, jinxes: form.hzJinxes, clock: form.hzClock }, ir: 0 });
@@ -1178,7 +1188,7 @@
     if (cf) {
       grab(); const k = cf.dataset.conf, cur = new Set(form.confs || []);
       if (!k) cur.clear();
-      else if (k === "@power") { const was = POWER.every((c) => cur.has(c)) && cur.size === POWER.length; cur.clear(); if (!was) POWER.forEach((c) => cur.add(c)); }
+      else if (k === "@power") { const P = powerOf(), was = P.every((c) => cur.has(c)) && cur.size === P.length; cur.clear(); if (!was) P.forEach((c) => cur.add(c)); }
       else if (cur.has(k)) cur.delete(k); else cur.add(k);
       form.confs = [...cur];
       render().then(() => { const back = $(`.su [data-conf="${k}"]`); if (back) back.focus(); });

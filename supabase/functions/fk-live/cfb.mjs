@@ -60,8 +60,8 @@ export function cfbBox(s) {
         const key = String(id);
         // defenders count toward their team's defense, not a line of their own (no individual defensive players)
         if (cat.name === "defensive" || cat.name === "interceptions") {
-          if (cat.name === "defensive") { D[IX.def_sack] += num(at(a, "SACKS")); D[IX.def_td] += num(at(a, "TD")); }
-          else { D[IX.def_int] += num(at(a, "INT")); D[IX.def_td] += num(at(a, "TD")); }
+          if (cat.name === "defensive") { D[IX.def_sack] += num(at(a, "SACKS")); D._dtd = (D._dtd || 0) + num(at(a, "TD")); }
+          else { D[IX.def_int] += num(at(a, "INT")); D._itd = (D._itd || 0) + num(at(a, "TD")); }
           continue;
         }
         if (cat.name === "punting") continue;
@@ -92,6 +92,8 @@ export function cfbBox(s) {
   for (const [tid, D] of Object.entries(dl)) {
     const opp = D._opp, oppAb = abOf[opp];
     const lost = Object.entries(out.lines).filter(([id]) => out.team[id] === oppAb).reduce((a, [, l]) => a + l[IX.fum_lost], 0);
+    // the defensive list's TDs may already include interception returns, so take the larger count, not both
+    D[IX.def_td] = Math.max(D._dtd || 0, D._itd || 0); delete D._dtd; delete D._itd;
     D[IX.fum_rec] += lost; D[IX.g] = 1; D[IX.pts_allow] = score[opp] || 0; D[IX.yds_allow] = tyds[opp] || 0;
     delete D._ab; delete D._opp;
     if (abOf[tid]) out.def[abOf[tid]] = withPoints(D, true);

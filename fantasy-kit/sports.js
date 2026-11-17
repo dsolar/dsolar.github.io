@@ -195,6 +195,27 @@
     ],
   };
 
+  /* ---------- college football ---------- */
+  // Every FBS team's quarterbacks, backs, receivers, tight ends, kickers and defenses (fantasy-kit/data/cfb.json and
+  // weeks-cfb.json, tools/fantasykit_cfb.mjs from ESPN's box scores), in the NFL's column names so the NFL's scorings,
+  // categories and custom points apply. A week is one game, like the NFL's, but it runs Monday to Sunday. Season
+  // leagues can keep the pool to chosen conferences (settings.confs) and stop before or after the playoff.
+  const CFB_COLS = ["g", "pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", "rush_td", "rec", "rec_yd", "rec_td", "fum_lost",
+    "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr",
+    "pass_att", "pass_cmp", "fum", "fgm_50p", "xpmiss", "fum_rec", "def_st_td", "yds_allow", "ret_td"];
+  const cfb = Object.assign({}, nfl, {
+    key: "cfb", name: "College football", league: "NCAA", college: true,
+    slots: nfl.slots, lineup: nfl.lineup.slice(), posMax: Object.assign({}, nfl.posMax), late: nfl.late.slice(),
+    catsTemplate: Object.assign({}, nfl.catsTemplate, { games: 12 }),
+    scorings: {
+      half: { label: "Half PPR", type: "points", line: "tot", col: "pts_half_ppr", games: 12 },
+      ppr: { label: "PPR", type: "points", line: "tot", col: "pts_ppr", games: 12 },
+      std: { label: "Standard", type: "points", line: "tot", col: "pts_std", games: 12 },
+    },
+  });
+  // football's way of playing: one game a week, lineups that lock by game, per-game projections
+  const football = (k) => { const key = k && k.key ? k.key : k; return key === "nfl" || key === "cfb"; };
+
   /* ---------- baseball ---------- */
   const HIT = ["C", "1B", "2B", "3B", "SS", "OF", "UT"];
   // Z-scores measure against players a league would roster: regulars, starters and closers.
@@ -321,7 +342,7 @@
     ],
   };
 
-  const ALL = { nba, nfl, mlb, nhl, cbb };
+  const ALL = { nba, nfl, mlb, nhl, cbb, cfb };
   // the sports a season league, a mock draft or a rankings page offers
   const SEASON_SPORTS = Object.values(ALL).filter((s) => !s.dailyOnly);
 
@@ -369,6 +390,7 @@
       ["ff", "Forced fumbles"], ["safe", "Safeties"], ["def_st_td", "Special teams TDs"], ["yds_allow", "Yards allowed"],
       ["epa_pass", "Passing EPA"], ["epa_rush", "Rushing EPA"], ["epa_rec", "Receiving EPA"], ["pass_sacked", "Times sacked"],
       ["air_rec", "Receiving air yards"], ["yac_rec", "Yards after catch"]],
+    get cfb() { return this.nfl.filter(([k]) => CFB_COLS.includes(k)).concat([["ret_td", "Return TDs"]]); },
     mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
       ["pit.ip", "Innings pitched"], ["pit.w", "Wins"], ["pit.l", "Losses"], ["pit.sv", "Saves"], ["pit.hld", "Holds"], ["pit.k", "Strikeouts"], ["pit.er", "Earned runs"],
       ["pit.bb", "Walks allowed"], ["pit.h", "Hits allowed"], ["pit.qs", "Quality starts"],
@@ -386,6 +408,7 @@
     mlb: { "bat.r": 1, "bat.tb": 1, "bat.rbi": 1, "bat.sb": 1, "pit.ip": 3, "pit.w": 2, "pit.l": -2, "pit.sv": 5, "pit.hld": 2, "pit.k": 1, "pit.er": -2, "pit.bb": -1, "pit.h": -1 },
     nhl: Object.assign({}, nhl.scorings.points.weights),
     cbb: Object.assign({}, cbb.scorings.dk.weights),
+    get cfb() { return Object.assign({ ret_td: 6 }, this.nfl); },
   };
   // Every category any of a sport's presets uses, plus a few common extras.
   // Categories no preset uses, for custom category leagues: the advanced ones are formulas over the box-score
@@ -423,6 +446,8 @@
       { k: "tovr", label: "TOV%", num: "tov", den: { fga: 1, fta: 0.44, tov: 1 }, low: true, fmt: pct1, unit: 0.35, adv: true, title: "Turnovers per possession used (lower is better)" },
       { k: "gmsc", label: "Game Score", col: { pts: 1, fgm: 0.4, fga: -0.7, fta: -0.4, ftm: 0.4, oreb: 0.7, dreb: 0.3, stl: 1, ast: 0.7, blk: 0.7, pf: -0.4, tov: -1 }, fmt: f1, adv: true, title: "John Hollinger's Game Score, added up: one number for a whole box score" },
     ],
+    // college football: the NFL's categories its box scores can make (no targets, first downs, two-point tries or EPA)
+    get cfb() { return this.nfl.filter((c) => catCols(c).every((x) => CFB_COLS.includes(x))); },
     nfl: [
       { k: "pass_yd", label: "Pass yds", line: "tot", col: "pass_yd", title: "Passing yards" },
       { k: "pass_td", label: "Pass TD", line: "tot", col: "pass_td", title: "Passing touchdowns" },
@@ -554,6 +579,11 @@
     ],
     // college: the pro presets without plus/minus, which college box scores don't carry
     get cbb() { return this.nba.map((x) => Object.assign({}, x, { blurb: x.blurb.replace(" and plus/minus", ""), cats: x.cats.filter((k) => k !== "pm") })); },
+    cfb: [
+      { k: "classic", name: "Classic", blurb: "Yards and touchdowns passing, rushing and receiving", cats: ["pass_yd", "pass_td", "pass_int", "rush_yd", "rush_td", "rec", "rec_yd", "rec_td"] },
+      { k: "eff", name: "Efficiency", blurb: "Rates only: no credit for volume alone", cats: ["aya", "cmp_pct", "td_pct", "int_pct", "ypc", "ypr", "ypto", "fg_pct"] },
+      { k: "vol", name: "Volume", blurb: "Touches, yards and touchdowns", cats: ["tot_yd", "scrim", "rec", "rush_att", "skill_td", "pass_td", "takeaways", "fgm"] },
+    ],
     nfl: [
       { k: "epa", name: "Analytics", blurb: "EPA, CPOE, ANY/A and target share", cats: ["epa", "epa_play", "cpoe", "anya", "tgt_share", "ypto", "fd", "skill_td"] },
       { k: "eff", name: "Efficiency", blurb: "Rates only: no credit for volume alone", cats: ["anya", "cmp_pct", "td_pct", "int_pct", "ypc", "ypt", "catch", "ypto"] },
@@ -595,9 +625,9 @@
       if (spec.base && base[spec.base] && base[spec.base].type === "points") return Object.assign({}, base[spec.base], extra, { label: base[spec.base].label + extraLabel(spec), custom: true, base: spec.base });
       const pts = Object.values(base).find((x) => x.type === "points") || {};
       const hoops = sport.key === "nba" || sport.key === "cbb";
-      const line = sport.key === "nfl" ? "tot" : hoops ? "pg" : sport.key === "nhl" ? "sk" : "bat";
+      const line = football(sport) ? "tot" : hoops ? "pg" : sport.key === "nhl" ? "sk" : "bat";
       return { label: "Custom points", type: "points", line, per: hoops ? "game" : undefined, games: pts.games || (sport.key === "mlb" ? 162 : 17),
-        weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true, ...extra, label: "Custom points" + extraLabel(spec) };
+        weights: Object.assign({}, spec.weights), projScale: football(sport) ? 1 : undefined, custom: true, ...extra, label: "Custom points" + extraLabel(spec) };
     }
     const cats = Object.values(base).find((x) => x.type === "cats") || ALL[sport.key].catsTemplate;
     // every category the league picked, even one this data file can't make yet (it scores once the columns arrive)
@@ -622,7 +652,7 @@
      A week's box score is one game in football, so a bonus counts once a week; a season projection counts the games a
      player is likely to reach the mark in, from his average and a typical spread game to game. Position points and
      multipliers are linear, so they work on any sport's week totals. */
-  const BONUS_OK = { nfl: true };
+  const BONUS_OK = { nfl: true, cfb: true };
   const BONUS_NAMES = { rush_yd: "rushing", rec_yd: "receiving", pass_yd: "passing" };
   const statName = (sportKey, k) => { const hit = (POINT_STATS[sportKey] || []).find(([x]) => x === k || x.split(".").pop() === k); return hit ? hit[1] : k.replace(/^(bat|pit)\./, "").replace(/_/g, " "); };
   function extraLabel(spec) {
@@ -738,7 +768,7 @@
   // regular season start to the end of the fantasy season. The default sport is the one whose fantasy season matters
   // most right now: football from August drafts until its fantasy playoffs end in early January, then basketball,
   // then baseball from its March drafts through July.
-  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928], nhl: [929, 415], cbb: [1101, 410] };
+  const SEASONS = { nfl: [901, 107], nba: [1020, 415], mlb: [325, 928], nhl: [929, 415], cbb: [1101, 410], cfb: [822, 131] };
   const DEFAULT_SPORT = [[801, 107, "nfl"], [108, 314, "nba"], [315, 731, "mlb"]];
   const mmdd = (d) => (d.getMonth() + 1) * 100 + d.getDate();
   const within = (x, [a, b]) => (a <= b ? x >= a && x <= b : x >= a || x <= b);
@@ -752,12 +782,23 @@
     if (end.getTime() < now.getTime()) end = new Date(now.getFullYear() + 1, Math.floor(se[1] / 100) - 1, se[1] % 100, 23, 59);
     return end.getTime();
   }
-  // college hoops' March: Selection Sunday is the Sunday from March 11 to 17, the regular season (before the
-  // conference tournaments) ends a week before it, and the title game is the Monday three weeks after it. A league
-  // that plays through the NCAA tournament runs to the Sunday after, so the title game is in its last week.
+  // where a college season can stop. Hoops: Selection Sunday is the Sunday from March 11 to 17, the regular season
+  // (before the conference tournaments) ends a week before it, and the title game is the Monday three weeks after it,
+  // so a league through the NCAA tournament runs to the Sunday after. Football: the regular season ends the Sunday
+  // after Thanksgiving (rivalry week), conference championships the Sunday after the first Saturday of December, and
+  // the national title game is in the second half of January, so a league through the playoff runs to the Sunday on or
+  // after January 26.
   const COLLEGE_ENDS = { reg: -7, conf: 0, ncaa: 28 };
-  function collegeEnd(kind, t) {
-    const now = new Date(t || Date.now()), y = now.getMonth() >= 6 ? now.getFullYear() + 1 : now.getFullYear();
+  const FOOTBALL_ENDS = ["reg", "conf", "cfp"];
+  function collegeEnd(kind, t, sportKey) {
+    const now = new Date(t || Date.now());
+    if (sportKey === "cfb") {
+      const fy = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+      if (kind === "cfp") { const d = new Date(fy + 1, 0, 26, 23, 59); while (d.getDay() !== 0) d.setDate(d.getDate() + 1); return d.getTime(); }
+      if (kind === "reg") { const d = new Date(fy, 10, 1, 23, 59); let th = 0; while (true) { if (d.getDay() === 4 && ++th === 4) break; d.setDate(d.getDate() + 1); } d.setDate(d.getDate() + 3); return d.getTime(); }
+      const d = new Date(fy, 11, 1, 23, 59); while (d.getDay() !== 6) d.setDate(d.getDate() + 1); d.setDate(d.getDate() + 1); return d.getTime();
+    }
+    const y = now.getMonth() >= 6 ? now.getFullYear() + 1 : now.getFullYear();
     const sel = new Date(y, 2, 11, 23, 59); while (sel.getDay() !== 0) sel.setDate(sel.getDate() + 1);
     sel.setDate(sel.getDate() + (COLLEGE_ENDS[kind] != null ? COLLEGE_ENDS[kind] : 0));
     return sel.getTime();
@@ -906,5 +947,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { collegeEnd, COLLEGE_ENDS, cbb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { football, CFB_COLS, FOOTBALL_ENDS, collegeEnd, COLLEGE_ENDS, cbb, cfb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

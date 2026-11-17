@@ -24,7 +24,7 @@
   function gauss(r) { const u = Math.max(1e-9, r()), v = r(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); }
 
   // How a season line turns into one week: basketball plays about 3.4 games a week, baseball and football split a season.
-  const WEEK = { nba: { pg: 3.4, weeks: 24 }, cbb: { pg: 2, weeks: 18 }, nfl: { tot: 1 / 17, weeks: 17 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 }, nhl: { sk: 1 / 28, goalie: 1 / 28, weeks: 28 } };
+  const WEEK = { nba: { pg: 3.4, weeks: 24 }, cbb: { pg: 2, weeks: 18 }, nfl: { tot: 1 / 17, weeks: 17 }, cfb: { tot: 1 / 12, weeks: 12 }, mlb: { bat: 1 / 26, pit: 1 / 26, weeks: 26 }, nhl: { sk: 1 / 28, goalie: 1 / 28, weeks: 28 } };
   const COLORS = 12;
 
   const DEFAULTS = { format: "h2h", bestBall: false, weeks: 14, playoffTeams: 4, faab: 100, minBid: 0, waivers: "faab", waiverHours: 48, waiverAt: null,
@@ -129,7 +129,7 @@
      before the week's first game and that's the team's score, whatever its players do; no deal and it plays it out.
      max deals a season (0: no limit). Bots take a deal that should beat their opponent's projection.
      L.deals = { w: { team: { offer, base, day, taken, passed, actual } } } */
-  const lockGuess = (L, w) => weekStart(L, w) + (L.sport === "nfl" ? 2.5 * DAY : 6 * HOUR);
+  const lockGuess = (L, w) => weekStart(L, w) + (L.sport === "nfl" ? 2.5 * DAY : L.sport === "cfb" ? 1.5 * DAY : 6 * HOUR);
   const dealOn = (L) => !!L.settings.deal;
   const dealTaken = (L, t, w) => { const d = L.deals && L.deals[w] && L.deals[w][t]; return d && d.taken && w <= L.settings.weeks ? d : null; };
   const dealsUsed = (L, t) => Object.values(L.deals || {}).filter((wk) => wk[t] && wk[t].taken).length;
@@ -188,7 +188,7 @@
   }
   // challenges close at the week's first game (L.kick, once the live feed has it), or a guess: Thursday night for
   // football, Monday afternoon (New York) for a daily sport
-  const ladderDue = (L, w) => weekStart(L, w) + (L.sport === "nfl" ? 2.5 * DAY : 6 * HOUR);
+  const ladderDue = (L, w) => weekStart(L, w) + (L.sport === "nfl" ? 2.5 * DAY : L.sport === "cfb" ? 1.5 * DAY : 6 * HOUR);
   function ladderOpen(L, w, now) {
     if (!L.ladder || w > L.settings.weeks) return;
     Object.assign(L.ladder, { week: w, ch: [], due: Math.max(now + HOUR, ladderDue(L, w)), at: now, done: null });
@@ -734,8 +734,8 @@
     for (const [line, def] of Object.entries(ctx.sport.data.lines)) {
       if (!p.l[line] || wk[line] == null) continue;
       // football's line is the season so far: a week is one game of it
-      const g = ctx.sport.key === "nfl" ? S.stat(ctx.sport, p, line, "g") || 0 : 0;
-      const f = ctx.sport.key === "nfl" ? (g > 0 ? form * frac / g : 0) : wk[line] * form * frac;
+      const g = S.football(ctx.sport) ? S.stat(ctx.sport, p, line, "g") || 0 : 0;
+      const f = S.football(ctx.sport) ? (g > 0 ? form * frac / g : 0) : wk[line] * form * frac;
       const base = ctx.sport.key === "nhl" && V.rateLine ? V.rateLine(ctx.sport, p, line) : p.l[line];
       out[line] = def.cols.map((c, i) => (/^(avg|obp|ops|era|whip|fg|ft|gaa|svp)$/.test(c) ? base[i] : base[i] * f));
     }
@@ -932,7 +932,7 @@
     if (sc.type === "points") {
       let total = 0, vr = 0;
       for (const id of ids) { const p = ctx.byId[id]; if (!p) continue; const m = slotMult(L, lu.indexOf(id), id), x = p.v / wk.weeks; total += x * m; vr += m * m * footballVar(x); }
-      return { total, var: ctx.sport.key === "nfl" ? vr : null };
+      return { total, var: S.football(ctx.sport) ? vr : null };
     }
     return { total: sum(ids.map((id) => (ctx.byId[id] ? ctx.byId[id].v : 0))) };
   }
@@ -1008,7 +1008,7 @@
       // one-week game's values, sport.weekOf, already count that)
       const m = slotMult(L, lu.indexOf(id), id), base = sc.type === "points" ? ((p.v || 0) / (sc.games || g)) * (ctx.sport.weekOf != null || (L.settings.slate && L.settings.slate.day) ? 1 : plays(p)) : 0;
       const togo = t.left + 0.5 * t.live, per = base * m;
-      rem += per * togo; vr += togo * (ctx.sport.key === "nfl" ? m * m * footballVar(base) : (k * per) ** 2);
+      rem += per * togo; vr += togo * (S.football(ctx.sport) ? m * m * footballVar(base) : (k * per) ** 2);
       played += t.played + 0.5 * t.live; left += togo;
     }
     return { rem, vr, played, left };
@@ -2137,7 +2137,7 @@
     if (at < weekStart(L, L.week + 1)) { const [y, m, d] = nextDay(t.y, t.m, t.d); at = etAt(y, m, d, PROCESS_HOUR); }
     return at;
   }
-  const gameLockOn = (L) => (L.settings.gameLock ? L.settings.gameLock === "week" : L.sport === "nfl");
+  const gameLockOn = (L) => (L.settings.gameLock ? L.settings.gameLock === "week" : L.sport === "nfl" || L.sport === "cfb");
   // free agents whose game this week has started: on waivers until next week
   function lockPlayed(L, ctx, now) {
     if (!gameLockOn(L) || !L.kick || L.kick.week !== L.week) return 0;

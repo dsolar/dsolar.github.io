@@ -23,6 +23,8 @@ const CACHE = "tools/cfb_fantasy/games.json", PEOPLE = "tools/cfb_fantasy/people
 // ESPN turns away requests that don't look like a browser
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 export const FANTASY_POS = ["QB", "RB", "WR", "TE", "K"];
+// bump when cfbBox reads a box score differently, so every week is fetched again
+const VERSION = 2;
 const read = (file, fallback = null) => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8")); } catch { return fallback; } };
 function write(file, data) { const full = path.join(ROOT, file); fs.mkdirSync(path.dirname(full), { recursive: true }); fs.writeFileSync(full, JSON.stringify(data) + "\n"); }
 async function get(url) {
@@ -83,10 +85,10 @@ async function main() {
   const { weeks: W, weekOf } = fantasyWeeks(hub);
   const today = nyDay(), yesterday = addDays(today, -1);
   const old = read(WEEKS, {}) || {};
-  const same = String(old.season) === season && JSON.stringify(old.cols) === JSON.stringify(CFB_COLS);
+  const same = String(old.season) === season && old.v === VERSION && JSON.stringify(old.cols) === JSON.stringify(CFB_COLS);
   const kept = same ? old.weeks || {} : {};
   const cacheFile = read(CACHE, {}) || {};
-  const cache = cacheFile.season === season && JSON.stringify(cacheFile.cols) === JSON.stringify(CFB_COLS) ? cacheFile.games || {} : {};
+  const cache = cacheFile.season === season && cacheFile.v === VERSION && JSON.stringify(cacheFile.cols) === JSON.stringify(CFB_COLS) ? cacheFile.games || {} : {};
   const people = (read(PEOPLE, {}) || {}).season === season ? read(PEOPLE).people || {} : {};
   const byWeek = {};
   for (const g of hub.games) { const k = weekOf(g); if (k) (byWeek[k] = byWeek[k] || []).push(g); }
@@ -123,8 +125,8 @@ async function main() {
     weeks[k] = { start, end, final, lines: acc };
     if (!final) for (const id of finals) if (cache[id]) nextCache[id] = cache[id];
   }
-  write(WEEKS, { sport: "cfb", season, updated: new Date().toISOString(), source: "ESPN box scores, every FBS game", line: "tot", cols: CFB_COLS, weeks });
-  write(CACHE, { season, cols: CFB_COLS, games: nextCache });
+  write(WEEKS, { sport: "cfb", v: VERSION, season, updated: new Date().toISOString(), source: "ESPN box scores, every FBS game", line: "tot", cols: CFB_COLS, weeks });
+  write(CACHE, { season, v: VERSION, cols: CFB_COLS, games: nextCache });
   write(PEOPLE, { season, people });
 
   // the pool: season totals from the weeks

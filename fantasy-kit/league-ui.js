@@ -39,7 +39,7 @@
       const lv = liveWeek(w);
       if (lv && lv.teams && Object.keys(lv.teams).length) return Object.values(lv.teams).some((t) => t.played || t.live);
       if (L().sport === "nhl") { const rw = G.realWeek(L(), ctx, w); return !!(rw && Object.values(rw.lines || {}).some((x) => (x.sk && x.sk[0] > 0) || (x.goalie && x.goalie[0] > 0))); }
-      return L().sport !== "nfl" || now() >= G.weekStart(L(), w) + 60 * 36e5;
+      return !S.football(L().sport) || now() >= G.weekStart(L(), w) + (L().sport === "cfb" ? 36 : 60) * 36e5;
     };
     const noKicks = (w) => !!(L().settings.real && w === L().week && !anyKicked(w));
     const frac = (w) => { if (w < L().week) return 1; if (noKicks(w)) return 0; const f = opts.frac ? opts.frac(w) : 0; return f < 0.01 ? 0 : f; };
@@ -274,7 +274,7 @@
     function oneGame(g) {
       const vs = `${g.home ? "vs" : "@"} ${esc(g.opp)}`;
       // ESPN's "4:21 3rd" reads better as "Q3 4:21"
-      const clock = String(g.detail || "Live").replace(/^(\d+:\d+)\s+(\d)(st|nd|rd|th)$/, (x, c, q) => (sport.key === "nfl" ? `Q${q} ${c}` : `${q}${{ 1: "st", 2: "nd", 3: "rd" }[q] || "th"} ${c}`));
+      const clock = String(g.detail || "Live").replace(/^(\d+:\d+)\s+(\d)(st|nd|rd|th)$/, (x, c, q) => (S.football(sport) ? `Q${q} ${c}` : `${q}${{ 1: "st", 2: "nd", 3: "rd" }[q] || "th"} ${c}`));
       if (g.state === "in") return `<span class="gm live"><i aria-hidden="true"></i>${esc(clock)}${g.us != null ? `, ${g.us}-${g.them}` : ""} ${vs}</span>`;
       if (g.state === "post") return `<span class="gm done">Final, ${g.us > g.them ? "W" : g.us < g.them ? "L" : "T"} ${g.us}-${g.them} ${vs}</span>`;
       return `<span class="gm">${esc(kick(g.at))} ${vs}</span>`;
@@ -705,17 +705,17 @@
     // his rate per game times the games his team has left (from the live feed's schedule), nothing more if he's out.
     function projFor(p, sofar, w) {
       const so = typeof sofar === "number" ? sofar : 0;
-      const wp = sport.key === "nfl" ? weekProj(p, w) : null;
+      const wp = S.football(sport) ? weekProj(p, w) : null;
       if (wp != null) { const g = gameNow(gamesOf(p, w) || []); return so + wp * (1 - progress(g)); }
       const wk = G.WEEK[sport.key] || { weeks: 20 };
-      if (sport.key === "nfl" || !liveWeek(w) || w !== curWeek()) return w === curWeek() && frac(w) > 0 ? so + (p.v / wk.weeks) * Math.max(0, 1 - frac(w)) : p.v / wk.weeks;
+      if (S.football(sport) || !liveWeek(w) || w !== curWeek()) return w === curWeek() && frac(w) > 0 ? so + (p.v / wk.weeks) * Math.max(0, 1 - frac(w)) : p.v / wk.weeks;
       const per = (p.v || 0) / (sc().games || { nba: 82, mlb: 162 }[sport.key] || 82);
       return so + per * G.gamesLeft(L(), ctx, p, w, frac(w)) * G.plays(p);
     }
     // games each lineup still has to play this week, from the live feed
     function outlookLine(m) {
       if (!m.outlook || m.final) return "";
-      const n = (x) => Math.round(x.left * 2) / 2, unit = sport.key === "nfl" ? "player" : "game";
+      const n = (x) => Math.round(x.left * 2) / 2, unit = S.football(sport) ? "player" : "game";
       const say = (t, o) => `<b>${esc(T(t).name)}</b> ${n(o) ? `${fmtS(n(o))} ${unit}${n(o) === 1 ? "" : "s"} left` : "done"}`;
       return `<div class="medline"><span>Still to play:</span><span>${say(m.a, m.outlook[0])}</span><span>${say(m.b, m.outlook[1])}</span>${(L().settings.real && (opts.hooks || {}).real && opts.hooks.real.live) ? `<span class="ps">Live box scores, updated ${esc(new Date(opts.hooks.real.live.updated).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }))}</span>` : ""}</div>`;
     }

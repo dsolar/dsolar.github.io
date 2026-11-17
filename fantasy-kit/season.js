@@ -39,7 +39,7 @@
         playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
         ...(s.playoffFinal === "chase" ? { playoffFinal: "chase", chaseWeeks: Math.max(1, Math.min(3, Math.floor(Number(s.chaseWeeks) || 2))) } : {}),
         deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: ["none", "commish"].includes(s.review) ? s.review : "vote", reviewHours: s.reviewHours || 24, vetoShare: s.vetoShare || 0.5,
-        waiverDays: s.waiverDays != null ? s.waiverDays : 2, gameLock: s.gameLock || (sport && sport.key === "nfl" ? "week" : "off"), faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
+        waiverDays: s.waiverDays != null ? s.waiverDays : 2, gameLock: s.gameLock || (sport && (sport.key === "nfl" || sport.key === "cfb") ? "week" : "off"), faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
     // roster rules from the form: IR spots, a weekly pickup limit, position limits
     if (s.ir != null) settings.ir = s.ir;
     if (s.maxAdds) settings.maxAdds = s.maxAdds;
@@ -53,8 +53,8 @@
     // a conference-only pool (AL or NL, AFC or NFC, East or West)
     if (({ mlb: ["AL", "NL"], nfl: ["AFC", "NFC"], nba: ["East", "West"], nhl: ["East", "West"] }[D.sport] || []).includes(s.poolOnly)) settings.poolOnly = s.poolOnly;
     // college: a pool kept to chosen conferences (their schools), and where the season stops in March
-    if (D.sport === "cbb" && Array.isArray(s.pool) && s.pool.length) Object.assign(settings, { pool: s.pool.slice(), confs: (s.confs || []).slice() });
-    if (D.sport === "cbb" && ["reg", "conf", "ncaa"].includes(s.collegeEnd)) settings.collegeEnd = s.collegeEnd;
+    if ((D.sport === "cbb" || D.sport === "cfb") && Array.isArray(s.pool) && s.pool.length) Object.assign(settings, { pool: s.pool.slice(), confs: (s.confs || []).slice() });
+    if ((D.sport === "cbb" ? ["reg", "conf", "ncaa"] : D.sport === "cfb" ? ["reg", "conf", "cfp"] : []).includes(s.collegeEnd)) settings.collegeEnd = s.collegeEnd;
     if (sport.key === "nhl") settings.minGoalieGames = settings.format === "roto" ? 0 : s.minGoalieGames == null ? 3 : s.minGoalieGames;
     if (sport.key === "nhl" && s.daily && !settings.bestBall) settings.daily = true;
     // weekly extras: a game against the league median, best ball lineups, divisions

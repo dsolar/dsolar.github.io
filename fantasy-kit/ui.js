@@ -274,6 +274,7 @@
     if (k === "nhl" && p.head && /^https:\/\/assets\.nhle\.com\//.test(p.head)) return { src: p.head };
     if (k === "mlb" && /^\d{5,7}$/.test(String(p.id))) return { src: `https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/${p.id}/headshot/67/current` };
     if (k === "cbb" && p.espn) return { src: `https://a.espncdn.com/combiner/i?img=/i/headshots/mens-college-basketball/players/full/${p.espn}.png&w=180&h=131`, espn: true };
+    if (k === "cfb" && p.espn) return { src: `https://a.espncdn.com/combiner/i?img=/i/headshots/college-football/players/full/${p.espn}.png&w=180&h=131`, espn: true };
     if ((k === "nba" || k === "nfl") && p.espn) return { src: `https://a.espncdn.com/combiner/i?img=/i/headshots/${k}/players/full/${p.espn}.png&w=180&h=131`, espn: true };
     return null;
   };
@@ -572,7 +573,7 @@
   // (UTIL, P) the group every position it takes belongs to, so UTIL shows hitting stats and P pitching
   const groupOf = (sport, st) => {
     if (!st.pos) return null;
-    if (!sport.groups) return sport.key === "nfl" ? st.pos : null;
+    if (!sport.groups) return S.football(sport) ? st.pos : null;
     if (st.pos.startsWith("g:")) return st.pos.slice(2);
     const ps = st.pos.startsWith("s:") ? sport.slots[st.pos.slice(2)] : [st.pos];
     if (!Array.isArray(ps)) return null;
@@ -595,7 +596,7 @@
     const lines = Object.entries(sport.data.lines || {}).filter(([k]) => p.l[k]).map(([k, def]) => {
       const cells = def.cols.filter((c) => c !== "eg").map((c) => {
         const v = S.stat(sport, p, k, c);
-        if (v == null || (sport.key === "nfl" && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return "";
+        if (v == null || (S.football(sport) && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return "";
         const f = /^(avg|obp|ops|slg|svp)$/.test(c) ? S.fmt.r3 : /^(era|whip|gaa)$/.test(c) ? S.fmt.f2 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
         return `<span><small>${esc(label(c))}</small><b>${f(v)}</b></span>`;
       }).join("");
