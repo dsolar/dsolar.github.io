@@ -259,7 +259,7 @@ owns which team, the invite code and the save order. It also stamps each team's 
   More columns ride along for the extra categories and custom points: basketball's `oreb, dreb, pf, tpa, pm, dd, td`
   (from Hard Cap's file, tools/hardcap_pull.py, whose weeks are recounted once when its columns grow) and football's
   Sleeper keys `pass_att, pass_cmp, pass_fd, rush_fd, rec_fd, pass_2pt, rush_2pt, rec_2pt, fum, fgm_50p, xpmiss,
-  fum_rec, fum_force, safe, def_st_td, yds_allow`. Football has no category preset: custom category leagues start
+  fum_rec, ff, safe, def_st_td, yds_allow`. Football has no category preset: custom category leagues start
   from `nfl.catsTemplate` (season totals so far; a simulated week is one game of them). `POINT_STATS` lists every
   stat a custom points league can put a value on.
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds

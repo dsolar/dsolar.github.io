@@ -298,7 +298,7 @@
       ["pass_att", "Pass attempts"], ["pass_cmp", "Completions"], ["rec_tgt", "Targets"], ["pass_fd", "Passing first downs"], ["rush_fd", "Rushing first downs"],
       ["rec_fd", "Receiving first downs"], ["pass_2pt", "2-pt passes"], ["rush_2pt", "2-pt runs"], ["rec_2pt", "2-pt catches"], ["fum", "Fumbles"],
       ["fga", "Field goals tried"], ["fgm_50p", "Field goals of 50+ yards"], ["xpmiss", "Extra points missed"], ["fum_rec", "Fumble recoveries"],
-      ["fum_force", "Forced fumbles"], ["safe", "Safeties"], ["def_st_td", "Special teams TDs"], ["yds_allow", "Yards allowed"]],
+      ["ff", "Forced fumbles"], ["safe", "Safeties"], ["def_st_td", "Special teams TDs"], ["yds_allow", "Yards allowed"]],
     mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
       ["pit.ip", "Innings pitched"], ["pit.w", "Wins"], ["pit.l", "Losses"], ["pit.sv", "Saves"], ["pit.hld", "Holds"], ["pit.k", "Strikeouts"], ["pit.er", "Earned runs"],
       ["pit.bb", "Walks allowed"], ["pit.h", "Hits allowed"], ["pit.qs", "Quality starts"],

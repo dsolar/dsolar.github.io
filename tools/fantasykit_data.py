@@ -142,6 +142,14 @@ def nba():
     prev = st["avg"][years[-2]] if len(years) > 1 else {}
     ix = {c: i for i, c in enumerate(cols)}
     names, rosters, inj = st.get("names", {}), st.get("rosters", {}), st.get("inj", {})
+    # ESPN's season averages leave some columns blank (offensive rebounds, plus/minus): this season's box scores, added
+    # up week by week, give those per game, and last season's blank column doesn't drag them toward zero
+    box = {}
+    for wk in (st.get("wk") or {}).values():
+        for pid, v in wk.items():
+            box[pid] = [x + (v[i] if i < len(v) else 0) for i, x in enumerate(box.get(pid) or [0] * len(cols))]
+    blank = lambda season: {c for c in ("oreb", "pm", "tpa", "dd", "td") if season and not any(hc_val(v, ix, c) for v in season.values())}
+    cur_blank, prev_blank = blank(cur), blank(prev)
     out = []
     for pid in set(cur) | set(prev):
         a, b = cur.get(pid), prev.get(pid)
@@ -158,9 +166,18 @@ def nba():
             if c == "eg":                     # effective games: this season plus last season's weight
                 line.append(ga + k)
                 continue
-            va = hc_val(a, ix, c)
-            vb = hc_val(b, ix, c)
-            line.append(round((va * ga + vb * k) / (ga + k), 2))
+            base = "oreb" if c == "dreb" else c
+            bx = box.get(pid)
+            if base in cur_blank and bx and hc_val(bx, ix, "gp"):
+                va = (hc_val(bx, ix, "reb") - hc_val(bx, ix, "oreb") if c == "dreb" else hc_val(bx, ix, c)) / hc_val(bx, ix, "gp")
+            else:
+                va = hc_val(a, ix, c)
+            vb, kk = (0, 0) if base in prev_blank else (hc_val(b, ix, c), k)
+            if c == "dreb" and base in prev_blank:
+                vb, kk = 0, 0
+            line.append(round((va * ga + vb * kk) / (ga + kk), 2) if ga + kk else 0)
+        # defensive rebounds are what's left of his rebounds, so the two always add up
+        line[NBA_COLS.index("dreb")] = round(max(0, line[NBA_COLS.index("reb")] - line[NBA_COLS.index("oreb")]), 2)
         p = bio.get(pid, {})
         nm = (names.get(pid) or [p.get("n") or pid.replace("-", " ").title()])[0]
         team = (rosters.get(pid) or [None])[0] or (names.get(pid) or [None, None])[1] or p.get("t") or "FA"
@@ -650,7 +667,7 @@ NFL_COLS = ["g", "pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", "rush_
             "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr",
             # Sleeper's stat keys, on the end, for the extra categories and custom points
             "pass_att", "pass_cmp", "pass_fd", "rush_fd", "rec_fd", "pass_2pt", "rush_2pt", "rec_2pt", "fum", "fgm_50p", "xpmiss",
-            "fum_rec", "fum_force", "safe", "def_st_td", "yds_allow"]
+            "fum_rec", "ff", "safe", "def_st_td", "yds_allow"]
 PROJ_COLS = ["pts_std", "pts_half_ppr", "pts_ppr"]
 NFL_POS = ["QB", "RB", "WR", "TE", "K", "DEF"]
 POS_Q = "".join(f"&position%5B%5D={p}" for p in NFL_POS)

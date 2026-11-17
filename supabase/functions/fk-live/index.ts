@@ -165,7 +165,7 @@ const NFL_COLS = ["g", "pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", 
   "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr",
   // the same extra columns as tools/fantasykit_data.py, on the end
   "pass_att", "pass_cmp", "pass_fd", "rush_fd", "rec_fd", "pass_2pt", "rush_2pt", "rec_2pt", "fum", "fgm_50p", "xpmiss",
-  "fum_rec", "fum_force", "safe", "def_st_td", "yds_allow"];
+  "fum_rec", "ff", "safe", "def_st_td", "yds_allow"];
 const NFL_POS = ["QB", "RB", "WR", "TE", "K", "DEF"];
 const NFL_TEAM: Record<string, string> = { WSH: "WAS" };
 async function nfl() {
