@@ -43,9 +43,10 @@ async function report(kind, name, year) {
   }
 }
 const byId = (rows) => Object.fromEntries(rows.map((x) => [String(x.playerId), x]));
-function skaterLine(x = {}, rt = {}) {
+function skaterLine(x = {}, rt = {}, fo = {}) {
   return [x.gamesPlayed || 0, x.goals || 0, x.assists || 0, x.points || 0, x.plusMinus || 0, x.penaltyMinutes || 0,
-    x.ppPoints || 0, x.ppGoals || 0, x.shPoints || 0, x.shots || 0, rt.hits || 0, rt.blockedShots || 0, (x.timeOnIcePerGame || 0) * (x.gamesPlayed || 0) / 60];
+    x.ppPoints || 0, x.ppGoals || 0, x.shPoints || 0, x.shots || 0, rt.hits || 0, rt.blockedShots || 0, (x.timeOnIcePerGame || 0) * (x.gamesPlayed || 0) / 60,
+    rt.takeaways || 0, rt.giveaways || 0, fo.totalFaceoffWins || 0, fo.totalFaceoffLosses || 0, rt.totalShotAttempts || 0];
 }
 function goalieLine(x = {}) {
   return goalieRates([x.gamesPlayed || 0, x.gamesStarted || 0, x.wins || 0, x.losses || 0, x.otLosses || 0, x.saves || 0,
@@ -79,8 +80,9 @@ export async function buildPool() {
   if (!hub?.players?.length) throw new Error("Build the NHL hub before the fantasy pool");
   const year = Number(hub.season.slice(0, 4));
   const reports = await pool([["skater", "summary", year], ["skater", "realtime", year], ["goalie", "summary", year],
-    ["skater", "summary", year - 1], ["skater", "realtime", year - 1], ["goalie", "summary", year - 1]], 3, async (args) => byId(await report(...args)));
-  const [sk, rt, goalies, oldSk, oldRt, oldG] = reports;
+    ["skater", "summary", year - 1], ["skater", "realtime", year - 1], ["goalie", "summary", year - 1],
+    ["skater", "faceoffwins", year], ["skater", "faceoffwins", year - 1]], 3, async (args) => byId(await report(...args)));
+  const [sk, rt, goalies, oldSk, oldRt, oldG, fo, oldFo] = reports;
   if (Object.keys(sk).length < 500 || Object.keys(goalies).length < 50) throw new Error("Incomplete NHL player reports; keeping the last pool");
   const known = Object.fromEntries(hub.players.map((p) => [String(p.id), p])), teams = Object.fromEntries(hub.teams.map((t) => [t.abbr, t]));
   const ltir = new Set((read("tools/nhl_hub/contracts.json", {}).ltir || []).map((p) => String(p.player_id)));
@@ -90,8 +92,8 @@ export async function buildPool() {
     const row = isG ? g : s, old = isG ? oldG[id] : oldSk[id];
     const team = p?.team || String(row?.teamAbbrevs || "FA").split(",").pop().trim();
     if (!teams[team]) continue;
-    const line = isG ? "goalie" : "sk", cols = NHL_LINES[line], cur = isG ? goalieLine(row) : skaterLine(row, rt[id]);
-    const prev = isG ? goalieLine(old) : skaterLine(old, oldRt[id]);
+    const line = isG ? "goalie" : "sk", cols = NHL_LINES[line], cur = isG ? goalieLine(row) : skaterLine(row, rt[id], fo[id]);
+    const prev = isG ? goalieLine(old) : skaterLine(old, oldRt[id], oldFo[id]);
     const pr = forecast(cur, prev, cols, teams[team].rec.gamesPlayed, isG);
     const ps = position(p?.pos || row?.positionCode || (isG ? "G" : "C"));
     const out = { id, n: p?.name || row?.skaterFullName || row?.goalieFullName, t: team, pos: [ps],
@@ -124,18 +126,20 @@ export async function buildWeeks(season) {
     return data.gameWeek.flatMap((d) => (d.games || []).filter((g) => g.gameType === 2 && Number(g.season) === Number(`${year}${year + 1}`)).map((g) => ({ ...g, day: d.date })));
   });
   const schedule = [...new Map(schedules.flat().map((g) => [String(g.id), g])).values()].filter((g) => g.day <= addDays(monday(today), 6));
-  const old = read(CACHE, {}), games = old.season === season ? old.games || {} : {};
+  // new columns: every game is read again once
+  const old = read(CACHE, {}), games = old.season === season && JSON.stringify(old.cols) === JSON.stringify(SK_COLS) ? old.games || {} : {};
   const fetchGames = schedule.filter((g) => ["post", "in"].includes(gameState(g)) && (!games[g.id]?.final || g.day >= addDays(today, -2)));
   const errors = [];
   await pool(fetchGames, 6, async (g, i) => {
     try {
-      const [box, landing] = await Promise.all([get(`https://api-web.nhle.com/v1/gamecenter/${g.id}/boxscore`), get(`https://api-web.nhle.com/v1/gamecenter/${g.id}/landing`)]);
-      games[g.id] = { day: g.day, at: g.startTimeUTC, final: gameState(box) === "post", lines: boxLines(box, landing) };
+      const [box, landing, pbp] = await Promise.all([get(`https://api-web.nhle.com/v1/gamecenter/${g.id}/boxscore`), get(`https://api-web.nhle.com/v1/gamecenter/${g.id}/landing`),
+        get(`https://api-web.nhle.com/v1/gamecenter/${g.id}/play-by-play`)]);
+      games[g.id] = { day: g.day, at: g.startTimeUTC, final: gameState(box) === "post", lines: boxLines(box, landing, pbp) };
     } catch (e) { errors.push(`${g.id}: ${e.message}`); }
     if ((i + 1) % 50 === 0) console.log(`NHL games imported: ${i + 1}/${fetchGames.length}`);
   });
   // Failed reads keep old snapshots. A missing final box prevents its week from closing.
-  write(CACHE, { season, updated: stamp, games });
+  write(CACHE, { season, cols: SK_COLS, updated: stamp, games });
   const weeks = {}, dayWeeks = {};
   for (const [i, start] of starts.entries()) {
     const end = addDays(start, 6), gs = schedule.filter((g) => g.day >= start && g.day <= end && gameState(g) !== "off"), total = {}, days = {};

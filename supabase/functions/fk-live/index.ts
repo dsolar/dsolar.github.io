@@ -156,8 +156,9 @@ async function nhl() {
   const have = await cached("nhl", games.map((g) => g.id)), fresh: any[] = [];
   const boxes = await pool(games, 6, async (g) => {
     if (have[g.id]) return have[g.id];
-    const [box, landing]: any[] = await Promise.all([getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/boxscore`), getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/landing`)]);
-    const lines = nhlBox(box, landing);
+    const [box, landing, pbp]: any[] = await Promise.all([getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/boxscore`), getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/landing`),
+      getJSON(`https://api-web.nhle.com/v1/gamecenter/${g.id}/play-by-play`).catch(() => null)]);
+    const lines = nhlBox(box, landing, pbp);
     fresh.push({ gid: g.id, day: g.day, final: nhlState(box) === "post", lines });
     return lines;
   });
@@ -421,8 +422,9 @@ async function gamesFor(sport: string, ids: string[]) {
     } else if (sport === "nhl") {
       const fresh: any[] = [];
       await pool(rest.filter((id) => !out[id]), 4, async (id) => {
-        const [box, landing]: any[] = await Promise.all([getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/boxscore`), getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/landing`)]);
-        const st = nhlState(box), lines = st === "pre" || st === "off" ? {} : nhlBox(box, landing);
+        const [box, landing, pbp]: any[] = await Promise.all([getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/boxscore`), getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/landing`),
+          getJSON(`https://api-web.nhle.com/v1/gamecenter/${id}/play-by-play`).catch(() => null)]);
+        const st = nhlState(box), lines = st === "pre" || st === "off" ? {} : nhlBox(box, landing, pbp);
         out[id] = { state: st, lines };
         if (st === "post") fresh.push({ gid: id, day: box.gameDate || nyDate(), final: true, lines });
       });

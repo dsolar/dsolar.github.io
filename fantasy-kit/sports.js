@@ -354,7 +354,8 @@
     nhl: [["sk.g", "Goals"], ["sk.a", "Assists"], ["sk.pm", "Plus/minus"], ["sk.pim", "Penalty minutes"], ["sk.ppp", "Power-play points"], ["sk.ppg", "Power-play goals"],
       ["sk.shp", "Shorthanded points"], ["sk.sog", "Shots on goal"], ["sk.hits", "Hits"], ["sk.blk", "Blocked shots"],
       ["goalie.w", "Goalie wins"], ["goalie.saves", "Saves"], ["goalie.ga", "Goals against"], ["goalie.so", "Shutouts"],
-      ["sk.pts", "Points"], ["goalie.gs", "Goalie starts"], ["goalie.l", "Goalie losses"], ["goalie.otl", "Overtime losses"], ["goalie.sa", "Shots against"]],
+      ["sk.pts", "Points"], ["goalie.gs", "Goalie starts"], ["goalie.l", "Goalie losses"], ["goalie.otl", "Overtime losses"], ["goalie.sa", "Shots against"],
+      ["sk.tka", "Takeaways"], ["sk.gva", "Giveaways"], ["sk.fow", "Faceoffs won"], ["sk.fol", "Faceoffs lost"], ["sk.sat", "Shot attempts"]],
   };
   const POINT_DEFAULTS = {
     nba: { pts: 1, reb: 1.2, ast: 1.5, stl: 3, blk: 3, tov: -1, tpm: 0.5 },
@@ -506,6 +507,15 @@
       { k: "g60", label: "G/60", line: "sk", num: "g", den: "min", mult: 60, fmt: f2, unit: 1.2, adv: true, title: "Goals per 60 minutes" },
       { k: "sog60", label: "SOG/60", line: "sk", num: "sog", den: "min", mult: 60, fmt: f1, unit: 3, adv: true, title: "Shots per 60 minutes" },
       { k: "ppshare", label: "PP share", line: "sk", num: "ppp", den: "pts", fmt: pct1, unit: 0.45, adv: true, title: "Share of his points on the power play" },
+      { k: "tka", label: "TK", line: "sk", col: "tka", title: "Takeaways" },
+      { k: "gva", label: "GV", line: "sk", col: "gva", low: true, title: "Giveaways (lower is better)" },
+      { k: "fow", label: "FOW", line: "sk", col: "fow", title: "Faceoffs won" },
+      { k: "sat", label: "SAT", line: "sk", col: "sat", title: "Shot attempts: on goal, missed and blocked" },
+      { k: "tkgv", label: "TK-GV", line: "sk", col: { tka: 1, gva: -1 }, adv: true, title: "Takeaways minus giveaways: puck management" },
+      { k: "fop", label: "FO%", line: "sk", num: "fow", den: { fow: 1, fol: 1 }, fmt: pct1, unit: 0.5, adv: true, title: "Faceoff percentage, weighted by faceoffs taken" },
+      { k: "netfo", label: "FOW-FOL", line: "sk", col: { fow: 1, fol: -1 }, adv: true, title: "Faceoffs won minus faceoffs lost" },
+      { k: "sat60", label: "SAT/60", line: "sk", num: "sat", den: "min", mult: 60, fmt: f1, unit: 6, adv: true, title: "Shot attempts per 60 minutes" },
+      { k: "shacc", label: "Shot accuracy", line: "sk", num: "sog", den: "sat", fmt: pct1, unit: 0.5, adv: true, title: "Share of his shot attempts that reached the net" },
       { k: "saves", label: "SV", line: "goalie", col: "saves", title: "Saves" },
       { k: "gs", label: "GS", line: "goalie", col: "gs", title: "Goalie starts" },
       { k: "ga", label: "GA", line: "goalie", col: "ga", low: true, title: "Goals against (lower is better)" },
@@ -530,8 +540,9 @@
       { k: "six", name: "6x6", blurb: "Adds slugging and K/BB, with net steals", cats: ["r", "hr", "rbi", "nsb", "obp", "slg", "k", "qs", "svh", "era", "whip", "kbb"] },
     ],
     nhl: [
-      { k: "adv", name: "Analytics", blurb: "Scoring per 60 minutes and goals saved above average", cats: ["p60", "g60", "sog60", "ppp", "hb", "gsaa", "svp"] },
+      { k: "adv", name: "Analytics", blurb: "Scoring and shot attempts per 60, faceoff percentage and goals saved above average", cats: ["p60", "g60", "sat60", "ppp", "fop", "hb", "gsaa", "svp"] },
       { k: "bang", name: "Banger", blurb: "Hits, blocks and penalty minutes count as much as goals", cats: ["g", "a", "ppp", "sog", "hits", "blocks", "pim", "wins", "svp", "gaa"] },
+      { k: "two", name: "Two-way", blurb: "Takeaways, faceoffs and plus/minus alongside the scoring", cats: ["g", "a", "pm", "ppp", "tkgv", "fow", "hb", "wins", "svp", "gaa"] },
     ],
   };
   // Every category a custom league can pick: the presets' and the extras. With data attached, only the ones its

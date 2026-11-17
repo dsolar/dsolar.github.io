@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { SK_COLS, GOALIE_COLS, NHL_LINES, boxLines, mergeLines, finishLines, goalieRates, gameState } from '../supabase/functions/fk-live/nhl.mjs';
+import { SK_COLS, GOALIE_COLS, NHL_LINES, boxLines, mergeLines, finishLines, goalieRates, gameState, playCounts } from '../supabase/functions/fk-live/nhl.mjs';
 import { forecast } from '../tools/fantasykit_nhl.mjs';
 const require = createRequire(import.meta.url);
 const S = require('../fantasy-kit/sports.js'), V = require('../fantasy-kit/value.js'), F = require('../fantasy-kit/draft.js');
@@ -180,4 +180,27 @@ test('NHL shared leagues retain daily lineups and lock only the game day', () =>
   assert.equal(G.isLocked(L, p, 1, at + 1), true);
   assert.equal(G.isLocked(L, p, 1, at + 86400000), false, 'a game yesterday does not lock today');
   assert.equal(gameState({ gameState: 'FUT', gameScheduleState: 'PPD' }), 'off');
+});
+
+test('takeaways and giveaways from the box; faceoffs and shot attempts from the play-by-play, shootout left out', () => {
+  const b = boxFixture(); Object.assign(b.playerByGameStats.awayTeam.forwards[0], { takeaways: 2, giveaways: 1 });
+  const reg = { periodType: 'REG' };
+  const pbp = { plays: [
+    { typeDescKey: 'faceoff', periodDescriptor: reg, details: { winningPlayerId: 1, losingPlayerId: 2 } },
+    { typeDescKey: 'faceoff', periodDescriptor: reg, details: { winningPlayerId: 1, losingPlayerId: 2 } },
+    { typeDescKey: 'faceoff', periodDescriptor: reg, details: { winningPlayerId: 2, losingPlayerId: 1 } },
+    { typeDescKey: 'missed-shot', periodDescriptor: reg, details: { shootingPlayerId: 1 } },
+    { typeDescKey: 'blocked-shot', periodDescriptor: reg, details: { shootingPlayerId: 1, blockingPlayerId: 2 } },
+    { typeDescKey: 'missed-shot', periodDescriptor: { periodType: 'SO' }, details: { shootingPlayerId: 1 } },
+  ] };
+  assert.deepEqual(playCounts(pbp)['1'], { fow: 2, fol: 1, miss: 2 });
+  const sk = boxLines(b, landing(), pbp)['1'].sk, at = (k) => sk[SK_COLS.indexOf(k)];
+  assert.deepEqual([at('tka'), at('gva'), at('fow'), at('fol'), at('sat')], [2, 1, 2, 1, 6], 'four shots on goal plus two missed or blocked');
+  // without the play-by-play the box still scores; faceoffs count 0
+  assert.equal(boxLines(b, landing())['1'].sk[SK_COLS.indexOf('fow')], 0);
+  // a game kept before the columns grew adds up without cutting the longer line short
+  const acc = {}; mergeLines(acc, { 1: { sk: sk.slice(0, 13) } }); mergeLines(acc, { 1: { sk } });
+  assert.equal(acc['1'].sk.length, SK_COLS.length); assert.equal(acc['1'].sk[SK_COLS.indexOf('fow')], 2);
+  mergeLines(acc, { 1: { sk: sk.slice(0, 13) } });
+  assert.equal(acc['1'].sk[SK_COLS.indexOf('fow')], 2, 'a shorter line added later keeps the tail');
 });

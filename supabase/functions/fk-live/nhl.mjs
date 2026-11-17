@@ -1,6 +1,8 @@
 // NHL box scores use the same columns in the daily import and the live relay.
 // Keep additive counts, then rebuild goalie ratios from saves/shots and goals/minutes.
-export const SK_COLS = ["gp", "g", "a", "pts", "pm", "pim", "ppp", "ppg", "shp", "sog", "hits", "blk", "min"];
+// takeaways, giveaways, faceoffs won and lost and shot attempts on the end (faceoffs and missed or blocked shots come
+// from the play-by-play, so a box read without it counts them 0)
+export const SK_COLS = ["gp", "g", "a", "pts", "pm", "pim", "ppp", "ppg", "shp", "sog", "hits", "blk", "min", "tka", "gva", "fow", "fol", "sat"];
 export const GOALIE_COLS = ["gp", "gs", "w", "l", "otl", "saves", "sa", "ga", "so", "min", "gaa", "svp"];
 export const NHL_LINES = { sk: SK_COLS, goalie: GOALIE_COLS };
 const minutes = (s) => { const [m, sec] = String(s || "0:00").split(":").map(Number); return (m || 0) + (sec || 0) / 60; };
@@ -16,7 +18,8 @@ export function goalieRates(row) {
 export function mergeLines(into, from) {
   for (const [id, lines] of Object.entries(from || {})) {
     const a = (into[id] ||= {});
-    for (const key of Object.keys(NHL_LINES)) if (lines[key]) a[key] = lines[key].map((x, i) => (x || 0) + (a[key]?.[i] || 0));
+    // a game kept before the columns grew is shorter: the longer line sets the length, missing parts count 0
+    for (const key of Object.keys(NHL_LINES)) if (lines[key]) { const b = a[key] || []; a[key] = Array.from({ length: Math.max(b.length, lines[key].length) }, (_, i) => (lines[key][i] || 0) + (b[i] || 0)); }
   }
   return into;
 }
@@ -26,7 +29,18 @@ export function finishLines(lines) {
 
 // The box score has PP goals, but not PP assists. The goal summary supplies both
 // assists and strength; shootout goals never become skater goals or goalie GA.
-export function boxLines(box, landing) {
+// Faceoffs won and lost and shots that missed or were blocked, by player, from the play-by-play (not the shootout).
+export function playCounts(pbp) {
+  const out = {}, add = (id, k) => { if (id == null) return; const r = (out[String(id)] ||= { fow: 0, fol: 0, miss: 0 }); r[k]++; };
+  for (const p of pbp?.plays || []) {
+    if (p.periodDescriptor?.periodType === "SO") continue;
+    const d = p.details || {};
+    if (p.typeDescKey === "faceoff") { add(d.winningPlayerId, "fow"); add(d.losingPlayerId, "fol"); }
+    else if (p.typeDescKey === "missed-shot" || p.typeDescKey === "blocked-shot") add(d.shootingPlayerId, "miss");
+  }
+  return out;
+}
+export function boxLines(box, landing, pbp) {
   if (!box?.playerByGameStats) throw new Error("NHL box score has no player stats");
   if (!Array.isArray(landing?.summary?.scoring)) throw new Error("NHL scoring summary is missing");
   const out = {}, special = {}, nonSO = {};
@@ -42,15 +56,16 @@ export function boxLines(box, landing) {
       }
     }
   }
-  const final = gameState(box) === "post";
+  const final = gameState(box) === "post", plays = playCounts(pbp);
   for (const [side, other] of [["awayTeam", "homeTeam"], ["homeTeam", "awayTeam"]]) {
     const stats = box.playerByGameStats[side] || {};
     for (const p of [...(stats.forwards || []), ...(stats.defense || stats.defensemen || [])]) {
       const min = minutes(p.toi);
       if (!min && !p.goals && !p.assists && !p.sog) continue;
-      const id = String(p.playerId), sp = special[id] || {};
+      const id = String(p.playerId), sp = special[id] || {}, pc = plays[id] || {};
       out[id] = { sk: [1, p.goals || 0, p.assists || 0, p.points ?? ((p.goals || 0) + (p.assists || 0)), p.plusMinus || 0, p.pim || 0,
-        sp.ppp || 0, p.powerPlayGoals || 0, sp.shp || 0, p.sog || 0, p.hits || 0, p.blockedShots || 0, min] };
+        sp.ppp || 0, p.powerPlayGoals || 0, sp.shp || 0, p.sog || 0, p.hits || 0, p.blockedShots || 0, min,
+        p.takeaways || 0, p.giveaways || 0, pc.fow || 0, pc.fol || 0, (p.sog || 0) + (pc.miss || 0)] };
     }
     const played = (stats.goalies || []).filter((p) => minutes(p.toi) > 0 || p.shotsAgainst > 0);
     const opponent = box[other]?.abbrev;
