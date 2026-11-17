@@ -27,7 +27,7 @@
     const sc = () => G.scoring(L(), ctx);
     const pts = () => sc().type === "points";
     const fmtS = (x) => (x == null ? "-" : pts() ? (Math.abs(x) < 0.05 ? 0 : x).toFixed(1) : String(Math.round(x) || 0));
-    const ui = { moving: null, week: null, pf: { q: "", pos: sport.groups && (sport.scorings[L().scoring] || {}).type !== "points" ? "g:" + Object.keys(sport.groups)[0] : "" }, psort: { k: "rank", dir: 1 }, pshow: "fa", txf: "", sbWeek: null };
+    const ui = { moving: null, week: null, pf: { q: "", pos: sport.groups && (sport.scorings[L().scoring] || {}).type !== "points" ? "g:" + Object.keys(sport.groups)[0] : "" }, psort: { k: "rank", dir: 1 }, pshow: "avail", txf: "", sbWeek: null };
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
     const over = () => L().week > G.totalWeeks(L());
     // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
