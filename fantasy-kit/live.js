@@ -1051,6 +1051,7 @@
     if (L) { const rv = L.trades.filter((t) => t.status === "review").length; if (rv) todo.push([`${rv} trade${rv > 1 ? "s" : ""} under review`, s.tradeReview === "commish" ? "You decide: let it through or veto it." : "The league is reviewing it.", `<a class="btn sm" href="#team/trades/all">Review</a>`]); }
     const tile = (t, d, act) => `<div class="cm-tile"><b>${t}</b><small>${d}</small>${act}</div>`;
     const tiles = [
+      tile("League name", esc(info.name || ""), `<button class="btn sm" data-cm="name">Rename</button>`),
       tile("Note to the league", "Pin a message on the front page", `<button class="btn sm" data-cm="note">${(L && (L.notes || []).length) ? "Change" : "Post"}</button>`),
       tile("Invite managers", openSeats() ? `${openSeats()} open team${openSeats() > 1 ? "s" : ""}` : "Every team is taken", `<button class="btn sm" data-live="invite">Invite</button>`),
       tile("Dues", duesOn() ? `${paidN()} of ${docTeams().length} paid` : "Not set up", `<button class="btn sm" data-live="dues">${duesOn() ? "Open" : "Set up"}</button>`),
@@ -1067,6 +1068,22 @@
   }
   // commissioner changes save like any other move, as the commissioner
   const commishSave = (r, msg) => { if (!r || r.ok === false) { U.toast((r && r.why) || "That didn't work", true); return false; } push(); if (app) app.refresh(); if (msg) U.toast(msg); return true; };
+  // the commissioner renames the league, before or after the draft: the name on the league list (fk_rename) and in the
+  // league's own documents
+  function nameDialog() {
+    U.dialog(`<h3>Rename the league</h3><form class="stack"><div class="field"><label for="fk-lname">League name</label><input id="fk-lname" name="name" type="text" maxlength="40" required value="${esc(info.name || "")}" autocomplete="off"></div>
+      <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save the name</button></div></form>`, (fd) => {
+      const name = String(fd.get("name") || "").trim().slice(0, 40);
+      if (!name || name === info.name) return name ? undefined : false;
+      setTimeout(async () => {
+        const r = await C.rpc("fk_rename", { p_id: id, p_name: name }).catch((e) => ({ error: e.message }));
+        if (!r || r.error) { U.toast((r && r.error) || "That didn't work", true); return; }
+        info.name = r.name || name; if (D) D.name = info.name; if (L) L.name = info.name;
+        document.title = `${info.name} | Draft Lab`;
+        commishSave({ ok: true }, `The league is ${info.name} now.`);
+      }, 0);
+    });
+  }
   // the commissioner's note: one pinned message on the front page (the last few are kept)
   function noteDialog() {
     const cur = (L.notes || [])[(L.notes || []).length - 1];
@@ -1307,7 +1324,7 @@
     const kt = e.target.closest("[data-kp-team]");
     if (kt && info.commish) keeperDialog(+kt.dataset.kpTeam);
     const cm = e.target.closest("[data-cm]");
-    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); else if (k === "note") noteDialog(); else if (k === "unnote") { L.notes = []; commishSave({ ok: true }, "The note is down."); } }
+    if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "name") nameDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); else if (k === "note") noteDialog(); else if (k === "unnote") { L.notes = []; commishSave({ ok: true }, "The note is down."); } }
     const rv = e.target.closest("[data-cm-rev]");
     if (rv && info.commish) { const tid = Number(rv.dataset.cmRev); U.confirm("Reverse this trade?", "Every player, pick and FAAB dollar goes back to the team that sent it.", "Reverse the trade", () => commishSave(G.reverseTrade(L, lctx(), tid, now()), "Trade reversed.")); }
     if (lv && lv.dataset.live === "new-season") U.confirm("Start next season?", "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", "Start next season", newSeason);

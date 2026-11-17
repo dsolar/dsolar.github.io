@@ -620,3 +620,20 @@ revoke all on function public.fk_username_free(text) from public, anon, authenti
 grant execute on function public.fk_username_free(text) to public, anon, authenticated, service_role;
 revoke all on function public.fk_username_set(text) from public, anon, authenticated, service_role;
 grant execute on function public.fk_username_set(text) to authenticated, service_role;
+
+-- The commissioner renames a league (before or after the draft): the name on the league list. The pages update the
+-- name inside the league's own documents with their next save.
+create or replace function public.fk_rename(p_id text, p_name text)
+returns jsonb language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); l fk_leagues; nm text := btrim(coalesce(p_name, ''));
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  select * into l from fk_leagues where id = p_id for update;
+  if not found then return jsonb_build_object('error', 'No league with that link.'); end if;
+  if l.commish <> uid then return jsonb_build_object('error', 'Only the commissioner can rename the league.'); end if;
+  if length(nm) < 1 or length(nm) > 40 then return jsonb_build_object('error', 'A league name is 1 to 40 characters.'); end if;
+  update fk_leagues set name = nm, updated_at = now() where id = p_id;
+  return jsonb_build_object('ok', true, 'name', nm);
+end $$;
+revoke all on function public.fk_rename(text, text) from public;
+grant execute on function public.fk_rename(text, text) to authenticated;
