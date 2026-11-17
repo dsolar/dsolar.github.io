@@ -357,7 +357,7 @@ def main():
         record["buckets"].append({"label": label, "games": len(rows), "right": sum(v["correct"] for v in rows),
                                   "expected": round(mean([max(v["homeProb"], 1 - v["homeProb"]) for v in rows]) * 100, 1) if rows else None})
     t0 = time.time()
-    sims = int(next((a.split("=")[1] for a in sys.argv[1:] if a.startswith("--sims=")), 4000))
+    sims = int(next((a.split("=")[1] for a in sys.argv[1:] if a.startswith("--sims=")), 10000))
     try:
         season = simulate(teams, avg, sims, int(today.strftime("%Y%m%d")), today)
         season["seconds"] = round(time.time() - t0, 1)
