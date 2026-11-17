@@ -283,6 +283,13 @@ owns which team, the invite code and the save order. It also stamps each team's 
   Next season the page refetches the board (`FK.sports.refreshProspects`: the new board plus last year's prospects
   still on a roster) and `nextDraft` takes it as `o.extraPlayers`; keeper leagues keep their prospect rounds, with each
   team's ungraduated taxi prospects kept in them.
+- **Deal or No Deal** (`settings.deal = { max }`, any points season but roto): every regular-season week
+  `FK.league.runDeals` offers each team a guaranteed score, 86 to 94% of its lineup's projection, new every morning.
+  `dealTake` before the week's first game (`dealDue`: `L.kick`, else Thursday night for football, Monday afternoon
+  otherwise) and `teamWeek` returns the offer as the team's score (`x.deal = { offer, actual }`); `L.deals[w][t].actual`
+  keeps what the lineup really scored. `max` deals a season (0: no limit). Bots take a deal that beats their
+  opponent's projection by 4%. The league page shows the offer card, an alert, and a note on the matchup.
+  `node --test tests/fantasydeal.test.mjs`.
 - **The ladder** (`settings.ladder = { reach }`): no schedule. The first ladder is the draft order upside down. Each
   week a challenge window runs from the end of last week to this week's first game (`L.kick`, else Thursday night for
   football, Monday afternoon otherwise): a team challenges any unbooked team up to `reach` rungs above

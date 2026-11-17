@@ -112,6 +112,61 @@
      The first ladder is the draft order upside down: whoever picked first starts at the bottom.
      L.ladder = { order (top first), reach, week, ch: [[challenger, defender, auto]], due, done, after: { w: order } } */
   const LADDER_REACH = 2;
+  /* Deal or No Deal (settings.deal = { max }): every week of the regular season the banker offers each team a
+     guaranteed score, a bit under what its lineup projects (86 to 94%, a new number every morning). Take the deal
+     before the week's first game and that's the team's score, whatever its players do; no deal and it plays it out.
+     max deals a season (0: no limit). Bots take a deal that should beat their opponent's projection.
+     L.deals = { w: { team: { offer, base, day, taken, passed, actual } } } */
+  const lockGuess = (L, w) => weekStart(L, w) + (L.sport === "nfl" ? 2.5 * DAY : 6 * HOUR);
+  const dealOn = (L) => !!L.settings.deal;
+  const dealTaken = (L, t, w) => { const d = L.deals && L.deals[w] && L.deals[w][t]; return d && d.taken && w <= L.settings.weeks ? d : null; };
+  const dealsUsed = (L, t) => Object.values(L.deals || {}).filter((wk) => wk[t] && wk[t].taken).length;
+  const dealsLeft = (L, t) => (!L.settings.deal ? 0 : L.settings.deal.max ? Math.max(0, L.settings.deal.max - dealsUsed(L, t)) : Infinity);
+  function dealDue(L, w) { const fk = w === L.week ? firstKick(L) : null; return Math.min(fk != null ? fk : Infinity, lockGuess(L, w)); }
+  const dealDay = (L, w, now) => Math.max(0, Math.floor((now - weekStart(L, w)) / DAY));
+  // this week's offer for a team (made or refreshed this morning), or null
+  function dealOffer(L, t) {
+    const w = L.week, d = L.deals && L.deals[w] && L.deals[w][t];
+    return dealOn(L) && w <= L.settings.weeks && d ? d : null;
+  }
+  function dealOpponent(L, t, w) { const g = (L.schedule[w - 1] || []).find((x) => x.includes(t)); return g ? (g[0] === t ? g[1] : g[0]) : null; }
+  function runDeals(L, ctx, now) {
+    if (!dealOn(L) || L.week > L.settings.weeks || now >= dealDue(L, L.week) || scoring(L, ctx).type !== "points") return 0;
+    const w = L.week, day = dealDay(L, w, now), wk = ((L.deals = L.deals || {})[w] = L.deals[w] || {});
+    const proj = {};
+    const pj = (t) => (proj[t] != null ? proj[t] : (proj[t] = projection(L, ctx, t, w).total || 0));
+    let n = 0;
+    for (const tm of L.teams) {
+      const t = tm.id, d = wk[t];
+      if (!isAlive(L, t) || (d && (d.taken || d.passed)) || (d && d.day === day) || dealsLeft(L, t) <= 0) continue;
+      const base = pj(t), f = 0.86 + 0.08 * hash01(`${L.seed}:deal:${t}:${w}:${day}`);
+      wk[t] = { offer: Math.round(base * f * 10) / 10, base: Math.round(base * 10) / 10, day, at: now };
+      n++;
+      // a bot takes a deal that should beat its opponent (or, with no opponent yet, the league's middle team)
+      if (!tm.owner && wk[t].offer > 0) {
+        const opp = dealOpponent(L, t, w), mids = L.teams.map((x) => pj(x.id)).sort((a, b) => a - b);
+        const bar = opp != null ? pj(opp) : mids[Math.floor(mids.length / 2)];
+        if (wk[t].offer >= bar * 1.04) dealTake(L, t, now, true); else wk[t].passed = now;
+      }
+    }
+    return n;
+  }
+  function dealTake(L, t, now, auto) {
+    const w = L.week, d = dealOffer(L, t);
+    if (!d) return { ok: false, why: "There's no offer on the table" };
+    if (d.taken) return { ok: false, why: "You already took the deal" };
+    if (now >= dealDue(L, w)) return { ok: false, why: "The offer ended at the first game" };
+    if (dealsLeft(L, t) <= 0) return { ok: false, why: "You're out of deals this season" };
+    d.taken = now; delete d.passed;
+    log(L, now, { type: "deal", team: t, text: `${L.teams[t].name} took the banker's deal: ${d.offer.toFixed(1)} points for week ${w}${auto ? "" : ""}` });
+    return { ok: true };
+  }
+  function dealPass(L, t, now) {
+    const d = dealOffer(L, t);
+    if (!d || d.taken) return { ok: false, why: "There's no offer to turn down" };
+    d.passed = now;
+    return { ok: true };
+  }
   function ladderStart(L, D) {
     const ids = L.teams.map((t) => t.id), r1 = D && Array.isArray(D.round1) && D.round1.length === ids.length ? D.round1.slice().reverse() : ids.slice();
     L.ladder = { order: r1, reach: Math.max(1, Math.min(3, Number(L.settings.ladder.reach) || LADDER_REACH)), after: {}, moves: {} };
@@ -711,7 +766,12 @@
     return { line: out, days: days.size };
   }
   // A team's week: points of its starters, or each category's total.
+  // a team that took the banker's deal scores the offer that week, whatever its players do (Deal or No Deal)
   function teamWeek(L, ctx, teamId, w, frac = 1) {
+    const x = teamWeek0(L, ctx, teamId, w, frac), d = dealTaken(L, teamId, w);
+    return d && x && x.total != null ? Object.assign({}, x, { total: d.offer, deal: { offer: d.offer, actual: x.total } }) : x;
+  }
+  function teamWeek0(L, ctx, teamId, w, frac = 1) {
     if (ctx.hooks.score) return ctx.hooks.score(L, ctx, teamId, w, frac);
     // daily lineups with daily box scores: each day's starters, that day
     if (hasDays(L, ctx, w)) {
@@ -1069,6 +1129,8 @@
     L.week = w + 1;
     if (L.settings.split && w === L.settings.split.after && !L.split) applySplit(L, now);
     if (L.ladder && w <= L.settings.weeks) ladderWeek(L, w, games, now);
+    // the deals: what each team that took one would have scored without it
+    for (const [t, d] of Object.entries((L.deals && L.deals[w]) || {})) if (d.taken && d.actual == null) { const x = teamWeek0(L, ctx, +t, w); d.actual = x && x.total != null ? Math.round(x.total * 100) / 100 : null; }
     if (w <= L.settings.weeks) { openBites(L, w, games, now); openRaids2(L, ctx, w, games, now); crownWeek(L, games, w, now); }
     // pick your opponent: this week's picks are final, and next week's open
     if (L.pyo && !L.pyo.done && L.pyo.week <= L.week) { runPyo(L, ctx, Math.max(now, L.pyo.due)); pyoDone(L, now); }
@@ -2740,6 +2802,7 @@
     n += prospectUpkeep(L, ctx, now);
     if (L.pyo && !L.pyo.done) n += runPyo(L, ctx, now);
     if (L.ladder && !L.ladder.done) n += runLadder(L, ctx, now);
+    if (L.settings.deal) n += runDeals(L, ctx, now);
     lockPlayed(L, ctx, now);
     if (L.settings.waiverAt == null) n += runDue(L, ctx, now);
     L.waiverRuns = L.waiverRuns || {};
@@ -2761,5 +2824,5 @@
   return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

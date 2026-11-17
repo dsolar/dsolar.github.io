@@ -73,7 +73,7 @@
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
-    open: {}, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+    open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, confOn: 0, tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -491,10 +491,12 @@
   function twistsHtml() {
     const gl = form.season === "guillotine";
     if (oneWeek() || (!twistOk() && !gl)) return "";
-    const on = [form.pyoOn, form.robinOn, form.conqOn, form.crownOn, form.hangOn].filter(Boolean).length + (gl && form.tbOn ? 1 : 0);
+    const on = [form.pyoOn, form.robinOn, form.conqOn, form.crownOn, form.hangOn].filter(Boolean).length + (gl && form.tbOn ? 1 : 0) + (form.dealOn ? 1 : 0);
+    const deal = blocked("dealOn") || toggle("dealOn", "Deal or No Deal", "Every week the banker offers a guaranteed score, a little under your projection. Take it before the first game, or play it out", form.dealOn,
+      fld("Deals a season", seg("dealMax", [[1, "1"], [2, "2"], [3, "3"], [0, "No limit"]], form.dealMax, "Deals a season"), "The offer is new every morning and ends at the week's first game (Thursday night in football). Regular season only."));
     const odd = form.teams % 2 === 1, faab = form.waivers === "faab";
     const body = gl ? toggle("tbOn", "Top-score bonus", "The week's top scorer gets extra FAAB: a reason to spend early instead of hoarding", form.tbOn,
-        fld("Bonus", seg("tbAmt", [[10, "$10"], [25, "$25"], [50, "$50"], [100, "$100"]], form.tbAmt, "Top-score bonus")))
+        fld("Bonus", seg("tbAmt", [[10, "$10"], [25, "$25"], [50, "$50"], [100, "$100"]], form.tbAmt, "Top-score bonus"))) + deal
       : `${toggle("pyoOn", "Pick your opponent", odd ? "Needs an even number of teams" : "Every week, worst record first, each team picks who it plays the next week", form.pyoOn && !odd, `<p class="fl-h">Each team gets 12 hours on its turn. Week 1 is drawn; no divisions.</p>`)}
         ${blocked("robinOn") || toggle("robinOn", "Robin Hood", "The week's lowest scorer takes a player from the top scorer and gives one back", form.robinOn,
           fld("The top scorer keeps his best", seg("robinP", [[0, "None"], [1, "1"], [2, "2"], [3, "3"], [4, "4"]], form.robinP, "Protected players"), "Protected, by value. Robin takes from the rest."))}
@@ -502,7 +504,8 @@
           `<div class="g2">${fld("The loser keeps his best", seg("conqP", [[1, "1"], [2, "2"], [3, "3"], [4, "4"], [5, "5"]], form.conqP, "Protected players"))}${fld("Swaps", seg("conqLike", [[0, "Any player"], [1, "Same position"]], form.conqLike, "Swaps"))}</div>`)}
         ${toggle("crownOn", "Kingslayer", faab ? "One team wears the crown. Beat the king to take it and the bounty, which grows every week he holds it" : "Needs FAAB waivers: the bounty is paid in FAAB", form.crownOn && faab,
           `<div class="g2">${fld("Bounty grows", seg("crownStep", [[5, "$5"], [10, "$10"], [20, "$20"]], form.crownStep, "Bounty grows"), "A week, while the king holds the crown. Week 1's top scorer is the first king.")}${fld("The king earns", seg("crownKeep", [[0, "$0"], [5, "$5"], [10, "$10"]], form.crownKeep, "The king earns"), "For each week he survives.")}</div>`)}
-        ${toggle("hangOn", "The Hangover", "Last week's winners can't add free agents or put in claims this week", form.hangOn)}`;
+        ${toggle("hangOn", "The Hangover", "Last week's winners can't add free agents or put in claims this week", form.hangOn)}
+        ${deal}`;
     // what the rules list says about this mix: a clash it couldn't switch off, or a heads-up
     const ck = RL.check(form), notes = ck.errors.concat(ck.warnings).map((x) => `<p class="fl-h tw-note">${esc(x.msg)}</p>`).join("");
     // folded until you want them; open on its own once one is on
@@ -769,7 +772,7 @@
   const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nhl: ["C", "LW", "RW", "D", "G"], nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
@@ -921,6 +924,8 @@
       if (fmt !== "roto" && fmt !== "total" && !gl && form.divs && n >= 2 * form.divs) D.season.divisions = form.divs;
       if (ladOn()) { D.season.ladder = { reach: form.ladReach || 2 }; delete D.season.divisions; delete D.season.median; }
       if (!ladOn() && ["h2h", "h2hcats"].includes(form.season) && !D.season.divisions && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2) D.season.split = { after: form.splitAfter };
+      // Deal or No Deal: any points season (guillotine too), not categories or roto
+      if (form.dealOn && !oneWeek() && !RL.blockedWhy(form, "dealOn")) D.season.deal = { max: form.dealMax };
       if (twistOk()) {
         if (form.pyoOn && n % 2 === 0) { D.season.pyo = true; delete D.season.divisions; }
         if (form.robinOn) D.season.robin = { protect: form.robinP };

@@ -31,6 +31,7 @@
     { id: "pyoOn", key: "pyo", label: "Pick your opponent", group: "schedule" },
     { id: "median", key: "median", label: "Median game", group: "schedule" },
     { id: "hangOn", key: "hangover", label: "The Hangover", group: "penalty" },
+    { id: "dealOn", key: "deal", label: "Deal or No Deal", group: "economy" },
   ];
   const byId = Object.fromEntries(OPTIONS.map((o) => [o.id, o]));
   const on = (form, id) => !!(form && +form[id]);
@@ -51,6 +52,8 @@
       msg: "A vampire's steals would pile up year after year, so it's redraft only." },
     { ids: ["crownOn", "hangOn"], level: "warn", when: (f) => on(f, "crownOn") && on(f, "hangOn"),
       msg: "Kingslayer and The Hangover both land on winners: the king will be hungover most weeks." },
+    { ids: ["dealOn"], level: "error", when: (f) => f.season && ["h2hcats", "roto"].includes(f.season),
+      msg: "Deal or No Deal guarantees a score, so it needs points scoring." },
     { ids: ["robinOn", "conqOn", "crownOn", "hangOn", "pyoOn"], level: "error", when: (f) => f.season && !["h2h", "h2hcats"].includes(f.season),
       msg: "Head to head twists need a head to head format." },
   ];

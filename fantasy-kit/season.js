@@ -77,6 +77,8 @@
       if (s.crown) settings.crown = { start: cl(s.crown.start, 0, 500, 10), step: cl(s.crown.step, 0, 200, 10), keep: cl(s.crown.keep, 0, 100, 5), king: s.crown.king != null ? s.crown.king : undefined };
       if (s.hangover) settings.hangover = true;
     } else if (s.format === "guillotine" && s.topBonus) settings.topBonus = cl(s.topBonus, 0, 500, 25);
+    // Deal or No Deal: a guaranteed score each week, before the first game (league.js). Points formats, any but roto
+    if (s.deal && s.format !== "roto" && !s.oneWeek) settings.deal = { max: cl(s.deal.max, 0, 20, 2) };
     if (s.dynasty) settings.dynasty = { rounds: s.dynasty.rounds || 3, picks: s.dynasty.picks !== false };
     if (s.dynasty && s.taxi) settings.taxi = Math.max(0, Math.min(6, s.taxi | 0));
     // prospect rounds: their picks start on the taxi squad, which has room for at least all of them
