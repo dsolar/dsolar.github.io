@@ -154,8 +154,8 @@
     function route() {
       const r = U.route("league");
       // pages that moved: transactions went under Players, settings became Rules
-      if (r.tab === "league" && r.sub === "tx") { r.tab = "players"; history.replaceState(null, "", "#players/tx"); }
-      if (r.tab === "league" && r.sub === "settings") { r.sub = "rules"; history.replaceState(null, "", "#league/rules"); }
+      if (r.tab === "league" && r.sub === "tx") { r.tab = "players"; history.replaceState(null, "", location.pathname + location.search + "#players/tx"); }
+      if (r.tab === "league" && r.sub === "settings") { r.sub = "rules"; history.replaceState(null, "", location.pathname + location.search + "#league/rules"); }
       if (!TABS().some((t) => t[0] === r.tab)) r.tab = "league";
       const subs = subsOf(r.tab);
       if (subs.length && !subs.some((s) => s[0] === r.sub)) { r.arg = r.tab === "team" && /^\d+$/.test(r.sub) ? r.sub : r.arg; r.sub = subs[0][0]; }
@@ -613,7 +613,7 @@
       row.sort((a, b) => b.wins - a.wins || b.top3 - a.top3 || b.pts - a.pts);
       return `<div class="card"><div class="mod-h"><h2>The series</h2><span class="ps">${done.length} week${done.length === 1 ? "" : "s"} played</span></div><div class="table-wrap"><table class="t dense"><thead><tr><th>Team</th><th class="r">Wins</th><th class="r">Top 3</th><th class="r">Points</th></tr></thead><tbody>
         ${row.map((r) => `<tr${isMe(r.i) ? ' class="me"' : ""}><td class="nm">${L().teams[r.i] ? teamName(T(r.i), { you: isMe(r.i) }) : esc(r.n)}</td><td class="r num"><b>${r.wins}</b></td><td class="r num">${r.top3}</td><td class="r num">${fmtS(r.pts)}</td></tr>`).join("")}</tbody></table></div>
-        <div class="bd sr-wks">${sr.weeks.map((w) => `<a class="btn xs ghost" href="play.html?id=${esc(w.id)}">Game ${w.n}${w.label ? `: ${esc(w.label)}` : ""}</a>`).join("")}</div></div>`;
+        <div class="bd sr-wks">${sr.weeks.map((w) => `<a class="btn xs ghost" href="/fantasy/league/?id=${esc(w.id)}">Game ${w.n}${w.label ? `: ${esc(w.label)}` : ""}</a>`).join("")}</div></div>`;
     }
     function weekBoardPage() {
       const mid = me(), { rows } = weekRows(), at = rows.findIndex((r) => r.t === mid);
@@ -665,7 +665,7 @@
           <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${esc(cs.name)} wins the ${dayL() ? "night" : "week"}</b><span>${fmtS(a.sc)} points${b ? `, ${fmtS(a.sc - b.sc)} ahead of ${esc(T(b.t).name)}` : ""}.${at > 2 ? ` You finished ${ord(at + 1)} of ${f.rows.length}.` : ""}</span></div></div>
           <ol class="fin-pod">${f.rows.slice(0, 3).map((r, i) => `<li${isMe(r.t) ? ' class="me"' : ""}><small>${ord(i + 1)}</small>${teamAv(T(r.t), "sm")}<b class="ell">${esc(T(r.t).name)}</b><span class="num">${fmtS(r.sc)}</span></li>`).join("")}</ol>
           ${mp ? `<div class="fin-mvp"><small>MVP</small><span data-player="${esc(mp.id)}" style="cursor:pointer">${pname(sport, mp, `${fmtS(f.mvp.v)} points for ${esc(T(f.mvp.t).name)}`)}</span></div>` : ""}
-          <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="leagues.html?w=1">Start another</a></div></div>`;
+          <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="/fantasy/leagues/?w=1">Start another</a></div></div>`;
       }
       const { g, champ, win, lose, mvp } = f, cs = T(champ), mine = isMe(champ);
       const score = win == null ? `${fmtS(g.sa)} to ${fmtS(g.sb)}, a tie` : `${fmtS(Math.max(g.sa, g.sb))} to ${fmtS(Math.min(g.sa, g.sb))}`;
@@ -676,7 +676,7 @@
         <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${head}</b><span>${sub}</span></div></div>
         ${mp ? `<div class="fin-mvp"><small>MVP</small><span data-player="${esc(mp.id)}" style="cursor:pointer">${pname(sport, mp, `${fmtS(mvp.v)} points for ${esc(T(mvp.t).name)}`)}</span></div>` : ""}
         ${f.moments.length ? `<ul class="fin-m">${f.moments.map((m) => `<li class="${m.k}${m.big ? " big" : ""}">${esc(m.text)}</li>`).join("")}</ul>` : ""}
-        <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="leagues.html?${sport.key === "nfl" ? "w=1" : `s=${esc(sport.key)}`}">Start another</a></div></div>`;
+        <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="/fantasy/leagues/?${sport.key === "nfl" ? "w=1" : `s=${esc(sport.key)}`}">Start another</a></div></div>`;
     }
     // the result as a few lines for the group chat
     function finishText() {

@@ -26,7 +26,9 @@
     var s = read("fk-auth:session");
     if (!s || !s.refresh) return null;
     var c = claims(s.access || ""), m = c.user_metadata || {};
-    var name = m.username || m.full_name || m.name || (c.email ? c.email.split("@")[0] : "") || "Your account";
+    // the name on your Draft Lab profile, when this browser has seen it (fantasy-kit/leagues.js saves it)
+    var pn = read("ds-acct:name"), prof = pn && pn.id && pn.id === c.sub ? pn.name : "";
+    var name = prof || m.username || m.full_name || m.name || (c.email ? c.email.split("@")[0] : "") || "Your account";
     return { id: c.sub || null, email: c.email || "", name: name };
   }
 
@@ -44,7 +46,7 @@
     return cloudP;
   }
   // Draft Lab's own pages load cloud.js and read sign-in links themselves; everywhere else this does it
-  var ownsLinks = !(window.FK && window.FK.cloud) && !/\/fantasy-kit\//.test(location.pathname);
+  var ownsLinks = !(window.FK && window.FK.cloud) && !/\/fantasy-kit\/|\/fantasy\/(leagues|league|demo|quick|mock|rankings)\//.test(location.pathname);
 
   /* ---------- styles ---------- */
   // its look lives in account.css, a file so a page with a strict content security policy still allows it
@@ -67,7 +69,7 @@
     var u = me();
     slot.innerHTML = u
       ? '<button type="button" class="ds-acct-btn" aria-haspopup="true" aria-expanded="false"><span class="ds-acct-av" aria-hidden="true">' + esc(initials(u.name)) + '</span><span class="ds-acct-name">' + esc(u.name) + '</span><span class="ds-acct-sr">, your account</span></button>'
-        + '<div class="ds-acct-menu" hidden><p><b>' + esc(u.name) + "</b>" + esc(u.email) + '</p><a href="' + esc(root + "fantasy-kit/leagues.html") + '">Your leagues</a><a href="' + esc(root + "account/") + '">Account</a><button type="button" data-ds-out>Sign out</button></div>'
+        + '<div class="ds-acct-menu" hidden><p><b>' + esc(u.name) + "</b>" + esc(u.email) + '</p><a href="' + esc(root + "fantasy/leagues/") + '">Your leagues</a><a href="' + esc(root + "account/") + '">Account</a><button type="button" data-ds-out>Sign out</button></div>'
       : '<button type="button" class="ds-acct-btn out" data-ds-in><span class="ds-acct-av" aria-hidden="true">?</span><span>Sign in</span></button>';
   }
   document.addEventListener("click", function (e) {
@@ -146,7 +148,7 @@
       if (mode === "signup") return c.signUp({ username: v("username"), email: v("email"), password: v("password"), back: back }).then(function (r) { if (r.signedIn) signedIn(); else { mode = "sent"; drawDialog(); } });
       if (mode === "link") return c.signIn(v("email"), back).then(function () { mode = "sent"; drawDialog(); });
       // a reset link opens Your leagues, which asks for the new password
-      if (mode === "forgot") return c.resetPassword(v("login"), location.origin + root + "fantasy-kit/leagues.html").then(function () { mode = "sent"; drawDialog(); });
+      if (mode === "forgot") return c.resetPassword(v("login"), location.origin + root + "fantasy/leagues/").then(function () { mode = "sent"; drawDialog(); });
     }).catch(function (err) { why.textContent = err.message || "That didn't work. Try again."; go.disabled = false; });
   }
   // signed in: start fresh, so every part of the page (and Draft Lab's own pages) sees it
@@ -222,7 +224,7 @@
       var r = c.fromLink();
       drawButton();
       if (r && r.error) toast("That sign-in didn't work: " + r.error);
-      else if (r && r.recovery) location.href = root + "fantasy-kit/leagues.html";
+      else if (r && r.recovery) location.href = root + "fantasy/leagues/";
       else if (r && r.ok) { if (dlg && dlg.open) dlg.close(); write("ds-sync:at", null); pull(); askUsername(c); window.dispatchEvent(new CustomEvent("dsolar:auth")); }
     });
     return true;

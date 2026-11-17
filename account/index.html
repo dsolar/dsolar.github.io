@@ -54,7 +54,7 @@
 </style>
 <link rel="stylesheet" href="/assets/navigation.css?v=20261112">
 <script src="/assets/projects.js?v=20261117-dl" defer></script>
-<script src="/assets/navigation.js?v=20261117-dl" defer></script>
+<script src="/assets/navigation.js?v=202611171356" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -100,7 +100,7 @@
       + (m.username ? '<div class="ac-card" id="username"><h2>Username</h2><p class="ps">For signing in with a password, and on your leagues and leaderboards.</p>' + usernameForm() + "</div>" : "")
       + '<div class="ac-card"><h2>Signing in</h2><dl class="ac-kv"><dt>Email</dt><dd>' + esc(m.email) + "</dd>" + (m.google ? "<dt>Google</dt><dd>Connected: you can sign in with Continue with Google</dd>" : "") + "<dt>Password</dt><dd>" + (m.password ? "Set" : "Not set yet") + "</dd></dl>"
       + '<form id="ac-pw" class="ac-row" style="margin-top:14px"><label>' + (m.password ? "New password" : "Set a password") + '<input type="password" id="ac-pw-1" autocomplete="new-password" minlength="8" required></label><button class="ac-btn" type="submit">' + (m.password ? "Change it" : "Set it") + '</button></form><p class="ac-msg" id="ac-pw-msg" role="status"></p></div>'
-      + '<div class="ac-card"><h2>What\'s saved</h2><dl class="ac-kv"><dt>Leagues</dt><dd>' + m.leagues + (m.leagues === 1 ? " league" : " leagues") + (m.commish ? ", " + m.commish + " you run" : "") + ' · <a href="/fantasy-kit/leagues.html">Your leagues</a></dd><dt>Game saves</dt><dd>' + m.saves + " daily game results, streaks and settings that follow you to every device</dd></dl>"
+      + '<div class="ac-card"><h2>What\'s saved</h2><dl class="ac-kv"><dt>Leagues</dt><dd>' + m.leagues + (m.leagues === 1 ? " league" : " leagues") + (m.commish ? ", " + m.commish + " you run" : "") + ' · <a href="/fantasy/leagues/">Your leagues</a></dd><dt>Game saves</dt><dd>' + m.saves + " daily game results, streaks and settings that follow you to every device</dd></dl>"
       + '<p class="ps" style="margin:14px 0 0"><a href="/privacy/">How your information is used</a></p></div>'
       + '<div class="ac-card"><h2>Sign out</h2><p class="ps">Signs you out in this browser. Your account and everything saved stays.</p><button type="button" class="ac-btn ghost" data-a="out">Sign out</button></div>'
       + '<div class="ac-card ac-danger"><h2>Delete your account</h2><p class="ps">This can\'t be undone.</p><ul>'

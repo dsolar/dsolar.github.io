@@ -243,7 +243,7 @@
 
   // the service worker keeps the app shell on this device (sw.js), so every Draft Lab page registers it, not only
   // alerts. Only pages in this file's own folder: the site header (assets/account.js) loads cloud.js everywhere.
-  if (HERE && typeof navigator !== "undefined" && "serviceWorker" in navigator && location.pathname.startsWith(new URL("./", HERE).pathname)) {
+  if (HERE && typeof navigator !== "undefined" && "serviceWorker" in navigator && (location.pathname.startsWith(new URL("./", HERE).pathname) || location.pathname.startsWith("/fantasy/"))) {
     const reg = () => navigator.serviceWorker.register(new URL("sw.js", HERE).href).catch(() => null);
     if (document.readyState === "complete") reg(); else root.addEventListener("load", reg);
   }

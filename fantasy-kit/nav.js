@@ -2,26 +2,27 @@
    draft, league and quick-game pages (fantasy-kit/).
 
    FK.nav.TABS                  the sections, in order: [key, label]
-   FK.nav.href(tab, o)          a section's address. o.kit: the path to fantasy-kit/ from this page ("" on a kit page,
-                                "../fantasy-kit/" on the home page); o.sport: the sport for the demo league; o.here: on
-                                fantasy-kit/index.html itself, where the draft room's pages are just hashes
-   FK.nav.HOME                  the home page from fantasy-kit/ ("../fantasy/")
+   FK.nav.href(tab, o)          a section's address (URLS): Draft Lab's pages all live under /fantasy/, their files under
+                                /fantasy-kit/. o.sport: the sport for the demo league; o.here: on the mock draft page
+                                itself, where the draft room is just a hash
+   FK.nav.HOME                  the home page ("/fantasy/")
    FK.nav.SPORTS                the sport pages: [key, label], each at fantasy/<key>/ */
 (function (root) {
   "use strict";
   var TABS = [["home", "Home"], ["leagues", "Your leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["week", "Quick games"], ["league", "Demo league"]];
   var SPORTS = [["nba", "NBA"], ["nfl", "NFL"], ["nhl", "NHL"], ["mlb", "MLB"], ["cbb", "NCAAB"], ["cfb", "NCAAF"]];
-  var HOME = "../fantasy/";
+  var HOME = "/fantasy/";
+  var URLS = { home: HOME, leagues: "/fantasy/leagues/", draft: "/fantasy/mock/", rankings: "/fantasy/rankings/", week: "/fantasy/quick/", league: "/fantasy/demo/" };
   function href(tab, o) {
     o = o || {};
-    var kit = o.kit || "", q = o.sport ? "?s=" + encodeURIComponent(o.sport) : "";
-    if (tab === "home") return kit + HOME;
-    if (tab === "leagues") return kit + "leagues.html";
-    if (tab === "week") return kit + "week.html";
-    if (tab === "league") return kit + "league.html" + q;
-    // the draft room's own pages are hash routes of fantasy-kit/index.html
-    return (o.here ? "" : kit || "./") + "#" + tab;
+    var q = o.sport ? "?s=" + encodeURIComponent(o.sport) : "";
+    if (tab === "league") return URLS.league + q;
+    // the mock draft's room is a hash on its own page
+    if (tab === "draft") return (o.here ? "" : URLS.draft) + "#draft";
+    return URLS[tab] || HOME;
   }
+  // a league's own page
+  var leagueUrl = function (id) { return "/fantasy/league/?id=" + encodeURIComponent(id); };
   // On a phone the site bar, the Draft Lab bar and a page's own row take a third of the screen. Scrolling down tucks
   // the site bar away (body.fk-tuck); scrolling up, or reaching the top, brings it back.
   function tuck() {
@@ -38,7 +39,7 @@
   }
   if (typeof document !== "undefined") { if (document.body) tuck(); else document.addEventListener("DOMContentLoaded", tuck); }
   /* Player search in the masthead: findHtml(kit) is the box; typing searches every sport's players (data/search.json,
-     loaded on first use) and a pick opens his card on the rankings page (fantasy-kit/?s=<sport>&p=<id>#rankings). */
+     loaded on first use) and a pick opens his card on the rankings page (fantasy/rankings/?s=<sport>&p=<id>). */
   var SHORT = { nba: "NBA", nfl: "NFL", nhl: "NHL", mlb: "MLB", cbb: "NCAAB", cfb: "NCAAF" };
   var esc = function (x) { return String(x == null ? "" : x).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
   var norm = function (x) { return String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); };
@@ -80,7 +81,7 @@
         loadIndex(kit).then(function (list) {
           var hits = find(list, input.value);
           ul.innerHTML = hits.map(function (p, i) {
-            return '<li role="option" id="fk-find-' + i + '"><a href="' + esc(kit + "?s=" + p.k + "&p=" + encodeURIComponent(p.id) + "#rankings") + '"><b>' + esc(p.n) + '</b><small>' + esc(SHORT[p.k] || p.k) + " &middot; " + esc(p.pos) + (p.t ? " &middot; " + esc(p.t) : "") + "</small></a></li>";
+            return '<li role="option" id="fk-find-' + i + '"><a href="' + esc(URLS.rankings + "?s=" + p.k + "&p=" + encodeURIComponent(p.id)) + '"><b>' + esc(p.n) + '</b><small>' + esc(SHORT[p.k] || p.k) + " &middot; " + esc(p.pos) + (p.t ? " &middot; " + esc(p.t) : "") + "</small></a></li>";
           }).join("") || (input.value.trim().length > 1 ? '<li class="none">No players by that name</li>' : "");
           ul.hidden = !ul.innerHTML; input.setAttribute("aria-expanded", String(!ul.hidden));
         });
@@ -100,7 +101,7 @@
     });
   }
   wireFind();
-  var nav = { TABS: TABS, SPORTS: SPORTS, HOME: HOME, href: href, findHtml: findHtml };
+  var nav = { TABS: TABS, SPORTS: SPORTS, HOME: HOME, URLS: URLS, leagueUrl: leagueUrl, href: href, findHtml: findHtml };
   if (typeof module !== "undefined" && module.exports) module.exports = nav;
   else (root.FK = root.FK || {}).nav = nav;
 })(this);

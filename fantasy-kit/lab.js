@@ -4,6 +4,7 @@
   const { sports: S, value: V, draft: F, ui: U } = window.FK;
   const { esc, $, $$ } = U;
   const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
+  const onRank = /\/rankings\/?$/.test(location.pathname);
   const store = U.store("fk-lab");
   const theme = U.theme("fk-lab");
   const top = $("#top"), app = $("#app");
@@ -78,7 +79,7 @@
     const right = `<button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
       tabs: N.TABS, inline: true, find: N.findHtml(""), tab, right,
-      hrefOf: (t, sub) => (t === "draft" || t === "rankings" ? "#" + t + (sub ? "/" + sub : "") : N.href(t, { sport: cfg.sport })) });
+      hrefOf: (t, sub) => (t === "draft" ? N.href("draft", { here: !onRank }) : t === "rankings" ? (onRank ? "" : N.URLS.rankings) + (sub ? "#rankings/" + sub : onRank ? "#rankings" : "") : N.href(t, { sport: cfg.sport })) });
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
@@ -151,7 +152,7 @@
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team ${esc(sport.name.toLowerCase())} snake draft. ${esc(scoring)}, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
         <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
-        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="leagues.html?s=${esc(cfg.sport)}">Start a league</a><a class="btn ghost" href="league.html?s=${esc(cfg.sport)}&f=h">Explore a demo</a></div></article>
+        <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="/fantasy/leagues/?s=${esc(cfg.sport)}">Start a league</a><a class="btn ghost" href="/fantasy/demo/?s=${esc(cfg.sport)}&f=h">Explore a demo</a></div></article>
       </section><p class="start-note">Mock drafts save on this device. You can leave and come back to the same seat.</p></div>`;
   }
   async function quickMock(button) {
@@ -221,7 +222,7 @@
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><div class="nr-l">${roster}</div></section>
         <section class="nl-sec mk-how">${tip("How the bots draft", `They value players over the replacement at each position and fill starters before the bench${c.sport === "nfl" ? ", saving kickers and defenses for last" : c.sport === "mlb" ? ", balancing hitters and pitchers as they go" : ""}. In an auction they bid by proxy up to a price set by their budget and needs.`)}
           ${tip("Your seat", "Queue players before you start. If your clock runs out, the first queued player who fits is your pick.")}
-          ${tip("After the draft", `Play a season with your team in a demo league: <a href="league.html?s=${esc(c.sport)}&f=h">head to head</a> or <a href="league.html?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
+          ${tip("After the draft", `Play a season with your team in a demo league: <a href="/fantasy/demo/?s=${esc(c.sport)}&f=h">head to head</a> or <a href="/fantasy/demo/?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
         <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
           <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
       </form></div></div>`;
@@ -389,7 +390,7 @@
       // with the room open in two tabs, only the one you're looking at runs the clock and the bots
       get drive() { return !document.hidden; },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
-      extra: () => `<a class="btn sm go" href="league.html?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
+      extra: () => `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a><button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });
   }
 
@@ -557,8 +558,12 @@
   }
 
   /* ---------- routing ---------- */
+  // two pages, one app: /fantasy/mock/ (the start page, setup and the draft room, by hash) and /fantasy/rankings/.
+  // A hash that belongs to the other page goes there.
   async function route() {
-    const r = U.route("home");
+    const r = U.route(onRank ? "rankings" : "home");
+    if (onRank && r.tab !== "rankings") { location.replace(N.URLS.draft + location.search + location.hash); return; }
+    if (!onRank && r.tab === "rankings") { location.replace(N.URLS.rankings + location.search + (r.sub ? "#rankings/" + r.sub : "")); return; }
     const tab = ["draft", "rankings", "home", "setup"].includes(r.tab) ? r.tab : "home";
     header(tab === "home" || tab === "setup" ? "draft" : tab);
     if (tab !== "draft" && roomCtl) { roomCtl.stop(); roomCtl = null; }

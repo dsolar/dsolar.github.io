@@ -80,8 +80,8 @@
     if (!Array.isArray(mine) || !mine.length) return;
     const list = mine.filter((l) => !l.oneWeek || l.phase !== "season").slice(0, 8);
     const icon = (k) => { const src = FK.sports && FK.sports.leagueLogo && FK.sports.leagueLogo(k); const txt = `<span class="ym-lg ym-sp">${esc((FK.sports.ALL[k] || {}).short || k)}</span>`; return src ? `<img class="ym-lg" src="${src}" alt="" loading="lazy" onerror="this.outerHTML=this.dataset.t" data-t="${esc(txt)}">` : txt; };
-    el.innerHTML = `<div class="sec-h"><div><h2>Your leagues</h2><p>This week's matchups, live while games are on.</p></div><a href="${KIT}leagues.html">All your leagues &rarr;</a></div>
-      <div class="ym">${list.map((l) => `<a class="ym-c" href="${KIT}play.html?id=${encodeURIComponent(l.id)}" data-ym="${esc(l.id)}">${icon(l.sport)}<span class="ym-m"><b>${esc(l.name)}</b><small>${esc(statusOf(l))}</small><span class="ym-s" data-ys></span></span></a>`).join("")}</div>`;
+    el.innerHTML = `<div class="sec-h"><div><h2>Your leagues</h2><p>This week's matchups, live while games are on.</p></div><a href="/fantasy/leagues/">All your leagues &rarr;</a></div>
+      <div class="ym">${list.map((l) => `<a class="ym-c" href="/fantasy/league/?id=${encodeURIComponent(l.id)}" data-ym="${esc(l.id)}">${icon(l.sport)}<span class="ym-m"><b>${esc(l.name)}</b><small>${esc(statusOf(l))}</small><span class="ym-s" data-ys></span></span></a>`).join("")}</div>`;
     el.hidden = false;
     // leagues still playing (a finished season shows its finish, not its last matchup)
     const scored = list.filter((l) => l.phase === "season" && l.card && l.card.format !== "guillotine" && !/^(Finished|Season over)/.test(statusOf(l))).slice(0, MAX_SCORED);

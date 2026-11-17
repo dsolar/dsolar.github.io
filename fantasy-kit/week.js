@@ -26,7 +26,7 @@
   }
   const day = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
   const weeks = () => ((data && data.weeks) || []).filter((w) => SL.list(w).length);
-  const start = (q) => `leagues.html?w=1&${q}${wk ? "&wk=1" : ""}${nba() ? `&s=${sport}` : ""}`;
+  const start = (q) => `/fantasy/leagues/?w=1&${q}${wk ? "&wk=1" : ""}${nba() ? `&s=${sport}` : ""}`;
 
   function slateCards(w) {
     const list = SL.list(w).filter((x) => x.kind !== "one" && x.kind !== "custom");
@@ -47,14 +47,14 @@
   }
   // your one-week games: the latest game of each series, with how far it's got
   function mineCard() {
-    if (!C.user()) return `<div class="card"><div class="bd stack"><p style="margin:0"><b>Your ${nba() ? "one-day" : "one-week"} games</b></p><p class="ps" style="margin:0"><a href="leagues.html">Sign in</a> to see yours and run them back.</p></div></div>`;
+    if (!C.user()) return `<div class="card"><div class="bd stack"><p style="margin:0"><b>Your ${nba() ? "one-day" : "one-week"} games</b></p><p class="ps" style="margin:0"><a href="/fantasy/leagues/">Sign in</a> to see yours and run them back.</p></div></div>`;
     if (!mine) return `<div class="card"><div class="bd"><p class="ps" style="margin:0">Loading your games…</p></div></div>`;
     const ones = mine.filter((l) => l.oneWeek && !!S.daily(l.sport) === !!nba()), by = {};
     for (const l of ones) { const k = l.series || l.id; if (!by[k] || (l.seriesN || 1) > (by[k].seriesN || 1)) by[k] = l; }
     const list = Object.values(by).sort((a, b) => Date.parse(b.updated) - Date.parse(a.updated));
     if (!list.length) return `<div class="card"><div class="bd stack"><p style="margin:0"><b>No ${nba() ? "one-day" : "one-week"} games yet.</b></p><p class="ps" style="margin:0">Start one above and send the link to your group.</p></div></div>`;
     const status = (l) => { const c = l.card || {}; return l.phase === "live" ? "Drafting now" : l.phase === "season" ? (c.week > (c.weeks || 1) ? "Final" : S.daily(l.sport) ? "Playing tonight" : "Playing this week") : l.phase === "done" ? "Draft done" : "Draft room open"; };
-    return `<div class="card"><div class="mod-h"><h2>Your ${nba() ? "one-day" : "one-week"} games</h2></div><ul class="feed wk-mine">${list.map((l) => `<li><a class="row" href="play.html?id=${esc(l.id)}" style="gap:10px;text-decoration:none;color:inherit;min-width:0"><span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span><span class="grow" style="min-width:0"><b class="ell" style="display:block">${esc(l.name)}</b><small>${l.seriesN > 1 ? `Game ${l.seriesN}, ` : ""}${l.slate ? esc(l.slate) + ", " : ""}${esc(status(l))}</small></span></a><a class="btn sm" href="play.html?id=${esc(l.id)}">Open</a></li>`).join("")}</ul></div>`;
+    return `<div class="card"><div class="mod-h"><h2>Your ${nba() ? "one-day" : "one-week"} games</h2></div><ul class="feed wk-mine">${list.map((l) => `<li><a class="row" href="/fantasy/league/?id=${esc(l.id)}" style="gap:10px;text-decoration:none;color:inherit;min-width:0"><span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span><span class="grow" style="min-width:0"><b class="ell" style="display:block">${esc(l.name)}</b><small>${l.seriesN > 1 ? `Game ${l.seriesN}, ` : ""}${l.slate ? esc(l.slate) + ", " : ""}${esc(status(l))}</small></span></a><a class="btn sm" href="/fantasy/league/?id=${esc(l.id)}">Open</a></li>`).join("")}</ul></div>`;
   }
   // "Tonight's" only when the slate is today's: late at night the next day's slate is the one on offer
   function nightName(w) {
@@ -75,7 +75,7 @@
         <div class="sg wr wk-sport" role="radiogroup" aria-label="Sport" style="margin-bottom:10px"><label class="sg-o"><input type="radio" name="wks" value="nfl"${nba() ? "" : " checked"} data-wks="nfl"><span>Football: one week</span></label><label class="sg-o"><input type="radio" name="wks" value="nba"${sport === "nba" ? " checked" : ""} data-wks="nba"><span>Basketball: one day</span></label><label class="sg-o"><input type="radio" name="wks" value="cbb"${sport === "cbb" ? " checked" : ""} data-wks="cbb"><span>College: one day</span></label></div>
         <h1 class="disp">Quick games</h1>
         <p>${sport === "cbb" ? "College basketball's daily fantasy, with your friends: the night's best games (picked by the CBB Hub), DraftKings scoring and a lineup of three guards, three forwards and two flex under a $50,000 cap. Or draft them with your group. Prices come from each player's season line and his team's projected points tonight." : nba() ? "Pick tonight's games, draft with your group in about ten minutes, and crown a winner when the last game ends. Then run it back tomorrow with the same people, and keep a running series." : "Pick the games, draft with your group in about ten minutes, play one real week of football and crown a winner. Then run it back next week with the same people, and keep a running series."}</p>
-        <div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn go" href="leagues.html?w=1${nba() ? `&s=${sport}` : ""}">${nba() ? "Start a one-day game" : "Start a one-week game"}</a>${sport === "cbb" ? `<a class="btn" href="../cbb/">CBB Hub ↗</a>` : `<a class="btn" href="./?s=${sport}#draft">Mock one first</a>`}</div>
+        <div class="row" style="gap:8px;flex-wrap:wrap"><a class="btn go" href="/fantasy/leagues/?w=1${nba() ? `&s=${sport}` : ""}">${nba() ? "Start a one-day game" : "Start a one-week game"}</a>${sport === "cbb" ? `<a class="btn" href="../cbb/">CBB Hub ↗</a>` : `<a class="btn" href="./?s=${sport}#draft">Mock one first</a>`}</div>
       </div></div></div>
       <section style="margin-top:18px"><h2 class="nl-h" style="margin:0 0 10px">${nba() ? `${nightName(w)}${sport === "cbb" ? " featured" : ""} games` : "This week's games"}</h2>${games}</section>
       <div class="mk-how" style="margin-top:18px">
@@ -98,7 +98,7 @@
     const sp = e.target.closest("[data-wks]");
     if (sp && sp.value !== sport) {
       sport = sp.value; wk = 0;
-      history.replaceState(null, "", nba() ? `?s=${sport}` : location.pathname);
+      history.replaceState(null, "", location.pathname + (nba() ? `?s=${sport}` : ""));
       document.title = "Quick games | Draft Lab";
       render(); load();
     }

@@ -12,10 +12,11 @@
    - Never: other origins (Supabase, Google Fonts, analytics), anything that isn't a GET, or other site files.
    Install saves the pages and everything they load, read from the pages themselves, so the list here never goes
    stale. Bump VERSION to drop every saved copy: activate deletes the old caches. */
-const VERSION = "2";
+const VERSION = "3";
 const PREFIX = "draft-lab-";
 const SHELL = `${PREFIX}${VERSION}-shell`, DATA = `${PREFIX}${VERSION}-data`;
-const PAGES = ["index.html", "week.html", "leagues.html", "play.html", "league.html"];
+// Draft Lab's pages moved to /fantasy/ (outside this worker's scope); the old addresses here only redirect
+const PAGES = [];
 const PAGE_WAIT = 4000;
 const STATIC = /\.(?:js|css|svg|png|jpe?g|webp|gif|ico|woff2?|webmanifest)$/i;
 const MEDIA = /\.(?:svg|png|jpe?g|webp|gif|ico|woff2?)$/i;
@@ -121,12 +122,12 @@ self.addEventListener("push", (e) => {
   let m = {};
   try { m = e.data ? e.data.json() : {}; } catch (err) { m = { title: "Draft Lab", body: e.data ? e.data.text() : "" }; }
   e.waitUntil(self.registration.showNotification(m.title || "Draft Lab", {
-    body: m.body || "", icon: "icon-192.png", badge: "badge-72.png", tag: m.tag || undefined, renotify: !!m.tag, data: { url: m.url || "leagues.html" },
+    body: m.body || "", icon: "icon-192.png", badge: "badge-72.png", tag: m.tag || undefined, renotify: !!m.tag, data: { url: m.url || "/fantasy/leagues/" },
   }));
 });
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
-  const url = new URL((e.notification.data && e.notification.data.url) || "leagues.html", self.registration.scope).href;
+  const url = new URL((e.notification.data && e.notification.data.url) || "/fantasy/leagues/", self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
     for (const c of list) if (c.url.split("#")[0] === url.split("#")[0] && "focus" in c) return c.focus();
     return self.clients.openWindow(url);

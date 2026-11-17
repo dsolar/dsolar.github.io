@@ -71,7 +71,7 @@ jobs.push(
   { file: "games", title: "Games", line: "Daily challenges for the group chat, and a few that take longer.", path: "/games/", cards: fan(of("journeyman/", "guess-the-pick/", "win-probability/")) },
   { file: "simulations", title: "Simulations & Tools", line: "Seasons played out thousands of times, front offices to run, drafts to mock.", path: "/simulations/", cards: fan(of("nfl/", "draft/", "31st-franchise/")) },
   { file: "kids", title: "Kids", line: "Games my daughters designed and we built together.", path: "/kids/", cards: fan(of("jellycat-battle/", "wild-bloom-isles/")) },
-  { file: "fantasy-kit", title: "Draft Lab", line: "Mock drafts against bots, and private leagues with formats you won't find anywhere else.", path: "/fantasy-kit/", cards: fan(of("yoenis/", "guillotine/", "fantasy/")) },
+  { file: "fantasy-kit", title: "Draft Lab", line: "Mock drafts against bots, and private leagues with formats you won't find anywhere else.", path: "/fantasy/mock/", cards: fan(of("yoenis/", "guillotine/", "fantasy/")) },
 );
 mkdirSync(ROOT + "assets/og", { recursive: true });
 const TMP = tmpdir() + "/og-build.html";

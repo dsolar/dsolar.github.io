@@ -150,9 +150,9 @@
       brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, crest: U.leagueCrest(U.leagueBrand(L.name, L.settings.brand), "sm") },
         leagues.map(([s, g]) => ({ href: `?s=${s.key}&f=${g ? "g" : "h"}`, name: nameOf(s.key, g), sub: `${s.name}, ${g ? "best ball guillotine" : "head to head"}`, crest: U.leagueCrest(U.leagueBrand(nameOf(s.key, g)), "sm") })),
-        `<a href="${N.HOME}">Draft Lab home<small>Every sport, league and tool</small></a><a href="./#draft">Mock draft<small>Draft against bots in any format</small></a>`),
+        `<a href="${N.HOME}">Draft Lab home<small>Every sport, league and tool</small></a><a href="/fantasy/mock/#draft">Mock draft<small>Draft against bots in any format</small></a>`),
       right: () => `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
-      draftHref: "./#draft",
+      draftHref: "/fantasy/mock/#draft",
       commishTools,
     });
   }

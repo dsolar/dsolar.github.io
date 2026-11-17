@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="/fantasy-kit/">
+<script>
+/* This page lives at a clean Draft Lab address, and its files at /fantasy-kit/ (the <base> above). A link to "#..."
+   would resolve against the base and leave the page, so one the app didn't handle itself is kept here. */
+window.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
+  e.preventDefault();
+  var h = a.getAttribute("href");
+  if (h.length > 1 && location.hash !== h) location.hash = h;
+});
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>League | Draft Lab</title>
+<meta name="description" content="A shared fantasy league in Draft Lab: a live draft room, then standings, matchups, rosters, waivers and trades that save for the whole league.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/fantasy/league/">
+<meta property="og:title" content="League | Draft Lab">
+<meta property="og:description" content="A shared fantasy league in Draft Lab: a live draft room, then standings, matchups, rosters, waivers and trades that save for the whole league.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#13233A">
+<script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Draft Lab">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="kit.css?v=202611171356">
+<link rel="stylesheet" href="../assets/faces.css?v=202611171356">
+<script src="../assets/analytics.js" defer></script>
+<style>
+.seatl{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:4px;max-height:46vh;overflow:auto}
+.seatl li{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;background:var(--surface-2)}
+.seatl b{display:block}
+.seatl small{color:var(--muted)}
+</style>
+
+<link rel="stylesheet" href="../assets/navigation.css?v=202611171356">
+<script src="../assets/projects.js?v=202611171356" defer></script>
+<script src="../assets/navigation.js?v=202611171356" defer></script>
+</head>
+<body>
+<div data-ds-navigation data-ds-own hidden></div>
+<header class="fk-top" id="top"></header>
+<main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading the league…</div></main>
+<script>
+/* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
+   stylesheets are in (an inline script waits for them): the first screen above paints without the JavaScript
+   sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
+["nav.js?v=202611171356", "sports.js?v=202611171356", "value.js?v=202611171356", "draft.js?v=202611171356", "rules.js?v=202611171356", "league.js?v=202611171356", "../assets/faces.js?v=202611171356", "ui.js?v=202611171356", "gameday.js?v=202611171356", "season.js?v=202611171356", "pyramid.js?v=202611171356", "cloud.js?v=202611171356", "entry.js?v=202611171356", "lobby.js?v=202611171356", "live.js?v=202611171356"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+</script>
+</body>
+</html>

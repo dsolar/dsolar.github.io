@@ -197,7 +197,7 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
         }
       } else changed = Z.catchUp(L, G.context(L, players, sport, hooks), now);
       if (!changed) return out;
-      const events = Z.events(base, { draft: D, league: L }, { name: l.name, url: `${SITE}play.html?id=${encodeURIComponent(l.id)}`, seats: l.seats, me: null, byId, now });
+      const events = Z.events(base, { draft: D, league: L }, { name: l.name, url: `https://davidsolar.dev/fantasy/league/?id=${encodeURIComponent(l.id)}`, seats: l.seats, me: null, byId, now });
       const r = await rpc("fk_clock_save", { p_token: token, p_id: l.id, p_version: l.version, p_draft: base.league ? null : D, p_league: L, p_events: events });
       Object.assign(out, { saved: !!r.ok, error: r.error, emails: events.length });
   } catch (e) { out.error = String((e as Error).message || e); }
@@ -262,7 +262,7 @@ function emailHtml(e: any, FK: any) {
     ${paras}${roster}
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px 0 22px"><tr><td style="background:#F6C445;border-radius:9px"><a href="${h(url)}" style="display:inline-block;padding:12px 22px;font:800 15px ${FONT};color:#1F1600;text-decoration:none">${e.kind === "invite" ? "Join the league" : "Open the league"}</a></td></tr></table>
   </td></tr>
-  <tr><td style="padding:14px 24px 18px;border-top:1px solid #EEF1F4;font:400 12.5px/1.5 ${FONT};color:#677284">${h(footText(e))}<br><br>Draft Lab, <a href="https://davidsolar.dev/fantasy-kit/" style="color:#677284">davidsolar.dev</a></td></tr>
+  <tr><td style="padding:14px 24px 18px;border-top:1px solid #EEF1F4;font:400 12.5px/1.5 ${FONT};color:#677284">${h(footText(e))}<br><br>Draft Lab, <a href="https://davidsolar.dev/fantasy/" style="color:#677284">davidsolar.dev</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -283,7 +283,7 @@ async function pushOne(token: string, e: any) {
   const first = String(e.body || "").split("\n\n")[0].slice(0, 160);
   const link = /^Open the league: (\S+)$/m.exec(String(e.body || ""));
   const msg = { title: e.league_name || "Draft Lab", body: line ? `${line.charAt(0).toUpperCase() + line.slice(1)}. ${first}`.slice(0, 220) : first,
-    url: (link && link[1]) || (e.data && e.data.url) || `${SITE}play.html?id=${encodeURIComponent(e.league)}`, tag: `${e.league}:${e.kind || "alert"}` };
+    url: (link && link[1]) || (e.data && e.data.url) || `https://davidsolar.dev/fantasy/league/?id=${encodeURIComponent(e.league)}`, tag: `${e.league}:${e.kind || "alert"}` };
   let sent = 0;
   for (const sub of subs) {
     try { await webpush.sendNotification(sub, JSON.stringify(msg), { TTL: 6 * 3600 }); sent++; }

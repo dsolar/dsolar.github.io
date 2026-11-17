@@ -163,7 +163,7 @@
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
       tabs: N.TABS, inline: true, find: N.findHtml(""), tab: view === "new" && oneWeek() ? "week" : "leagues",
-      right: `${C.user() ? `<button class="btn sm ghost" data-a="out">Sign out</button>` : ""}<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
+      right: `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
       hrefOf: (t) => N.href(t) });
   }
   const page = (html) => { app.innerHTML = `<div class="wrap page">${html}</div>`; U.pushBox($("#lg-push")); };
@@ -177,6 +177,8 @@
     const r = await C.rpc("fk_profile_me", {}).catch(() => null);
     prof = r && r.ok ? r : null;
     if (prof && prof.name && !(form.me || "").trim()) form.me = prof.name;
+    // the site's account button (assets/account.js) shows this name too, not the email's first half
+    try { const me = C.user(); if (prof && me && (prof.name || prof.username)) localStorage.setItem("ds-acct:name", JSON.stringify({ id: me.id, name: prof.name || prof.username })); } catch (e) { /* private mode */ }
   }
   const profChip = () => prof ? `<button type="button" class="pf-chip" data-a="profile">${U.faceAv(prof, prof.name, "md")}<span>${esc(prof.name || "Add your name")}<small style="display:block">${prof.saved ? "Edit your profile" : "Set up your profile"}</small></span></button>` : "";
   // a league set up while signed out, saved when "Make the league" asks you to sign in
@@ -212,9 +214,22 @@
     // on an invite, the join form is the page; your other leagues, if any, follow it quietly
     if (joinId) return page(`${err}${invite}${Array.isArray(mine) && mine.length ? `<div class="head" style="margin-top:8px"><h2 style="margin:0">Your other leagues</h2></div><div class="lgl">${mine.map(card).join("")}</div>` : ""}`);
     page(`${err}${invite}
-      <div class="su sp-${S.inSeason()}"><div class="nl-band lg-band">${FIELD[S.inSeason()]}<div class="nl-bi"><h1 class="disp">Your leagues</h1>${profChip()}<p>Signed in as ${esc(u.email)}${prof && prof.username ? `, username <b style="color:#fff">${esc(prof.username)}</b>` : ""}</p><div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" data-a="new">Start a league</button><button class="btn" data-a="account">${prof && prof.username ? "Username and password" : "Set a username and password"}</button></div></div></div>
+      <div class="su"><div class="nl-band lg-band dl-band"><div class="nl-bi"><span class="dl-eyebrow">Draft Lab</span><h1 class="disp">Your leagues</h1><p class="dl-lede">${esc(leagueSummary(mine))}</p>
+        <div class="row" style="gap:8px;flex-wrap:wrap"><button class="btn go" data-a="new">Start a league</button><a class="btn" href="/fantasy/quick/">Quick game</a></div></div>
+        <div class="dl-me">${profChip()}<button type="button" class="si-link" data-a="account">${prof && prof.username ? `Signed in as ${esc(prof.username)} · sign-in settings` : "Set a username and password"}</button></div></div></div>
       <div id="lg-push"></div>
       ${mine.error ? fail(mine.error) : mine.length ? leagueList(mine) : joinId ? "" : `<div class="card"><div class="bd stack"><p style="margin:0"><b>No leagues yet.</b></p><p class="ps" style="margin:0">Start one and send your friends the invite link, or open the invite link your commissioner sent you.</p><div><button class="btn go" data-a="new">Start a league</button></div></div>`}</div>`);
+  }
+  // The line under "Your leagues": how many, and what's happening in them now
+  function leagueSummary(mine) {
+    if (!Array.isArray(mine) || !mine.length) return "Start a league and send the invite link, or open the link your commissioner sent you.";
+    const n = (k) => mine.filter((l) => l.phase === k).length, parts = [`${mine.length} league${mine.length === 1 ? "" : "s"}`];
+    if (n("live")) parts.push(`${n("live")} drafting now`);
+    const on = mine.filter((l) => l.phase === "season" && !(l.card && l.card.weeks != null && l.card.week > l.card.weeks + (l.card.playoffWeeks || 0))).length;
+    if (on) parts.push(`${on} in season`);
+    const open = mine.filter((l) => !["season", "live", "done"].includes(l.phase)).length;
+    if (open) parts.push(`${open} with the draft room open`);
+    return parts.join(" · ");
   }
   // Your leagues by sport: chips for each sport you play (with counts) once there's more than one, and under All the
   // leagues grouped by sport, the one in season first. The chip you picked sticks in this browser.
@@ -256,14 +271,15 @@
     else { status = "Draft room open"; tone = "on"; if (c.teams) stats.push([`${c.claimed}/${c.teams}`, "teams claimed"]); }
     const facts = [esc(S[l.sport].name), c.teams ? `${c.teams} teams` : ""].filter(Boolean).join(", ");
     const chips = `${c.teamName ? `<span class="lgc-team">${esc(c.teamName)}</span>` : ""}<span class="lgc-st ${tone}">${esc(status)}</span>${l.commish ? `<span class="lgc-cm">Commissioner</span>` : ""}`;
-    return `<a class="card lgc" href="play.html?id=${esc(l.id)}" style="--lc:${col}">${l.phase === "season" || l.brand ? `<span class="lg-cr">${U.leagueCrest(br)}</span>` : `<span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>`}
+    return `<a class="card lgc" href="/fantasy/league/?id=${esc(l.id)}" style="--lc:${col}">${l.phase === "season" || l.brand ? `<span class="lg-cr">${U.leagueCrest(br)}</span>` : `<span class="lg-sp sp-${esc(l.sport)}">${icon(l.sport)}</span>`}
       <span class="lgc-m"><b class="lgc-n">${esc(l.name)}</b><small>${facts}</small><span class="lgc-chips">${chips}</span>${bar != null ? `<span class="lgbar" role="img" aria-label="${Math.round(bar * 100)}% of picks in"><i style="width:${(bar * 100).toFixed(1)}%"></i></span>` : ""}</span>
       ${stats.length ? `<span class="lgc-stats">${stats.map(([big, small], i) => `<span class="lgstat${tone === "live" ? " live" : ""}${i ? " sec" : ""}"><b>${esc(big)}</b><small>${esc(small)}</small></span>`).join("")}</span>` : ""}<span class="lgc-go" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>`;
   }
 
   function signInCard(inv) {
     const k0 = inv && S[inv.sport] ? inv.sport : S.inSeason();
-    const band = (title, body) => `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi"><h1 class="disp">${title}</h1>${body}</div></div></div>`;
+    const band = (title, body) => (inv ? `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi"><h1 class="disp">${title}</h1>${body}</div></div></div>`
+      : `<div class="su"><div class="nl-band si-band dl-band"><div class="nl-bi"><span class="dl-eyebrow">Draft Lab</span><h1 class="disp">${title}</h1>${body}</div></div></div>`);
     if (sent) return band("Check your email", `<p>We sent a sign-in link to <b style="color:#fff;overflow-wrap:anywhere">${esc(sent)}</b>.</p>
         <div class="si-card">
           <ol class="si-steps"><li>Open the email from Draft Lab on the phone or computer you want to play on.</li><li>Tap <b>Sign in</b>. The link works once and expires in an hour.</li><li>You land back here, signed in.</li></ol>
@@ -309,7 +325,8 @@
           <div class="si-row"><input id="si-email" type="email" autocomplete="email" required value="${esc(C.lastEmail())}" placeholder="you@example.com"><button class="btn go" type="submit"${busy ? " disabled" : ""}>Email me a sign-in link</button></div>
           <p class="ps">No password needed: the link signs you in.</p>${alt([["password", "Use a password instead"]])}</form>`,
     };
-    return `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi">${lead}${forms[siMode] || forms.password}</div></div>
+    return inv ? `<div class="su sp-${k0}"><div class="nl-band si-band">${FIELD[k0]}<div class="nl-bi">${lead}${forms[siMode] || forms.password}</div></div>`
+      : `<div class="su"><div class="nl-band si-band dl-band"><div class="nl-bi"><span class="dl-eyebrow">Draft Lab</span>${lead}${forms[siMode] || forms.password}</div></div>
       <div class="mk-how" style="margin-top:14px">
         <div class="mk-tip"><b>Draft live or slow</b><p>Snake, auction, mystery packages or white elephant, with a pick clock from 30 seconds to 8 hours.</p></div>
         <div class="mk-tip"><b>A whole season</b><p>Lineups, waivers, trades and playoffs, scored from real games. Redraft, keeper or dynasty.</p></div>
@@ -340,7 +357,7 @@
   }
   function joinCard(v) {
     const teams = v.draft.teams, seats = v.seats || {};
-    if (v.me != null) return `<div class="banner"><b>You're already in ${esc(v.name)}.</b> <a href="play.html?id=${esc(joinId)}">Open the league</a></div>`;
+    if (v.me != null) return `<div class="banner"><b>You're already in ${esc(v.name)}.</b> <a href="/fantasy/league/?id=${esc(joinId)}">Open the league</a></div>`;
     const open = teams.map((t, i) => [t, i]).filter(([, i]) => seats[i] == null);
     if (!open.length) return fail(`Every team in ${v.name} has a manager.`);
     // an invite emailed for one team (&team=) picks that team, when it's still open
@@ -1077,8 +1094,8 @@
         D.teams.forEach((t, i) => { const o = rematch.teams[i]; if (o) Object.assign(t, o); });
         const r = await C.rpc("fk_rematch", { p_id: rematch.id, p_draft: D, p_name: form.name }).catch((e) => ({ error: e.message }));
         if (!r || r.error) throw new Error((r && r.error) || "Couldn't run it back.");
-        if (!r.existed) C.rpc("fk_post", { p_id: rematch.id, p_body: `Running it back: next week's draft room is open. ${location.origin}${location.pathname.replace(/leagues\.html$/, "play.html")}?id=${r.id}` }).catch(() => null);
-        location.href = `play.html?id=${encodeURIComponent(r.id)}`;
+        if (!r.existed) C.rpc("fk_post", { p_id: rematch.id, p_body: `Running it back: next week's draft room is open. ${location.origin}/fantasy/league/?id=${r.id}` }).catch(() => null);
+        location.href = `/fantasy/league/?id=${encodeURIComponent(r.id)}`;
         return;
       }
       if (pyrOn()) {
@@ -1111,12 +1128,12 @@
         D.name = nm(names[0]);
         const r = await C.rpc("fk_pyramid_create", { p_top_name: nm(names[0]), p_bot_name: nm(names[1]), p_sport: form.sport, p_manager: form.me, p_top: D, p_bot: D2 });
         if (r.error) throw new Error(r.error);
-        location.href = `play.html?id=${encodeURIComponent(r.top)}#invite`;
+        location.href = `/fantasy/league/?id=${encodeURIComponent(r.top)}#invite`;
         return;
       }
       const r = await C.rpc("fk_create", { p_name: form.name, p_sport: form.sport, p_manager: form.me, p_draft: D });
       if (r.error) throw new Error(r.error);
-      location.href = `play.html?id=${encodeURIComponent(r.id)}#invite`;
+      location.href = `/fantasy/league/?id=${encodeURIComponent(r.id)}#invite`;
     } catch (e) { busy = false; await render(); why(e.message); }
   }
 
@@ -1149,7 +1166,7 @@
       if (r.error) { U.toast(r.error, true); return; }
       const tn = $("#j-team").value.trim();
       if (tn) await C.rpc("fk_team_name", { p_id: joinId, p_name: tn }).catch(() => null);
-      location.href = `play.html?id=${encodeURIComponent(joinId)}`;
+      location.href = `/fantasy/league/?id=${encodeURIComponent(joinId)}`;
     } else if (f.id === "new") makeLeague();
   });
   /* ---------- presets: a starting point for the whole form, then change anything ---------- */

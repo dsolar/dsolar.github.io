@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base href="/fantasy-kit/">
+<script>
+/* This page lives at a clean Draft Lab address, and its files at /fantasy-kit/ (the <base> above). A link to "#..."
+   would resolve against the base and leave the page, so one the app didn't handle itself is kept here. */
+window.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
+  e.preventDefault();
+  var h = a.getAttribute("href");
+  if (h.length > 1 && location.hash !== h) location.hash = h;
+});
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Your leagues | Draft Lab</title>
+<meta name="description" content="Start a fantasy league in Draft Lab, invite your friends with a link and draft live. Sign in with an email link, Google or a password.">
+<link rel="canonical" href="https://davidsolar.dev/fantasy/leagues/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/fantasy/leagues/">
+<meta property="og:title" content="Your leagues | Draft Lab">
+<meta property="og:description" content="Start a fantasy league in Draft Lab, invite your friends with a link and draft live. Sign in with an email link, Google or a password.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/fantasy-kit.jpg">
+<meta name="theme-color" content="#13233A">
+<script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Draft Lab">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="kit.css?v=202611171356">
+<link rel="stylesheet" href="../assets/faces.css?v=202611171356">
+<script src="../assets/analytics.js" defer></script>
+<style>
+.hero{padding:26px 0 6px}
+.hero h1{margin:0;font-size:clamp(40px,7vw,84px)}
+.hero p{max-width:60ch;color:var(--muted);font-size:17px;margin:12px 0 18px}
+.narrow{max-width:520px}
+.form .bd{display:grid;gap:16px}
+.row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.lgl{display:grid;gap:10px}
+.lgc{position:relative;display:flex;align-items:center;gap:16px;padding:14px 16px 14px 18px;text-decoration:none;color:inherit;overflow:hidden;border-left:0;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--lc) 13%,var(--surface)) 0,var(--surface) 46%)}
+.lgc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--lc)}
+.lgc:hover{border-color:color-mix(in srgb,var(--lc) 45%,var(--line));box-shadow:0 6px 22px rgba(0,0,0,.08)}
+.lgc:hover .lgc-go{color:var(--lc);transform:translateX(2px)}
+.lgc .lg-cr{width:44px;height:55px}
+.lgc .lg-cr .lgcr{width:44px;height:55px}
+.lgc-m{display:grid;gap:3px;min-width:0;flex:1}
+.lgc-n{display:block;font-size:18px;font-weight:850;letter-spacing:-.01em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lgc-m small{color:var(--muted);font-size:12.5px}
+.lgc-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.lgc-chips span{font-size:11.5px;font-weight:750;padding:2px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);white-space:nowrap}
+.lgc-chips .lgc-team{background:color-mix(in srgb,var(--lc) 14%,var(--surface));border-color:color-mix(in srgb,var(--lc) 30%,transparent);color:var(--ink)}
+.lgc-chips .lgc-st.on{color:var(--win);border-color:color-mix(in srgb,var(--win) 35%,transparent)}
+.lgc-chips .lgc-st.live{color:#fff;background:var(--loss);border-color:var(--loss)}
+.lgc-chips .lgc-cm{color:var(--muted)}
+.lgc-stats{display:flex;gap:4px;align-items:stretch}
+.lgstat{display:grid;justify-items:end;align-content:center;line-height:1.1;padding:2px 12px;min-width:64px}
+.lgstat + .lgstat{border-left:1px solid var(--line)}
+.lgstat b{font-size:24px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.lgstat.sec b{font-size:17px;font-weight:800;color:var(--ink)}
+.lgstat small{font-size:11px;white-space:nowrap;color:var(--muted);margin-top:3px}
+.lgstat.live b{color:var(--loss)}
+.lgc-go{color:var(--muted);display:grid;place-items:center;transition:transform .15s,color .15s}
+.lgbar{display:block;height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:6px;max-width:260px}
+.lgbar i{display:block;height:100%;background:var(--lc)}
+@media (max-width:560px){.lgc{flex-wrap:wrap;gap:10px 12px}.lgc-m{flex:1 1 calc(100% - 90px)}.lgc-stats{order:3;width:100%;padding-left:56px}.lgstat{justify-items:start;padding:0 14px 0 0;min-width:0}.lgstat + .lgstat{padding-left:14px}.lgstat b{font-size:20px}.lgc-go{position:absolute;right:12px;top:16px}}
+.seats{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px}
+.seats label{display:flex;align-items:center;gap:10px;border:1px solid var(--line-2);border-radius:10px;padding:8px 10px;background:var(--field);cursor:pointer}
+.seats label.taken{opacity:.6;cursor:default;background:var(--surface-2)}
+.seats label:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.seats span{display:grid;min-width:0}
+.seats small{color:var(--muted)}
+
+</style>
+
+<link rel="stylesheet" href="../assets/navigation.css?v=202611171356">
+<script src="../assets/projects.js?v=202611171356" defer></script>
+<script src="../assets/navigation.js?v=202611171356" defer></script>
+</head>
+<body>
+<div data-ds-navigation data-ds-own hidden></div>
+<!-- The header, drawn before the scripts arrive: what leagues.js draws (header()). The page under it depends on who's
+     signed in, so it waits for leagues.js. Keep the header in step. -->
+<header class="fk-top" id="top"><div class="fk-mast fk-band inline"><div class="wrap">
+        <a class="fk-site" href="/" title="davidsolar.dev" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"></a>
+        <a class="fk-brand" href="../fantasy/"><img src="mark.svg" alt=""><b class="disp">Draft Lab</b></a>
+        <nav class="mast-nav" aria-label="Sections"><a href="../fantasy/">Home</a><a href="/fantasy/leagues/" aria-current="page">Your leagues</a><a href="./#draft">Mock draft</a><a href="./#rankings">Rankings</a><a href="/fantasy/quick/">Quick games</a><a href="/fantasy/demo/?s=nfl">Demo league</a></nav><form class="fk-find" role="search" data-kit="" onsubmit="return false"><label class="sr" for="fk-find-q">Find a player</label><input id="fk-find-q" type="search" placeholder="Find a player" autocomplete="off" spellcheck="false" aria-controls="fk-find-r" aria-expanded="false"><ul id="fk-find-r" class="fk-find-r" role="listbox" hidden></ul></form><div class="fk-who"><button class="btn sm ghost" data-theme="">Dark</button></div></div></div>
+</header>
+<main id="app"><div class="wrap" style="padding:80px 16px;color:var(--muted)">Loading…</div></main>
+<script>
+(function () {
+  try {
+    var top = document.getElementById("top"), q = new URLSearchParams(location.search);
+    if (q.get("w") === "1") { top.querySelector("[aria-current]").removeAttribute("aria-current"); top.querySelector('a[href="/fantasy/quick/"]').setAttribute("aria-current", "page"); }
+    if (localStorage.getItem("fk-auth:session")) top.querySelector(".fk-who").insertAdjacentHTML("afterbegin", '<button class="btn sm ghost" data-a="out">Sign out</button>');
+    if (document.documentElement.dataset.theme === "dark") top.querySelector("[data-theme]").textContent = "Light";
+  } catch (e) { /* leagues.js draws the header either way */ }
+})();
+</script>
+<script>
+/* The app's scripts, run in this order. Loaded from here rather than as <script src> tags so they start once the
+   stylesheets are in (an inline script waits for them): the first screen above paints without the JavaScript
+   sharing the connection with kit.css. Bump a file's ?v= here when it changes. */
+["nav.js?v=202611171356", "sports.js?v=202611171356", "value.js?v=202611171356", "rules.js?v=202611171356", "scoring-ui.js?v=202611171356", "draft.js?v=202611171356", "../assets/faces.js?v=202611171356", "ui.js?v=202611171356", "pyramid.js?v=202611171356", "setup.js?v=202611171356", "cloud.js?v=202611171356", "slates.js?v=202611171356", "leagues.js?v=202611171356"].forEach(function (src) { var s = document.createElement("script"); s.src = src; s.async = false; document.body.appendChild(s); });
+</script>
+</body>
+</html>

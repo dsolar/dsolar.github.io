@@ -66,10 +66,10 @@
       blurb: "Categories or points, one night or a dynasty.",
       presets: [["cats9", "Categories"], ["points", "Points"]],
       modes: [
-        { i: "i-one", t: "One day", n: true, d: "Draft tonight's games with your group: the main slate, the late games or one game. A winner when the last game ends.", u: "fantasy-kit/week.html?s=nba", go: "Pick tonight's slate" },
-        { i: "i-bolt", t: "Quick games", d: "Draft now, play this week's real games and crown a winner. Games before the draft don't count.", u: "fantasy-kit/leagues.html?w=1&s=nba", go: "Start a quick game" },
-        { i: "i-star", t: "Showdown", d: "One game, a captain at 1.5x and five flex. Snake or a $50 auction.", u: "fantasy-kit/leagues.html?w=1&s=nba&slate=one", go: "Pick a game" },
-        { i: "i-cap", t: "Hard Cap", d: "A mode for any NBA or NHL league: real contracts under one salary line. Draft the player, carry the contract.", u: "fantasy-kit/leagues.html?hardcap=1", go: "Start a Hard Cap league" }
+        { i: "i-one", t: "One day", n: true, d: "Draft tonight's games with your group: the main slate, the late games or one game. A winner when the last game ends.", u: "fantasy/quick/?s=nba", go: "Pick tonight's slate" },
+        { i: "i-bolt", t: "Quick games", d: "Draft now, play this week's real games and crown a winner. Games before the draft don't count.", u: "fantasy/leagues/?w=1&s=nba", go: "Start a quick game" },
+        { i: "i-star", t: "Showdown", d: "One game, a captain at 1.5x and five flex. Snake or a $50 auction.", u: "fantasy/leagues/?w=1&s=nba&slate=one", go: "Pick a game" },
+        { i: "i-cap", t: "Hard Cap", d: "A mode for any NBA or NHL league: real contracts under one salary line. Draft the player, carry the contract.", u: "fantasy/leagues/?hardcap=1", go: "Start a Hard Cap league" }
       ],
       demos: [["nba", "HH", "Head to head", "Hardwood Heads", "f=h"], ["nba:g", "LT", "Best ball guillotine", "Last Team Standing", "f=g"]]
     },
@@ -79,10 +79,10 @@
       blurb: "PPR to custom points, plus the guillotine.",
       presets: [["half", "Half PPR"], ["ppr", "PPR"], ["std", "Standard"]],
       modes: [
-        { i: "i-bolt", t: "Quick games", d: "Draft tonight, play this week's real games, crown a winner. Pick the full slate, Sunday, prime time or your own games.", u: "fantasy-kit/leagues.html?w=1&s=nfl", go: "Start a quick game" },
-        { i: "i-star", t: "Showdown", d: "One game, a captain at 1.5x and five flex. Snake or a $50 auction.", u: "fantasy-kit/leagues.html?w=1&s=nfl&slate=one", go: "Pick a game" },
-        { i: "i-mask", t: "Heist", d: "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's.", u: "fantasy-kit/leagues.html?w=1&s=nfl", go: "Plan a heist" },
-        { i: "i-fang", t: "Vampire", d: "One team skips the draft, builds from free agents, and takes a player from every team it beats.", u: "fantasy-kit/leagues.html?s=nfl", go: "Start a league" }
+        { i: "i-bolt", t: "Quick games", d: "Draft tonight, play this week's real games, crown a winner. Pick the full slate, Sunday, prime time or your own games.", u: "fantasy/leagues/?w=1&s=nfl", go: "Start a quick game" },
+        { i: "i-star", t: "Showdown", d: "One game, a captain at 1.5x and five flex. Snake or a $50 auction.", u: "fantasy/leagues/?w=1&s=nfl&slate=one", go: "Pick a game" },
+        { i: "i-mask", t: "Heist", d: "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's.", u: "fantasy/leagues/?w=1&s=nfl", go: "Plan a heist" },
+        { i: "i-fang", t: "Vampire", d: "One team skips the draft, builds from free agents, and takes a player from every team it beats.", u: "fantasy/leagues/?s=nfl", go: "Start a league" }
       ],
       demos: [["nfl", "SS", "Head to head", "Sunday Scaries", "f=h"], ["nfl:g", "OH", "Best ball guillotine", "Off With Their Heads", "f=g"]],
       mine: "guillotine"
@@ -93,10 +93,10 @@
       blurb: "Roto, H2H or points, on any categories.",
       presets: [["roto5", "5x5"], ["yoenis", "8x8"]],
       modes: [
-        { i: "i-roto", t: "Rotisserie", d: "The original: season totals, ranked category by category. No weekly matchups.", u: "fantasy-kit/leagues.html?s=mlb", go: "Start a roto league" },
-        { i: "i-half", t: "AL-only or NL-only", d: "Draft from one league's players. A player traded to the other league stops scoring for you.", u: "fantasy-kit/leagues.html?s=mlb", go: "Start a league" },
-        { i: "i-key", t: "Keepers", d: "Keep players into next year at the cost of a round or a price. Dynasty, too.", u: "fantasy-kit/leagues.html?s=mlb", go: "Start a keeper league" },
-        { i: "i-seed", t: "Prospect rounds", d: "Extra rounds after the main draft for prospects only, off FanGraphs' board. They start on the taxi squad.", u: "fantasy-kit/leagues.html?s=mlb", go: "Start a dynasty" }
+        { i: "i-roto", t: "Rotisserie", d: "The original: season totals, ranked category by category. No weekly matchups.", u: "fantasy/leagues/?s=mlb", go: "Start a roto league" },
+        { i: "i-half", t: "AL-only or NL-only", d: "Draft from one league's players. A player traded to the other league stops scoring for you.", u: "fantasy/leagues/?s=mlb", go: "Start a league" },
+        { i: "i-key", t: "Keepers", d: "Keep players into next year at the cost of a round or a price. Dynasty, too.", u: "fantasy/leagues/?s=mlb", go: "Start a keeper league" },
+        { i: "i-seed", t: "Prospect rounds", d: "Extra rounds after the main draft for prospects only, off FanGraphs' board. They start on the taxi squad.", u: "fantasy/leagues/?s=mlb", go: "Start a dynasty" }
       ],
       demos: [["mlb", "BM", "Head to head", "Bullpen Mafia", "f=h"], ["mlb:g", "SD", "Best ball guillotine", "Sudden Death", "f=g"]],
       mine: "yoenis"
@@ -107,9 +107,9 @@
       blurb: "10 categories, hits and blocks, or points. Real NHL contracts.",
       presets: [["cats10", "10-cat"], ["bangers", "Hits + blocks"], ["points", "Points"]],
       modes: [
-        { i: "i-bolt", t: "Quick games", d: "Draft a roster for the next full Monday–Sunday scoring week. A winner when that week's games finish.", u: "fantasy-kit/leagues.html?w=1&s=nhl", go: "Start a quick game" },
-        { i: "i-roto", t: "Categories or points", d: "Start with 10 categories, add hits and blocks, or choose your own points. Goalie ratios use actual saves, shots and minutes.", u: "fantasy-kit/leagues.html?s=nhl", go: "Set up a league" },
-        { i: "i-key", t: "Keepers and dynasty", d: "Keep players into next year or carry your whole roster forward. Value forecasts account for different goalie workloads.", u: "fantasy-kit/leagues.html?s=nhl", go: "Build a lasting roster" },
+        { i: "i-bolt", t: "Quick games", d: "Draft a roster for the next full Monday–Sunday scoring week. A winner when that week's games finish.", u: "fantasy/leagues/?w=1&s=nhl", go: "Start a quick game" },
+        { i: "i-roto", t: "Categories or points", d: "Start with 10 categories, add hits and blocks, or choose your own points. Goalie ratios use actual saves, shots and minutes.", u: "fantasy/leagues/?s=nhl", go: "Set up a league" },
+        { i: "i-key", t: "Keepers and dynasty", d: "Keep players into next year or carry your whole roster forward. Value forecasts account for different goalie workloads.", u: "fantasy/leagues/?s=nhl", go: "Build a lasting roster" },
         { i: "i-cap", t: "Contracts and cap sheets", d: "Compare real NHL cap hits, salary, bonuses and remaining contract years. Open a player card in Draft Lab for the details.", u: "nhl/#/contracts", go: "Explore NHL contracts" }
       ],
       demos: [["nhl", "FA", "Head to head", "Frozen Assets", "f=h"], ["nhl:g", "SI", "Best ball guillotine", "Sudden Death on Ice", "f=g"]]
@@ -121,10 +121,10 @@
     blurb: "Points or categories, any conferences, March included.",
     presets: [["dk", "DraftKings"], ["points", "Points"], ["cats9", "Categories"]],
     modes: [
-      { i: "i-one", t: "One night", d: "Draft tonight's best college games with your group: the full slate or one game. A winner when the last game ends.", u: "fantasy-kit/week.html?s=cbb", go: "Pick tonight's games" },
-      { i: "i-half", t: "Conference leagues", n: true, d: "Draft from one conference, a few, the power five or every school. Only their players can be drafted or added.", u: "fantasy-kit/leagues.html?s=cbb", go: "Pick your conferences" },
-      { i: "i-roto", t: "March, your way", d: "End before the conference tournaments, on Selection Sunday, or play through the NCAA tournament, where a player scores only while his team is alive.", u: "fantasy-kit/leagues.html?s=cbb", go: "Start a season league" },
-      { i: "i-bolt", t: "Quick games", d: "Draft now, play this week's real games and crown a winner on Sunday night.", u: "fantasy-kit/leagues.html?w=1&s=cbb", go: "Start a quick game" }
+      { i: "i-one", t: "One night", d: "Draft tonight's best college games with your group: the full slate or one game. A winner when the last game ends.", u: "fantasy/quick/?s=cbb", go: "Pick tonight's games" },
+      { i: "i-half", t: "Conference leagues", n: true, d: "Draft from one conference, a few, the power five or every school. Only their players can be drafted or added.", u: "fantasy/leagues/?s=cbb", go: "Pick your conferences" },
+      { i: "i-roto", t: "March, your way", d: "End before the conference tournaments, on Selection Sunday, or play through the NCAA tournament, where a player scores only while his team is alive.", u: "fantasy/leagues/?s=cbb", go: "Start a season league" },
+      { i: "i-bolt", t: "Quick games", d: "Draft now, play this week's real games and crown a winner on Sunday night.", u: "fantasy/leagues/?w=1&s=cbb", go: "Start a quick game" }
     ],
     demos: [["cbb", "BB", "Head to head", "Bracket Busters", "f=h"], ["cbb:g", "OD", "Best ball guillotine", "One and Done", "f=g"]]
   };
@@ -134,10 +134,10 @@
     blurb: "PPR to custom points, any conferences, the playoff if you want it.",
     presets: [["half", "Half PPR"], ["ppr", "PPR"], ["std", "Standard"]],
     modes: [
-      { i: "i-half", t: "Conference leagues", n: true, d: "Draft from one conference, a few, the power four or all of FBS. Only their players can be drafted or added.", u: "fantasy-kit/leagues.html?s=cfb", go: "Pick your conferences" },
-      { i: "i-roto", t: "Rivalry week to the title game", d: "Stop after rivalry week, after the conference championships, or play through the bowls and the playoff, where a player scores only while his team is alive.", u: "fantasy-kit/leagues.html?s=cfb", go: "Start a season league" },
-      { i: "i-bolt", t: "Quick games", d: "Draft now, play this Saturday's real games and crown a winner by Sunday.", u: "fantasy-kit/leagues.html?w=1&s=cfb", go: "Start a quick game" },
-      { i: "i-key", t: "Keepers", d: "Keep a few players into next season, if they're still in school. Graduation is the toughest keeper rule there is.", u: "fantasy-kit/leagues.html?s=cfb", go: "Start a keeper league" }
+      { i: "i-half", t: "Conference leagues", n: true, d: "Draft from one conference, a few, the power four or all of FBS. Only their players can be drafted or added.", u: "fantasy/leagues/?s=cfb", go: "Pick your conferences" },
+      { i: "i-roto", t: "Rivalry week to the title game", d: "Stop after rivalry week, after the conference championships, or play through the bowls and the playoff, where a player scores only while his team is alive.", u: "fantasy/leagues/?s=cfb", go: "Start a season league" },
+      { i: "i-bolt", t: "Quick games", d: "Draft now, play this Saturday's real games and crown a winner by Sunday.", u: "fantasy/leagues/?w=1&s=cfb", go: "Start a quick game" },
+      { i: "i-key", t: "Keepers", d: "Keep a few players into next season, if they're still in school. Graduation is the toughest keeper rule there is.", u: "fantasy/leagues/?s=cfb", go: "Start a keeper league" }
     ],
     demos: [["cfb", "SS", "Head to head", "Saturday Spoilers", "f=h"], ["cfb:g", "UF", "Best ball guillotine", "Upset Fever", "f=g"]]
   };
@@ -250,11 +250,11 @@
     el.innerHTML = '<div class="mod-h"><div><span class="kick">Draft Lab rankings</span><h2>Top of the board</h2></div><div class="segs" role="group" aria-label="Scoring">' +
       s.presets.map(function (p, i) { return '<button type="button" data-preset="' + p[0] + '" aria-pressed="' + (i === 0) + '">' + esc(p[1]) + "</button>"; }).join("") + "</div></div>" +
       '<ol class="rk" data-rk><li class="rk-empty" style="display:block">Loading the board...</li></ol>' +
-      '<div class="rk-foot"><span>12 teams, standard lineup. Values are auction dollars on a $200 budget.</span><a class="more" href="' + KIT + "?s=" + k + '#rankings">Full rankings &rarr;</a></div>';
+      '<div class="rk-foot"><span>12 teams, standard lineup. Values are auction dollars on a $200 budget.</span><a class="more" href="' + ROOT + "fantasy/rankings/?s=" + k + '">Full rankings &rarr;</a></div>';
     var draw = function () {
       ranked(k, preset).then(function (R) {
         var ol = $("[data-rk]", el);
-        if (!R) { ol.innerHTML = '<li class="rk-empty" style="display:block">The board couldn\'t load. <a href="' + KIT + "?s=" + k + '#rankings">Open the rankings in Draft Lab</a>.</li>'; return; }
+        if (!R) { ol.innerHTML = '<li class="rk-empty" style="display:block">The board couldn\'t load. <a href="' + ROOT + "fantasy/rankings/?s=" + k + '">Open the rankings in Draft Lab</a>.</li>'; return; }
         var top = R.players.slice(0, 10), max = Math.max(1, top[0].d);
         ol.innerHTML = top.map(function (r, i) {
           var p = r.p;
@@ -296,7 +296,7 @@
       ["Total points", "No matchups: every point all season adds up, and the most points wins."],
       ["All-play", "Your points against every team, every week, like going 9-2."]
     ];
-    el.innerHTML = '<div class="mod-h"><div><span class="kick">Scoring</span><h2>Score it your way</h2></div><a class="more" href="' + KIT + "leagues.html?s=" + k + '">Set up scoring &rarr;</a></div>' +
+    el.innerHTML = '<div class="mod-h"><div><span class="kick">Scoring</span><h2>Score it your way</h2></div><a class="more" href="' + ROOT + "fantasy/leagues/?s=" + k + '">Set up scoring &rarr;</a></div>' +
       '<div class="score"><div><h3>Points</h3><p>Give any stat any value. These are the starting values' + (k === "nfl" ? ", and you can add position premiums like a TE premium and yardage bonuses on top" : "") + ".</p><div class=\"chips\">" + pointsChips + "</div></div>" +
       (catsOk ? "<div><h3>Categories</h3><p>Pick any of these, as many as you want. Rate stats are weighted by playing time.</p><div class=\"chips\">" + catChips + "</div>" +
           (comboChips ? '<h4 class="adv-h">Combos</h4><div class="chips">' + comboChips + "</div>" : "") +
@@ -313,7 +313,7 @@
     if (!sets.length) return "";
     var lab = function (key) { var c = all.filter(function (x) { return x.k === key; })[0]; return c ? c.label : key; };
     return '<h4 class="adv-h">Ready-made setups</h4><div class="rsets">' + sets.map(function (p) {
-      return '<a class="rset" href="' + KIT + "leagues.html?s=" + k + '"><b>' + esc(p.name) + "</b><span>" + esc(p.blurb) + "</span><i>" + p.cats.map(function (c) { return esc(lab(c)); }).join(" &middot; ") + "</i></a>";
+      return '<a class="rset" href="' + ROOT + "fantasy/leagues/?s=" + k + '"><b>' + esc(p.name) + "</b><span>" + esc(p.blurb) + "</span><i>" + p.cats.map(function (c) { return esc(lab(c)); }).join(" &middot; ") + "</i></a>";
     }).join("") + "</div>";
   }
 
@@ -321,7 +321,7 @@
   function demos(el, k) {
     el.innerHTML = '<div class="mod-h"><div><span class="kick">Play now</span><h2>Demo leagues</h2></div></div><div class="mod-b"><div class="lgs">' +
       SPORTS[k].demos.map(function (d) {
-        return '<a class="lg" data-demo="' + d[0] + '" href="' + KIT + "league.html?s=" + k + "&amp;" + d[4] + '"><span class="av md">' + d[1] + '</span><span class="lt"><small>' + esc(d[2]) + "</small><b>" + esc(d[3]) + "</b><span>" +
+        return '<a class="lg" data-demo="' + d[0] + '" href="' + ROOT + "fantasy/demo/?s=" + k + "&amp;" + d[4] + '"><span class="av md">' + d[1] + '</span><span class="lt"><small>' + esc(d[2]) + "</small><b>" + esc(d[3]) + "</b><span>" +
           (d[4] === "f=g" ? "Lowest score each week is chopped." : "Bots, a season moving in real time.") + '</span></span><em class="st">Play</em></a>';
       }).join("") + '</div><p class="ps" style="margin:12px 0 0">Demo leagues save in this browser. Jump in any week.</p></div>';
     $$("[data-demo]", el).forEach(function (a) {
@@ -377,7 +377,7 @@
     hero.className = "hero sport " + k;
     hero.innerHTML = field(k) + '<div class="wrap"><span class="eyebrow">Fantasy ' + esc(s.name.toLowerCase()) + "</span>" +
       '<h1 class="disp"><span class="badge-ic">' + mark(k) + "</span>" + esc(s.short) + '</h1><p class="lede">' + esc(s.tag) + '</p><span class="status' + (st.on ? " on" : "") + '">' + esc(st.text) + "</span>" +
-      '<div class="cta"><a class="btn sp-go" href="' + KIT + "?s=" + k + '#home">Mock a ' + s.name.toLowerCase() + ' draft</a><a class="btn" href="' + KIT + "?s=" + k + '#rankings">Rankings</a><a class="btn" href="' + KIT + "leagues.html?s=" + k + '">Start a league</a></div>' +
+      '<div class="cta"><a class="btn sp-go" href="' + ROOT + "fantasy/mock/?s=" + k + '">Mock a ' + s.name.toLowerCase() + ' draft</a><a class="btn" href="' + ROOT + "fantasy/rankings/?s=" + k + '">Rankings</a><a class="btn" href="' + ROOT + "fantasy/leagues/?s=" + k + '">Start a league</a></div>' +
       '<div class="facts"><div><small>Season</small><b>' + mdText(s.season[0]) + " to " + mdText(s.season[1]) + "</b></div><div><small>Draft season</small><b>" + MONTHS_L[Math.floor(s.draft[0] / 100) - 1] +
       "</b></div><div><small>Default scoring</small><b>" + esc(defScoring ? defScoring.label : "Points") + "</b></div></div></div>";
     board($("[data-board]"), k);
@@ -385,7 +385,7 @@
     var side = $("[data-side]");
     if (side && k === "cfb") side.innerHTML = '<a class="lgm cfb" href="' + ROOT + 'cfb/">' + field("cfb") + '<small>' + ic("i-cfb") + 'This Saturday</small><b>College Football Hub</b><span>Every FBS game with lines, FPI and playoff odds, the rankings, and the players behind them.</span><em class="go">Open the hub</em></a>';
     else if (side && k === "cbb") side.innerHTML = '<a class="lgm cbb" href="' + ROOT + 'cbb/">' + field("cbb") + '<small>' + ic("i-cbb") + 'Tonight in college hoops</small><b>CBB Hub</b><span>Every Division I game ranked by how watchable it is, with lines, team ratings and the matchups worth your night.</span><em class="go">Open the CBB Hub</em></a>';
-    else if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'fantasy-kit/leagues.html?hardcap=1">' + field("nba") + "<small>" + ic("i-cap") + "League mode</small><b>Hard Cap</b><span>Real NBA contracts under one salary line, in any Draft Lab league. Draft the player, carry the contract.</span><em class=\"go\">Start a Hard Cap league</em></a>";
+    else if (side) side.innerHTML = k === "nhl" ? '<a class="lgm nhl" href="' + ROOT + 'nhl/#/contracts">' + field("nhl") + '<small>' + ic("i-cap") + 'Real NHL contracts</small><b>Know the deal</b><span>Cap hits, salary, bonuses and contract years, alongside team cap sheets. Reported figures carry their source; estimates are marked.</span><em class="go">Explore contracts</em></a>' : s.mine ? mine(s.mine) : '<a class="lgm nba" href="' + ROOT + 'fantasy/leagues/?hardcap=1">' + field("nba") + "<small>" + ic("i-cap") + "League mode</small><b>Hard Cap</b><span>Real NBA contracts under one salary line, in any Draft Lab league. Draft the player, carry the contract.</span><em class=\"go\">Start a Hard Cap league</em></a>";
     $("[data-modes]").innerHTML = s.modes.map(function (m) {
       return '<a class="mode" href="' + ROOT + m.u + '"><span class="mi">' + ic(m.i) + "</span><b>" + esc(m.t) + (m.n ? ' <em class="new">New</em>' : "") + "</b><span>" + esc(m.d) + '</span><span class="go">' + esc(m.go) + " &rarr;</span></a>";
     }).join("");
@@ -431,7 +431,7 @@
     var el = $("[data-yours]"); if (!el) return;
     var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
     if (!on) return;
-    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171340";
+    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171356";
     s.onload = function () { if (window.FK && window.FK.home) window.FK.home.mount(el); };
     document.head.appendChild(s);
   }
@@ -447,7 +447,7 @@
     var mock = read("fk-lab:mock"), cta = $("[data-cta]");
     if (cta && mock && mock.D && mock.D.phase !== "done") {
       var a = document.createElement("a");
-      a.className = "btn go"; a.href = KIT + "#draft";
+      a.className = "btn go"; a.href = ROOT + "fantasy/mock/#draft";
       a.textContent = "Back to your " + ((SPORTS[mock.D.sport] || {}).name || "").toLowerCase() + " mock";
       cta.insertBefore(a, cta.firstChild);
       cta.children[1].className = "btn";

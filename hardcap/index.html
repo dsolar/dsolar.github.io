@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hard Cap is now part of Draft Lab | David Solar</title>
 <meta name="robots" content="noindex">
-<link rel="canonical" href="https://davidsolar.dev/fantasy-kit/leagues.html?hardcap=1">
-<meta http-equiv="refresh" content="0; url=../fantasy-kit/leagues.html?hardcap=1">
+<link rel="canonical" href="https://davidsolar.dev/fantasy/leagues/?hardcap=1">
+<meta http-equiv="refresh" content="0; url=../fantasy/leagues/?hardcap=1">
 <link rel="icon" href="mark.svg" type="image/svg+xml">
 <script>
 /* Hard Cap is a mode in any Draft Lab NBA or NHL league now. Anyone who installed the old app has its service
    worker: sw.js clears it, and this page sends everyone to Draft Lab's setup with Hard Cap turned on. */
 try { if (navigator.serviceWorker) navigator.serviceWorker.getRegistrations().then(function (rs) { rs.forEach(function (r) { if (/\/hardcap\//.test(r.scope)) r.unregister(); }); }); } catch (e) {}
-location.replace("../fantasy-kit/leagues.html?hardcap=1");
+location.replace("../fantasy/leagues/?hardcap=1");
 </script>
 </head>
 <body style="font:16px/1.5 system-ui,sans-serif;max-width:36em;margin:3em auto;padding:0 1em">
-<p>Hard Cap is now a mode in Draft Lab: turn it on when you set up any NBA or NHL league. <a href="../fantasy-kit/leagues.html?hardcap=1">Start a Hard Cap league</a>.</p>
+<p>Hard Cap is now a mode in Draft Lab: turn it on when you set up any NBA or NHL league. <a href="../fantasy/leagues/?hardcap=1">Start a Hard Cap league</a>.</p>
 </body>
 </html>

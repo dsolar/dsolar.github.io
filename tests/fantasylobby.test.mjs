@@ -52,7 +52,7 @@ test('lobby: ready counts only teams with a manager, and the commissioner sees w
 test('lobby: the calendar file and Google link carry the draft time and the room link', () => {
   const D = draft();
   D.startAt = Date.UTC(2026, 10, 22, 0, 30, 0);
-  const ics = LB.ics(D, 'Lige de Rohan', 'https://davidsolar.dev/fantasy-kit/play.html?id=1');
+  const ics = LB.ics(D, 'Lige de Rohan', 'https://davidsolar.dev/fantasy/league/?id=1');
   assert.match(ics, /DTSTART:20261122T003000Z/);
   assert.match(ics, /SUMMARY:Lige de Rohan draft/);
   assert.match(ics, /TRIGGER:-PT15M/);

@@ -2650,3 +2650,16 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .lgm-brand{display:flex;align-items:center;gap:10px}
 .lgm-brand .fk-site img{width:20px;height:20px}
 @media (max-width:760px){.lgm:not(.slim) .lgm-brand .fk-site{border-right:0;padding-right:0}}
+/* Draft Lab's own band (Your leagues, signing in): the hub's night navy with its gold and blue glows, not a sport's field */
+.su .nl-band.dl-band{background:radial-gradient(60% 120% at 100% 0%,rgba(246,196,69,.16),transparent 60%),radial-gradient(50% 90% at 0% 100%,rgba(59,111,240,.14),transparent 60%),#13233A;color:#EEF2F7}
+.dl-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#F6C445}
+.dl-eyebrow::before{content:"";width:18px;height:2px;background:currentColor}
+.dl-band h1.disp{color:#fff}
+.dl-lede{color:#B9C5D4 !important;font-size:16px;max-width:60ch}
+.lg-band.dl-band{display:grid;grid-template-columns:1fr auto;align-items:end;gap:16px}
+.lg-band.dl-band .nl-bi{gap:8px;padding:26px 28px 26px}
+.lg-band.dl-band h1{font-size:clamp(40px,6vw,72px)}
+.lg-band.dl-band .btn:not(.go){background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.22);color:#F2F5F8}
+.dl-me{display:grid;justify-items:end;gap:6px;padding:0 28px 26px}
+.dl-me .si-link{color:#B9C5D4;font-size:12.5px}
+@media (max-width:700px){.lg-band.dl-band{grid-template-columns:1fr}.dl-me{justify-items:start;padding:0 20px 20px}.lg-band.dl-band .nl-bi{padding:20px 20px 4px}}

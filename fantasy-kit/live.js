@@ -30,7 +30,7 @@
   let rt = null;   // the realtime nudge socket (cloud.listen)
   let inflight = false, dirty = false, lastChange = Date.now(), userAt = 0, pollT = null;
 
-  const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="leagues.html">Your leagues</a></p></div>`; };
+  const fatal = (msg, more = "") => { document.body.classList.remove("fk-room"); $("#top").innerHTML = ""; $("#app").innerHTML = `<div class="wrap page"><div class="banner loss" role="alert"><b>${esc(msg)}</b> ${more}</div><p><a class="btn" href="/fantasy/leagues/">Your leagues</a></p></div>`; };
   const seated = () => Object.keys(info.seats || {}).map(Number);
   const canAct = () => info && (info.me != null || info.commish);
   const teamName = (t) => { const doc = L || D; return doc && doc.teams[t] ? doc.teams[t].name : "A team"; };
@@ -145,7 +145,7 @@
     $("#app").innerHTML = `<div id="room"></div>${guestNote()}`;
     room = U.entryRoom({
       el: $("#room"), sport, players, draft: () => D, me: () => info.me, now,
-      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
+      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "/fantasy/leagues/", label: "Your leagues" },
       tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
       load: () => C.rpc("fk_seal_get", { p_id: id, p_kind: kind }),
       save: async (entry) => { const r = await C.rpc("fk_seal_set", { p_id: id, p_kind: kind, p_data: entry }); if (r && r.ok) pull(); return r; },
@@ -177,7 +177,7 @@
     room = U.room({
       el: $("#room"), sport, players, draft: () => D, save: () => push(), me: () => info.me, now, hooks: { trivia: triviaHook }, ...roomCols(),
       get commish() { return info.commish; }, get drive() { return driveOk(); },
-      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "leagues.html", label: "Your leagues" },
+      brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "/fantasy/leagues/", label: "Your leagues" },
       tools: () => `${info.invite ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm${info.invite ? " ghost" : ""}" data-live="league">League</button>`,
       // heist moves are sealed on the server until everyone's in or the clock runs out
       heist: {
@@ -308,16 +308,16 @@
   async function rematchGo() {
     const r = series || (await C.rpc("fk_series", { p_id: id }).catch(() => null));
     const weeks = (r && r.weeks) || [], me = weeks.find((w) => w.id === id), next = me && weeks.find((w) => w.n === me.n + 1);
-    location.href = next ? `play.html?id=${encodeURIComponent(next.id)}` : `leagues.html?rematch=${encodeURIComponent(id)}`;
+    location.href = next ? `/fantasy/league/?id=${encodeURIComponent(next.id)}` : `/fantasy/leagues/?rematch=${encodeURIComponent(id)}`;
   }
   function mountLeague() {
     document.body.classList.remove("fk-room");
     app = U.leagueApp({
       top: $("#top"), el: $("#app"), sport, players, league: () => L, save: () => push(), me: () => info.me, now, frac, hooks: hooks(),
-      brand: { name: "Draft Lab", href: "leagues.html", mark: `<img src="mark.svg" alt="">` },
+      brand: { name: "Draft Lab", href: "/fantasy/leagues/", mark: `<img src="mark.svg" alt="">` },
       switcher: () => U.switcher({ name: L.name, crest: U.leagueCrest(U.leagueBrand(L.name, L.settings.brand), "sm") },
-        mine.filter((m) => m.id !== id).map((m) => ({ href: `play.html?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, crest: U.leagueCrest(U.leagueBrand(m.name, m.brand), "sm") })),
-        `<a href="leagues.html">Your leagues<small>Start or join a league</small></a><a href="./">Draft Lab<small>Mock drafts and rankings</small></a>`),
+        mine.filter((m) => m.id !== id).map((m) => ({ href: `/fantasy/league/?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, crest: U.leagueCrest(U.leagueBrand(m.name, m.brand), "sm") })),
+        `<a href="/fantasy/leagues/">Your leagues<small>Start or join a league</small></a><a href="/fantasy/">Draft Lab<small>Mock drafts and rankings</small></a>`),
       right: () => `${info.invite && openSeats() ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm ghost" data-live="league">League</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
       notice: () => guestNote() + duesNote() + startNote() + keeperNote(),
@@ -418,7 +418,7 @@
   function guestNote() {
     if (info.me != null || info.commish) return "";
     const msg = C.user() ? "You don't have a team in this league. Ask the commissioner for the invite link." : "You're looking as a guest.";
-    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${esc(msg)}</b> ${C.user() ? "" : `<a href="leagues.html">Sign in</a> <span class="muted">to make moves.</span>`}</div></div>`;
+    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${esc(msg)}</b> ${C.user() ? "" : `<a href="/fantasy/leagues/">Sign in</a> <span class="muted">to make moves.</span>`}</div></div>`;
   }
   /* ---------- dues: the buy-in, where to pay, the payout plan and who's paid. Money moves outside Draft Lab;
      this is the commissioner's ledger. A manager taps "I sent it", the commissioner confirms. ---------- */
@@ -671,7 +671,7 @@
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { pull(); schedule(); } });
 
   /* ---------- the league dialog: invite link, managers, email alerts ---------- */
-  function inviteUrl() { return `${location.origin}${location.pathname.replace(/play\.html$/, "leagues.html")}?join=${encodeURIComponent(id)}&code=${encodeURIComponent(info.invite || "")}`; }
+  function inviteUrl() { return `${location.origin}/fantasy/leagues/?join=${encodeURIComponent(id)}&code=${encodeURIComponent(info.invite || "")}`; }
   function seatList() {
     const doc = L || D;
     return `<ul class="seatl" id="lv-seats">${doc.teams.map((t, i) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${info.seats[i] != null ? esc(info.seats[i]) : L || (D && D.phase !== "setup") ? "Open: a bot runs it until someone joins" : "Open: a bot drafts it if no one joins"}</small></span>${info.commish && info.seats[i] != null && i !== 0 && i !== info.me ? `<button type="button" class="btn sm ghost" data-free="${i}">Free this team</button>` : ""}${info.commish && info.seats[i] == null && !L && D && D.phase === "setup" && doc.teams.length > 2 ? `<button type="button" class="btn sm ghost" data-lv="rmteam" data-team="${i}" title="The league drops to ${doc.teams.length - 1} teams">Remove team</button>` : ""}</li>`).join("")}</ul>`;
@@ -709,7 +709,7 @@
       <div id="lv-past"></div>
       ${info.me != null && C.user() ? `<div id="lv-push" style="margin-top:12px"></div>` : ""}
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
-      <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="leagues.html">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
+      <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="/fantasy/leagues/">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
     dialogClicks(dlg);
     U.pushBox($("#lv-push"), true);
@@ -923,7 +923,7 @@
   function pyramidCard() {
     if (!pyrOn()) return "";
     const p = L.settings.pyramid, names = window.FK.pyramid.rules(p).names;
-    return `<div class="card pyr-c"><div class="mod-h"><h2>${esc(names[p.tier === 1 ? 0 : 1])}</h2><a href="play.html?id=${encodeURIComponent(p.other || "")}">The ${esc(names[p.tier === 1 ? 1 : 0])}</a></div><div class="bd stack">${pyramidBody()}</div></div>`;
+    return `<div class="card pyr-c"><div class="mod-h"><h2>${esc(names[p.tier === 1 ? 0 : 1])}</h2><a href="/fantasy/league/?id=${encodeURIComponent(p.other || "")}">The ${esc(names[p.tier === 1 ? 1 : 0])}</a></div><div class="bd stack">${pyramidBody()}</div></div>`;
   }
   function pyramidNextCard() {
     const PY = window.FK.pyramid, p = L.settings.pyramid, r = PY.rules(p), otherName = r.names[p.tier === 1 ? 1 : 0];
@@ -1230,7 +1230,7 @@
       if (String(fd.get("name") || "").trim() !== name) { U.toast("Type the name exactly as it is.", true); return false; }
       const r = await C.rpc("fk_delete", { p_id: id, p_name: name }).catch((e) => ({ error: e.message }));
       if (r.error) { U.toast(r.error, true); return false; }
-      location.href = "leagues.html";
+      location.href = "/fantasy/leagues/";
     });
   }
   // before the draft: add a team, or remove one nobody has claimed
