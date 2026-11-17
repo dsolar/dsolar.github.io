@@ -238,11 +238,21 @@
     el.innerHTML = '<div class="mod-h"><div><span class="kick">Scoring</span><h2>Score it your way</h2></div><a class="more" href="' + KIT + "leagues.html?s=" + k + '">Set up scoring &rarr;</a></div>' +
       '<div class="score"><div><h3>Points</h3><p>Give any stat any value. These are the starting values' + (k === "nfl" ? ", and you can add position premiums like a TE premium and yardage bonuses on top" : "") + ".</p><div class=\"chips\">" + pointsChips + "</div></div>" +
       (catsOk ? "<div><h3>Categories</h3><p>Pick any of these, as many as you want. Rate stats are weighted by playing time.</p><div class=\"chips\">" + catChips + "</div>" +
-          (advChips ? '<h4 class="adv-h">Advanced</h4><div class="chips">' + advChips + "</div>" : "") + "</div>"
+          (advChips ? '<h4 class="adv-h">Advanced</h4><div class="chips">' + advChips + "</div>" : "") + readyMade(sp, k) + "</div>"
         : "<div><h3>Extras</h3><p>On top of any points scoring. Football leagues score in points; category leagues aren't built for football yet.</p><div class=\"chips\">" +
           [["TE premium", "+0.5 a catch"], ["6-point passing TDs", ""], ["100-yard rushing game", "+3"], ["100-yard receiving game", "+3"], ["300-yard passing game", "+3"], ["Points by position", ""]].map(function (x) { return '<span class="chip">' + esc(x[0]) + (x[1] ? " <em>" + esc(x[1]) + "</em>" : "") + "</span>"; }).join("") + "</div></div>") +
       '<div><h3>How you win</h3><p>From most to least common.</p><ol class="wins">' + wins.map(function (w) { return "<li><div><b>" + esc(w[0]) + "</b><span>" + esc(w[1]) + "</span></div></li>"; }).join("") +
       '<li class="addon"><div><b>Median game</b><span>Add-on for head to head: also play the league median for a second result each week.</span></div></li></ol></div></div>';
+  }
+
+  // the one-click category setups league setup offers, each with its categories
+  function readyMade(sp, k) {
+    var sets = (S.CAT_PRESETS || {})[k] || [], all = S.catCatalog(sp, { all: true });
+    if (!sets.length) return "";
+    var lab = function (key) { var c = all.filter(function (x) { return x.k === key; })[0]; return c ? c.label : key; };
+    return '<h4 class="adv-h">Ready-made setups</h4><div class="rsets">' + sets.map(function (p) {
+      return '<a class="rset" href="' + KIT + "leagues.html?s=" + k + '"><b>' + esc(p.name) + "</b><span>" + esc(p.blurb) + "</span><i>" + p.cats.map(function (c) { return esc(lab(c)); }).join(" &middot; ") + "</i></a>";
+    }).join("") + "</div>";
   }
 
   /* ---------- demo leagues ---------- */

@@ -1105,6 +1105,14 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .pm-l{font-weight:800;font-size:13.5px}
 .pm .stp{grid-template-columns:30px minmax(66px,auto) 30px}.pm .stp-b{height:32px;font-size:17px}.pm .stp output{font-size:13px}
 .su .chips.presets button[aria-pressed="true"]{background:var(--sp);border-color:var(--sp);color:var(--sp-ink)}
+.csets{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.cset{display:flex;flex-direction:column;gap:3px;text-align:left;border:1px solid var(--line-2);background:var(--surface);border-radius:10px;padding:10px 12px;cursor:pointer;color:var(--ink);font:inherit}
+.cset:hover{border-color:var(--muted)}
+.cset b{font-size:14px;font-weight:800}
+.cset span{font-size:12.5px;color:var(--muted);line-height:1.35}
+.cset i{font-style:normal;font-size:11.5px;font-weight:700;color:var(--muted);margin-top:2px}
+.cset[aria-pressed="true"]{border-color:var(--sp);box-shadow:inset 0 0 0 1px var(--sp)}
+.cset[aria-pressed="true"] i{color:var(--sp)}
 @media (max-width:900px){.sty-g{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media (max-width:700px){
   .nl-band{border-radius:14px;margin-top:10px}

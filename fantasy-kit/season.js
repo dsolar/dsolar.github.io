@@ -190,7 +190,10 @@
         : b && typeof b === "object" ? (() => { const o = {}; let any = false; for (const k of Object.keys(b)) { const d = diff((a || {})[k], b[k]); if (d) { o[k] = d; any = true; } } return any ? o : null; })() : null);
       for (const [id, line] of Object.entries(live.players || {})) { const d = diff(old[id], line); if (d) feed.push({ id, at: live.updated, d }); }
     }
-    if (wk) wk.lines = live.players || {};
+    // columns the feed doesn't carry (football's nflverse stats, past the end of its lines) keep the file's values
+    const tail = (o, n) => (Array.isArray(n) ? (Array.isArray(o) && o.length > n.length ? n.concat(o.slice(n.length)) : n)
+      : n && typeof n === "object" ? Object.fromEntries(Object.entries(n).map(([k, v]) => [k, tail(o && o[k], v)])) : n);
+    if (wk) { const was = wk.lines || {}; wk.lines = Object.fromEntries(Object.entries(live.players || {}).map(([id, l]) => [id, tail(was[id], l)])); }
     else (weeks.weeks = weeks.weeks || {})["live"] = { start: live.start, end: live.end, final: false, lines: live.players || {} };
     weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, boxes: live.boxes || null, players: live.players || {}, stale: !!live.stale, errors: live.errors || [], feed: feed.slice(-300) };
     return before !== live.updated || wasStale !== !!live.stale;

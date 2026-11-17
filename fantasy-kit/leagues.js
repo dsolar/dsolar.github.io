@@ -665,13 +665,17 @@
         sp.key === "nfl" ? "Per yard, catch, touchdown and so on. Points allowed counts each point a defense gives up, so use a small negative number." : sp.key === "mlb" ? "Hitting and pitching stats from each player's line. Total bases count singles 1, doubles 2, triples 3 and homers 4." : "Per stat, per game.");
     }
     if (form.scoring === "cc") {
-      const all = S.catCatalog(sp);
       // football has no category preset: start from the usual offensive eight
       const on = form.cats || (form.cats = sp.key === "nfl" ? ["pass_yd", "pass_td", "pass_int", "rush_yd", "rush_td", "rec", "rec_yd", "rec_td"]
         : (Object.values(sp.scorings).find((x) => x.type === "cats") || { cats: [] }).cats.map((c) => c.k));
+      // the ones the data can make now, and any already picked that it can't yet (they score once the columns arrive)
+      const can = S.catCatalog(sp), all = can.concat(S.catCatalog(sp, { all: true }).filter((c) => on.includes(c.k) && !can.includes(c)));
       const chip = (c) => `<button type="button" data-cat="${esc(c.k)}" aria-pressed="${on.includes(c.k)}"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</button>`;
       const std = all.filter((c) => !c.adv), adv = all.filter((c) => c.adv);
-      return group(`Categories (${on.length} chosen)`, `<div class="chips presets" role="group" aria-label="Categories">${std.map(chip).join("")}</div>`
+      const same = (a, b) => a.length === b.length && a.every((x) => b.includes(x));
+      const sets = (S.CAT_PRESETS[sp.key] || []).map((p) => `<button type="button" class="cset" data-catset="${esc(p.k)}" aria-pressed="${same(on, p.cats)}"><b>${esc(p.name)}</b><span>${esc(p.blurb)}</span><i>${p.cats.length} categories</i></button>`).join("");
+      return (sets ? group("Start from", `<div class="csets" role="group" aria-label="Ready-made category setups">${sets}</div>`, "One click picks the categories. Change any of them below.") : "")
+        + group(`Categories (${on.length} chosen)`, `<div class="chips presets" role="group" aria-label="Categories">${std.map(chip).join("")}</div>`
         + (adv.length ? `<p class="ps" style="margin:12px 0 6px"><b>Advanced</b>: rates and formulas that add up week by week, like the rest</p><div class="chips presets" role="group" aria-label="Advanced categories">${adv.map(chip).join("")}</div>` : ""),
         `Pick at least two. Hover one for what it counts.${all.some((c) => c.low) ? " Some, like turnovers, ERA and FIP, are better low." : ""}`);
     }
@@ -1075,6 +1079,14 @@
     }
     const set = e.target.closest("[data-set]");
     if (set) { grab(); form[set.dataset.set] = Number(set.dataset.v); redraw(); return; }
+    const cs = e.target.closest("[data-catset]");
+    if (cs) {
+      grab();
+      const p = (S.CAT_PRESETS[form.sport] || []).find((x) => x.k === cs.dataset.catset);
+      if (p) form.cats = p.cats.slice();
+      render().then(() => { const back = $(`.su [data-catset="${cs.dataset.catset}"]`); if (back) back.focus(); });
+      return;
+    }
     const cb = e.target.closest("[data-cat]");
     if (cb) {
       grab();

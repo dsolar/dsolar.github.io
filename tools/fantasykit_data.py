@@ -667,7 +667,13 @@ NFL_COLS = ["g", "pass_yd", "pass_td", "pass_int", "rush_att", "rush_yd", "rush_
             "fgm", "fga", "xpm", "def_td", "def_int", "def_sack", "pts_allow", "pts_std", "pts_half_ppr", "pts_ppr",
             # Sleeper's stat keys, on the end, for the extra categories and custom points
             "pass_att", "pass_cmp", "pass_fd", "rush_fd", "rec_fd", "pass_2pt", "rush_2pt", "rec_2pt", "fum", "fgm_50p", "xpmiss",
-            "fum_rec", "ff", "safe", "def_st_td", "yds_allow"]
+            "fum_rec", "ff", "safe", "def_st_td", "yds_allow",
+            # nflverse's play-by-play stats, on the end (NFLV_COLS): Sleeper has none of these, so the live feed stops short
+            # of them and the page keeps the file's values (season.js mergeLive). They arrive overnight, not live.
+            "epa_pass", "epa_rush", "epa_rec", "pass_sacked", "sack_yd", "air_rec", "yac_rec", "cpoe_x", "tm_tgt", "tm_air"]
+NFLV_COLS = NFL_COLS[NFL_COLS.index("epa_pass"):]
+NFLV_URL = "https://github.com/nflverse/nflverse-data/releases/download/stats_player/stats_player_week_{season}.csv"
+NFL_IDS_URL = "https://raw.githubusercontent.com/dynastyprocess/data/master/files/db_playerids.csv"
 PROJ_COLS = ["pts_std", "pts_half_ppr", "pts_ppr"]
 NFL_POS = ["QB", "RB", "WR", "TE", "K", "DEF"]
 POS_Q = "".join(f"&position%5B%5D={p}" for p in NFL_POS)
@@ -685,6 +691,71 @@ def nfl_season():
 def nfl_rows(url):
     rows = get(url)
     return rows if isinstance(rows, list) else []
+
+
+def get_csv(url):
+    import csv
+    import io
+    req = urllib.request.Request(url, headers={"User-Agent": UA})
+    with urllib.request.urlopen(req, timeout=90) as r:
+        return list(csv.DictReader(io.StringIO(r.read().decode("utf-8"))))
+
+
+def nfl_gsis_map(allp):
+    """nflverse ids (gsis) to Sleeper's: Sleeper's own list first, DynastyProcess's crosswalk for anyone it lacks."""
+    out = {}
+    try:
+        for r in get_csv(NFL_IDS_URL):
+            g, s = (r.get("gsis_id") or "").strip(), (r.get("sleeper_id") or "").strip()
+            if g and s and s != "NA":
+                out[g] = s
+    except Exception as e:
+        print(f"Player id crosswalk didn't load: {type(e).__name__}: {e}")
+    for pid, q in (allp or {}).items():
+        g = str((q or {}).get("gsis_id") or "").strip()
+        if g:
+            out[g] = str(pid)
+    return out
+
+
+def nflverse(season, ids):
+    """nflverse's weekly player stats as NFLV_COLS lines: { week: { sleeper id: [values] } } and the teams each week's
+    rows cover ({ week: set }), or None if the file didn't load. Completions over expected (cpoe_x) and the team's
+    targets and air yards while he played (tm_tgt, tm_air) are stored as counts, so CPOE, target share and air yards
+    share add up over weeks like any ratio."""
+    try:
+        rows = get_csv(NFLV_URL.format(season=season))
+    except Exception as e:
+        print(f"nflverse didn't load: {type(e).__name__}: {e}")
+        return None
+    f = lambda r, k: float(r.get(k) or 0) if (r.get(k) or "") not in ("", "NA") else 0.0
+    weeks, teams, miss = {}, {}, 0
+    for r in rows:
+        if r.get("season_type") != "REG":
+            continue
+        w = str(int(r["week"]))
+        teams.setdefault(w, set()).add(r.get("team"))
+        if r.get("position") not in ("QB", "RB", "FB", "WR", "TE", "K"):
+            continue                                   # defenders: the kit scores team defenses, not players
+        sid = ids.get(r.get("player_id"))
+        if not sid:
+            miss += 1
+            continue
+        att, tgt, ts, ay, ays = f(r, "attempts"), f(r, "targets"), f(r, "target_share"), f(r, "receiving_air_yards"), f(r, "air_yards_share")
+        line = [f(r, "passing_epa"), f(r, "rushing_epa"), f(r, "receiving_epa"), f(r, "sacks_suffered"), abs(f(r, "sack_yards_lost")), ay,
+                f(r, "receiving_yards_after_catch"), f(r, "passing_cpoe") * att / 100,
+                tgt / ts if ts > 0 else 0, ay / ays if abs(ays) >= 0.01 else 0]
+        weeks.setdefault(w, {})[sid] = [round(x, 2) for x in line]
+    print(f"nflverse: weeks {', '.join(sorted(weeks, key=int))}, {sum(len(x) for x in weeks.values())} player weeks, {miss} without a Sleeper id")
+    return {"weeks": weeks, "teams": teams}
+
+
+def nflv_into(line, vals):
+    """A Sleeper line with nflverse's values laid over its end."""
+    i = NFL_COLS.index(NFLV_COLS[0])
+    line = list(line) + [0] * (len(NFL_COLS) - len(line))
+    line[i:i + len(NFLV_COLS)] = vals
+    return line
 
 
 def nfl():
@@ -775,6 +846,7 @@ def nfl():
     print(f"Weekly projections kept: {', '.join(f'week {w} ({len(g)} players)' for w, g in wk_lines.items()) or 'none'}")
     # Sleeper's full player list: each player's college (for a league that limits starters from one conference), and
     # birth dates, for dynasty values, for anyone the stats rows left out
+    allp = {}
     try:
         allp = get("https://api.sleeper.app/v1/players/nfl")
         for pid, p in by.items():
@@ -794,6 +866,16 @@ def nfl():
             if old.get(pid):
                 p["col"] = old[pid]
     print(f"NFL ages: {sum(1 for p in by.values() if p.get('age'))} of {len(by)}, colleges: {sum(1 for p in by.values() if p.get('col'))}")
+    # nflverse's EPA and the rest, each player's weeks added up into his season line
+    nv = nflverse(season, nfl_gsis_map(allp))
+    if nv:
+        tot = {}
+        for got in nv["weeks"].values():
+            for sid, vals in got.items():
+                tot[sid] = [a + b for a, b in zip(tot.get(sid, [0] * len(NFLV_COLS)), vals)]
+        for pid, p in by.items():
+            if p["l"].get("tot"):
+                p["l"]["tot"] = nflv_into(p["l"]["tot"], [round(x, 2) for x in tot.get(pid, [0] * len(NFLV_COLS))])
     # in the pool: anyone who has scored, is projected for real points the rest of the way, or is projected to score this
     # week or next (a backup quarterback named the starter, say, and the depth a one-game draft of six teams needs:
     # without them a game's two teams came to 29 to 38 players, short of the 36 six teams start)
@@ -801,7 +883,7 @@ def nfl():
     players = [p for p in by.values() if (p["l"].get("tot") and p["l"]["tot"][hi] > 0) or (p["l"].get("proj") and p["l"]["proj"][1] > 20)
                or any(len(p["l"].get(f"wk{w}") or []) > hi and p["l"][f"wk{w}"][hi] >= 1 for w in wk_lines)]
     try:
-        nfl_weeks(season, state)
+        nfl_weeks(season, state, nv)
     except Exception as e:
         print(f"NFL weeks didn't build: {type(e).__name__}: {e}")
     write("nfl", {"sport": "nfl", "season": str(season), "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com)",
@@ -824,8 +906,10 @@ def week_dates(state, season, w):
     return {"start": start.isoformat(), "end": (start + timedelta(days=6)).isoformat()}
 
 
-def nfl_weeks(season, state):
-    """Each regular-season week's stats, Tuesday to Monday. Final weeks already in the file aren't fetched again."""
+def nfl_weeks(season, state, nv=None):
+    """Each regular-season week's stats, Tuesday to Monday. Final weeks already in the file aren't fetched again, but
+    nflverse's columns (nv) are laid over every week each run. A week is final once Sleeper's is over and nflverse covers
+    every team that played in it (or two days after that, if nflverse never does), so a league closes it with its EPA."""
     if not state or state.get("season_type") not in ("regular", "post"):
         print("No NFL weeks: not the regular season")
         return
@@ -849,7 +933,7 @@ def nfl_weeks(season, state):
             weeks[k].update(start=start.isoformat(), end=end.isoformat())
             continue
         rows = nfl_rows(f"https://api.sleeper.com/stats/nfl/{season}/{w}?season_type=regular{POS_Q}")
-        lines = {}
+        lines, played = {}, set()
         for r in rows:
             pl = r.get("player") or {}
             if (pl.get("position") or r.get("position")) not in NFL_POS:
@@ -859,10 +943,29 @@ def nfl_weeks(season, state):
             line = [g] + [round(st.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]
             if g or any(line[1:]):
                 lines[str(r.get("player_id"))] = line
+                if g and r.get("team"):
+                    played.add(r.get("team"))
         if not lines and k in weeks and weeks[k].get("lines"):
             weeks[k].update(start=start.isoformat(), end=end.isoformat())
             continue                                   # keep what we had if Sleeper came back empty
-        weeks[k] = {"start": start.isoformat(), "end": end.isoformat(), "final": now >= after_night(end), "lines": lines}
+        if not nv and k in weeks:                      # nflverse didn't load: keep last run's values for this week
+            i = NFL_COLS.index(NFLV_COLS[0])
+            for pid, line in lines.items():
+                was = weeks[k].get("lines", {}).get(pid)
+                if was and len(was) == len(NFL_COLS):
+                    line[i:] = was[i:]
+        # nflverse names teams its own way in a few cases
+        alias = {"LAR": "LA", "JAC": "JAX", "WSH": "WAS"}
+        covered = bool(nv) and {alias.get(t, t) for t in played} <= {alias.get(t, t) for t in nv["teams"].get(k, set())}
+        over = now >= after_night(end)
+        weeks[k] = {"start": start.isoformat(), "end": end.isoformat(), "final": over and (covered or now >= after_night(end) + timedelta(days=2)), "lines": lines}
+    for k, got in ((nv or {}).get("weeks") or {}).items():
+        if k not in weeks:
+            continue
+        lines = weeks[k]["lines"]
+        for pid, vals in got.items():
+            # a player with only nflverse numbers (a quarterback's kneel-downs, say) gets a line of his own
+            lines[pid] = nflv_into(lines.get(pid) or [1] + [0] * (len(NFL_COLS) - 1), vals)
     write_weeks("nfl", {"sport": "nfl", "season": str(season), "updated": NOW, "source": "Sleeper",
                         "line": "tot", "cols": NFL_COLS, "weeks": weeks})
 

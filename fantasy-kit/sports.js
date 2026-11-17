@@ -298,7 +298,9 @@
       ["pass_att", "Pass attempts"], ["pass_cmp", "Completions"], ["rec_tgt", "Targets"], ["pass_fd", "Passing first downs"], ["rush_fd", "Rushing first downs"],
       ["rec_fd", "Receiving first downs"], ["pass_2pt", "2-pt passes"], ["rush_2pt", "2-pt runs"], ["rec_2pt", "2-pt catches"], ["fum", "Fumbles"],
       ["fga", "Field goals tried"], ["fgm_50p", "Field goals of 50+ yards"], ["xpmiss", "Extra points missed"], ["fum_rec", "Fumble recoveries"],
-      ["ff", "Forced fumbles"], ["safe", "Safeties"], ["def_st_td", "Special teams TDs"], ["yds_allow", "Yards allowed"]],
+      ["ff", "Forced fumbles"], ["safe", "Safeties"], ["def_st_td", "Special teams TDs"], ["yds_allow", "Yards allowed"],
+      ["epa_pass", "Passing EPA"], ["epa_rush", "Rushing EPA"], ["epa_rec", "Receiving EPA"], ["pass_sacked", "Times sacked"],
+      ["air_rec", "Receiving air yards"], ["yac_rec", "Yards after catch"]],
     mlb: [["bat.r", "Runs"], ["bat.h", "Hits"], ["bat.hr", "Home runs"], ["bat.rbi", "RBI"], ["bat.sb", "Stolen bases"], ["bat.tb", "Total bases"],
       ["pit.ip", "Innings pitched"], ["pit.w", "Wins"], ["pit.l", "Losses"], ["pit.sv", "Saves"], ["pit.hld", "Holds"], ["pit.k", "Strikeouts"], ["pit.er", "Earned runs"],
       ["pit.bb", "Walks allowed"], ["pit.h", "Hits allowed"], ["pit.qs", "Quality starts"],
@@ -388,6 +390,25 @@
       { k: "ypr", label: "Y/R", line: "tot", num: "rec_yd", den: "rec", fmt: f1, unit: 9, adv: true, title: "Yards per reception" },
       { k: "ypto", label: "Yds/touch", line: "tot", num: { rush_yd: 1, rec_yd: 1 }, den: { rush_att: 1, rec: 1 }, fmt: f1, unit: 7, adv: true, title: "Scrimmage yards per carry or catch" },
       { k: "fg_pct", label: "FG%", line: "tot", num: "fgm", den: "fga", fmt: pct1, unit: 0.35, adv: true, title: "Field goal percentage" },
+      // nflverse's play-by-play stats: they come in overnight, so a game's EPA counts the next morning, not live
+      { k: "epa", label: "EPA", line: "tot", col: { epa_pass: 1, epa_rush: 1, epa_rec: 1 }, fmt: f1, adv: true, title: "Expected points added, passing, rushing and receiving: how much each play moved his team's scoring odds (counts the morning after a game)" },
+      { k: "epa_pass", label: "Pass EPA", line: "tot", col: "epa_pass", fmt: f1, adv: true, title: "Expected points added on dropbacks, sacks included (counts the morning after a game)" },
+      { k: "epa_rush", label: "Rush EPA", line: "tot", col: "epa_rush", fmt: f1, adv: true, title: "Expected points added on carries (counts the morning after a game)" },
+      { k: "epa_rec", label: "Rec EPA", line: "tot", col: "epa_rec", fmt: f1, adv: true, title: "Expected points added on targets (counts the morning after a game)" },
+      { k: "epa_play", label: "EPA/play", line: "tot", num: { epa_pass: 1, epa_rush: 1, epa_rec: 1 }, den: { pass_att: 1, pass_sacked: 1, rush_att: 1, rec_tgt: 1 }, fmt: f2, unit: 0.25, adv: true, title: "Expected points added per dropback, carry or target (counts the morning after a game)" },
+      { k: "epa_db", label: "EPA/dropback", line: "tot", num: "epa_pass", den: { pass_att: 1, pass_sacked: 1 }, fmt: f2, unit: 0.25, adv: true, title: "Passing EPA per dropback, sacks included (counts the morning after a game)" },
+      { k: "epa_car", label: "EPA/carry", line: "tot", num: "epa_rush", den: "rush_att", fmt: f2, unit: 0.2, adv: true, title: "Rushing EPA per carry (counts the morning after a game)" },
+      { k: "epa_tgt", label: "EPA/target", line: "tot", num: "epa_rec", den: "rec_tgt", fmt: f2, unit: 0.35, adv: true, title: "Receiving EPA per target (counts the morning after a game)" },
+      { k: "cpoe", label: "CPOE", line: "tot", num: "cpoe_x", den: "pass_att", mult: 100, fmt: f1, unit: 6, adv: true, title: "Completion percentage over expected: completions beyond what the throws' difficulty predicts, per 100 attempts (counts the morning after a game)" },
+      { k: "anya", label: "ANY/A", line: "tot", num: { pass_yd: 1, pass_td: 20, pass_int: -45, sack_yd: -1 }, den: { pass_att: 1, pass_sacked: 1 }, fmt: f1, unit: 9, adv: true, title: "Adjusted net yards per attempt: AY/A with sacks and sack yards taken off (sacks count the morning after a game)" },
+      { k: "sack_pct", label: "Sack%", line: "tot", num: "pass_sacked", den: { pass_att: 1, pass_sacked: 1 }, low: true, fmt: pct1, unit: 0.08, adv: true, title: "Sacks per dropback (lower is better; counts the morning after a game)" },
+      { k: "tgt_share", label: "Tgt share", line: "tot", num: "rec_tgt", den: "tm_tgt", fmt: pct1, unit: 0.25, adv: true, title: "Target share: his share of his team's targets in the games he played (counts the morning after a game)" },
+      { k: "air_share", label: "Air yds share", line: "tot", num: "air_rec", den: "tm_air", fmt: pct1, unit: 0.35, adv: true, title: "His share of his team's air yards in the games he played (counts the morning after a game)" },
+      { k: "adot", label: "aDOT", line: "tot", num: "air_rec", den: "rec_tgt", fmt: f1, unit: 10, adv: true, title: "Average depth of target: how far downfield his targets were thrown (counts the morning after a game)" },
+      { k: "yac_r", label: "YAC/rec", line: "tot", num: "yac_rec", den: "rec", fmt: f1, unit: 6, adv: true, title: "Yards after the catch per reception (counts the morning after a game)" },
+      { k: "racr", label: "RACR", line: "tot", num: "rec_yd", den: "air_rec", fmt: f2, unit: 1, adv: true, title: "Receiver air conversion ratio: receiving yards per air yard targeted (counts the morning after a game)" },
+      { k: "air_yd", label: "Air yds", line: "tot", col: "air_rec", adv: true, title: "Receiving air yards: how far downfield all his targets went (counts the morning after a game)" },
+      { k: "yac", label: "YAC", line: "tot", col: "yac_rec", adv: true, title: "Yards after the catch (counts the morning after a game)" },
     ],
     mlb: [
       { k: "obp", label: "OBP", line: "bat", rate: "obp", w: "pa", fmt: r3 },
@@ -442,6 +463,28 @@
       { k: "gs", label: "GS", line: "goalie", col: "gs", title: "Goalie starts" },
       { k: "ga", label: "GA", line: "goalie", col: "ga", low: true, title: "Goals against (lower is better)" },
       { k: "gsaa", label: "GSAA", line: "goalie", col: { saves: 1, sa: -0.9 }, fmt: f1, adv: true, title: "Goals saved above average: saves beyond a .900 goalie on the same shots" },
+    ],
+  };
+  // Ready-made custom category setups, one click in league setup: a starting point the league can still edit.
+  const CAT_PRESETS = {
+    nba: [
+      { k: "eff", name: "Efficiency", blurb: "True shooting, ball security and plus/minus over raw volume", cats: ["ts", "pts", "reb", "ast", "stocks", "tpm", "ato", "tovr", "pm"] },
+      { k: "p36", name: "Per 36", blurb: "Production per minute, so a bench scorer counts like a starter", cats: ["ppm", "rpm", "apm", "stocks36", "ts", "tpp", "ato", "tovr"] },
+      { k: "plus", name: "9-cat plus", blurb: "The standard nine with double-doubles and triple-doubles", cats: ["fg", "ft", "tpm", "pts", "reb", "ast", "stl", "blk", "tov", "dd", "td"] },
+    ],
+    nfl: [
+      { k: "epa", name: "Analytics", blurb: "EPA, CPOE, ANY/A and target share", cats: ["epa", "epa_play", "cpoe", "anya", "tgt_share", "ypto", "fd", "skill_td"] },
+      { k: "eff", name: "Efficiency", blurb: "Rates only: no credit for volume alone", cats: ["anya", "cmp_pct", "td_pct", "int_pct", "ypc", "ypt", "catch", "ypto"] },
+      { k: "vol", name: "Volume", blurb: "Touches, yards, first downs and touchdowns", cats: ["tot_yd", "fd", "rec", "rush_att", "rec_tgt", "skill_td", "pass_td", "two"] },
+    ],
+    mlb: [
+      { k: "saber", name: "Sabermetrics", blurb: "wOBA, ISO and walk rate for hitters; FIP and K-BB% for pitchers", cats: ["woba", "iso", "bbp", "nsb", "rrbi", "fip", "kbbp", "whip", "svh", "ip"] },
+      { k: "obp", name: "OBP and QS", blurb: "5x5 with on-base percentage, quality starts and saves plus holds", cats: ["r", "hr", "rbi", "sb", "obp", "k", "qs", "svh", "era", "whip"] },
+      { k: "six", name: "6x6", blurb: "Adds slugging and K/BB, with net steals", cats: ["r", "hr", "rbi", "nsb", "obp", "slg", "k", "qs", "svh", "era", "whip", "kbb"] },
+    ],
+    nhl: [
+      { k: "adv", name: "Analytics", blurb: "Scoring per 60 minutes and goals saved above average", cats: ["p60", "g60", "sog60", "ppp", "hb", "gsaa", "svp"] },
+      { k: "bang", name: "Banger", blurb: "Hits, blocks and penalty minutes count as much as goals", cats: ["g", "a", "ppp", "sog", "hits", "blocks", "pim", "wins", "svp", "gaa"] },
     ],
   };
   // Every category a custom league can pick: the presets' and the extras. With data attached, only the ones its
@@ -762,5 +805,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { lineVal, ratioVal, catCols, catOk, EXTRA_CATS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

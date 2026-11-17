@@ -108,3 +108,36 @@ test('every sport can pick categories and put a value on many more stats', () =>
     assert.ok(S.POINT_STATS[k].length >= 18, `${k}: ${S.POINT_STATS[k].length} stats to value`);
   }
 });
+
+// EPA and the rest of nflverse's columns: formulas over them, kept when the live feed (which lacks them) lands.
+test('football EPA categories: formulas over the nflverse columns', () => {
+  const all = S.catCatalog(S.ALL.nfl, { all: true }), get = (k) => all.find((c) => c.k === k);
+  const cols = ['g', 'pass_yd', 'pass_td', 'pass_int', 'pass_att', 'rush_att', 'rec', 'rec_tgt', 'rec_yd', 'epa_pass', 'epa_rush', 'epa_rec', 'pass_sacked', 'sack_yd', 'cpoe_x', 'tm_tgt', 'air_rec', 'yac_rec', 'tm_air'];
+  const cm = Object.fromEntries(cols.map((c, i) => [c, i]));
+  const at = { g: 1, pass_yd: 300, pass_td: 2, pass_int: 1, pass_att: 38, rush_att: 2, epa_pass: 12, epa_rush: 1, pass_sacked: 2, sack_yd: 15, cpoe_x: 1.9 };
+  const row = cols.map((c) => at[c] || 0);
+  const val = (k) => { const c = get(k); return c.col ? S.lineVal(row, cm, c.col) : S.ratioVal(c, S.lineVal(row, cm, c.num), S.lineVal(row, cm, c.den)); };
+  assert.equal(val('epa'), 13);
+  assert.equal(val('epa_db'), 12 / 40, 'per dropback: sacks count as dropbacks');
+  assert.equal(val('cpoe'), 5, 'completions over expected per 100 attempts');
+  assert.equal(val('anya'), (300 + 40 - 45 - 15) / 40);
+  assert.equal(val('sack_pct'), 2 / 40);
+  // the pick list only offers them once the columns are in the data
+  const fake = S.attach(Object.assign({}, S.nfl), { lines: { tot: { cols } }, players: [] });
+  assert.ok(S.catCatalog(fake).some((c) => c.k === 'cpoe'));
+  const bare = S.attach(Object.assign({}, S.nfl), { lines: { tot: { cols: ['g', 'pass_yd'] } }, players: [] });
+  assert.ok(!S.catCatalog(bare).some((c) => c.k === 'epa'));
+});
+
+test('category presets: every category exists, and the live feed keeps columns it lacks', () => {
+  for (const [sp, sets] of Object.entries(S.CAT_PRESETS)) {
+    const ks = S.catCatalog(S.ALL[sp], { all: true }).map((c) => c.k);
+    for (const p of sets) for (const k of p.cats) assert.ok(ks.includes(k), `${sp} ${p.k} ${k}`);
+  }
+  const weeks = { season: '2026', cols: ['g', 'pass_yd', 'epa_pass'], weeks: { 10: { start: '2026-11-10', final: false, lines: { a: [1, 200, 9.5] } } } };
+  Z.mergeLive(weeks, { season: '2026', start: '2026-11-10', updated: 't1', players: { a: [1, 250], b: [1, 80] } });
+  assert.deepEqual(weeks.weeks[10].lines.a, [1, 250, 9.5], 'EPA from the file stays');
+  assert.deepEqual(weeks.weeks[10].lines.b, [1, 80]);
+  Z.mergeLive(weeks, { season: '2026', start: '2026-11-10', updated: 't2', players: { a: [1, 260] } });
+  assert.deepEqual(weeks.weeks[10].lines.a, [1, 260, 9.5]);
+});
