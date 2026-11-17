@@ -87,13 +87,16 @@ def zscores(values):
 
 
 def production(p):
+    """Game Score per game (Hollinger; rebounds weighted 0.45 because the feed doesn't split offensive and defensive boards).
+    Falls back to points + 0.6 rebounds + 0.9 assists, scaled to the same range, when only the basic line is available."""
     s = p.get("stats") or {}
-    pts, reb, ast = num(s.get("pts")), num(s.get("reb")), num(s.get("ast"))
-    if pts is None and reb is None and ast is None:
-        return None
+    g = lambda k: num(s.get(k))
+    pts, reb, ast = g("pts"), g("reb"), g("ast")
     if not (pts or reb or ast):
         return None  # a roster row with no games yet
-    return (pts or 0) + 0.6 * (reb or 0) + 0.9 * (ast or 0)
+    if g("fga") is not None and g("fgm") is not None:
+        return (pts or 0) + 0.4 * g("fgm") - 0.7 * g("fga") - 0.4 * ((g("fta") or 0) - (g("ftm") or 0)) + 0.45 * (reb or 0) + (g("stl") or 0) + 0.7 * (ast or 0) + 0.7 * (g("blk") or 0) - 0.4 * (g("pf") or 0) - (g("tov") or 0)
+    return 0.7 * ((pts or 0) + 0.6 * (reb or 0) + 0.9 * (ast or 0))
 
 
 def ladder(players, teams, watch):
@@ -113,7 +116,7 @@ def ladder(players, teams, watch):
             missing.append(w["name"])
     listed_set = set(listed)
     # Ranking pool: the list plus credible outsiders (real production on a top-150 team)
-    pool = [p for p in players if p["id"] in listed_set or ((production(p) or 0) >= 12 and (num(by_team.get(p["teamId"], {}).get("haslamRank")) or 999) <= 150)]
+    pool = [p for p in players if p["id"] in listed_set or ((production(p) or 0) >= 9 and (num(by_team.get(p["teamId"], {}).get("haslamRank")) or 999) <= 150)]
     prod = [production(p) for p in pool]
     team = []
     for p in pool:
@@ -160,7 +163,7 @@ def build_bracket(field, aq_set, strength):
     return regions
 
 
-def simulate(teams, avg, sims, seed, today):
+def simulate(teams, avg, sims, seed, today, schedule=None):
     rng = random.Random(seed)
     gauss, rand = rng.gauss, rng.random
     T = [t for t in teams if num(t.get("metrics", {}).get("adjO")) is not None and t.get("conference")]
@@ -195,7 +198,29 @@ def simulate(teams, avg, sims, seed, today):
             if not left[i] and known:
                 left[i] = known[len(known) // 2]
     M = {c: [[S(i, j) if i != j else 0 for j in m] for i in m] for c, m in confs.items()}
-    reg, aq, made, wsum = [0] * n, [0] * n, [0] * n, [0.0] * n
+    # The real remaining schedule where we have it: every Division I game still to play, with its true venue
+    idx = {t["id"]: i for i, t in enumerate(T)}
+    rem, outside, sleft = [], [0] * n, [0] * n
+    t0 = today.isoformat()
+    for g in (schedule or {}).get("games", []):
+        if g.get("state") != "pre" or g.get("post") or g["day"] < t0:
+            continue
+        i, j = idx.get(g["home"]), idx.get(g["away"])
+        if i is None and j is None:
+            continue
+        if i is None or j is None:  # a non-Division I opponent: counted as a win
+            outside[i if j is None else j] += 1
+            continue
+        rem.append((i, j, S(i, j) + (0 if g.get("neutral") else HOME_EDGE), bool(g.get("conf"))))
+        if g.get("conf"):
+            sleft[i] += 1
+            sleft[j] += 1
+    use_sched = {c: bool(rem) and sum(sleft[i] for i in m) >= 0.8 * sum(left[i] for i in m) for c, m in confs.items()}
+    ctot = [0] * n
+    for c, m in confs.items():
+        for i in m:
+            ctot[i] = played[i] + int(num((T[i].get("record") or {}).get("cl")) or 0) + (sleft[i] if use_sched[c] else left[i])
+    reg, aq, made, wsum, osum = [0] * n, [0] * n, [0] * n, [0.0] * n, [0.0] * n
     rounds = [[0] * 7 for _ in range(n)]
     seeds = [[0] * 17 for _ in range(n)]
     SD, H = SPREAD_SD, HOME_EDGE
@@ -207,11 +232,19 @@ def simulate(teams, avg, sims, seed, today):
         off = [gauss(0, drift) for _ in range(n)]
         strength = [base[i] + off[i] for i in range(n)]
         aq_set = set()
+        cw, ow = played[:], [0] * n
+        for i, j, m0, cf in rem:
+            w = i if m0 + off[i] - off[j] + gauss(0, SD) > 0 else j
+            ow[w] += 1
+            if cf:
+                cw[w] += 1
+        for i in range(n):
+            osum[i] += ow[i]
         for c, m in confs.items():
             k, mat = len(m), M[c]
-            wins = [played[i] for i in m]
+            wins = [cw[i] if use_sched[c] else played[i] for i in m]
             gp = [0] * k
-            slots = [li for li in range(k) for _ in range(left[m[li]])]
+            slots = [] if use_sched[c] else [li for li in range(k) for _ in range(left[m[li]])]
             rng.shuffle(slots)
             if len(slots) % 2:
                 slots.pop()
@@ -276,8 +309,13 @@ def simulate(teams, avg, sims, seed, today):
         out[t["id"]] = {"reg": round(reg[i] / sims, 4), "cw": round(wsum[i] / sims, 1), "aq": round(aq[i] / sims, 4), "in": round(made[i] / sims, 4),
                         "seed": round(sum(s_ * cnt[s_] for s_ in range(17)) / made[i], 1) if made[i] else None, "mode": mode,
                         "top4": round(sum(cnt[1:5]) / sims, 4), "r": [round(x / sims, 4) for x in rounds[i]]}
-        total = left[i] + played[i] + int(num((t.get("record") or {}).get("cl")) or 0)
-        out[t["id"]]["cl"] = round(total - out[t["id"]]["cw"], 1)
+        out[t["id"]]["cl"] = round(ctot[i] - out[t["id"]]["cw"], 1)
+        r = t.get("record") or {}
+        if rem:
+            wins = (num(r.get("w")) or 0) + osum[i] / sims + outside[i]
+            games_left = sum(1 for g in rem if g[0] == i or g[1] == i) + outside[i]
+            out[t["id"]]["w"] = round(wins, 1)
+            out[t["id"]]["l"] = round((num(r.get("w")) or 0) + (num(r.get("l")) or 0) + games_left - wins, 1)
     # The bracket if the season ended with today's ratings: favorite to win each conference tournament takes the bid
     idx = {t["id"]: i for i, t in enumerate(T)}
     fav = {c: max(m, key=lambda i: (aq[i], base[i])) for c, m in confs.items()}
@@ -288,8 +326,8 @@ def simulate(teams, avg, sims, seed, today):
     projected = [[{"seed": sd, "teams": [T[i]["id"] for i in reg_.get(sd, ())]} for sd in REGION_ORDER] for reg_ in regions]
     last_in = [T[i]["id"] for i in pool[:FIELD - len(aq_set)][-6:]]
     first_out = [T[i]["id"] for i in pool[FIELD - len(aq_set):FIELD - len(aq_set) + 6]]
-    return {"sims": sims, "drift": round(drift, 2), "selectionSunday": SELECTION_SUNDAY, "teams": out, "bracket": projected, "lastIn": last_in, "firstOut": first_out,
-            "method": f"{sims:,} seasons. Each run nudges every team's rating by a random amount (up to about {drift:.1f} points a game, shrinking toward Selection Sunday), plays each team's remaining conference games against randomly drawn league opponents with home court split evenly, then an eight-team conference tournament for the automatic bid. The other {FIELD - 32} spots go to the strongest teams left, the 12 weakest automatic qualifiers and 12 weakest at-large teams play in the Opening Round, seeds follow the S-curve, and the 76-team tournament is played out on neutral courts."}
+    return {"sims": sims, "drift": round(drift, 2), "scheduled": sum(use_sched.values()), "remaining": len(rem), "selectionSunday": SELECTION_SUNDAY, "teams": out, "bracket": projected, "lastIn": last_in, "firstOut": first_out,
+            "method": f"{sims:,} seasons. Each run nudges every team's rating by a random amount (up to about {drift:.1f} points a game, shrinking toward Selection Sunday), plays every team's real remaining schedule at its real venues (a league whose schedule isn't posted yet draws random league opponents instead), then an eight-team conference tournament for the automatic bid. The other {FIELD - 32} spots go to the strongest teams left, the 12 weakest automatic qualifiers and 12 weakest at-large teams play in the Opening Round, seeds follow the S-curve, and the 76-team tournament is played out on neutral courts."}
 
 
 def ny_today():
@@ -321,7 +359,7 @@ def main():
         r["prev"] = base.get(r["id"])
     naismith = {k: watch.get(k) for k in ("award", "list", "announced", "source", "url", "note")}
     naismith.update({"ladder": on, "knocking": knocking, "unmatched": missing, "since": past[-1] if past else None, "history": history,
-                     "method": "Ladder score = 60% production (points + 0.6 rebounds + 0.9 assists per game, as a z-score), 30% team strength (Haslametrics efficiency margin) and 10% NBA Big Board stock. It is the hub's estimate, not voting."})
+                     "method": "Ladder score = 60% production (Game Score per game, which credits points, efficient shooting, rebounds, assists, steals and blocks and charges missed shots, turnovers and fouls, as a z-score), 30% team strength (Haslametrics efficiency margin) and 10% NBA Big Board stock. It is the hub's estimate, not voting."})
 
     # Hub lines: refresh pregame lines, freeze and grade finals
     log = (prior.get("lines") or {}).get("games") or {}
@@ -359,7 +397,7 @@ def main():
     t0 = time.time()
     sims = int(next((a.split("=")[1] for a in sys.argv[1:] if a.startswith("--sims=")), 10000))
     try:
-        season = simulate(teams, avg, sims, int(today.strftime("%Y%m%d")), today)
+        season = simulate(teams, avg, sims, int(today.strftime("%Y%m%d")), today, read(ROOT / "cbb/data/schedule.json", {}))
         season["seconds"] = round(time.time() - t0, 1)
     except Exception as e:  # keep the last good simulation rather than publishing none
         print("Simulation failed:", e, file=sys.stderr)

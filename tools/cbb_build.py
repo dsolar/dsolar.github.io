@@ -206,6 +206,48 @@ def parse_games(data,teams):
    "source":"ESPN scoreboard","url":next((l["href"] for l in e.get("links",[]) if "summary" in l.get("rel",[])),"https://www.espn.com/mens-college-basketball/scoreboard")}
  return out
 
+SCHEDULE=ROOT/"cbb/data/schedule.json"
+
+def parse_schedule(d,teams,year):
+ """One team's ESPN season schedule: every game, with scores once final. Opponents outside Division I keep their name."""
+ if d.get("season",{}).get("year") not in (None,year):raise ValueError("Schedule season mismatch")
+ out,other={},{}
+ for e in d.get("events",[]):
+  c=(e.get("competitions") or [{}])[0];cs=c.get("competitors",[])
+  h=next((x for x in cs if x.get("homeAway")=="home"),None);a=next((x for x in cs if x.get("homeAway")=="away"),None)
+  if not h or not a or not e.get("date"):continue
+  for x in (h,a):
+   if str(x["id"]) not in teams:other[str(x["id"])]=(x.get("team") or {}).get("shortDisplayName") or (x.get("team") or {}).get("displayName") or "Non-D1"
+  st=(c.get("status") or {}).get("type",{});state=st.get("state","pre")
+  if re.search("postpon|cancel",st.get("description",""),re.I):state="off"
+  score=lambda x:number((x.get("score") or {}).get("value") if isinstance(x.get("score"),dict) else x.get("score"))
+  at=e["date"];day=dt.datetime.fromisoformat(at.replace("Z","+00:00")).astimezone(NY).date().isoformat()
+  hid,aid=str(h["id"]),str(a["id"])
+  conf=hid in teams and aid in teams and teams[hid].get("conference")==teams[aid].get("conference") and (e.get("seasonType") or {}).get("type",2)==2
+  out[str(e["id"])]={"id":str(e["id"]),"day":day,"at":at if e.get("timeValid",True) else None,"home":hid,"away":aid,"neutral":bool(c.get("neutralSite")),"conf":bool(conf),
+   "post":(e.get("seasonType") or {}).get("type")==3,"state":state,"hs":score(h) if state in ("in","post") else None,"as":score(a) if state in ("in","post") else None}
+ return out,other
+
+BYATH=["general","offensive","defensive"]
+def parse_byathlete(d):
+ """ESPN's season stat leaders feed, every Division I player who has appeared: per-game averages and totals."""
+ names={c["name"]:c.get("names",[]) for c in d.get("categories",[])}
+ out={}
+ for row in d.get("athletes",[]):
+  a=row.get("athlete",{});aid=str(a.get("id",""))
+  if not aid:continue
+  v={}
+  for c in row.get("categories",[]):v.update(dict(zip(names.get(c.get("name"),[]),c.get("values",[]))))
+  g=lambda k:number(v.get(k))
+  pts,fga,fta=g("points"),g("fieldGoalsAttempted"),g("freeThrowsAttempted")
+  ts=round(pts/(2*(fga+0.44*fta))*100,1) if pts is not None and fga is not None and fta is not None and fga+0.44*fta>0 else None
+  efg=round((g("fieldGoalsMade")+0.5*g("threePointFieldGoalsMade"))/fga*100,1) if fga and g("fieldGoalsMade") is not None and g("threePointFieldGoalsMade") is not None else None
+  out[aid]={"gp":g("gamesPlayed"),"min":g("avgMinutes"),"pts":g("avgPoints"),"reb":g("avgRebounds"),"ast":g("avgAssists"),"stl":g("avgSteals"),"blk":g("avgBlocks"),
+   "tov":g("avgTurnovers"),"pf":g("avgFouls"),"fgm":g("avgFieldGoalsMade"),"fga":g("avgFieldGoalsAttempted"),"fgPct":g("fieldGoalPct"),
+   "tpm":g("avgThreePointFieldGoalsMade"),"threeAtt":g("avgThreePointFieldGoalsAttempted"),"threePct":g("threePointFieldGoalPct"),
+   "ftm":g("avgFreeThrowsMade"),"fta":g("avgFreeThrowsAttempted"),"ftPct":g("freeThrowPct"),"per":g("PER"),"dd":g("doubleDouble"),"ts":ts,"efg":efg,"teamId":str(a.get("teamId",""))}
+ return out,d.get("pagination") or {}
+
 def main():
  ap=argparse.ArgumentParser();ap.add_argument("--seed-cache",action="store_true");ap.add_argument("--rosters",action="store_true");args=ap.parse_args()
  now=dt.datetime.now(dt.timezone.utc);today=now.astimezone(NY).date();year=today.year+(today.month>=7);stamp=now.isoformat()
@@ -292,6 +334,49 @@ def main():
   for tid,t in teams.items():
    if prior.get(tid,{}).get("coach"):t["coach"]=prior[tid]["coach"]
    if prior.get(tid,{}).get("color"):t["color"]=prior[tid]["color"]
+ # Full player season lines (minutes, shooting, steals, blocks, turnovers) from ESPN's stat leaders feed, every run.
+ stat_rows={};stat_err=None
+ try:
+  page,pages=1,1
+  while page<=pages and page<=15:
+   rows,pg=parse_byathlete(json.loads(get(f"{WEB}/apis/common/v3/sports/basketball/mens-college-basketball/statistics/byathlete?{Q}&isqualified=false&limit=1000&page={page}&sort=offensive.avgPoints:desc&season={year}&seasontype=2")))
+   stat_rows.update(rows);pages=int(pg.get("pages") or 1);page+=1
+  matched=0
+  for p in players:
+   r=stat_rows.get(p["id"])
+   if r and (not r["teamId"] or r["teamId"]==p["teamId"]):
+    p["stats"]={k:v for k,v in r.items() if k!="teamId"};p["statsSource"]="ESPN season stats";matched+=1
+  if matched<500:raise ValueError(f"Only {matched} roster players matched season stats")
+  sources["playerStats"]={"name":"ESPN player season stats","status":"connected","url":"https://www.espn.com/mens-college-basketball/stats/player","updated":stamp,"checked":stamp,"coverage":matched}
+ except Exception as e:
+  stat_err=str(e);errors.append("Player stats: "+stat_err)
+  oldstats={p["id"]:p for p in old.get("players",[]) if p.get("statsSource")}
+  for p in players:
+   if p["id"] in oldstats:p["stats"]=oldstats[p["id"]]["stats"];p["statsSource"]=oldstats[p["id"]]["statsSource"]
+ # Every team's full season schedule, refreshed every run after six hours (365 small requests).
+ sched=read(SCHEDULE,{}) or {}
+ if sched.get("season")!=year:sched={}
+ try:sage=(now-dt.datetime.fromisoformat(sched.get("updated","").replace("Z","+00:00"))).total_seconds()/3600
+ except (ValueError,TypeError):sage=1e6
+ if args.rosters or sage>=6 or not sched.get("games"):
+  sg,sother,sfail={},{},[]
+  def schedule(t):
+   try:return parse_schedule(json.loads(get(f'{WEB}/apis/site/v2/sports/basketball/mens-college-basketball/teams/{t["id"]}/schedule?{Q}&season={year}')),teams,year)
+   except Exception as e:sfail.append(t["short"]+": "+str(e)[:80]);return {},{}
+  with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
+   for g_,o_ in pool.map(schedule,teams.values()):sg.update(g_);sother.update(o_)
+  if len(sfail)<40 and len(sg)>3000:
+   sched={"season":year,"updated":stamp,"games":sorted(sg.values(),key=lambda g:(g["day"],g.get("at") or "")),"other":sother,"failed":sfail}
+   sources["schedule"]={"name":"ESPN team schedules","status":"connected" if not sfail else "partial","url":"https://www.espn.com/mens-college-basketball/schedule","updated":stamp,"checked":stamp,"coverage":len(sg)}
+   SCHEDULE.write_text(json.dumps(sched,ensure_ascii=False,separators=(",",":"))+"\n")
+  else:errors.append(f"Schedules: {len(sfail)} teams failed, {len(sg)} games; kept the last good schedule")
+ # Today's scoreboard is fresher than the schedule snapshot
+ if sched.get("games"):
+  live={g["id"]:g for g in games.values() if g.get("source")=="ESPN scoreboard"}
+  for g in sched["games"]:
+   x=live.get(g["id"])
+   if x:g.update({"state":x["state"],"hs":x["homeScore"],"as":x["awayScore"]})
+  SCHEDULE.write_text(json.dumps(sched,ensure_ascii=False,separators=(",",":"))+"\n")
  # Connect matching college players to the existing NBA Big Board without inventing an impact rating.
  draft=read(ROOT/"draft/nba.json",{});draft_byname={norm(p["n"]):p for p in draft.get("players",[])}
  for p in players:
@@ -310,7 +395,7 @@ def main():
  ts=list(teams.values());ts.sort(key=lambda t:t.get("haslamRank") or 9999)
  payload={"schema":1,"sport":"ncaam","season":year,"seasonLabel":f"{year-1}-{str(year)[2:]}","updated":stamp,"today":today.isoformat(),"sources":sources,
   "teams":ts,"players":players,"games":sorted(games.values(),key=lambda g:(g["day"],g.get("at") or "")),"march":march,"errors":errors,
-  "notes":{"players":"ESPN roster snapshots supply points, rebounds, assists and field-goal percentage where reported. Missing advanced player metrics remain unavailable.",
+  "notes":{"players":"Season lines from ESPN's player stats feed (minutes, shooting, rebounds, assists, steals, blocks, turnovers, PER). True shooting and effective field-goal percentage are computed from those totals.",
    "games":"Scores are timestamped ESPN snapshots, refreshed periodically. Haslametrics supplies additional future fixtures.",
    "rankings":"Haslametrics and BPI measure team strength differently. Strength of Record measures résumé. Haslametrics quadrant records are based on its own hNET, not official NCAA NET."}}
  if len(ts)<300 or sum(t.get("haslamRank") is not None for t in ts)<300 or len(players)<2500:raise ValueError("Core college data incomplete; not replacing the last complete hub")
