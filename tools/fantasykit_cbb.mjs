@@ -15,7 +15,8 @@ import { CBB_COLS, cbbBox } from "../supabase/functions/fk-live/cbb.mjs";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = "fantasy-kit/data/weeks-cbb.json", CACHE = "tools/cbb_fantasy/games.json";
 const ESPN = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball";
-const UA = "davidsolar-fantasykit/1.0 (+https://davidsolar.dev/fantasy-kit/)";
+// ESPN turns away requests that don't look like a browser (fk-live found the same)
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 const read = (file, fallback = null) => { try { return JSON.parse(fs.readFileSync(path.join(ROOT, file), "utf8")); } catch { return fallback; } };
 function write(file, data) { const full = path.join(ROOT, file); fs.mkdirSync(path.dirname(full), { recursive: true }); fs.writeFileSync(full, JSON.stringify(data) + "\n"); }
 async function get(url) {
@@ -77,7 +78,7 @@ export async function main(today = nyDay()) {
     if (start > today) { weeks[k] = { start, end, final: false, lines: {} }; continue; }
     // the week's days through today: one scoreboard each (groups=50 is Division I, limit=400 every game)
     const days = []; for (let d = start; d <= end && d <= today; d = addDays(d, 1)) days.push(d);
-    const lists = await pool(days, 4, (d) => get(`${ESPN}/scoreboard?dates=${d.replace(/-/g, "")}&groups=50&limit=400`).then((b) => (boards++, b.events || [])).catch(() => null));
+    const lists = await pool(days, 4, (d) => get(`${ESPN}/scoreboard?dates=${d.replace(/-/g, "")}&groups=50&limit=400`).then((b) => (boards++, b.events || [])).catch((e) => (console.error(String(e.message || e).slice(0, 200)), null)));
     const events = [], broke = lists.some((x) => x === null);
     lists.forEach((list) => { for (const e of list || []) events.push(e); });
     const finals = events.filter((e) => eventState(e) === "final").map((e) => String(e.id));
