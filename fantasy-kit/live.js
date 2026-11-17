@@ -189,6 +189,8 @@
     if (sc && S.bonusLines) for (const x of S.bonusLines(sc, sport.key)) out.push(x);
     if (D.steals) out.push(`${D.steals.perTeam} steals a team, frozen after ${D.steals.freeze}${F.taxOf && F.taxOf(D) < 1 ? `; a stolen player scores ${Math.round(F.taxOf(D) * 100)}%` : ""}${F.goldenOf && F.goldenOf(D) > 1 ? `, a make-up pick ${Math.round(F.goldenOf(D) * 100)}%` : ""}`);
     if (s.poolOnly && S.POOL_NAMES) out.push(`${S.POOL_NAMES[s.poolOnly]}: only those players can be drafted`);
+    if (Array.isArray(s.confs) && s.confs.length) out.push(`Players from ${s.confs.length <= 4 ? s.confs.join(", ") : `${s.confs.length} conferences`} only`);
+    if (s.collegeEnd) out.push({ reg: "Ends before the conference tournaments", conf: "Ends on Selection Sunday: conference tournaments count", ncaa: "Runs through the NCAA tournament" }[s.collegeEnd]);
     if (s.format === "guillotine") out.push("Guillotine: the lowest score each week is cut");
     else if (s.weeks) out.push(`${s.weeks} weeks${s.playoffTeams ? `, then ${s.playoffTeams}-team playoffs` : ""}`);
     if (s.dynasty) out.push(`Dynasty: everyone carries over, ${s.dynasty.rounds}-round rookie draft`);
@@ -340,12 +342,13 @@
   async function livePoll() {
     clearTimeout(liveT);
     if (weeks && !document.hidden && (!L || L.settings.real)) {
-      const lv = await C.live(info.sport);
+      // a one-day league scores its own games: their box scores and whether they're final
+      const ids = Z.slateGames && Z.slateGames(L);
+      // (a one-day college league skips the weekly feed: 400 games a week, and it only needs its own)
+      const lv = ids && info.sport === "cbb" ? null : await C.live(info.sport);
       // this week's kickoff times go with the league, so every page and the clock lock players when their games start
       const kicked = L && canAct() && G.setKicks(L, lv);
       if (kicked) push();
-      // a one-day league scores its own games: their box scores and whether they're final
-      const ids = Z.slateGames && Z.slateGames(L);
       const gm = ids ? await C.games(info.sport, ids) : null;
       const gch = !!(gm && Z.mergeGames(weeks, gm));
       if (gch && L && canAct() && catchUp()) push();

@@ -2582,3 +2582,5 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 /* the countdown ring: an hour or more reads "13h 34m" on two lines inside the ring */
 .ring span{max-width:40px;text-align:center;line-height:1.02}
 @media (max-width:640px){.en-t th,.en-t td{padding-left:6px;padding-right:6px}}
+.chips.confs{flex-wrap:wrap;overflow:visible;margin-bottom:8px}
+.chips.confs .ct{opacity:.6;font-weight:600;margin-left:2px}

@@ -110,13 +110,7 @@ def main():
             "teams": {t["abbr"]: {"n": t["short"], "c": t.get("color"), "logo": t.get("logo"), "conf": t.get("conference")} for t in hub["teams"]},
             "players": players}
     (ROOT / "fantasy-kit/data/cbb.json").write_text(json.dumps(pool, ensure_ascii=False, separators=(",", ":")) + "\n")
-    # the league clock scores a game on real box scores only when the weekly file reaches its week: this week and the
-    # next, Monday to Sunday, with no lines (a one-day game reads its own games' box scores from fk-live instead)
-    mon = today - timedelta(days=today.weekday())
-    first = datetime.fromisoformat(f"{hub['season'] - 1}-11-02").date()
-    first -= timedelta(days=first.weekday())
-    weeks = {str((m - first).days // 7 + 1): {"start": m.isoformat(), "end": (m + timedelta(days=6)).isoformat(), "final": False, "lines": {}} for m in (mon, mon + timedelta(days=7))}
-    (ROOT / "fantasy-kit/data/weeks-cbb.json").write_text(json.dumps({"sport": "cbb", "season": season, "updated": now.isoformat(), "source": "ESPN", "line": "pg", "cols": COLS, "weeks": weeks}, separators=(",", ":")) + "\n")
+    # weeks-cbb.json (real Monday-Sunday weeks for season-long leagues) is tools/fantasykit_cbb.mjs's, in the Fantasy Kit data run
     print(json.dumps({"players": len(players), "featured": {d["day"]: len(d["games"]) for d in out_days}, "matchups": len(nxt)}))
 
 

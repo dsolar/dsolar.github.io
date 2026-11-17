@@ -14,9 +14,9 @@ const dfs = JSON.parse(readFileSync(new URL('../cbb/data/dfs.json', import.meta.
 const night = (() => { const d = dfs.days[dfs.days.length - 1]; return { day: d.day, start: d.day, end: d.day, sport: 'cbb', games: d.games.map((g) => ({ ...g, state: 'pre' })) }; })();
 const BEFORE = Math.min(...night.games.map((g) => Date.parse(g.at))) - 3 * 36e5;
 
-test('college hoops is a one-day sport with DraftKings lineups and scoring', () => {
+test('college hoops has one-day games with DraftKings lineups and scoring, and season leagues too', () => {
   assert.ok(S.daily('cbb') && S.daily('nba') && !S.daily('nfl'));
-  assert.ok(S.ALL.cbb.dailyOnly); assert.ok(!S.SEASON_SPORTS.includes(S.cbb), 'no season leagues or mock drafts');
+  assert.ok(!S.ALL.cbb.dailyOnly); assert.ok(S.SEASON_SPORTS.includes(S.cbb), 'season leagues and mock drafts');
   assert.deepEqual(SL.lineup(8, 10, 'cbb').lineup, ['G', 'G', 'G', 'F', 'F', 'F', 'UTIL', 'UTIL']);
   assert.deepEqual(SL.lineup(2, 6, 'cbb').lineup, ['CPT', 'UTIL', 'UTIL', 'UTIL', 'UTIL', 'UTIL']);
   assert.equal(SL.word('cbb'), 'tips off');

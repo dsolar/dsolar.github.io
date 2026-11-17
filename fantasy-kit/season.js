@@ -52,6 +52,9 @@
     if (s.confMax) settings.confMax = s.confMax;
     // a conference-only pool (AL or NL, AFC or NFC, East or West)
     if (({ mlb: ["AL", "NL"], nfl: ["AFC", "NFC"], nba: ["East", "West"], nhl: ["East", "West"] }[D.sport] || []).includes(s.poolOnly)) settings.poolOnly = s.poolOnly;
+    // college: a pool kept to chosen conferences (their schools), and where the season stops in March
+    if (D.sport === "cbb" && Array.isArray(s.pool) && s.pool.length) Object.assign(settings, { pool: s.pool.slice(), confs: (s.confs || []).slice() });
+    if (D.sport === "cbb" && ["reg", "conf", "ncaa"].includes(s.collegeEnd)) settings.collegeEnd = s.collegeEnd;
     if (sport.key === "nhl") settings.minGoalieGames = settings.format === "roto" ? 0 : s.minGoalieGames == null ? 3 : s.minGoalieGames;
     if (sport.key === "nhl" && s.daily && !settings.bestBall) settings.daily = true;
     // weekly extras: a game against the league median, best ball lineups, divisions

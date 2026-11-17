@@ -99,24 +99,47 @@
     ],
   };
 
-  /* ---------- college basketball (one-day games only) ---------- */
-  // Draft Lab's daily college game: the CBB Hub's player pool (fantasy-kit/data/cbb.json, tools/cbb_dfs.py), guards and
-  // forwards as DraftKings lists them (a center plays forward), and DraftKings' college scoring. dailyOnly: it offers
-  // one-day games (salary cap, drafts on a night's slate), not season leagues or mock drafts.
+  /* ---------- college basketball ---------- */
+  // The CBB Hub's player pool (fantasy-kit/data/cbb.json, tools/cbb_dfs.py): every Division I school, guards and
+  // forwards as DraftKings lists them (a center plays forward). One-day games use DraftKings' scoring; season leagues
+  // score real Monday-Sunday weeks (weeks-cbb.json, tools/fantasykit_cbb.mjs) and can keep the pool to chosen
+  // conferences (settings.confs). The season runs November to the national title game; a league can stop sooner.
   const cbb = {
-    key: "cbb", name: "College hoops", league: "NCAA", unit: "game", dailyOnly: true,
+    key: "cbb", name: "College hoops", league: "NCAA", unit: "game", college: true,
     positions: ["G", "F"],
     colors: { G: 1, F: 4 },
     slots: { G: ["G"], F: ["F"], UTIL: "*", CPT: "*", BN: "*" },
     lineup: ["G", "G", "G", "F", "F", "F", "UTIL", "UTIL"],
-    bench: 1,
+    bench: 4,
+    oneDayBench: 1,
     posMax: {},
     late: [],
-    sample: { line: "pg", col: "eg", k: 3 },
+    // the pool's "eg" is 0 (no prior season blended in), so small samples count games played
+    sample: { line: "pg", col: "gp", k: 4 },
     scorings: {
       dk: {
         label: "DraftKings points", type: "points", line: "pg", per: "game", games: 31,
         weights: { pts: 1, tpm: 0.5, reb: 1.25, ast: 1.5, stl: 2, blk: 2, tov: -0.5, dd: 1.5, td: 3 },
+      },
+      points: {
+        label: "Points", type: "points", line: "pg", per: "game", games: 31,
+        weights: { pts: 1, reb: 1.2, ast: 1.5, stl: 3, blk: 3, tov: -1, tpm: 0.5 },
+      },
+      cats9: {
+        label: "9 categories", type: "cats", line: "pg", games: 31,
+        cats: [
+          { k: "fg", label: "FG%", num: "fgm", den: "fga", fmt: r3 },
+          { k: "ft", label: "FT%", num: "ftm", den: "fta", fmt: r3 },
+          { k: "tpm", label: "3PM", col: "tpm" },
+          { k: "pts", label: "PTS", col: "pts" },
+          { k: "reb", label: "REB", col: "reb" },
+          { k: "ast", label: "AST", col: "ast" },
+          { k: "stl", label: "STL", col: "stl" },
+          { k: "blk", label: "BLK", col: "blk" },
+          { k: "tov", label: "TO", col: "tov", low: true },
+        ],
+        // measured against regulars: real minutes and enough games to mean something
+        base: (sport, p) => (stat(sport, p, "pg", "min") || 0) >= 22 && (stat(sport, p, "pg", "gp") || 0) >= 2,
       },
     },
     columns: [
@@ -299,7 +322,7 @@
   };
 
   const ALL = { nba, nfl, mlb, nhl, cbb };
-  // the sports a season league, a mock draft or a rankings page offers (college hoops is one-day only)
+  // the sports a season league, a mock draft or a rankings page offers
   const SEASON_SPORTS = Object.values(ALL).filter((s) => !s.dailyOnly);
 
   // Links a sport to the columns of its data file, so stat() can read the compact arrays.
@@ -336,7 +359,7 @@
       ["fgm", "Field goals made"], ["fga", "Field goals tried"], ["ftm", "Free throws made"], ["fta", "Free throws tried"],
       ["tpa", "3-pointers tried"], ["oreb", "Offensive rebounds"], ["dreb", "Defensive rebounds"], ["pf", "Personal fouls"], ["dd", "Double-doubles"],
       ["td", "Triple-doubles"], ["pm", "Plus/minus"], ["min", "Minutes"]],
-    get cbb() { return this.nba; },
+    get cbb() { return this.nba.filter(([k]) => k !== "pm"); },
     nfl: [["pass_yd", "Passing yards"], ["pass_td", "Passing TDs"], ["pass_int", "Interceptions thrown"], ["rush_att", "Carries"], ["rush_yd", "Rushing yards"], ["rush_td", "Rushing TDs"],
       ["rec", "Receptions"], ["rec_yd", "Receiving yards"], ["rec_td", "Receiving TDs"], ["fum_lost", "Fumbles lost"], ["fgm", "Field goals made"], ["xpm", "Extra points made"],
       ["def_td", "Defensive TDs"], ["def_int", "Interceptions caught"], ["def_sack", "Sacks"], ["pts_allow", "Points allowed"],
@@ -370,7 +393,7 @@
   // exactly like FG% does. adv marks them for the pick list. wOBA uses FanGraphs' recent linear weights.
   const pct1 = (v) => (v == null ? "-" : (v * 100).toFixed(1) + "%");
   const EXTRA_CATS = {
-    get cbb() { return this.nba; },
+    get cbb() { return this.nba.filter((c) => c.k !== "pm"); },     // college box scores carry no plus/minus
     nba: [
       { k: "oreb", label: "OREB", col: "oreb", title: "Offensive rebounds" },
       { k: "dreb", label: "DREB", col: "dreb", title: "Defensive rebounds" },
@@ -529,6 +552,8 @@
       { k: "p36", name: "Per 36", blurb: "Production per minute, so a bench scorer counts like a starter", cats: ["ppm", "rpm", "apm", "stocks36", "ts", "tpp", "ato", "tovr"] },
       { k: "plus", name: "9-cat plus", blurb: "The standard nine with double-doubles and triple-doubles", cats: ["fg", "ft", "tpm", "pts", "reb", "ast", "stl", "blk", "tov", "dd", "td"] },
     ],
+    // college: the pro presets without plus/minus, which college box scores don't carry
+    get cbb() { return this.nba.map((x) => Object.assign({}, x, { blurb: x.blurb.replace(" and plus/minus", ""), cats: x.cats.filter((k) => k !== "pm") })); },
     nfl: [
       { k: "epa", name: "Analytics", blurb: "EPA, CPOE, ANY/A and target share", cats: ["epa", "epa_play", "cpoe", "anya", "tgt_share", "ypto", "fd", "skill_td"] },
       { k: "eff", name: "Efficiency", blurb: "Rates only: no credit for volume alone", cats: ["anya", "cmp_pct", "td_pct", "int_pct", "ypc", "ypt", "catch", "ypto"] },
@@ -569,8 +594,9 @@
       // a preset plus extras: the preset's own columns and projections, with the extras added on top
       if (spec.base && base[spec.base] && base[spec.base].type === "points") return Object.assign({}, base[spec.base], extra, { label: base[spec.base].label + extraLabel(spec), custom: true, base: spec.base });
       const pts = Object.values(base).find((x) => x.type === "points") || {};
-      const line = sport.key === "nfl" ? "tot" : sport.key === "nba" ? "pg" : sport.key === "nhl" ? "sk" : "bat";
-      return { label: "Custom points", type: "points", line, per: sport.key === "nba" ? "game" : undefined, games: pts.games || (sport.key === "mlb" ? 162 : 17),
+      const hoops = sport.key === "nba" || sport.key === "cbb";
+      const line = sport.key === "nfl" ? "tot" : hoops ? "pg" : sport.key === "nhl" ? "sk" : "bat";
+      return { label: "Custom points", type: "points", line, per: hoops ? "game" : undefined, games: pts.games || (sport.key === "mlb" ? 162 : 17),
         weights: Object.assign({}, spec.weights), projScale: sport.key === "nfl" ? 1 : undefined, custom: true, ...extra, label: "Custom points" + extraLabel(spec) };
     }
     const cats = Object.values(base).find((x) => x.type === "cats") || ALL[sport.key].catsTemplate;
@@ -726,6 +752,16 @@
     if (end.getTime() < now.getTime()) end = new Date(now.getFullYear() + 1, Math.floor(se[1] / 100) - 1, se[1] % 100, 23, 59);
     return end.getTime();
   }
+  // college hoops' March: Selection Sunday is the Sunday from March 11 to 17, the regular season (before the
+  // conference tournaments) ends a week before it, and the title game is the Monday three weeks after it. A league
+  // that plays through the NCAA tournament runs to the Sunday after, so the title game is in its last week.
+  const COLLEGE_ENDS = { reg: -7, conf: 0, ncaa: 28 };
+  function collegeEnd(kind, t) {
+    const now = new Date(t || Date.now()), y = now.getMonth() >= 6 ? now.getFullYear() + 1 : now.getFullYear();
+    const sel = new Date(y, 2, 11, 23, 59); while (sel.getDay() !== 0) sel.setDate(sel.getDate() + 1);
+    sel.setDate(sel.getDate() + (COLLEGE_ENDS[kind] != null ? COLLEGE_ENDS[kind] : 0));
+    return sel.getTime();
+  }
   const inSeason = (date) => { const x = mmdd(date || new Date()); return (DEFAULT_SPORT.find(([a, b]) => within(x, [a, b])) || [0, 0, "nfl"])[2]; };
 
   // Each pro team's main color, for its abbreviation next to a player's name. Colors only: no logos or marks.
@@ -778,7 +814,8 @@
   const POOL_NAMES = { AL: "AL-only", NL: "NL-only", AFC: "AFC-only", NFC: "NFC-only", East: "East-only", West: "West-only" };
   const poolRuleOf = (doc) => (doc && ((doc.settings && doc.settings.poolOnly) || (doc.season && doc.season.poolOnly))) || null;
   const poolTeams = (sportKey, rule) => (rule && POOL_SETS[sportKey] && POOL_SETS[sportKey][rule]) || null;
-  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || poolTeams(doc && doc.sport, poolRuleOf(doc)) || null;
+  // a pool of chosen teams: one-day slates, and college leagues kept to chosen conferences (season.pool, settings.pool)
+  const poolOf = (doc) => (doc && ((doc.settings && doc.settings.pool) || (doc.season && doc.season.pool) || (doc.season && doc.season.showdown && doc.season.showdown.teams) || (doc.season && doc.season.slate && doc.season.slate.teams))) || poolTeams(doc && doc.sport, poolRuleOf(doc)) || null;
   // everyone on a league's rosters (a player traded out of a conference-only pool keeps his spot)
   const rosteredSets = typeof WeakMap !== "undefined" ? new WeakMap() : null;
   function rostered(doc, id) {
@@ -869,5 +906,5 @@
   // a short label for a tag next to a player's name
   const confShort = (c) => ({ "Conference USA": "C-USA", "Mountain West": "MWC", American: "AAC" })[c] || c;
 
-  return { cbb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
+  return { collegeEnd, COLLEGE_ENDS, cbb, DAILY, daily, SEASON_SPORTS, lineVal, ratioVal, catCols, catOk, EXTRA_CATS, CAT_PRESETS, refreshProspects, prospectPlayers, withExtras, prospectRule, isProspect, POOL_SETS, POOL_NAMES, poolRuleOf, poolTeams, outOfPool, pointsOf, posMultOf, cleanPos, BONUS_OK, statName, ELIG, ELIG_PRESETS, eligibleAt, applyElig, conference, confOf, power4, confShort, ALL, nba, nfl, mlb, nhl, poolOf, inPool, dayOf, weekFor, SHOWDOWN, attach, TEAM_COLORS, teamColor, teamLogo, stat, positions, fits, isLate, fmt: { r3, f1, f2, f0, ip: fip, pct1 }, POINT_STATS, POINT_DEFAULTS, catCatalog, customScoring, withScoring, extraPts, bonusLines, inSeason, seasonOn, seasonEnd, prospectClass };
 });

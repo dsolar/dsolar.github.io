@@ -5,6 +5,7 @@
 // matchup page, and for football Sleeper's projections for the week ({ proj: { id: line } }).
 //
 //   basketball  ESPN's scoreboard and box scores, Monday to Sunday weeks, player ids as name slugs (like Hard Cap)
+//   college     every Division I game on ESPN's college scoreboard, ids as ESPN athlete ids, pool players only
 //   football    Sleeper's live weekly stats (the same feed as weeks-nfl.json), game states from ESPN's scoreboard
 //   baseball    MLB's Stats API schedule and box scores, Monday to Sunday weeks
 //
@@ -132,6 +133,51 @@ async function nba() {
   const acc: Record<string, number[]> = {};
   for (const l of lines) for (const [id, row] of Object.entries(l || {})) sumInto(acc, id, row as number[]);
   return { sport: "nba", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: NBA_COLS, players: acc, boxes: Object.fromEntries(games.map((g, i) => [g.id, lines[i]])), teams, games: sched };
+}
+
+/* ---------- college basketball ---------- */
+// The week's Division I games (400 or so by Sunday). A finished game's box score is kept, so a request only fetches
+// games in progress and ones that finished since. A cold start (nobody opened a college league since Monday) fetches
+// at most CBB_FRESH new box scores a request, live games first, and says partial until the week is filled in; the
+// pages ask again within the minute. Only players in the pool (fantasy-kit/data/cbb.json) are kept.
+const CBB_FRESH = 90;
+async function cbb() {
+  const today = nyDate(), start = mondayOf(today), end = addDays(start, 6);
+  const y = Number(today.slice(0, 4)), m = Number(today.slice(5, 7)), sy = m >= 7 ? y : y - 1;
+  const days = Array.from({ length: 7 }, (_, i) => addDays(start, i)).filter((d) => d <= today);
+  const [boards, poolFile]: any[] = await Promise.all([
+    pool(days, 4, (d) => getJSON(`https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=${d.replace(/-/g, "")}&groups=50&limit=400`).catch(() => ({ events: [] }))),
+    getJSON(`https://davidsolar.dev/fantasy-kit/data/cbb.json`).catch(() => null)]);
+  const ids = new Set(((poolFile && poolFile.players) || []).map((p: any) => String(p.id)));
+  const keepPool = (l: Record<string, number[]>) => (ids.size ? Object.fromEntries(Object.entries(l || {}).filter(([id]) => ids.has(id))) : l || {});
+  const teams: Teams = {}, games: { id: string; day: string; state: string }[] = [], sched: Games = {};
+  boards.forEach((b: any, i: number) => {
+    for (const e of b.events || []) {
+      const t = e.status?.type || {}; if (/postpon|cancel/i.test(`${t.name || ""} ${t.description || ""}`)) continue;
+      const state = t.state || "pre";
+      espnGames(sched, e, {});
+      for (const c of e.competitions?.[0]?.competitors || []) tally(teams, c.team?.abbreviation, state);
+      if (state !== "pre") games.push({ id: String(e.id), day: days[i], state });
+    }
+  });
+  const have = await cached("cbb", games.map((g) => g.id)), fresh: any[] = [];
+  // live games first, then the most recent finals
+  const todo = games.filter((g) => !have[g.id]).sort((a, b) => (a.state === "in" ? 0 : 1) - (b.state === "in" ? 0 : 1) || b.day.localeCompare(a.day));
+  const now = new Set(todo.slice(0, CBB_FRESH).map((g) => g.id)), partial = todo.length > CBB_FRESH;
+  const lines = await pool(games, 8, async (g) => {
+    if (have[g.id]) return keepPool(have[g.id]);
+    if (!now.has(g.id)) return null;
+    const s: any = await cbbSummary(getJSON, g.id);
+    if (!s) return null;
+    const out = keepPool(cbbBox(s));
+    fresh.push({ gid: g.id, day: g.day, final: g.state === "post", lines: out });
+    return out;
+  });
+  await keep("cbb", fresh);
+  const acc: Record<string, number[]> = {};
+  for (const l of lines) for (const [id, row] of Object.entries(l || {})) sumInto(acc, id, row as number[]);
+  return { sport: "cbb", season: `${sy}-${String(sy + 1).slice(2)}`, start, end, line: "pg", cols: CBB_COLS, players: acc, partial: partial || undefined,
+    boxes: Object.fromEntries(games.map((g, i) => [g.id, lines[i]]).filter(([, l]) => l)), teams, games: sched };
 }
 
 /* ---------- hockey ---------- */
@@ -388,6 +434,7 @@ async function nbaSlates() {
 // columns. Games in this week come from the week's feed (kept a minute); a game from an earlier week (a Sunday night
 // game read on Monday) from the finished games kept for good, or from ESPN. A postponed game reads "off".
 async function gamesFor(sport: string, ids: string[]) {
+  // college's week is 400 games: a one-day league reads its own few games straight from ESPN or the kept finals
   const wk = sport === "cbb" ? null : await liveData(sport).catch(() => null);
   const out: Record<string, { state: string; lines: unknown }> = {};
   const state: Record<string, string> = {};
@@ -435,7 +482,7 @@ async function gamesFor(sport: string, ids: string[]) {
   return { sport, ...cols, games: out, updated: new Date().toISOString() };
 }
 
-const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb, nhl };
+const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb, nhl, cbb };
 // the week's feed for a sport: the kept copy if it's under a minute old, else built fresh and kept; a feed that's down
 // gives the last copy marked stale
 async function liveData(sport: string) {
@@ -468,14 +515,14 @@ Deno.serve(async (req) => {
   const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
   if (sport === "nfl" && q.get("slates")) return json(await nflSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "nba" && q.get("slates")) return json(await nbaSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
-  // college hoops plays one-day games only: its featured slates and named games' box scores, no weekly feed
+  // college hoops: its featured slates for one-day games; the weekly feed below serves season leagues
   if (sport === "cbb" && q.get("slates")) return json(await cbbSlates(getJSON).catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "mlb" && q.get("lineups")) {
     const date = /^\d{4}-\d{2}-\d{2}$/.test(q.get("date") || "") ? q.get("date") : null;
     errors.length = 0;
     return json(await mlbLineups(date).catch((e) => ({ days: {}, error: String(e) })), { "cache-control": "max-age=90" });
   }
-  if (!BUILD[sport] && !(sport === "cbb" && q.get("games"))) return json({ error: "sport must be nba, nfl, mlb or nhl (or cbb with games)" }, {}, 400);
+  if (!BUILD[sport]) return json({ error: "sport must be nba, nfl, mlb, nhl or cbb" }, {}, 400);
   if (q.get("games")) {
     const ids = [...new Set(String(q.get("games")).split(",").map((x) => x.trim()).filter((x) => /^\d{1,12}$/.test(x)))].slice(0, 20);
     return json(await gamesFor(sport, ids).catch((e) => ({ games: {}, error: String(e) })), { "cache-control": "max-age=30" });

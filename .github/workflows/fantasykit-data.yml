@@ -1,5 +1,5 @@
 # Rebuilds the Fantasy Kit's player pools (fantasy-kit/data/nba.json, nfl.json, mlb.json) and real weekly box scores
-# (weeks-nba.json, weeks-nfl.json, weeks-mlb.json) for Draft Lab and the
+# (weeks-nba.json, weeks-nfl.json, weeks-mlb.json, weeks-cbb.json) for Draft Lab and the
 # league pages: basketball from Hard Cap's ESPN lines, baseball from MLB's Stats API files in tools/mlb, football
 # from Sleeper. Runs after each Hard Cap stats pull, when the script or this file changes, or by hand.
 name: Fantasy Kit data
@@ -17,6 +17,8 @@ on:
     paths:
       - tools/fantasykit_data.py
       - tools/fantasykit_nhl.mjs
+      - tools/fantasykit_cbb.mjs
+      - supabase/functions/fk-live/cbb.mjs
       - supabase/functions/fk-live/nhl.mjs
       - tools/dynasty_pull.py
       - tools/market_pull.py
@@ -48,6 +50,11 @@ jobs:
       - name: Build the player pools
         run: python3 tools/fantasykit_data.py
 
+      - name: Build college basketball's weeks
+        run: node tools/fantasykit_cbb.mjs
+        timeout-minutes: 12
+        continue-on-error: true
+
       - name: Pull outside dynasty rankings
         run: python3 tools/dynasty_pull.py
         continue-on-error: true
@@ -62,7 +69,7 @@ jobs:
 
       - name: Commit the pools
         run: |
-          git add fantasy-kit/data tools/nhl_fantasy
+          git add fantasy-kit/data tools/nhl_fantasy tools/cbb_fantasy
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
