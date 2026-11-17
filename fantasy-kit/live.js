@@ -1099,7 +1099,9 @@
         ${sel("playoffLegs", "Playoff rounds", [["1", "One week each"], ["final2", "Two-week final"], ["all2", "Two weeks each"]], s.playoffLegs || "1")}
         ${sel("consolation", "Also play", [["none", "Nothing else"], ["third", "A third-place game"], ["bracket", "A consolation bracket"]], s.consolation || "none")}
       </div>
-      <div class="row3">${s.playoffTeams > 2 ? sel("reseed", "Each round", [[0, "A fixed bracket"], [1, "Reseed: best seed left plays the worst"]], s.reseed ? 1 : 0) : ""}</div>`}`}
+      <div class="row3">${s.playoffTeams > 2 ? sel("reseed", "Each round", [[0, "A fixed bracket"], [1, "Reseed: best seed left plays the worst"]], s.reseed ? 1 : 0) : ""}
+        ${s.playoffTeams >= 4 && G.scoring(L, lctx()).type === "points" ? sel("playoffFinal", "The final", [["game", "Head to head"], ["chase", "The chase: the last four, highest total wins"]], s.playoffFinal === "chase" ? "chase" : "game")
+          + sel("chaseWeeks", "The chase lasts", [[1, "One week"], [2, "Two weeks"], [3, "Three weeks"]], s.chaseWeeks || 2) : ""}</div>`}`}
       <div class="row3">
         ${sel("bots", "Teams without a manager", [[1, "Bots run them"], [0, "Wait for their manager"]], s.bots === false ? 0 : 1)}
         <div class="field" style="grid-column:span 2"><label for="historyUrl">The league's own record book (optional)</label><input id="historyUrl" name="historyUrl" type="url" maxlength="200" placeholder="https://..." value="${esc(s.historyUrl || "")}"></div>

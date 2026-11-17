@@ -37,6 +37,7 @@
     const settings = s.format === "guillotine" ? { format: "guillotine", bestBall: s.bestBall !== false, waiverAt: 60, faab: s.faab || 1000 }
       : { format: s.format === "roto" || s.format === "total" ? s.format : "h2h", tally: s.tally || "game", weeks, playoffTeams: s.format === "roto" || s.format === "total" ? 0 : Math.min(s.playoffTeams != null ? s.playoffTeams : 4, n),
         playoffLegs: s.playoffLegs || "1", consolation: s.consolation || "none",
+        ...(s.playoffFinal === "chase" ? { playoffFinal: "chase", chaseWeeks: Math.max(1, Math.min(3, Math.floor(Number(s.chaseWeeks) || 2))) } : {}),
         deadline: s.deadline != null ? s.deadline : Math.max(1, weeks - 3), tradeReview: ["none", "commish"].includes(s.review) ? s.review : "vote", reviewHours: s.reviewHours || 24, vetoShare: s.vetoShare || 0.5,
         waiverDays: s.waiverDays != null ? s.waiverDays : 2, gameLock: s.gameLock || (sport && sport.key === "nfl" ? "week" : "off"), faab: s.faab || 100, waivers: s.waivers === "rolling" ? "rolling" : "faab" };
     // roster rules from the form: IR spots, a weekly pickup limit, position limits
@@ -459,6 +460,17 @@
                 med = ` Against the league median of ${fmtS(m)}, you ${sm > m ? "won" : sm < m ? "lost" : "tied"}.`;
               }
               add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.${med}${cl.settings.weeks > 1 ? (g.cats ? " The recap has every result and who moved in the standings." : " The recap has every result, the top players and who left points on the bench.") : ""}`, null, cl.settings.weeks > 1 ? `league/recap/${w}` : null);
+              continue;
+            }
+            // the chase: where you stand after each week, and your place at the end
+            if (g.kind === "chase") {
+              const row = G.postseason(cl).find((x) => x.chase && x.chase.teams), c = row && row.chase;
+              if (c) {
+                const k = rd.weeks.indexOf(+w), place = c.order.indexOf(mine) + 1, gap = c.totals[c.order[0]] - c.totals[mine];
+                const PL = ["first", "second", "third", "fourth"];
+                if (c.done) add(mine, "week", place === 1 ? "you won the chase and the championship" : `you finished ${PL[place - 1]} in the chase`, `${fmtS(c.totals[mine])} over the chase's ${rd.weeks.length} weeks${place === 1 ? `, ahead of ${teamName(c.order[1])}'s ${fmtS(c.totals[c.order[1]])}` : `, ${fmtS(gap)} behind ${teamName(c.order[0])}`}.`);
+                else add(mine, "week", `the chase, week ${k + 1} of ${rd.weeks.length}`, `You're ${PL[place - 1]} with ${fmtS(c.totals[mine])}${place > 1 ? `, ${fmtS(gap)} behind ${teamName(c.order[0])}` : ""}. Only the total counts.`);
+              }
               continue;
             }
             // playoffs: name the round, add up a two-week round, and say what's next

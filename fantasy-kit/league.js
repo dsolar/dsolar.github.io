@@ -50,7 +50,12 @@
     const guillotine = s.format === "guillotine";
     if (guillotine) { s.chops = Math.max(1, s.chops); s.weeks = Math.ceil((n - 1) / s.chops); s.playoffTeams = 0; s.playoffWeeks = 0; }
     else if (flat(s)) { s.playoffTeams = 0; s.playoffWeeks = 0; }
-    else { s.playoffTeams = Math.min(s.playoffTeams, n); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0; s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0); }
+    else {
+      s.playoffTeams = Math.min(s.playoffTeams, n); s.playoffTeams = s.playoffTeams >= 2 ? s.playoffTeams : 0;
+      if (s.playoffFinal === "chase" && s.playoffTeams < CHASE) delete s.playoffFinal;
+      if (chaseOn(s) && (s.consolation === "third" || s.consolation === "places")) s.consolation = "none";
+      s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0);
+    }
     const seed = opts.seed != null ? opts.seed : D ? D.seed + 1 : Math.floor(Math.random() * 2 ** 31);
     const rosters = D ? F.rosters(D) : (opts.rosters || teams.map(() => []));
     // waiver priority starts as the reverse of the draft order
@@ -1585,11 +1590,30 @@
      best of the teams that missed play their own bracket, finishing the same week as the final). Ties in a round go
      to the higher seed. */
   const ROUNDS = (R, r) => (r === R ? "Final" : r === R - 1 ? "Semifinals" : r === R - 2 ? "Quarterfinals" : `Round ${r}`);
+  /* The chase (settings.playoffFinal "chase", points leagues, 4+ playoff teams): the bracket narrows to four, and the
+     final is a race among them over settings.chaseWeeks weeks (2 by default): no matchups, the highest total wins and
+     the totals give places 1 to 4. The four still play a paired game each week (1 v 4, 2 v 3) so every score is kept,
+     but only the totals count. Ties go to the better seed. */
+  const CHASE = 4;
+  const chaseOn = (s) => s.playoffFinal === "chase" && (s.playoffTeams || 0) >= CHASE;
+  const chaseWeeks = (s) => Math.max(1, Math.min(3, Math.floor(Number(s.chaseWeeks) || 2)));
   function planOf(s) {
     const m = s.playoffTeams || 0;
     if (m < 2) return [];
-    const R = Math.ceil(Math.log2(m)), out = [];
+    const out = [];
     let w = s.weeks + 1;
+    if (chaseOn(s)) {
+      // rounds down to four (8 teams play one, 12 or 16 play two), then the chase
+      const pre = m <= CHASE ? 0 : Math.ceil(Math.log2(m)) - 2;
+      for (let r = 1; r <= pre; r++) {
+        const legs = s.playoffLegs === "all2" ? 2 : 1;
+        out.push({ round: r, name: ROUNDS(pre + 2, r), weeks: Array.from({ length: legs }, (_, i) => w + i) });
+        w += legs;
+      }
+      out.push({ round: pre + 1, name: "The Chase", chase: true, weeks: Array.from({ length: chaseWeeks(s) }, (_, i) => w + i) });
+      return out;
+    }
+    const R = Math.ceil(Math.log2(m));
     for (let r = 1; r <= R; r++) {
       const legs = s.playoffLegs === "all2" || (s.playoffLegs === "final2" && r === R) ? 2 : 1;
       out.push({ round: r, name: ROUNDS(R, r), weeks: Array.from({ length: legs }, (_, i) => w + i) });
@@ -1619,6 +1643,20 @@
     if (sa === sb && L.settings.playoffTie === "h2h") { const h = h2h(L, a, b); if (h < 0) return { win: b, lose: a, sa, sb }; }
     return sb > sa ? { win: b, lose: a, sa, sb } : { win: a, lose: b, sa, sb };
   }
+  // The chase's standing over its weeks: each team's total, best first (ties to the better seed: teams come in seed
+  // order). Complete once every week is final; until then the totals so far, with done false.
+  function decideChase(L, rd, teams) {
+    const tot = Object.fromEntries(teams.map((t) => [t, 0]));
+    let done = true;
+    for (const w of rd.weeks) for (const t of teams) {
+      const g = (L.results[w] || []).find((x) => x.a === t || x.b === t);
+      if (!g) { done = false; continue; }
+      tot[t] += g.a === t ? g.sa : g.sb;
+    }
+    for (const t of teams) tot[t] = Math.round(tot[t] * 100) / 100;
+    const order = teams.slice().sort((a, b) => tot[b] - tot[a] || teams.indexOf(a) - teams.indexOf(b));
+    return { order, totals: tot, done };
+  }
   // a's regular-season record against b, as a's wins minus b's: categories in a league that counts them, else games
   function h2h(L, a, b) {
     let n = 0;
@@ -1643,7 +1681,12 @@
     const out = [];
     for (const rd of plan) {
       const r = rd.round, row = { round: r, name: rd.name, weeks: rd.weeks, main: [], third: null, cons: [] };
-      if (main) {
+      if (rd.chase) {
+        // the four left, in seed order
+        const four = main ? main.slice().sort((x, y) => seedOf(x) - seedOf(y)) : null;
+        row.chase = four ? Object.assign({ teams: four }, decideChase(L, rd, four)) : { teams: null };
+        main = null;
+      } else if (main) {
         const slots = pairUp(main), next = [];
         for (const sl of slots) {
           if (sl.bye != null) { row.main.push({ bye: sl.bye }); next.push(sl.bye); continue; }
@@ -1712,8 +1755,10 @@
     if (!row) return [];
     const tag = (g, kind) => Object.assign([g.a, g.b], { kind });
     const tagP = (g) => Object.assign([g.a, g.b], { kind: `p${g.place}` });   // "p5": the game for 5th place and below
-    return row.main.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "title"))
-      .concat(row.third ? [tag(row.third, "third")] : [], (row.places || []).filter((g) => g.bye == null && g.a != null && g.b != null).map(tagP), row.cons.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "cons")));
+    // the chase: 1 v 4 and 2 v 3, so each of the four has a score; the totals decide it
+    const ch = row.chase && row.chase.teams && row.chase.teams.length === CHASE ? [Object.assign([row.chase.teams[0], row.chase.teams[3]], { kind: "chase" }), Object.assign([row.chase.teams[1], row.chase.teams[2]], { kind: "chase" })] : [];
+    return ch.concat(row.main.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "title"))
+      .concat(row.third ? [tag(row.third, "third")] : [], (row.places || []).filter((g) => g.bye == null && g.a != null && g.b != null).map(tagP), row.cons.filter((g) => g.bye == null && g.a != null && g.b != null).map((g) => tag(g, "cons"))));
   }
   // How the season ended: the champion and runner-up, third place, and the consolation winner, as far as decided.
   function finish(L) {
@@ -1723,6 +1768,12 @@
     const st = standings(L);
     if (isRoto(L) || isTotal(L) || !L.settings.playoffTeams) return { champion: L.week > totalWeeks(L) && st[0] ? st[0].team : null };
     const ps = postseason(L), last = ps[ps.length - 1], fin = last && last.main[0] && last.main[0].res;
+    // the chase: the totals give the top four places
+    if (last && last.chase) {
+      const c = last.chase, ok = c.teams && c.done, places = ok ? Object.fromEntries(c.order.map((t, i) => [t, i + 1])) : {};
+      return { champion: ok ? c.order[0] : null, runnerUp: ok ? c.order[1] : null, third: ok ? c.order[2] : null, places: ok ? places : undefined,
+        consolation: last.cons[0] && last.cons[0].res ? last.cons[0].res.win : null };
+    }
     // every playoff team's final place, when they all played for one
     if (L.settings.consolation === "places" && last) {
       const places = {};
@@ -1813,7 +1864,7 @@
       for (const w of rd.weeks) {
         if (w > L.week) return out;
         const games = matchups(L, ctx, w, w < L.week ? 1 : 0);
-        out.push({ week: w, round: rd.name, leg: rd.weeks.length > 1 ? `${rd.weeks.indexOf(w) + 1} of 2` : "", games });
+        out.push({ week: w, round: rd.name, chase: !!rd.chase, leg: rd.weeks.length > 1 ? `${rd.weeks.indexOf(w) + 1} of ${rd.weeks.length}` : "", games });
       }
     }
     return out;
@@ -1845,6 +1896,7 @@
     reviewHours: (v) => clampInt(v, 1, 168), vetoShare: (v) => (Number.isFinite(+v) && +v > 0 && +v <= 1 ? +v : null), offerHours: (v) => clampInt(v, 1, 336),
     trades: (v) => !!v, median: (v) => !!v, bestBall: (v) => !!v, posMax: (v) => (v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clampInt(x, 0, 30)]).filter(([, x]) => x)) : null),
     playoffTeams: (v) => clampInt(v, 0, 32), playoffLegs: (v) => (["1", "final2", "all2"].includes(String(v)) ? String(v) : null), consolation: (v) => (["none", "third", "bracket", "places"].includes(v) ? v : null),
+    playoffFinal: (v) => (v === "chase" || v === "game" ? v : null), chaseWeeks: (v) => clampInt(v, 1, 3),
     weeks: (v) => clampInt(v, 1, 30), taxi: (v) => clampInt(v, 0, 6),
     waiverPrice: (v) => (v === "first" || v === "second" ? v : null),
     tradeMax: (v) => clampInt(v, 0, 10), pickTrades: (v) => (v === "offseason" || v === "always" ? v : v === "off" || v === false ? false : null), faabTrades: (v) => !!v, reseed: (v) => !!v, minIP: (v) => clampInt(v, 0, 100), minGoalieGames: (v) => clampInt(v, 0, 14), draftOrder: (v) => (["worst", "lottery"].includes(v) ? v : null),
@@ -1852,7 +1904,7 @@
     elig: (v) => (v && typeof v === "object" && ["g", "gs", "sp", "rp"].every((k) => clampInt(v[k], 0, 60) != null) ? { g: clampInt(v.g, 0, 60), gs: clampInt(v.gs, 0, 60), sp: clampInt(v.sp, 0, 60), rp: clampInt(v.rp, 0, 60) } : null),
   };
   const clampInt = (v, lo, hi) => (Number.isFinite(+v) ? Math.max(lo, Math.min(hi, Math.round(+v))) : null);
-  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation", "reseed", "playoffTie"];
+  const PLAYOFF_RULES = ["playoffTeams", "playoffLegs", "consolation", "reseed", "playoffTie", "playoffFinal", "chaseWeeks"];
   function setRules(L, patch, now) {
     if (isGuillotine(L) && Object.keys(patch).some((k) => ["playoffTeams", "playoffLegs", "consolation", "median", "weeks"].includes(k))) return { ok: false, why: "A guillotine league has no playoffs or schedule to change" };
     const s = L.settings, changed = [];
@@ -1870,6 +1922,8 @@
     if (changed.includes("weeks")) { L.schedule = roundRobin(L.teams.length, s.weeks, rng(L.seed + 7)); if (s.split && !splitOk(s, L.teams.length)) delete s.split; }
     if (changed.some((k) => PLAYOFF_RULES.includes(k) || k === "weeks")) {
       s.playoffTeams = Math.min(s.playoffTeams, L.teams.length); if (s.playoffTeams < 2) s.playoffTeams = 0;
+      if (s.playoffFinal === "chase" && s.playoffTeams < CHASE) s.playoffFinal = "game";
+      if (chaseOn(s) && (s.consolation === "third" || s.consolation === "places")) s.consolation = "none";
       s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0);
     }
     if (changed.length) log(L, now, { type: "commish", team: -1, text: `Rules changed: ${changed.join(", ")}` });
@@ -2853,5 +2907,5 @@
   return { sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
+    weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

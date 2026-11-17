@@ -729,6 +729,9 @@ td.more{text-align:center;padding:12px}
 .bk-t.me{background:var(--brand-soft)}
 .bk-t .sd{font-weight:900;color:var(--dim);font-variant-numeric:tabular-nums}
 .bk-g.tbd .bk-t{grid-template-columns:1fr;min-height:36px}
+.bk-g.chase .bk-t{grid-template-columns:18px auto minmax(0,1fr) auto auto}
+.bk-g.chase .bk-t small{font-weight:600;white-space:nowrap}
+.bk-g.chase .bk-t:has(.ps:only-child){grid-template-columns:1fr;min-height:36px}
 /* a matchup cell holding a stat line instead of a number */
 table.t.vs td.pa,table.t.vs td.pb{white-space:nowrap}
 @media (max-width:600px){table.t.vs td.pa,table.t.vs td.pb{white-space:normal;font-size:11.5px;max-width:84px}}

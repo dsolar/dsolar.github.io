@@ -494,7 +494,7 @@
       roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       heist: `${form.hzShields} shield${form.hzShields === 1 ? "" : "s"}, ${form.hzSteals} steal${form.hzSteals === 1 ? "" : "s"}, ${form.hzJinxes} jinx${form.hzJinxes === 1 ? "" : "es"}, ${form.hzClock} sec`,
       season: `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" && form.season !== "total" ? `, ${form.divs} divisions` : ""}${!gl && !form.divs && ["h2h", "h2hcats"].includes(form.season) && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2 ? `, splits after week ${form.splitAfter}` : ""}`,
-      playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks` : "None",
+      playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks${chaseOn() ? ", the chase" : ""}` : "None",
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverDays}-day waivers` : `Rolling, ${form.waiverDays}-day waivers`,
       trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
       carry: (form.kind === "dynasty" ? `Dynasty, ${form.rookie}-round rookie draft` : form.kind === "keeper" ? `Up to ${form.keepN} keepers` : "Redraft") + (form.kind !== "redraft" && form.proRounds > 0 ? `, ${form.proRounds} prospect round${form.proRounds > 1 ? "s" : ""}` : ""),
@@ -769,8 +769,10 @@
     const poOpts = [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x <= n).map((x) => [x, x ? `${x}` : "None"]);
     const byes = po ? 2 ** Math.ceil(Math.log2(Math.max(2, po))) - po : 0;
     return `${fld("Playoff teams", seg("playoffs", poOpts, po, "Playoff teams", { wrap: true }), po ? `${byes ? `The top ${byes} get a bye. ` : ""}${playoffWeeks(po)} playoff weeks after week ${form.weeks}, so the season runs ${form.weeks + playoffWeeks(po)} weeks.` : "")}
-        ${po >= 2 ? `<div class="g2">${fld("Each round lasts", seg("legs", [["1", "One week"], ["final2", "Two-week final"], ["all2", "Two weeks"]], form.legs, "Playoff rounds", { wrap: true }))}
-        ${fld("Also play", seg("cons", [["none", "Nothing else"]].concat(po >= 3 ? [["third", "Third place"]] : [], n - po >= 2 ? [["bracket", "Consolation"]] : []), form.cons, "Also play", { wrap: true }))}</div>` : ""}`;
+        ${chaseOk() ? `<div class="g2">${fld("The final", seg("pfinal", [["game", "Head to head"], ["chase", "The chase"]], chaseOn() ? "chase" : "game", "The final", { wrap: true }), chaseOn() ? `The last four race for the highest total, no matchups${po > 4 ? `: the rounds before it narrow ${po} teams to four` : ""}. The totals set first through fourth.` : "Two teams, one matchup.")}
+          ${chaseOn() ? fld("The chase lasts", seg("chaseWeeks", [[2, "Two weeks"], [1, "One week"], [3, "Three weeks"]], form.chaseWeeks || 2, "The chase lasts", { wrap: true })) : ""}</div>` : ""}
+        ${po >= 2 ? `<div class="g2">${chaseOn() ? (po > 4 ? fld("Rounds before the chase", seg("legs", [["1", "One week"], ["all2", "Two weeks"]], form.legs === "all2" ? "all2" : "1", "Rounds before the chase", { wrap: true })) : "") : fld("Each round lasts", seg("legs", [["1", "One week"], ["final2", "Two-week final"], ["all2", "Two weeks"]], form.legs, "Playoff rounds", { wrap: true }))}
+        ${fld("Also play", seg("cons", [["none", "Nothing else"]].concat(po >= 3 && !chaseOn() ? [["third", "Third place"]] : [], n - po >= 2 ? [["bracket", "Consolation"]] : []), chaseOn() && form.cons === "third" ? "none" : form.cons, "Also play", { wrap: true }))}</div>` : ""}`;
   }
   function waiversBody() {
     const gl = form.season === "guillotine", faab = form.faab == null ? (gl ? 1000 : 100) : form.faab, fb = gl || form.waivers === "faab";
@@ -805,10 +807,16 @@
     return Math.max(1, Math.floor((end - d.getTime()) / 6048e5));
   }
   const endLabel = () => { const e = S.seasonEnd(form.sport, Date.now()); return e ? new Date(e).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : ""; };
-  const playoffWeeks = (po) => { const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R; };
+  // the chase (a points race among the last four): points scoring, four or more playoff teams
+  const chaseOk = () => scoringType(S[form.sport]) === "points" && Math.min(form.playoffs, form.teams) >= 4;
+  const chaseOn = () => chaseOk() && form.pfinal === "chase";
+  const playoffWeeks = (po) => {
+    if (chaseOn()) { const pre = po <= 4 ? 0 : Math.ceil(Math.log2(po)) - 2; return pre * (form.legs === "all2" ? 2 : 1) + (form.chaseWeeks || 2); }
+    const R = Math.ceil(Math.log2(po)); return form.legs === "all2" ? 2 * R : form.legs === "final2" ? R + 1 : R;
+  };
   const kc = () => { const ok = form.type === "auction" ? ["price", "price5"] : ["round", "round1", "free"]; return ok.includes(form.keeperCost) ? form.keeperCost : ok[0]; };
   const POS_MAIN = { nhl: ["C", "LW", "RW", "D", "G"], nfl: ["QB", "RB", "WR", "TE", "K", "DEF"], nba: ["PG", "SG", "SF", "PF", "C"], mlb: ["C", "1B", "2B", "3B", "SS", "OF", "SP", "RP"] };
-  const NUMERIC = /^(aBudget|ladSeed|nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
+  const NUMERIC = /^(aBudget|ladSeed|chaseWeeks|nhlDaily|minGoalieGames|proRounds|elSteals|elFreeze|elTax|elGold|hzOn|hzShields|hzSteals|hzJinxes|hzClock|rlOn|rlRound|respins|teams|clock|weeks|trades|bench|faab|playoffs|deadline|waiverDays|ir|maxAdds|median|bestball|divs|rookie|fpicks|taxi|ptd|vlike|vdouble|reviewHours|vetoShare|minBid|maxAddsSeason|keepN|vampOn|pyoOn|robinOn|robinP|conqOn|conqP|conqLike|crownOn|crownStep|crownKeep|hangOn|tbOn|tbAmt|slWeek|capBudget|capBonus|pyrOn|pyrTeams|pyrK|splitAfter|ladOn|ladReach|dealOn|dealMax|confOn|tvOn|(tep|b100r|b100c|b300p)(On|Amt)|pm_.+)$/;
   // keep what's typed when a choice redraws the form
   function grab() {
     const root = $(".su"); if (!root) return;
@@ -978,7 +986,8 @@
       if (oneWeek()) Object.assign(D.season, { weeks: 1, when: D.season.when || (form.when === "next" || form.sport === "mlb" || form.sport === "nhl" ? "next" : "now"), oneWeek: true });
       if (!gl) Object.assign(D.season, { waivers: form.waivers, deadline: oneWeek() ? 0 : form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline, review: n <= 2 && form.review === "vote" ? "none" : form.review, waiverDays: form.waiverDays, gameLock: form.gameLock || (form.sport === "nfl" ? "week" : "off"), reviewHours: form.reviewHours, vetoShare: form.vetoShare, waiverOrder: form.waiverOrder,
         playoffTeams: fmt === "roto" || fmt === "total" || oneWeek() ? 0 : Math.min(form.playoffs, n), playoffLegs: form.legs,
-        consolation: form.cons === "third" && Math.min(form.playoffs, n) < 3 ? "none" : form.cons === "bracket" && n - Math.min(form.playoffs, n) < 2 ? "none" : form.cons });
+        consolation: form.cons === "third" && (Math.min(form.playoffs, n) < 3 || chaseOn()) ? "none" : form.cons === "bracket" && n - Math.min(form.playoffs, n) < 2 ? "none" : form.cons,
+        ...(chaseOn() ? { playoffFinal: "chase", chaseWeeks: form.chaseWeeks || 2 } : {}) });
       if (rematch) {
         D.teams.forEach((t, i) => { const o = rematch.teams[i]; if (o) Object.assign(t, o); });
         const r = await C.rpc("fk_rematch", { p_id: rematch.id, p_draft: D, p_name: form.name }).catch((e) => ({ error: e.message }));

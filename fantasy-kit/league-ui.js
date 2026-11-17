@@ -179,7 +179,7 @@
     // championship. Returns the game's index in G.matchups, or -1.
     function featuredGame(w, ms) {
       if (gl() || flat()) return -1;
-      if (w > L().settings.weeks) return ms.findIndex((m) => m.kind === "title" && (G.roundOf(L(), w) || {}).name === "Final");
+      if (w > L().settings.weeks) return ms.findIndex((m) => (m.kind === "title" && (G.roundOf(L(), w) || {}).name === "Final") || m.kind === "chase");
       if (w < 2) return -1;
       // two good teams, not one great team carrying a bad one: the weaker side's record decides it. Late in the
       // season a game between teams on the playoff bubble gets a lift
@@ -736,7 +736,8 @@
     function kindName(kind, w) {
       const rd = G.roundOf(L(), w);
       if (!rd) return "Playoffs";
-      const leg = rd.weeks.length > 1 ? `, week ${rd.weeks.indexOf(w) + 1} of 2` : "";
+      const leg = rd.weeks.length > 1 ? `, week ${rd.weeks.indexOf(w) + 1} of ${rd.weeks.length}` : "";
+      if (kind === "chase" || rd.chase) return `The Chase${leg}: four teams, the highest total wins`;
       if ((kind === "title" || !kind) && rd.name === "Final") return `Championship${leg}`;
       return kind === "third" ? `Third place${leg}` : /^p\d+$/.test(kind || "") ? `${placeGame(+kind.slice(1), rd)}${leg}` : kind === "cons" ? `Consolation ${rd.name.toLowerCase()}${leg}` : `${rd.name}${leg}`;
     }
@@ -744,12 +745,13 @@
     function weekChip(x) {
       const rd = G.roundOf(L(), x);
       if (!rd) return `Week ${x}`;
-      const short = { Final: "Final", Semifinals: "Semis", Quarterfinals: "Quarters" }[rd.name] || rd.name.replace("Round ", "R");
+      const short = { Final: "Final", Semifinals: "Semis", Quarterfinals: "Quarters", "The Chase": "Chase" }[rd.name] || rd.name.replace("Round ", "R");
       return rd.weeks.length > 1 ? `${short} ${rd.weeks.indexOf(x) + 1}` : short;
     }
     function playoffLine(s) {
       const n = s.playoffTeams, P = 2 ** Math.ceil(Math.log2(n)), byes = P - n, plan = G.playoffPlan(L());
-      const legs = s.playoffLegs === "all2" ? ", every round two weeks" : s.playoffLegs === "final2" ? ", a two-week final" : "";
+      const chase = G.chaseOn && G.chaseOn(s) ? `, ending in the chase: the last four race for the highest total over ${plan[plan.length - 1].weeks.length} week${plan[plan.length - 1].weeks.length > 1 ? "s" : ""}, and the totals set first to fourth` : "";
+      const legs = chase ? `${s.playoffLegs === "all2" && plan.length > 1 ? ", the rounds before it two weeks each" : ""}${chase}` : s.playoffLegs === "all2" ? ", every round two weeks" : s.playoffLegs === "final2" ? ", a two-week final" : "";
       const extra = s.consolation === "third" ? ", and a third-place game" : s.consolation === "bracket" ? ", and a consolation bracket for the teams that miss" : s.consolation === "places" ? ". Every playoff team plays every week for its final place" : "";
       return `${s.weeks} weeks, then ${n} teams in the playoffs${byes ? ` (the top ${byes} get a bye)` : ""} over ${plan.reduce((a, rd) => a + rd.weeks.length, 0)} weeks${legs}${s.reseed && n > 2 ? `, reseeded every round so the best seed left plays the worst` : ""}${extra}`;
     }
@@ -762,7 +764,9 @@
       const team = (r) => `<div class="bk-t${isMe(r.team) ? " me" : ""}"><span class="sd">${r.rank}</span>${teamAv(T(r.team), "sm")}<span class="ell">${esc(T(r.team).name)}</span><span class="ps">${esc(recOf(r.team))}</span></div>`;
       const wk = (rd) => (rd.weeks.length > 1 ? `weeks ${rd.weeks[0]} and ${rd.weeks[1]}` : `week ${rd.weeks[0]}`);
       const tbd = `<div class="bk-g tbd"><div class="bk-t"><span class="ps">Winner</span></div><div class="bk-t"><span class="ps">Winner</span></div></div>`;
-      return `<p class="ps" style="margin:0 0 10px">If the season ended today:</p><div class="bk">${G.playoffPlan(L()).map((rd, ri) => `<div class="bk-r"><b class="ps">${esc(rd.name)}, ${wk(rd)}</b>${ri === 0
+      const chaseBox = (rd, ri) => `<div class="bk-g chase">${ri === 0 ? seeds.slice(0, 4).map(team).join("") : Array.from({ length: 4 }, () => `<div class="bk-t"><span class="ps">Winner</span></div>`).join("")}</div>`;
+      const wk2 = (rd) => (rd.weeks.length > 1 ? `weeks ${rd.weeks[0]} to ${rd.weeks[rd.weeks.length - 1]}` : `week ${rd.weeks[0]}`);
+      return `<p class="ps" style="margin:0 0 10px">If the season ended today:</p><div class="bk">${G.playoffPlan(L()).map((rd, ri) => rd.chase ? `<div class="bk-r"><b class="ps">The Chase, ${wk2(rd)}: highest total wins</b>${chaseBox(rd, ri)}</div>` : `<div class="bk-r"><b class="ps">${esc(rd.name)}, ${wk(rd)}</b>${ri === 0
         ? first.map(([a, b]) => (b ? `<div class="bk-g">${team(a)}${team(b)}</div>` : `<div class="bk-g">${team(a)}<div class="bk-t"><span class="ps">Bye</span></div></div>`)).join("")
         : Array.from({ length: P / 2 ** (ri + 1) }, () => tbd).join("")}</div>`).join("")}</div>`;
     }
@@ -780,7 +784,7 @@
       // the consolation bracket: the games for the places after the title (3rd, then 5th to 8th with "places", or a
       // consolation round for teams out of the title hunt), a column a week, each game labeled with what it's for
       if (side) {
-        const cols2 = br.map((b) => ({ wk: b.week, round: b.round, games: b.games.filter((m) => m.kind && m.kind !== "title") })).filter((c) => c.games.length);
+        const cols2 = br.map((b) => ({ wk: b.week, round: b.round, games: b.games.filter((m) => m.kind && m.kind !== "title" && m.kind !== "chase") })).filter((c) => c.games.length);
         if (!cols2.length) return "";
         const label = (m, wk) => (m.kind === "third" ? "Third place" : /^p\d+$/.test(m.kind) ? kindName(m.kind, wk) : "Consolation");
         return `<div class="card bk-card"><div class="mod-h"><h2>Consolation bracket</h2><span class="ps">${L().settings.consolation === "places" ? "Every playoff team plays for its place" : "Playing for the places after the title"}</span></div>
@@ -788,8 +792,18 @@
       }
       const cols = br.map((b) => ({ name: b.round, wk: b.week, games: b.games.filter((m) => (m.kind || "title") === "title") })).filter((c) => c.games.length);
       const champ = over() ? championOf() : null;
+      // the chase: the four, best total first, each week's score and the total (a week in progress counts live)
+      const crow = G.postseason(L()).find((r) => r.chase && r.chase.teams), cwk = br.filter((b) => b.chase);
+      if (crow && cwk.length) {
+        const t4 = crow.chase.teams, wkSc = (t, b) => { const m = b.games.find((g) => g.a === t || g.b === t); return m ? (m.a === t ? (m.final ? m.sa : m.pa != null ? m.pa : m.sa) : (m.final ? m.sb : m.pb != null ? m.pb : m.sb)) : null; };
+        const totals = Object.fromEntries(t4.map((t) => [t, cwk.reduce((a, b) => a + (wkSc(t, b) || 0), 0)]));
+        const order = crow.chase.done ? crow.chase.order : t4.slice().sort((a, b) => totals[b] - totals[a] || t4.indexOf(a) - t4.indexOf(b));
+        const done = crow.chase.done, plan = G.playoffPlan(L()).find((r) => r.chase);
+        const rows4 = order.map((t, i) => `<div class="bk-t${done && i === 0 ? " w" : ""}${isMe(t) ? " me" : ""}"><i>${seed(t) || ""}</i>${teamAv(T(t), "sm")}<span class="ell">${esc(T(t).name)}</span><small class="ps">${cwk.map((b) => fmtS(wkSc(t, b) || 0)).join(" + ")}</small><b>${fmtS(totals[t])}</b></div>`).join("");
+        cols.push({ name: "The Chase", wk: `${plan.weeks[0]}${plan.weeks.length > 1 ? `-${plan.weeks[plan.weeks.length - 1]}` : ""}`, html: `<div class="bk-g chase" title="Highest total over the chase's weeks wins">${rows4}</div>` });
+      }
       return `<div class="card bk-card"><div class="mod-h"><h2>Playoff bracket</h2><span class="ps">Weeks ${L().settings.weeks + 1} to ${G.totalWeeks(L())}${L().settings.reseed ? ", reseeded each round" : ""}</span></div>
-        <div class="bk" style="--cols:${cols.length + 1}">${cols.map((c) => `<div class="bk-col"><b class="bk-h">${esc(c.name)}<small>Week ${c.wk}</small></b><div class="bk-gs">${c.games.map((m) => box(m, c.wk)).join("")}</div></div>`).join("")}
+        <div class="bk" style="--cols:${cols.length + 1}">${cols.map((c) => `<div class="bk-col"><b class="bk-h">${esc(c.name)}<small>Week${String(c.wk).includes("-") ? "s" : ""} ${c.wk}</small></b><div class="bk-gs">${c.html || c.games.map((m) => box(m, c.wk)).join("")}</div></div>`).join("")}
           <div class="bk-col bk-champ"><b class="bk-h">Champion<small>${esc(L().season || "")}</small></b><div class="bk-gs"><div class="bk-cup">${champ != null ? `${teamAv(T(champ), "lg")}<b>${esc(T(champ).name)}</b>${T(champ).owner ? `<small class="ps">${esc(T(champ).owner)}</small>` : ""}` : `<b class="ps">To be decided</b>`}</div></div></div></div></div>`;
     }
     function standingsPage() {

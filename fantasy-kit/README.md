@@ -286,6 +286,11 @@ owns which team, the invite code and the save order. It also stamps each team's 
   set after the last seeding week. With no seeding it starts from the draft order upside down, or a random order after
   an auction.
 - **Your leagues** groups by sport once you're in more than one, with a chip per sport (the pick sticks per browser).
+- **The chase** (`settings.playoffFinal: "chase"`, `chaseWeeks` 1 to 3, default 2; points leagues with four or more
+  playoff teams): the bracket narrows to four (8 teams play one round, 12 or 16 play two), then the last four race for
+  the highest total, no matchups; the totals give places 1 to 4 (`decideChase`). The four still play paired games
+  (1 v 4, 2 v 3) each week so every score is kept. A third-place game or "places" consolation turns off with it.
+  Set in league setup's Playoffs and in the commissioner's rules.
 - **Prospect rounds** (keeper and dynasty leagues): `D.season`/`F.create({ prospects: { rounds, rule } })` adds rounds
   after the main draft that take prospects only (`FK.draft.prospectRound`), and those picks start the season on the
   taxi squad (`settings.prospects`, at least that many taxi spots, keeper leagues included). The pool rides with the
