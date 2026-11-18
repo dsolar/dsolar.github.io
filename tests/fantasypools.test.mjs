@@ -99,3 +99,35 @@ test('expected points and win chances come from the hub', () => {
   assert.ok(Math.abs(P.winProb({ bpi: 10 }, { bpi: 10 }) - 0.5) < 1e-6);
   assert.ok(P.winProb({ bpi: 20 }, { bpi: 9 }) > 0.8);
 });
+
+test('survivor tiebreak: same-day wipeout goes to the higher seeds of winning picks', () => {
+  // u1 won day 1 with D (9), u2 with C... both lose day 2; D beat C so give u2 the 8-9 game's other side via r1
+  const b = { games: games({ r1: 'B', r2: 'D', r3: 'E', r4: 'G' }), members: members.slice(0, 2),
+    picks: [pk('u1', 'd1', 'D'), pk('u2', 'd1', 'B'), pk('u1', 'd2', 'F'), pk('u2', 'd2', 'H')] };
+  const s = P.survivor(b, T(19, 23));
+  assert.deepEqual(s.winners, ['u2']);                               // 16 seed B beats 9 seed D
+  assert.equal(s.rows[0].id, 'u2');
+  assert.equal(s.rows[0].seeds, 16);
+});
+
+test('5 teams tiebreak: points, then seeds, then the deepest run', () => {
+  const gs = [
+    g('a1', 1, 18, T(18, 1), 'A', 5, 'B', 12, 'A'), g('a2', 1, 18, T(18, 2), 'C', 5, 'D', 12, 'D'),
+    g('a3', 1, 18, T(18, 3), 'E', 5, 'F', 12, 'F'), g('a4', 1, 18, T(18, 4), 'G', 5, 'H', 12, 'G'),
+    g('a5', 1, 18, T(18, 5), 'K', 5, 'L', 12, 'K'),
+    g('b1', 2, 20, T(20, 1), 'A', 5, 'D', 12, 'A'), g('b2', 2, 20, T(20, 2), 'F', 12, 'G', 5, 'F'),
+  ];
+  const five = (u, ts) => ts.map((t, i) => pk(u, 'f' + i, t));
+  const run = (p1, p2) => P.five({ games: gs, members: members.slice(0, 2), picks: [...five('u1', p1), ...five('u2', p2)] }, T(21, 1));
+  // both 3 points and 39 seeds: u1's A won two games, u2's best team won one, so u1 is ahead
+  let F = run(['A', 'B', 'C', 'E', 'H'], ['D', 'G', 'K', 'B', 'C']);
+  assert.deepEqual(F.rows.map((r) => [r.points, r.seeds]), [[3, 39], [3, 39]]);
+  assert.equal(F.rows[0].id, 'u1');
+  assert.deepEqual(F.rows.map((r) => r.place), [1, 2]);
+  // same points, but u2's seeds are higher: seeds come first
+  F = run(['A', 'B', 'C', 'E', 'H'], ['D', 'G', 'K', 'B', 'L']);
+  assert.equal(F.rows[0].id, 'u2');
+  // identical in every way: a shared place
+  F = run(['A', 'B', 'C', 'E', 'H'], ['A', 'B', 'C', 'E', 'H']);
+  assert.deepEqual(F.rows.map((r) => r.place), [1, 1]);
+});

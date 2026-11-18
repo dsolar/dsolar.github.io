@@ -45,12 +45,17 @@
   };
 
   /* Survivor. A pick wins when its team wins; a loss, or no pick by the time the day's last game has tipped, is out.
-     When everyone still alive goes out on the same day, they split the win. The last one standing wins (in a pool of
-     more than one), and whoever survives the title game splits it. */
+     The last one standing wins (in a pool of more than one). When everyone still alive goes out on the same day, or
+     more than one survives the title game, the tiebreaker is the highest combined seeds of their winning picks; a tie
+     there splits it. */
+  var topSeeds = function (rs) {
+    var hi = Math.max.apply(null, rs.map(function (r) { return r.seeds; }));
+    return rs.filter(function (r) { return r.seeds === hi; }).map(function (r) { return r.id; });
+  };
   function survivor(board, now) {
     now = now == null ? Date.now() : ms(now);
     var ds = days(board.games || []), by = picksBy(board), winners = null, status = "open";
-    var rows = (board.members || []).map(function (m) { return { id: m.id, name: m.name, me: !!m.me, alive: true, out: null, wins: 0, cells: {} }; });
+    var rows = (board.members || []).map(function (m) { return { id: m.id, name: m.name, me: !!m.me, alive: true, out: null, wins: 0, seeds: 0, cells: {} }; });
     for (var k = 0; k < ds.length && !winners; k++) {
       var day = ds[k], alive = rows.filter(function (r) { return r.alive; }), lost = [];
       if (!alive.length) break;
@@ -64,19 +69,19 @@
         var g = gameOn(day, team);
         if (!g) { r.cells[day.n] = { team: team, bad: true }; return; }
         if (g.final && g.w) {
-          if (g.w === team) { r.wins++; r.cells[day.n] = { team: team, win: true, game: g.id }; }
+          if (g.w === team) { r.wins++; r.seeds += seedOf(board.games, team) || 0; r.cells[day.n] = { team: team, win: true, game: g.id }; }
           else { r.cells[day.n] = { team: team, loss: true, game: g.id }; lost.push(r); }
         } else r.cells[day.n] = { team: team, live: ms(g.tip) <= now, game: g.id };
       });
-      if (lost.length && lost.length === alive.length) { winners = alive.map(function (r) { return r.id; }); status = "done"; break; }
+      if (lost.length && lost.length === alive.length) { winners = topSeeds(alive); status = "done"; break; }
       lost.forEach(function (r) { r.alive = false; r.out = day.n; });
       var left = rows.filter(function (r) { return r.alive; });
       // the last one standing wins as soon as everyone else is out, even with his own pick still to play
       if (rows.length > 1 && left.length === 1) { winners = [left[0].id]; status = "done"; }
     }
-    if (!winners && ds.length && ds[ds.length - 1].round === 6 && ds[ds.length - 1].done) { winners = rows.filter(function (r) { return r.alive; }).map(function (r) { return r.id; }); status = "done"; }
+    if (!winners && ds.length && ds[ds.length - 1].round === 6 && ds[ds.length - 1].done) { winners = topSeeds(rows.filter(function (r) { return r.alive; })); status = "done"; }
     rows.forEach(function (r) { r.winner = !!winners && winners.indexOf(r.id) >= 0; });
-    rows.sort(function (a, b) { return (b.winner - a.winner) || (b.alive - a.alive) || ((b.out || 99) - (a.out || 99)) || (b.wins - a.wins) || String(a.name).localeCompare(String(b.name)); });
+    rows.sort(function (a, b) { return (b.winner - a.winner) || (b.alive - a.alive) || ((b.out || 99) - (a.out || 99)) || (b.seeds - a.seeds) || (b.wins - a.wins) || String(a.name).localeCompare(String(b.name)); });
     return { days: ds, rows: rows, winners: winners, status: status };
   }
 
@@ -98,7 +103,12 @@
     return out;
   }
 
-  /* The 5-team game: five teams whose seeds add up to 25 or more, locked at the first round's first tip. */
+  /* The 5-team game: five teams whose seeds add up to 25 or more, locked at the first round's first tip. Ties on points
+     go to the higher combined seeds, then the deepest run (best team's wins, then the next best, and so on), then split. */
+  var deeper = function (a, b) {
+    for (var i = 0; i < Math.max(a.length, b.length); i++) { var d = (b[i] || 0) - (a[i] || 0); if (d) return d; }
+    return 0;
+  };
   function fiveCheck(board, teams) {
     var f = field(board.games || []), seeds = 0, uniq = {};
     for (var i = 0; i < teams.length; i++) {
@@ -129,17 +139,21 @@
         if (t == null) return { hidden: true };
         var left = 0;
         if (!lost[t]) for (var r = (won[t] || 0) + 1; r <= 6; r++) left += PTS[r];
-        return { team: t, seed: seedOf(games, t), pts: pts[t] || 0, alive: !lost[t], left: left };
+        return { team: t, seed: seedOf(games, t), pts: pts[t] || 0, wins: won[t] || 0, alive: !lost[t], left: left };
       });
       var total = teams.reduce(function (a, x) { return a + (x.pts || 0); }, 0);
       return { id: m.id, name: m.name, me: !!m.me, teams: teams, picked: slots.length === 5, points: total,
+        seeds: teams.reduce(function (a, x) { return a + (x.seed || 0); }, 0),
+        deep: teams.map(function (x) { return x.wins || 0; }).sort(function (a, b) { return b - a; }),
         max: total + teams.reduce(function (a, x) { return a + (x.left || 0); }, 0) };
     });
-    rows.sort(function (a, b) { return (b.points - a.points) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var cmp = function (a, b) { return (b.points - a.points) || (b.seeds - a.seeds) || deeper(a.deep, b.deep); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
     var place = 0;
-    rows.forEach(function (r, i) { if (!i || r.points !== rows[i - 1].points) place = i + 1; r.place = place; });
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
     var titleDone = games.some(function (g) { return g.round === 6 && g.final; });
-    return { rows: rows, lock: lock, locked: lock != null && now >= lock, done: titleDone };
+    return { rows: rows, lock: lock, locked: lock != null && now >= lock, done: titleDone,
+      winners: titleDone ? rows.filter(function (r) { return r.place === 1 && r.picked; }).map(function (r) { return r.id; }) : null };
   }
 
   // expected points from the hub's sim: its chance to win each round (given it makes the field) times the round's points

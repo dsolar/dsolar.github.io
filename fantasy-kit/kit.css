@@ -2700,3 +2700,7 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .rtab table.t.roster th.r,.rtab table.t.roster td.r.num,.rtab table.t.roster th.num{width:1%;white-space:nowrap;padding-left:18px}
 .rtab table.t.roster td.nm{width:auto}
 .rtab table.t.roster th.two-h,.rtab table.t.roster td.two-h{white-space:nowrap;padding-left:22px}
+/* football's one-line season stats in the draft room's All view */
+td.fbl-c{font-size:12.5px;color:var(--ink);line-height:1.5}
+td.fbl-c .fbl{display:inline-block;white-space:nowrap;margin-right:14px}
+td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.02em;margin-right:4px;text-transform:uppercase}

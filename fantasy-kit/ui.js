@@ -504,6 +504,33 @@
     MIN: "Minutes per game", PTS: "Points per game", REB: "Rebounds per game", AST: "Assists per game", STL: "Steals per game", BLK: "Blocks per game", "3PM": "Threes made per game", "FG%": "Field goal percentage", "FT%": "Free throw percentage", TO: "Turnovers per game",
     R: "Runs", HR: "Home runs", RBI: "Runs batted in", SB: "Stolen bases", AVG: "Batting average", OBP: "On-base percentage", OPS: "On-base plus slugging", H: "Hits", TB: "Total bases", BB: "Walks",
     IP: "Innings pitched", W: "Wins", L: "Losses", SV: "Saves", HLD: "Holds", K: "Strikeouts", ERA: "Earned run average", WHIP: "Walks and hits per inning pitched", QS: "Quality starts" };
+  // Football's All view in the draft room can't give every position its own columns, so each player gets one line of
+  // the stats that matter at his position: a quarterback's passing, a back's rushing and catches, a kicker's field goals.
+  const FB_LINE = (() => {
+    const pass = ["Pass", [["pass_yd", "yds"], ["pass_td", "TD"], ["pass_int", "INT"]]], rush = ["Rush", [["rush_yd", "yds"], ["rush_td", "TD"]]];
+    const rec = ["Rec", [["rec", ""], ["rec_yd", "yds"], ["rec_td", "TD"]]];
+    return { QB: [pass, rush], RB: [rush, rec], WR: [rec, rush], TE: [rec, rush],
+      K: [["FG", [["fgm", "/fga"], ["fgm_50p", "50+"]]], ["XP", [["xpm", ""]]]], DEF: [["Def", [["def_sack", "sacks"], ["def_int", "INT"], ["def_td", "TD"]]]] };
+  })();
+  function fbLine(sport, p) {
+    const segs = FB_LINE[(p.pos || [])[0]];
+    if (!segs) return "";
+    const v = (col) => statCell(sport, p, { line: "tot", col });
+    const n = (x) => Math.round(x).toLocaleString("en-US");
+    const out = segs.map(([lab, parts], i) => {
+      const first = v(parts[0][0]);
+      // the second line only when it's real: a quarterback's 30 rushing yards don't earn a spot
+      if (first == null || (i && (lab === "Rush" || lab === "Rec") && first < (lab === "Rec" ? 10 : 50)) || (!i && !first && lab !== "Def")) return "";
+      const txt = parts.map(([c, u], j) => {
+        if (u === "/fga") { const a = v("fga"); return `${n(first)}/${n(a || 0)}`; }
+        const x = j ? v(c) : first;
+        if (x == null || (j && !x)) return "";
+        return `${n(x)}${u ? " " + u : ""}`;
+      }).filter(Boolean).join(" · ");
+      return `<span class="fbl"><b>${lab}</b> ${txt}</span>`;
+    }).filter(Boolean);
+    return out.length ? out.join("") : `<span class="ps">-</span>`;
+  }
   function poolColumns(sport, opts = {}) {
     const pts = isPoints(sport, opts.scoring);
     const cols = [
@@ -552,6 +579,9 @@
       cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, asc: !!c.low, sort: (p) => (small(p) ? null : statCell(sport, p, c)),
         html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : small(p) ? `<span class="ps" title="Small sample: too little volume to rank">${c.fmt(v)}</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
+    // the draft room's All view in football: the season's key stats as one line, instead of a wide empty name column
+    if (compact && opts.stats !== false && sport.statView !== "proj" && statSet(sport) === "std" && (sport.key === "nfl" || sport.key === "cfb"))
+      cols.push({ k: "fbl", label: sport.statView === "prev" ? `${sport.data.prev}` : "Season", td: "fbl-c", hide: "s", title: "His key stats at his position", html: (p) => fbLine(sport, p) });
     if (opts.actions) cols.push({ k: "act", label: '<span class="sr">Actions</span>', raw: true, cls: "r act", html: opts.actions });
     return (opts.lead || []).concat(cols);
   }
