@@ -10,6 +10,10 @@
       intro: "The full week, Sunday afternoon, or one primetime matchup. Pick your window, bring your group, and let the real games settle it.",
       scoring: "half", scoringLabel: "Half PPR", unit: "week", verb: "Kickoff", next: "Next kickoff", theme: "field", hub: "/fantasy/nfl/", hubLabel: "NFL rankings & formats",
       ideas: [["The Sunday crew", "Sunday's day games. A live draft. Everyone chasing the same top score."], ["A primetime rivalry", "One matchup, a captain at 1.5x, and bragging rights when the game ends."], ["No meeting required", "Build salary-cap lineups or submit sealed lists before the first kickoff."]] },
+    cfb: { short: "NCAAF", name: "College football", duration: "One night or one week", headline: "Own the weekend.\nPlay your Saturday.",
+      intro: "The full FBS week, Saturday's main slate, primetime, or midweek MACtion. Pick your games, draft your college stars, and settle it on the field.",
+      scoring: "half", scoringLabel: "Half PPR", unit: "slate", verb: "Kickoff", next: "Next kickoff", theme: "college-football", hub: "/cfb/", hubLabel: "Explore the College Football Hub",
+      ideas: [["A proper football Saturday", "Build from the main slate or keep it to Saturday night. Your contest scores only the games you choose."], ["Friday lights and MACtion", "A smaller group, a midweek rivalry, or a Friday slate. Play the available FBS matchups without a season-long commitment."], ["Your favorite matchup", "Make one game a showdown: a captain at 1.5x and five flex spots. Finish when that game's final."]] },
     nba: { short: "NBA", name: "Basketball", duration: "One night of NBA", headline: "Your group.\nTonight's games.",
       intro: "Turn a night of basketball into a league. Play the whole slate, stay up for the late games, or make one matchup the main event.",
       scoring: "points", scoringLabel: "Fantasy points", unit: "night", verb: "Tip-off", next: "Next tip-off", theme: "court", hub: "/fantasy/nba/", hubLabel: "NBA rankings & formats",
@@ -39,7 +43,7 @@
     const lu = slate ? SL.lineup(slate.games.length, mode === "cap" ? 2 : wantedTeams, sport) : null;
     const roster = lu ? lu.lineup.length + (mode === "cap" ? 0 : lu.bench) : 0;
     const poolCount = slate && counts ? slate.teams.reduce((n, t) => n + (counts[t] || 0), 0) : null;
-    const ceiling = sport === "nfl" && slate && slate.games.length === 1 ? 6 : 16;
+    const ceiling = S.football(sport) && slate && slate.games.length === 1 ? 6 : 16;
     const max = mode === "cap" ? 16 : poolCount != null ? Math.max(2, Math.min(ceiling, Math.floor(poolCount / Math.max(1, roster)))) : slate && slate.games.length === 1 ? 4 : 16;
     const teamOptions = [2, 4, 6, 8, 10, 12, 14, 16].filter((n) => n <= max);
     const teams = teamOptions.reduce((b, n) => Math.abs(n - wantedTeams) < Math.abs(b - wantedTeams) ? n : b, teamOptions[0]);
@@ -76,8 +80,8 @@
     return Array.from(by.values()).sort((a, b) => (Date.parse(b.updated) || 0) - (Date.parse(a.updated) || 0));
   }
   function scoringRows(v, S) {
-    const w = v.sport === "nfl" ? { ...S.POINT_DEFAULTS.nfl, rec: v.scoring === "ppr" ? 1 : v.scoring === "std" ? 0 : 0.5 } : S[v.sport].scorings[v.scoring].weights;
-    const fields = v.sport === "nfl" ? [["pass_td", "Passing TD"], ["rush_td", "Rushing TD"], ["rec_td", "Receiving TD"], ["rec", "Reception"], ["pass_int", "Interception"]]
+    const w = S.football(v.sport) ? { ...S.POINT_DEFAULTS[v.sport], rec: v.scoring === "ppr" ? 1 : v.scoring === "std" ? 0 : 0.5 } : S[v.sport].scorings[v.scoring].weights;
+    const fields = S.football(v.sport) ? [["pass_td", "Passing TD"], ["rush_td", "Rushing TD"], ["rec_td", "Receiving TD"], ["rec", "Reception"], ["pass_int", "Interception"]]
       : [["pts", "Point"], ["reb", "Rebound"], ["ast", "Assist"], ["stl", "Steal"], ["blk", "Block"], ["tov", "Turnover"], ...(w.dd ? [["dd", "Double-double bonus"], ["td", "Triple-double bonus"]] : [])];
     return fields.map(([k, label]) => ({ key: k, label, value: w[k] || 0 }));
   }

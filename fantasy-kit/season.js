@@ -103,8 +103,8 @@
     // a one-week league set for this week starts in the week that's on, if enough of it is left to play
     // (a slate or a showdown plays the week its games are in, however little of it is left)
     const lastKick = s.slate ? s.slate.last : s.showdown ? s.showdown.at : null, cur = weekOf(at, sport.key);
-    // a one-day slate plays its own night: it starts now and its one week ends with its last game (settings.span)
-    const day = s.slate && s.slate.day && !s.showdown ? s.slate : null;
+    // A day slate or college-football window starts now and ends with its selected games (settings.span).
+    const day = s.slate && (s.slate.day || sport.key === "cfb") && !s.showdown ? s.slate : null;
     const thisWeek = day ? false : lastKick != null ? lastKick < cur + 7 * DAY : s.when === "now" && !["mlb", "nhl"].includes(sport.key) && cur + 7 * DAY - at >= MIN_LEFT;
     const start = day ? at : thisWeek ? cur : startAfter(at, sport.key);
     // o.real: a weeks file (real scoring if its box scores reach the league's start) or true
@@ -116,11 +116,11 @@
     // kickoff its lock, and free agency with no waiting
     const sl = s.slate && !sd ? s.slate : null;
     if (sl) Object.assign(settings, { pool: sl.teams.slice(), waiverDays: 0, gameLock: "off", slate: { kind: sl.kind, label: sl.label, week: sl.week, first: sl.first, last: sl.last, games: sl.games.length } }, sl.mult ? { mult: Object.assign({}, sl.mult) } : {});
-    // a one-day slate scores its own games (settings.slate.list, from their box scores) and its week runs from now to
-    // three hours after the last tip; it closes once every game is final (league.js)
+    // Explicit game windows score their own boxes. Basketball reserves three hours after the last tip;
+    // college football reserves four after kickoff and can close earlier once all selected games are final.
     if (day) {
-      Object.assign(settings.slate, { day: day.day, list: day.games.map((g) => ({ id: g.id, away: g.away, home: g.home, at: Date.parse(g.at) })) });
-      settings.span = { end: Math.max(at + HOUR, day.last + 3 * HOUR) };
+      Object.assign(settings.slate, { ...(day.day ? { day: day.day } : {}), list: day.games.map((g) => ({ id: g.id, away: g.away, home: g.home, at: Date.parse(g.at) })) });
+      settings.span = { end: Math.max(at + HOUR, day.last + (sport.key === "cfb" ? 4 : 3) * HOUR) };
     }
     // a league's second season on: last season's rules as the commissioner left them (D.rules, from nextDraft), so a
     // change made mid-season isn't lost to the original setup. What belongs to one season stays behind.
@@ -134,7 +134,7 @@
     if (Array.isArray(D.extraPlayers) && D.extraPlayers.length && !L.extraPlayers) L.extraPlayers = D.extraPlayers.slice();
     // its kickoff locks everyone, even before a page has seen the live feed
     if (sd && sd.at && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sd.teams.map((t) => [t, sd.at])) };
-    if (sl && L.week === 1) L.kick = { week: 1, teams: Object.fromEntries(sl.games.flatMap((g) => [[g.away, Date.parse(g.at)], [g.home, Date.parse(g.at)]])) };
+    if (sl && L.week === 1) { const teams = {}; for (const g of sl.games) for (const t of [g.away, g.home]) teams[t] = Math.min(teams[t] || Infinity, Date.parse(g.at)); L.kick = { week: 1, teams }; }
     // a heist: the lineups it left (stolen players moved, the thieves' bumped players released), each player's 1.5x or
     // half, the week's matchups as the heist paired them, and rosters set for the week but for filling a robbed spot
     const hr = D.heist && D.heist.result;
@@ -208,8 +208,8 @@
     weeks.live = { start: live.start, updated: live.updated, teams: live.teams || {}, games: live.games || {}, proj: live.proj || null, boxes: live.boxes || null, players: live.players || {}, stale: !!live.stale, errors: live.errors || [], feed: feed.slice(-300) };
     return before !== live.updated || wasStale !== !!live.stale;
   }
-  // A one-day league's game ids (to ask fk-live ?games= for), or null
-  const slateGames = (L) => { const sl = L && L.settings && L.settings.slate; return sl && sl.day && Array.isArray(sl.list) ? sl.list.map((g) => g.id) : null; };
+  // A game window's explicit ids (to ask fk-live ?games= for), or null
+  const slateGames = (L) => { const sl = L && L.settings && L.settings.slate; return sl && Array.isArray(sl.list) ? sl.list.map((g) => g.id) : null; };
   // Lays fk-live ?games= over a weeks file: weeks.games[id] = { state, lines } for each game, which a one-day league
   // scores from. A finished game is kept once seen. True if anything changed.
   function mergeGames(weeks, res) {

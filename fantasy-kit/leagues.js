@@ -33,7 +33,7 @@
     // a feed that couldn't be reached ({ error }) is asked again from Try again (data-a="slates-retry")
     C.slates(k).then((d) => { slatesFor[k] = d && Array.isArray(d.weeks) ? d : { weeks: [], error: true }; render(); });
   }
-  const SLATE_SPORTS = ["nfl", "nba", "cbb"];
+  const SLATE_SPORTS = ["nfl", "cfb", "nba", "cbb"];
   // how many players each pro team has (data/<sport>.json), so a slate offers only the team counts its players can
   // fill: one football game's two teams have 30 or so, enough for five teams of six but not six
   const proCounts = {}, proAsked = {}, proTeams = {};
@@ -73,7 +73,7 @@
   }
   // one game: a showdown, with its own lineup and budget
   // (a basketball game is a day slate of one: its captain comes from the slate's lineup, not a football showdown)
-  const sdGame = () => { const sl = slateOn() ? curSlate() : null; return sl && sl.games.length === 1 && !sl.day ? { id: sl.games[0].id, at: Date.parse(sl.games[0].at), home: sl.games[0].home, away: sl.games[0].away, week: sl.week } : null; };
+  const sdGame = () => { const sl = slateOn() ? curSlate() : null; return form.sport === "nfl" && sl && sl.games.length === 1 && !sl.day ? { id: sl.games[0].id, at: Date.parse(sl.games[0].at), home: sl.games[0].home, away: sl.games[0].away, week: sl.week } : null; };
   const kickLabel = (t) => new Date(t).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" }).replace(":00", "");
   const form = { sport: S.inSeason(), teams: 10, type: "snake", clock: 90, season: "h2h", weeks: 14, trades: 1, scoring: "",
     lineup: "", bench: null, playoffs: 4, deadline: null, review: "vote", faab: null, waiverDays: 2, gameLock: null,
@@ -160,7 +160,7 @@
   // leagues.html?w=1: start a one-week game (from the One week page, or a slate picked there)
   if (params.get("w")) {
     form.kind = "week"; if (!S.ALL[params.get("s")]) form.sport = "nfl"; view = "new"; oneWeekDefaults();
-    if (["full", "sunday", "prime", "early", "late", "one", "custom"].includes(params.get("slate"))) form.slKind = params.get("slate");
+    if (["full", "sunday", "saturday", "friday", "midweek", "prime", "early", "late", "one", "custom"].includes(params.get("slate"))) form.slKind = params.get("slate");
     if (params.get("game")) { form.slKind = "one"; form.slOne = params.get("game"); }
     if (params.get("wk") === "1") form.slWeek = 1;
     loadSlates();
@@ -515,8 +515,8 @@
     return `<div class="su sp-${sp.key}">
       <div class="nl-band">${FIELD[sp.key]}<div class="nl-bi">
         <div class="nl-sports" role="radiogroup" aria-label="Sport">${(oneWeek() ? Object.values(S.ALL) : S.SEASON_SPORTS).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span>${esc(s.short || s.name)}</span></label>`).join("")}</div>
-        <h1 class="disp">${dayOn() ? `Start a one-day ${form.sport === "cbb" ? "college basketball" : "basketball"} game` : oneWeek() ? `Start a one-week ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
-        <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
+        <h1 class="disp">${dayOn() ? `Start a one-day ${form.sport === "cbb" ? "college basketball" : "basketball"} game` : oneWeek() ? `Start a ${form.sport === "cfb" ? "quick" : "one-week"} ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
+        <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() && form.sport === "cfb" ? "Pick one night, your Saturday, or a full FBS week. Play only the selected games and crown a winner when they finish. Run it back with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
         ${templateError ? `<div class="banner loss" role="alert">${esc(templateError)} Use a starting point below to begin a new setup.</div>` : ""}
@@ -578,7 +578,7 @@
     const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
     const slt = slateOn() ? curSlate() : null;
     const fmtName = oneWeek() && formatOf() === "allplay" ? "everyone vs. everyone" : scoringType(sp) === "cats" && formatOf() === "h2h" ? "head to head, most categories" : scoringType(sp) === "cats" && formatOf() === "h2hcats" ? "head to head, each category" : FORMATS[formatOf()] ? FORMATS[formatOf()][0].toLowerCase() : "";
-    const style = oneWeek() ? `${slt && slt.day ? "One day" : "One week"}${slt ? `: ${slt.label}, ${slt.day ? SL.dayName(slt.day).toLowerCase() : `week ${slt.week}`}` : slateOn() ? "" : ` (${form.when === "now" ? "this week" : "next week"})`}${showdown() ? ", captain at 1.5x" : ""}, ${fmtName}${form.bestball ? ", best ball" : ""}`
+    const style = oneWeek() ? `${slt && slt.day ? "One day" : form.sport === "cfb" ? "Quick game" : "One week"}${slt ? `: ${slt.label}, ${slt.day ? SL.dayName(slt.day).toLowerCase() : `week ${slt.week}`}` : slateOn() ? "" : ` (${form.when === "now" ? "this week" : "next week"})`}${showdown() ? ", captain at 1.5x" : ""}, ${fmtName}${form.bestball ? ", best ball" : ""}`
       : `${(KINDS.find(([k]) => k === form.kind) || [, "Redraft"])[1]}, ${fmtName}${bbOn(sp) ? ", best ball" : gl ? ", set lineups" : ""}`;
     return {
       line: `${sp.name}, ${n} teams, ${sc}, ${hcOn() ? "Hard Cap, " : ""}${capOn() ? `${F.capMoney(form.capBudget)} salary cap, no draft` : `${DRAFT_SHORT[form.type]} draft`}${rlOk() && form.rlOn ? " with team roulette" : ""}${ladOn() ? ", ladder" : ""}${pyrOn() ? `, plus ${[8, 11, 18].includes(form.pyrTeams) ? "an" : "a"} ${form.pyrTeams}-team lower tier with promotion and relegation` : ""}${heist() ? " and a heist" : ""}${trivia() ? ", trivia to pick" : ""}${sp.key === "nfl" && form.confOn ? ", two starters a conference" : ""}. ${style}`,
@@ -586,7 +586,7 @@
       draft: capOn() ? "Submit lineups before the first game" : sealedOn() ? "Private lists, automatic draft" : `${form.type === "elephant" ? window.FK.setup.elephantLine(form, scoringType(sp) === "points") + ", " : ""}${rlOk() && form.rlOn ? `Team roulette${form.rlRound ? " by round" : ""}, ` : ""}${auction() ? `$${aucBudget()} budgets, ` : ""}${clock} a ${auction() ? "bid" : "pick"}${form.type === "mystery" ? `, packages open ${{ now: "now", start: "at the start", own: "as picks come up" }[form.reveal || "start"]}` : ""}${!auction() && form.type !== "elephant" ? (form.trades ? ", trades on" : ", no trades") : ""}`,
       roster: capOn() ? `${lu.length} starters, no bench` : showdown() ? "Captain and 5 flex, no bench" : heist() ? "8 starters, no bench" : `${lu.length} starters, ${benchOf(sp)} bench${form.ir ? `, ${form.ir} IR` : ""}`,
       heist: `${form.hzShields} shield${form.hzShields === 1 ? "" : "s"}, ${form.hzSteals} steal${form.hzSteals === 1 ? "" : "s"}, ${form.hzJinxes} jinx${form.hzJinxes === 1 ? "" : "es"}, ${form.hzClock} sec`,
-      season: oneWeek() ? slt && slt.games.length === 1 ? "One real game" : dayOn() ? "One day, final after the last game" : "One scoring week" : `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" && form.season !== "total" ? `, ${form.divs} divisions` : ""}${!gl && !form.divs && ["h2h", "h2hcats"].includes(form.season) && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2 ? `, splits after week ${form.splitAfter}` : ""}`,
+      season: oneWeek() ? slt && slt.games.length === 1 ? "One real game" : dayOn() || form.sport === "cfb" ? "Final after the selected games" : "One scoring week" : `${gl ? `${n - 1} weeks` : `${form.weeks} weeks`}${form.divs && !gl && form.season !== "roto" && form.season !== "total" ? `, ${form.divs} divisions` : ""}${!gl && !form.divs && ["h2h", "h2hcats"].includes(form.season) && form.splitAfter >= 2 && form.splitAfter <= form.weeks - 2 ? `, splits after week ${form.splitAfter}` : ""}`,
       playoffs: po ? `${po} teams, ${playoffWeeks(po)} weeks${chaseOn() ? ", the chase" : ""}${reseedOk() && form.reseed ? ", reseeded" : ""}` : "None",
       waivers: gl ? `$${faab} FAAB` : form.waivers === "faab" ? `$${faab} FAAB, ${form.waiverDays}-day waivers` : `Rolling, ${form.waiverDays}-day waivers`,
       trades: `${oneWeek() ? "" : dl ? `Deadline week ${dl}, ` : "No deadline, "}${form.review === "vote" ? "league vote" : form.review === "commish" ? "commissioner" : "no review"}`,
@@ -648,7 +648,7 @@
     const ref = slRef(), later = ref > Date.now() + 6e4;
     const early = sl && sl.first - ref < 36 * 36e5 ? ` The first game ${kw} ${esc(SL.kick(sl.games[0].at))}: ${capOn() ? "submit your lineup" : sealedOn() ? "lock the lists" : "finish the draft"} before then.` : "";
     const cut = later && w.games && SL.open(w).length > SL.open(w, ref).length ? ` Games that ${kw === "tips off" ? "tip off" : "kick off"} before the ${sealedOn() ? "lists lock" : "draft"} (${esc(SL.kick(new Date(ref).toISOString()))}) are left out.` : "";
-    const dayNote = sl && sl.day ? " It's scored on the selected day's box scores and wraps up when the last game ends." : "";
+    const dayNote = sl && (sl.day || form.sport === "cfb") ? " It's scored on the selected games' box scores and wraps up when the last game ends." : "";
     const sum = sl ? `<p class="fl-h slsum"><b>${esc(sl.label)}: ${sl.games.length} game${sl.games.length === 1 ? "" : "s"}, ${sl.teams.length} teams' players.</b> ${heist() ? "The heist lineup: QB, 2 RB, 3 WR, TE and a flex, no bench." : esc(lineupNote) + "."} Each player locks when his game ${kw}.${dayNote}${cut}${early}</p>`
       : `<p class="fl-h slsum">Pick at least one game.</p>`;
     return `<section class="nl-sec"><h2 class="nl-h">The games</h2>${weekSeg}${cardsHtml}${pickOne}${pickMany}${sum}</section>`;

@@ -26,7 +26,7 @@
     try { doc = JSON.parse(text); } catch (e) { throw new Error("That rule template could not be read."); }
     if (!doc || doc.v !== 1 || !doc.rules || Array.isArray(doc.rules) || !S.ALL[doc.rules.sport]) throw new Error("That rule template uses an unsupported sport or version.");
     const r = rulesOf(doc.rules), sp = S.ALL[r.sport];
-    if (r.slPeriod != null && (typeof r.slPeriod !== "string" || !/^(day:\d{4}-\d{2}-\d{2}|week:([1-9]|1[0-8]))$/.test(r.slPeriod))) throw new Error("That game window could not be read.");
+    if (r.slPeriod != null && (typeof r.slPeriod !== "string" || !/^(day:\d{4}-\d{2}-\d{2}|week:([1-9]|[12]\d|30))$/.test(r.slPeriod) || (r.sport === "nfl" && r.slPeriod.startsWith("week:") && Number(r.slPeriod.slice(5)) > 18))) throw new Error("That game window could not be read.");
     if (r.teams != null && (!Number.isInteger(r.teams) || r.teams < 2 || r.teams > 20)) throw new Error("A template needs between 2 and 20 teams.");
     if (r.lineup != null && (typeof r.lineup !== "string" || r.lineup.split(/[\s,]+/).filter(Boolean).some((k) => !sp.slots[k] || k === "BN"))) throw new Error("That template has an invalid roster slot.");
     for (const k of ["cats", "confs"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) throw new Error("That template has an invalid category or conference list.");

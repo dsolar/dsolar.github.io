@@ -226,10 +226,10 @@
     }
     /* ---------- gameday: each pro team's games this week, from the live feed ---------- */
     // a one-day league (basketball's day slates): its night's games, inside the live feed's week
-    const dayL = () => { const sl = L().settings.slate; return sl && sl.day && Array.isArray(sl.list) ? sl : null; };
+    const dayL = () => { const sl = L().settings.slate; return sl && Array.isArray(sl.list) ? sl : null; };
     const liveWeek = (w) => {
       const R = (opts.hooks || {}).real, lv = R && R.live, d = dayL();
-      if (d) return lv && lv.start && lv.start <= d.day && d.day <= lv.end ? lv : null;
+      if (d) return lv && lv.games && d.list.some(g => (lv.games[g.away] || []).some(x => String(x.id) === String(g.id))) ? lv : null;
       const rw = G.realWeek(L(), ctx, w); return lv && rw && rw.start === lv.start ? lv : null;
     };
     const gamesOf = (p, w) => {
@@ -641,7 +641,7 @@
     const slateName = () => { const st = L().settings; return st.slate ? `${st.slate.label}, ${st.slate.games} game${st.slate.games === 1 ? "" : "s"}` : st.showdown ? `${st.showdown.label} showdown` : ""; };
     function leaderboardCard() {
       const { rows, started, toPlay } = weekRows(), live = !over() && frac(1) > 0;
-      const status = over() ? "Final" : live ? "Live" : `Projected until the first ${dayL() ? "tip" : "kickoff"}`;
+      const status = over() ? "Final" : live ? "Live" : `Projected until the first ${dayL() && !S.football(sport) ? "tip" : "kickoff"}`;
       return `<div class="card"><div class="mod-h"><h2>Leaderboard</h2><span class="ps">${esc(status)}</span></div><div class="table-wrap"><table class="t wklb"><thead><tr><th class="num">#</th><th>Team</th><th class="r">Points</th>${over() ? "" : `${toPlay ? `<th class="r" title="Starters whose games haven't kicked off">To play</th>` : ""}<th class="r" title="Points so far plus what the players still to play should score">Projected</th>`}</tr></thead><tbody>
         ${rows.map((r, i) => `<tr class="${isMe(r.t) ? "me" : ""}"><td class="num"><b>${i + 1}</b></td><td class="nm"><a href="${teamHref(r.t)}" style="color:inherit;text-decoration:none">${teamName(T(r.t), { you: isMe(r.t), badge: over() && i === 0 ? ` <span class="tag gold">Winner</span>` : "" })}</a></td><td class="r num"><b>${started ? fmtS(r.sc) : "-"}</b></td>${over() ? "" : `${toPlay ? `<td class="r num">${r.left}</td>` : ""}<td class="r num ps">${fmtS(r.pj)}</td>`}</tr>`).join("")}</tbody></table></div>${over() ? `<div class="bd ps" style="padding-top:8px">A tie on points goes to the team with the best single player's score.</div>` : ""}</div>`;
     }
@@ -662,7 +662,7 @@
     }
     function weekBoardPage() {
       const mid = me(), { rows } = weekRows(), at = rows.findIndex((r) => r.t === mid);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">${over() ? "Final" : dayL() ? "Tonight" : "This week"}</h1><span class="ps">${esc(slateName() || L().season || "")}${mid != null && at >= 0 ? `. You're ${ord(at + 1)} of ${rows.length}` : ""}.</span></div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">${over() ? "Final" : dayL() ? S.football(sport) ? "Your slate" : "Tonight" : "This week"}</h1><span class="ps">${esc(slateName() || L().season || "")}${mid != null && at >= 0 ? `. You're ${ord(at + 1)} of ${rows.length}` : ""}.</span></div>
         ${over() ? finishCard() : ""}<div class="cols2"><div class="stack">${leaderboardCard()}</div><div class="stack">${seriesCard()}${chatCard()}</div></div>${gamedayStatus(1)}${teamGameBoxes(1, rows.map(r => r.t))}</div>`;
     }
     function finishData() {
@@ -707,14 +707,14 @@
       if (f.allplay) {
         const [a, b] = f.rows, cs = T(a.t), mine = isMe(a.t), mp = f.mvp && ctx.byId[f.mvp.pid], at = f.rows.findIndex((r) => isMe(r.t));
         return `<div class="card fin${mine ? " me" : ""}">
-          <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${esc(cs.name)} wins the ${dayL() ? "night" : "week"}</b><span>${fmtS(a.sc)} points${b ? `, ${fmtS(a.sc - b.sc)} ahead of ${esc(T(b.t).name)}` : ""}.${at > 2 ? ` You finished ${ord(at + 1)} of ${f.rows.length}.` : ""}</span></div></div>
+          <div class="fin-h">${teamAv(cs, "xl")}<div><small>${esc(L().name || "")}, final</small><b class="disp">${esc(cs.name)} wins the ${dayL() ? S.football(sport) ? "slate" : "night" : "week"}</b><span>${fmtS(a.sc)} points${b ? `, ${fmtS(a.sc - b.sc)} ahead of ${esc(T(b.t).name)}` : ""}.${at > 2 ? ` You finished ${ord(at + 1)} of ${f.rows.length}.` : ""}</span></div></div>
           <ol class="fin-pod">${f.rows.slice(0, 3).map((r, i) => `<li${isMe(r.t) ? ' class="me"' : ""}><small>${ord(i + 1)}</small>${teamAv(T(r.t), "sm")}<b class="ell">${esc(T(r.t).name)}</b><span class="num">${fmtS(r.sc)}</span></li>`).join("")}</ol>
           ${mp ? `<div class="fin-mvp"><small>MVP</small><span data-player="${esc(mp.id)}" style="cursor:pointer">${pname(sport, mp, `${fmtS(f.mvp.v)} points for ${esc(T(f.mvp.t).name)}`)}</span></div>` : ""}
           <div class="fin-a">${rematchBtn()}<button class="btn sm" data-copyfinal>Copy the result</button><a class="btn sm" href="/fantasy/leagues/?w=1">Start another</a></div></div>`;
       }
       const { g, champ, win, lose, mvp } = f, cs = T(champ), mine = isMe(champ);
       const score = win == null ? `${fmtS(g.sa)} to ${fmtS(g.sb)}, a tie` : `${fmtS(Math.max(g.sa, g.sb))} to ${fmtS(Math.min(g.sa, g.sb))}`;
-      const head = f.many ? `${esc(cs.name)} wins the ${dayL() ? "night" : "week"}` : win == null ? "A dead heat" : `${esc(T(win).name)} beat ${esc(T(lose).name)}`;
+      const head = f.many ? `${esc(cs.name)} wins the ${dayL() ? S.football(sport) ? "slate" : "night" : "week"}` : win == null ? "A dead heat" : `${esc(T(win).name)} beat ${esc(T(lose).name)}`;
       const sub = f.many ? `Champion on the best record, then points. ${g.a === champ || g.b === champ ? `Won ${score}.` : ""}` : win == null ? `${score}. ${esc(cs.name)} takes it on the tiebreak.` : `${score}, by ${fmtS(Math.abs(g.sa - g.sb))}.`;
       const mp = mvp && ctx.byId[mvp.pid];
       return `<div class="card fin${mine ? " me" : ""}">

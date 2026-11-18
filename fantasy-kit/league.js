@@ -357,9 +357,14 @@
   // { week, teams: { pro team: first kickoff ms } }. Without it (a simulated league), nothing locks.
   function setKicks(L, live) {
     if (!L.settings.real || !live || !live.games || !live.start || L.week > totalWeeks(L)) return false;
-    if (Math.abs(Date.parse(live.start + "T12:00:00Z") - weekStart(L, L.week)) >= 2.5 * DAY) return false;
+    const list = L.settings.slate && L.settings.slate.list;
+    const selected = Array.isArray(list) ? new Set(list.map(g => String(g.id))) : null;
+    if (!selected && Math.abs(Date.parse(live.start + "T12:00:00Z") - weekStart(L, L.week)) >= 2.5 * DAY) return false;
     const teams = {};
-    for (const [t, gs] of Object.entries(live.games)) {
+    for (const [t, all] of Object.entries(live.games)) {
+      // A selected window can contain a school's later game; an earlier unselected game must not lock it.
+      const gs = selected ? (all || []).filter(g => selected.has(String(g.id))) : all;
+      if (!gs || !gs.length) continue;
       // a game the feed shows under way or over has started, whatever its listed time says
       // (and keeps the earliest time it was seen started, so a lock never moves later)
       const seen = Date.parse(live.updated) || null, was = L.kick && L.kick.week === L.week ? L.kick.teams[t] : undefined;
@@ -649,7 +654,7 @@
     const R = ctx.hooks && ctx.hooks.real;
     if (!L.settings.real || !R || !R.weeks) return null;
     const sl = L.settings.slate;
-    if (sl && sl.day && Array.isArray(sl.list)) return dayWeek(L, ctx, R, sl);
+    if (sl && Array.isArray(sl.list)) return dayWeek(L, ctx, R, sl);
     if (ctx._rwOf !== R) { ctx._rw = {}; ctx._rwOf = R; }
     if (w in ctx._rw) return sinceStart(L, ctx, ctx._rw[w]);
     const t = weekStart(L, w);
@@ -668,7 +673,7 @@
     for (const g of sl.list) { const x = gs[g.id]; if (x && x.lines) for (const [id, line] of Object.entries(x.lines)) lines[id] = lines[id] ? add(lines[id], line) : line; }
     const done = (g) => gs[g.id] && (gs[g.id].state === "post" || gs[g.id].state === "off");
     c.R = R; c.at = R.gamesAt;
-    c.out = { start: "day:" + sl.day, lines, final: sl.list.every(done), missing: !sl.list.some((g) => gs[g.id]), day: true };
+    c.out = { start: sl.day ? "day:" + sl.day : "slate:" + sl.first, lines, final: sl.list.every(done), missing: !sl.list.some((g) => gs[g.id]), day: true };
     return c.out;
   }
   // A league that began midweek (L.baseline: each player's line for that week when it began) counts only what came
@@ -689,8 +694,10 @@
   // so a broken feed can't stall the season forever).
   function canFinish(L, ctx, now) {
     const end = weekStart(L, L.week + 1);
-    if (L.week > totalWeeks(L) || now < end) return false;
+    if (L.week > totalWeeks(L)) return false;
     const rw = realWeek(L, ctx, L.week);
+    if (L.sport === "cfb" && L.settings.span && rw && rw.day && rw.final && now >= L.settings.slate.last) return true;
+    if (now < end) return false;
     return !rw || !!rw.final || now >= end + (L.settings.span ? DAY : 3 * DAY);
   }
   // Once a week's time is up its lineups are locked, even while the league waits for the last box scores.
@@ -853,7 +860,7 @@
   function gamesLeft(L, ctx, p, w, frac) {
     const R = ctx.hooks && ctx.hooks.real, lv = R && R.live, rw = realWeek(L, ctx, w);
     // a one-day league: his team's game tonight, if it hasn't finished (one in progress counts half)
-    if (rw && rw.day) { const sl = L.settings.slate, g = sl.list.find((x) => x.away === p.t || x.home === p.t), st = g && R.games && R.games[g.id] ? R.games[g.id].state : "pre"; return !g ? 0 : st === "pre" ? 1 : st === "in" ? 0.5 : 0; }
+    if (rw && rw.day) return L.settings.slate.list.filter(g => g.away === p.t || g.home === p.t).reduce((n, g) => { const st = R.games && R.games[g.id] ? R.games[g.id].state : "pre"; return n + (st === "pre" ? 1 : st === "in" ? 0.5 : 0); }, 0);
     if (lv && rw && !rw.missing && rw.start === lv.start && lv.teams) { const t = lv.teams[p.t]; return t ? t.left + 0.5 * t.live : 0; }
     const wk = WEEK[ctx.sport.key] || { weeks: 20 };
     return Math.max(0, 1 - frac) * (GAMES[ctx.sport.key] || 82) / wk.weeks;
@@ -1018,7 +1025,7 @@
     const out = {}, gs = (R && R.games) || {};
     for (const g of L.settings.slate.list) {
       const st = gs[g.id] ? gs[g.id].state : "pre", t = { played: st === "post" || st === "off" ? 1 : 0, live: st === "in" ? 1 : 0, left: st === "pre" ? 1 : 0 };
-      out[g.away] = t; out[g.home] = Object.assign({}, t);
+      for (const ab of [g.away, g.home]) { const a = out[ab] || { played: 0, live: 0, left: 0 }; out[ab] = { played: a.played + t.played, live: a.live + t.live, left: a.left + t.left }; }
     }
     return out;
   }

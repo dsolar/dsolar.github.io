@@ -34,6 +34,12 @@
   // night games: Thursday, Sunday and Monday nights (and any other weekday night game)
   const night = (g) => { const t = et(g.at); return (t.wd === 0 && t.h >= 19) || (t.wd !== 0 && t.wd !== 6) || (t.wd === 6 && t.h >= 19); };
   const sunday = (g) => { const t = et(g.at); return t.wd === 0 && t.h < 19; };
+  // After-midnight kickoffs belong to the preceding football night, including Hawaii's late Saturday games.
+  const cfbDay = (g) => { const t = et(g.at); return t.h < 6 ? (t.wd + 6) % 7 : t.wd; };
+  const cfbSaturday = (g) => cfbDay(g) === 6 && et(g.at).h >= 6 && et(g.at).h < 19;
+  const cfbNight = (g) => cfbDay(g) === 6 && (et(g.at).h >= 19 || et(g.at).h < 6);
+  const cfbFriday = (g) => cfbDay(g) === 5;
+  const cfbMidweek = (g) => cfbDay(g) >= 1 && cfbDay(g) <= 4;
   const days = (gs) => { const ds = [...new Set(gs.map((g) => et(g.at).wd))]; const order = [4, 5, 6, 0, 1, 2, 3]; ds.sort((a, b) => order.indexOf(a) - order.indexOf(b)); return ds.map((d) => DAYS[d]); };
   const gamesN = (n) => `${n} game${n === 1 ? "" : "s"}`;
   function nightSub(gs) {
@@ -83,6 +89,15 @@
     const gs = open(week, now), all = (week && week.games) || [];
     if (!gs.length) return [];
     const out = [];
+    if (week && week.sport === "cfb") {
+      if (gs.length >= 2) out.push({ key: "full", kind: "full", label: gs.length < all.length ? "Rest of the week" : "Full week", sub: `${gamesN(gs.length)}, FBS matchups`, games: gs });
+      for (const [kind, label, filter, text] of [["saturday", "Saturday main", cfbSaturday, "Saturday before 7 PM ET"], ["prime", "Saturday night", cfbNight, "Saturday from 7 PM ET, including late kickoffs"], ["friday", "Friday", cfbFriday, "Friday's college games"], ["midweek", "Midweek / MACtion", cfbMidweek, "Monday through Thursday"]]) {
+        const games = gs.filter(filter);
+        if (games.length && games.length < gs.length) out.push({ key: kind, kind, label, sub: `${gamesN(games.length)} · ${text}`, games });
+      }
+      out.push({ key: "one", kind: "one", label: "One game", sub: "A showdown: a captain at 1.5x and five flex", games: gs }, { key: "custom", kind: "custom", label: "Pick your games", sub: "Your own FBS matchups", games: gs });
+      return out;
+    }
     const full = gs, sun = gs.filter(sunday), pr = gs.filter(night);
     if (full.length >= 2) out.push({ key: "full", kind: "full", label: full.length < all.length ? "Rest of the week" : "Full week", sub: `${gamesN(full.length)}, ${days(full)[0]} to ${days(full).slice(-1)[0]}`, games: full });
     if (sun.length >= 2 && sun.length < full.length) {
@@ -100,12 +115,17 @@
     const gs = open(week, now), byId = Object.fromEntries(gs.map((g) => [g.id, g]));
     let games = kind === "full" ? gs : kind === "sunday" ? gs.filter(sunday) : kind === "prime" ? gs.filter(night)
       : (ids || []).map((id) => byId[id]).filter(Boolean);
+    if (week && week.sport === "cfb") {
+      const filter = { saturday: cfbSaturday, prime: cfbNight, friday: cfbFriday, midweek: cfbMidweek }[kind];
+      if (filter) games = gs.filter(filter);
+    }
     if (kind === "one") games = games.slice(0, 1);
     if (!games.length) return null;
     games = games.slice().sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
     const name = games.length === 1 ? label(games[0]) : kind === "full" ? (games.length < ((week && week.games) || []).length ? "Rest of the week" : "Full week")
-      : kind === "sunday" ? "Sunday" : kind === "prime" ? "Primetime" : "Your games";
+      : week && week.sport === "cfb" ? ({ saturday: "Saturday main", prime: "Saturday night", friday: "Friday", midweek: "Midweek / MACtion" }[kind] || "Your games") : kind === "sunday" ? "Sunday" : kind === "prime" ? "Primetime" : "Your games";
     return {
+      ...(week && week.sport === "cfb" ? { sport: "cfb" } : {}),
       kind: games.length === 1 ? "one" : kind, label: name, week: week.week,
       games: games.map((g) => ({ id: g.id, at: g.at, away: g.away, home: g.home })),
       teams: [...new Set(games.flatMap((g) => [g.away, g.home]))],
