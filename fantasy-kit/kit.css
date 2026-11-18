@@ -2704,3 +2704,8 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 td.fbl-c{font-size:12.5px;color:var(--ink);line-height:1.5}
 td.fbl-c .fbl{display:inline-block;white-space:nowrap;margin-right:14px}
 td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.02em;margin-right:4px;text-transform:uppercase}
+/* the draft room card's note on timing, fit and money */
+.pc-draft{border:1px solid var(--line,rgba(127,127,127,.25));border-left:3px solid var(--accent,#F6C445);border-radius:10px;padding:10px 12px;display:grid;gap:4px}
+.pc-draft p{margin:0;font-size:13.5px;line-height:1.45}
+.pc-line-s{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:10px 12px;border:1px solid var(--line,rgba(127,127,127,.25));border-radius:10px}
+.pc-line-s b.num{font-size:16px}

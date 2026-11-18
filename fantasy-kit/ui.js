@@ -630,8 +630,9 @@
 
   const LABELS = { gp: "GP", g: "G", gs: "GS", min: "MIN", fgm: "FGM", fga: "FGA", ftm: "FTM", fta: "FTA", tpm: "3PM", pts: "PTS", reb: "REB", ast: "AST", stl: "STL", blk: "BLK", tov: "TO",
     pa: "PA", ab: "AB", r: "R", h: "H", hr: "HR", rbi: "RBI", sb: "SB", tb: "TB", bb: "BB", avg: "AVG", obp: "OBP", ops: "OPS", ip: "IP", w: "W", l: "L", sv: "SV", hld: "HLD", k: "K", er: "ER", era: "ERA", whip: "WHIP", qs: "QS",
-    pass_yd: "Pass yd", pass_td: "Pass TD", pass_int: "INT", rush_att: "Rush", rush_yd: "Rush yd", rush_td: "Rush TD", rec: "Rec", rec_tgt: "Targets", rec_yd: "Rec yd", rec_td: "Rec TD", fum_lost: "Fum",
-    fgm_: "FGM", xpm: "XPM", def_td: "Def TD", def_int: "Def INT", def_sack: "Sacks", pts_allow: "Pts allowed", pts_std: "Std pts", pts_half_ppr: "Half PPR", pts_ppr: "PPR" };
+    pass_cmp: "Cmp", pass_att: "Att", pass_yd: "Pass yd", pass_td: "Pass TD", pass_int: "INT", rush_att: "Car", rush_yd: "Rush yd", rush_td: "Rush TD", rec: "Rec", rec_tgt: "Targets", rec_yd: "Rec yd", rec_td: "Rec TD", fum_lost: "Fum",
+    fgm_50p: "50+", xpmiss: "XP miss", fum_rec: "Fum rec", yds_allow: "Yds allowed", idp_tkl_solo: "Solo", idp_tkl_ast: "Ast tkl", idp_sack: "Sacks", idp_tkl_loss: "TFL",
+    idp_qb_hit: "QB hits", idp_int: "INT", idp_ff: "FF", idp_fum_rec: "FR", idp_pass_def: "PD", idp_def_td: "TD", xpm: "XPM", def_td: "Def TD", def_int: "Def INT", def_sack: "Sacks", pts_allow: "Pts allowed", pts_std: "Std pts", pts_half_ppr: "Half PPR", pts_ppr: "PPR" };
   const label = (c) => LABELS[c] || c.toUpperCase();
   // a college player's class
   const YR = { Fr: "freshman", So: "sophomore", Jr: "junior", Se: "senior", Sr: "senior", Gr: "graduate student", RS: "redshirt" };
@@ -649,20 +650,40 @@
     return best && best.of >= 4 && best.g > 0 && best.g < 0.4 * best.of ? best : null;
   }
   const sampleTag = (sport, p) => { const s = sampleOf(sport, p); return s ? ` <span class="tag ss" title="Small sample: ${s.g} of ${s.of} games so far">${s.g} G</span>` : ""; };
+  // a football card's stat lines: the columns for his position, in reading order (a receiver's passing and a back's
+  // first downs stay out), and the league's own fantasy points rather than every scoring's
+  const FB_CARD = (() => {
+    const rush = ["rush_att", "rush_yd", "rush_td"], rec = ["rec_tgt", "rec", "rec_yd", "rec_td"], idp = ["idp_tkl_solo", "idp_tkl_ast", "idp_tkl_loss", "idp_sack", "idp_qb_hit", "idp_int", "idp_pass_def", "idp_ff", "idp_fum_rec", "idp_def_td"];
+    return { QB: ["g", "pass_cmp", "pass_att", "pass_yd", "pass_td", "pass_int", ...rush, "fum_lost"], RB: ["g", ...rush, ...rec, "fum_lost"], WR: ["g", ...rec, ...rush, "fum_lost"], TE: ["g", ...rec, ...rush, "fum_lost"],
+      K: ["g", "fgm", "fga", "fgm_50p", "xpm", "xpmiss"], DEF: ["g", "def_sack", "def_int", "fum_rec", "def_td", "pts_allow", "yds_allow"], DL: ["g", ...idp], LB: ["g", ...idp], DB: ["g", ...idp] };
+  })();
+  const HOOPS_MINOR = new Set(["oreb", "dreb", "pf", "tpa", "pm", "dd", "td"]);
+  const commas = (txt, v) => (Math.abs(v) >= 1000 && /^-?\d+$/.test(txt) ? Number(txt).toLocaleString("en-US") : txt);
   function playerCard(sport, p, opts = {}) {
     const sc = sport.scorings[opts.scoring] || Object.values(sport.scorings)[0];
     const kd = S.positions(p).some((x) => x === "K" || x === "DEF");
     // each stat line as one compact row: a label over each number, the columns the pool has numbers in, a per-game
     // line to one decimal throughout
-    const tbl = (title, cells) => (cells.length ? `<div class="pc-line"><div class="ps"><b>${esc(title)}</b>, ${esc(sport.data.season)}</div><div class="table-wrap"><table class="t dense pc-tbl"><thead><tr>${cells.map(([l, , t]) => `<th class="r"${t ? ` title="${esc(t)}"` : ""}>${esc(l)}</th>`).join("")}</tr></thead><tbody><tr>${cells.map(([, v]) => `<td class="r num">${v}</td>`).join("")}</tr></tbody></table></div></div>` : "");
+    const tbl = (title, cells) => (cells.length && cells.length <= 2 ? `<div class="pc-line pc-line-s"><span class="ps"><b>${esc(title)}</b>, ${esc(sport.data.season)}</span><span>${cells.map(([l, v]) => `<b class="num">${v}</b> <small class="ps">${esc(l)}</small>`).join(" &nbsp; ")}</span></div>` : cells.length ? `<div class="pc-line"><div class="ps"><b>${esc(title)}</b>, ${esc(sport.data.season)}</div><div class="table-wrap"><table class="t dense pc-tbl"><thead><tr>${cells.map(([l, , t]) => `<th class="r"${t ? ` title="${esc(t)}"` : ""}>${esc(l)}</th>`).join("")}</tr></thead><tbody><tr>${cells.map(([, v]) => `<td class="r num">${v}</td>`).join("")}</tr></tbody></table></div></div>` : "");
+    const fb = S.football(sport) ? FB_CARD[S.positions(p)[0]] : null, ptsCol = fb ? sc.col : null;
+    const curWeek = +(sport.data && sport.data.week) || 0;
+    // basketball's lesser columns (offensive boards, fouls, double-doubles) only when the league scores them
+    const hoops = sport.key === "nba" || sport.key === "cbb", scJson = JSON.stringify(sc), scUses = (c) => scJson.includes(`"${c}"`);
+    let bye = null;
     const lines = Object.entries(sport.data.lines || {}).filter(([k]) => p.l[k]).map(([k, def]) => {
+      // a past week's projection is history; this week's with no games in it is his bye
+      if (def.week != null && curWeek && def.week < curWeek) return "";
       const empty = (sport.empty && sport.empty[k]) || new Set(), perGame = /per game/i.test(def.label || "") || /^p?pg$/.test(k);
-      const cells = def.cols.filter((c) => c !== "eg" && !empty.has(c)).map((c) => {
+      // football: his position's columns, then the league's fantasy points (and per game, on a season line)
+      const order = fb ? fb.filter((c) => def.cols.includes(c)).concat(ptsCol && def.cols.includes(ptsCol) ? [ptsCol] : []) : def.cols;
+      const cells = order.filter((c) => c !== "eg" && !empty.has(c) && !(hoops && HOOPS_MINOR.has(c) && !scUses(c))).map((c) => {
         const v = S.stat(sport, p, k, c);
         if (v == null || (S.football(sport) && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return null;
         const f = /^(avg|obp|ops|slg|svp)$/.test(c) ? S.fmt.r3 : /^(era|whip|gaa)$/.test(c) ? S.fmt.f2 : /^(gp|g|gs)$/.test(c) ? S.fmt.f0 : perGame ? S.fmt.f1 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
-        return [label(c), f(v)];
+        return [c === ptsCol ? "Fantasy pts" : label(c), commas(f(v), v)];
       }).filter(Boolean);
+      if (fb && ptsCol && !def.proj) { const g = S.stat(sport, p, k, "g"), t = S.stat(sport, p, k, ptsCol); if (g && t != null) cells.push(["FP/G", S.fmt.f1(t / g)]); }
+      if (def.week != null && def.week === curWeek && !cells.some(([, v]) => v !== "0" && v !== "0.0")) { bye = def.week; return ""; }
       return tbl(def.label, cells);
     }).filter(Boolean);
     // his advanced stats this season (football: the ones for his position), each from its category's formula
@@ -682,17 +703,19 @@
     // a league's card leads with the week and the league; the season lines fold away under one heading
     // opts.lines === false: the card already shows his season and projection its own way (a category league's lines)
     // folded (a league's card, which leads with the week): his main line stays open, the rest folds under one heading
-    const more = lines.slice(1).join("") + adv;
-    const linesHtml = opts.lines === false ? adv : opts.fold ? `${lines[0] || ""}${more ? `<details class="pc-more"><summary>More stats</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + adv;
+    const keep = opts.fold ? (typeof opts.fold === "number" ? opts.fold : 1) : lines.length;
+    const contract = opts.contract === "fold" ? "" : contractPanel(sport, p);
+    const more = lines.slice(keep).join("") + adv + (opts.contract === "fold" ? contractPanel(sport, p) : "");
+    const linesHtml = opts.lines === false ? adv : opts.fold ? `${lines.slice(0, keep).join("")}${more ? `<details class="pc-more"><summary>${opts.contract === "fold" && sport.key === "nhl" ? "More stats and his contract" : "More stats"}</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + adv;
     const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
     const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     // opts.logo: his pro team's logo at the right of the header
     const lg = opts.logo && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
-    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.school ? ` ${esc(p.school)}` : ""}${p.yr && YR[p.yr] ? `, ${YR[p.yr]}` : ""}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
+    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.school ? ` ${esc(p.school)}` : ""}${p.yr && YR[p.yr] ? `, ${YR[p.yr]}` : ""}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}${bye ? `, bye in week ${bye}` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
       ${(() => { const s = sampleOf(sport, p); return s ? `<p class="small pc-ss" style="margin:0 0 12px"><span class="tag ss">Small sample</span> ${s.g} of ${s.of} games so far, so his rates can still move a lot.</p>` : ""; })()}
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${opts.extra || ""}${zs}${contractPanel(sport, p)}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
+      <div class="stack">${opts.extra || ""}${zs}${contract}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
   }
 
   const capMoney = (n) => n == null || !Number.isFinite(+n) ? "—" : +n >= 1e6 ? `$${(+n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${Math.round(+n).toLocaleString("en-US")}`;
@@ -1841,6 +1864,45 @@
     }
     const act = (fn) => { const r = fn(); if (r && r.ok === false) { toast(r.why, true); return false; } save(); render(); return true; };
 
+    // The card's top numbers in the draft room: in a snake draft the market's rank stands in for auction dollars
+    function cardStats(p) {
+      const pts = isPoints(sport, D().scoring), mk = p.mk || {};
+      const out = [["Overall", p.rank], ["Position", esc(p.prank)], [pts ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", p.v == null ? "-" : pts ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)]];
+      if (auction() || D().hardCap) out.push(["Auction", p.$ ? money(p.$) : "-"]);
+      if (mk.fp) out.push([sport.market && sport.market.fp === "rest of season" ? "ECR (ROS)" : "ECR", String(mk.fp)]);
+      else if (mk.r) out.push(["ESPN rank", String(mk.r)]);
+      else if (!auction() && !D().hardCap) out.push(["Auction", p.$ ? money(p.$) : "-"]);
+      if (auction() && mk && (mk.aav || mk.a)) out.push(["ESPN $", money(Math.round(mk.aav || mk.a))]);
+      return out;
+    }
+    // what the card says about this draft: when your next pick comes and whether he'll last, where he'd play for you,
+    // and in an auction what he's worth and what you can bid
+    function cardDraft(p, taken, can) {
+      const d = D(), mine = me();
+      if (mine == null || taken || d.phase === "done") return "";
+      const bits = [];
+      if (auction()) {
+        const max = F.maxBid(d, mine), mk = p.mk || {};
+        bits.push(`<b>Worth ${money(p.$ || 0)}</b> in this league${mk.aav ? `, and real ESPN auctions pay ${money(Math.round(mk.aav))}` : ""}. You can bid up to ${money(max)}.`);
+      } else if (!d.packs && !mystery() && Array.isArray(d.order)) {
+        const next = F.nextPickOf(d, mine), first = d.board.findIndex((x, i) => !x && d.order[i] != null) + 1;
+        if (next != null && first > 0) {
+          const wait = next - first, ahead = ctx.available.indexOf(p);
+          if (wait <= 0) bits.push(`<b>You're on the clock.</b>`);
+          else if (ahead >= 0) {
+            const verdict = ahead < wait * 0.6 ? "he likely won't last" : ahead >= wait * 1.5 ? "he should still be there" : "he may not last";
+            bits.push(`<b>Your next pick is ${esc(F.pickLabel(d, next - 1))}</b>, ${wait} pick${wait === 1 ? "" : "s"} away. ${ahead ? `${ahead} player${ahead === 1 ? "" : "s"} left rank ahead of him, so ${verdict}.` : `He's the top player left, so ${verdict}.`}`);
+          }
+        }
+      }
+      if (can && can.ok && d.lineup) {
+        const ros = F.rosters(d)[mine].map((id) => ctx.byId[id]).filter(Boolean);
+        const before = F.assign(sport, ros, d.lineup).filter(Boolean).length, after = F.assign(sport, ros.concat(p), d.lineup);
+        const at = after.findIndex((x) => x && x.id === p.id);
+        bits.push(after.filter(Boolean).length > before && at >= 0 ? `He'd fill your open <b>${esc(d.lineup[at])}</b> spot.` : `Your spots for his position${S.positions(p).length > 1 ? "s" : ""} are full, so he'd start on your bench.`);
+      }
+      return bits.length ? `<div class="pc-draft">${bits.map((b) => `<p>${b}</p>`).join("")}</div>` : "";
+    }
     function openCard(pid) {
       const d = D(), p = ctx.byId[pid];
       if (!p) return;
@@ -1855,7 +1917,7 @@
       if (sk && sk.ok) actions += `<button class="btn warn" data-card="steal">Steal ${esc(last(p.n))}</button>`;
       if (can && can.ok && st && st.kind === "nominate" && st.team === mine) actions += `<button class="btn go" data-card="nominate">Nominate</button>`;
       const status = taken ? `${teamAv(team(ctx.own[pid]), "sm")} On ${esc(team(ctx.own[pid]).name)}${elephant() ? `, stolen ${F.stealsOf(d, pid)} of ${d.steals.freeze} times${sk && !sk.ok && c && c.team === mine ? `. <span class="bad">${esc(sk.why)}</span>` : ""}` : ""}` : can && !can.ok ? `<span class="bad">${esc(can.why)}</span>` : "";
-      const Dl = dialog(playerCard(sport, p, { scoring: d.scoring, actions, status }), null, { wide: true, dark: true });
+      const Dl = dialog(playerCard(sport, p, { scoring: d.scoring, actions, status, stats: cardStats(p), extra: cardDraft(p, taken, can), fold: 2, contract: d.hardCap ? undefined : "fold" }), null, { wide: true, dark: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card;
         if (a === "pick") { if (act(() => F.pick(D(), ctx, mine, pid, now()))) Dl.close(); }
