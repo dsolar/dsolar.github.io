@@ -358,8 +358,8 @@
       const leftTxt = cap ? `${left === Infinity ? "" : left} deal${left === 1 ? "" : "s"} left this season` : "No limit on deals";
       let body;
       if (w > L().settings.weeks || over()) body = lastLine ? lastLine.replace('style="margin:8px 0 0"', 'style="margin:0"') : "";
-      else if (d && d.taken) body = `<p style="margin:0"><b>Deal.</b> You score <b>${fmtD(d.offer)}</b> in ${weekLabel(w).toLowerCase()}, whatever your lineup does.</p><p class="ps" style="margin:4px 0 0">${leftTxt}.</p>${lastLine}`;
-      else if (d && now() < due) body = `<div class="row" style="gap:12px;align-items:baseline"><span class="deal-o num">${fmtD(d.offer)}</span><span class="ps">guaranteed points for ${weekLabel(w).toLowerCase()}. Your lineup projects ${fmtD(d.base)}.</span></div>
+      else if (d && d.taken) body = `<p style="margin:0"><b>Deal.</b> You score <b>${fmtD(d.offer)}</b> in ${weekLabel(w).replace(/Week/, "week")}, whatever your lineup does.</p><p class="ps" style="margin:4px 0 0">${leftTxt}.</p>${lastLine}`;
+      else if (d && now() < due) body = `<div class="row" style="gap:12px;align-items:baseline"><span class="deal-o num">${fmtD(d.offer)}</span><span class="ps">guaranteed points for ${weekLabel(w).replace(/Week/, "week")}. Your lineup projects ${fmtD(d.base)}.</span></div>
         <p class="ps" style="margin:6px 0 0">The banker updates his offer every morning. It ends ${esc(dueTxt(due))}, at the week's first game. ${leftTxt}.</p>
         <div class="row" style="gap:8px;margin-top:10px"><button type="button" class="btn sm go" data-deal="take">Deal</button>${d.passed ? `<span class="ps">You said no deal. You can still change your mind.</span>` : `<button type="button" class="btn sm" data-deal="pass">No deal</button>`}</div>${lastLine}`;
       else if (left <= 0) body = `<p class="ps" style="margin:0">You've used your ${cap === 1 ? "deal" : `${cap} deals`} this season. You play every week out.</p>${lastLine}`;
@@ -370,7 +370,7 @@
       const mid = me(), d = G.dealOffer(L(), mid);
       if (!d) return;
       if (kind === "pass") { act(() => G.dealPass(L(), mid, now()), "No deal. Good luck."); return; }
-      U.confirm(`Take ${fmtD(d.offer)}?`, `That's your score for ${weekLabel(L().week).toLowerCase()}, whatever your lineup does. ${L().settings.deal.max ? `It uses one of your ${L().settings.deal.max} deals.` : ""} You can't take it back.`, "Deal", () => act(() => G.dealTake(L(), mid, now()), `Deal: ${fmtD(d.offer)} for ${weekLabel(L().week).toLowerCase()}.`));
+      U.confirm(`Take ${fmtD(d.offer)}?`, `That's your score for ${weekLabel(L().week).replace(/Week/, "week")}, whatever your lineup does. ${L().settings.deal.max ? `It uses one of your ${L().settings.deal.max} deals.` : ""} You can't take it back.`, "Deal", () => act(() => G.dealTake(L(), mid, now()), `Deal: ${fmtD(d.offer)} for ${weekLabel(L().week).replace(/Week/, "week")}.`));
     }
     // the ladder: every rung, this week's challenges, and your challenge buttons
     function ladderCard() {
@@ -491,11 +491,11 @@
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
       const total = G.totalWeeks(L());
       return `<div class="wrap page">
-        <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, ${weekLabel(w).toLowerCase()}` : `${weekLabel(w)}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
+        <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, ${weekLabel(w).replace(/Week/, "week")}` : `${weekLabel(w)}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${noteCard()}
         ${nextActions()}${leaguePulse(mine)}
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? champHero(champ) : ""}
-        ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, ${weekLabel(w).toLowerCase()}` : `${weekLabel(w)} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
+        ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, ${weekLabel(w).replace(/Week/, "week")}` : `${weekLabel(w)} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">${weekLabel(w)}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
@@ -1268,7 +1268,7 @@
       w = Math.max(1, Math.min(w, curWeek()));
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1).filter((x) => L().results[x] || x === L().week);
       const mid = me(), row = mid != null ? blockRow(w, mid) : null;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">The block, ${weekLabel(w).toLowerCase()}</h1><span class="ps">${bb() ? "Best ball: every roster's best lineup scores automatically. " : ""}The lowest score is chopped. On a tie, the lower projection goes.</span></div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">The block, ${weekLabel(w).replace(/Week/, "week")}</h1><span class="ps">${bb() ? "Best ball: every roster's best lineup scores automatically. " : ""}The lowest score is chopped. On a tie, the lower projection goes.</span></div>
         <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">Wk ${x}</button>`).join("")}</div>
         <div class="cols"><div class="card">${blockList(w)}</div>
         <aside class="stack">${row ? myWeekCard(w, mid, row) : ""}</aside></div>${gamedayStatus(w)}${teamGameBoxes(w, blockOf(w).map(r=>r.team))}</div>`;
@@ -1656,7 +1656,7 @@
       const raided = (L().bites || []).filter((b) => b.by != null && b.status === "done" && b.victim === mid && now() - b.done < 72 * 36e5).pop();
       if (raided) items.push(`<a class="alert loss" href="#players/tx"><span>${raided.why === "robin" ? "Robin Hood struck" : `${esc(T(raided.by).name)} took the spoils`}: <b>${esc((ctx.byId[raided.take] || {}).n || "")}</b> is gone${raided.give ? `, and <b>${esc((ctx.byId[raided.give] || {}).n || "")}</b> joined your roster` : ""}.</span><b class="go">See it</b></a>`);
       { const d = L().settings.deal && pts() ? G.dealOffer(L(), mid) : null;
-        if (d && !d.taken && !d.passed && now() < G.dealDue(L(), L().week)) items.push(`<a class="alert info" href="#league/overview"><span><b>The banker's offer: ${(Math.round(d.offer * 10) / 10).toFixed(1)}.</b> Take a guaranteed score for ${weekLabel(L().week).toLowerCase()}, or play it out. It ends at the first game.</span></a>`); }
+        if (d && !d.taken && !d.passed && now() < G.dealDue(L(), L().week)) items.push(`<a class="alert info" href="#league/overview"><span><b>The banker's offer: ${(Math.round(d.offer * 10) / 10).toFixed(1)}.</b> Take a guaranteed score for ${weekLabel(L().week).replace(/Week/, "week")}, or play it out. It ends at the first game.</span></a>`); }
       if (L().ladder && !L().ladder.done && now() < L().ladder.due && G.ladderTargets(L(), mid).length) items.push(`<a class="alert info" href="#league/overview"><span><b>Challenge someone.</b> Pick your week ${L().ladder.week} match on the ladder before ${esc(new Date(L().ladder.due).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }))}, or you'll be paired.</span></a>`);
       if (L().pyo && !L().pyo.done && G.pyoTurn(L()) === mid) items.push(`<button type="button" class="alert info" data-pyo><span><b>Your pick.</b> Choose your week ${L().pyo.week} opponent by ${when(Math.min(L().pyo.at + G.PYO_HOURS * 36e5, L().pyo.due))}, or the weakest team left is picked for you.</span><b class="go">Pick</b></button>`);
       const hg = G.hungover(L(), mid);
@@ -2120,7 +2120,7 @@
       const asked = w;
       w = Math.max(1, Math.min(w, curWeek()));
       const games = G.matchups(L(), ctx, w, frac(w));
-      if (sub && asked !== w) badLink(`Week ${asked} ${asked > curWeek() ? "hasn't happened yet" : "doesn't exist"}. Showing ${weekLabel(w).toLowerCase()}.`);
+      if (sub && asked !== w) badLink(`Week ${asked} ${asked > curWeek() ? "hasn't happened yet" : "doesn't exist"}. Showing ${weekLabel(w).replace(/Week/, "week")}.`);
       else if (i != null && !games[i]) badLink(`${weekLabel(w)} has no game ${i + 1}. Showing your matchup.`);
       let m = i != null && games[i] ? games[i] : games.find((g) => isMe(g.a) || isMe(g.b)) || games[0];
       if (m && isMe(m.b)) m = flip(m);
@@ -2160,7 +2160,7 @@
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}${dealLine(m)}</div>${categoryPlan(m, w)}${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
         ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
-        <div class="stack" style="gap:8px"><b class="ps">Other games, ${weekLabel(w).toLowerCase()}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
+        <div class="stack" style="gap:8px"><b class="ps">Other games, ${weekLabel(w).replace(/Week/, "week")}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 
     function teamGameBoxes(w, teams) {
@@ -2772,7 +2772,7 @@
       const champ = over() ? championOf() : null;
       const you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
       const weeks = total > 1 ? Array.from({ length: total }, (_, i) => { const n = i + 1; return { n, label: weekLabel(n), po: n > reg, gap: n === reg + 1, k: over() || n < w ? "done" : n === w ? "now" : "next" }; }) : [];
-      const weekLine = over() ? "Season over" : sport.key === "cfb" ? `${weekLabel(w)}${now() < Lg.start ? ", upcoming" : ""} · league period ${w} of ${reg}` : oneWeekLg() ? "One week" : w > reg ? `Playoffs, ${weekLabel(w).toLowerCase()}` : `${weekLabel(w)} of ${reg}${total > reg ? `, then ${total - reg} of playoffs` : ""}`;
+      const weekLine = over() ? "Season over" : sport.key === "cfb" ? `${weekLabel(w)}${now() < Lg.start ? ", upcoming" : ""} · league period ${w} of ${total}` : oneWeekLg() ? "One week" : w > reg ? `Playoffs, ${weekLabel(w).replace(/Week/, "week")}` : `${weekLabel(w)} of ${reg}${total > reg ? `, then ${total - reg} of playoffs` : ""}`;
       const champs = seasonsAll().filter((x) => !x.live && x.champion).slice(-4).map((x) => { const t = Lg.teams[x.champion.team]; return { season: x.season || `Year ${x.year}`, name: x.champion.name, abbr: (t && t.name === x.champion.name && t.abbr) || U.initials(x.champion.name).slice(0, 3), color: t ? t.color : 0 }; });
       return { brand: br, sub: `${lines.join(", ")}.${you ? " " + you : ""}`, weeks, weekLine, note: scoreMsg(), champs };
     }
