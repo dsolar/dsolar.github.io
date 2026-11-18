@@ -28,6 +28,8 @@
     const pts = () => sc().type === "points";
     const fmtS = (x) => (x == null ? "-" : pts() ? (Math.abs(x) < 0.05 ? 0 : x).toFixed(1) : String(Math.round(x) || 0));
     const ui = { moving: null, week: null, pf: { q: "", pos: sport.groups && (sport.scorings[L().scoring] || {}).type !== "points" ? "g:" + Object.keys(sport.groups)[0] : "" }, psort: { k: "rank", dir: 1 }, pshow: "avail", txf: "", sbWeek: null };
+    const stories = U.store("fk-stories");
+    const storyTone = () => stories.get("tone", "straight");
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
     const over = () => L().week > G.totalWeeks(L());
     // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
@@ -421,6 +423,44 @@
         const tag = own != null ? (own === me() ? `<span class="tag win">Yours</span>` : `<span class="ps">${esc(T(own).abbr)}</span>`) : G.onWaivers(L(), id, now()) ? `<button class="btn xs" data-add="${esc(id)}">Claim</button>` : `<button class="btn xs go" data-add="${esc(id)}">Add</button>`;
         return `<li style="grid-template-columns:minmax(0,1fr) auto;align-items:center;padding:8px 16px"><span data-player="${esc(id)}" style="cursor:pointer;min-width:0">${pname(sport, p, esc(p.prank || ""))}</span>${tag}</li>`; }).join("")}</ul></div>`;
     }
+    function nextActions() {
+      if (me() == null || !canMove()) return "";
+      const mid = me(), w = curWeek(), lu = G.lineupFor(L(), ctx, mid, w), items = [];
+      const out = !bb() ? lu.filter((id) => id && ctx.byId[id] && G.plays(ctx.byId[id]) === 0).length : 0;
+      const empty = !bb() ? L().settings.lineup.length - lu.filter(Boolean).length : 0;
+      const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid).length;
+      const claims = L().claims.filter((c) => c.team === mid && c.status === "open").length;
+      if (empty || out) items.push(["#team/roster", "Review your lineup", `${empty ? `${empty} empty spot${empty === 1 ? "" : "s"}. ` : ""}${out ? `${out} starter${out === 1 ? " is" : "s are"} flagged out. Game locks still apply.` : ""}`]);
+      if (offers) items.push(["#team/trades", `${offers} trade offer${offers === 1 ? "" : "s"} waiting`, "Review what you give, what you get, and your roster fit."]);
+      if (claims) items.push(["#players/claims", `${claims} waiver claim${claims === 1 ? "" : "s"} pending`, claimsRun()]);
+      return items.length ? `<nav class="next-actions" aria-label="Your next actions">${items.map(([href, label, sub]) => `<a class="next-action" href="${href}"><b>${esc(label)}</b><small>${esc(sub)}</small></a>`).join("")}</nav>` : "";
+    }
+    function categoryPlan(game, w) {
+      const E = FK.experience, mid = me();
+      if (!E || !game || mid == null || (game.a !== mid && game.b !== mid) || w !== L().week || !canMove() || pts()) return "";
+      const focus = E.targets(game, mid, sc()); if (!focus.length) return "";
+      const lu = G.lineupFor(L(), ctx, mid, w), held = G.held(L(), mid);
+      const drops = L().rosters[mid].filter((id) => !held.includes(id) && ctx.byId[id] && !G.isLocked(L(), ctx.byId[id], w, now())).sort((a, b) => (lu.includes(a) - lu.includes(b)) || (ctx.byId[a].vor || 0) - (ctx.byId[b].vor || 0));
+      const candidates = L().openWaivers > now() ? [] : ctx.free.filter((p) => G.plays(p) > 0 && E.reliableSample(S, sport, p) && !G.onWaivers(L(), p.id, now()) && !G.isLocked(L(), p, w, now()) && G.gamesLeft(L(), ctx, p, w, frac(w)) > 0 && (G.canRoster(L(), ctx, mid, p.id, [], true).ok || drops.some((id) => G.canRoster(L(), ctx, mid, p.id, [id], true).ok)));
+      const used = new Set();
+      const rows = focus.map(({ category: c, probability: q }) => {
+        const p = candidates.filter((p) => !used.has(p.id) && (p.zc && p.zc[c.k] || 0) > 0).sort((a, b) => b.zc[c.k] - a.zc[c.k])[0];
+        if (p) used.add(p.id);
+        return `<li><b>${esc(c.label)} · ${Math.round(q * 100)}% to win</b>${p ? `<small>Available specialist: <button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button>${liveLeft(p, w) ? ` · ${esc(liveLeft(p, w))}` : ""}. Strong ${esc(c.label)} contribution for this scoring.</small><a class="small" href="#players/fa">Review pickup options &rarr;</a>` : `<small>Review your starters and remaining games. No eligible immediate pickup stands out for this category.</small>`}</li>`;
+      }).join("");
+      return `<section class="card"><div class="mod-h"><h2>Your category plan</h2><a href="#players/fa">Free agents</a></div><div class="category-plan"><p>These categories are still within reach. Specialists are ranked by category contribution; review the player you would drop and your other categories before making a move.</p><ul>${rows}</ul></div></section>`;
+    }
+    function leaguePulse(game) {
+      if (over()) return "";
+      const w = curWeek(), mid = me(), focus = FK.experience ? FK.experience.targets(game, mid, sc()) : [];
+      const q = game && mid != null && game.winProb != null ? (game.a === mid ? game.winProb : 1 - game.winProb) : null;
+      const rc = recapOn() && lastDone() > 0 ? recapOf(lastDone()) : null;
+      const leader = standings()[0];
+      const head = focus[0] ? `${focus[0].category.label} could decide your week` : game ? `${T(game.a === mid ? game.b : game.a).name} is on the other side` : "The week is taking shape";
+      return `<section class="league-pulse"><span class="pulse-k">${esc(L().name)} · Week ${w}</span><h2>${esc(head)}</h2>
+        ${rc ? `<p>${recapLede(rc)}</p><div class="row" style="gap:12px;flex-wrap:wrap"><a href="#league/recap/${rc.week}">Read week ${rc.week}'s story &rarr;</a><button type="button" class="btn xs" data-copyrecap="${rc.week}">Copy recap for the group chat</button></div>` : `<p>Your matchup, lineup decisions, and the moves that shape the week.</p>`}
+        <div class="pulse-grid">${q != null ? `<div><span class="pulse-k">Your matchup</span><b>${Math.round(q * 100)}% to win</b><small>Model estimate, updated with the matchup</small></div>` : ""}${focus[0] ? `<div><span class="pulse-k">Closest category</span><b>${esc(focus[0].category.label)}</b><small>${Math.round(focus[0].probability * 100)}% chance to win it</small></div>` : ""}${leader ? `<div><span class="pulse-k">Team to catch</span><b>${esc(T(leader.team).name)}</b><small>${esc(recOf(leader.team))}</small></div>` : ""}</div></section>`;
+    }
     function overview() {
       if (allplay1()) return weekBoardPage();
       if (gl()) return guillotineOverview();
@@ -452,11 +492,13 @@
       return `<div class="wrap page">
         <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${noteCard()}
+        ${nextActions()}${leaguePulse(mine)}
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? champHero(champ) : ""}
         ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
           ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
+          ${categoryPlan(mine, w)}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
           <div class="card feed2"><div class="mod-h"><h2>Recent activity</h2><a href="#players/tx">All transactions</a></div>${U.feed(recent.slice(0, 6).map(txVM), "No moves yet. Pick up a free agent to get things going.")}</div>
@@ -496,8 +538,9 @@
     // the one-paragraph story of the week
     function recapLede(rc) {
       const bits = [];
-      if (rc.high) bits.push(`${nm(rc.high.team)} put up the high score, ${fmtS(rc.high.score)}.`);
-      if (rc.blowout && rc.blowout.margin > 0) { const [a, b] = winLose(rc.blowout); bits.push(`The biggest win: ${nm(a)} over ${nm(b)} by ${byText(rc.blowout.margin)}.`); }
+      const banter = storyTone() === "banter";
+      if (rc.high) bits.push(banter ? `${nm(rc.high.team)} brought the fireworks: ${fmtS(rc.high.score)}, the week's high score.` : `${nm(rc.high.team)} put up the high score, ${fmtS(rc.high.score)}.`);
+      if (rc.blowout && rc.blowout.margin > 0) { const [a, b] = winLose(rc.blowout); bits.push(banter ? `${nm(a)} left ${nm(b)} looking for the reset button, winning by ${byText(rc.blowout.margin)}.` : `The biggest win: ${nm(a)} over ${nm(b)} by ${byText(rc.blowout.margin)}.`); }
       if (rc.close && rc.close !== rc.blowout) { const [a, b] = winLose(rc.close); bits.push(rc.close.w === "a" || rc.close.w === "b" ? `${nm(a)} edged ${nm(b)} by ${byText(rc.close.margin)}.` : `${nm(rc.close.a)} and ${nm(rc.close.b)} tied.`); }
       const cost = rc.calls.find((c) => c.cost && c.miss);
       if (cost) bits.push(`${nm(cost.team)} had the points to win on the bench.`);
@@ -505,6 +548,7 @@
     }
     function recapText(rc) {
       const lines = [`${L().name}, week ${rc.week} recap`];
+      if (storyTone() === "banter") lines.push(recapLede(rc).replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'"), "");
       for (const g of rc.games) { const [a, b, x, y] = winLose(g); lines.push(g.w === "a" || g.w === "b" ? `${T(a).name} ${fmtS(x)}, ${T(b).name} ${fmtS(y)}` : `${T(g.a).name} ${fmtS(g.sa)}, ${T(g.b).name} ${fmtS(g.sb)} (tie)`); }
       lines.push("");
       if (rc.high) lines.push(`High score: ${T(rc.high.team).name}, ${fmtS(rc.high.score)}. Low: ${T(rc.low.team).name}, ${fmtS(rc.low.score)}.`);
@@ -567,6 +611,7 @@
       const everyCard = `<div class="card"><div class="mod-h"><h2>Every result</h2><a href="#league/scoreboard/${w}">Scoreboard</a></div><div class="bd sbtwo">${U.scoreboard(gamesVM(w).map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
       return `<div class="wrap page rcp">
         <div class="head"><h1 class="disp">Week ${w} recap</h1><span class="ps">${rc.playoff ? esc(kindName(rc.games[0] && rc.games[0].kind, w)) + ". " : ""}${rc.games.length} game${rc.games.length === 1 ? "" : "s"}</span></div>
+        <div class="row" style="gap:12px;flex-wrap:wrap"><span class="ps">Story tone on this device</span><div class="seg" role="group" aria-label="Recap tone">${[["straight", "Straight"], ["banter", "Banter"]].map(([k, label]) => `<button type="button" data-story-tone="${k}" aria-pressed="${storyTone() === k}">${label}</button>`).join("")}</div></div>
         ${weeks.length > 1 ? `<div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-rcweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>` : ""}
         <div class="card rc-lede"><div class="bd"><p>${lede || "Every result from the week."}</p><div class="row" style="flex-wrap:wrap"><button class="btn sm" data-copyrecap="${w}">Copy for the group chat</button>${typeof navigator.share === "function" ? `<button class="btn sm ghost" data-sharerecap="${w}">Share</button>` : ""}</div></div></div>
         <div class="cols"><div class="stack">
@@ -2103,7 +2148,7 @@
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
-        ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}${dealLine(m)}</div>${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
+        ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}${dealLine(m)}</div>${categoryPlan(m, w)}${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
         ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
@@ -2904,6 +2949,8 @@
       save(); render(); U.toast(v ? "Note saved." : "Note cleared.");
     });
     opts.el.addEventListener("click", (e) => {
+      const tone = e.target.closest("[data-story-tone]");
+      if (tone) { stories.set("tone", tone.dataset.storyTone === "banter" ? "banter" : "straight"); render(); return; }
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
       const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");

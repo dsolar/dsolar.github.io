@@ -9,7 +9,7 @@
   "use strict";
   var S = window.FK && window.FK.sports, V = window.FK && window.FK.value;
   var ROOT = (function () { var s = document.currentScript && document.currentScript.src; return s ? s.replace(/fantasy\/hub\.js.*$/, "") : "/"; })();
-  var KIT = ROOT + "fantasy-kit/";
+  var KIT = ROOT + "fantasy-kit/", E = window.FK.experience;
   var page = document.body.dataset.page || "overview";
   var $ = function (sel, el) { return (el || document).querySelector(sel); };
   var $$ = function (sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); };
@@ -204,15 +204,18 @@
   function sportData(k) {
     if (!cache[k]) cache[k] = fetch(KIT + "data/" + k + ".json").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d || !d.players || !S || !V) return null;
-      return { sport: S.attach(S.ALL[k], d), players: d.players };
+      return fetch(KIT + "data/market-" + k + ".json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (market) { return { sport: S.attach(Object.assign({}, S.ALL[k]), d), players: d.players, market: market }; });
     }).catch(function () { return null; });
     return cache[k];
   }
   function ranked(k, scoring) {
     return sportData(k).then(function (D) {
       if (!D) return null;
-      var ps = D.players.slice();
-      V.evaluate(D.sport, ps, { teams: 12, scoring: scoring });
+      var ps = D.players.map(function (p) { return Object.assign({}, p); }), c = E.rankingConfig(S, k, read("fk-lab:cfg"));
+      var have = new Set(ps.flatMap(function (p) { return p.pos; }));
+      c.lineup = c.lineup.filter(function (slot) { return D.sport.slots[slot] === "*" || D.sport.slots[slot].some(function (p) { return have.has(p); }); });
+      c.scoring = scoring || c.scoring; c.market = D.market;
+      V.evaluate(D.sport, ps, c);
       ps.sort(function (a, b) { return (a.rank || 1e9) - (b.rank || 1e9) || (b.vor || 0) - (a.vor || 0); });
       return { sport: D.sport, players: ps.map(function (p) { return { p: p, d: p.$ || 0, rank: p.rank, prank: p.prank }; }) };
     });
@@ -246,12 +249,14 @@
 
   // the full board on a sport page: the top ten under a scoring preset
   function board(el, k) {
-    var s = SPORTS[k], preset = s.presets[0][0];
+    var s = SPORTS[k], settings = E.rankingConfig(S, k, read("fk-lab:cfg")), preset = settings.scoring;
+    var fullHref = function () { var q = new URLSearchParams({ s: k, scoring: preset, teams: settings.teams, budget: settings.budget, bench: settings.bench, lineup: settings.lineup.join(" ") }); return ROOT + "fantasy/rankings/?" + q.toString(); };
     el.innerHTML = '<div class="mod-h"><div><span class="kick">Draft Lab rankings</span><h2>Top of the board</h2></div><div class="segs" role="group" aria-label="Scoring">' +
-      s.presets.map(function (p, i) { return '<button type="button" data-preset="' + p[0] + '" aria-pressed="' + (i === 0) + '">' + esc(p[1]) + "</button>"; }).join("") + "</div></div>" +
+      s.presets.map(function (p, i) { return '<button type="button" data-preset="' + p[0] + '" aria-pressed="' + (p[0] === preset) + '">' + esc(p[1]) + "</button>"; }).join("") + "</div></div>" +
       '<ol class="rk" data-rk><li class="rk-empty" style="display:block">Loading the board...</li></ol>' +
-      '<div class="rk-foot"><span>12 teams, standard lineup. Values are auction dollars on a $200 budget.</span><a class="more" href="' + ROOT + "fantasy/rankings/?s=" + k + '">Full rankings &rarr;</a></div>';
+      '<div class="rk-foot"><span>' + settings.teams + ' teams, ' + (settings.lineup.join(", ") === S.ALL[k].lineup.join(", ") ? 'standard' : 'custom') + ' lineup. Auction dollars on a $' + settings.budget + ' budget.</span><a class="more" href="' + ROOT + "fantasy/rankings/?s=" + k + '">Full rankings &rarr;</a></div>';
     var draw = function () {
+      var more = $(".rk-foot .more", el); if (more) more.href = fullHref();
       ranked(k, preset).then(function (R) {
         var ol = $("[data-rk]", el);
         if (!R) { ol.innerHTML = '<li class="rk-empty" style="display:block">The board couldn\'t load. <a href="' + ROOT + "fantasy/rankings/?s=" + k + '">Open the rankings in Draft Lab</a>.</li>'; return; }
@@ -313,7 +318,7 @@
     if (!sets.length) return "";
     var lab = function (key) { var c = all.filter(function (x) { return x.k === key; })[0]; return c ? c.label : key; };
     return '<h4 class="adv-h">Ready-made setups</h4><div class="rsets">' + sets.map(function (p) {
-      return '<a class="rset" href="' + ROOT + "fantasy/leagues/?s=" + k + '"><b>' + esc(p.name) + "</b><span>" + esc(p.blurb) + "</span><i>" + p.cats.map(function (c) { return esc(lab(c)); }).join(" &middot; ") + "</i></a>";
+      return '<a class="rset" href="' + ROOT + "fantasy/leagues/?s=" + k + "&amp;catset=" + encodeURIComponent(p.k) + '"><b>' + esc(p.name) + "</b><span>" + esc(p.blurb) + "</span><i>" + p.cats.map(function (c) { return esc(lab(c)); }).join(" &middot; ") + "</i></a>";
     }).join("") + "</div>";
   }
 
@@ -403,7 +408,7 @@
         '<div class="door-foot"><span>Open ' + s.name.toLowerCase() + '</span><span class="arr">&rarr;</span></div></a>';
     }).join("");
     ORDER.forEach(function (k) {
-      ranked(k, SPORTS[k].presets[0][0]).then(function (R) {
+      ranked(k).then(function (R) {
         var ol = $('[data-door="' + k + '"]');
         if (!R) { ol.innerHTML = '<li class="ph" style="display:block">Rankings are in Draft Lab.</li>'; return; }
         ol.innerHTML = R.players.slice(0, 3).map(function (r, i) {
@@ -431,27 +436,28 @@
     var el = $("[data-yours]"); if (!el) return;
     var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
     if (!on) return;
-    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611171452";
+    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611181715";
     s.onload = function () { if (window.FK && window.FK.home) window.FK.home.mount(el); };
     document.head.appendChild(s);
   }
   function overview() {
     yours();
+    var preview = $("[data-launch-preview]");
+    if (preview) ranked("nba").then(function (R) {
+      if (!R) { preview.innerHTML = '<p>Real players, a live pick clock, and a queue built around your board.</p>'; return; }
+      preview.innerHTML = '<ol class="preview-board">' + R.players.slice(0, 3).map(function (r, i) { return '<li><b class="num">' + (i + 1) + '</b>' + face("nba", r.p, 42) + '<span><b>' + esc(r.p.n) + '</b><small>' + esc(posName(R.sport, r.p)) + ' · ' + esc(r.p.t) + '</small></span><strong>$' + Math.round(r.d) + '</strong></li>'; }).join("") + '</ol><p class="preview-caption">NBA sample board · ' + E.rankingConfig(S, "nba", read("fk-lab:cfg")).teams + ' teams · $' + E.rankingConfig(S, "nba", read("fk-lab:cfg")).budget + ' auction budget</p>';
+    });
     doors($("[data-doors]"));
     calendar($("[data-cal]"));
     var mineEl = $("[data-mine]");
     if (mineEl) { mineEl.innerHTML = mine("guillotine") + mine("yoenis"); fillMine(); }
     // the hero's numbers count what's on the page
     $$("[data-count]").forEach(function (b) { b.textContent = $$(b.dataset.count).length; });
-    // a mock draft in progress goes first in the hero
-    var mock = read("fk-lab:mock"), cta = $("[data-cta]");
-    if (cta && mock && mock.D && mock.D.phase !== "done") {
-      var a = document.createElement("a");
-      a.className = "btn go"; a.href = ROOT + "fantasy/mock/#draft";
-      a.textContent = "Back to your " + ((SPORTS[mock.D.sport] || {}).name || "").toLowerCase() + " mock";
-      cta.insertBefore(a, cta.firstChild);
-      cta.children[1].className = "btn";
-    }
+    var mock = read("fk-lab:mock"), resume = $("[data-resume]"), cards = [];
+    if (mock && mock.D) cards.push('<a class="resume-item" href="/fantasy/mock/#draft"><span class="eyebrow">' + (mock.D.phase === "done" ? 'Draft results' : 'Saved mock') + '</span><b>' + esc((SPORTS[mock.D.sport] || {}).name || mock.D.sport) + ' · ' + esc(mock.D.type) + ' · ' + mock.D.teams.length + ' teams</b><span>' + (mock.D.phase === "done" ? 'Review your team and start a league' : 'Continue from your saved seat') + ' &rarr;</span></a>');
+    var last = read("fk-demo:last"), lastf = read("fk-demo:lastf"), demo = last && read("fk-demo:" + last + (lastf === "g" ? ":g" : ""));
+    if (demo && demo.settings) cards.push('<a class="resume-item" href="/fantasy/demo/?s=' + encodeURIComponent(last) + '&amp;f=' + (lastf === "g" ? 'g' : 'h') + '"><span class="eyebrow">Your demo · saved on this device</span><b>' + esc(demo.name) + '</b><span>Week ' + demo.week + ' · Open your league &rarr;</span></a>');
+    if (resume && cards.length) { resume.innerHTML = '<div class="sec-h"><h2>Pick up where you left off</h2></div><div class="resume-grid">' + cards.join("") + '</div>'; resume.hidden = false; }
   }
 
   bar();

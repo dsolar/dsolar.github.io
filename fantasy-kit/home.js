@@ -69,7 +69,12 @@
     const you = mine ? game.sa : game.sb, them = mine ? game.sb : game.sa;
     const win = game.winProb != null ? (mine ? game.winProb : 1 - game.winProb) : null;
     const pts = G.scoring ? G.scoring(L, ctx).type === "points" : true;
-    return { w, you, them, pts, opp: L.teams[opp] ? L.teams[opp].name : "Opponent", live: !!game.live && frac < 1, final: !!game.final || frac >= 1, win };
+    const lu = G.lineupFor(L, ctx, me, w), offers = (L.trades || []).filter((t) => t.status === "pending" && t.to === me).length;
+    const empty = L.settings.bestBall ? 0 : L.settings.lineup.length - lu.filter(Boolean).length;
+    const out = L.settings.bestBall ? 0 : lu.filter((id) => id && ctx.byId[id] && G.plays(ctx.byId[id]) === 0).length;
+    const claims = (L.claims || []).filter((c) => c.team === me && c.status === "open").length;
+    const attention = offers ? `${offers} trade offer${offers === 1 ? "" : "s"} to review` : empty ? `${empty} empty lineup spot${empty === 1 ? "" : "s"}` : out ? `${out} starter${out === 1 ? "" : "s"} flagged out` : claims ? `${claims} waiver claim${claims === 1 ? "" : "s"} pending` : "";
+    return { w, you, them, pts, opp: L.teams[opp] ? L.teams[opp].name : "Opponent", live: !!game.live && frac < 1, final: !!game.final || frac >= 1, win, attention, action: offers ? "team/trades" : empty || out ? "team/roster" : claims ? "players/claims" : "" };
   }
 
   async function mount(el) {
@@ -78,9 +83,9 @@
     const C = FK.cloud; if (!C || !C.user()) return;
     const mine = await C.rpc("fk_mine", {}).catch(() => null);
     if (!Array.isArray(mine) || !mine.length) return;
-    const list = mine.filter((l) => !l.oneWeek || l.phase !== "season").slice(0, 8);
+    const list = mine.slice().sort((a, b) => (a.phase === "live" ? -1 : 0) - (b.phase === "live" ? -1 : 0)).slice(0, 8);
     const icon = (k) => { const src = FK.sports && FK.sports.leagueLogo && FK.sports.leagueLogo(k); const txt = `<span class="ym-lg ym-sp">${esc((FK.sports.ALL[k] || {}).short || k)}</span>`; return src ? `<img class="ym-lg" src="${src}" alt="" loading="lazy" onerror="this.outerHTML=this.dataset.t" data-t="${esc(txt)}">` : txt; };
-    el.innerHTML = `<div class="sec-h"><div><h2>My leagues</h2><p>This week's matchups, live while games are on.</p></div><a href="/fantasy/leagues/">All my leagues &rarr;</a></div>
+    el.innerHTML = `<div class="sec-h"><div><h2>Your leagues, right now</h2><p>Draft rooms, matchups, and decisions waiting on you.</p></div><a href="/fantasy/leagues/">All my leagues &rarr;</a></div>
       <div class="ym">${list.map((l) => `<a class="ym-c" href="/fantasy/league/?id=${encodeURIComponent(l.id)}" data-ym="${esc(l.id)}">${icon(l.sport)}<span class="ym-m"><b>${esc(l.name)}</b><small>${esc(statusOf(l))}</small><span class="ym-s" data-ys></span></span></a>`).join("")}</div>`;
     el.hidden = false;
     // leagues still playing (a finished season shows its finish, not its last matchup)
@@ -93,6 +98,7 @@
         if (!m || !box) return;
         const lead = m.you > m.them ? "up" : m.you < m.them ? "down" : "";
         box.innerHTML = `<span class="ym-sc ${lead}">${m.pts ? fmt(m.you) : m.you}<i>-</i>${m.pts ? fmt(m.them) : m.them}</span><span class="ym-vs">vs ${esc(m.opp)}${m.live ? ` <em class="ym-live">Live</em>` : m.final ? " (final)" : ""}${m.win != null && !m.final ? `, ${Math.round(m.win * 100)}% to win` : ""}</span>`;
+        if (m.attention) { box.insertAdjacentHTML("beforeend", `<span class="ym-attention">${esc(m.attention)} &rarr;</span>`); const card = box.closest("a"); if (card && m.action) card.href += "#" + m.action; }
       }).catch(() => {});
     }
   }

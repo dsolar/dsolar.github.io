@@ -3,6 +3,8 @@
 (function () {
   "use strict";
   const { sports: S, value: V, draft: F, ui: U, cloud: C } = window.FK;
+  const E = window.FK.experience, templates = U.store("fk-templates");
+  let templateNote = "", templateError = "", presetChoice = "classic";
   const { esc, $ } = U;
   const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
   const theme = U.theme("fk-lab");
@@ -78,6 +80,7 @@
     weights: null, cats: null, waivers: "faab", ir: 1, maxAdds: 0, posMax: {}, keepers: 0, keeperCost: "round", legs: "1", cons: "none", median: 0, bestball: 0, divs: 0, rookie: 3, fpicks: 1, taxi: 2, ohold: "clock", tep: 0, ptd: 4, b100r: 0, b100c: 0, b300p: 0, vamp: "off", vlike: 0, vdouble: 0,
     reviewHours: 24, vetoShare: 0.5, waiverOrder: "rolling", minBid: 0, waiverPrice: "first", maxAddsSeason: 0,
     open: {}, dealOn: 0, dealMax: 2, ladOn: 0, ladReach: 2, splitAfter: 0, pyrOn: 0, pyrTeams: 8, pyrMode: "swap", pyrK: 2, pyrTop: "Premier", pyrBot: "Championship", capBudget: 50000, capBonus: 1, hcOn: 0, hcScale: "auto", confOn: 0, reseed: 0, confs: [], cbbEnd: "conf", cfbEnd: "conf", tvOn: 0, pyoOn: 0, robinOn: 0, robinP: 2, conqOn: 0, conqP: 3, conqLike: 0, crownOn: 0, crownStep: 10, crownKeep: 5, hangOn: 0, tbOn: 0, tbAmt: 25, reveal: "start", kind: "redraft", when: "now", rlOn: 0, rlRound: 0, respins: 1, hzOn: 0, hzShields: 3, hzSteals: 1, hzJinxes: 1, hzClock: 60, keepN: 3, tepOn: 0, tepAmt: 0.5, b100rOn: 0, b100rAmt: 3, b100cOn: 0, b100cAmt: 3, b300pOn: 0, b300pAmt: 3, vampOn: 0, vampWho: "random", poolOnly: "", proRounds: 0, proRule: "strict", ...window.FK.setup.ELEPHANT_DEF };
+  const FORM_DEFAULTS = JSON.parse(JSON.stringify(form));
   // a vampire league: football, head to head on points, and a draft where one team can simply sit out
   const vampOk = () => form.sport === "nfl" && form.season === "h2h" && ["snake", "linear", "3rr"].includes(form.type);
   // scoring: a preset key, or "cp" (custom points) / "cc" (custom categories)
@@ -162,12 +165,20 @@
     if (params.get("wk") === "1") form.slWeek = 1;
     loadSlates();
   }
+  try {
+    const notes = E.applyQuery(form, params, S);
+    templateNote = notes.join(" ");
+    if (params.has("rules") || params.has("catset") || params.has("scoring")) { view = "new"; presetChoice = "custom"; }
+    if (params.has("rules")) templateNote = "Rules loaded. Review the setup, add your names, then create a fresh league.";
+    if (form.kind === "week" && SLATE_SPORTS.includes(form.sport)) loadSlates();
+  } catch (err) { templateError = err.message; view = "new"; form.customize = true; }
+  if (params.has("hardcap")) form.customize = true;
 
   function header() {
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
       tabs: N.TABS, inline: true, find: N.findHtml(""), tab: view === "new" && oneWeek() ? "week" : "leagues",
       right: `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
-      hrefOf: (t) => N.href(t) });
+      hrefOf: (t) => N.href(t, { sport: view === "new" ? form.sport : "" }) });
   }
   const page = (html) => { app.innerHTML = `<div class="wrap page">${html}</div>`; U.pushBox($("#lg-push")); };
   const fail = (msg) => `<div class="banner loss" role="alert"><b>${esc(msg)}</b></div>`;
@@ -436,6 +447,26 @@
   }
   const { SC_SUB } = window.FK.setup;
   const DRAFT_SHORT = { cap: "Salary cap", sealed: "Sealed", snake: "Snake", auction: "Auction", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack" };
+  function startingPoints(sp) {
+    const presets = oneWeek() && SLATE_SPORTS.includes(sp.key) ? [["classic", "Live draft", "A quick snake draft"], ["sealed", "Sealed lists", "Rank privately, draft together"], ["cap", "Salary cap", "Build a lineup under a budget"]]
+      : [["classic", "Classic", "Standard scoring and a snake draft"], ["auction", "Auction", "$200 budgets and live bidding"], ["guillotine", "Guillotine", "The lowest score is chopped"], sp.college ? ["bestball", "Best ball", "Your best scores count"] : ["dynasty", "Dynasty", "Keep your roster year to year"]];
+    const saved = templates.get("all", []).filter((t) => t.rules && t.rules.sport === sp.key);
+    return `<section class="nl-sec nl-start"><div class="nl-start-head"><div><h2 class="nl-h">Choose a starting point</h2><p class="nl-sub">Use a template, then change any rule in Full customization.</p></div><button class="btn sm" type="button" data-full-custom>Build your own</button></div>
+      <div class="nl-presets" role="group" aria-label="Starting templates">${presets.map(([k, name, sub]) => `<button type="button" data-launch-template="${k}" aria-pressed="${presetChoice === k}"><b>${esc(name)}</b><small>${esc(sub)}</small></button>`).join("")}</div>
+      <div class="nl-template-tools">${saved.length ? `<label>Saved rule sets <select id="saved-rules"><option value="">Choose a saved setup</option>${saved.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn sm ghost" data-save-rules>Save these rules</button><button type="button" class="btn sm ghost" data-share-rules>Copy setup link</button><span class="ps">Names and account details stay out of templates.</span></div></section>`;
+  }
+  function usePreset(k) {
+    const keep = { sport: form.sport, teams: form.teams, name: form.name, me: form.me, team: form.team, kind: oneWeek() ? "week" : "redraft" };
+    for (const key of Object.keys(form)) delete form[key];
+    Object.assign(form, JSON.parse(JSON.stringify(FORM_DEFAULTS)), keep);
+    if (k === "dynasty") form.kind = "dynasty";
+    if (["auction", "sealed", "cap"].includes(k)) form.type = k;
+    if (k === "guillotine") form.season = "guillotine";
+    if (k === "bestball") { form.bestball = 1; form.scoring = Object.keys(S[form.sport].scorings).find((x) => S[form.sport].scorings[x].type === "points") || "cp"; }
+    if (form.kind === "week") oneWeekDefaults();
+    form.customize = false; presetChoice = k; templateNote = ""; templateError = "";
+    derive();
+  }
   // a field drawn behind the header, one for each sport
   function newForm() {
     derive();
@@ -481,15 +512,20 @@
         <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
+        ${templateError ? `<div class="banner loss" role="alert">${esc(templateError)} Use a starting point below to begin a new setup.</div>` : ""}
+        ${templateNote ? `<div class="banner" role="status">${esc(templateNote)}</div>` : ""}
         ${!C.user() ? `<div class="banner nl-out" style="margin:0 0 4px"><b>Set it up now, sign in at the end.</b> <span class="muted">Everything here is kept.</span></div>` : ""}
         ${rematch ? `<div class="banner" style="margin:0 0 4px"><b>Running it back: ${esc(rematch.name)}, the same ${rematch.n} teams and managers.</b> <span class="muted">Pick next week's games and go. Everyone in this week's game is in the new one.</span></div>` : ""}
+        ${startingPoints(sp)}
         <section class="nl-sec nl-ess"><h2 class="nl-h">The basics</h2>
           <div class="nl-name"><label for="n-name">League name</label><input id="n-name" type="text" maxlength="40" required value="${esc(form.name || "")}" placeholder="Name your league" autocomplete="off"></div>
           <div class="g2">${fld("Your name", `<input id="n-me" type="text" maxlength="24" required value="${esc(form.me || "")}" autocomplete="name">`, "", "n-me")}${fld("Your team's name", `<input id="n-team" type="text" maxlength="28" value="${esc(form.team || "")}" placeholder="Optional">`, "", "n-team")}</div>
           ${fld("Teams", stepper("teams", teamVals(), form.teams, (x) => `${x} teams`, "Teams"), teamsHint())}
         </section>
-        <section class="nl-sec"><h2 class="nl-h">What are you starting?</h2>${modes}${kinds ? `<div style="margin-top:12px">${kinds}</div>` : ""}${whenHtml}</section>
         ${slateHtml}
+        <section class="nl-sec nl-rules-preview"><span class="eyebrow">Your setup</span><p>${esc(V.line)}</p><div class="row" style="gap:20px;flex-wrap:wrap"><span>${esc(V.roster)}</span><span>${esc(V.season)}</span><span>${esc(V.draft)}</span></div></section>
+        <details class="nl-full" id="nl-custom"${form.customize ? " open" : ""}><summary><span><b>Full customization</b><small>Every scoring option, draft format, roster rule, and twist</small></span><span class="chev" aria-hidden="true"></span></summary>
+        <section class="nl-sec"><h2 class="nl-h">What are you starting?</h2>${modes}${kinds ? `<div style="margin-top:12px">${kinds}</div>` : ""}${whenHtml}</section>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}${sdHtml}
           ${showdown() || capOn() || scoringType(sp) !== "points" ? "" : `<div class="nl-bb">${toggle("bestball", gl ? "Best ball guillotine" : "Best ball", gl ? "Your best lineup counts each week, so nobody gets chopped for a bad lineup" : "Lineups set themselves: your best scores count each week", form.bestball)}${slateOn() && form.season === "h2h" && scoringType(sp) === "points" && curSlate() && curSlate().games.length >= 8 ? toggle("hzOn", "Heist", "Right after the draft, everyone secretly shields their own starters and steals or jinxes the other team's", form.hzOn) : ""}${form.season === "h2h" && !form.vampOn && !heist() && scoringType(sp) === "points" ? toggle("median", "Median game", "Also play the league median, for a second win or loss each week", form.median) : ""}</div>`}</section>
         ${hcOk() ? `<section class="nl-sec" style="padding-top:0"><div class="nl-bb" style="margin-top:0">${toggle("hcOn", "Hard Cap", `Real ${sp.league} contracts under a salary line: draft the player, carry the contract`, !!form.hcOn, hcOn() ? hcHtml(sp) : "")}</div></section>` : ""}
@@ -513,6 +549,8 @@
         </section>
         ${twistsHtml()}
         <section class="nl-sec"><h2 class="nl-h">Fine-tune</h2><p class="nl-sub">Every rule and what it's set to. Open one to change it.</p><div class="nr-l">${rows}</div></section>
+        </details>
+        ${(() => { const checks = RL.check(form); return checks.errors.concat(checks.warnings).map((x) => `<p class="banner${checks.errors.includes(x) ? " loss" : ""}" role="status">${esc(x.msg)}</p>`).join(""); })()}
         <div class="nl-bar"><div class="nl-sum">${icon(sp.key, "nl-sum-ic")}<span><b id="tk-name">${esc(form.name || "Your league")}</b><small>${esc(V.line)}</small></span></div>
           <p id="n-why" role="alert"></p><span class="grow"></span><button type="button" class="btn ghost" data-a="list">Cancel</button><button type="submit" class="btn go"${busy ? " disabled" : ""}>${busy ? (rematch ? "Setting it up…" : "Making the league…") : rematch ? "Run it back" : oneWeek() ? "Make the game" : "Make the league"}</button></div>
       </form></div>`;
@@ -968,9 +1006,12 @@
   async function makeLeague() {
     grab();
     const why = (m) => { const el = $("#n-why"); if (el) el.textContent = m; };
-    const need = (m, el) => { why(m); const x = $(el); if (x) { x.focus({ preventScroll: true }); x.scrollIntoView({ block: "center", behavior: "smooth" }); } };
+    const need = (m, el) => { why(m); const x = $(el); if (x) { if (x.tagName === "DETAILS") x.open = true; x.focus({ preventScroll: true }); x.scrollIntoView({ block: "center", behavior: "smooth" }); } };
     if (!(form.name || "").trim()) return need("Give the league a name.", "#n-name");
     if (!(form.me || "").trim()) return need("Add your name.", "#n-me");
+    const errors = RL.check(form).errors;
+    if (errors.length) { form.customize = true; return need(errors.map((x) => x.msg).join(" "), "#nl-custom"); }
+    if (form.scoring === "cc" && (!form.cats || form.cats.length < 2)) return need("Pick at least two categories in Full customization.", "#nl-custom");
     if (!C.user()) { savePending(); waiting = true; view = "list"; await render(); scrollTo({ top: 0 }); const f = $("#pi-login") || $("#pu-user"); if (f) f.focus({ preventScroll: true }); return; }
     busy = true; render();
     try {
@@ -1211,9 +1252,22 @@
   // redraw the form and put focus back where it was
   const redraw = (focusId) => render().then(() => { const el = focusId && (document.getElementById(focusId) || (focusId.startsWith("n-pick-") && $(`.su [data-${focusId.split("-")[2]}="${focusId.split("-").slice(3).join("-")}"]`))); if (el && !el.disabled) el.focus({ preventScroll: true }); });
   // the twists stay open or closed across redraws
-  app.addEventListener("toggle", (e) => { if (e.target && e.target.id === "nl-tw") form.twOpen = e.target.open; }, true);
+  app.addEventListener("toggle", (e) => { if (e.target && e.target.id === "nl-tw") form.twOpen = e.target.open; if (e.target && e.target.id === "nl-custom") form.customize = e.target.open; }, true);
   app.addEventListener("click", (e) => {
     if (!e.target.closest(".su")) return;
+    const preset = e.target.closest("[data-launch-template]");
+    if (preset) { grab(); usePreset(preset.dataset.launchTemplate); redraw(); return; }
+    if (e.target.closest("[data-full-custom]")) { grab(); form.customize = true; presetChoice = "custom"; render().then(() => { const d = $("#nl-custom"); if (d) { d.open = true; d.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
+    if (e.target.closest("[data-save-rules]")) {
+      grab();
+      const rules = E.rulesOf(form);
+      U.dialog(`<h3>Save your rule set</h3><p class="ps">Keep this setup on this device. You can also copy a setup link for friends.</p><form><label for="rule-name">Rule set name</label><input id="rule-name" name="title" maxlength="50" required value="${esc((S[form.sport].short || form.sport) + " · " + (DRAFT_SHORT[form.type] || form.type))}"><div class="acts"><button class="btn" type="button" data-close>Cancel</button><button class="btn go">Save rules</button></div></form>`, (fd) => { const name = String(fd.get("title") || "").trim(); if (!name) return false; const all = templates.get("all", []).filter((t) => !(t.name === name && t.rules && t.rules.sport === rules.sport)); all.unshift({ name, rules }); templates.set("all", all.slice(0, 20)); render(); U.toast("Rule set saved on this device."); });
+      return;
+    }
+    if (e.target.closest("[data-share-rules]")) {
+      grab(); const q = new URLSearchParams({ rules: E.encode(form) }), url = `${location.origin}/fantasy/leagues/?${q}`;
+      (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => U.toast("Setup link copied. It shares rules only."), () => U.dialog(`<h3>Your setup link</h3><textarea rows="5" readonly style="width:100%">${esc(url)}</textarea><div class="acts"><button class="btn" data-close>Close</button></div>`)); return;
+    }
     const sxb = e.target.closest("[data-sxa]");
     if (sxb) { grab(); if (SX.act(sxOf(), form.sport, sxb)) redraw(); return; }
     const row = e.target.closest("[data-row]");
@@ -1307,6 +1361,11 @@
     } else if (el.id === "n-name") { const t = $("#tk-name"); if (t) t.textContent = el.value || "Your league"; }
   });
   app.addEventListener("change", (e) => {
+    if (e.target.id === "saved-rules" && e.target.value !== "") {
+      grab(); const t = templates.get("all", []).filter((x) => x.rules && x.rules.sport === form.sport)[+e.target.value];
+      if (t) try { const r = E.decode(JSON.stringify({ v: 1, rules: t.rules }), S), keep = { name: form.name, me: form.me, team: form.team }; for (const key of Object.keys(form)) delete form[key]; Object.assign(form, JSON.parse(JSON.stringify(FORM_DEFAULTS)), r, keep, { customize: true }); presetChoice = "custom"; templateNote = `Loaded ${t.name}. Every rule is editable.`; templateError = ""; render(); } catch (err) { U.toast(err.message, true); }
+      return;
+    }
     // the scoring editor's numbers: read them and redo the preview, without redrawing under the cursor
     if (e.target.closest(".su") && e.target.dataset.sx) { grab(); schedulePreview(); const v = $(`.su [data-row="scoring"] .nr-v`); if (v) v.textContent = values(S[form.sport]).scoring; return; }
     // the draft time redraws too: the slate is cut from it

@@ -1270,6 +1270,16 @@
     }
 
     /* left side: players, board, picks, results */
+    let adviceCache = null;
+    function draftCoach() {
+      const E = FK.experience, d = D(), mine = me();
+      if (!E || mine == null) return "";
+      const key = `${d.created}:${d.phase}:${F.made(d).length}:${mine}:${sport.statView}:${ctx.players[0] && ctx.players[0].v}:${d.teams[mine].budget}`;
+      if (!adviceCache || adviceCache.key !== key) adviceCache = { key, advice: E.draftAdvice(F, d, ctx, mine) };
+      const a = adviceCache.advice; if (!a) return "";
+      const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button><span>${why}</span></div>`;
+      return `<div class="lab-coach" aria-label="Draft guidance">${item("Best available", a.best, `#${a.best.rank} for this scoring`)}${item("Roster fit", a.fit, "Values your open slots and budget")}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
+    }
     function players() {
       const d = D(), n = now(), mine = me();
       const c = !auction() && d.phase === "live" ? F.onClock(d, n) : null;
@@ -1327,7 +1337,7 @@
       })() : "";
       const sortable = cols.filter((c) => c.sort && c.label && !c.raw);
       const sortSel = `<div class="psort show-m"><label for="fk-psort">Sort by</label><select id="fk-psort">${sortable.map((c) => `<option value="${esc(c.k)}"${ui.sort.k === c.k ? " selected" : ""}>${esc(c.title || c.label)}</option>`).join("")}</select><button type="button" class="btn xs ghost" data-act="sortdir" aria-label="Flip the order">${ui.sort.dir > 0 ? "Low to high" : "High to low"}</button></div>`;
-      return fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "", limit: ui.limit || 100, empty: "No one matches.",
+      return draftCoach() + fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "", limit: ui.limit || 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team

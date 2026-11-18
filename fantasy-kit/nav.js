@@ -18,7 +18,8 @@
     var q = o.sport ? "?s=" + encodeURIComponent(o.sport) : "";
     if (tab === "league") return URLS.league + q;
     // the mock draft's room is a hash on its own page
-    if (tab === "draft") return (o.here ? "" : URLS.draft) + "#draft";
+    if (tab === "draft") return (o.here ? "" : URLS.draft + q) + "#draft";
+    if (["rankings", "week"].includes(tab)) return URLS[tab] + q;
     return URLS[tab] || HOME;
   }
   // a league's own page

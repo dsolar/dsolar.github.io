@@ -2,6 +2,7 @@
 (function () {
   "use strict";
   const { sports: S, value: V, draft: F, ui: U } = window.FK;
+  const E = window.FK.experience;
   const { esc, $, $$ } = U;
   const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
   const onRank = /\/rankings\/?$/.test(location.pathname);
@@ -13,8 +14,12 @@
   let cfg = Object.assign({}, DEFAULTS, store.get("cfg", {}));
   if ([-20, -30, -60].includes(cfg.clock)) cfg.clock = -200;                // the old per-round banks
   // ?s=nfl (from the fantasy hub) picks the sport for setup and rankings
-  const qs = new URLSearchParams(location.search).get("s");
+  const query = new URLSearchParams(location.search), qs = query.get("s");
   if (S[qs] && qs !== cfg.sport) { cfg = Object.assign(cfg, { sport: qs, scoring: "", lineup: "", bench: null }); store.set("cfg", cfg); }
+  if (S[cfg.sport].scorings[query.get("scoring")]) cfg.scoring = query.get("scoring");
+  for (const k of ["teams", "budget", "bench"]) { const v = Number(query.get(k)); if (query.has(k) && Number.isInteger(v) && v >= (k === "teams" ? 2 : k === "budget" ? 1 : 0) && v <= (k === "teams" ? 20 : k === "budget" ? 10000 : 30)) cfg[k] = v; }
+  if (query.get("lineup") && query.get("lineup").split(/[\s,]+/).every((k) => S[cfg.sport].slots[k] && k !== "BN")) cfg.lineup = query.get("lineup");
+  store.set("cfg", cfg);
   let mock = store.get("mock", null);            // { cfg, D }
   const cache = {};
   let roomCtl = null;
@@ -79,7 +84,7 @@
     const right = `<button class="btn sm ghost" data-act="theme">${theme.dark() ? "Light" : "Dark"}</button>${mock ? `<button class="btn sm" data-act="new">New mock</button>` : ""}`;
     top.innerHTML = U.shell({ brand: { name: "Draft Lab", href: N.HOME, mark: `<img src="mark.svg" alt="">` },
       tabs: N.TABS, inline: true, find: N.findHtml(""), tab, right,
-      hrefOf: (t, sub) => (t === "draft" ? N.href("draft", { here: !onRank }) : t === "rankings" ? (onRank ? "" : N.URLS.rankings) + (sub ? "#rankings/" + sub : onRank ? "#rankings" : "") : N.href(t, { sport: cfg.sport })) });
+      hrefOf: (t, sub) => (t === "draft" ? N.href("draft", { here: !onRank, sport: cfg.sport }) : t === "rankings" ? (onRank ? "" : N.href("rankings", { sport: cfg.sport })) + (sub ? "#rankings/" + sub : onRank ? "#rankings" : "") : N.href(t, { sport: cfg.sport })) });
   }
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-act]");
@@ -171,7 +176,8 @@
     const scoring = Object.values(sport.scorings)[0].label.replace(/ \(.*\)$/, "");
     app.innerHTML = `<div class="wrap page">
       <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
-      ${mock ? `<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">${mock.D.phase === "done" ? "Your draft is in the books." : "Your seat is still here."}</h2><p>${esc(S[mock.D.sport] ? S[mock.D.sport].name : "")} · ${esc(K.DRAFT_SHORT[mock.D.type] || mock.D.type)} · ${mock.D.teams.length} teams. ${mock.D.phase === "done" ? "See your roster and results." : "Continue your saved draft on this device."}</p></div><a class="btn go" href="#draft">${mock.D.phase === "done" ? "View your results" : "Continue your draft"}</a></section>` : ""}
+      ${E.mockConflict(qs && cfg.sport, mock) ? `<div class="banner"><b>You chose ${esc(sport.name.toLowerCase())}.</b> Your saved ${esc(S[mock.D.sport].name.toLowerCase())} draft is separate. Resume it below, or start a ${esc(sport.name.toLowerCase())} mock with the choices here.</div>` : ""}
+      ${mock ? `<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">${mock.D.phase === "done" ? "Your draft is in the books." : "Your seat is still here."}</h2><p>${esc(S[mock.D.sport] ? S[mock.D.sport].name : "")} · ${esc(K.DRAFT_SHORT[mock.D.type] || mock.D.type)} · ${mock.D.teams.length} teams. ${mock.D.phase === "done" ? "See your roster and results." : "Continue your saved draft on this device."}</p></div><a class="btn go" href="${N.URLS.draft}#draft">${mock.D.phase === "done" ? "View your results" : "Continue your draft"}</a></section>` : ""}
       <div class="start-sports" role="group" aria-label="Choose a sport">${S.SEASON_SPORTS.map(s => `<button type="button" class="btn" data-entry-sport="${s.key}" aria-pressed="${s.key === cfg.sport}">${K.icon(s.key)} ${esc(s.short || s.name)}</button>`).join("")}</div>
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team ${esc(sport.name.toLowerCase())} snake draft. ${esc(scoring)}, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
@@ -228,7 +234,7 @@
         <h1 class="disp">Mock a ${esc(sport.name.toLowerCase())} draft</h1>
         <p>Draft against bots that know positions, budgets and the clock, with real player data. It saves on this device, so you can leave and come back.</p>
       </div></div>
-      ${mock ? `<a class="mk-resume" href="#draft"><span><b>Your ${esc(S[mock.D.sport] ? S[mock.D.sport].name.toLowerCase() : "")} mock is ${mock.D.phase === "done" ? "done" : "still going"}</b><small>${esc(K.DRAFT_SHORT[mock.D.type] || "")}, ${mock.D.teams.length} teams${mock.D.phase === "done" ? ". See how it turned out." : ". Pick up where you left off."}</small></span><span class="btn sm">Back to your mock</span></a>` : ""}
+      ${mock ? `<a class="mk-resume" href="${N.URLS.draft}#draft"><span><b>Your ${esc(S[mock.D.sport] ? S[mock.D.sport].name.toLowerCase() : "")} mock is ${mock.D.phase === "done" ? "done" : "still going"}</b><small>${esc(K.DRAFT_SHORT[mock.D.type] || "")}, ${mock.D.teams.length} teams${mock.D.phase === "done" ? ". See how it turned out." : ". Pick up where you left off."}</small></span><span class="btn sm">Back to your mock</span></a>` : ""}
       <form class="nl-body" id="setup" novalidate>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}</section>
         <section class="nl-sec nl-ess">
@@ -248,7 +254,7 @@
           ${tip("Your seat", "Queue players before you start. If your clock runs out, the first queued player who fits is your pick.")}
           ${tip("After the draft", slateMock(c) ? `Play it out live: your team against the bots on the real games, ${c.fmt1 === "allplay" ? "everyone ranked by score" : "head to head"}, final when the last game ends.` : `Play a season with your team in a demo league: <a href="/fantasy/demo/?s=${esc(c.sport)}&f=h">head to head</a> or <a href="/fantasy/demo/?s=${esc(c.sport)}&f=g">guillotine</a>.`)}</section>
         <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
-          <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
+          <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="${N.URLS.draft}#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
       </form></div></div>`;
   }
   let sched = null, schedAsked = false;
@@ -360,12 +366,16 @@
       cfg.lineup = (cfg.lineup || s.lineup.join(" ")).trim();
       cfg.name = (cfg.name || "").trim();
       store.set("cfg", cfg);
-      const go = $("#app .nl-bar button.go"), why = $("#s-why");
-      go.disabled = true; go.textContent = cfg.type === "mystery" && cfg.test ? "Dealing and testing packages..." : "Setting up...";
-      await new Promise((r) => setTimeout(r, 30));
-      try { await newMock(cfg); }
-      catch (err) { go.disabled = false; go.textContent = "Take your seat"; why.textContent = err.message; return; }
-      location.hash = "#draft"; route();
+      const start = async () => {
+        const go = $("#app .nl-bar button.go"), why = $("#s-why");
+        go.disabled = true; go.textContent = cfg.type === "mystery" && cfg.test ? "Dealing and testing packages..." : "Setting up...";
+        await new Promise((r) => setTimeout(r, 30));
+        try { await newMock(cfg); }
+        catch (err) { go.disabled = false; go.textContent = "Take your seat"; why.textContent = err.message; return; }
+        location.hash = "#draft"; route();
+      };
+      if (mock) U.confirm("Replace your saved mock?", "This new draft replaces the mock saved on this device. Choose Cancel to keep it.", "Start this mock", start);
+      else start();
     });
   }
   wireSetup();
@@ -426,7 +436,7 @@
       // with the room open in two tabs, only the one you're looking at runs the clock and the bots
       get drive() { return !document.hidden; },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
-      extra: () => `${playable(mock.D) ? `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&play=mock">Play it out live</a>` : mock.D.season && mock.D.season.oneWeek ? "" : `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a>`}<button class="btn sm" data-new>New mock</button>` });
+      extra: () => `${playable(mock.D) ? `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&play=mock">Play it out live</a>` : mock.D.season && mock.D.season.oneWeek ? "" : `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a>`}<a class="btn sm" href="/fantasy/leagues/?${new URLSearchParams({ rules: E.encode(E.fromDraft(mock.D)) })}">Draft with friends</a><button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });
   }
 
@@ -460,6 +470,8 @@
       <div class="head"><h1 class="disp">${esc(sp.name)} rankings</h1><span class="ps">${esc(sp.data.source)}, ${esc(sp.data.season)}. ${c.teams} teams, ${esc(sp.scorings[P.scoring].label)}${P.lineup.length ? `, starting ${(() => { const n = {}; P.lineup.forEach((x) => (n[x] = (n[x] || 0) + 1)); return Object.entries(n).map(([x, k]) => (k > 1 ? `${k} ${x}` : x)).join(", "); })()}` : ""}.</span></div>
       <div class="tools"><label class="sr" for="r-sport">Sport</label><select id="r-sport">${S.SEASON_SPORTS.map((s) => opt(s.key, s.short || s.name, rank.sport)).join("")}</select>
         <label class="sr" for="r-scoring">Scoring</label><select id="r-scoring">${Object.entries(sp.scorings).map(([k, s]) => opt(k, s.label.replace(/ \(.*\)$/, ""), P.scoring)).join("")}</select>
+        <label class="sr" for="r-size">Teams</label><select id="r-size">${Array.from({ length: 19 }, (_, i) => i + 2).map((n) => opt(String(n), `${n} teams`, String(c.teams))).join("")}</select>
+        <label class="sr" for="r-budget">Auction budget</label><select id="r-budget">${[...new Set([100, 200, 260, 500, 1000, c.budget])].sort((a, b) => a - b).map((n) => opt(String(n), `$${n} budget`, String(c.budget))).join("")}</select>
         ${U.viewSelect(sp, "r-statv")}${U.setSwitch(sp)}
         <label class="sr" for="r-dyn">League type</label><select id="r-dyn">${opt("", "Redraft", rank.dyn ? "1" : "")}${opt("1", "Dynasty", rank.dyn ? "1" : "")}</select>
         <div class="seg" role="group" aria-label="Rankings"><button type="button" data-rmode="default" aria-pressed="${rank.mode === "default"}">Rankings</button><button type="button" data-rmode="board" aria-pressed="${mine}">My board</button>${sp.key === "nhl" ? "" : `<button type="button" data-rmode="prospects" aria-pressed="${rank.mode === "prospects"}">Prospects</button>`}</div></div>
@@ -516,14 +528,21 @@
     app.oninput = (e) => { if (e.target.id === "fk-q") { rank.f.q = e.target.value; rankingsPage(); } };
     app.onchange = (e) => {
       const id = e.target.id;
-      if (id === "r-sport") { rank.sport = e.target.value; rank.scoring = ""; rank.f = { q: "", pos: rank.sport === "nhl" ? "g:sk" : "", team: "" }; rank.sort = { k: "rank", dir: 1 }; }
-      else if (id === "r-scoring") rank.scoring = e.target.value;
+      if (id === "r-sport") { rank.sport = e.target.value; rank.scoring = ""; rank.f = { q: "", pos: rank.sport === "nhl" ? "g:sk" : "", team: "" }; rank.sort = { k: "rank", dir: 1 }; cfg = Object.assign({}, cfg, { sport: rank.sport, scoring: "", lineup: "", bench: null }); }
+      else if (id === "r-scoring") { rank.scoring = e.target.value; cfg.scoring = rank.scoring; }
+      else if (id === "r-size") cfg.teams = Number(e.target.value);
+      else if (id === "r-budget") cfg.budget = Number(e.target.value);
       else if (id === "r-dyn") rank.dyn = !!e.target.value;
       else if (id === "r-statv") U.setView(sp, e.target.value);
       else if (id === "fk-pos") rank.f.pos = e.target.value;
       else if (id === "fk-team") rank.f.team = e.target.value;
       else if (id === "fk-conf") { rank.f.conf = e.target.value; rank.f.team = ""; }
       else return;
+      store.set("cfg", cfg);
+      if (["r-sport", "r-scoring", "r-size", "r-budget"].includes(id)) {
+        const q = new URLSearchParams(location.search); q.set("s", rank.sport); q.set("scoring", rank.scoring || cfg.scoring || Object.keys(S[rank.sport].scorings)[0]); q.set("teams", cfg.teams); q.set("budget", cfg.budget); q.delete("lineup"); q.delete("bench");
+        history.replaceState(null, "", location.pathname + "?" + q + location.hash); header("rankings");
+      }
       rankingsPage();
     };
   }
@@ -612,7 +631,7 @@
     if (tab !== "draft" && roomCtl) { roomCtl.stop(); roomCtl = null; }
     if (tab === "home") { app.onclick = app.oninput = app.onchange = null; return startPage(); }
     if (tab === "setup") { app.onclick = app.oninput = app.onchange = null; return setupPage(); }
-    if (tab === "draft") { app.onclick = app.oninput = app.onchange = null; return mock ? draftPage() : startPage(); }
+    if (tab === "draft") { app.onclick = app.oninput = app.onchange = null; return mock && !E.mockConflict(qs && cfg.sport, mock) ? draftPage() : startPage(); }
     return rankingsPage();
   }
   window.addEventListener("hashchange", route);

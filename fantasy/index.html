@@ -22,41 +22,43 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,62..125,400..900;1,62..125,700..900&display=swap">
 <link rel="stylesheet" href="../assets/bar.css">
-<link rel="stylesheet" href="../fantasy-kit/kit.css?v=202611171458">
+<link rel="stylesheet" href="../fantasy-kit/kit.css?v=202611181715">
 <link rel="stylesheet" href="../assets/faces.css">
-<link rel="stylesheet" href="../fantasy/hub.css?v=202611171455">
-<link rel="stylesheet" href="../assets/navigation.css?v=202611171455">
+<link rel="stylesheet" href="../fantasy/hub.css?v=202611181715">
+<link rel="stylesheet" href="../assets/navigation.css?v=202611181715">
 <script src="../assets/analytics.js" defer></script>
-<script src="../assets/projects.js?v=202611171455" defer></script>
-<script src="../assets/navigation.js?v=202611171455" defer></script>
-<script src="../fantasy-kit/nav.js?v=202611171455" defer></script>
-<script src="../fantasy-kit/sports.js?v=202611171610" defer></script>
-<script src="../fantasy-kit/value.js?v=202611171455" defer></script>
+<script src="../assets/projects.js?v=202611181715" defer></script>
+<script src="../assets/navigation.js?v=202611181715" defer></script>
+<script src="../fantasy-kit/nav.js?v=202611181715" defer></script>
+<script src="../fantasy-kit/sports.js?v=202611181715" defer></script>
+<script src="../fantasy-kit/experience.js?v=202611181715" defer></script>
+<script src="../fantasy-kit/value.js?v=202611181715" defer></script>
 <script src="../assets/faces.js" defer></script>
-<script src="../fantasy/hub.js?v=202611171455" defer></script>
+<script src="../fantasy/hub.js?v=202611181715" defer></script>
 </head>
 <body data-page="overview">
 <div data-ds-navigation data-ds-own hidden></div>
 <nav class="fbar" data-fbar aria-label="Fantasy"></nav>
 
-<header class="hero">
-  <div class="wrap">
-    <h1 class="disp">Draft Lab</h1>
-    <p class="lede">Mock drafts against bots, rankings for your scoring, demo leagues you can play right now, and real leagues to start with friends, across nine draft formats and ten season formats.</p>
-    <div class="cta" data-cta>
-      <a class="btn go" href="../fantasy/mock/">Start a mock draft</a>
-      <a class="btn" href="../fantasy/leagues/">Start a league</a>
+<header class="hero launch-hero">
+  <div class="wrap launch-grid">
+    <div><span class="eyebrow">Draft Lab · Fantasy your way</span>
+      <h1 class="disp">Your league.<br>Your rules.</h1>
+      <p class="lede">Practice a draft, play tonight with friends, or build a season around the rules you love. Six sports. Every format. Make it yours.</p>
+      <div class="cta" data-cta><a class="btn go" href="/fantasy/quick/">Find a quick game</a><a class="btn" href="/fantasy/leagues/?new=1">Build your league</a></div>
+      <a class="launch-depth" href="#formats">Explore all 9 draft formats, 10 season formats, and 16 twists &rarr;</a>
     </div>
-    <div class="stats">
-      <div><b>6</b><span>Sports</span></div>
-      <div><b data-count="[data-f=draft] .fc">9</b><span>Draft formats</span></div>
-      <div><b data-count="[data-f=season] .fc">10</b><span>Season formats</span></div>
-      <div><b data-count=".feat li">16</b><span>Features and twists</span></div>
-    </div>
+    <aside class="launch-preview" aria-label="Inside Draft Lab"><div class="launch-preview-h"><span>Inside the draft room</span><a href="/fantasy/mock/?s=nba">Try NBA &rarr;</a></div><div data-launch-preview><p class="ps">Loading the board…</p></div><div class="launch-preview-f"><span>Real players</span><span>Your scoring</span><span>Your board</span></div></aside>
   </div>
 </header>
 
 <main class="wrap">
+  <section class="launch-ways" aria-label="Choose how to play">
+    <a class="launch-way" href="/fantasy/mock/"><span class="launch-number">01 / Practice</span><h2>Practice a draft</h2><p>Take a seat against bots. Quick snake, auction, or a draft built your way.</p><b>Enter Draft Lab &rarr;</b></a>
+    <a class="launch-way featured" href="/fantasy/quick/"><span class="launch-number">02 / Play with friends</span><h2>Play tonight</h2><p>One night of basketball or one week of football. Draft together, crown a winner, run it back.</p><b>Pick your games &rarr;</b></a>
+    <a class="launch-way" href="/fantasy/leagues/?new=1"><span class="launch-number">03 / Build something lasting</span><h2>Start a season</h2><p>Redraft, keeper, dynasty, or something stranger. Every customization is available.</p><b>Build your league &rarr;</b></a>
+  </section>
+  <section class="sec" data-resume aria-label="Continue playing" hidden></section>
   <section class="sec" data-yours aria-label="My leagues" hidden></section>
   <section class="sec" aria-labelledby="pick-h">
     <div class="sec-h"><div><h2 id="pick-h">Pick a sport</h2><p>Each one has its own page: rankings, scoring, demo leagues and the ways to play it.</p></div></div>
@@ -102,7 +104,7 @@
 
   <section class="sec" id="formats" aria-label="Formats and features">
     <div class="fgroup">
-      <div class="sec-h"><div><h2>Draft formats</h2><p>Nine ways to fill a roster across Draft Lab and shared leagues, with options for each sport.</p></div><a href="../fantasy/mock/">Start a mock draft &rarr;</a></div>
+      <div class="sec-h"><div><h2>Every way to play</h2><p>All customization stays available. Nine ways to fill a roster across Draft Lab and shared leagues, with options for each sport.</p></div><a href="../fantasy/mock/">Start a mock draft &rarr;</a></div>
       <div class="fgrid g3" data-f="draft">
         <div class="fc"><b data-n="01">Snake</b><span>The order flips every round. The classic.</span></div>
         <div class="fc"><b data-n="02">Auction</b><span>A budget and live bidding on every player. Nominate, bid, pass. Bots bid by proxy.</span></div>
