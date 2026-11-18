@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-18T01:01:38Z",
+ "updated": "2026-11-18T11:55:37Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -304,6 +304,10 @@
     [
      "2026-11-17",
      56
+    ],
+    [
+     "2026-11-18",
+     56
     ]
    ],
    "sg": null,
@@ -455,6 +459,10 @@
     ],
     [
      "2026-11-17",
+     22
+    ],
+    [
+     "2026-11-18",
      22
     ]
    ],
@@ -670,6 +678,10 @@
     [
      "2026-11-17",
      28
+    ],
+    [
+     "2026-11-18",
+     28
     ]
    ],
    "sg": null,
@@ -811,16 +823,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892728": {
-   "history": [],
-   "sg": 18378513,
-   "title": "Bruins vs Kings",
-   "date": "2026-11-17",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892728/kings-bruins",
-   "src": null,
-   "low": null
-  },
   "espn-401892758": {
    "history": [],
    "sg": 18378515,
@@ -858,16 +860,6 @@
    "date": "2026-11-25",
    "venue": "TD Garden",
    "url": "https://www.espn.com/nhl/game/_/gameId/401892781/jets-bruins",
-   "src": null,
-   "low": null
-  },
-  "sg-18760855": {
-   "history": [],
-   "sg": 18760855,
-   "title": "LCD Soundsystem (18+)",
-   "date": "2026-11-17",
-   "venue": "Music Hall of Williamsburg",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/brooklyn-new-york-music-hall-of-williamsburg-2026-11-17-8-pm/concert/18760855",
    "src": null,
    "low": null
   },
@@ -928,6 +920,10 @@
     [
      "2026-11-17",
      44
+    ],
+    [
+     "2026-11-18",
+     44
     ]
    ],
    "sg": null,
@@ -955,6 +951,10 @@
     ],
     [
      "2026-11-17",
+     44
+    ],
+    [
+     "2026-11-18",
      44
     ]
    ],
@@ -1056,6 +1056,26 @@
    "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-12-2027/event/01006533FFA73B59",
    "src": null,
    "low": null
+  },
+  "espn-401910078": {
+   "history": [],
+   "sg": 18495291,
+   "title": "Celtics vs Hornets",
+   "date": "2026-12-02",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nba/game/_/gameId/401910078/hornets-celtics",
+   "src": null,
+   "low": null
+  },
+  "tm-vv1AvZkfMGkeTdy2C": {
+   "history": [],
+   "sg": 18685644,
+   "title": "Dropkick Murphys",
+   "date": "2027-03-14",
+   "venue": "MGM Music Hall at Fenway",
+   "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-14-2027/event/01006537BF0F93CE",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -1063,7 +1083,6 @@
   "tm-vv177Z_oGkXBi8-I": "2026-11-16",
   "tm-rZ7HnEZ1AfuNZ7": "2026-11-16",
   "tm-rZ7HnEZ1AfuYF0": "2026-11-16",
-  "tm-vvG17Z_u7Z_JCI": "2026-11-16",
   "tm-Z7r9jZ1AAvx-I": "2026-11-16",
   "tm-Z7r9jZ1AAvx-E": "2026-11-16",
   "tm-rZ7HnEZ1Afugk7": "2026-11-16",
@@ -1083,7 +1102,8 @@
   "tm-vv177Z_KGknM09Yr": "2026-11-17",
   "tm-k7vGF_KBmAa9o": "2026-11-16",
   "tm-1AdZZ_KGklJMams": "2026-11-16",
-  "tm-vv177Z_pGklqR-Eh": "2026-11-17"
+  "tm-vv177Z_pGklqR-Eh": "2026-11-17",
+  "tm-vv1AvZkfSGkdTcSmB": "2026-11-18"
  },
  "drops": []
 }
