@@ -1426,7 +1426,7 @@
         const drag = mine && alive && (!over() || G.offseason(L())) && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
         const zone = i != null ? (pl(p) ? "" : ` data-dz="s${i}"`) : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p && !pl(p) ? ` data-dzp="${esc(p.id)}"` : ""}`;
         return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${hcSal(p)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
-          ${grp ? rvCols(grp).map((c) => `<td class="${c.cls || "r num"}">${p ? c.cell(p, onIR, onTaxi) : ""}</td>`).join("") : `<td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi && pts() ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>`}
+          ${grp ? rvCols(grp).map((c) => `<td class="${c.cls || "r num"}">${p ? c.cell(p, onIR, onTaxi) : ""}</td>`).join("") : `<td class="r num">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num hide-s">${p ? esc(p.prank || "") : ""}</td>`}
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
       /* The roster, Yahoo's way: a table for each group of positions (hitters and pitchers, skaters and goalies; one
@@ -1517,8 +1517,8 @@
           const tw = G.teamWeek(L(), ctx, id, w, frac(w)), c = (tw.parts || {}).era, ip = c ? c[1] : 0, need = L().settings.minIP, ok = ip >= need;
           return `<div class="ipbar${ok ? " ok" : ""}"><span><b>${(Math.floor(ip) + Math.round((ip % 1) * 3) / 10).toFixed(1)}</b> of ${need} innings this week${ok ? ". The minimum's in." : `. Short of ${need}, you lose ERA and WHIP.`}</span><i style="--p:${Math.min(100, Math.round((ip / need) * 100))}%"></i></div>`;
         })();
-        const irT = irMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Injured reserve, ${ir.length} of ${irMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody data-dz="ir">${irRows}</tbody></table></div>` : "";
-        const txT = txMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Taxi squad, ${taxi.length} of ${txMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody>${txRows}</tbody></table></div>` : "";
+        const irT = irMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Injured reserve, ${ir.length} of ${irMax}</th><th class="r num">Rank</th><th class="r num hide-s">Pos</th><th class="act"></th></tr></thead><tbody data-dz="ir">${irRows}</tbody></table></div>` : "";
+        const txT = txMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Taxi squad, ${taxi.length} of ${txMax}</th><th class="r num">Rank</th><th class="r num hide-s">Pos</th><th class="act"></th></tr></thead><tbody>${txRows}</tbody></table></div>` : "";
         return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${/ stats$/.test(n) ? `<span class="lng">${esc(n)}</span><span class="sht">${esc(n.replace(/ stats$/, ""))}</span>` : esc(n)}</button>`).join("")}</div>
           ${groupKeys.map((g) => tbl(g, g === "all" ? "Player" : U.groupLabel(sport, g))).join("")}${ipLine}${irT}${txT}`;
       }
@@ -1932,7 +1932,10 @@
 
     /* ---------- Matchup ---------- */
     // which stat group a lineup spot is: pitchers' spots (SP, RP, P) or hitters'
-    const slotGrp = (sl) => U.slotGroup(sport, sl);
+    const slotGrp = (sl) => (sport.groups ? U.slotGroup(sport, sl) : "all");
+    // a category box score's tables: one per group of positions (hitters, pitchers), or one for hoops
+    const boxGroups = () => (sport.groups ? Object.keys(sport.groups) : ["all"]);
+    const boxTitle = (g) => (g === "all" ? "Starters" : U.groupLabel(sport, g));
     // A baseball category matchup, Yahoo's way: each team's box for the week, hitters and pitchers apart, every
     // category. A week brought in from Yahoo came as team totals, so it says so instead of making up player lines.
     // A week brought in from another site: its box scores come from a file beside the league (L.imported.boxUrl):
@@ -2091,34 +2094,42 @@
         if (wk && (wk[m.a] || wk[m.b])) return importedBoxes(w, m, wk);
         return `<div class="card"><div class="bd"><p class="ps" style="margin:0">This week came over from ${esc(L().imported.from || "another site")} as each team's category totals (above), so there's no player-by-player box score for it.</p></div></div>`;
       }
-      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => c.group === grp && typeof c.col === "string");
+      // hoops (one table): the week's totals, so a counting stat reads whole (38 minutes, not 38.0); shooting
+      // percentages from the week's makes and tries
+      const whole = (c) => Object.assign({}, c, { fmt: (v) => (v == null ? "" : c.ratio ? c.fmt(v) : Number.isInteger(v) ? String(v) : String(Math.round(v * 10) / 10)) });
+      const cols = (grp) => U.statColumns(sport, L().scoring).filter((c) => (grp === "all" ? !c.posOnly && c.col !== "min" && (typeof c.col === "string" || c.ratio) : c.group === grp && typeof c.col === "string")).map((c) => (grp === "all" ? whole(c) : c));
       // daily lineups: everyone who started at least one day, his line from just those days
       if (G.hasDays(L(), ctx, w)) {
         const dbox = (team) => {
           const dl = G.dailyLines(L(), ctx, team, w), ids = [...new Set(dl.map((x) => x[0].id))];
           const slotOf = (pid) => { for (let d = 6; d >= 0; d--) { const k = G.lineupFor(L(), ctx, team, w, d).indexOf(pid); if (k >= 0 && dl.some((x) => x[0].id === pid && x[2] === d)) return L().settings.lineup[k]; } return "BN"; };
           const tbl = (grp, title) => {
-            const cs = cols(grp), mine = ids.filter((pid) => (slotGrp(slotOf(pid)) || U.playerGroup(sport, ctx.byId[pid])) === grp).sort((a, b) => L().settings.lineup.indexOf(slotOf(a)) - L().settings.lineup.indexOf(slotOf(b)));
+            const cs = cols(grp), mine = ids.filter((pid) => (sport.groups ? slotGrp(slotOf(pid)) || U.playerGroup(sport, ctx.byId[pid]) : "all") === grp).sort((a, b) => L().settings.lineup.indexOf(slotOf(a)) - L().settings.lineup.indexOf(slotOf(b)));
             const tr = mine.map((pid) => { const p = ctx.byId[pid], x = G.dailyPlayerLine(L(), ctx, team, pid, w), ps = { l: x.line }; return `<tr><td class="c"><span class="slot">${esc(slotOf(pid))}</span></td><td class="nm"><span data-player="${esc(pid)}" style="cursor:pointer">${pname(sport, p, `${x.days} day${x.days === 1 ? "" : "s"}`, { size: "sm" })}</span></td>${cs.map((c) => { const v = U.statCell(sport, ps, c); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`; }).join("");
             return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num">${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${tr || `<tr><td colspan="${cs.length + 2}" class="empty">No ${title.toLowerCase()} have played yet.</td></tr>`}</tbody></table>`;
           };
-          return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Each player's days in the lineup</span></div><div class="table-wrap">${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}</div></div>`;
+          return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span><span class="ps">Each player's days in the lineup</span></div><div class="table-wrap">${boxGroups().map((g) => tbl(g, boxTitle(g))).join("")}</div></div>`;
         };
         return mboxWrap(m, dbox(m.a), dbox(m.b));
       }
+      // the team's totals under a hoops box score: counting stats added up, percentages from the summed makes and tries
+      const addLine = (acc, x) => { for (const [k, v] of Object.entries(x || {})) if (Array.isArray(v)) { const t = (acc[k] = acc[k] || []); v.forEach((n, j) => { if (typeof n === "number") t[j] = (t[j] || 0) + n; }); } return acc; };
       const box = (team, lu) => {
         const tbl = (grp, title) => {
-          const cs = cols(grp);
+          const cs = cols(grp), sum = {};
           const rows = L().settings.lineup.map((sl, i) => [sl, i]).filter(([sl]) => slotGrp(sl) === grp).map(([sl, i]) => {
-            const p = lu[i] && ctx.byId[lu[i]], wl = p && frac(w) > 0 ? G.playerWeek(L(), ctx, p, w, frac(w)) : null, ps = wl ? { l: wl } : null;
+            const p = lu[i] && ctx.byId[lu[i]], wl = p && frac(w) > 0 ? G.playerWeek(L(), ctx, p, w, frac(w)) : null;
+            const gpc = grp === "all" && cs.find((c) => /^g(p)?$/.test(c.col || "")), ps = wl && !(gpc && !U.statCell(sport, { l: wl }, gpc)) ? { l: wl } : null;
+            if (ps && grp === "all") addLine(sum, wl);
             return `<tr><td class="c"><span class="slot">${esc(sl)}</span></td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, "", { size: "sm" })}</span>` : `<span class="ps">Empty</span>`}</td>${cs.map((c) => { const v = ps ? U.statCell(sport, ps, c) : null; return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr>`;
           }).join("");
-          return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody></table>`;
+          const tot = grp === "all" && Object.keys(sum).length ? `<tfoot><tr class="mtot"><td></td><td><b>Totals</b></td>${cs.map((c) => { const v = U.statCell(sport, { l: sum }, c); return `<td class="r num">${v == null ? `<span class="ps">-</span>` : c.fmt(v)}</td>`; }).join("")}</tr></tfoot>` : "";
+          return `<table class="t mbox"><thead><tr><th class="c">Slot</th><th>${title}</th>${cs.map((c) => `<th class="r num"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${rows}</tbody>${tot}</table>`;
         };
         // the innings minimum: how far along this team is (short of it, ERA and WHIP go to the other side)
         const min = L().settings.minIP, side = team === m.a ? m.ta : m.tb, ip = side && side.parts && side.parts.era ? side.parts.era[1] : null;
         const ipTag = min && ip != null ? `<span class="tag ${ip >= min ? "win" : m.final ? "loss" : ""}" title="At least ${min} innings a week, or this team loses ERA and WHIP">${S.fmt.ip(ip)} of ${min} IP</span>` : "";
-        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span>${ipTag}</div><div class="table-wrap">${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}</div></div>`;
+        return `<div class="card mbox-c"><div class="mod-h">${teamAv(T(team), "sm")}<h2>${esc(T(team).name)}</h2><span class="grow"></span>${ipTag}</div><div class="table-wrap">${boxGroups().map((g) => tbl(g, boxTitle(g))).join("")}</div></div>`;
       };
       return mboxWrap(m, box(m.a, la), box(m.b, lb));
     }
@@ -2165,12 +2176,12 @@
       // a day of the week: Yahoo's date picker (category baseball, with day box scores)
       const wd = !pts() && sport.groups ? weekDays(w, m) : null;
       const dsel = wd && ui.mdayW === w && ui.mday != null && wd.days[ui.mday] && wd.days[ui.mday].teams ? ui.mday : null;
-      const boxes = !pts() && sport.groups ? (dsel != null ? dayView(w, m, wd, dsel) : catBoxes(w, m, la, lb)) : "";
+      const boxes = !pts() ? (dsel != null ? dayView(w, m, wd, dsel) : catBoxes(w, m, la, lb)) : "";
       return `<div class="wrap page">
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `${weekLabel(w)} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}${dealLine(m)}</div>${categoryPlan(m, w)}${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
-        ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
+        ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, ${weekLabel(w).replace(/Week/, "week")}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 
