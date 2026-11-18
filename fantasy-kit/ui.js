@@ -1070,13 +1070,15 @@
       if (opts.commish && d.phase === "setup") prim.push(`<button class="btn sm go" data-act="start">Start the draft</button>`);
       if (opts.commish && d.phase === "live" && d.paused && !d.hold) prim.push(`<button class="btn sm go" data-act="pause">Resume</button>`);
       // a draft on your own (a mock, a practice draft): pause sits right in the bar, not tucked in More
-      else if (opts.solo && opts.commish && d.phase === "live" && !d.paused) prim.push(`<button class="btn sm" data-act="pause">Pause</button>`);
+      else if (opts.solo && opts.commish && d.phase === "live" && !d.paused) prim.push(`<button class="btn sm hide-s" data-act="pause">Pause</button>`);
       if (opts.solo && (d.phase === "live" || d.phase === "setup") && !auction() && !d.packs && me() != null) {
         const oc = d.phase === "live" && !d.paused ? F.onClock(d, n) : null, auto = team(me()).auto;
-        if (oc && (oc.team !== me() || auto) && (auto || F.nextPickOf(d, me()) != null)) prim.push(`<button class="btn sm go" data-act="sim">${auto ? "Sim to the end" : "Sim to my pick"}</button>`);
+        if (oc && (oc.team !== me() || auto) && (auto || F.nextPickOf(d, me()) != null)) prim.push(`<button class="btn sm go" data-act="sim">Sim<span class="hide-s">${auto ? " to the end" : " to my pick"}</span></button>`);
         const bs = BOT_SPEEDS.find((x) => x[2] === d.botDelay) || botSpeed.get();
         menu.push(`<button class="btn sm" data-act="botspeed" title="How long each bot takes to pick">Bot speed: ${bs[1]}</button>`);
       }
+      // an auction or a pack draft with autodraft on: the bots bid and pick for you, so the rest can play out at once
+      else if (opts.solo && d.phase === "live" && !d.paused && (auction() || d.packs) && me() != null && team(me()).auto) prim.push(`<button class="btn sm go" data-act="sim">Sim<span class="hide-s"> to the end</span></button>`);
       if (canTrade() && d.phase === "live") prim.push(`<button class="btn sm" data-act="trade">Trade</button>`);
       if (me() != null && d.phase !== "done") {
         prim.push(`<button class="btn sm${team(me()).auto ? " on" : ""}" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">${team(me()).auto ? "Autodraft on" : "Autodraft"}</button>`);
@@ -1278,7 +1280,7 @@
       if (!adviceCache || adviceCache.key !== key) adviceCache = { key, advice: E.draftAdvice(F, d, ctx, mine) };
       const a = adviceCache.advice; if (!a) return "";
       const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button><span>${why}</span></div>`;
-      return `<div class="lab-coach" aria-label="Draft guidance">${item("Best available", a.best, `#${a.best.rank} for this scoring`)}${item("Roster fit", a.fit, "Values your open slots and budget")}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
+      return `<div class="lab-coach" aria-label="Draft guidance">${item("Best available", a.best, `#${a.best.rank} for this scoring`)}${item("Roster fit", a.fit, auction() ? "Values your open slots and budget" : "Values your open slots")}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
     }
     function players() {
       const d = D(), n = now(), mine = me();
@@ -1318,7 +1320,7 @@
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
       const lead = at ? [{ k: "my", label: "Mine", cls: "r num", title: "Your board, from the Rankings page", sort: (p) => (at[p.id] ? at[p.id].n : 1e4), asc: true, html: (p) => (at[p.id] ? `<b>${at[p.id].n}</b><span class="tier-n">T${at[p.id].tier}</span>` : "") }] : [];
       if (at && !ui.sortSet) { ui.sort = { k: "my", dir: 1 }; ui.sortSet = true; }
-      const cols = poolColumns(sport, { players: opts.players, group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() ? undefined : opts.money, value: opts.value, salary: !!d.hardCap });
+      const cols = poolColumns(sport, { players: opts.players, group: groupOf(sport, ui.f), scoring: d.scoring, actions, lead, compact: true, auction: auction(), dynasty: !!(d.season && d.season.dynasty), money: auction() || opts.money === true ? undefined : false, value: opts.value, salary: !!d.hardCap });
       rows = sortRows(rows, cols, ui.sort);
       const pat = pk ? F.packAt(d, F.packTurnNow(d)) : null, pw = pk ? packWhere(d, mine) : null;
       const sealed = pk && packOnly && pat.j === 0 && myTurn && !packOpened(pat.q);
@@ -1380,6 +1382,8 @@
     }
     // The recap above the team cards: best values, biggest reaches, position runs; Copy puts it in words for a group chat.
     const passedBy = (k) => `passed by ${k} team${k === 1 ? "" : "s"}`;
+    // how a recap pick reads: dollars in an auction, picks in a snake (taken 6 picks after his rank is +6)
+    const recapGap = (x, good) => { if (D().type === "auction") return `${good ? "+" : "-"}${money(Math.abs(x.diff))}`; const n = Math.max(1, Math.abs(x.at - x.rank)); return `${good ? "+" : "-"}${n} pick${n === 1 ? "" : "s"}`; };
     function recapLine(x) {
       const p = ctx.byId[x.pid];
       if (D().packs) return x.diff < 0 && x.over ? `${p.n}, with ${ctx.byId[x.over.pid].n} still in the pack` : x.passed ? `${p.n}, ${passedBy(x.passed)}` : `${p.n}, a ${x.tier || "top"} pull`;
@@ -1396,8 +1400,8 @@
         if (R.reaches.length) lines.push("", "Left in the pack:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name})`));
         return lines.join("\n");
       }
-      if (R.steals.length) lines.push("", "Best values:", ...R.steals.map((x) => `  ${recapLine(x)} (${team(x.team).name}, +${money(x.diff)})`));
-      if (R.reaches.length) lines.push("", "Biggest reaches:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name}, ${money(-x.diff)} over)`));
+      if (R.steals.length) lines.push("", "Best values:", ...R.steals.map((x) => `  ${recapLine(x)} (${team(x.team).name}, ${recapGap(x, true)})`));
+      if (R.reaches.length) lines.push("", "Biggest reaches:", ...R.reaches.map((x) => `  ${recapLine(x)} (${team(x.team).name}, ${d.type === "auction" ? money(-x.diff) + " over" : recapGap(x, false)})`));
       if (R.runs.length) lines.push("", "Runs:", ...R.runs.map((r) => `  ${r.pos}: ${r.count} of ${r.of} picks, ${plab(r.fromPick - 1)} to ${plab(r.toPick - 1)}`));
       return lines.join("\n");
     }
@@ -1405,7 +1409,8 @@
       const d = D(), R = F.recap(d, ctx);
       if (R.pack) return packRecapCard(R);
       if (!R.steals.length && !R.reaches.length) return "";
-      const item = (x, good) => `<li><span data-player="${esc(x.pid)}" style="cursor:pointer;min-width:0">${pname(sport, ctx.byId[x.pid], `${esc(team(x.team).name)}, ${d.type === "auction" ? `${money(x.price)} for ${money(x.$)} of value` : `${plab(x.at - 1)}, ranked #${x.rank}`}`, { size: "sm" })}</span><b class="${good ? "win" : "loss"} num">${good ? "+" : "-"}${money(Math.abs(x.diff))}</b></li>`;
+      if (d.type !== "auction") { const gap = (x) => Math.abs(x.at - x.rank); R.steals.sort((a, b) => gap(b) - gap(a)); R.reaches.sort((a, b) => gap(b) - gap(a)); } // the five biggest by value, shown by picks
+      const item = (x, good) => `<li><span data-player="${esc(x.pid)}" style="cursor:pointer;min-width:0">${pname(sport, ctx.byId[x.pid], `${d.type === "auction" ? `${money(x.price)} for ${money(x.$)} of value` : `${plab(x.at - 1)}, ranked #${x.rank}`}, ${esc(team(x.team).name)}`, { size: "sm" })}</span><b class="${good ? "win" : "loss"} num" title="${d.type === "auction" ? "Value against price" : "Picks after (or before) his rank"}">${recapGap(x, good)}</b></li>`;
       return `<div class="card recap"><div class="mod-h"><b>Draft recap</b><span class="ps" style="margin-left:6px">Against the rankings at draft time</span><span class="grow"></span><button class="btn sm" data-act="recap">Copy recap</button></div>
         <div class="recap-cols"><div><h4>Best values</h4><ul class="rslots">${R.steals.map((x) => item(x, true)).join("") || `<li class="ps">None to speak of</li>`}</ul></div>
         <div><h4>Biggest reaches</h4><ul class="rslots">${R.reaches.map((x) => item(x, false)).join("") || `<li class="ps">None to speak of</li>`}</ul></div>
@@ -1446,7 +1451,7 @@
     function results() {
       const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank), R = F.recap(d, ctx);
       return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
-        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, +${money(bv.diff)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
+        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, ${recapGap(bv, true)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
     }
     // Projected standings from the rosters so far: each team's best lineup, its category totals and the roto points
@@ -1668,6 +1673,24 @@
     // them all and stops at your pick, since your clock hasn't run out. With autodraft on it runs to the end.
     function simAhead() {
       const d = D(); if (d.phase !== "live" || d.paused) return;
+      if (auction() || d.packs) {
+        // every bid is by proxy and every pick automatic, so play the clock forward: each lot closes when it ends
+        if (me() == null || !team(me()).auto) return;
+        const keep = d.botDelay; d.botDelay = 0;
+        let t = now(), moved = 0;
+        try {
+          for (let i = 0; i < 20000 && d.phase === "live" && !d.paused; i++) {
+            const lot = auction() && d.auction.lot;
+            if (lot && lot.ends > t) t = lot.ends;
+            else if (!lot && !auction()) t += (d.clock || 30) * 1000 + 1;
+            const m = F.tick(d, ctx, t, 5000);
+            moved += m;
+            if (!m && !(auction() && d.auction.lot)) { if (auction()) t += (d.auction.nomClock || 30) * 1000 + 1; else if (i > 50) break; }
+          }
+        } finally { d.botDelay = keep; }
+        if (moved) { d.clockStart = Math.min(d.clockStart || now(), now()); save(); render(); }
+        return;
+      }
       const t = now(), c = F.onClock(d, t);
       if (!c) return;
       if (F.isBot(d.teams[c.team])) d.clockStart = t;          // your clock starts now, not when the last bot came up

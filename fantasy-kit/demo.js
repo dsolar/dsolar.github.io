@@ -40,6 +40,7 @@
     livePoll();
     L = store.get(KEY, null);
     if (!L || L.v !== 1 || L.demo !== 2) L = build(lineup, scoring);
+    keepPool();
     // a demo on this season's real calendar scores on real games from here on
     if (weeks && !/replay/.test(L.season || "") && L.settings.real == null) L.settings.real = true;
     catchUp();
@@ -93,6 +94,7 @@
     if (sportKey === "nhl") settings.minGoalieGames = 3;
     // college football's demo ends with the conference championships: ten weeks from mid-September, then the playoffs
     if (sportKey === "cfb" && !guil) Object.assign(settings, { weeks: 10, deadline: 8 });
+    if (D.pool && D.pool.length) settings.pool = D.pool.slice();     // a conference-only mock plays on with just those schools
     const lg = G.create({ sport, draft: D, name: nameOf(sportKey, guil), season: data.season + (cal.replay ? " replay" : ""), now: start, start, scoring: D.scoring, settings });
     lg.demo = 2;
     lg.teams.forEach((t, i) => (t.color = [0, 1, 2, 3, 4, 5, 6, 7, 11, 9, 8, 10][i % 12]));
@@ -172,11 +174,13 @@
           <div class="row" style="flex-wrap:wrap"><button class="btn warn" data-c="reset">New demo league</button>${mockDone() ? `<button class="btn" data-c="mock">Use my Draft Lab mock</button>` : ""}</div></div></div>
       </div>`;
   }
+  // a conference-only mock's league keeps its free agents to those schools (in place: the app holds this array)
+  function keepPool() { if (L && L.settings && L.settings.pool) { const keep = players.filter((p) => S.inPool(L, p)); players.splice(0, players.length, ...keep); } }
   // Start a league from the finished Draft Lab mock, after asking: it replaces this demo league.
   function useMock() {
     U.confirm("Play a season with your mock?", `Your finished Draft Lab mock becomes a new league here. It replaces ${esc(L.name)} on this device.`, "Start the season", () => {
       const m = U.store("fk-lab").get("mock", null); const D = m.D; D.teams[0].owner = "You";
-      L = build(D.lineup, D.scoring, D); catchUp(); location.hash = "#league/overview"; app.refresh();
+      L = build(D.lineup, D.scoring, D); keepPool(); catchUp(); location.hash = "#league/overview"; app.refresh();
     });
   }
   const mockDone = () => { const m = U.store("fk-lab").get("mock", null); return m && m.D && m.D.phase === "done" && m.D.sport === sportKey && m.D.teams.length >= 4; };

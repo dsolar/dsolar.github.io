@@ -48,6 +48,18 @@
     ["Power Play", "PP"], ["Odd Man Rush", "OMR"], ["Hat Trick", "HT"], ["Top Shelf", "TS"], ["Empty Net", "EN"], ["Crease Crashers", "CC"],
     ["Short Handed", "SH"], ["Slap Shot", "SS"], ["Bench Minors", "BM"], ["Overtime", "OT"], ["Faceoff", "FO"], ["Neutral Zone", "NZ"], ["The Forecheck", "TF"], ["Trade Deadline", "TD"]];
 
+  // Bot names in the sport's own slang (pro and college share them); NAMES for anything else
+  const HOOPS_NAMES = [["Bench Mob", "BM"], ["Fast Break", "FB"], ["Shot Clock", "SC"], ["Sixth Man", "6M"], ["Garbage Time", "GT"], ["And One", "A1"],
+    ["Pick and Roll", "PR"], ["Full Court Press", "FCP"], ["Box Score", "BX"], ["Alley Oop", "AO"], ["Buzzer Beaters", "BB"], ["Triple Double", "TD"],
+    ["Late Scratch", "LS"], ["Swish", "SW"], ["Fadeaway", "FA"], ["Backdoor Cut", "BC"], ["Overtime", "OT"], ["Waiver Wire", "WW"], ["Glass Cleaners", "GC"], ["Deep Sleepers", "DS"]];
+  const FOOTBALL_NAMES = [["Red Zone", "RZ"], ["Two Minute", "TM"], ["Pick Six", "P6"], ["Hail Mary", "HM"], ["Bye Week", "BW"], ["Blitz", "BZ"],
+    ["Play Action", "PA"], ["Fourth and Long", "4L"], ["Waiver Wire", "WW"], ["Hard Count", "HC"], ["Deep Sleepers", "DS"], ["Goal Line", "GL"],
+    ["Late Scratch", "LS"], ["Flea Flicker", "FF"], ["Onside Kick", "OK"], ["Box Score", "BX"], ["Overtime", "OT"], ["Garbage Time", "GT"], ["Two Point Try", "2PT"], ["Trade Deadline", "TDL"]];
+  const BASEBALL_NAMES = [["Hot Corner", "HC"], ["Full Count", "FC"], ["Rain Delay", "RD"], ["Home Stand", "HS"], ["Seventh Inning", "7I"], ["Waiver Wire", "WW"],
+    ["Late Scratch", "LS"], ["Deep Sleepers", "DS"], ["Box Score", "BX"], ["Walk Off", "WO"], ["Bullpen Day", "BD"], ["Bleacher Bums", "BB"],
+    ["Squeeze Play", "SP"], ["Night Shift", "NS"], ["Double Play", "DP"], ["Knuckleballers", "KB"], ["Trade Deadline", "TD"], ["Extra Innings", "XI"], ["Opener", "OP"], ["Green Monsters", "GM"]];
+  const namesFor = (key) => (key === "nhl" ? NHL_NAMES : key === "nba" || key === "cbb" ? HOOPS_NAMES : key === "nfl" || key === "cfb" ? FOOTBALL_NAMES : key === "mlb" ? BASEBALL_NAMES : NAMES);
+
   // Which team picks at each overall pick, from the first round's order.
   function makeOrder(type, first, rounds) {
     const out = [];
@@ -69,7 +81,7 @@
     const list = Array.isArray(opts.teams) ? opts.teams : Array.from({ length: opts.teams || 10 }, () => ({}));
     const n = Math.max(2, Math.min(20, list.length));
     const r = rng(seed + 5);
-    const names = sport.key === "nhl" ? NHL_NAMES : NAMES;
+    const names = namesFor(sport.key);
     const teams = list.slice(0, n).map((t, i) => ({
       id: i, name: t.name || names[i % names.length][0], abbr: t.abbr || names[i % names.length][1],
       owner: t.owner || null, auto: !!t.auto, queue: [], budget: opts.budget || 200,

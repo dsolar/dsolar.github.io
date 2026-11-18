@@ -66,7 +66,8 @@
     if (dayOn(c) && !ds) throw new Error(scheds[c.sport] && scheds[c.sport].error ? "Couldn't reach the schedule. Try again in a moment." : scheds[c.sport] ? (S.daily(c.sport) ? "There are no games left tonight or tomorrow. Turn off one day to draft the season." : "There are no games left this week or next. Turn off one week to draft the season.") : "Tonight's games are still loading. Try again in a moment.");
     const want = ds ? ds.lineup.lineup.slice() : sdOn(c) ? S.SHOWDOWN.lineup.slice() : hzOn(c) ? ONE_WEEK_NFL.slice() : (c.lineup ? c.lineup.split(/[\s,]+/).filter(Boolean) : sport.lineup).filter((s) => sport.slots[s] && s !== "BN");
     const lineup = want.filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
-    let players = data.players.filter((p) => (!sdOn(c) || p.t === c.sdA || p.t === c.sdH) && (!ds || ds.slate.teams.includes(p.t))).map((p) => Object.assign({}, p));
+    const conf = confOf(c, data);
+    let players = data.players.filter((p) => (!sdOn(c) || p.t === c.sdA || p.t === c.sdH) && (!ds || ds.slate.teams.includes(p.t)) && (!conf || (data.teams[p.t] && data.teams[p.t].conf === conf))).map((p) => Object.assign({}, p));
     const hcf = hcOn(c) ? await loadHc(c.sport) : null;
     if (hcOn(c) && !hcf) throw new Error("Couldn't load the contracts. Try again, or turn Hard Cap off.");
     if (hcf) { S.addContracts(players, hcf, { year: hcf.year, min: hcf.min }); players = S.capPool(players); }
@@ -76,7 +77,21 @@
     // a showdown of a real game on this week's or next week's schedule plays that week's projections
     const sdWk = sdOn(c) && sched ? (sched.weeks.find((w) => (w.games || []).some((g) => g.away === c.sdA && g.home === c.sdH)) || {}).week : null;
     V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, week: sdWk ? S.weekFor({ season: { showdown: { week: sdWk } } }, sport) : null, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
-    return { sport, players, lineup, scoring, bench, data, slate: ds ? ds.slate : null, hcf };
+    return { sport, players, lineup, scoring, bench, data, slate: ds ? ds.slate : null, hcf, conf };
+  }
+  // college: a mock kept to one conference (cfg.conf), the way college leagues can keep their pool to chosen
+  // conferences. A one-day or one-week slate already picks its own schools, so it wins
+  function confOf(c, data) {
+    if (!c.conf || !(S[c.sport] && S[c.sport].college) || dayOn(c)) return "";
+    const t = data && data.teams && !Array.isArray(data.teams) ? data.teams : null;
+    return t && Object.values(t).some((x) => x.conf === c.conf) ? c.conf : "";
+  }
+  function confList(key) {
+    const d = cache[key], t = d && d.teams && !Array.isArray(d.teams) ? d.teams : null;
+    if (!t) return null;
+    const n = {};
+    d.players.forEach((p) => { const cf = t[p.t] && t[p.t].conf; if (cf) n[cf] = (n[cf] || 0) + 1; });
+    return Object.keys(n).sort((a, b) => ((RANK_POWERS[key] || []).indexOf(a) + 1 || 99) - ((RANK_POWERS[key] || []).indexOf(b) + 1 || 99) || a.localeCompare(b));
   }
 
   /* ---------- header ---------- */
@@ -169,7 +184,7 @@
   const hzOn = (c) => c.sport === "nfl" && !!c.hz && !c.sd;
   // team roulette: drafts that go pick by pick, not a showdown. College only on a night of 40 schools or fewer: the
   // wheel deals every school once before repeats, so across all of D1 most picks would land on nobody worth drafting.
-  const rlOn = (c) => { if (!rlFits(c) || sdOn(c)) return false; if (!(S[c.sport] && S[c.sport].college)) return true; const d = dayOn(c) ? daySlate(c) : null; return !!d && d.slate.teams.length <= 40; };
+  const rlOn = (c) => { if (!rlFits(c) || sdOn(c)) return false; if (!(S[c.sport] && S[c.sport].college)) return true; if (c.conf && !dayOn(c)) return true; const d = dayOn(c) ? daySlate(c) : null; return !!d && d.slate.teams.length <= 40; };
   function startPage() {
     document.body.classList.remove("fk-room");
     const sport = S[cfg.sport];
@@ -222,7 +237,7 @@
     const twHtml = twists(c);
     const dsl = dayOn(c) ? daySlate(c) : null;
     const tw = [dsl ? `${window.FK.slates.dayName(dsl.slate.day).toLowerCase()}: ${dsl.slate.label.toLowerCase()}` : dayOn(c) ? "one day" : "", sdOn(c) ? `showdown, ${c.sdA || "?"} at ${c.sdH || "?"}` : "", rlOn(c) && c.rl ? "team roulette" : "", hzOn(c) ? "a heist" : ""].filter(Boolean);
-    const line = `${sport.name}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${sdOn(c) ? 50 : c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}${tw.length ? `, ${tw.join(" and ")}` : ""}`;
+    const line = `${sport.name}${S[c.sport].college && c.conf && !dayOn(c) ? ` (${c.conf} only)` : ""}, ${c.teams} teams, ${sc.replace(/ \(.*\)$/, "")}, ${K.DRAFT_SHORT[c.type] || c.type}${auction ? `, $${sdOn(c) ? 50 : c.budget}` : ""}, ${clock[1].toLowerCase()}${c.slot && !mystery ? `, pick ${c.slot}` : ""}${tw.length ? `, ${tw.join(" and ")}` : ""}`;
     const formats = K.pickCards("type", Object.entries(F.FORMATS).map(([k, l]) => [k, K.DRAFT_SHORT[k] || l, K.DRAFTS[k] || ""]), c.type, "Draft format");
     const presets = Object.entries(sport.scorings).map(([k, x]) => [k, x.label.replace(/ \(.*\)$/, ""), K.SC_SUB[k] || ""]);
     const roster = `<div class="nr${open.roster ? " open" : ""}"><button type="button" class="nr-h" data-row="roster" aria-expanded="${!!open.roster}"><span class="nr-t"><b>Roster</b><small>Starting lineup and bench</small></span><span class="nr-v">${dayOn(c) ? (dsl ? `${dsl.lineup.lineup.length} starters, ${dsl.lineup.bench} bench (the slate sets it)` : "Set by the slate") : sdOn(c) ? "Captain and 5 flex, no bench (showdown)" : hzOn(c) ? "8 starters, no bench (heist)" : `${lu.length} starters, ${bench} bench`}</span><span class="chev" aria-hidden="true"></span></button>
@@ -244,7 +259,7 @@
           <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
               auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (dsl ? dsl.lineup.lineup.length + dsl.lineup.bench : sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
             ${auction ? K.fld("Budget per team", `<div class="row" style="flex-wrap:wrap">${K.numIn("budget", c.budget, { pre: "$", min: 10, max: 100000, label: "Budget per team" })}<span class="qk">${[100, 200, 260, 1000].map((x) => `<button type="button" data-bset="${x}" aria-pressed="${x === c.budget}">$${x}</button>`).join("")}</span></div>`, "Any amount, the same for every team.") : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
-          <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div><div></div></div>
+          <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div>${confField(c)}</div>
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
           ${elephant ? window.FK.setup.elephantFields(c, (sport.scorings[scoring] || {}).type === "points") : ""}
         </section>
@@ -256,6 +271,14 @@
         <div class="nl-bar"><div class="nl-sum">${K.icon(sport.key, "nl-sum-ic")}<span><b>${esc(c.name || "Your team")}</b><small>${esc(line)}</small></span></div>
           <p id="s-why" role="alert"></p><span class="grow"></span>${mock ? `<a class="btn ghost" href="${N.URLS.draft}#draft">Back to your mock</a>` : ""}<button type="submit" class="btn go">Take your seat</button></div>
       </form></div></div>`;
+  }
+  // college: draft every school, or keep the pool to one conference
+  function confField(c) {
+    if (!(S[c.sport] && S[c.sport].college) || dayOn(c)) return "<div></div>";
+    const list = confList(c.sport);
+    if (!list) { loadSport(c.sport).then(() => { if ($("#app #setup")) setupPage(); }).catch(() => {}); return "<div></div>"; }
+    if (c.conf && !list.includes(c.conf)) c.conf = "";
+    return `<div class="fl"><div class="fl-l"><label for="s-conf">Player pool</label></div><select id="s-conf" data-f="conf"><option value="">Every school</option>${list.map((x) => `<option value="${esc(x)}"${x === c.conf ? " selected" : ""}>${esc(x)} only</option>`).join("")}</select></div>`;
   }
   let sched = null, schedAsked = false;
   function twists(c) {
@@ -393,7 +416,7 @@
     }
     const spots = n * (P.lineup.length + P.bench);
     if (spots > P.players.length && P.slate) throw new Error(`${P.slate.label} has ${P.players.length} players, enough for ${Math.floor(P.players.length / (P.lineup.length + P.bench))} teams. Pick fewer teams or a bigger slate.`);
-    if (spots > P.players.length) throw new Error(`${n} teams with ${P.lineup.length + P.bench} roster spots need ${spots} players, and the pool has ${P.players.length}.`);
+    if (spots > P.players.length) { const fit = Math.floor(P.players.length / (P.lineup.length + P.bench)); throw new Error(`${n} teams with ${P.lineup.length + P.bench} roster spots need ${spots} players, and ${P.conf ? `the ${P.conf} has` : "the pool has"} ${P.players.length}. ${fit >= 4 ? `Pick ${fit} teams or fewer` : "Pick fewer teams"}${P.conf ? ", or a bigger conference" : ""}.`); }
     const seed = Math.floor(Math.random() * 2 ** 31);
     const r = F.rng(seed);
     const others = [...Array(n).keys()].filter((x) => x !== 0);
@@ -402,8 +425,9 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : `${P.sport.name} mock`,
+      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : P.conf ? `${P.conf} ${P.sport.name.toLowerCase()} mock` : `${P.sport.name} mock`,
       trades: c.trades !== 0, steals: c.type === "elephant" ? window.FK.setup.elephantSteals(c, (P.sport.scorings[P.scoring] || {}).type === "points") : undefined, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
+    if (P.conf) D.pool = [...new Set(P.players.map((p) => p.t))];   // a season played after it keeps the same schools
     if (P.hcf) { const h = P.hcf; D.hardCap = { line: S.suggestLine(P.players, n, P.lineup.length + P.bench, h), min: h.min, year: h.year, cap: h.cap, held: [] }; }
     if (c.type === "mystery" && c.test) F.fairDeal(D, P.players, P.sport, null, { tries: 5 });
     if (c.type === "pack") F.dealPacks(D, P.players, P.sport);
