@@ -6,6 +6,7 @@
 })(this, function () {
   "use strict";
   const RULE_FIELDS = ("sport teams type clock aBudget season weeks trades scoring lineup bench playoffs deadline review faab waiverDays gameLock weights cats waivers ir maxAdds posMax keepers keeperCost legs cons median bestball divs rookie fpicks taxi ohold tep ptd b100r b100c b300p reviewHours vetoShare waiverOrder minBid waiverPrice maxAddsSeason dealOn dealMax ladOn ladSeed ladReach splitAfter pyrOn pyrTeams pyrMode pyrK pyrTop pyrBot capBudget capBonus hcOn hcScale confOn reseed confs cbbEnd cfbEnd tvOn pyoOn robinOn robinP conqOn conqP conqLike crownOn crownStep crownKeep hangOn tbOn tbAmt reveal kind rlOn rlRound respins hzOn hzShields hzSteals hzJinxes hzClock keepN tepOn tepAmt b100rOn b100rAmt b100cOn b100cAmt b300pOn b300pAmt vampOn vampWho poolOnly proRounds proRule nhlDaily minGoalieGames chaseOn chaseWeeks elSteals elFreeze elTax elGold sx slKind slWeek slOne slGames").split(" ");
+  RULE_FIELDS.push("slPeriod");
   const BAD = new Set(["__proto__", "constructor", "prototype"]);
   function safe(value, depth = 0) {
     if (depth > 5) return undefined;
@@ -25,6 +26,7 @@
     try { doc = JSON.parse(text); } catch (e) { throw new Error("That rule template could not be read."); }
     if (!doc || doc.v !== 1 || !doc.rules || Array.isArray(doc.rules) || !S.ALL[doc.rules.sport]) throw new Error("That rule template uses an unsupported sport or version.");
     const r = rulesOf(doc.rules), sp = S.ALL[r.sport];
+    if (r.slPeriod != null && (typeof r.slPeriod !== "string" || !/^(day:\d{4}-\d{2}-\d{2}|week:([1-9]|1[0-8]))$/.test(r.slPeriod))) throw new Error("That game window could not be read.");
     if (r.teams != null && (!Number.isInteger(r.teams) || r.teams < 2 || r.teams > 20)) throw new Error("A template needs between 2 and 20 teams.");
     if (r.lineup != null && (typeof r.lineup !== "string" || r.lineup.split(/[\s,]+/).filter(Boolean).some((k) => !sp.slots[k] || k === "BN"))) throw new Error("That template has an invalid roster slot.");
     for (const k of ["cats", "confs"]) if (r[k] != null && (!Array.isArray(r[k]) || r[k].some((x) => typeof x !== "string"))) throw new Error("That template has an invalid category or conference list.");

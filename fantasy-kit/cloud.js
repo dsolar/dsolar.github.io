@@ -156,10 +156,13 @@
   // basketball's are today's and tomorrow's games, each day shaped like a week with a day (fk-live ?sport=nba&slates=1)
   // When the feed can't be reached it's { weeks: [], error: true } (not an empty week), and the next call asks again.
   const slatesP = {};
-  const slates = (sport = "nfl") => (slatesP[sport] = slatesP[sport] || fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&slates=1`)
+  const slates = (sport = "nfl", refresh = false) => {
+    if (refresh) delete slatesP[sport];
+    return (slatesP[sport] = slatesP[sport] || fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&slates=1`, refresh ? { cache: "no-cache" } : {})
     .then((r) => { if (!r.ok) throw new Error(`Error ${r.status}`); return r.json(); })
     .then((d) => { if (!d || !Array.isArray(d.weeks)) throw new Error("No schedule"); return d; })
     .catch(() => { slatesP[sport] = null; return { weeks: [], error: true }; }));
+  };
   // named games' box scores and states, for a one-day league (fk-live ?games=)
   const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);

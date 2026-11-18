@@ -139,5 +139,7 @@
     return { lineup: [qb, "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"], bench: 2, mult: null, note: `${qb === "QB" ? "QB" : "Superflex"}, 2 RB, 3 WR, TE and a flex, two bench spots` };
   }
   const word = (sport) => (sport === "nba" || sport === "cbb" ? "tips off" : "kicks off");
-  return { open, list, pick, lineup, et, kick, label, night, sunday, isDay, dayName, tip, word, early, late };
+  const periodKey = (w) => !w ? "" : w.day ? "day:" + w.day : "week:" + w.week;
+  const resolvePeriod = (weeks, wanted, index = 0) => wanted ? weeks.find((w) => periodKey(w) === wanted) || null : weeks[Math.min(index || 0, Math.max(0, weeks.length - 1))] || null;
+  return { open, list, pick, lineup, et, kick, label, night, sunday, isDay, dayName, tip, word, early, late, periodKey, resolvePeriod };
 });
