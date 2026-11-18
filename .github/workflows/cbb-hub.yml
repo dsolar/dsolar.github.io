@@ -11,6 +11,7 @@ on:
       - tools/cbb_build.py
       - tools/cbb_extras.py
       - tools/cbb_dfs.py
+      - tools/cbb_pool_teams.py
       - cbb/data/naismith-watch.json
       - tests/cbb*.cjs
       - tests/cbb*.py
@@ -44,6 +45,8 @@ jobs:
         run: python3 tools/cbb_extras.py
       - name: Draft Lab college pool and featured slates
         run: python3 tools/cbb_dfs.py && python3 tools/fantasykit_teams.py cbb
+      - name: March Madness pool teams
+        run: python3 tools/cbb_pool_teams.py
       - name: Check JavaScript
         run: |
           node --check cbb/model.js

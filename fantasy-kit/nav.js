@@ -9,10 +9,10 @@
    FK.nav.SPORTS                the sport pages: [key, label], each at fantasy/<key>/ */
 (function (root) {
   "use strict";
-  var TABS = [["home", "Home"], ["leagues", "My leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["week", "Quick games"], ["league", "Demo league"]];
+  var TABS = [["home", "Home"], ["leagues", "My leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["week", "Quick games"], ["pools", "Pools"], ["league", "Demo league"]];
   var SPORTS = [["nba", "NBA"], ["nfl", "NFL"], ["nhl", "NHL"], ["mlb", "MLB"], ["cbb", "NCAAB"], ["cfb", "NCAAF"]];
   var HOME = "/fantasy/";
-  var URLS = { home: HOME, leagues: "/fantasy/leagues/", draft: "/fantasy/mock/", rankings: "/fantasy/rankings/", week: "/fantasy/quick/", league: "/fantasy/demo/" };
+  var URLS = { home: HOME, leagues: "/fantasy/leagues/", draft: "/fantasy/mock/", rankings: "/fantasy/rankings/", week: "/fantasy/quick/", pools: "/fantasy/pools/", league: "/fantasy/demo/" };
   function href(tab, o) {
     o = o || {};
     var q = o.sport ? "?s=" + encodeURIComponent(o.sport) : "";
