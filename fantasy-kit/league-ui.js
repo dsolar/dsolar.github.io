@@ -116,7 +116,9 @@
     // and this week while the season's on
     function rosterViews() {
       const lines = (sport.data && sport.data.lines) || {}, yr = (sport.data && sport.data.season) || L().season || "Season";
-      return [["stats", `${yr} stats`]].concat(lines.pbat || lines.psk ? [["proj", sport.key === "nhl" ? "Workload projection" : `${Number(yr) ? Number(yr) + 1 : "Season"} proj`]] : [], sport.data && sport.data.prev ? [["prev", `${sport.data.prev} stats`]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : [], over() ? [] : [["week", "This week"]]);
+      const base = [["stats", `${yr} stats`]].concat(lines.pbat || lines.psk ? [["proj", sport.key === "nhl" ? "Workload projection" : `${Number(yr) ? Number(yr) + 1 : "Season"} proj`]] : [], sport.data && sport.data.prev ? [["prev", `${sport.data.prev} stats`]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : []);
+      // in season a points league opens on this week's points; a categories league on the season's stats
+      return over() ? base : pts() ? [["week", "This week"]].concat(base) : base.concat([["week", "This week"]]);
     }
     // where a player went in this league's draft: { r: round, n: overall pick }
     let draftIdx = null;
@@ -1423,37 +1425,47 @@
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
         const drag = mine && alive && (!over() || G.offseason(L())) && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
         const zone = i != null ? (pl(p) ? "" : ` data-dz="s${i}"`) : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p && !pl(p) ? ` data-dzp="${esc(p.id)}"` : ""}`;
-        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${hcSal(p)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}${sport.key === "cfb" ? `<div class="only-s roster-mobile-stats"><span class="ps">${esc(sport.data.season)} stats</span>${seasonStats(p)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
+        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${hcSal(p)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
           ${grp ? rvCols(grp).map((c) => `<td class="${c.cls || "r num"}">${p ? c.cell(p, onIR, onTaxi) : ""}</td>`).join("") : `<td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi && pts() ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>`}
-          ${sport.key === "cfb" ? `<td class="rstats hide-s">${seasonStats(p)}</td>` : ""}
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
-      /* Baseball's roster, Yahoo's way: a hitters table and a pitchers table, each with its own columns, and a view
-         switch: last season's stats, projections, ranks, keeper costs (keeper leagues), and this week once games are on. */
-      const collegeStats = sport.key === "cfb";
-      const seasonStats = (p) => {
-        if (!p) return "";
-        const values = FK.gameday.stats("cfb", p, p.l && p.l.tot, { cols: sport.data.lines.tot.cols });
-        const games = S.stat(sport, p, "tot", "g");
-        if (!values.length) return `<span class="ps">No season stats available</span>`;
-        return `<dl class="roster-box" aria-label="${esc(p.n)} season stats">${[["GP", games == null ? "—" : games]].concat(values).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
-      };
-      const grouped = !!sport.groups && !pts();
+      /* The roster, Yahoo's way: a table for each group of positions (hitters and pitchers, skaters and goalies; one
+         table for hoops and football), each with its own stat columns, and a view switch: this week (first in a points
+         league), the season's stats, projections, ranks, keeper costs (keeper leagues). */
+      const groupKeys = sport.groups ? Object.keys(sport.groups) : ["all"];
       const views = rosterViews();
       const view = views.some((v) => v[0] === ui.rview) ? ui.rview : views[0][0];
-      const grpOfSlot = (sl) => U.slotGroup(sport, sl);
-      const grpOf = (p) => U.playerGroup(sport, p);
+      const grpOfSlot = (sl) => (sport.groups ? U.slotGroup(sport, sl) : "all");
+      const grpOf = (p) => (sport.groups ? U.playerGroup(sport, p) : "all");
       function rvCols(grp) {
         const line = (c) => (view === "proj" ? "p" + c.line : c.line);
-        const cats = U.statColumns(sport, L().scoring).filter((c) => c.group === grp && c.col !== "gp");
+        const one = grp === "all";   // a sport with one table (hoops, football): its columns carry their own games played
+        const cats = U.statColumns(sport, L().scoring).filter((c) => (one ? !c.posOnly : c.group === grp && c.col !== "gp"))
+          // a points league sees fantasy points a game beside the real stats
+          .concat(pts() && !U.statColumns(sport, L().scoring).some((c) => c.fpg) ? [{ fpg: true, label: "FP/G", title: "Fantasy points per game", fmt: (x) => (x == null ? "" : x.toFixed(1)) }] : []);
+        if (view === "week" && pts()) return [
+          { h: "Pts", title: w === curWeek() ? "Points this week so far" : "Points this week", cell: (p, onIR, onTaxi) => { if (onIR || onTaxi) return ""; const v = ptsOf(p.id); return v != null ? `<b>${fmtS(v)}</b>` : frac(w) > 0 ? `<span class="ps" title="On the bench: doesn't count">${fmtS(soFar(p))}</span>` : `<span class="ps">-</span>`; } },
+          { h: "Proj", title: w === curWeek() ? "Projected finish this week" : "Projected points this week", cell: (p, onIR, onTaxi) => (onIR || onTaxi ? "" : fmtS(projOf(p))) },
+          { h: "FP/G", title: "Fantasy points per game this season", cls: "r num hide-s", cell: (p) => (p.fpg != null ? p.fpg.toFixed(1) : `<span class="ps">-</span>`) },
+          { h: "Rank", title: "Overall rank by value over replacement", cls: "r num hide-s", cell: (p) => `<span class="ps">#${p.rank}</span>` },
+        ];
         // games played first: what the rest of the line is out of
         const gp = { h: "GP", title: view === "proj" ? "Projected games" : "Games played", cls: "r num", cell: (p) => { const col = sport.gamesCol || "g", v = view === "prev" ? U.prevStat(sport, p, { line: grp, col }) : S.stat(sport, p, line({ line: grp }), col); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } };
-        if (view === "prev") return [gp].concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.prevStat(sport, p, c); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
-        if (view === "stats" || view === "proj") return [gp].concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.statCell(sport, p, Object.assign({}, c, { line: line(c) })); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
+        const lead = one ? [] : [gp];
+        if (view === "prev") return lead.concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.prevStat(sport, p, c); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
+        // a stat that isn't his position's (a receiver's passing yards) is a dash, and a zero is faint, so his own line reads
+        const offPos = (p, c) => !!(c.pos && !S.positions(p).some((x) => c.pos.includes(x)));
+        if (view === "stats" || view === "proj") return lead.concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { if (offPos(p, c)) return `<span class="ps">-</span>`; const v = U.statCell(sport, p, Object.assign({}, c, { line: line(c) })); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } })));
         if (view === "ranks") {
           // another site's ranks for the season just played (L.ext.ranks: Yahoo's preseason and final ranks, % rostered)
           const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, src = (L().ext && L().ext.source) || "";
           const yr = Number(L().season) || "", num = (v) => (v != null ? `#${v}` : `<span class="ps">-</span>`);
+          // in season: where he ranks now, on this season so far and overall, and at his position
+          if (!over() && !G.offseason(L())) return [
+            { h: "Overall", title: "Rank by value over replacement: this season's pace blended with the projection", cell: (p) => num(p.rank) },
+            { h: "Pos", title: "Rank at his position", cell: (p) => esc(p.prank || "") },
+            { h: "Season", title: "Rank on this season's stats so far, in this league's scoring", cls: "r num hide-s", cell: (p) => num(p.crank) },
+          ].concat(sport.market && Object.values(ctx.byId).some((x) => x.mk && x.mk.own != null) ? [{ h: "% Ros", title: "Rostered in ESPN leagues", cls: "r num hide-s", cell: (p) => (p.mk && p.mk.own != null ? `${Math.round(p.mk.own)}%` : `<span class="ps">-</span>`) }] : []);
           const own = ext && Object.values(ext).some((r) => r.own != null) ? (p) => xr(p).own : sport.market && Object.values(ctx.byId).some((x) => x.mk && x.mk.own != null) ? (p) => (p.mk ? p.mk.own : null) : null;
           return [].concat(
             ext ? [{ h: `${yr} pre`, title: `${src} preseason rank, ${yr}`, cell: (p) => num(xr(p).pre) }] : [],
@@ -1498,7 +1510,7 @@
           const st = slots.map((sl, i) => [sl, i]).filter(([sl]) => grpOfSlot(sl) === grp).map(([sl, i]) => row(sl, lu[i] ? ctx.byId[lu[i]] : null, i, false, false, grp)).join("");
           const bn = benchIds.map((x) => ctx.byId[x]).filter((p) => p && grpOf(p) === grp).sort((a, b) => a.rank - b.rank).map((p) => row("BN", p, null, false, false, grp)).join("");
           return `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>${title}</th>${cols.map((c) => `<th class="${c.cls || "r num"}"${c.title ? ` title="${esc(c.title)}"` : ""}>${esc(c.h)}</th>`).join("")}<th class="act"></th></tr></thead>
-            <tbody>${st}<tr class="sec" data-dz="bn"><td colspan="${n}">Bench</td></tr>${bn || `<tr data-dz="bn"><td colspan="${n}" class="empty">No ${U.groupLabel(sport, grp).toLowerCase()} on the bench.</td></tr>`}</tbody></table></div>`;
+            <tbody>${st}<tr class="sec" data-dz="bn"><td colspan="${n}">Bench</td></tr>${bn || `<tr data-dz="bn"><td colspan="${n}" class="empty">No ${grp === "all" ? "one" : U.groupLabel(sport, grp).toLowerCase()} on the bench.</td></tr>`}</tbody></table></div>`;
         };
         const ipLine = (() => {
           if (!L().settings.minIP || over() || w !== L().week) return "";
@@ -1508,7 +1520,7 @@
         const irT = irMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Injured reserve, ${ir.length} of ${irMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody data-dz="ir">${irRows}</tbody></table></div>` : "";
         const txT = txMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Taxi squad, ${taxi.length} of ${txMax}</th><th class="r num hide-s">Rank</th><th></th><th class="hide-s"></th><th class="act"></th></tr></thead><tbody>${txRows}</tbody></table></div>` : "";
         return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${/ stats$/.test(n) ? `<span class="lng">${esc(n)}</span><span class="sht">${esc(n.replace(/ stats$/, ""))}</span>` : esc(n)}</button>`).join("")}</div>
-          ${Object.keys(sport.groups).map((g) => tbl(g, U.groupLabel(sport, g))).join("")}${ipLine}${irT}${txT}`;
+          ${groupKeys.map((g) => tbl(g, g === "all" ? "Player" : U.groupLabel(sport, g))).join("")}${ipLine}${irT}${txT}`;
       }
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
       const claims = mine ? L().claims.filter((c) => c.team === id && c.status === "open") : [];
@@ -1523,8 +1535,7 @@
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
         ${mine && L().settings.frozen && L().heist && L().rosters[id].length < G.maxRoster(L()) && !over() ? `<div class="alert"><span>A steal left a spot open in your lineup. Pick up a free agent for it before his game starts: he scores normal points.</span><a class="btn sm go" href="#players/fa">Free agents</a></div>` : ""}
         ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
-        ${grouped ? groupedTables() : `<div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : ""}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th>${collegeStats ? `<th class="rstats hide-s" title="Real college season totals; league points are shown separately">${esc(sport.data.season)} stats</th>` : ""}<th class="act"></th></tr></thead><tbody>
-          <tr class="sec"><td colspan="${collegeStats ? 7 : 6}">Starters</td></tr>${starters}<tr class="sec" data-dz="bn"><td colspan="${collegeStats ? 7 : 6}">Bench</td></tr>${bench}${irMax ? `<tr class="sec" data-dz="ir"><td colspan="${collegeStats ? 7 : 6}">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="${collegeStats ? 7 : 6}">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>`}
+        ${groupedTables()}
         ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : G.offseason(L()) ? "Between seasons your roster stays open: drag a player or tap his slot to move him, and bring players off IR. Nothing counts until next season." : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Drag a player onto a slot, or tap a slot, to move him. ${L().kick ? (S.football(sport) ? "Players lock when their game kicks off." : "Players lock for the week when their team's first game starts.") : `${weekLabel(w)} is under way; in this demo a change counts for the whole week.`} Starters left empty score nothing.` : `Drag a player onto a slot, or tap a slot, to move him. ${L().settings.real ? (S.football(sport) ? "Each player locks when his game kicks off" : "Each player locks for the week when his team's first game starts") : `${weekLabel(w)} lineups lock when it starts`}, and starters left empty score nothing.`}${irMax && alive ? " Drag a player who's out onto injured reserve to open a spot; IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
     }
     // Pending claims with their bids, each one cancellable.
