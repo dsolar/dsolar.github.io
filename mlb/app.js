@@ -801,17 +801,58 @@
     if (!tr.three) html += '<p><button class="btn" data-three>+ Add a third team</button></p>';
     var a = totals.a || 0, b = totals.b || 0;
     if ((tr.a || []).length && (tr.b || []).length && !tr.three) {
-      var d = a - b, close = Math.abs(d) < Math.max(5, 0.1 * Math.max(Math.abs(a), Math.abs(b)));
-      var na = sideName(tr, "a", 0), nb = sideName(tr, "b", 1);
-      html += '<div class="verdict">' + (close ? "<b>Even.</b> The surplus going each way is within " + money(Math.abs(d)) + "."
-        : "<b>" + esc(d > 0 ? nb : na) + " win" + (/s$/.test(d > 0 ? nb : na) ? "" : "s") + "</b> by " + money(Math.abs(d)) + " of surplus value.") +
-        "<small>" + esc(na) + " send " + signed(a) + ", " + esc(nb) + " send " + signed(b) + ". Surplus isn't everything: contenders pay for wins now, and a team's payroll room matters.</small></div>";
+      // the grades go above the two sides, where they're seen as the deal changes (the org lists below run long)
+      var at = html.indexOf('<div class="sides">');
+      html = html.slice(0, at) + tradeGrades(tr, totals) + html.slice(at);
     } else if (tr.three && sides.every(function (k) { return (tr[k] || []).length; })) {
       html += '<div class="verdict"><b>Three-team deal.</b> ' + sides.map(function (k, i) { return esc(sideName(tr, k, i)) + " send " + signed(totals[k]); }).join(" · ") + "<small>Compare what each side gives up.</small></div>";
     }
     html += '<p><button class="btn" data-clear>Clear the trade</button></p>';
     view.innerHTML = html;
   }
+  // Trade grades, like the signing grades: each team's surplus in against surplus out (model.js gradeTrade), with the
+  // same credit for taking in a player who fills a hole, and next season's WAR changing hands for the win-now view
+  function sentBy(tr, k) { // the team a side is: its pick, or the club all its players come from
+    if (tr.teams[k]) return tr.teams[k];
+    var ts = (tr[k] || []).map(function (id) { return H.byId[id].t; });
+    return ts.length && ts.every(function (t) { return t === ts[0]; }) ? ts[0] : null;
+  }
+  function nowWar(ids) {
+    return (ids || []).reduce(function (a, id) { var r = H.surplus(H.byId[id]).rows[0]; return a + (r && r.y === H.season ? r.war : 0); }, 0);
+  }
+  function tradeNeed(abbr, ids) {
+    if (!abbr) return null;
+    var best = null;
+    (ids || []).forEach(function (id) {
+      var p = H.byId[id], r = H.surplus(p).rows[0];
+      if (p.g === "min" || !r || r.y !== H.season || p.t === abbr) return;
+      var pos = p.p ? (/SP/.test(p.pos || "") ? "SP" : "RP") : (p.el && p.el.length ? p.el : [p.pos]).join("/");
+      if (pos === "RP") return; // the hole test covers lineup spots and the rotation
+      var nd = H.need({ to: abbr, id: p.id, pos: pos }, r.war);
+      if (nd && (!best || (nd.fills && !best.fills) || (nd.fills === best.fills && nd.up > best.up))) best = Object.assign({ p: p }, nd);
+    });
+    return best;
+  }
+  function tradeGrades(tr, totals) {
+    var rows = ["a", "b"].map(function (k, i) {
+      var o = k === "a" ? "b" : "a", abbr = sentBy(tr, k), nd = tradeNeed(abbr, tr[o]);
+      return { k: k, name: sideName(tr, k, i), abbr: abbr, gr: M.gradeTrade(totals[k] || 0, totals[o] || 0, nd), now: nowWar(tr[o]) - nowWar(tr[k]) };
+    });
+    var win = rows[0].gr.net > 0 ? rows[0] : rows[1], d = Math.abs(rows[0].gr.net);
+    var even = /^B$/.test(rows[0].gr.g) && /^B$/.test(rows[1].gr.g) || d < 2;
+    var html = '<div class="verdict tgrades"><p class="tg-head">' + (even ? "<b>About even.</b> The surplus going each way is within " + money(d) + "."
+      : "<b>" + esc(win.name) + " win" + (/s$/.test(win.name) ? "" : "s") + "</b> by " + money(d) + " of surplus value.") + "</p>";
+    rows.forEach(function (r) {
+      var gr = r.gr, nd = gr.need;
+      var tip = (gr.edge >= 0 ? "Takes in " : "Gives up ") + pct(Math.abs(gr.edge), 0) + " more surplus than it " + (gr.edge >= 0 ? "sends" : "gets") + (gr.credit ? "; fills a need" : "");
+      html += '<div class="tg-row"><span class="grade g-' + gr.g.charAt(0).toLowerCase() + '" title="' + esc(tip) + '">' + esc(gr.g) + "</span>" +
+        (r.abbr ? logo(r.abbr, 22) : "") + '<div class="grow"><b>' + esc(r.name) + "</b>" + (gr.credit ? ' <span class="pill up" title="Takes in a player who fills a hole">Need</span>' : "") +
+        "<small>Gets " + signed(gr.got) + ", gives " + signed(gr.sent) + " (" + signed(gr.net) + "). " + H.season + ": " + (Math.abs(r.now) < 0.05 ? "no change in WAR" : (r.now > 0 ? "+" : "") + r.now.toFixed(1) + " WAR") +
+        (nd && nd.fills ? ". " + esc(nd.p.n) + " fills a hole: without him their " + esc(nd.label) + " ranks " + ord(nd.rank) + " in MLB" : "") + ".</small></div></div>";
+    });
+    return html + "<small>Grades weigh the surplus each team takes in against what it gives up, as a share of the bigger side: even is a B, winning by 8% a B+, 18% an A-, 30% an A, 50% an A+, and the same steps down to an F. Taking in a player who fills a hole gives 8 points of room, as with signings. Surplus isn't everything: contenders pay for wins now, and payroll room matters.</small></div>";
+  }
+
   // A team's roster and farm, best surplus first, to add with one tap
   function orgPicker(abbr, k, ids) {
     var on = {};
@@ -1010,6 +1051,7 @@
       "<h3>Free agent value</h3><p>A free agent's value is his projected wins at the market price of a win, priced by tier (what players of his caliber have gone for) and, for the market price, by contract length (one-year deals come in well under the going rate, long deals over it); length and tier are read together from the last five winters, since most one-year deals go to lesser players. A player coming off a big league club with little big league time has his projection counted at 55-100%: full at about 1,000 plate appearances, 300 innings as a starter or 120 in relief over the last three seasons, 55% with none. Those projections lean on minor league or overseas numbers that teams discount until a player holds up in the majors. Players signing from Japan or Korea keep their full projection, since teams bid on those records. A signed player's card counts his value the same way.</p>" +
       "<h3>Far-off seasons and star pricing</h3><p>Seasons more than " + (H.cfg.lateAfter == null ? 3 : H.cfg.lateAfter) + " years out count " + pct(H.cfg.lateFade, 0) + " of the projection a year, compounding (" + pct(H.cfg.lateFade, 0) + ", then " + pct(H.cfg.lateFade * H.cfg.lateFade, 0) + "...), since projections that far ahead miss more often; set Far-off seasons to 100% on Trade Value to count the full projection every season. Wins are priced by tier: a win from a 1-WAR player costs about 78% of the going rate and one from a 3+ WAR player about 115%, since role players are plentiful and stars aren't. Both are calibrated to Baseball Trade Values' November 2026 values for players on long extensions (Witt, Crow-Armstrong, Merrill, Chourio, Carroll, Rafaela, Anthony). Player cards show projected and counted WAR side by side.</p>" +
       "<h3>Deal grades</h3><p>Every free agent who signs a big league deal gets a grade the morning after FanGraphs logs it. The grade compares what the team pays with what deals of that length have gone for (the market price on the Free Agents tab), and a team that signs another club's qualifying-offer player takes a small dock (about " + money(H.cfg.qoPickCost) + ") for the draft pick and pool money it gives up. Teams expect to pay a little over the going rate, so a B runs from 6% under market to 10% over. 6-15% under is a B+, 15-25% an A-, 25-40% an A, more than that an A+. Over market, 10-18% is a B-, then C+, C at 27%, D at 37% and F at 50% or more. A signing that fills a hole gets 8 points more room: without him, the spot (or the rotation, for a starter) ranks in the bottom third of the league, and he improves it by at least three quarters of a win. The player card lays out his projected WAR, what it's worth and his salary, season by season, so the surplus behind the grade is visible. Only deals of $2M or more for players projected at 1+ WAR get a grade: that's the range the market study covers, so most relievers and depth signings go ungraded. Grades follow the projections, so a deal can move a little as Steamer updates.</p>" +
+      "<h3>Trade grades</h3><p>The Trade Builder grades each team in a two-team deal the way signings are graded: the surplus it takes in against the surplus it gives up, as a share of the bigger side (at least $20M, so a swap of spare parts doesn't swing a full letter). An even swap is a B. Winning by 8% of the deal is a B+, 18% an A-, 30% an A and 50% an A+; losing by the same steps gives a B-, C+, C, D and F. A team that takes in a hitter or starter who fills a hole (by the same test as signings) gets 8 points more room. Next season's WAR changing hands is shown beside the grade, since a contender may happily lose on surplus to win now.</p>" +
       "<h3>Production value or market price</h3><p>By default, value is what a player should produce: projected WAR, aged a year at a time, at the going rate for a win. Some trade-value sites (Baseball Trade Values, for one) value a player at what he'd get as a free agent instead. Free agent deals pay a premium for length (deals of six years or more ran about 19% over the going rate in the last five winters), so a star's long contract can look fair there and underwater here. The Value as switch on the Trade Value tab flips to market price: a remaining term of four or five years gets the premium those deals drew (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[4] : 0, 0) + "), six or more theirs (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[6] : 0, 0) + ").</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
       '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p></div>";

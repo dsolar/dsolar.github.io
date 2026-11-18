@@ -802,6 +802,18 @@
     return { g: g, edge: edge, credit: credit, need: need || null, paid: paid, mkt: mkt, pick: pick, worth: val, prod: val - paid - pick };
   }
 
+  // A trade's grade for one team: the surplus it takes in against the surplus it gives up, as a share of the bigger
+  // side (at least $20M, so a swap of spare parts doesn't swing a full letter on a couple of million). An even swap is
+  // a B; winning by 8% of the deal is a B+, 18% an A-, 30% an A, 50% an A+, and the same steps down (B-, C+, C, D, F).
+  // A team that takes in a player who fills a hole gets the same NEED_CREDIT room a signing does.
+  var TRADE_GRADES = [[0.5, "A+"], [0.3, "A"], [0.18, "A-"], [0.08, "B+"], [-0.08, "B"], [-0.18, "B-"], [-0.3, "C+"], [-0.42, "C"], [-0.6, "D"]];
+  function gradeTrade(sent, got, need) {
+    var scale = Math.max(Math.abs(sent), Math.abs(got), 20), edge = (got - sent) / scale;
+    var credit = need && need.fills ? NEED_CREDIT : 0, g = "F";
+    for (var i = 0; i < TRADE_GRADES.length; i++) if (edge + credit >= TRADE_GRADES[i][0]) { g = TRADE_GRADES[i][1]; break; }
+    return { g: g, edge: edge, credit: credit, need: need || null, sent: sent, got: got, net: got - sent };
+  }
+
   // Does a signing fill a hole? The signing team's coming season without him: for a hitter, the weakest of the spots he
   // can play (his own spot if he's already in Depth Charts' lineup, filled by the best bench bat); for a starter, the
   // rotation. A hole is a spot in the bottom third of the league that he improves by 0.75+ WAR.
@@ -910,7 +922,7 @@
 
   var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
-    marketRead: marketRead, outlookShare: outlookShare, recentRead: recentRead, gradeDeal: gradeDeal, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
+    marketRead: marketRead, outlookShare: outlookShare, recentRead: recentRead, gradeDeal: gradeDeal, gradeTrade: gradeTrade, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.MLBModel = api;
 })(typeof window !== "undefined" ? window : this);

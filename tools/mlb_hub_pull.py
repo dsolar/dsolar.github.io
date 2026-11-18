@@ -167,12 +167,12 @@ def pull_rosters():
 def pull_payroll(per_run=10, max_age_days=3):
     """Contracts change slowly, so each run refreshes the 10 stalest teams: every team every three days."""
     path = os.path.join(OUT, "payroll.json")
-    out = {"season": season(), "teams": {}, "fetched": {}}
+    out = {"season": season(), "teams": {}, "fetched": {}, "moved": {}}
     if os.path.exists(path):
         with open(path, encoding="utf-8") as f:
             prev = json.load(f)
         if prev.get("season") == season():
-            out["teams"], out["fetched"] = prev.get("teams", {}), prev.get("fetched", {})
+            out["teams"], out["fetched"], out["moved"] = prev.get("teams", {}), prev.get("fetched", {}), prev.get("moved", {})
     today = date.today()
     def age(tid):
         d = out["fetched"].get(str(tid))
@@ -206,10 +206,21 @@ def pull_payroll(per_run=10, max_age_days=3):
                          "note": s.get("LongContractSummaryPayrollNote"), "years": years})
         dead = [[p.get("Season"), num(p.get("PaymentAmount"), 0), p.get("PaymentDescription")]
                 for p in d.get("dataOtherPayments") or []]
+        # A player traded off this page keeps his contract (the deal travels with him) until his new team's page is
+        # refreshed and lists him, so a trade doesn't turn an extension into a guess from service time for a few days
+        was = (out["teams"].get(str(tid)) or {}).get("contracts", [])
+        here = {c.get("mlbam") for c in rows}
+        for c in was:
+            if c.get("mlbam") and c["mlbam"] not in here:
+                out["moved"][str(c["mlbam"])] = dict(c, movedFrom=abbr, movedOn=today.isoformat())
         out["teams"][str(tid)] = {"contracts": rows, "other": dead}
         out["fetched"][str(tid)] = today.isoformat()
         done += 1
         print(f"  payroll {abbr}: {len(rows)} contracts")
+    # a moved contract is dropped once some team's page lists him again, or after 30 days (released, or retired)
+    listed = {c.get("mlbam") for t in out["teams"].values() for c in t.get("contracts", [])}
+    out["moved"] = {k: c for k, c in out["moved"].items()
+                    if c.get("mlbam") not in listed and (today - date.fromisoformat(c["movedOn"])).days <= 30}
     out["yearCols"] = ["season", "salary", "type", "arbYear", "arbProj", "buyout", "cbt"]
     save("payroll.json", out)
     print(f"  {len(out['teams'])}/30 teams on file")

@@ -153,8 +153,11 @@ def build():
     # ---- contracts by mlbam
     contracts = {}
     if pay:
-        for tid, t in pay.get("teams", {}).items():
-            for c in t.get("contracts", []):
+        # contracts of players traded off a page their new team's page doesn't list yet go first, so a team's own
+        # page wins whenever it has him
+        moved = list((pay.get("moved") or {}).values())
+        for c in moved + [c for t in pay.get("teams", {}).values() for c in t.get("contracts", [])]:
+            if True:
                 if not c.get("mlbam"):
                     continue
                 # [season, salary, code, option buyout, arbitration projection, CBT hit]

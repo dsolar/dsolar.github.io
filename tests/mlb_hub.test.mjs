@@ -137,3 +137,14 @@ test('deal grades: a small overpay is still a B, and filling a hole buys more ro
   assert.equal(M.gradeDeal(over, 4, 2.5, 70, 15, cfg).g, 'B-');
   assert.equal(M.gradeDeal(over, 4, 2.5, 70, 15, cfg, { fills: true }).g, 'B', 'fills a need');
 });
+
+test('trade grades: an even swap is a B, a lopsided one runs from A+ to F, and filling a hole buys room', () => {
+  assert.equal(M.gradeTrade(30, 30).g, 'B');
+  assert.equal(M.gradeTrade(30, 32).g, 'B');
+  assert.equal(M.gradeTrade(20, 60).g, 'A+');
+  assert.equal(M.gradeTrade(60, 20).g, 'F');
+  assert.equal(M.gradeTrade(2, 3.5).g, 'B'); // small swaps measure against $20M
+  assert.equal(M.gradeTrade(30, 32.5).g, 'B'); // 7.7%: still a B
+  assert.equal(M.gradeTrade(30, 32.5, { fills: true }).g, 'B+');
+  assert.equal(M.gradeTrade(30, 32.5).net, 2.5);
+});
