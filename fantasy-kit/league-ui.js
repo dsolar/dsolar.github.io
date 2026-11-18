@@ -118,7 +118,57 @@
       const lines = (sport.data && sport.data.lines) || {}, yr = (sport.data && sport.data.season) || L().season || "Season";
       const base = [["stats", `${yr} stats`]].concat(lines.pbat || lines.psk ? [["proj", sport.key === "nhl" ? "Workload projection" : `${Number(yr) ? Number(yr) + 1 : "Season"} proj`]] : [], sport.data && sport.data.prev ? [["prev", `${sport.data.prev} stats`]] : [], [["ranks", "Ranks"]], L().settings.keepers || L().settings.dynasty ? [["keep", "Keepers"]] : []);
       // in season a points league opens on this week's points; a categories league on the season's stats
-      return over() ? base : pts() ? [["week", "This week"]].concat(base) : base.concat([["week", "This week"]]);
+      const recent = recentOn() ? [["recent", "Recent"]] : [];
+      return over() ? base : pts() ? [["week", "This week"]].concat(recent, base) : base.slice(0, 1).concat(recent, base.slice(1), [["week", "This week"]]);
+    }
+    /* Recent form: a player's real box scores over the last 1, 2 or 4 weeks of the league, added up and read like his
+       season line (per game where the season line is per game; rates worked out again from their parts). The data is
+       weekly, so the windows are whole weeks: this week counts once it's at least three days old. */
+    const RECENT = [[1, "Last week"], [2, "Last 2 weeks"], [4, "Last 4 weeks"]];
+    const recentOn = () => !!(L().settings.real && ctx.hooks && ctx.hooks.real && ctx.hooks.real.weeks) && !over() && !G.offseason(L()) && L().week > 1;
+    const recentSpan = () => (RECENT.some((x) => x[0] === ui.rspan) ? ui.rspan : 2);
+    function recentWeeks(n) {
+      const cur = Math.min(L().week, G.totalWeeks(L())), first = frac(cur) >= 3 / 7 ? cur : cur - 1, out = [];
+      for (let w = first; w >= 1 && out.length < n; w--) out.push(w);
+      return out;
+    }
+    let recentCache = null;
+    function recentOf(p) {
+      const n = recentSpan(), ws = recentWeeks(n), key = `${n}:${ws.join(",")}:${L().week}`;
+      if (!recentCache || recentCache.key !== key || recentCache.R !== ctx.hooks.real) recentCache = { key, R: ctx.hooks.real, m: {} };
+      if (recentCache.m[p.id]) return recentCache.m[p.id];
+      const R = ctx.hooks.real, sc = G.scoring(L(), ctx), lines = sport.data.lines || {}, acc = {};
+      const RATE = /^(avg|obp|ops|slg|era|whip|gaa|svp)$/;
+      let pts = 0, any = false;
+      for (const w of ws) {
+        const rw = G.realWeek(L(), ctx, w), line = rw && rw.lines && rw.lines[p.id];
+        if (!line) continue;
+        any = true;
+        if (sc.type === "points") pts += G.realPts(R, sc, line, p) || 0;
+        for (const [key, def] of Object.entries(lines)) {
+          const cols = R.lines ? R.lines[key] : R.cols, vals = R.lines ? line[key] : line;
+          if (!cols || !vals || (!R.lines && key !== R.line && !def.cols.every((c) => cols.includes(c)))) continue;
+          const a = acc[key] || (acc[key] = def.cols.map(() => 0));
+          def.cols.forEach((c, i) => { const j = cols.indexOf(c); if (j >= 0 && !RATE.test(c)) a[i] += vals[j] || 0; });
+        }
+      }
+      const out = Object.assign({}, p, { l: {}, fpts: null, fpg: null, recent: any });
+      for (const [key, a] of Object.entries(acc)) {
+        const cols = lines[key].cols, at = (c) => { const i = cols.indexOf(c); return i >= 0 ? a[i] : null; }, set = (c, v) => { const i = cols.indexOf(c); if (i >= 0) a[i] = v; };
+        // baseball and hockey rates, from their parts
+        if (key === "bat" || key === "pbat") { const ab = at("ab"), h = at("h"), bb = at("bb") || 0, hbp = at("hbp") || 0, sf = at("sf") || 0, tb = at("tb"); const obp = ab + bb + hbp + sf > 0 ? (h + bb + hbp) / (ab + bb + hbp + sf) : 0; set("avg", ab ? h / ab : 0); set("obp", obp); set("ops", ab ? obp + tb / ab : 0); }
+        if (key === "pit" || key === "ppit") { const outs = at("outs"), ip = outs != null && outs > 0 ? outs / 3 : at("ip") || 0; if (outs != null && outs > 0) set("ip", Math.floor(ip) + (outs % 3) / 10); set("era", ip ? (at("er") * 9) / ip : 0); set("whip", ip ? ((at("bb") || 0) + (at("h") || 0)) / ip : 0); }
+        if (key === "goalie") { const mn = at("min"), sa = at("sa"); set("gaa", mn ? (at("ga") * 60) / mn : 0); set("svp", sa ? at("saves") / sa : 0); }
+        // a per-game season line reads per game here too
+        if (/per game/i.test(lines[key].label || "") || /^p?pg$/.test(key)) { const g = at("gp") || at("g") || 0; out.l[key] = a.map((v, i) => (/^(gp|g|eg)$/.test(cols[i]) ? v : g ? v / g : 0)); }
+        else out.l[key] = a;
+      }
+      if (sc.type === "points") {
+        const gk = sport.gamesCol || "g", gl = Object.keys(out.l).find((k) => lines[k].cols.includes(gk) || lines[k].cols.includes("gp"));
+        const g = gl ? out.l[gl][lines[gl].cols.indexOf(lines[gl].cols.includes(gk) ? gk : "gp")] : 0;
+        out.fpts = any ? pts : null; out.fpg = g ? pts / g : null;
+      }
+      return (recentCache.m[p.id] = out);
     }
     // where a player went in this league's draft: { r: round, n: overall pick }
     let draftIdx = null;
@@ -1455,6 +1505,9 @@
         if (view === "prev") return lead.concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { const v = U.prevStat(sport, p, c); return v == null ? `<span class="ps">-</span>` : c.fmt(v); } })));
         // a stat that isn't his position's (a receiver's passing yards) is a dash, and a zero is faint, so his own line reads
         const offPos = (p, c) => !!(c.pos && !S.positions(p).some((x) => c.pos.includes(x)));
+        if (view === "recent") return [{ h: "GP", title: "Games played in these weeks", cls: "r num", cell: (p) => { const rp = recentOf(p); const k = Object.keys(rp.l).find((x) => (sport.data.lines[x].cols || []).some((c) => c === "gp" || c === (sport.gamesCol || "g"))); if (!k) return `<span class="ps">0</span>`; const cs = sport.data.lines[k].cols, i = cs.indexOf(cs.includes("gp") ? "gp" : sport.gamesCol || "g"); return String(Math.round(rp.l[k][i] || 0)); } }]
+          .concat(pts() ? [{ h: "FPTS", title: "Fantasy points in these weeks", cls: "r num", cell: (p) => { const rp = recentOf(p); return rp.fpts == null ? `<span class="ps">-</span>` : `<b>${rp.fpts.toFixed(1)}</b>`; } }] : [])
+          .concat(cats.filter((c) => !(one && (c.col === "gp" || c.col === "g")) && !(pts() && c.fpts)).map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { if (offPos(p, c)) return `<span class="ps">-</span>`; const rp = recentOf(p); if (!rp.recent) return `<span class="ps">-</span>`; const v = U.statCell(sport, rp, c); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } })));
         if (view === "stats" || view === "proj") return lead.concat(cats.map((c) => ({ h: c.label, title: c.title, cls: `r num${c.hide === "s" ? " hide-s" : ""}`, cell: (p) => { if (offPos(p, c)) return `<span class="ps">-</span>`; const v = U.statCell(sport, p, Object.assign({}, c, { line: line(c) })); return v == null ? `<span class="ps">-</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } })));
         if (view === "ranks") {
           // another site's ranks for the season just played (L.ext.ranks: Yahoo's preseason and final ranks, % rostered)
@@ -1519,7 +1572,12 @@
         })();
         const irT = irMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Injured reserve, ${ir.length} of ${irMax}</th><th class="r num">Rank</th><th class="r num hide-s">Pos</th><th class="act"></th></tr></thead><tbody data-dz="ir">${irRows}</tbody></table></div>` : "";
         const txT = txMax ? `<div class="table-wrap rtab"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Taxi squad, ${taxi.length} of ${txMax}</th><th class="r num">Rank</th><th class="r num hide-s">Pos</th><th class="act"></th></tr></thead><tbody>${txRows}</tbody></table></div>` : "";
-        return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${/ stats$/.test(n) ? `<span class="lng">${esc(n)}</span><span class="sht">${esc(n.replace(/ stats$/, ""))}</span>` : esc(n)}</button>`).join("")}</div>
+        const recentBar = view === "recent" ? (() => {
+          const ws = recentWeeks(recentSpan()), md2 = (t) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+          const from = ws.length ? G.weekStart(L(), ws[ws.length - 1]) : null, to = ws.length ? Math.min(now(), G.weekStart(L(), ws[0] + 1) - 864e5) : null;
+          return `<div class="row rc-bar"><div class="seg sm" role="group" aria-label="How far back">${RECENT.map(([k, n]) => `<button type="button" data-rspan="${k}" aria-pressed="${k === recentSpan()}">${n}</button>`).join("")}</div><span class="ps">${from ? `${md2(from)} to ${md2(to)}, from the box scores${pts() ? "" : ". Rates are for these weeks only"}.` : "No games yet."}</span></div>`;
+        })() : "";
+        return `<div class="seg rv" role="group" aria-label="Roster view">${views.map(([k, n]) => `<button type="button" data-rview="${k}" aria-pressed="${k === view}">${/ stats$/.test(n) ? `<span class="lng">${esc(n)}</span><span class="sht">${esc(n.replace(/ stats$/, ""))}</span>` : esc(n)}</button>`).join("")}</div>${recentBar}
           ${groupKeys.map((g) => tbl(g, g === "all" ? "Player" : U.groupLabel(sport, g))).join("")}${ipLine}${irT}${txT}`;
       }
       const weeks = [curWeek()].concat(curWeek() < G.totalWeeks(L()) ? [curWeek() + 1] : []);
@@ -2987,7 +3045,7 @@
       if (tone) { stories.set("tone", tone.dataset.storyTone === "banter" ? "banter" : "straight"); render(); return; }
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-rspan],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -3068,6 +3126,7 @@
         else if (d.trCmveto) { const id = +d.trCmveto; U.confirm("Veto this trade?", "It won't go through, and both teams keep their players.", "Veto trade", () => act(() => G.commishVeto(L(), id, now()), "Trade vetoed.")); }
         else if (d.trVeto) act(() => G.vote(L(), ctx, +d.trVeto, mid, true, now()), "You voted to veto.");
         else if (d.rview) { ui.rview = d.rview; render(); }
+        else if (d.rspan) { ui.rspan = +d.rspan; render(); }
         else if (d.tfprop != null) openTrade(+d.tfprop, null, { give: d.give.split(","), get: d.get.split(",") });
         else if (d.dview) { ui.dview = d.dview; render(); }
         else if (b.hasAttribute("data-txmore")) { ui.txlim = (ui.txlim || 200) + 300; render(); }

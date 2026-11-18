@@ -952,16 +952,64 @@
     if (pyrOn()) return pyramidNextCard();
     const k = L.settings.keepers || 0;
     if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">The season is over. Open keeper picks with a deadline: every manager gets an email and picks up to ${k}.</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
-    const doc = L, picks = (L.next && L.next.picks) || {}, lock = keepLocked(), auto = L.next && L.next.missed === "auto";
-    const status = (t) => picks[t.id] ? `Keeping ${picks[t.id].length}` : info.seats[t.id] == null ? (auto ? "Open seat: keeps its best values" : "Open seat: keeps nobody") : lock ? (auto ? "Missed the deadline: keeps its best values" : "Missed the deadline: keeps nobody") : "Hasn't picked yet";
-    const rows = doc.teams.map((t) => `<li>${U.teamAv(t, "sm")}<span class="grow"><b>${esc(t.name)}</b><small>${status(t)}</small></span>${k ? `<button type="button" class="btn sm ghost" data-kp-team="${t.id}">${picks[t.id] ? "Change" : "Set"}</button>` : ""}</li>`).join("");
-    return `<div class="card"><div class="mod-h"><h2>Next season</h2>${k && L.next ? `<button type="button" class="btn sm" data-live="open-keepers" style="margin-left:auto">Deadline</button>` : ""}</div><div class="bd stack">
-      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `${k ? (lock ? `Keepers locked ${esc(whenTxt(keepDue()))}.` : `Keeper picks are open until ${esc(whenTxt(keepDue()))}.`) : "The season is over."} Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
-      ${k ? `<ul class="seatl">${rows}</ul>` : ""}
+    return `${k && L.next ? keeperTracker() : ""}<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack">
+      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `The season is over. Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
       ${expiringHtml()}
       ${L.settings.dynasty ? "" : L.settings.draftOrder === "lottery" ? lotteryLine() : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
       ${practiceLine()}
       <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
+  }
+  /* The commissioner's keeper tracker: the clock to the deadline, who's in and who isn't, each team's keepers with the
+     round each lands in (and the year he's being kept), anything that breaks the rules, what the deadline rule would
+     keep for a team that misses it, and a copy for the league's keeper sheet. */
+  function keeperRows() {
+    const ctx = lctx(), picks = (L.next && L.next.picks) || {}, list = (L.next && L.next.list) || {}, auto = L.next && L.next.missed === "auto";
+    return L.teams.map((t) => {
+      const ks = picks[t.id], seat = info.seats[t.id];
+      const state = ks ? "in" : seat == null ? "open" : keepLocked() ? "missed" : "waiting";
+      // a team with no picks: its best values, as the deadline rule would keep them or as a starting point for you
+      const pids = ks || Z.autoKeepers(L, ctx, t.id);
+      const plan = Z.keeperPlan(L, t.id, pids);
+      const bySelf = new Set((list[t.id] || []).filter((r) => r[3]).map((r) => r[0]));
+      const rows = (plan.rows || []).map((r) => ({ pid: r.pid, n: (ctx.byId[r.pid] || {}).n || r.pid, round: r.round != null ? r.round : r.cost.round, moved: !!r.moved, year: r.cost.year || null, label: r.cost.label, star: bySelf.has((ctx.byId[r.pid] || {}).n) }))
+        .sort((a, b) => (a.round == null ? 99 : a.round) - (b.round == null ? 99 : b.round));
+      return { t, seat, state, ks: !!ks, rows, why: ks && !plan.ok ? plan.why : "", auto };
+    });
+  }
+  function keeperTracker() {
+    const k = L.settings.keepers, rs = keeperRows(), due = keepDue(), lock = keepLocked();
+    const inN = rs.filter((r) => r.state === "in").length, waiting = rs.filter((r) => r.state === "waiting"), bad = rs.filter((r) => r.why), open = rs.filter((r) => r.state === "open");
+    const left = due && !lock ? due - now() : 0;
+    const span = left >= 864e5 ? `${Math.floor(left / 864e5)} day${left >= 2 * 864e5 ? "s" : ""}${Math.floor((left % 864e5) / 36e5) ? `, ${Math.floor((left % 864e5) / 36e5)} hr` : ""}` : left >= 36e5 ? `${Math.floor(left / 36e5)} hr ${Math.floor((left % 36e5) / 6e4)} min` : `${Math.max(1, Math.floor(left / 6e4))} min`;
+    const tag = (r) => r.state === "in" ? `<span class="tag win">In${r.rows.length < k ? `, ${r.rows.length} of ${k}` : ""}</span>` : r.state === "open" ? `<span class="tag">Open seat</span>` : r.state === "missed" ? `<span class="tag loss">Missed it</span>` : `<span class="tag gold">Not in yet</span>`;
+    const chip = (x, ghost) => `<span class="kt-k${ghost ? " gh" : ""}${x.moved ? " mv" : ""}" title="${esc(x.moved ? `Moved up a round by the same-round rule` : x.label || "")}">${esc(x.n)}${x.star ? "*" : ""} <b>${x.round != null ? `Rd ${x.round}` : esc(x.label)}</b>${x.year > 1 ? `<em>yr ${x.year}</em>` : ""}</span>`;
+    const keepCell = (r) => r.state === "in" ? (r.rows.length ? r.rows.map((x) => chip(x)).join("") : `<span class="ps">Keeping nobody</span>`)
+      : `<span class="ps kt-if">${r.auto ? (r.state === "waiting" ? "If they miss it, keeps:" : "Keeps:") : r.state === "open" ? "Best values:" : r.state === "missed" ? "Keeps nobody. Best values were:" : "Misses it, keeps nobody. Best values:"}</span>${r.rows.map((x) => chip(x, true)).join("") || `<span class="ps">none worth keeping</span>`}`;
+    const row = (r) => `<tr class="${r.state}"><td class="kt-team">${U.teamAv(r.t, "sm")}<span><b>${esc(r.t.name)}</b><small class="ps">${r.seat != null ? esc(r.seat) : "No manager"}</small></span></td><td>${tag(r)}</td><td class="kt-ks">${keepCell(r)}${r.why ? `<div class="kt-why"><b>Breaks the rules:</b> ${esc(r.why)}.</div>` : ""}</td><td class="r"><button type="button" class="btn sm ghost" data-kp-team="${r.t.id}">${r.ks ? "Change" : "Set"}</button></td></tr>`;
+    const order = { waiting: 0, missed: 1, in: 2, open: 3 };
+    const sorted = rs.slice().sort((a, b) => (b.why ? 1 : 0) - (a.why ? 1 : 0) || order[a.state] - order[b.state] || a.t.name.localeCompare(b.t.name));
+    return `<div class="card kt"><div class="mod-h"><h2>Keeper tracker</h2><span class="grow"></span><button type="button" class="btn sm" data-live="keeper-copy">Copy for the keeper sheet</button><button type="button" class="btn sm" data-live="open-keepers">Deadline</button></div><div class="bd stack">
+      <div class="kt-top"><div class="kt-clock${lock ? " done" : left < 864e5 ? " hot" : ""}"><small>${lock ? "Locked" : "Keepers lock"}</small><b>${due ? esc(whenTxt(due)) : "No deadline"}</b>${due && !lock ? `<span>${span} from now</span>` : ""}</div>
+        <div class="kt-prog"><small>Teams in</small><b>${inN} of ${rs.length}</b><i style="--w:${Math.round((inN / rs.length) * 100)}%"></i></div></div>
+      ${waiting.length && !lock ? `<p class="small" style="margin:0"><b>Still to pick:</b> ${waiting.map((r) => esc(r.t.name)).join(", ")}. ${L.next.reminded ? "They got a reminder a day out." : "They get an email reminder a day before it locks."}</p>` : ""}
+      ${open.length && !lock ? `<p class="small" style="margin:0"><b>${open.length} team${open.length > 1 ? "s have" : " has"} no manager</b>, so nobody will pick for ${open.length > 1 ? "them" : "it"}. Set ${open.length > 1 ? "their" : "its"} keepers yourself${L.next.missed === "auto" ? ", or the deadline rule keeps the best values" : " before the deadline, or they keep nobody"}.</p>` : ""}
+      ${bad.length ? `<p class="small kt-bad" style="margin:0"><b>${bad.length} team${bad.length > 1 ? "s break" : " breaks"} the rules</b> and need${bad.length > 1 ? "" : "s"} a fix before the draft.</p>` : ""}
+      <div class="table-wrap"><table class="t kt-t"><thead><tr><th>Team</th><th>Status</th><th>Keepers, by the round each lands in</th><th></th></tr></thead><tbody>${sorted.map(row).join("")}</tbody></table></div>
+      <p class="ps" style="margin:0">* set by you. A red round moved up under the same-round rule. ${L.next.missed === "auto" ? "Faded keepers are what the deadline rule keeps for a team that misses it." : "Faded keepers are each team's best values, a starting point when you set them; a team without picks at the deadline keeps nobody."}</p></div></div>`;
+  }
+  // the keepers as rows for the league's Google sheet: team, player, round, year kept, and * when the commissioner set it
+  function keeperSheet() {
+    const lines = [["Team", "Player", "Round", "Year", "Set by commissioner"].join("\t")];
+    for (const r of keeperRows()) {
+      if (r.state !== "in" && (!r.auto || r.state === "waiting")) { lines.push([r.t.name, r.state === "open" ? "(no manager, not set)" : r.state === "missed" ? "(missed the deadline)" : "(not in yet)", "", "", ""].join("\t")); continue; }
+      for (const x of r.rows) lines.push([r.t.name, x.n, x.round != null ? x.round : x.label, x.year || "", x.star ? "*" : ""].join("\t"));
+    }
+    return lines.join("\n");
+  }
+  async function copyKeepers() {
+    const txt = keeperSheet();
+    try { await navigator.clipboard.writeText(txt); U.toast("Copied. Paste it into the keeper sheet."); }
+    catch (e) { U.dialog(`<h3>Keepers for the sheet</h3><p class="small muted" style="margin:0 0 8px">Copy this and paste it into the sheet: it splits into columns.</p><textarea rows="14" style="width:100%;font:12px ui-monospace,monospace" readonly>${esc(txt)}</textarea><div class="acts"><button type="button" class="btn" data-close>Close</button></div>`); }
   }
   // Hard Cap dynasty: contracts that run out this season. Each one is re-signed (his rights held into next season,
   // at his new real deal, the minimum until it's out) unless his manager lets him go into the rookie and free agent
@@ -1044,7 +1092,7 @@
     // the overview: what needs doing now, then every tool
     const todo = [];
     if (L && seasonOver() && (s.keepers || 0) && !L.next) todo.push(["Open keeper picks", "Every manager gets an email and picks their keepers by a deadline.", `<a class="btn sm go" href="#commish/season">Open</a>`]);
-    if (L && seasonOver() && L.next && !keepLocked()) { const picks = L.next.picks || {}, done = Object.keys(picks).length; todo.push([`Keepers: ${done} of ${L.teams.length} picked`, L.next.due ? `They lock ${new Date(L.next.due).toLocaleDateString("en-US", { month: "short", day: "numeric" })}.` : "No deadline set yet.", `<a class="btn sm" href="#commish/season">See them</a>`]); }
+    if (L && seasonOver() && L.next && !keepLocked()) { const picks = L.next.picks || {}, done = Object.keys(picks).length; todo.push([`Keepers: ${done} of ${L.teams.length} in`, L.next.due ? `They lock ${new Date(L.next.due).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}.${done < L.teams.length ? ` Waiting on ${L.teams.length - done}.` : ""}` : "No deadline set yet.", `<a class="btn sm go" href="#commish/season">Keeper tracker</a>`]); }
     if (L && seasonOver() && s.draftOrder === "lottery" && !L.lottery && (!(s.keepers || 0) || L.next)) todo.push(["Run the draft lottery", "It sets next season's order for the teams that missed the playoffs.", `<a class="btn sm" href="#commish/season">Go</a>`]);
     if (openSeats()) todo.push([`${openSeats()} team${openSeats() > 1 ? "s" : ""} without a manager`, "Send the invite link, or email each manager his team.", `<a class="btn sm go" href="#commish/managers">Invite</a>`]);
     if (duesOn() && paidN() < docTeams().length) todo.push([`Dues: ${docTeams().length - paidN()} still to pay`, `${paidN()} of ${docTeams().length} paid.`, `<button class="btn sm" data-live="dues">Dues</button>`]);
@@ -1310,6 +1358,7 @@
     if (lv && lv.dataset.live === "dues") { e.preventDefault(); duesDialog(); }
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers" && info.commish) keeperOpenDialog();
+    if (lv && lv.dataset.live === "keeper-copy" && info.commish) copyKeepers();
     if (lv && lv.dataset.live === "draft-order" && info.commish) orderDialog();
     if (lv && lv.dataset.live === "lottery" && info.commish) runLottery();
     if (lv && lv.dataset.live === "practice") { e.preventDefault(); practiceOpen(false); }
