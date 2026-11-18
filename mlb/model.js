@@ -48,6 +48,8 @@
     lateAfter: 3,      // (calibrated to Baseball Trade Values' long extensions, Nov 2026; 100% turns it off)
     qoPickCost: 1.5,   // $M, a small dock for signing another team's qualifying-offer player (the lost draft pick
                        // and international pool money)
+    availW: 0.5,       // weight on how much of a full season he has actually played against FanGraphs' playing time
+    spread: true,      // show a low-high range on values and grade trades with it
     blend: 0.5,        // weight on his last three seasons' actual WAR against FanGraphs' projection (the hub's own
                        // outlook), scaled by playing time; 0 is FanGraphs alone
     years: 5,          // seasons on the slider
@@ -114,6 +116,26 @@
     return p.rate != null ? (1 - wFv) * r + wFv * rp : rp;
   }
 
+  // How far a player's production could reasonably land from his projection, as a share of it (an 80% range): wider
+  // for a prospect (by risk grade), for a player whose seasons have swung, and for one who isn't established yet
+  var RISK_SPREAD = { Low: 0.35, Med: 0.5, Medium: 0.5, High: 0.65, Extreme: 0.8 };
+  function spreadOf(p) {
+    if (isProspect(p)) return RISK_SPREAD[p.risk] || 0.5;
+    var rr = recentRead(p);
+    return Math.min(0.6, 0.2 + 0.5 * (rr ? Math.min(0.7, rr.vol) : 0.3) + 0.2 * (1 - recordShare(p)));
+  }
+  // Surplus at the low and high ends of that range. Salary is fixed; a control year (pre-arb, arbitration) can't go
+  // below zero, since a team can non-tender a player who isn't worth his raise
+  function valueRange(p, s, cfg, season) {
+    var k = spreadOf(p), lo = 0, hi = 0;
+    s.rows.forEach(function (r) {
+      var disc = Math.pow(1 + cfg.discount, r.y - season), ctl = /Pre-arb|Arb/.test(r.kind);
+      var l = r.value * (1 - k) - r.salary, h = r.value * (1 + k) - r.salary;
+      lo += (ctl ? Math.max(0, l) : l) / disc; hi += h / disc;
+    });
+    return { lo: lo, hi: hi, k: k, sd: (hi - lo) / 2.56 };
+  }
+
   // ---------- contracts and team control ----------
 
   function contractYear(p, year) {
@@ -170,16 +192,37 @@
   // WAR per full season (600 PA; 180 innings as a starter, 65 in relief), weighted 5/4/3 toward the latest, is set
   // against his projected full-season rate; cfg.blend of the gap counts, scaled by how much playing time backs it
   // (full weight at two full seasons). Returns the share of his projection to count (1 with no record).
+  //
+  // Two refinements, so one big season or a lot of missed time isn't waved through:
+  //   - the rate is half that weighted average and half his median season (seasons of a quarter or more), so a
+  //     career year among ordinary ones carries less of the read
+  //   - availability: how much of a full season he has actually played, weighted the same way, against the playing
+  //     time FanGraphs projects. Seasons before his first full one don't count against him (a call-up isn't missed
+  //     time) unless he's a veteran (4+ years of service). avail is the share of the projected time he's been there.
+  // vol is how much his seasons swing: the spread of his per-season rates against their mean (the value range uses it)
   function recentRead(p) {
     if (p._rr !== undefined) return p._rr;
     var rec = p.rec || [], W = [5, 4, 3], unit = p.p ? (isReliever(p) ? 65 : 180) : 600, num = 0, den = 0, pt = 0;
-    var last = rec.length ? rec[rec.length - 1][0] : 0;
+    var last = rec.length ? rec[rec.length - 1][0] : 0, rates = [], full = false, an = 0, ad = 0;
     rec.forEach(function (r) {
       var k = last - r[0], w = W[k] || 0, t = p.p ? (r[3] || 0) : (r[2] || 0);
       if (!w || !t) return;
       num += w * r[1]; den += w * t / unit; pt += t;
+      if (t >= unit / 4) rates.push(r[1] / (t / unit));
+      if (t >= 0.8 * unit) full = true;
+      if (full || (p.st || 0) >= 4) { an += w * Math.min(1.1, t / unit); ad += w; }
     });
-    p._rr = den > 0 && pt >= unit / 2 ? { rate: num / den, rel: Math.min(1, pt / (2 * unit)) } : null;
+    if (!(den > 0 && pt >= unit / 2)) { p._rr = null; return null; }
+    var avg = num / den, sorted = rates.slice().sort(function (a, b) { return a - b; }), n = sorted.length;
+    var med = n ? (n % 2 ? sorted[(n - 1) / 2] : (sorted[n / 2 - 1] + sorted[n / 2]) / 2) : avg;
+    var mean = n ? rates.reduce(function (a, x) { return a + x; }, 0) / n : avg;
+    var sd = n > 1 ? Math.sqrt(rates.reduce(function (a, x) { return a + (x - mean) * (x - mean); }, 0) / (n - 1)) : 0;
+    var pj = p.pj || {}, proj = p.p ? (pj.ip || 0) / unit : (pj.pa || 0) / 600;
+    var avail = ad > 0 && proj >= 0.5 ? Math.min(1, an / ad / proj) : 1;
+    // a career year that isn't his latest is tempered toward his median; a latest-season peak is a trend, not a blip
+    var latest = rec.length ? rec[rec.length - 1] : null, lt = latest ? (p.p ? latest[3] : latest[2]) || 0 : 0;
+    var peakIsLatest = n && latest && lt >= unit / 4 && latest[1] / (lt / unit) >= sorted[n - 1] - 1e-9;
+    p._rr = { rate: peakIsLatest ? avg : (avg + med) / 2, avg: avg, med: med, rel: Math.min(1, pt / (2 * unit)), avail: avail, vol: n > 1 ? Math.min(1, sd / Math.max(1.5, Math.abs(mean))) : 0 };
     return p._rr;
   }
   function outlookShare(p, cfg) {
@@ -187,7 +230,8 @@
     var rr = recentRead(p);
     if (!rr) return 1;
     var r = p.rate + cfg.blend * rr.rel * (rr.rate - p.rate);
-    return Math.max(0.5, Math.min(1.6, r / p.rate));
+    var av = 1 + (cfg.availW == null ? 0.5 : cfg.availW) * rr.rel * (rr.avail - 1); // missed time counts half
+    return Math.max(0.5, Math.min(1.6, r / p.rate * av));
   }
   // Seasons more than lateAfter years out count lateFade of the projection, compounding: projections that far ahead
   // miss more often, and teams (and Baseball Trade Values) value them for less
@@ -260,7 +304,18 @@
       if (code === "G" && optOuts(p).indexOf(year - 1) >= 0) code = "OO"; // opt-outs written only in the deal's description
       if ((p.c.defer || /defer/i.test(p.c.desc || "")) && cy[5]) sal = cy[5] / 1e6; // deferred money: value it at the CBT hit, not face
       if (code === "CO") return { on: value >= sal, salary: value >= sal ? sal : buyout, kind: value >= sal ? "Club option" : "Option declined", value: value, war: war, option: true, buyout: buyout };
-      if (code === "PO" || code === "OO") return { on: sal >= value, salary: sal >= value ? sal : 0, kind: sal >= value ? (code === "OO" ? "Stays (opt-out)" : "Player option") : "Opts out", value: value, war: war, option: true };
+      if (code === "PO" || code === "OO") {
+        // he walks when the rest of the deal pays less than he'd be worth over those years, not on one season: a
+        // 31-year-old owed $46M a year for ten years stays even if his next season alone is worth a little more
+        var restS = 0, restV = 0;
+        p.c.yrs.forEach(function (y) {
+          if (y[0] < year || !/^(G|OO|PO)$/.test(y[2])) return;
+          restS += (y[1] || 0) / 1e6; restV += fieldValue(warAt(p, y[0], season), y[0], season, cfg, p);
+        });
+        var stays = restS >= restV;
+        return { on: stays, salary: stays ? sal : 0, kind: stays ? (code === "OO" ? "Stays (opt-out)" : "Player option") : "Opts out", value: value, war: war, option: true };
+      }
+
       if (code === "MO") return { on: false, salary: buyout, kind: "Mutual option", value: value, war: war, option: true };
       if (/^A/.test(code) || code === "PA") {
         var n = /^A(\d)/.exec(code), arbN = n ? +n[1] : (/arb(\d)/.exec(st) || [0, 1])[1];
@@ -806,12 +861,22 @@
   // side (at least $20M, so a swap of spare parts doesn't swing a full letter on a couple of million). An even swap is
   // a B; winning by 8% of the deal is a B+, 18% an A-, 30% an A, 50% an A+, and the same steps down (B-, C+, C, D, F).
   // A team that takes in a player who fills a hole gets the same NEED_CREDIT room a signing does.
+  // With sd (the spread of the surplus gap, from both sides' value ranges), the edge is scaled by how sure it is: by
+  // 2P - 1, where P is the chance the winning side really comes out ahead. A big edge on a player whose seasons swing
+  // grades a letter or two short of the same edge on a sure thing, and a coin flip grades as even.
   var TRADE_GRADES = [[0.5, "A+"], [0.3, "A"], [0.18, "A-"], [0.08, "B+"], [-0.08, "B"], [-0.18, "B-"], [-0.3, "C+"], [-0.42, "C"], [-0.6, "D"]];
-  function gradeTrade(sent, got, need) {
-    var scale = Math.max(Math.abs(sent), Math.abs(got), 20), edge = (got - sent) / scale;
+  function normCdf(z) { // Abramowitz-Stegun
+    var t = 1 / (1 + 0.2316419 * Math.abs(z)), d = 0.3989423 * Math.exp(-z * z / 2);
+    var q = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return z > 0 ? 1 - q : q;
+  }
+  function gradeTrade(sent, got, need, sd) {
+    var scale = Math.max(Math.abs(sent), Math.abs(got), 20), raw = (got - sent) / scale;
+    var pWin = sd > 0 ? normCdf((got - sent) / sd) : (got >= sent ? 1 : 0), sure = sd > 0 ? Math.abs(2 * pWin - 1) : 1;
+    var edge = raw * sure;
     var credit = need && need.fills ? NEED_CREDIT : 0, g = "F";
     for (var i = 0; i < TRADE_GRADES.length; i++) if (edge + credit >= TRADE_GRADES[i][0]) { g = TRADE_GRADES[i][1]; break; }
-    return { g: g, edge: edge, credit: credit, need: need || null, sent: sent, got: got, net: got - sent };
+    return { g: g, edge: edge, raw: raw, pWin: pWin, credit: credit, need: need || null, sent: sent, got: got, net: got - sent };
   }
 
   // Does a signing fill a hole? The signing team's coming season without him: for a hitter, the weakest of the spots he
@@ -872,6 +937,7 @@
   };
 
   Hub.prototype.surplus = function (p) { return surplus(p, this.cfg, this.season, this.resigned[p.id]); };
+  Hub.prototype.range = function (p) { return valueRange(p, this.surplus(p), this.cfg, this.season); };
   Hub.prototype.terms = function (p, year) { return yearTerms(p, year, this.season, this.cfg, this.resigned[p.id]); };
   Hub.prototype.rateAt = function (p, year) { return rateAt(p, year, this.season); };
   Hub.prototype.warAt = function (p, year) { return warAt(p, year, this.season); };
@@ -922,7 +988,7 @@
 
   var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
-    marketRead: marketRead, outlookShare: outlookShare, recentRead: recentRead, gradeDeal: gradeDeal, gradeTrade: gradeTrade, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
+    marketRead: marketRead, outlookShare: outlookShare, recentRead: recentRead, gradeDeal: gradeDeal, gradeTrade: gradeTrade, valueRange: valueRange, spreadOf: spreadOf, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.MLBModel = api;
 })(typeof window !== "undefined" ? window : this);
