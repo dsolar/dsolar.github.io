@@ -431,7 +431,7 @@
     if (data && data.idp && !IDP_POS.every((x) => sport.positions.includes(x))) sport.positions = sport.positions.concat(IDP_POS.filter((x) => !sport.positions.includes(x)));
     sport.cols = {};
     for (const [line, def] of Object.entries(data.lines || {})) sport.cols[line] = Object.fromEntries(def.cols.map((c, i) => [c, i]));
-    sport.data = { season: data.season, prev: data.prev || null, updated: data.updated, source: data.source, lines: data.lines, teams: data.teams && !Array.isArray(data.teams) ? data.teams : null };
+    sport.data = { season: data.season, prev: data.prev || null, updated: data.updated, source: data.source, lines: data.lines, calendar: data.calendar || null, teams: data.teams && !Array.isArray(data.teams) ? data.teams : null };
     // the columns no player in the pool has a number in (a feed that doesn't carry plus-minus or offensive rebounds,
     // say): the player card leaves them out instead of showing everyone a zero
     sport.empty = {};

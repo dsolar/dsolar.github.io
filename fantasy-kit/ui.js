@@ -260,7 +260,7 @@
   // The masthead: crest, name (the league switcher), a line about the league, the season as a strip of weeks, and
   // past champions as pennants. vm: { brand, sub, note, weeks: [{ n, k: "done" | "now" | "next", po }], weekLine, champs }
   function leagueMast(vm) {
-    const wk = vm.weeks && vm.weeks.length ? `<div class="lgm-wk"><span class="lgm-ticks" aria-hidden="true">${vm.weeks.map((x) => `<i class="${x.k}${x.po ? " po" : ""}${x.gap ? " gap" : ""}" title="${x.po ? "Playoffs, w" : "W"}eek ${x.n}"></i>`).join("")}</span><span class="lgm-wl">${esc(vm.weekLine)}</span></div>` : "";
+    const wk = vm.weeks && vm.weeks.length ? `<div class="lgm-wk"><span class="lgm-ticks" aria-hidden="true">${vm.weeks.map((x) => `<i class="${x.k}${x.po ? " po" : ""}${x.gap ? " gap" : ""}" title="${esc(x.label || `${x.po ? "Playoffs, w" : "W"}eek ${x.n}`)}"></i>`).join("")}</span><span class="lgm-wl">${esc(vm.weekLine)}</span></div>` : "";
     const champs = vm.champs && vm.champs.length ? `<ul class="lgm-pn" aria-label="Past champions">${vm.champs.map(pennant).join("")}</ul>` : "";
     return { crest: leagueCrest(vm.brand, "lg"), body: `${vm.sub ? `<p class="lgm-sub">${vm.sub}</p>` : ""}${wk}${vm.note ? `<p class="lgm-note">${vm.note}</p>` : ""}`, champs };
   }

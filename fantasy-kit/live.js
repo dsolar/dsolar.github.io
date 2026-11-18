@@ -413,7 +413,7 @@
     // once, where it matters: the overview and your roster (not on every page)
     if (!/^#?(league(\/overview)?|team(\/roster)?)?$/.test(location.hash)) return "";
     const d = new Date(L.start).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
-    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>Week 1 starts ${esc(d)}.</b> <span class="muted">Until then, set your lineup, work the waiver wire and make trades.</span></div></div>`;
+    return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${esc(FK.experience.weekLabel(sport, 1, L.start, L.settings.slate))} starts ${esc(d)}.</b> <span class="muted">Until then, set your lineup, work the waiver wire and make trades.</span></div></div>`;
   }
   function guestNote() {
     if (info.me != null || info.commish) return "";

@@ -31,6 +31,7 @@
     const stories = U.store("fk-stories");
     const storyTone = () => stories.get("tone", "straight");
     const curWeek = () => Math.min(L().week, G.totalWeeks(L()));
+    const weekLabel = (w) => FK.experience.weekLabel(sport, w, G.weekStart(L(), w), L().settings.slate);
     const over = () => L().week > G.totalWeeks(L());
     // real scores: nothing is live until the week's first game kicks off (a football Wednesday is still "Projected")
     // Has any of this week's games started? The league's kickoff times if it has them, else the live feed's teams, else
@@ -195,7 +196,7 @@
       const ms = G.matchups(L(), ctx, w, frac(w)), fi = featuredGame(w, ms);
       return ms.map((m, idx) => ({ feat: idx === fi, ...(idx === fi && w <= L().settings.weeks ? { featLabel: "Matchup of the week" } : {}),
         href: matchHref(w, m.i), me: isMe(m.a) || isMe(m.b), status: m.final ? "final" : m.live ? "live" : "proj",
-        label: m.final ? "Final" : m.live ? "Live" : pts() ? `Week ${w}, projected` : `Week ${w}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : pickedBy(w, m) ? `${T(pickedBy(w, m)).abbr}'s pick` : "",
+        label: m.final ? "Final" : m.live ? "Live" : pts() ? `${weekLabel(w)}, projected` : `${weekLabel(w)}`, sub: w > L().settings.weeks ? kindName(m.kind, w) : pickedBy(w, m) ? `${T(pickedBy(w, m)).abbr}'s pick` : "",
         a: { team: T(m.a), score: m.final || m.live ? m.sa : pts() ? m.pa : null, rec: recOf(m.a) }, b: { team: T(m.b), score: m.final || m.live ? m.sb : pts() ? m.pb : null, rec: recOf(m.b) }, m,
         wp: m.final ? null : m.winProb,
       })).map((g) => (g.featLabel ? Object.assign(g, { sub: g.featLabel }) : g)).sort((x, y) => (y.me ? 2 : 0) + (y.feat ? 1 : 0) - (x.me ? 2 : 0) - (x.feat ? 1 : 0));   // your game first, then the headline game
@@ -253,7 +254,7 @@
       const of = gs.length > 1 ? `<span class="gm-of">${done} of ${gs.length} played</span>` : "";
       const lv = liveWeek(w), R = (opts.hooks || {}).real;
       const box = (game) => {
-        const line = FK.gameday.line(sport.key, p, game, lv);
+        const line = FK.gameday.line(sport.key, p, game, lv) || (R && R.games && R.games[game.id] && R.games[game.id].lines || {})[p.id];
         const stats = FK.gameday.stats(sport.key, p, line, R);
         return stats.length ? `<dl class="game-stats" aria-label="Game box score for ${esc(p.n)}">${stats.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : `<span class="ps game-missing">${game.state === "pre" ? "Stats appear after the game starts" : "Awaiting game stats"}</span>`;
       };
@@ -357,19 +358,19 @@
       const leftTxt = cap ? `${left === Infinity ? "" : left} deal${left === 1 ? "" : "s"} left this season` : "No limit on deals";
       let body;
       if (w > L().settings.weeks || over()) body = lastLine ? lastLine.replace('style="margin:8px 0 0"', 'style="margin:0"') : "";
-      else if (d && d.taken) body = `<p style="margin:0"><b>Deal.</b> You score <b>${fmtD(d.offer)}</b> in week ${w}, whatever your lineup does.</p><p class="ps" style="margin:4px 0 0">${leftTxt}.</p>${lastLine}`;
-      else if (d && now() < due) body = `<div class="row" style="gap:12px;align-items:baseline"><span class="deal-o num">${fmtD(d.offer)}</span><span class="ps">guaranteed points for week ${w}. Your lineup projects ${fmtD(d.base)}.</span></div>
+      else if (d && d.taken) body = `<p style="margin:0"><b>Deal.</b> You score <b>${fmtD(d.offer)}</b> in ${weekLabel(w).toLowerCase()}, whatever your lineup does.</p><p class="ps" style="margin:4px 0 0">${leftTxt}.</p>${lastLine}`;
+      else if (d && now() < due) body = `<div class="row" style="gap:12px;align-items:baseline"><span class="deal-o num">${fmtD(d.offer)}</span><span class="ps">guaranteed points for ${weekLabel(w).toLowerCase()}. Your lineup projects ${fmtD(d.base)}.</span></div>
         <p class="ps" style="margin:6px 0 0">The banker updates his offer every morning. It ends ${esc(dueTxt(due))}, at the week's first game. ${leftTxt}.</p>
         <div class="row" style="gap:8px;margin-top:10px"><button type="button" class="btn sm go" data-deal="take">Deal</button>${d.passed ? `<span class="ps">You said no deal. You can still change your mind.</span>` : `<button type="button" class="btn sm" data-deal="pass">No deal</button>`}</div>${lastLine}`;
       else if (left <= 0) body = `<p class="ps" style="margin:0">You've used your ${cap === 1 ? "deal" : `${cap} deals`} this season. You play every week out.</p>${lastLine}`;
-      else body = `<p class="ps" style="margin:0">${now() >= due ? `Week ${w}'s offers ended at the first game.` : "The banker's offer comes in the morning."}</p>${lastLine}`;
+      else body = `<p class="ps" style="margin:0">${now() >= due ? `${weekLabel(w)}'s offers ended at the first game.` : "The banker's offer comes in the morning."}</p>${lastLine}`;
       return body ? `<div class="card deal-c"><div class="mod-h"><h2>Deal or No Deal</h2></div><div class="bd">${body}</div></div>` : "";
     }
     function dealGo(kind) {
       const mid = me(), d = G.dealOffer(L(), mid);
       if (!d) return;
       if (kind === "pass") { act(() => G.dealPass(L(), mid, now()), "No deal. Good luck."); return; }
-      U.confirm(`Take ${fmtD(d.offer)}?`, `That's your score for week ${L().week}, whatever your lineup does. ${L().settings.deal.max ? `It uses one of your ${L().settings.deal.max} deals.` : ""} You can't take it back.`, "Deal", () => act(() => G.dealTake(L(), mid, now()), `Deal: ${fmtD(d.offer)} for week ${L().week}.`));
+      U.confirm(`Take ${fmtD(d.offer)}?`, `That's your score for ${weekLabel(L().week).toLowerCase()}, whatever your lineup does. ${L().settings.deal.max ? `It uses one of your ${L().settings.deal.max} deals.` : ""} You can't take it back.`, "Deal", () => act(() => G.dealTake(L(), mid, now()), `Deal: ${fmtD(d.offer)} for ${weekLabel(L().week).toLowerCase()}.`));
     }
     // the ladder: every rung, this week's challenges, and your challenge buttons
     function ladderCard() {
@@ -457,7 +458,7 @@
       const rc = recapOn() && lastDone() > 0 ? recapOf(lastDone()) : null;
       const leader = standings()[0];
       const head = focus[0] ? `${focus[0].category.label} could decide your week` : game ? `${T(game.a === mid ? game.b : game.a).name} is on the other side` : "The week is taking shape";
-      return `<section class="league-pulse"><span class="pulse-k">${esc(L().name)} · Week ${w}</span><h2>${esc(head)}</h2>
+      return `<section class="league-pulse"><span class="pulse-k">${esc(L().name)} · ${weekLabel(w)}</span><h2>${esc(head)}</h2>
         ${rc ? `<p>${recapLede(rc)}</p><div class="row" style="gap:12px;flex-wrap:wrap"><a href="#league/recap/${rc.week}">Read week ${rc.week}'s story &rarr;</a><button type="button" class="btn xs" data-copyrecap="${rc.week}">Copy recap for the group chat</button></div>` : `<p>Your matchup, lineup decisions, and the moves that shape the week.</p>`}
         <div class="pulse-grid">${q != null ? `<div><span class="pulse-k">Your matchup</span><b>${Math.round(q * 100)}% to win</b><small>Model estimate, updated with the matchup</small></div>` : ""}${focus[0] ? `<div><span class="pulse-k">Closest category</span><b>${esc(focus[0].category.label)}</b><small>${Math.round(focus[0].probability * 100)}% chance to win it</small></div>` : ""}${leader ? `<div><span class="pulse-k">Team to catch</span><b>${esc(T(leader.team).name)}</b><small>${esc(recOf(leader.team))}</small></div>` : ""}</div></section>`;
     }
@@ -490,14 +491,14 @@
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
       const total = G.totalWeeks(L());
       return `<div class="wrap page">
-        <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, week ${w}` : `Week ${w}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
+        <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, ${weekLabel(w).toLowerCase()}` : `${weekLabel(w)}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${noteCard()}
         ${nextActions()}${leaguePulse(mine)}
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? champHero(champ) : ""}
-        ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, week ${w}` : `Week ${w} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
+        ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, ${weekLabel(w).toLowerCase()}` : `${weekLabel(w)} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
-          ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">Week ${w}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
+          ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">${weekLabel(w)}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
           ${categoryPlan(mine, w)}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
@@ -524,7 +525,7 @@
       let line = "";
       if (mine) { const m = isMe(mine.m.b) ? flip(mine.m) : mine.m; line = m.w === "t" ? `You tied ${esc(T(m.b).name)}` : `You ${m.w === "a" ? "beat" : "lost to"} ${esc(T(m.b).name)}, ${fmtS(m.sa)} to ${fmtS(m.sb)}`; }
       const rc = recapOn() ? recapOf(w) : null, lede = rc ? recapLede(rc) : "";
-      return `<div class="card"><div class="mod-h"><h2>Week ${w} results</h2><span class="ps">${line}${hi ? `${line ? ". " : ""}High score: ${esc(hi[0].abbr)} ${fmtS(hi[1])}` : ""}</span><a href="${rc ? `#league/recap/${w}">Read the recap` : `#league/scoreboard/${w}">Scoreboard`}</a></div>${lede ? `<div class="bd rc-mini" style="padding-bottom:0"><p class="ps" style="margin:0">${lede}</p></div>` : ""}<div class="bd sbtwo">${U.scoreboard(games.map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
+      return `<div class="card"><div class="mod-h"><h2>${weekLabel(w)} results</h2><span class="ps">${line}${hi ? `${line ? ". " : ""}High score: ${esc(hi[0].abbr)} ${fmtS(hi[1])}` : ""}</span><a href="${rc ? `#league/recap/${w}">Read the recap` : `#league/scoreboard/${w}">Scoreboard`}</a></div>${lede ? `<div class="bd rc-mini" style="padding-bottom:0"><p class="ps" style="margin:0">${lede}</p></div>` : ""}<div class="bd sbtwo">${U.scoreboard(games.map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
     }
     /* ---------- the weekly recap: a finished week told as a story, with copy for the group chat ---------- */
     const recapOn = () => !gl() && !flat() && !oneWeekLg() && !allplay1() && Object.keys(L().results || {}).length > 0;
@@ -585,7 +586,7 @@
       if (!recapOn() || last < 1) return `<div class="wrap page"><div class="head"><h1 class="disp">Recap</h1></div><div class="card"><div class="bd"><p class="ps" style="margin:0">The recap is written when the first week is final.</p></div></div></div>`;
       const w = Math.max(1, Math.min(last, +arg || last));
       const rc = recapOf(w);
-      if (!rc) return `<div class="wrap page"><div class="head"><h1 class="disp">Week ${w} recap</h1></div></div>`;
+      if (!rc) return `<div class="wrap page"><div class="head"><h1 class="disp">${weekLabel(w)} recap</h1></div></div>`;
       const weeks = Array.from({ length: last }, (_, i) => i + 1);
       const row = (team, main, sub, right) => `<li style="grid-template-columns:auto minmax(0,1fr) auto;align-items:center;padding:10px 16px">${teamAv(T(team), "sm")}<span style="min-width:0"><b style="display:block">${main}</b>${sub ? `<span class="ps">${sub}</span>` : ""}</span>${right || ""}</li>`;
       const gameCard = (g, title) => g ? `<a class="card" href="${matchHref(w, g.i)}" style="text-decoration:none;color:inherit"><div class="mod-h"><h2>${title}</h2><span class="ps">${g.w === "a" || g.w === "b" ? `By ${byText(g.margin)}` : "A tie"}</span></div>${U.versus(Object.assign(versusVM(w, G.matchups(L(), ctx, w, 1)[g.i]), { cats: null }))}</a>` : "";
@@ -610,7 +611,7 @@
       // every result: under the headline game, or in the sidebar when nothing else fills it (a playoff week)
       const everyCard = `<div class="card"><div class="mod-h"><h2>Every result</h2><a href="#league/scoreboard/${w}">Scoreboard</a></div><div class="bd sbtwo">${U.scoreboard(gamesVM(w).map((g) => Object.assign({}, g, { wp: null })), fmtS, { list: true })}</div></div>`;
       return `<div class="wrap page rcp">
-        <div class="head"><h1 class="disp">Week ${w} recap</h1><span class="ps">${rc.playoff ? esc(kindName(rc.games[0] && rc.games[0].kind, w)) + ". " : ""}${rc.games.length} game${rc.games.length === 1 ? "" : "s"}</span></div>
+        <div class="head"><h1 class="disp">${weekLabel(w)} recap</h1><span class="ps">${rc.playoff ? esc(kindName(rc.games[0] && rc.games[0].kind, w)) + ". " : ""}${rc.games.length} game${rc.games.length === 1 ? "" : "s"}</span></div>
         <div class="row" style="gap:12px;flex-wrap:wrap"><span class="ps">Story tone on this device</span><div class="seg" role="group" aria-label="Recap tone">${[["straight", "Straight"], ["banter", "Banter"]].map(([k, label]) => `<button type="button" data-story-tone="${k}" aria-pressed="${storyTone() === k}">${label}</button>`).join("")}</div></div>
         ${weeks.length > 1 ? `<div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-rcweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div>` : ""}
         <div class="card rc-lede"><div class="bd"><p>${lede || "Every result from the week."}</p><div class="row" style="flex-wrap:wrap"><button class="btn sm" data-copyrecap="${w}">Copy for the group chat</button>${typeof navigator.share === "function" ? `<button class="btn sm ghost" data-sharerecap="${w}">Share</button>` : ""}</div></div></div>
@@ -789,7 +790,7 @@
     // short week chips: "Week 9", then "Semis", "Final 1", "Final 2"
     function weekChip(x) {
       const rd = G.roundOf(L(), x);
-      if (!rd) return `Week ${x}`;
+      if (!rd) return `${weekLabel(x)}`;
       const short = { Final: "Final", Semifinals: "Semis", Quarterfinals: "Quarters", "The Chase": "Chase" }[rd.name] || rd.name.replace("Round ", "R");
       return rd.weeks.length > 1 ? `${short} ${rd.weeks.indexOf(x) + 1}` : short;
     }
@@ -1241,9 +1242,9 @@
       const s = L().settings;
       return `<div class="wrap page">
         ${champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} is the last team standing</b><div class="ps">${L().teams.length - 1} teams chopped, one a week.</div></div></div>` : ""}
-        ${!over() ? `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">Week ${w} scores</h2><a href="#matchup/${w}" class="small" style="margin-left:auto">The block</a></div>${scoreStrip(w)}</div>` : ""}
+        ${!over() ? `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${weekLabel(w)} scores</h2><a href="#matchup/${w}" class="small" style="margin-left:auto">The block</a></div>${scoreStrip(w)}</div>` : ""}
         <div class="cols"><div class="stack">
-          ${!over() ? `<div class="card"><div class="mod-h"><h2>Week ${w}: the chopping block</h2><span class="ps">${L().alive.length} left, lowest ${s.chops > 1 ? s.chops + " go" : "goes"}</span><a href="#matchup/${w}">Full block</a></div>${blockList(w)}</div>` : ""}
+          ${!over() ? `<div class="card"><div class="mod-h"><h2>${weekLabel(w)}: the chopping block</h2><span class="ps">${L().alive.length} left, lowest ${s.chops > 1 ? s.chops + " go" : "goes"}</span><a href="#matchup/${w}">Full block</a></div>${blockList(w)}</div>` : ""}
           <div class="card"><div class="mod-h"><h2>In memoriam</h2><a href="#league/standings">Survivors</a></div>${memoriam(5)}</div>
           <div class="card"><div class="mod-h"><h2>Recent activity</h2><a href="#players/tx">All transactions</a></div>${U.feed(recent.map(txVM), "No moves yet.")}</div>
         </div><aside class="stack">
@@ -1267,7 +1268,7 @@
       w = Math.max(1, Math.min(w, curWeek()));
       const weeks = Array.from({ length: curWeek() }, (_, k) => k + 1).filter((x) => L().results[x] || x === L().week);
       const mid = me(), row = mid != null ? blockRow(w, mid) : null;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">The block, week ${w}</h1><span class="ps">${bb() ? "Best ball: every roster's best lineup scores automatically. " : ""}The lowest score is chopped. On a tie, the lower projection goes.</span></div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">The block, ${weekLabel(w).toLowerCase()}</h1><span class="ps">${bb() ? "Best ball: every roster's best lineup scores automatically. " : ""}The lowest score is chopped. On a tie, the lower projection goes.</span></div>
         <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">Wk ${x}</button>`).join("")}</div>
         <div class="cols"><div class="card">${blockList(w)}</div>
         <aside class="stack">${row ? myWeekCard(w, mid, row) : ""}</aside></div>${gamedayStatus(w)}${teamGameBoxes(w, blockOf(w).map(r=>r.team))}</div>`;
@@ -1302,7 +1303,7 @@
       if (!weeks.length) return `<div class="wrap page"><div class="head"><h1 class="disp">Weekly results</h1></div><p class="empty">No week has finished yet. See the live block on the block tab.</p></div>`;
       const show = weeks.includes(w) ? w : weeks[weeks.length - 1];
       return `<div class="wrap page"><div class="head"><h1 class="disp">Weekly results</h1></div>
-        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === show}">Week ${x}</button>`).join("")}</div>
+        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-sbweek="${x}" aria-pressed="${x === show}">${weekLabel(x)}</button>`).join("")}</div>
         <div class="card"><div class="mod-h"><h2>Week ${show}</h2><span class="ps">${esc(T(L().results[show].chopped[0]).name)} was chopped</span></div>${blockList(show)}</div></div>`;
     }
     function historyPage(id) {
@@ -1311,11 +1312,11 @@
         if (!r) return "";
         const last = b[b.length - 1], above = b[b.length - 2];
         const margin = r.out ? r.score - above.score : r.score - last.score;
-        return `<tr><td><a href="#matchup/${w}">Week ${w}</a></td><td class="r num"><b>${fmtS(r.score)}</b></td><td class="r num">${ord(r.rank)} of ${b.length}</td><td class="r num ${r.out ? "loss" : margin < (pts() ? 10 : 4) ? "" : "win"}">${r.out ? `Chopped by ${fmtS(-margin)}` : `+${fmtS(margin)}`}</td></tr>`;
+        return `<tr><td><a href="#matchup/${w}">${weekLabel(w)}</a></td><td class="r num"><b>${fmtS(r.score)}</b></td><td class="r num">${ord(r.rank)} of ${b.length}</td><td class="r num ${r.out ? "loss" : margin < (pts() ? 10 : 4) ? "" : "win"}">${r.out ? `Chopped by ${fmtS(-margin)}` : `+${fmtS(margin)}`}</td></tr>`;
       }).join("");
       const live = !over() && G.isAlive(L(), id) ? blockRow(L().week, id) : null;
       return `<div class="wrap page">${teamHead(id)}<div class="table-wrap"><table class="t"><thead><tr><th>Week</th><th class="r">Score</th><th class="r">Rank</th><th class="r">Over the cut</th></tr></thead><tbody>
-        ${live ? `<tr class="me"><td><a href="#matchup/${L().week}">Week ${L().week}</a> <span class="pill live">Live</span></td><td class="r num"><b>${fmtS(live.score)}</b></td><td class="r num">${ord(live.rank)} of ${L().alive.length}</td><td class="r num">${pct(live.chop)} to be chopped</td></tr>` : ""}${rows || `<tr><td colspan="4" class="empty">No weeks finished yet.</td></tr>`}</tbody></table></div></div>`;
+        ${live ? `<tr class="me"><td><a href="#matchup/${L().week}">${weekLabel(L().week)}</a> <span class="pill live">Live</span></td><td class="r num"><b>${fmtS(live.score)}</b></td><td class="r num">${ord(live.rank)} of ${L().alive.length}</td><td class="r num">${pct(live.chop)} to be chopped</td></tr>` : ""}${rows || `<tr><td colspan="4" class="empty">No weeks finished yet.</td></tr>`}</tbody></table></div></div>`;
     }
 
     /* ---------- pages: My Team ---------- */
@@ -1334,7 +1335,7 @@
       const R = (opts.hooks || {}).real, w = L().week, rw = G.realWeek(L(), ctx, w);
       const when = (t) => new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
       let msg;
-      if (rw && now() >= G.weekStart(L(), w + 1) && !rw.final) msg = `Week ${w} is over and lineups are locked. It closes when the last box scores come in, usually by the next morning.`;
+      if (rw && now() >= G.weekStart(L(), w + 1) && !rw.final) msg = `${weekLabel(w)} is over and lineups are locked. It closes when the last box scores come in, usually by the next morning.`;
       else if (rw) msg = `Real box scores from ${esc(R.source || "the league feeds")}, updated ${when(R.updated)}.`;
       else msg = "Scores are simulated from each player's season, not real games.";
       return msg;
@@ -1422,12 +1423,21 @@
         // drag and drop: a starter, bench or IR player can be dragged; every slot, the bench and IR take drops
         const drag = mine && alive && (!over() || G.offseason(L())) && p && !onTaxi && (onIR || !locked) && (onIR || !pl(p)) ? ` data-dg="${esc(p.id)}" data-from="${onIR ? "ir" : i != null ? "s" + i : "bn"}"` : "";
         const zone = i != null ? (pl(p) ? "" : ` data-dz="s${i}"`) : onIR ? ` data-dz="ir"` : onTaxi ? "" : ` data-dz="bn"${p && !pl(p) ? ` data-dzp="${esc(p.id)}"` : ""}`;
-        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${hcSal(p)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
+        return `<tr class="${cls}"${drag}${zone}><td class="c" style="width:86px;white-space:nowrap">${drag ? `<span class="grip" aria-hidden="true"></span>` : ""}${slotEl}</td><td class="nm">${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer">${pname(sport, p, `${esc(p.prank)}${hcSal(p)}${onIR && !G.irEligible(p) ? `, <span class="win">healthy</span>` : ""}${blocked.has(p.id) ? `, <span class="blk-tag">on the block</span>` : ""}${heistTag(p)}`)}</span>${!onIR && !onTaxi && w === curWeek() && gameChip(p, w) ? `<div class="gmr">${gameChip(p, w)}</div>` : ""}${sport.key === "cfb" ? `<div class="only-s roster-mobile-stats"><span class="ps">${esc(sport.data.season)} stats</span>${seasonStats(p)}</div>` : ""}` : `<span class="ps">${onIR ? "Open for a player who's out or on IR" : onTaxi ? "Open for a rookie" : L().heist && i != null ? "Open: stolen in the heist. Add a free agent here" : "Empty"}</span>`}</td>
           ${grp ? rvCols(grp).map((c) => `<td class="${c.cls || "r num"}">${p ? c.cell(p, onIR, onTaxi) : ""}</td>`).join("") : `<td class="r num hide-s">${p ? `<span class="ps">#${p.rank}</span>` : ""}</td><td class="r num">${p && pts() && !onIR && !onTaxi ? `<b>${fmtS(ptsOf(p.id))}</b><small class="ps only-s">proj ${fmtS(projOf(p))}</small>` : p && !onIR && !onTaxi && pts() ? `<b>${p.v.toFixed(1)}</b>` : ""}</td><td class="r num hide-s">${p && pts() && !onIR && !onTaxi ? fmtS(projOf(p)) : ""}</td>`}
+          ${sport.key === "cfb" ? `<td class="rstats hide-s">${seasonStats(p)}</td>` : ""}
           <td class="r act">${tgt || actsFor(p, onIR, onTaxi)}</td></tr>`;
       };
       /* Baseball's roster, Yahoo's way: a hitters table and a pitchers table, each with its own columns, and a view
          switch: last season's stats, projections, ranks, keeper costs (keeper leagues), and this week once games are on. */
+      const collegeStats = sport.key === "cfb";
+      const seasonStats = (p) => {
+        if (!p) return "";
+        const values = FK.gameday.stats("cfb", p, p.l && p.l.tot, { cols: sport.data.lines.tot.cols });
+        const games = S.stat(sport, p, "tot", "g");
+        if (!values.length) return `<span class="ps">No season stats available</span>`;
+        return `<dl class="roster-box" aria-label="${esc(p.n)} season stats">${[["GP", games == null ? "—" : games]].concat(values).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>`;
+      };
       const grouped = !!sport.groups && !pts();
       const views = rosterViews();
       const view = views.some((v) => v[0] === ui.rview) ? ui.rview : views[0][0];
@@ -1505,7 +1515,7 @@
       return `<div class="wrap page">${teamHead(id)}
         ${hcBar(id)}
         ${G.daily(L()) && !over() ? dayTabs(w, day, today) : ""}
-        <div class="row wk-bar" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">Week ${x}${x === L().week ? ", now" : ""}</button>`).join("")}</div>` : ""}
+        <div class="row wk-bar" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">${weekLabel(x)}${x === L().week ? now() < L().start ? ", upcoming" : ", now" : ""}</button>`).join("")}</div>` : ""}
           ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}${w === L().week && frac(w) > 0 ? `: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}` : ""}</a>` : ""}
           ${brow ? `<a class="pill" href="#matchup/${w}" style="text-decoration:none">${fmtS(brow.score)}, ${ord(brow.rank)} of ${L().alive.length}, ${pct(brow.chop)} to be chopped</a>` : ""}
           <span class="grow"></span>${mine && !over() && !bb() ? `<button class="btn sm autost${T(id).autoStart ? " on" : ""}" data-autostart aria-pressed="${!!T(id).autoStart}" title="${G.daily(L()) ? "Each day, starts your players with a game, best first, unless you've set that day yourself" : "Each week, starts your players with games, best first, unless you've set that week yourself"}"><i aria-hidden="true"></i>Auto-start</button>` : ""}${mine && !locked && !moving && hasGames(id, w) ? `<button class="btn sm" data-optimize="active" title="${G.daily(L()) ? "Starts everyone with a game that day" : "Starts everyone with a game this week"}, best first, and sits the rest"><span class="hide-xs">Start active players</span><span class="show-xs">Start active</span></button>` : ""}${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
@@ -1513,9 +1523,9 @@
         ${gl() && !alive ? `<div class="banner loss"><b>Chopped in week ${(L().chopped.find((c) => c.team === id) || {}).week}.</b> <span class="muted">This roster went back on waivers.</span></div>` : ""}
         ${mine && L().settings.frozen && L().heist && L().rosters[id].length < G.maxRoster(L()) && !over() ? `<div class="alert"><span>A steal left a spot open in your lineup. Pick up a free agent for it before his game starts: he scores normal points.</span><a class="btn sm go" href="#players/fa">Free agents</a></div>` : ""}
         ${claims.length ? `<div class="card"><div class="mod-h"><h2>Pending waiver claims</h2><span class="ps">${esc(claimsRun())}</span><a href="#players/claims">All claims</a></div>${claimList(claims)}</div>` : ""}
-        ${grouped ? groupedTables() : `<div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : ""}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th><th class="act"></th></tr></thead><tbody>
-          <tr class="sec"><td colspan="6">Starters</td></tr>${starters}<tr class="sec" data-dz="bn"><td colspan="6">Bench</td></tr>${bench}${irMax ? `<tr class="sec" data-dz="ir"><td colspan="6">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="6">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>`}
-        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : G.offseason(L()) ? "Between seasons your roster stays open: drag a player or tap his slot to move him, and bring players off IR. Nothing counts until next season." : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Drag a player onto a slot, or tap a slot, to move him. ${L().kick ? (sport.key === "nfl" ? "Players lock when their game kicks off." : "Players lock for the week when their team's first game starts.") : `Week ${w} is under way; in this demo a change counts for the whole week.`} Starters left empty score nothing.` : `Drag a player onto a slot, or tap a slot, to move him. ${L().settings.real ? (sport.key === "nfl" ? "Each player locks when his game kicks off" : "Each player locks for the week when his team's first game starts") : `Week ${w} lineups lock when it starts`}, and starters left empty score nothing.`}${irMax && alive ? " Drag a player who's out onto injured reserve to open a spot; IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
+        ${grouped ? groupedTables() : `<div class="table-wrap"><table class="t roster"><thead><tr><th class="c">Slot</th><th>Player</th><th class="r hide-s">Rank</th><th class="r">${pts() ? "Pts" : ""}</th><th class="r hide-s">${pts() ? "Proj" : ""}</th>${collegeStats ? `<th class="rstats hide-s" title="Real college season totals; league points are shown separately">${esc(sport.data.season)} stats</th>` : ""}<th class="act"></th></tr></thead><tbody>
+          <tr class="sec"><td colspan="${collegeStats ? 7 : 6}">Starters</td></tr>${starters}<tr class="sec" data-dz="bn"><td colspan="${collegeStats ? 7 : 6}">Bench</td></tr>${bench}${irMax ? `<tr class="sec" data-dz="ir"><td colspan="${collegeStats ? 7 : 6}">Injured reserve, ${ir.length} of ${irMax}</td></tr>${irRows}` : ""}${txMax ? `<tr class="sec"><td colspan="${collegeStats ? 7 : 6}">Taxi squad, ${taxi.length} of ${txMax}</td></tr>${txRows}` : ""}</tbody></table></div>`}
+        ${mine ? `<p class="ps">${bb() ? "Best ball: there's no lineup to set. Each week your best possible lineup scores, picked from what your players actually did." : !alive ? "" : G.offseason(L()) ? "Between seasons your roster stays open: drag a player or tap his slot to move him, and bring players off IR. Nothing counts until next season." : locked ? "This week is locked." : w === L().week && frac(w) > 0 ? `Drag a player onto a slot, or tap a slot, to move him. ${L().kick ? (S.football(sport) ? "Players lock when their game kicks off." : "Players lock for the week when their team's first game starts.") : `${weekLabel(w)} is under way; in this demo a change counts for the whole week.`} Starters left empty score nothing.` : `Drag a player onto a slot, or tap a slot, to move him. ${L().settings.real ? (S.football(sport) ? "Each player locks when his game kicks off" : "Each player locks for the week when his team's first game starts") : `${weekLabel(w)} lineups lock when it starts`}, and starters left empty score nothing.`}${irMax && alive ? " Drag a player who's out onto injured reserve to open a spot; IR spots don't count against your roster." : ""}${txMax && alive ? " Neither do taxi spots: stash rookies there, and promote one when he's ready to play. A promotion is for good." : ""}</p>` : ""}</div>`;
     }
     // Pending claims with their bids, each one cancellable.
     function claimList(list) {
@@ -1646,7 +1656,7 @@
       const raided = (L().bites || []).filter((b) => b.by != null && b.status === "done" && b.victim === mid && now() - b.done < 72 * 36e5).pop();
       if (raided) items.push(`<a class="alert loss" href="#players/tx"><span>${raided.why === "robin" ? "Robin Hood struck" : `${esc(T(raided.by).name)} took the spoils`}: <b>${esc((ctx.byId[raided.take] || {}).n || "")}</b> is gone${raided.give ? `, and <b>${esc((ctx.byId[raided.give] || {}).n || "")}</b> joined your roster` : ""}.</span><b class="go">See it</b></a>`);
       { const d = L().settings.deal && pts() ? G.dealOffer(L(), mid) : null;
-        if (d && !d.taken && !d.passed && now() < G.dealDue(L(), L().week)) items.push(`<a class="alert info" href="#league/overview"><span><b>The banker's offer: ${(Math.round(d.offer * 10) / 10).toFixed(1)}.</b> Take a guaranteed score for week ${L().week}, or play it out. It ends at the first game.</span></a>`); }
+        if (d && !d.taken && !d.passed && now() < G.dealDue(L(), L().week)) items.push(`<a class="alert info" href="#league/overview"><span><b>The banker's offer: ${(Math.round(d.offer * 10) / 10).toFixed(1)}.</b> Take a guaranteed score for ${weekLabel(L().week).toLowerCase()}, or play it out. It ends at the first game.</span></a>`); }
       if (L().ladder && !L().ladder.done && now() < L().ladder.due && G.ladderTargets(L(), mid).length) items.push(`<a class="alert info" href="#league/overview"><span><b>Challenge someone.</b> Pick your week ${L().ladder.week} match on the ladder before ${esc(new Date(L().ladder.due).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }))}, or you'll be paired.</span></a>`);
       if (L().pyo && !L().pyo.done && G.pyoTurn(L()) === mid) items.push(`<button type="button" class="alert info" data-pyo><span><b>Your pick.</b> Choose your week ${L().pyo.week} opponent by ${when(Math.min(L().pyo.at + G.PYO_HOURS * 36e5, L().pyo.due))}, or the weakest team left is picked for you.</span><b class="go">Pick</b></button>`);
       const hg = G.hungover(L(), mid);
@@ -1704,7 +1714,7 @@
         ${champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">First in the final standings, with ${fmtPts(rows[0].pts)} points.</div></div></div>` : ""}
         <div class="cols"><div class="stack">
           ${myCard ? `<div class="m-only stack">${myCard}</div>` : ""}
-          <div class="card"><div class="mod-h"><h2>Standings</h2><span class="ps">${over() ? "Final" : L().week > 1 ? `Weeks 1 to ${L().week}, this week so far included` : "Week 1 so far"}</span><a href="#league/standings">By category</a></div>${rotoTable(rows, false)}</div>
+          <div class="card"><div class="mod-h"><h2>Standings</h2><span class="ps">${over() ? "Final" : L().week > 1 ? `Weeks 1 to ${L().week}, this week so far included` : `${weekLabel(1)} so far`}</span><a href="#league/standings">By category</a></div>${rotoTable(rows, false)}</div>
           <div class="card"><div class="mod-h"><h2>How it works</h2></div><div class="bd"><p class="small" style="margin:0">Rotisserie: no weekly games. In each category, the best season total gets ${n} points and the worst gets 1; ties split the points. Most points wins.</p></div></div>
         </div><aside class="stack">
           ${myCard ? `<div class="d-only stack">${myCard}</div>` : ""}
@@ -1727,8 +1737,8 @@
       const cols = [{ k: "team", label: "Team", td: "nm", html: (r) => `<a href="${teamHref(r.team)}" style="color:inherit;text-decoration:none">${teamName(T(r.team), { you: isMe(r.team) })}</a>` }]
         .concat(cats.map((c) => ({ k: c.k, label: c.label, cls: "r num", html: (r) => { const v = r.vals[c.k]; return `<span class="${v === best[c.k] && v ? "win" : ""}">${catFmt(c, v)}</span>`; } })));
       const weeks = Array.from({ length: cur }, (_, i) => i + 1);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Week ${w} categories</h1><span class="ps">${done ? "Final for the week." : `${Math.round(frac(w) * 100)}% of the week played.`} The week's best in each category is green. Weeks add up to the season standings.</span></div>
-        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">Week ${x}</button>`).join("")}</div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">${weekLabel(w)} categories</h1><span class="ps">${done ? "Final for the week." : `${Math.round(frac(w) * 100)}% of the week played.`} The week's best in each category is green. Weeks add up to the season standings.</span></div>
+        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekLabel(x)}</button>`).join("")}</div>
         <div class="card">${U.table({ cols, rows, rowAttr: (r) => `class="${isMe(r.team) ? "me" : ""}"` })}</div></div>`;
     }
     /* ---------- total points ---------- */
@@ -1758,7 +1768,7 @@
         ${champ != null ? `<div class="banner"><span>${teamAv(T(champ), "lg")}</span><div><b class="disp" style="font-size:26px">${esc(T(champ).name)} won the title</b><div class="ps">The most points all season, ${fmtS(rows[0].pf)}.</div></div></div>` : ""}
         <div class="cols"><div class="stack">
           ${myCard ? `<div class="m-only stack">${myCard}</div>` : ""}
-          <div class="card"><div class="mod-h"><h2>Standings</h2><span class="ps">${over() ? "Final" : played ? `Weeks 1 to ${L().week}, this week so far included` : "Week 1 so far"}</span><a href="#league/standings">Full table</a></div>${totalTable(rows, false)}</div>
+          <div class="card"><div class="mod-h"><h2>Standings</h2><span class="ps">${over() ? "Final" : played ? `Weeks 1 to ${L().week}, this week so far included` : `${weekLabel(1)} so far`}</span><a href="#league/standings">Full table</a></div>${totalTable(rows, false)}</div>
           <div class="card"><div class="mod-h"><h2>How it works</h2></div><div class="bd"><p class="small" style="margin:0">Total points: no weekly games and no playoffs. Every point your starters score all season adds up, and the most points wins the title. Ties go to the best single week.</p></div></div>
         </div><aside class="stack">
           ${myCard ? `<div class="d-only stack">${myCard}</div>` : ""}
@@ -1779,8 +1789,8 @@
         .sort((a, b) => b.score - a.score || a.team - b.team).map((r, i) => Object.assign(r, { rank: i + 1 }));
       const top = rows.length ? Math.max(1, rows[0].score) : 1;
       const weeks = Array.from({ length: cur }, (_, i) => i + 1);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Week ${w}</h1><span class="ps">${done ? "Final for the week." : `${Math.round(frac(w) * 100)}% of the week played.`} Every team's points this week, which add up to the season standings.</span></div>
-        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">Week ${x}</button>`).join("")}</div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">${weekLabel(w)}</h1><span class="ps">${done ? "Final for the week." : `${Math.round(frac(w) * 100)}% of the week played.`} Every team's points this week, which add up to the season standings.</span></div>
+        <div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekLabel(x)}</button>`).join("")}</div>
         <div class="card"><ol class="feed">${rows.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:9px 16px"${isMe(r.team) ? ' class="me"' : ""}><span class="num ps">${r.rank}</span>${teamAv(T(r.team), "md")}<div style="min-width:0"><a href="${teamHref(r.team)}" style="color:inherit;text-decoration:none"><b class="ell" style="display:block">${esc(T(r.team).name)}</b></a><div style="height:5px;border-radius:3px;background:var(--surface-3);margin-top:5px;overflow:hidden"><i style="display:block;height:100%;width:${Math.max(2, Math.round(100 * r.score / top))}%;background:${r.rank === 1 ? "var(--win)" : "var(--accent)"}"></i></div></div><b class="num">${fmtS(r.score)}</b></li>`).join("")}</ol></div></div>`;
     }
     function schedulePage(arg) {
@@ -2110,8 +2120,8 @@
       const asked = w;
       w = Math.max(1, Math.min(w, curWeek()));
       const games = G.matchups(L(), ctx, w, frac(w));
-      if (sub && asked !== w) badLink(`Week ${asked} ${asked > curWeek() ? "hasn't happened yet" : "doesn't exist"}. Showing week ${w}.`);
-      else if (i != null && !games[i]) badLink(`Week ${w} has no game ${i + 1}. Showing your matchup.`);
+      if (sub && asked !== w) badLink(`Week ${asked} ${asked > curWeek() ? "hasn't happened yet" : "doesn't exist"}. Showing ${weekLabel(w).toLowerCase()}.`);
+      else if (i != null && !games[i]) badLink(`${weekLabel(w)} has no game ${i + 1}. Showing your matchup.`);
       let m = i != null && games[i] ? games[i] : games.find((g) => isMe(g.a) || isMe(g.b)) || games[0];
       if (m && isMe(m.b)) m = flip(m);
       if (!m) return `<div class="wrap page"><p class="empty">No games this week.</p></div>`;
@@ -2146,11 +2156,11 @@
       const dsel = wd && ui.mdayW === w && ui.mday != null && wd.days[ui.mday] && wd.days[ui.mday].teams ? ui.mday : null;
       const boxes = !pts() && sport.groups ? (dsel != null ? dayView(w, m, wd, dsel) : catBoxes(w, m, la, lb)) : "";
       return `<div class="wrap page">
-        <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `Week ${w} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
+        <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `${weekLabel(w)} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}${dealLine(m)}</div>${categoryPlan(m, w)}${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
         ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() && sport.groups ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
-        <div class="stack" style="gap:8px"><b class="ps">Other games, week ${w}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
+        <div class="stack" style="gap:8px"><b class="ps">Other games, ${weekLabel(w).toLowerCase()}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 
     function teamGameBoxes(w, teams) {
@@ -2464,7 +2474,7 @@
       // nothing but this week's projection (no schedule to show, no points yet): that's one number, and it goes in
       // the card's top row instead of a box of its own
       if (pts() && !games && !(W.cur && W.cur.so > 0) && W.avg == null && !p.inj) return "";
-      return `<div class="pc-wk"><div class="pc-wk-h"><b>Week ${w}${pts() ? "" : ", projected"}</b>${left}${p.inj ? `<span class="tag inj">${esc(p.inj)}</span>` : ""}</div>${games ? `<div class="pc-gms">${games}</div>` : ""}<div class="pc-wk-n">${nums}</div></div>`;
+      return `<div class="pc-wk"><div class="pc-wk-h"><b>${weekLabel(w)}${pts() ? "" : ", projected"}</b>${left}${p.inj ? `<span class="tag inj">${esc(p.inj)}</span>` : ""}</div>${games ? `<div class="pc-gms">${games}</div>` : ""}<div class="pc-wk-n">${nums}</div></div>`;
     }
     // Everything that's happened to him in this league, newest first
     function leagueLog(p) {
@@ -2713,7 +2723,7 @@
       // site has no weekly lines here, so there's no week-by-week table for it
       const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id));
       const wkp = weekPanel(p, W || {});
-      if (!wkp && pts() && W && W.cur && W.cur.pj != null && !over()) stats.splice(2, 0, [`Week ${curWeek()}`, fmtS(W.cur.pj)]);
+      if (!wkp && pts() && W && W.cur && W.cur.pj != null && !over()) stats.splice(2, 0, [`${weekLabel(curWeek())}`, fmtS(W.cur.pj)]);
       const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: wkp, extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div><div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
       if (mlbOn) { playerNews(p, Dl.querySelector(".pc-news")); mlbSplits(p, Dl.querySelector(".pc-mlb")); }
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
@@ -2755,12 +2765,14 @@
     function mastVM() {
       const Lg = L(), br = U.leagueBrand(Lg.name, Lg.settings.brand), total = G.totalWeeks(Lg), reg = Lg.settings.weeks, w = Lg.week;
       const st = gl() || flat() ? null : standings(), my = me() != null && st ? st.find((r) => r.team === me()) : null;
+      const currentCollege = FK.experience.sportWeek(sport, now());
       const lines = [esc(sport.name), `${Lg.teams.length} teams`, esc(sc().label.replace(/ \(.*\)$/, ""))];
+      if (currentCollege) lines.push(`NCAAF Week ${currentCollege} now`);
       if (gl()) lines.push("guillotine"); else if (roto()) lines.push("rotisserie"); else if (tot()) lines.push("total points");
       const champ = over() ? championOf() : null;
       const you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
-      const weeks = total > 1 ? Array.from({ length: total }, (_, i) => { const n = i + 1; return { n, po: n > reg, gap: n === reg + 1, k: over() || n < w ? "done" : n === w ? "now" : "next" }; }) : [];
-      const weekLine = over() ? "Season over" : oneWeekLg() ? "One week" : w > reg ? `Playoffs, week ${w}` : `Week ${w} of ${reg}${total > reg ? `, then ${total - reg} of playoffs` : ""}`;
+      const weeks = total > 1 ? Array.from({ length: total }, (_, i) => { const n = i + 1; return { n, label: weekLabel(n), po: n > reg, gap: n === reg + 1, k: over() || n < w ? "done" : n === w ? "now" : "next" }; }) : [];
+      const weekLine = over() ? "Season over" : sport.key === "cfb" ? `${weekLabel(w)}${now() < Lg.start ? ", upcoming" : ""} · league period ${w} of ${reg}` : oneWeekLg() ? "One week" : w > reg ? `Playoffs, ${weekLabel(w).toLowerCase()}` : `${weekLabel(w)} of ${reg}${total > reg ? `, then ${total - reg} of playoffs` : ""}`;
       const champs = seasonsAll().filter((x) => !x.live && x.champion).slice(-4).map((x) => { const t = Lg.teams[x.champion.team]; return { season: x.season || `Year ${x.year}`, name: x.champion.name, abbr: (t && t.name === x.champion.name && t.abbr) || U.initials(x.champion.name).slice(0, 3), color: t ? t.color : 0 }; });
       return { brand: br, sub: `${lines.join(", ")}.${you ? " " + you : ""}`, weeks, weekLine, note: scoreMsg(), champs };
     }

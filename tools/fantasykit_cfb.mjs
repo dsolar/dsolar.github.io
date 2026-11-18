@@ -146,7 +146,7 @@ async function main() {
     players.push(rec);
   }
   const poolOut = { sport: "cfb", season, updated: new Date().toISOString(), source: "ESPN box scores of every FBS game, schedule and conferences from the College Football Hub",
-    lines: { tot: { label: "Season totals", cols: CFB_COLS } },
+    lines: { tot: { label: "Season totals", cols: CFB_COLS } }, calendar: W,
     teams: Object.fromEntries(Object.entries(teams).map(([ab, t]) => [ab, { n: t.short, c: t.color, logo: t.logo, conf: String(t.conference || "").replace(/ - (East|West)$/, "") }])),   // one Sun Belt, not its divisions
     players };
   write(POOL, poolOut);

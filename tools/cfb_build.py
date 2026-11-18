@@ -65,6 +65,24 @@ def logo_of(t):
     return next((x["href"] for x in t.get("logos", []) if "default" in x.get("rel", [])), (t.get("logos") or [{}])[0].get("href"))
 
 
+def apply_team_colors(teams, catalog, previous=()):
+    """FPI omits colors; the ESPN team catalog carries each school's actual primary color."""
+    colors = {}
+    for sport in catalog.get("sports", []):
+        for league in sport.get("leagues", []):
+            for row in league.get("teams", []):
+                t = row.get("team", {})
+                value = str(t.get("color") or "").lstrip("#")
+                if re.fullmatch(r"[0-9a-fA-F]{6}", value):
+                    colors[str(t.get("id"))] = "#" + value.lower()
+    old = {str(t["id"]): t.get("color") for t in previous}
+    for tid, team in teams.items():
+        value = colors.get(str(tid)) or old.get(str(tid))
+        if value and re.fullmatch(r"#[0-9a-fA-F]{6}", value):
+            team["color"] = value
+    return sum(str(tid) in colors for tid in teams)
+
+
 # ---------- teams: ESPN FPI ----------
 def parse_fpi(d, year):
     if (d.get("requestedSeason") or {}).get("year") not in (None, year):
@@ -262,6 +280,14 @@ def main():
         if not teams:
             raise
         sources.setdefault("fpi", {})["error"] = str(e)
+
+    # School colors come from the team catalog, not FPI's missing color field. Keep the prior palette on failure.
+    try:
+        catalog = get("https://site.api.espn.com/apis/site/v2/sports/football/college-football/teams?limit=1000&groups=80")
+        apply_team_colors(teams, catalog, old.get("teams", []))
+    except Exception as e:
+        apply_team_colors(teams, {}, old.get("teams", []))
+        errors.append("Team colors: " + str(e))
 
     # Conferences
     try:

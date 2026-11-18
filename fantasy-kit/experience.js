@@ -5,6 +5,21 @@
   else (root.FK = root.FK || {}).experience = api;
 })(this, function () {
   "use strict";
+  const NY_DATE = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
+  // League periods stay 1-based internally. College labels use the real season's calendar, including its long
+  // opening week and postseason, rather than pretending every new league starts in NCAA Week 1.
+  function sportWeek(sport, at) {
+    if (!sport || sport.key !== "cfb" || !Number.isFinite(Number(at))) return null;
+    const date = new Date(Number(at)); if (!Number.isFinite(+date)) return null;
+    const day = NY_DATE.format(date);
+    const hit = Object.entries((sport.data && sport.data.calendar) || {}).find(([, w]) => w.start <= day && day <= w.end);
+    return hit && Number(hit[0]) > 0 ? Number(hit[0]) : null;
+  }
+  function weekLabel(sport, week, at, slate) {
+    if (!sport || sport.key !== "cfb") return `Week ${week}`;
+    const n = slate && Number(slate.week) > 0 ? Number(slate.week) : sportWeek(sport, at);
+    return n ? `NCAAF Week ${n}` : `League week ${week}`;
+  }
   const RULE_FIELDS = ("sport teams type clock aBudget season weeks trades scoring lineup bench playoffs deadline review faab waiverDays gameLock weights cats waivers ir maxAdds posMax keepers keeperCost legs cons median bestball divs rookie fpicks taxi ohold tep ptd b100r b100c b300p reviewHours vetoShare waiverOrder minBid waiverPrice maxAddsSeason dealOn dealMax ladOn ladSeed ladReach splitAfter pyrOn pyrTeams pyrMode pyrK pyrTop pyrBot capBudget capBonus hcOn hcScale confOn reseed confs cbbEnd cfbEnd tvOn pyoOn robinOn robinP conqOn conqP conqLike crownOn crownStep crownKeep hangOn tbOn tbAmt reveal kind rlOn rlRound respins hzOn hzShields hzSteals hzJinxes hzClock keepN tepOn tepAmt b100rOn b100rAmt b100cOn b100cAmt b300pOn b300pAmt vampOn vampWho poolOnly proRounds proRule nhlDaily minGoalieGames chaseOn chaseWeeks elSteals elFreeze elTax elGold sx slKind slWeek slOne slGames").split(" ");
   RULE_FIELDS.push("slPeriod");
   const BAD = new Set(["__proto__", "constructor", "prototype"]);
@@ -115,5 +130,5 @@
     const later = wait == null ? null : legal[Math.min(legal.length - 1, wait)];
     return { best, fit, later, wait, next };
   }
-  return { RULE_FIELDS, rulesOf, encode, decode, applyQuery, rankingConfig, mockConflict, fromDraft, targets, reliableSample, draftAdvice };
+  return { sportWeek, weekLabel, RULE_FIELDS, rulesOf, encode, decode, applyQuery, rankingConfig, mockConflict, fromDraft, targets, reliableSample, draftAdvice };
 });
