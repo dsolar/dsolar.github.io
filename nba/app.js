@@ -442,41 +442,76 @@
   }
 
   // ---------- player card ----------
+  var cardTab = "ov";
   function openCard(id) {
     var p = H.W.P[id];
     if (!p) return;
-    var s = H.surplus(p), sm = H.surplus(p, H.cfg.mode === "market" ? "prod" : "market"), t = team(p.t);
-    var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) +
-      " · age " + (p.age != null ? p.age : "—") + " · " + (p.yos != null ? p.yos + " yrs in the league" : "") + "</div></div></div>";
-    html += '<div class="card-b"><div class="kv">';
-    html += kv(rt(H.rating(p, 0)), "Impact now") + kv(rt(H.rating(p, 2)), "In " + sname(2)) + kv(pct(p.h || 0.85), "Games played (health)");
-    if (p.line) html += kv(f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast), "This season (" + p.line.gp + " gp)");
-    if (p.darko != null) html += kv(rt(p.darko), "DARKO today");
-    if (p.bpm != null) html += kv(rt(p.bpm), "BPM this season");
-    html += "</div>";
-    html += skillProfile(p);
-    if (contractYears(p, 0).length) html += '<h4 class="card-sec">Contract</h4>' + contractStrip(p, 0);
-    var vt = s.rows.reduce(function (a, r) { return a + r.value * Math.pow(1 + H.cfg.disc, -r.j); }, 0), ct = s.rows.reduce(function (a, r) { return a + r.sal * Math.pow(1 + H.cfg.disc, -r.j); }, 0);
-    html += '<div class="vcs"><div><span>Value</span><b>' + money(vt) + "</b><small>" + (H.cfg.mode === "market" ? "what teams would pay him" : "what he should produce") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(ct) +
+    var s = H.surplus(p), sm = H.surplus(p, H.cfg.mode === "market" ? "prod" : "market"), t = team(p.t), r = H.adv ? p.adv : null;
+    var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + ", " + esc(posOf(p)) +
+      ", age " + (p.age != null ? p.age : "—") + (p.yos != null ? ", " + p.yos + " yrs in the league" : "") + "</div>" + (r ? '<div class="meta2"><span class="pill new">' + esc(r.arch) + "</span></div>" : "") + "</div></div>";
+    var tabs = [["ov", "Overview"]].concat(r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], [["ct", "Contract"]]);
+    if (!tabs.some(function (x) { return x[0] === cardTab; })) cardTab = "ov";
+    html += '<div class="ctabs" role="tablist">' + tabs.map(function (x) { return '<button type="button" role="tab" data-ctab="' + x[0] + '" aria-selected="' + (x[0] === cardTab) + '">' + x[1] + "</button>"; }).join("") + "</div>";
+    html += '<div class="card-b">';
+    // overview
+    var ov = '<div class="kv">' + kv(rt(H.rating(p, 0)), "Impact now") + kv(rt(H.rating(p, 2)), "In " + sname(2)) + kv(pct(p.h || 0.85), "Games played (health)");
+    if (p.line) ov += kv(f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast), "Pts / reb / ast (" + p.line.gp + " gp)");
+    if (p.darko != null) ov += kv(rt(p.darko), "DARKO today");
+    if (p.bpm != null) ov += kv(rt(p.bpm), "BPM this season");
+    if (r && r.s.onoff != null) ov += kv((r.s.onoff > 0 ? "+" : "") + f1(r.s.onoff), "On/off per 100");
+    ov += kv(signed(s.pv), "Contract surplus") + "</div>";
+    if (r) {
+      var top = Object.keys(H.adv.cats).filter(function (c) { return CAT_IMP.indexOf(c) < 0 && r.r[c] != null; }).sort(function (a, b) { return r.r[b] - r.r[a]; });
+      ov += '<p class="tldr"><b>Best at:</b> ' + top.slice(0, 3).map(function (c) { return esc(H.adv.cats[c].toLowerCase()) + " (" + r.r[c] + ")"; }).join(", ") + '. <b>Weakest:</b> ' + top.slice(-2).reverse().map(function (c) { return esc(H.adv.cats[c].toLowerCase()) + " (" + r.r[c] + ")"; }).join(", ") + ".</p>";
+    }
+    if (contractYears(p, 0).length) ov += '<h4 class="card-sec">Contract</h4>' + contractStrip(p, 0);
+    html += '<div class="cpane" data-pane="ov"' + (cardTab === "ov" ? "" : " hidden") + ">" + ov + "</div>";
+    // skills
+    if (r) {
+      var st = r.s, pc = function (x) { return x == null ? "—" : (x * 100).toFixed(1) + "%"; };
+      html += '<div class="cpane" data-pane="sk"' + (cardTab === "sk" ? "" : " hidden") + ">" + skillBars(r) +
+        '<p class="note">Percentiles among players with real minutes (99 is best), then his rank among ' + GROUP1[r.g] + "." + (r.mp ? " Last season counts at half weight while this one is young." : "") + "</p>" +
+        '<div class="kv">' + kv(f1(st.pts100), "Points per 100") + kv(pc(st.ts), "True shooting") + kv(f1(st.usg) + "%", "Usage") + kv(f1(st.unast100), "Unassisted pts / 100") + kv(f1(st.ast) + "%", "Assist rate") + kv(f1(st.tov) + "%", "Turnover rate") +
+        kv(f1(st.orb) + " / " + f1(st.drb), "Off / def reb %") + kv(f1(st.stl) + " / " + f1(st.blk), "Steal / block %") + (st.ortg ? kv(f0(st.ortg) + " / " + f0(st.drtg), "Off / def rating") : "") + "</div>" + deeper(r, p) + "</div>";
+    }
+    // shooting
+    if (r && r.zones && r.zones.rim) {
+      var st2 = r.s;
+      html += '<div class="cpane" data-pane="sh"' + (cardTab === "sh" ? "" : " hidden") + ">" + shotChart(r.zones) + zoneTable(r.zones) +
+        '<div class="kv">' + kv(pct(st2.p3, 1), "3P% (regressed)") + kv(f1(st2.fg3a100), "3PA per 100") + kv(pct(st2.pft, 1), "FT% (regressed)") + kv(pct(st2.prim, 1), "Rim FG% (regressed)") + kv(f1(st2.rim100), "Rim attempts / 100") + kv(pct(st2.ast_share), "Of his buckets assisted") + "</div>" +
+        '<p class="note">Regressed percentages are pulled toward the league average by how many shots back them up.</p></div>';
+    }
+    // contract
+    var ct = "";
+    if (contractYears(p, 0).length) ct += contractStrip(p, 0);
+    var vt = s.rows.reduce(function (a, x) { return a + x.value * Math.pow(1 + H.cfg.disc, -x.j); }, 0), cv = s.rows.reduce(function (a, x) { return a + x.sal * Math.pow(1 + H.cfg.disc, -x.j); }, 0);
+    ct += '<div class="vcs"><div><span>Value</span><b>' + money(vt) + "</b><small>" + (H.cfg.mode === "market" ? "what teams would pay him" : "what he should produce") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(cv) +
       '</b><small>what he\'ll be paid</small></div><i>=</i><div class="' + (s.pv >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.pv) + "</b><small>" + s.rows.length + " season" + (s.rows.length === 1 ? "" : "s") + (H.cfg.disc > 0 ? ", discounted" : "") + "</small></div></div>";
-    html += '<p class="tldr">' + (H.cfg.mode === "market" ? "Production view" : "Market view") + ": " + signed(sm.pv) + ". " + esc(p.note || "") + (p.form ? " This season's play has moved his rating " + rt(p.form) + "." : "") + "</p>";
-    html += '<h4 class="card-sec">Contract value</h4><div class="scroll"><table class="t"><thead><tr><th>Season</th><th>Age</th><th>Impact</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
-    s.rows.forEach(function (r) {
-      html += "<tr><td>" + r.season + (r.opt ? ' <span class="pill">' + esc(r.opt) + "</span>" : "") + (r.part < 1 ? ' <span class="note">(rest of season)</span>' : "") + "</td><td>" + (p.age + r.j) + "</td><td>" + rchip(r.r) + "</td><td>" + money(r.value) + "</td><td>" + money(r.sal) + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
+    ct += '<p class="tldr">' + (H.cfg.mode === "market" ? "Production view" : "Market view") + ": " + signed(sm.pv) + ". " + esc(p.note || "") + (p.form ? " This season's play has moved his rating " + rt(p.form) + "." : "") + "</p>";
+    ct += '<div class="scroll"><table class="t"><thead><tr><th>Season</th><th>Age</th><th>Impact</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
+    s.rows.forEach(function (x) {
+      ct += "<tr><td>" + x.season + (x.opt ? ' <span class="pill">' + esc(x.opt) + "</span>" : "") + (x.part < 1 ? ' <span class="note">(rest of season)</span>' : "") + "</td><td>" + (p.age + x.j) + "</td><td>" + rchip(x.r) + "</td><td>" + money(x.value) + "</td><td>" + money(x.sal) + '</td><td class="' + (x.surplus >= 0 ? "pos" : "neg") + '">' + signed(x.surplus) + "</td></tr>";
     });
-    html += '<tr class="tot"><td colspan="5">Discounted at ' + pct(H.cfg.disc) + ' a year</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
-    html += "</tbody></table></div>";
+    ct += '<tr class="tot"><td colspan="5">Discounted at ' + pct(H.cfg.disc) + ' a year</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr></tbody></table></div>";
     var ee = CBA.extEligible(p, 0);
-    if (ee.ok) { var el = CBA.extLimit(p, 0); html += '<p class="note">Extension eligible now (' + esc(ee.kind) + "): up to " + money(el.first) + " in " + sname(el.start) + (el.maxYears ? ", " + el.maxYears + " years" : "") + ".</p>"; }
+    if (ee.ok) { var el = CBA.extLimit(p, 0); ct += '<p class="note">Extension eligible now (' + esc(ee.kind) + "): up to " + money(el.first) + " in " + sname(el.start) + (el.maxYears ? ", " + el.maxYears + " years" : "") + ".</p>"; }
     var e = H.lastYear(p);
-    if (e >= 0 && e < Hub.YEARS - 1) html += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
-    html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a></p></div>";
+    if (e >= 0 && e < Hub.YEARS - 1) ct += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
+    html += '<div class="cpane" data-pane="ct"' + (cardTab === "ct" ? "" : " hidden") + ">" + ct + "</div>";
+    html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a></p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
   }
   function closeCard() { if (card.open) card.close(); }
   card.addEventListener("click", function (e) {
     if (e.target === card || e.target.closest("[data-close]")) { closeCard(); return; }
+    var tb = e.target.closest("[data-ctab]");
+    if (tb) {
+      cardTab = tb.dataset.ctab;
+      card.querySelectorAll("[data-ctab]").forEach(function (b) { b.setAttribute("aria-selected", b === tb); });
+      card.querySelectorAll("[data-pane]").forEach(function (x) { x.hidden = x.dataset.pane !== cardTab; });
+      return;
+    }
     var add = e.target.closest("[data-add]");
     if (add) {
       var tr = tradeState(), p = H.W.P[add.dataset.id];
@@ -499,58 +534,77 @@
   // league-wide or against his position group (guards, wings, bigs).
   var CAT_OFF = ["shoot", "finish", "score", "create", "pass", "secure"], CAT_DEF = ["rimd", "reb", "steal"], CAT_IMP = ["overall", "off", "def"];
   var CAT_SHORT = { overall: "Overall", off: "Off", def: "Def", shoot: "Shoot", finish: "Finish", score: "Score", create: "Create", pass: "Pass", secure: "Secure", reb: "Reb", rimd: "Rim D", steal: "Steals" };
-  var GROUP = { G: "Guards", W: "Wings", B: "Bigs" }, GROUP1 = { G: "guards", W: "wings", B: "bigs" };
-  function heat(v) { return v == null ? "h-" : v >= 90 ? "h5" : v >= 75 ? "h4" : v >= 55 ? "h3" : v >= 40 ? "h2" : v >= 20 ? "h1" : "h0"; }
-  function hcell(v, title) { return '<td class="hc ' + heat(v) + '"' + (title ? ' title="' + esc(title) + '"' : "") + ">" + (v == null ? "—" : v) + "</td>"; }
+  var GROUP1 = { G: "guards", W: "wings", B: "bigs" };
+  var ARCH = { // short badge and family for each archetype; the full name shows on hover and in the card
+    "Two-way superstar": ["SUP", "star"], "Primary creator": ["CRE", "cre"], "Shot creator": ["SC", "cre"], "Three-level scorer": ["SCR", "cre"], "Floor general": ["FG", "cre"],
+    "Shooter": ["SH", "sht"], "3-and-D wing": ["3&D", "sht"], "3-and-D guard": ["3&D", "sht"], "Defensive stopper": ["DEF", "def"], "Slasher": ["SL", "sht"], "Connector": ["CON", "role"], "Role player": ["ROL", "role"],
+    "Playmaking big": ["PB", "big"], "Scoring big": ["SB", "big"], "Stretch rim protector": ["SRP", "big"], "Rim protector": ["RP", "big"], "Stretch big": ["STR", "big"], "Rim runner": ["RR", "big"], "Rotation big": ["BIG", "big"]
+  };
+  function archBadge(a) { var x = ARCH[a] || ["?", "role"]; return '<span class="ab ab-' + x[1] + '" title="' + esc(a) + '">' + esc(x[0]) + "</span>"; }
+  // Excel's three-color scale: red at 0, yellow at 50, green at 99
+  function mix(c1, c2, t) { return "rgb(" + [0, 1, 2].map(function (i) { return Math.round(c1[i] + (c2[i] - c1[i]) * t); }).join(",") + ")"; }
+  var XR = [248, 105, 107], XY = [255, 235, 132], XG = [99, 190, 123];
+  function xl(v) { return v == null ? "transparent" : v < 50 ? mix(XR, XY, v / 50) : mix(XY, XG, Math.min(1, (v - 50) / 49)); }
+  function hcell(v, title) { return '<td class="hc"' + (v == null ? "" : ' style="background:' + xl(v) + '"') + (title ? ' title="' + esc(title) + '"' : "") + ">" + (v == null ? "—" : v) + "</td>"; }
+  function advPos(r) { var p = r.id && H.W.P[r.id]; return p ? posOf(p) : (r.pos || "").replace(/-/g, "/"); }
   function advName(r, size) {
     var p = r.id && H.W.P[r.id];
     if (p) return pname(p, size || 22);
     return '<span class="pl static">' + window.DSFaces.html({ sport: "nba", name: r.n, color: team(r.t).color, size: size || 22 }) + '<span class="nm">' + esc(r.n) + "</span></span>";
   }
   function ord(n) { return n == null ? "—" : ordinal(n); }
+  var PER = 50;
   function ratingsPage() {
     var A = H.adv;
     if (!A) { view.innerHTML = '<h2 class="sec">Ratings</h2><p class="lede">The skill ratings haven\'t loaded. They rebuild every morning; try again in a bit.</p>'; return; }
-    var q = state.q, by = A.cats[q.by] ? q.by : "overall", vs = q.vs === "pos" ? "rp" : "r", g = GROUP[q.g] ? q.g : "", tm = q.t || "", all = q.all === "1";
+    var q = state.q, by = A.cats[q.by] ? q.by : "overall", vs = q.vs === "pos" ? "rp" : "r", pos = q.pos || "", tm = q.t || "", all = q.all === "1";
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
     var pool = A.players.filter(function (r) { return all || r.q; });
+    var hasPos = function (r) { return !pos || advPos(r).split("/").indexOf(pos) >= 0; };
     var list = pool.filter(function (r) {
-      if (g && r.g !== g) return false;
+      if (!hasPos(r)) return false;
       if (tm && r.t !== tm) return false;
       if (q.s && r.n.toLowerCase().indexOf(q.s.toLowerCase()) < 0) return false;
       if (q.a && r.arch !== q.a) return false;
       return true;
     }).sort(function (a, b) { return ((b[vs][by] == null ? -1 : b[vs][by]) - (a[vs][by] == null ? -1 : a[vs][by])) || ((b.s.imp || -9) - (a.s.imp || -9)); });
-    var html = '<h2 class="sec">Ratings</h2><p class="lede">Every player\'s game, broken into the skills that win: shooting, finishing, scoring, creating his own shot, playmaking, ball security, rim protection, rebounding and defensive playmaking, plus offensive, defensive and overall impact. Each is a percentile among the ' + A.pool + " players with real minutes (99 is the best in the league), from pbpstats' play-by-play, Basketball-Reference and DARKO, rebuilt every morning. Early in the season last year (" + esc(A.prev) + ") still counts, at half weight, and small samples are pulled toward average. Click a player for his skill profile and shot chart.</p>";
-    // leaders
+    var link = function (extra) { return href("ratings", Object.assign({}, q, { pg: null }, extra)); };
+    var html = '<h2 class="sec">Ratings</h2><p class="lede">Every player\'s game in twelve skills, each a percentile among the ' + A.pool + " players with real minutes (99 is the best). Built every morning from pbpstats, Basketball-Reference and DARKO; last season (" + esc(A.prev) + ") still counts at half weight. Click a player for his profile and shot chart.</p>";
+    // leaders: top three in each category
     html += '<div class="leaders">' + Object.keys(A.cats).map(function (c) {
-      var top = pool.filter(function (r) { return !g || r.g === g; }).slice().sort(function (a, b) { return (b[vs][c] || 0) - (a[vs][c] || 0) || (b.s.imp || -9) - (a.s.imp || -9); }).slice(0, 3);
-      return '<div class="ldr' + (c === by ? " on" : "") + '"><a class="ldr-h" href="' + href("ratings", Object.assign({}, q, { by: c === "overall" ? null : c })) + '">' + esc(A.cats[c]) + "</a><ol>" +
+      var top = pool.filter(hasPos).slice().sort(function (a, b) { return (b[vs][c] || 0) - (a[vs][c] || 0) || (b.s.imp || -9) - (a.s.imp || -9); }).slice(0, 3);
+      return '<div class="ldr' + (c === by ? " on" : "") + '"><a class="ldr-h" href="' + link({ by: c === "overall" ? null : c }) + '">' + esc(A.cats[c]) + "</a><ol>" +
         top.map(function (r) { return "<li>" + advName(r, 20) + "</li>"; }).join("") + "</ol></div>";
     }).join("") + "</div>";
     var archs = {};
     pool.forEach(function (r) { archs[r.arch] = (archs[r.arch] || 0) + 1; });
-    html += '<div class="controls">' + ('<label>Rank by<select data-q="by">' + Object.keys(A.cats).map(function (c) { return opt(c === "overall" ? "" : c, A.cats[c], by === "overall" ? "" : by); }).join("") + "</select></label>" +
-      '<label>Position<select data-q="g">' + opt("", "Everyone", g) + opt("G", "Guards", g) + opt("W", "Wings", g) + opt("B", "Bigs", g) + "</select></label>" +
-      '<label>Compare to<select data-q="vs">' + opt("", "The league", q.vs || "") + opt("pos", "His position", q.vs || "") + "</select></label>" +
+    html += '<div class="controls">' +
+      '<label>Rank by<select data-q="by">' + Object.keys(A.cats).map(function (c) { return opt(c === "overall" ? "" : c, A.cats[c], by === "overall" ? "" : by); }).join("") + "</select></label>" +
+      '<label>Position<select data-q="pos">' + opt("", "All", pos) + ["PG", "SG", "SF", "PF", "C"].map(function (x) { return opt(x, x, pos); }).join("") + "</select></label>" +
       teamSelect(tm) +
-      '<label>Type<select data-q="a">' + opt("", "Any", q.a || "") + Object.keys(archs).sort().map(function (a) { return opt(a, a + " (" + archs[a] + ")", q.a || ""); }).join("") + "</select></label>" +
+      '<label>Type<select data-q="a">' + opt("", "Any", q.a || "") + Object.keys(archs).sort().map(function (a) { return opt(a, (ARCH[a] ? ARCH[a][0] + ": " : "") + a + " (" + archs[a] + ")", q.a || ""); }).join("") + "</select></label>" +
+      '<label>Percentiles vs<select data-q="vs">' + opt("", "League", q.vs || "") + opt("pos", "Position group", q.vs || "") + "</select></label>" +
       '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>' +
-      '<label class="chk"><input type="checkbox" data-q="all" value="1"' + (all ? " checked" : "") + "> Include low minutes</label>") + "</div>";
-    var cols = CAT_IMP.concat(CAT_OFF, CAT_DEF);
-    var th = function (c) { return '<th class="hc' + (c === by ? " on" : "") + '"><a href="' + href("ratings", Object.assign({}, q, { by: c === "overall" ? null : c })) + '" title="' + esc(A.cats[c]) + '">' + CAT_SHORT[c] + "</a></th>"; };
-    html += '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class="pn">Player</th><th class="hm">Team</th><th class="hm">Pos</th><th class="hm">Age</th><th class="hm">Min</th><th class="ar hm">Type</th><th>Impact</th>' + cols.map(th).join("") + "</tr></thead><tbody>";
-    list.slice(0, q.more ? 600 : 150).forEach(function (r, k) {
-      var mins = r.mc + (r.mp ? ' <span class="note">(' + r.mp + ")</span>" : "");
-      html += '<tr><td class="pn"><span class="rk">' + (k + 1) + "</span>" + advName(r, 22) + "</td><td class=\"hm\">" + (r.t ? logo(r.t, 18) : "") + "</td><td class=\"hm\">" + esc(r.g) + "</td><td class=\"hm\">" + (r.age != null ? Math.floor(r.age) : "—") + '</td><td class="mn hm" title="Minutes this season (last season)">' + mins + '</td><td class="ar hm">' + esc(r.arch) + "</td><td>" + (r.s.imp != null ? rchip(r.s.imp) : "—") + "</td>" +
+      '<label class="chk"><input type="checkbox" data-q="all" value="1"' + (all ? " checked" : "") + "> Low minutes too</label></div>";
+    var cols = ["off", "def"].concat(CAT_OFF, CAT_DEF);
+    var th = function (c, label, cls) { return '<th class="' + (cls || "hc") + (c === by ? " on" : "") + '"><a href="' + link({ by: c === "overall" ? null : c }) + '" title="' + esc(A.cats[c]) + '">' + (label || CAT_SHORT[c]) + "</a></th>"; };
+    var pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(pages, Math.max(1, +q.pg || 1)), start = (pg - 1) * PER;
+    html += '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class="pn">Player</th><th class="hm">Pos</th><th class="hm">Age</th><th class="hm" title="Minutes this season">Min</th><th class="hm">Type</th>' + th("overall", "Impact", "imp") + cols.map(function (c) { return th(c); }).join("") + "</tr></thead><tbody>";
+    list.slice(start, start + PER).forEach(function (r, k) {
+      html += '<tr><td class="pn"><span class="rk">' + (start + k + 1) + "</span>" + (r.t ? logo(r.t, 16) : "") + advName(r, 22) + '</td><td class="hm ps">' + esc(advPos(r)) + '</td><td class="hm">' + (r.age != null ? Math.floor(r.age) : "—") + '</td><td class="hm mn">' + r.mc + '</td><td class="hm">' + archBadge(r.arch) + '</td><td class="imp">' + (r.s.imp != null ? rchip(r.s.imp) : "—") + "</td>" +
         cols.map(function (c) { return hcell(r[vs][c], A.cats[c] + ": " + ord(r.r[c]) + " in the league, " + ord(r.rp[c]) + " among " + GROUP1[r.g]); }).join("") + "</tr>";
     });
+    if (!list.length) html += '<tr><td class="note" colspan="16">Nobody matches.</td></tr>';
     html += "</tbody></table></div></div>";
-    if (list.length > 150 && !q.more) html += '<p><a class="btn" href="' + href("ratings", Object.assign({}, q, { more: 1 })) + '">Show all ' + list.length + "</a></p>";
-    html += '<p class="note">Minutes are this season, with last season in parentheses. Impact is points per 100 possessions better than average (DARKO, or box plus-minus where DARKO has no number). Updated ' + esc(A.updated.replace("T", " ").replace("Z", " UTC")) + ". How it works explains every category.</p>";
+    if (pages > 1) {
+      html += '<nav class="pager" aria-label="Pages">' + (pg > 1 ? '<a class="btn" href="' + link({ pg: pg - 1 }) + '">Previous</a>' : '<span class="btn off">Previous</span>') +
+        "<span>" + (start + 1) + "-" + Math.min(list.length, start + PER) + " of " + list.length + "</span>" +
+        (pg < pages ? '<a class="btn" href="' + link({ pg: pg + 1 }) + '">Next</a>' : '<span class="btn off">Next</span>') + "</nav>";
+    }
+    html += '<p class="note">Impact is points per 100 possessions better than average (DARKO, or box plus-minus where DARKO has no number). Hover a cell for league and position-group ranks, or a badge for the player type. Updated ' + esc(A.updated.replace("T", " ").replace("Z", " UTC")) + ". How it works explains every category.</p>";
     view.innerHTML = html;
   }
-  // skill profile on the player card
+  // shot chart and skill bars for the player card
   function zoneColor(z) { if (!z || z[1] == null) return "z-n"; var d = z[1] - z[2]; return d >= 0.06 ? "z5" : d >= 0.02 ? "z4" : d > -0.02 ? "z3" : d > -0.06 ? "z2" : "z1"; }
   function shotChart(zs) {
     var lab = function (k, x, y) {
@@ -568,24 +622,26 @@
       (zs.c3 ? '<text x="12" y="320" class="zf sm">Corner 3s: ' + (zs.c3[1] == null ? "—" : Math.round(zs.c3[1] * 100) + "%") + ", " + Math.round(zs.c3[0] * 100) + "% of shots</text>" : "") +
       '</svg><div class="zkey"><span class="z1"></span>Well below average<span class="z3"></span>Average<span class="z5"></span>Well above</div></div>';
   }
-  function skillProfile(p) {
-    var r = p.adv, A = H.adv;
-    if (!r || !A) return "";
+  function zoneTable(zs) {
+    var nm = { rim: "At the rim", smid: "Short mid-range", lmid: "Long mid-range", c3: "Corner 3", a3: "Above-the-break 3" };
+    return '<div class="scroll"><table class="t"><thead><tr><th>Zone</th><th>Share</th><th>FG%</th><th>NBA avg</th></tr></thead><tbody>' +
+      ["rim", "smid", "lmid", "c3", "a3"].filter(function (k) { return zs[k]; }).map(function (k) {
+        var z = zs[k], d = z[1] == null ? null : z[1] - z[2];
+        return "<tr><td>" + nm[k] + "</td><td>" + pct(z[0]) + "</td><td class=\"" + (d == null ? "" : d >= 0 ? "pos" : "neg") + "\"><b>" + (z[1] == null ? "—" : pct(z[1], 1)) + "</b></td><td>" + pct(z[2], 1) + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+  function skillBars(r) {
+    var A = H.adv;
     var bar = function (c) {
       var v = r.r[c];
-      return '<div class="sk"><span class="skn">' + esc(A.cats[c]) + '</span><span class="skb"><i class="' + heat(v) + '" style="width:' + (v == null ? 0 : Math.max(2, v)) + '%"></i></span><b>' + (v == null ? "—" : v) + '</b><small title="Percentile among ' + GROUP1[r.g] + '">' + (r.rp[c] == null ? "" : ord(r.rp[c]) + " of " + GROUP1[r.g]) + "</small></div>";
+      return '<div class="sk"><span class="skn">' + esc(A.cats[c]) + '</span><span class="skb"><i style="width:' + (v == null ? 0 : Math.max(2, v)) + "%;background:" + xl(v) + '"></i></span><b>' + (v == null ? "—" : v) + "</b><small>" + (r.rp[c] == null ? "" : ord(r.rp[c]) + " of " + GROUP1[r.g]) + "</small></div>";
     };
-    var s = r.s, pc = function (x) { return x == null ? "—" : (x * 100).toFixed(1) + "%"; };
-    var html = '<h4 class="card-sec">Skill profile <span class="pill new">' + esc(r.arch) + "</span></h4>";
-    html += '<div class="skills"><div><h5>Impact</h5>' + CAT_IMP.map(bar).join("") + "<h5>Defense</h5>" + CAT_DEF.map(bar).join("") + "</div><div><h5>Offense</h5>" + CAT_OFF.map(bar).join("") + "</div></div>";
-    html += '<p class="note">Percentiles among players with real minutes (99 is best), then where he ranks among ' + GROUP1[r.g] + ". " + (r.mp ? "Last season counts at half weight while this one is young." : "") + "</p>";
-    html += '<div class="kv">' + kv(f1(s.pts100), "Points per 100") + kv(pc(s.ts), "True shooting") + kv(f1(s.usg) + "%", "Usage") + kv(f1(s.unast100), "Unassisted pts / 100") + kv(f1(s.ast) + "%", "Assist rate") + kv(f1(s.tov) + "%", "Turnover rate") +
-      (s.onoff != null ? kv((s.onoff > 0 ? "+" : "") + f1(s.onoff), "On/off per 100") : "") + (s.ortg ? kv(f0(s.ortg) + " / " + f0(s.drtg), "Off / def rating") : "") + "</div>";
-    if (r.zones && r.zones.rim) html += '<h4 class="card-sec">Where he shoots</h4>' + shotChart(r.zones);
-    var nm = encodeURIComponent(r.n);
-    html += '<p class="deeper">Go deeper: ' + (r.nba ? '<a href="https://www.nba.com/player/' + esc(r.nba) + '" target="_blank" rel="noopener">NBA.com</a> · ' : "") +
-      '<a href="https://www.basketball-reference.com/search/search.fcgi?search=' + nm + '" target="_blank" rel="noopener">Basketball-Reference</a> · <a href="https://www.darko.app/" target="_blank" rel="noopener">DARKO</a> · <a href="https://craftednba.com/" target="_blank" rel="noopener">CraftedNBA</a> · <a href="https://dunksandthrees.com/epm" target="_blank" rel="noopener">Dunks &amp; Threes</a> · <a href="https://www.nbarapm.com/" target="_blank" rel="noopener">NBA RAPM</a> · <a href="https://cleaningtheglass.com/" target="_blank" rel="noopener">Cleaning the Glass</a> · <a href="https://www.pbpstats.com/" target="_blank" rel="noopener">pbpstats</a></p>';
-    return html;
+    return '<div class="skills"><div><h5>Impact</h5>' + CAT_IMP.map(bar).join("") + "<h5>Defense</h5>" + CAT_DEF.map(bar).join("") + "</div><div><h5>Offense</h5>" + CAT_OFF.map(bar).join("") + "</div></div>";
+  }
+  function deeper(r, p) {
+    var nmq = encodeURIComponent(r ? r.n : p.n), id = r && r.nba;
+    return '<p class="deeper">More on him: ' + (id ? '<a href="https://www.nba.com/player/' + esc(id) + '" target="_blank" rel="noopener">NBA.com</a>, ' : "") +
+      '<a href="https://www.basketball-reference.com/search/search.fcgi?search=' + nmq + '" target="_blank" rel="noopener">Basketball-Reference</a>. Other models: <a href="https://www.darko.app/" target="_blank" rel="noopener">DARKO</a>, <a href="https://craftednba.com/" target="_blank" rel="noopener">CraftedNBA</a>, <a href="https://dunksandthrees.com/epm" target="_blank" rel="noopener">Dunks &amp; Threes</a>, <a href="https://www.nbarapm.com/" target="_blank" rel="noopener">NBA RAPM</a>, <a href="https://cleaningtheglass.com/" target="_blank" rel="noopener">Cleaning the Glass</a>.</p>';
   }
 
   // ---------- trade value ----------
