@@ -1,5 +1,5 @@
 {
- "checked": "2026-10-29T19:52:02Z",
+ "checked": "2026-11-19T12:31:12Z",
  "2023 transactions": {
   "path": "league/422.l.4580/transactions",
   "ok": false,
@@ -247,6 +247,12 @@
     "n": 1,
     "sample": [
      "2023"
+    ]
+   },
+   "/fantasy_content/league/is_playoff_game": {
+    "n": 1,
+    "sample": [
+     "0"
     ]
    },
    "/fantasy_content/league/transactions": {
@@ -693,6 +699,12 @@
      "2023"
     ]
    },
+   "/fantasy_content/league/is_playoff_game": {
+    "n": 1,
+    "sample": [
+     "0"
+    ]
+   },
    "/fantasy_content/league/transactions": {
     "n": 1,
     "sample": []
@@ -1133,6 +1145,12 @@
     "n": 1,
     "sample": [
      "2026"
+    ]
+   },
+   "/fantasy_content/league/is_playoff_game": {
+    "n": 1,
+    "sample": [
+     "0"
     ]
    },
    "/fantasy_content/league/transactions": {
