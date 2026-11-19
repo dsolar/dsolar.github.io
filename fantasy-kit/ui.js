@@ -1515,7 +1515,8 @@
         <ul class="rslots" style="padding:4px 16px 12px">${mine.concat(rest).map((e) => `<li class="${isMe(team(e.by)) || isMe(team(e.on)) ? "me" : ""}"><span class="txi ${e.ok ? (e.type === "steal" ? "add" : "drop") : ""}" aria-hidden="true">${e.ok ? (e.type === "steal" ? "&#8644;" : "&#9660;") : "&#9632;"}</span><span>${line(e)}</span></li>`).join("") || `<li class="ps">Nobody made a move.</li>`}</ul></div>`;
     }
     function results() {
-      const d = D(), st = F.standings(d, ctx).sort((a, b) => a.rank - b.rank), R = F.recap(d, ctx);
+      // your team's grade first, then everyone by projected finish
+      const d = D(), st = F.standings(d, ctx).sort((a, b) => (isMe(team(b.team)) - isMe(team(a.team))) || a.rank - b.rank), R = F.recap(d, ctx);
       return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
         return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, ${recapGap(bv, true)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
@@ -1703,12 +1704,13 @@
       const bench = ps.filter((p) => !starters.includes(p));
       const paid = (p) => { const s = auction() ? d.sales.find((x) => x.pid === p.id) : null; return s ? money(s.price) : ""; };
       const li = (slot, p) => `<li class="${p ? "" : "open"}"><span class="slot">${esc(slot)}</span>${p ? `<span data-player="${esc(p.id)}" style="cursor:pointer;min-width:0">${pname(sport, p, "", { size: "sm" })}</span><span class="ps">${paid(p) || "#" + p.rank}</span>` : `<span class="ps">Open</span><span></span>`}</li>`;
-      // open bench spots read as one line, not a row each
+      // open spots read as one line of slot chips, not a row each: your picks stay on top and the picks to come in view
       const openBn = Math.max(0, d.bench - bench.length);
-      const bnLine = openBn ? `<li class="open bn-left"><span class="slot">BN</span><span class="ps">${openBn} bench spot${openBn === 1 ? "" : "s"} open</span><span></span></li>` : "";
+      const openSt = d.lineup.filter((s, i) => !starters[i]);
+      const openLine = openSt.length || openBn ? `<li class="open bn-left rs-open"><span class="slot">Open</span><span class="rs-chips">${openSt.map((s) => `<span class="slot sm">${esc(s)}</span>`).join("")}${openBn ? `<span class="ps">+ ${openBn} bench</span>` : ""}</span><span></span></li>` : "";
       return `<div class="mod-h">${teamAv(t, "sm")}<b class="ell">${esc(t.name)}</b><span class="ps" style="margin-left:auto;white-space:nowrap">${ps.length} of ${F.sizeOf(d, id)}${auction() ? `, ${money(t.budget)} left` : ""}</span></div>
         ${id === me() && d.phase !== "done" ? brief(id, starters) : ""}
-        <ul class="rslots">${d.lineup.map((s, i) => li(s, starters[i])).join("")}${bench.map((p) => li("BN", p)).join("")}${bnLine}</ul>${upcoming(id)}`;
+        <ul class="rslots">${d.lineup.map((s, i) => (starters[i] ? li(s, starters[i]) : "")).join("")}${bench.map((p) => li("BN", p)).join("")}${openLine}</ul>${upcoming(id)}`;
     }
     /* league chat in the room (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) */
     function chatPanel() {
