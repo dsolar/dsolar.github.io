@@ -456,6 +456,18 @@
       if (move > 0) raw += Mo.posPenalty(b) - Mo.posPenalty({ G: b.G, W: b.W - move, B: b.B + move });
       return { raw, lu };
     }
+    // This season's strength with short injuries in: a player out for part of what's left counts as the full team for
+    // the share he plays and the team without him for the share he misses (out-for-season players are already gone)
+    function strengthNow(entries, code) {
+      const full = strengthOf(entries, 0, code);
+      let raw = full.raw;
+      for (const e of entries) {
+        const sh = outShare(e.p);
+        if (!(sh > 0) || sh >= 1) continue;
+        raw -= sh * (full.raw - strengthOf(entries.filter(x => x !== e), 0, code).raw);
+      }
+      return { raw, lu: full.lu };
+    }
     H.lineup = (code, i) => cache("lu" + code + ":" + i, () => buildLineup(H.rosterAt(code, i).filter(e => i > 0 || !injured[e.p.id]), i, code));
     function netsFrom(raws) {
       const mean = sum(Object.values(raws)) / codes.length, nets = {};
@@ -469,7 +481,7 @@
       const raws = {}, rots = {};
       for (const c of codes) {
         const entries = H.rosterAt(c, 0).filter(e => !injured[e.p.id]);
-        const s = strengthOf(entries, 0, c); raws[c] = s.raw; rots[c] = s.lu;
+        const s = strengthNow(entries, c); raws[c] = s.raw; rots[c] = s.lu;
       }
       return { nets: netsFrom(raws), rots };
     });
@@ -997,7 +1009,7 @@
       for (const m of tr.moves) if (m.kind === "p") moved[m.id] = m.to;
       const rawsFor = (mv, only) => { const raws = {}; for (const c of only || codes) {
         const entries = Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0 && !injured[p.id] && (mv[p.id] || p.t) === c).map(p => ({ p, r: H.rating(p, 0), sal: H.salary(p, 0) }));
-        raws[c] = strengthOf(entries, 0, c).raw; } return raws; };
+        raws[c] = strengthNow(entries, c).raw; } return raws; };
       const base = cache("tradeBase", () => rawsFor({}));
       const raws = Object.assign({}, base);
       const aft = rawsFor(moved, tr.teams); for (const c of tr.teams) raws[c] = aft[c];
@@ -1198,7 +1210,8 @@
       const ctx = H.teamCtx(c);
       if (m.kind === "c") return m.amt || 0;
       if (m.kind === "k") return pickBlend(H.pickById(m.id)) * tilt(ctx.youth);
-      if (m.kind === "s") { const sw = H.swapOf(m); return (H.swapValue(sw, "prod") + H.swapValue(sw, "market")) / 2 * tilt(ctx.youth); }
+      // a team gives up a swap reluctantly (it loses control of its own pick), so it costs the giver 30% more than it's worth to the taker
+      if (m.kind === "s") { const sw = H.swapOf(m); return (H.swapValue(sw, "prod") + H.swapValue(sw, "market")) / 2 * tilt(ctx.youth) * (c === m.from ? 1.3 : 1); }
       return H.teamPV(W.P[m.id], c);
     };
     // The trade card's grade for one team: the deal's value by its own situation, the wins it adds (worth more to a
@@ -1319,17 +1332,23 @@
           let uA = util(A, moves), uB = util(B, moves);
           // sweeteners: the side short of what it needs adds picks (and, buying, a young player) until it's there
           const sweeten = (payer, other, need) => {
-            const pk0 = poolMemo[payer + other] || (poolMemo[payer + other] = picks(payer).map(pk => ({ m: { kind: "k", id: pk.id, from: payer, to: other } })).map(x => Object.assign(x, { v: dv(other, x.m) })).filter(x => x.v > 1e6));
-            const pool = pk0.filter(x => !moves.some(m => m.kind === "k" && m.id === x.m.id))
+            // picks, plus first-round swaps (often the cheapest way to close a small gap)
+            const pk0 = poolMemo[payer + other] || (poolMemo[payer + other] = picks(payer).map(pk => ({ m: { kind: "k", id: pk.id, from: payer, to: other } }))
+              .concat([2027, 2028, 2029, 2030, 2031, 2032].map(y => ({ m: { kind: "s", id: `${y}-1-${payer}`, from: payer, to: other } })).filter(x => H.swapOf(x.m).ok))
+              .map(x => Object.assign(x, { v: dv(other, x.m) })).filter(x => x.v > 1e6));
+            const hasSwap = moves.some(m => m.kind === "s");       // one swap a deal at most: they're a garnish, not the meal
+            const pool = pk0.filter(x => !moves.some(m => m.id === x.m.id) && !(x.m.kind === "s" && (hasSwap || !H.swapOf(x.m, moves).ok)))
               .concat(mode === "buy" && payer === A ? rA.filter(q => isYoung(q) && !coreA.has(q.id) && !outA.includes(q)).map(q => ({ m: { kind: "p", id: q.id, from: A, to: other } })).map(x => Object.assign(x, { v: dv(other, x.m) })).filter(x => x.v > 1e6) : [])
               .sort((x, y) => x.v - y.v);
             let added = 0;
-            while (need() > 0 && added < 3 && pool.length) {
+            // picks first; a swap only when picks alone can't close the gap (the second pass), and never more than one
+            for (const swaps of [false, true]) while (need() > 0 && added < 3 && pool.length) {
               // the smallest piece that covers the gap, else the biggest one: checked lazily, since the rules are the slow part
               const gap = need(), ok = y => { const t = moves.concat([y.m]); return rosterOK(t) && stepienOK(payer, t); };
               let x = null;
-              for (const y of pool) if (y.v >= gap && ok(y)) { x = y; break; }
-              if (!x) for (let k = pool.length - 1; k >= 0; k--) if (pool[k].v < gap && ok(pool[k])) { x = pool[k]; break; }
+              const live = !swaps || moves.some(m => m.kind === "s") ? pool.filter(y => y.m.kind !== "s") : pool.filter(y => y.m.kind === "s");
+              for (const y of live) if (y.v >= gap && ok(y)) { x = y; break; }
+              if (!x) for (let k = live.length - 1; k >= 0; k--) if (live[k].v < gap && ok(live[k])) { x = live[k]; break; }
               if (!x) break;
               pool.splice(pool.indexOf(x), 1); moves = moves.concat([x.m]); added++;
               uA = util(A, moves); uB = util(B, moves);
