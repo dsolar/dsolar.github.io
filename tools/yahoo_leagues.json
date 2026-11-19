@@ -1,5 +1,5 @@
 {
- "checked": "2026-10-29T19:03:20Z",
+ "checked": "2026-11-19T12:31:34Z",
  "leagues": [
   {
    "code": "mlb",
@@ -205,7 +205,7 @@
    "scoring": "head",
    "draft_status": "postdraft",
    "finished": false,
-   "current_week": "8",
+   "current_week": "11",
    "renew": "461_1118984",
    "renewed": null
   }
@@ -228,8 +228,8 @@
     },
     "scoreboard": {
      "ok": true,
-     "team": 16,
-     "matchup": 8
+     "team": 10,
+     "matchup": 5
     },
     "draft results": {
      "ok": true,
@@ -237,8 +237,8 @@
     },
     "transactions": {
      "ok": true,
-     "transaction": 454,
-     "player": 454
+     "transaction": 633,
+     "player": 626
     },
     "trades": {
      "ok": true
