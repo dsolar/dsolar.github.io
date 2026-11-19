@@ -30,7 +30,7 @@
       if (at('fum_lost')) out.push(pair('FUM', 'fum_lost'));
       return out;
     }
-    if (sport === 'nba') return [['PTS','pts'],['REB','reb'],['AST','ast'],['STL','stl'],['BLK','blk'],['3PM','tpm'],['TO','tov'],['MIN','min']].map(([l,k])=>pair(l,k));
+    if (sport === 'nba' || sport === 'cbb') return [['PTS','pts'],['REB','reb'],['AST','ast'],['STL','stl'],['BLK','blk'],['3PM','tpm'],['TO','tov'],['MIN','min']].map(([l,k])=>pair(l,k));
     if (sport === 'nhl') {
       if (row.goalie) return [['W', 'w'], ['SV', 'saves'], ['SA', 'sa'], ['GA', 'ga'], ['SO', 'so']].map(([l, k]) => pair(l, k, 'goalie')).concat([
         ['GAA', at('gaa', 'goalie') == null ? '—' : at('gaa', 'goalie').toFixed(2)],

@@ -309,10 +309,17 @@
       const g = gameNow(gs), done = gs.filter((x) => x.state === "post").length;
       const of = gs.length > 1 ? `<span class="gm-of">${done} of ${gs.length} played</span>` : "";
       const lv = liveWeek(w), R = (opts.hooks || {}).real;
+      // after the game: the weekly file stands in when it's the only game he's played this week, and a player the
+      // file has no line for, once his team's game is in it, didn't play
+      const rw = done ? G.realWeek(L(), ctx, w) : null, gpAt = R && R.cols ? R.cols.indexOf(R.cols.includes("gp") ? "gp" : "g") : -1;
+      const wkLine = rw && rw.lines ? rw.lines[p.id] : null, gpOf = (ln) => (Array.isArray(ln) && gpAt >= 0 ? ln[gpAt] || 0 : null);
+      const teamIn = () => !!(rw && rw.lines) && opts.players.some((x) => x.t === p.t && x.id !== p.id && (gpOf(rw.lines[x.id]) || 0) >= done);
       const box = (game) => {
-        const line = FK.gameday.line(sport.key, p, game, lv) || (R && R.games && R.games[game.id] && R.games[game.id].lines || {})[p.id];
+        let line = FK.gameday.line(sport.key, p, game, lv) || (R && R.games && R.games[game.id] && R.games[game.id].lines || {})[p.id];
+        if (!line && game.state === "post" && wkLine && done === 1 && gpOf(wkLine) === 1) line = wkLine;
         const stats = FK.gameday.stats(sport.key, p, line, R);
-        return stats.length ? `<dl class="game-stats" aria-label="Game box score for ${esc(p.n)}">${stats.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : `<span class="ps game-missing">${game.state === "pre" ? "Stats appear after the game starts" : "Awaiting game stats"}</span>`;
+        const dnp = !line && game.state === "post" && !wkLine && teamIn();
+        return stats.length ? `<dl class="game-stats" aria-label="Game box score for ${esc(p.n)}">${stats.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : `<span class="ps game-missing">${game.state === "pre" ? "Stats appear after the game starts" : dnp ? "Didn't play" : "Awaiting game stats"}</span>`;
       };
       const others = gs.filter(x => x.id !== g.id);
       return oneGame(g) + of + box(g) + (others.length ? `<details class="game-history"><summary>Other games this week</summary>${others.map(x => `<div class="game-history-row">${oneGame(x)}${box(x)}</div>`).join("")}</details>` : "");

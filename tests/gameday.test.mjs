@@ -26,3 +26,10 @@ test('football shows real zeroes, missing values and position-specific stats', (
 test('baseball innings use outs, not decimal fractions', () => {
   assert.deepEqual(B.stats('mlb',{pos:['SP']},{pit:[17]},{lines:{pit:['outs']}})[0],['IP','5.2']);
 });
+
+test('college hoops box scores read like the NBA\'s', () => {
+  const G = require('../fantasy-kit/gameday.js');
+  const schema = { cols: ['gp', 'eg', 'min', 'fgm', 'fga', 'ftm', 'fta', 'tpm', 'pts', 'reb', 'ast', 'stl', 'blk', 'tov'] };
+  const out = G.stats('cbb', { pos: ['G'] }, [1, 1, 30, 6, 12, 3, 4, 2, 17, 5, 4, 1, 0, 2], schema);
+  assert.deepEqual(out.slice(0, 3), [['PTS', '17'], ['REB', '5'], ['AST', '4']]);
+});
