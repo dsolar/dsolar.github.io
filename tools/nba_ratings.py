@@ -113,6 +113,27 @@ def bbref_season(end_year):
 
 # ---------- pbpstats ----------
 
+PBP_KEEP = ["Name", "EntityId", "OffPoss"] + [z + s for _, z in [("", "AtRim"), ("", "ShortMidRange"), ("", "LongMidRange"), ("", "Corner3"), ("", "Arc3")] for s in ("FGM", "FGA")] + [
+    "PtsUnassisted2s", "PtsUnassisted3s", "PtsAssisted2s", "PtsAssisted3s", "AssistPoints", "AtRimAssists", "Corner3Assists", "Arc3Assists", "PtsPutbacks"]
+PBP_CACHE = os.path.join(ROOT, "nba", "data", "pbp_prev.json")
+
+
+def pbpstats_prev(end_year):
+    """Last season's pbpstats totals never change: fetch them once and keep a copy."""
+    lbl = season_label(end_year)
+    try:
+        c = json.load(open(PBP_CACHE))
+        if c.get("season") == lbl and c.get("rows"):
+            return {key(r["Name"]): r for r in c["rows"]}
+    except (OSError, ValueError):
+        pass
+    got = pbpstats_season(end_year)
+    if got:
+        with open(PBP_CACHE, "w", encoding="utf-8") as f:
+            json.dump({"season": lbl, "rows": [{k: r.get(k) for k in PBP_KEEP} for r in got.values()]}, f, separators=(",", ":"), ensure_ascii=False)
+    return got
+
+
 def pbpstats_season(end_year):
     url = f"https://api.pbpstats.com/get-totals/nba?Season={season_label(end_year)}&SeasonType=Regular%20Season&Type=Player"
     try:
@@ -149,7 +170,7 @@ def zscore(vals):
 
 def group_of(pos_avg, pos):
     if pos_avg is not None:
-        return "G" if pos_avg < 2.3 else "W" if pos_avg < 3.7 else "B"
+        return "G" if pos_avg < 2.4 else "W" if pos_avg < 4.3 else "B"
     p = (pos or "").upper()
     return "B" if "C" in p else "G" if "G" in p and "F" not in p else "W"
 
@@ -157,7 +178,7 @@ def group_of(pos_avg, pos):
 def main():
     end = current_end_year()
     cur_bb, prev_bb = bbref_season(end), bbref_season(end - 1)
-    cur_pb, prev_pb = pbpstats_season(end), pbpstats_season(end - 1)
+    cur_pb, prev_pb = pbpstats_season(end), pbpstats_prev(end - 1)
     darko = {}
     try:
         dk = json.load(open(os.path.join(ROOT, "nba", "data", "darko.json")))
@@ -205,7 +226,7 @@ def main():
         dr = darko.get(k)
         r = {
             "n": nm, "t": team if not re.match(r"\d+TM|TOT", team) else "", "age": num(ac.get("age") or ap.get("age")),
-            "pos": ac.get("pos") or ap.get("pos") or "", "g": group_of(pos_avg, ac.get("pos") or ap.get("pos")),
+            "pos": ac.get("pos") or ap.get("pos") or "", "g": group_of(pos_avg, ac.get("pos") or ap.get("pos")), "pa": pos_avg,
             "nba": (pc or pp).get("EntityId"), "mc": round(mc), "mp": round(mp), "w": tot_w,
             "gp": num(ac.get("games")) or 0,
             # per 100 and rates (Basketball-Reference, blended)
@@ -329,17 +350,22 @@ def main():
         R = lambda c: r.get(c) or 0
         P = lambda c: rp.get(c) or 0
         if R("overall") >= 97 and R("off") >= 85 and R("def") >= 70: return "Two-way superstar"
+        if g == "B":
+            if R("pass") >= 85 and R("create") >= 60: return "Playmaking big"
+            if R("score") >= 85 and R("create") >= 75: return "Scoring big"
+            if P("rimd") >= 70 and R("shoot") >= 55: return "Stretch rim protector"
+            if P("rimd") >= 70: return "Rim protector"
+            if R("shoot") >= 60: return "Stretch big"
+            if R("finish") >= 70: return "Rim runner"
+            return "Rotation big"
         if R("create") >= 85 and R("pass") >= 75: return "Primary creator"
-        if R("create") >= 85 and R("score") >= 75: return "Shot creator"
+        if R("create") >= 80 and R("score") >= 75: return "Three-level scorer" if R("shoot") >= 60 else "Shot creator"
         if R("pass") >= 85: return "Floor general"
-        if g == "B" and P("rimd") >= 80 and R("shoot") >= 55: return "Stretch rim protector"
-        if g == "B" and P("rimd") >= 80: return "Rim protector"
-        if g == "B" and R("shoot") >= 60: return "Stretch big"
-        if g == "B" and R("finish") >= 75: return "Rim runner"
-        if R("shoot") >= 75 and R("def") >= 65: return "3-and-D " + ("wing" if g != "G" else "guard")
+        if R("shoot") >= 70 and R("def") >= 65: return "3-and-D " + ("wing" if g == "W" else "guard")
         if R("shoot") >= 80: return "Shooter"
-        if R("def") >= 80 or (R("steal") >= 85 and g != "B"): return "Defensive stopper"
-        if g == "B": return "Rotation big"
+        if R("def") >= 75 or R("steal") >= 85: return "Defensive stopper"
+        if R("finish") >= 75: return "Slasher"
+        if R("pass") >= 70: return "Connector"
         return "Role player"
 
     out = []
@@ -352,7 +378,7 @@ def main():
             zones = {z: [round(a / tot, 3), round(m / a, 3) if a else None, round(zone_lg[z], 3)] for z, (m, a) in p["zones"].items()}
         rd = lambda x, n=1: None if x is None else round(x, n)
         out.append({
-            "n": p["n"], "t": p["t"], "age": p["age"], "pos": p["pos"], "g": p["g"], "nba": p["nba"],
+            "n": p["n"], "t": p["t"], "age": p["age"], "pos": p["pos"], "g": p["g"], "pa": None if p.get("pa") is None else round(p["pa"], 1), "nba": p["nba"],
             "mc": p["mc"], "mp": p["mp"], "gp": p["gp"], "q": p["w"] >= 250,
             "arch": arche(p), "r": p["r"], "rp": p["rp"],
             "s": {"pts100": rd(p.get("pts100")), "ts": rd(p.get("ts"), 3), "usg": rd(p.get("usg")), "p3": rd(p.get("p3"), 3),
