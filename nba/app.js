@@ -918,7 +918,7 @@
     var n = tr.sides.length, fails = tr.sides.filter(function (c) { return !chk.teams[c].ok; });
     var nm = { room: "Under the cap", over: "Over the cap", tax: "In the tax", a1: "Over the 1st apron", a2: "Over the 2nd apron" };
     var html = '<div class="tcard"><div class="tcard-top ' + (chk.ok ? "ok" : "bad") + '"><span class="tmark">' + (chk.ok ? "✓" : "✕") + "</span><div><b>" + (chk.ok ? "Trade works" : "Trade doesn't work") + "</b><span>" +
-      (chk.ok ? "Every team passes the cap rules." : fails.map(function (c) { return esc(team(c).short); }).join(" and ") + (fails.length === 1 ? " fails" : " fail") + " the cap rules.") + '</span></div><button class="btn" data-copy>Copy link</button></div><div class="tcard-cols n' + n + '">';
+      (chk.ok ? "Every team passes the cap rules." : fails.map(function (c) { return esc(team(c).short); }).join(" and ") + (fails.length === 1 ? " fails" : " fail") + " the cap rules.") + '</span></div><button class="btn" data-snap>Save image</button><button class="btn" data-copy>Copy link</button></div><div class="tcard-cols n' + n + '">';
     tr.sides.forEach(function (c, k) {
       var t = team(c), r = chk.teams[c], s = sum[c], g = grade(s.prod), inc = tr.assets.filter(function (a) { return destOf(tr, a) === k && a.from !== k; });
       var before = H.payroll(c, 0), dw = s.winsAfter - s.winsBefore;
@@ -931,6 +931,154 @@
     });
     return html + "</div></div>";
   }
+  // ---------- the trade snap: the trade card as a picture to share ----------
+  // Drawn on a canvas so it saves as one PNG. ESPN's logo and headshot servers allow cross-origin drawing.
+  function snapImg(src) {
+    return new Promise(function (res) {
+      if (!src) { res(null); return; }
+      var im = new Image(), done = false;
+      im.crossOrigin = "anonymous";
+      im.onload = function () { if (!done) { done = true; res(im); } };
+      im.onerror = function () { if (!done) { done = true; res(null); } };
+      setTimeout(function () { if (!done) { done = true; res(null); } }, 6000);
+      im.src = src;
+    });
+  }
+  function logoSrc(c) { return "https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/" + team(c).espn + ".png&w=160&h=160"; }
+  function headSrc(p) {
+    var id = p.espn || (window.DSFaces.find && window.DSFaces.find("nba", p.n));
+    return id ? window.DSFaces.url("nba", id, { size: 80 }) : "";
+  }
+  function fit(ctx, txt, w) {
+    if (ctx.measureText(txt).width <= w) return txt;
+    while (txt.length > 1 && ctx.measureText(txt + "…").width > w) txt = txt.slice(0, -1);
+    return txt + "…";
+  }
+  function rrect(ctx, x, y, w, h, r) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
+  function circleImg(ctx, im, x, y, d, bg, ini, cover) {
+    ctx.save(); ctx.beginPath(); ctx.arc(x + d / 2, y + d / 2, d / 2, 0, Math.PI * 2); ctx.closePath(); ctx.fillStyle = bg; ctx.fill(); ctx.clip();
+    if (im) {
+      if (cover) { var sw = im.width, sh = im.height, sc = Math.max(d / sw, d / sh) * 1.25; ctx.drawImage(im, x + d / 2 - sw * sc / 2, y + d - sh * sc + d * 0.06, sw * sc, sh * sc); }
+      else { var pad = d * 0.14; ctx.drawImage(im, x + pad, y + pad, d - 2 * pad, d - 2 * pad); }
+    } else if (ini) { ctx.fillStyle = /^#(fff|ECEBE6)/i.test(bg) ? "#56637A" : "#fff"; ctx.font = "700 " + Math.round(d * 0.36) + "px Barlow, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(ini, x + d / 2, y + d / 2 + 1); }
+    ctx.restore();
+  }
+  function snapTrade(tr, chk, sum) {
+    var n = tr.sides.length, colW = 380, gap = 18, pad = 28, W = Math.max(1080, pad * 2 + n * colW + (n - 1) * gap);
+    colW = (W - pad * 2 - (n - 1) * gap) / n;
+    var incs = tr.sides.map(function (c, k) { return tr.assets.filter(function (a) { return destOf(tr, a) === k && a.from !== k; }); });
+    var rows = Math.max(1, Math.max.apply(null, incs.map(function (x) { return x.length; }))), TILE = 92;
+    var H0 = 96, HEAD = 104, FOOT = 128, Hh = H0 + 22 + HEAD + 36 + rows * TILE + FOOT + 64;
+    var load = [];
+    tr.sides.forEach(function (c, k) {
+      load.push(snapImg(logoSrc(c)));
+      incs[k].forEach(function (a) { load.push(snapImg(a.kind === "p" ? headSrc(H.W.P[a.id]) : a.kind === "k" ? logoSrc(pickOf(a.id).from) : "")); });
+    });
+    var fonts = document.fonts && document.fonts.load ? Promise.all(["800 30px Besley", "700 20px Barlow", "700 22px 'Barlow Condensed'"].map(function (f) { return document.fonts.load(f).catch(function () {}); })) : Promise.resolve();
+    return Promise.all([fonts, window.DSFaces.load ? window.DSFaces.load("nba") : null]).then(function () { return Promise.all(load); }).then(function (ims) {
+      var S = 2, cv = document.createElement("canvas");
+      cv.width = W * S; cv.height = Hh * S;
+      var ctx = cv.getContext("2d"); ctx.scale(S, S);
+      ctx.fillStyle = "#F5F4F0"; ctx.fillRect(0, 0, W, Hh);
+      // title bar
+      ctx.fillStyle = "#002244"; ctx.fillRect(0, 0, W, H0);
+      ctx.fillStyle = "#C60C30"; ctx.fillRect(0, H0 - 5, W, 5);
+      ctx.fillStyle = "#fff"; ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+      ctx.font = "800 34px Besley, Georgia, serif"; ctx.fillText(n > 2 ? n + "-team trade" : "The trade", pad, 52);
+      ctx.font = "600 15px Barlow, sans-serif"; ctx.fillStyle = "rgba(255,255,255,.75)"; ctx.fillText("NBA Hub, " + H.asOf, pad, 76);
+      var vt = chk.ok ? "✓  Trade works" : "✕  Doesn't work";
+      ctx.font = "700 18px Barlow, sans-serif"; var vw = ctx.measureText(vt).width + 32;
+      rrect(ctx, W - pad - vw, 30, vw, 38, 19); ctx.fillStyle = chk.ok ? "#16804A" : "#C0392B"; ctx.fill();
+      ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.fillText(vt, W - pad - vw / 2, 55);
+      var ii = 0, y0 = H0 + 22;
+      tr.sides.forEach(function (c, k) {
+        var t = team(c), r = chk.teams[c], sm = sum[c], g = grade(sm.prod), x = pad + k * (colW + gap), colH = HEAD + 36 + rows * TILE + FOOT;
+        ctx.save(); ctx.shadowColor = "rgba(0,34,68,.10)"; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3; rrect(ctx, x, y0, colW, colH, 16); ctx.fillStyle = "#fff"; ctx.fill(); ctx.restore();
+        ctx.save(); rrect(ctx, x, y0, colW, colH, 16); ctx.clip();
+        ctx.fillStyle = t.color; ctx.fillRect(x, y0, colW, HEAD);
+        ctx.fillStyle = "rgba(255,255,255,.28)"; ctx.fillRect(x, y0 + HEAD - 4, colW, 4);
+        ctx.restore();
+        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.25)"; ctx.shadowBlur = 6; ctx.beginPath(); ctx.arc(x + 20 + 32, y0 + HEAD / 2, 32, 0, Math.PI * 2); ctx.fillStyle = "#fff"; ctx.fill(); ctx.restore();
+        circleImg(ctx, ims[ii++], x + 20, y0 + HEAD / 2 - 32, 64, "#fff", c);
+        ctx.textAlign = "left"; ctx.fillStyle = "#fff";
+        ctx.font = "700 12px Barlow, sans-serif"; ctx.fillText((t.city || "").toUpperCase().split("").join(String.fromCharCode(8202)), x + 100, y0 + 42);
+        ctx.font = "800 28px Besley, Georgia, serif"; ctx.fillText(fit(ctx, t.short, colW - 100 - 76), x + 100, y0 + 74);
+        // grade
+        var gc = { A: ["#D4EFD9", "#17663A"], B: ["#EEF4C9", "#4F6A00"], C: ["#FBE5CC", "#9A5B00"], D: ["#F9D9D9", "#A32020"], F: ["#F9D9D9", "#A32020"] }[g.charAt(0)];
+        rrect(ctx, x + colW - 72, y0 + HEAD / 2 - 28, 56, 56, 12); ctx.fillStyle = gc[0]; ctx.fill();
+        ctx.fillStyle = gc[1]; ctx.font = "800 26px Besley, Georgia, serif"; ctx.textAlign = "center"; ctx.fillText(g, x + colW - 44, y0 + HEAD / 2 + 9);
+        // receives
+        ctx.textAlign = "left"; ctx.fillStyle = "#66717F"; ctx.font = "700 12px Barlow, sans-serif"; ctx.fillText("RECEIVES", x + 20, y0 + HEAD + 26);
+        var ty = y0 + HEAD + 36;
+        if (!incs[k].length) { ctx.fillStyle = "#66717F"; ctx.font = "500 15px Barlow, sans-serif"; ctx.fillText("Nothing", x + 20, ty + 40); }
+        incs[k].forEach(function (a, j) {
+          var yy = ty + j * TILE, im = ims[ii++];
+          if (j) { ctx.fillStyle = "#E8EAED"; ctx.fillRect(x + 16, yy, colW - 32, 1); }
+          var title, sub, sub2, right;
+          if (a.kind === "p") {
+            var p = H.W.P[a.id], last = H.lastYear(p);
+            circleImg(ctx, im, x + 16, yy + 12, 66, team(p.t).color, window.DSFaces.initials(p.n), true);
+            title = p.n; sub = posOf(p) + ", age " + p.age + ", " + rt(H.rating(p, 0)) + " impact"; sub2 = last > 0 ? "Thru " + sname(last) : "Expiring"; right = money(H.salary(p, 0) + H.kicker(p));
+          } else if (a.kind === "k") {
+            var pk = pickOf(a.id);
+            circleImg(ctx, im, x + 16, yy + 12, 66, "#ECEBE6", pk.from);
+            title = H.pickName(pk); sub = "Projected slot " + f1(H.pickInfo(pk).avg); sub2 = ""; right = "Pick";
+          } else {
+            circleImg(ctx, null, x + 16, yy + 12, 66, "#16804A", "$");
+            title = "Cash"; sub = ""; sub2 = ""; right = money(+a.id);
+          }
+          if (n > 2) sub2 = (sub2 ? sub2 + ", " : "") + "from " + team(tr.sides[a.from]).short;
+          ctx.font = "700 21px 'Barlow Condensed', sans-serif"; var rw = ctx.measureText(right).width;
+          ctx.fillStyle = "#002244"; ctx.textAlign = "right"; ctx.fillText(right, x + colW - 18, yy + 52);
+          ctx.textAlign = "left"; ctx.font = "700 18px Barlow, sans-serif"; ctx.fillText(fit(ctx, title, colW - 100 - rw - 30), x + 96, yy + 38);
+          ctx.fillStyle = "#56637A"; ctx.font = "500 14px Barlow, sans-serif"; ctx.fillText(fit(ctx, sub, colW - 100 - rw - 30), x + 96, yy + 59);
+          if (sub2) { ctx.fillStyle = "#66717F"; ctx.font = "500 13px Barlow, sans-serif"; ctx.fillText(fit(ctx, sub2, colW - 100 - rw - 30), x + 96, yy + 78); }
+        });
+        // footer
+        var fy = y0 + HEAD + 36 + rows * TILE;
+        ctx.save(); rrect(ctx, x, y0, colW, colH, 16); ctx.clip(); ctx.fillStyle = "#ECEBE6"; ctx.fillRect(x, fy, colW, FOOT); ctx.restore();
+        ctx.fillStyle = r.ok ? "#16804A" : "#C0392B"; ctx.font = "700 14px Barlow, sans-serif"; ctx.textAlign = "left";
+        ctx.fillText(fit(ctx, r.ok ? "✓ Works for " + t.short : "✕ " + (r.msgs[0] || "Fails the cap rules"), colW - 36), x + 18, fy + 26);
+        var cell = function (lbl, val, cx, cy, col) {
+          ctx.fillStyle = "#66717F"; ctx.font = "700 11px Barlow, sans-serif"; ctx.fillText(lbl, cx, cy);
+          ctx.fillStyle = col || "#002244"; ctx.font = "600 17px 'Barlow Condensed', sans-serif"; ctx.fillText(fit(ctx, val, colW / 2 - 26), cx, cy + 21);
+        };
+        var dw = sm.winsAfter - sm.winsBefore;
+        cell("PAYROLL", money(H.payroll(c, 0)) + " → " + money(r.P2), x + 18, fy + 54);
+        cell("WINS THIS SEASON", f1(sm.winsBefore) + " → " + f1(sm.winsAfter) + " (" + (dw >= 0 ? "+" : "") + f1(dw) + ")", x + colW / 2 + 6, fy + 54);
+        cell("VALUE", signed(sm.prod), x + 18, fy + 98, sm.prod >= 0 ? "#16804A" : "#C0392B");
+        cell("SALARY IN / OUT", money(r.inSal) + " / " + money(r.outSal), x + colW / 2 + 6, fy + 98);
+      });
+      ctx.fillStyle = "#56637A"; ctx.font = "600 14px Barlow, sans-serif"; ctx.textAlign = "left";
+      ctx.fillText("Checked against the 2023 CBA. Value grade from production surplus.", pad, Hh - 26);
+      ctx.textAlign = "right"; ctx.fillStyle = "#002244"; ctx.font = "700 15px Barlow, sans-serif"; ctx.fillText("davidsolar.dev/nba", W - pad, Hh - 26);
+      return cv;
+    });
+  }
+  function openSnap() {
+    var tr = tradeState();
+    if (!tr.sides.every(Boolean) || !tr.assets.length) return;
+    var moves = tr.assets.map(function (a) { return { kind: a.kind, id: a.id, amt: a.kind === "c" ? +a.id : 0, from: tr.sides[a.from], to: tr.sides[destOf(tr, a)] }; });
+    var chk = H.checkTrade({ teams: tr.sides, moves: moves }), sum = H.tradeSummary({ teams: tr.sides, moves: moves });
+    cardBody.innerHTML = '<div class="snapbox"><h3>Share this trade</h3><p class="note">Drawing the picture…</p></div>';
+    if (!card.open) card.showModal();
+    var name = "trade-" + tr.sides.join("-").toLowerCase() + ".png";
+    snapTrade(tr, chk, sum).then(function (cv) {
+      cv.toBlob(function (blob) {
+        if (!blob) { cardBody.innerHTML = '<div class="snapbox"><h3>Share this trade</h3><p class="note">Couldn\'t draw the picture in this browser. Copy the link instead.</p></div>'; return; }
+        var url = URL.createObjectURL(blob), file = null;
+        try { file = new File([blob], name, { type: "image/png" }); } catch (e) { /* old browser */ }
+        var canShare = file && navigator.canShare && navigator.canShare({ files: [file] });
+        cardBody.innerHTML = '<div class="snapbox"><h3>Share this trade</h3><img class="snapimg" src="' + url + '" alt="The trade card as a picture"><p class="snapbtns">' +
+          (canShare ? '<button class="btn" data-snapshare>Share</button> ' : "") + '<a class="btn" href="' + url + '" download="' + name + '">Download</a> <button class="btn" data-copy>Copy link</button></p></div>';
+        var sh = cardBody.querySelector("[data-snapshare]");
+        if (sh) sh.addEventListener("click", function () { navigator.share({ files: [file], title: "NBA trade", url: location.href }).catch(function () {}); });
+        var cp = cardBody.querySelector("[data-copy]");
+        cp.addEventListener("click", function () { try { navigator.clipboard.writeText(location.href); cp.textContent = "Link copied"; } catch (x) { /* no clipboard */ } });
+      }, "image/png");
+    });
+  }
+
   function tradePage() {
     var tr = tradeState(), n = tr.sides.length, ready = tr.sides.every(Boolean);
     var opts = function (cur, taken) {
@@ -1059,9 +1207,10 @@
   });
   view.addEventListener("click", function (e) {
     var pick = e.target.closest("[data-pick]"), rm = e.target.closest("[data-rm]"), clear = e.target.closest("[data-clear]"), add = e.target.closest("[data-addteam]"),
-      drop = e.target.closest("[data-dropteam]"), cash = e.target.closest("[data-addcash]"), copy = e.target.closest("[data-copy]");
-    if (!pick && !rm && !clear && !add && !drop && !cash && !copy) return;
+      drop = e.target.closest("[data-dropteam]"), cash = e.target.closest("[data-addcash]"), copy = e.target.closest("[data-copy]"), snap = e.target.closest("[data-snap]");
+    if (!pick && !rm && !clear && !add && !drop && !cash && !copy && !snap) return;
     e.stopPropagation();
+    if (snap) { openSnap(); return; }
     if (copy) { try { navigator.clipboard.writeText(location.href); copy.textContent = "Link copied"; } catch (x) { /* no clipboard */ } return; }
     var tr = tradeState();
     if (clear) tr = { sides: [null, null], assets: [] };

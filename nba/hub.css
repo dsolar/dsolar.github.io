@@ -408,3 +408,7 @@ details.capdet>.panel{margin:0 10px 10px}
 .asset.out .aact{grid-column:3;grid-row:1/3;display:flex;align-items:center;gap:6px;margin:0}
 .asset.out b.sal{grid-column:2;grid-row:1/3}
 details.capdet>summary h3{border:0;padding:0}
+.tcard-top .btn+.btn{margin-left:-4px}
+.snapbox h3{margin:0 0 10px;font:800 22px/1.2 var(--display)}
+.snapimg{width:100%;height:auto;border-radius:10px;border:1px solid var(--rule);display:block}
+.snapbtns{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0}
