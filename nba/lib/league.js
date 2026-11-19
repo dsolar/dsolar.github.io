@@ -522,7 +522,9 @@
       for (const pk of W.picks) if (pk.owner === code && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1;
       for (const id of out.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.r === 1) firsts[pk.y]--; }
       for (const id of inn.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1; }
-      const st = CBA.stepien(firsts, 2027 + W.season + (L.inSeason(W) ? 0 : 0) + (W.phase === "fa" || W.phase === "summer" ? 0 : 0));
+      // the rule limits trading first-round picks away: a team already short (from older deals) can still trade players
+      const sendsFirst = (out.picks || []).some(id => { const pk = W.picks.find(x => x.id === id); return pk && pk.r === 1; });
+      const st = sendsFirst ? CBA.stepien(firsts, 2027 + W.season) : { ok: true };
       if (!st.ok) { r.ok = false; r.msgs.push(st.why); }
       return r;
     }

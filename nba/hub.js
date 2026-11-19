@@ -38,6 +38,9 @@
     fill: true,          // teams fill open roster spots with free agents they can afford
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
     growth: 0.5,         // share of a young player's projected improvement that counts in his value
+    salW: 0.5,           // what a dollar of salary costs a team in value. Teams must spend to the salary floor and unused
+                         // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
+                         // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
     convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
     blendRookie: 1000,   // a first- or second-year player's rating is mostly a draft-slot guess, so his play moves it faster
   };
@@ -556,7 +559,7 @@
     const pickCurve = s => curve[clamp(Math.round(s), 1, 60) - 1] || 0;
     H.surplus = (p, mode) => {
       mode = mode || cfg.mode;
-      return cache("sur" + p.id + mode + cfg.disc + cfg.growth, () => {
+      return cache("sur" + p.id + mode + cfg.disc + cfg.growth + cfg.salW, () => {
         const rows = [];
         const e = H.lastYear(p);
         for (let j = 0; j <= Math.max(e, -1) && j < 6; j++) {
@@ -565,7 +568,8 @@
           const part = j === 0 ? frac0 : 1;
           const v = mode === "market" ? marketAt(p, j) : prodAt(p, j);
           const opt = p.c.opt && p.c.opt[j] ? p.c.opt[j] : "";
-          rows.push({ j, season: CBA.seasonName(j), r: H.rating(p, j), value: v * part, sal: sal * part, surplus: (v - sal) * part, pv: (v - sal) * part * discAt(j), opt, part });
+          const cost = sal * (cfg.salW ?? 1);
+          rows.push({ j, season: CBA.seasonName(j), r: H.rating(p, j), value: v * part, sal: sal * part, cost: cost * part, surplus: (v - cost) * part, pv: (v - cost) * part * discAt(j), opt, part });
         }
         let pv = sum(rows.map(r => r.pv));
         // A player still on his rookie deal is mostly his draft slot: the No. 1 pick doesn't lose most of its value the
@@ -584,7 +588,7 @@
           prior = { slot: rk[1], year: rk[0], value: slotV, w, model: pv };
           pv = w * pv + (1 - w) * slotV;
         }
-        return { rows, pv, prior, total: sum(rows.map(r => r.surplus)), years: rows.length, salLeft: sum(rows.map(r => r.sal)) };
+        return { rows, pv, prior, total: sum(rows.map(r => r.surplus)), years: rows.length, salLeft: sum(rows.map(r => r.sal)), costLeft: sum(rows.map(r => r.cost)) };
       });
     };
 
@@ -900,6 +904,168 @@
         }
       }
       return out.sort((a, b) => Math.abs(a.gap) - Math.abs(b.gap)).slice(0, 15);
+    };
+    // ---------- Deal finder: team-aware ----------
+    // Every team weighs a deal by where it is. Contenders also count the wins it adds this season; rebuilders count
+    // picks and young players for more and veterans for less. That's what lets both sides come out ahead (on one
+    // value scale a trade is zero-sum). Value is the average of the production and market views, as in trade grades.
+    H.teamCtx = c => cache("ctx" + c, () => {
+      const st = H.standings(0).find(r => r.code === c), po = st ? st.playoffs : 0.5;
+      const tier = po >= 0.65 ? "contend" : po <= 0.3 ? "rebuild" : "middle";
+      return { tier, po, winW: tier === "contend" ? 6e6 : tier === "middle" ? 2.5e6 : 0,
+        youth: tier === "rebuild" ? 1.3 : tier === "middle" ? 1.1 : 0.95, vet: tier === "rebuild" ? 0.55 : tier === "middle" ? 0.9 : 1.05 };
+    });
+    const isYoung = p => p.age <= 24 || !!(p.c && p.c.rk && (p.yos ?? 9) <= 3);
+    const isVet = p => p.age >= 29;
+    const blendV = p => cache("bl" + p.id + cfg.disc + cfg.growth + cfg.salW, () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
+    const pickBlend = pk => cache("pb" + pk.id + cfg.disc, () => (H.pickValue(pk, "prod") + H.pickValue(pk, "market")) / 2);
+    const contrib = p => Math.max(0, H.rating(p, 0) + 2) * H.mpgAt(p, 0) / 48 * (p.h ?? 0.85);
+    H.dealValue = (c, m) => {                      // what one piece is worth to team c
+      const ctx = H.teamCtx(c);
+      if (m.kind === "c") return m.amt || 0;
+      if (m.kind === "k") return pickBlend(W.picks.find(x => x.id === m.id)) * ctx.youth;
+      const p = W.P[m.id], v = blendV(p);
+      return v <= 0 ? v : v * (isYoung(p) ? ctx.youth : isVet(p) ? ctx.vet : 1);
+    };
+    const winsFor = (c, moves) => {               // quick estimate of this season's wins added (full sim for the shortlist)
+      let d = 0;
+      for (const m of moves) if (m.kind === "p") { const q = W.P[m.id]; if (m.to === c) d += contrib(q); if (m.from === c) d -= contrib(q); }
+      return d * 2.7 * Math.max(0, 82 - W.T[c].w - W.T[c].l) / 82;
+    };
+    H.dealUtility = (c, moves) => {
+      let u = 0;
+      for (const m of moves) { if (m.to === c) u += H.dealValue(c, m); if (m.from === c) u -= H.dealValue(c, m); }
+      const dw = winsFor(c, moves);
+      return { u: u + H.teamCtx(c).winW * dw, dw, value: u };
+    };
+    // opts: { team, mode: "win" | "buy" | "sell", player (optional: a player on team who must go out) }
+    H.findDeals = (opts) => {
+      const A = opts.team, mode = opts.mode || "win", forced = opts.player && W.P[opts.player] && W.P[opts.player].t === A ? W.P[opts.player] : null;
+      if (!W.T[A]) return [];
+      const ctxA = H.teamCtx(A), payA = H.payroll(A, 0);
+      const roster = c => Object.values(W.P).filter(q => q.t === c && !q.two && H.salary(q, 0) > 0);
+      const core = c => new Set(roster(c).sort((a, b) => contrib(b) - contrib(a)).slice(0, 3).map(q => q.id));
+      const picks = c => H.picksOf(c).filter(pk => !pk.locked && (pk.r === 1 ? pk.y <= 2032 : pk.y <= 2028));
+      const salOK = (outA, inA, B) => {           // quick salary check for both sides (the full rules run on the shortlist)
+        const S = sum(outA.map(q => H.salary(q, 0))), T = sum(inA.map(q => H.salary(q, 0)));
+        const kA = sum(outA.map(q => H.kicker(q))), kB = sum(inA.map(q => H.kicker(q)));
+        const payB = H.payroll(B, 0), postB = payB - T + S + kA, postA = payA - S + T + kB;
+        const okB = !outA.length && !inA.length ? false : (postB <= CBA.cap(0) || S + kA <= (T > 0 ? CBA.matchMax(T, 0, CBA.status(postB, 0)) : 0) || S === 0);
+        const okA = postA <= CBA.cap(0) || T + kB <= (S > 0 ? CBA.matchMax(S, 0, CBA.status(postA, 0)) : 0) || T === 0;
+        return okA && okB;
+      };
+      const combos = (pool, max) => {
+        const out = [], n = pool.length;
+        for (let a = 0; a < n; a++) { out.push([pool[a]]); if (max < 2) continue;
+          for (let b = a + 1; b < n; b++) { out.push([pool[a], pool[b]]); if (max < 3) continue;
+            for (let c = b + 1; c < n; c++) out.push([pool[a], pool[b], pool[c]]); } }
+        return out;
+      };
+      const mv = (list, from, to) => list.map(q => ({ kind: "p", id: q.id, from, to }));
+      const nRoster = {}; for (const c of codes) nRoster[c] = roster(c).length;
+      const rosterOK = moves => {
+        const d = {};
+        for (const m of moves) if (m.kind === "p") { d[m.from] = (d[m.from] || 0) - 1; d[m.to] = (d[m.to] || 0) + 1; }
+        return Object.keys(d).every(c => nRoster[c] + d[c] <= 15 && nRoster[c] + d[c] >= 13);
+      };
+      // Stepien rule: never leave a team without a first-round pick in back-to-back future drafts
+      const firstsOf = c => { const y = {}; for (const pk of W.picks) if (pk.r === 1 && pk.owner === c && pk.y >= 2027) y[pk.y] = (y[pk.y] || 0) + 1; return y; };
+      const stepienOK = (c, moves) => {
+        const y = Object.assign({}, firstsOf(c));
+        for (const m of moves) if (m.kind === "k") { const pk = W.picks.find(x => x.id === m.id); if (pk.r !== 1) continue; if (m.from === c) y[pk.y] = (y[pk.y] || 0) - 1; if (m.to === c) y[pk.y] = (y[pk.y] || 0) + 1; }
+        // like the trade check: a team that sends a first can't be left with back-to-back years missing one
+        const sends = moves.some(m => m.kind === "k" && m.from === c && W.picks.find(x => x.id === m.id).r === 1);
+        if (!sends) return true;
+        for (let yr = 2027; yr <= 2032; yr++) if (!(y[yr] > 0) && !(y[yr + 1] > 0)) return false;
+        return true;
+      };
+      const cands = [];
+      const coreA = core(A);
+      const dbg = H._dealDbg = { combos: 0, sal: 0, floors: 0 };
+      for (const B of codes) {
+        if (B === A) continue;
+        const ctxB = H.teamCtx(B), coreB = core(B), rB = roster(B), rA = roster(A);
+        if (mode === "sell" && ctxB.tier === "rebuild") continue;      // sellers sell to teams trying to win
+        if (mode === "buy" && ctxB.tier === "contend") continue;       // buyers buy from teams that aren't
+        // what A puts on the table
+        let outSets;
+        if (forced) outSets = [[forced]].concat(rA.filter(q => q.id !== forced.id && !coreA.has(q.id) && !(isYoung(q) && ctxA.tier !== "contend")).sort((a, b) => H.salary(a, 0) - H.salary(b, 0)).slice(0, 6).map(q => [forced, q]));
+        else if (mode === "sell") outSets = rA.filter(q => q.age >= 27 && H.rating(q, 0) >= 0 && H.mpgAt(q, 0) >= 15).map(q => [q]);
+        else outSets = combos(rA.filter(q => !coreA.has(q.id)).sort((a, b) => H.salary(b, 0) - H.salary(a, 0)).slice(0, 9), 2);
+        // what B could send
+        let inPool;
+        if (mode === "buy") inPool = rB.filter(q => H.rating(q, 0) >= 0.8 && H.mpgAt(q, 0) >= 18 && !isYoung(q)).sort((a, b) => contrib(b) - contrib(a)).slice(0, 5);
+        else if (mode === "sell") {
+          const nc = rB.filter(q => !coreB.has(q.id));
+          const filler = nc.slice().sort((a, b) => H.salary(b, 0) - H.salary(a, 0)).slice(0, 6), young = nc.filter(q => isYoung(q) && !filler.includes(q)).sort((a, b) => blendV(b) - blendV(a)).slice(0, 4);
+          inPool = filler.concat(young);
+        }
+        else inPool = rB.filter(q => H.mpgAt(q, 0) >= 10).sort((a, b) => H.salary(b, 0) - H.salary(a, 0)).slice(0, 10);
+        const inSets = mode === "sell" ? combos(inPool, 3) : combos(inPool, 2);
+        const best = [];
+        for (const outA of outSets) for (const inA of inSets) {
+          dbg.combos++;
+          if (!salOK(outA, inA, B)) continue;
+          if (outA.length + inA.length > 5) continue;
+          dbg.sal++;
+          let moves = mv(outA, A, B).concat(mv(inA, B, A));
+          if (!rosterOK(moves)) continue;
+          let uA = H.dealUtility(A, moves), uB = H.dealUtility(B, moves);
+          // sweeteners: the side short of what it needs adds picks (and, buying, a young player) until it's there
+          const sweeten = (payer, other, need) => {
+            const pool = picks(payer).filter(pk => !moves.some(m => m.kind === "k" && m.id === pk.id)).map(pk => ({ m: { kind: "k", id: pk.id, from: payer, to: other } }))
+              .concat(mode === "buy" && payer === A ? rA.filter(q => isYoung(q) && !coreA.has(q.id) && !outA.includes(q)).map(q => ({ m: { kind: "p", id: q.id, from: A, to: other } })) : [])
+              .map(x => Object.assign(x, { v: H.dealValue(other, x.m) })).filter(x => x.v > 1e6).sort((x, y) => x.v - y.v);
+            let added = 0;
+            while (need() > 0 && added < 3 && pool.length) {
+              const gap = need(), legal = pool.filter(y => { const t = moves.concat([y.m]); return rosterOK(t) && stepienOK(payer, t); });
+              if (!legal.length) break;
+              const x = legal.find(y => y.v >= gap) || legal[legal.length - 1];
+              pool.splice(pool.indexOf(x), 1); moves = moves.concat([x.m]); added++;
+              uA = H.dealUtility(A, moves); uB = H.dealUtility(B, moves);
+            }
+          };
+          const floorB = 1e6, floorA = mode === "buy" ? -15e6 : 1e6;
+          if (uB.u < floorB) sweeten(A, B, () => floorB - uB.u);
+          if (mode === "sell" || mode === "win") {
+            if (uA.u < floorA) sweeten(B, A, () => floorA - uA.u);
+            // a seller asks for more while the buyer still comes out ahead
+            if (mode === "sell" && uA.u >= floorA && uB.u >= floorB) {
+              // a seller asks for picks while the buyer still comes out ahead: biggest that fits first, up to three
+              const extra = picks(B).filter(pk => !moves.some(m => m.kind === "k" && m.id === pk.id)).map(pk => ({ kind: "k", id: pk.id, from: B, to: A })).sort((x, y) => H.dealValue(A, y) - H.dealValue(A, x));
+              let n = 0;
+              for (const m of extra) {
+                if (n >= 3) break;
+                const t = moves.concat([m]);
+                if (!stepienOK(B, t)) continue;
+                const ub = H.dealUtility(B, t);
+                if (ub.u >= 3e6) { moves = t; uB = ub; uA = H.dealUtility(A, moves); n++; }
+              }
+            }
+          }
+          if (uA.u < floorA || uB.u < floorB) continue;
+          dbg.floors++;
+          if (mode === "buy" && uA.dw < 0.5) continue;
+          const score = mode === "buy" ? uA.dw * 10e6 + uA.u : mode === "sell" ? uA.value : Math.min(uA.u, uB.u);
+          best.push({ team: B, moves, uA, uB, score });
+        }
+        best.sort((x, y) => y.score - x.score);
+        let kept = 0;
+        for (const c of best) {
+          if (kept >= 2) break;
+          if (cands.some(o => o.team === B && o.moves.filter(m => m.kind === "p").map(m => m.id).sort().join() === c.moves.filter(m => m.kind === "p").map(m => m.id).sort().join())) continue;
+          cands.push(c); kept++;
+        }
+      }
+      cands.sort((x, y) => y.score - x.score);
+      const out = [];
+      for (const c of cands.slice(0, 30)) {
+        if (out.length >= 12) break;
+        const chk = H.checkTrade({ teams: [A, c.team], moves: c.moves });
+        if (!chk.ok) { (dbg.fails = dbg.fails || []).push([A, c.team].map(x => chk.teams[x].msgs.join("; ")).join(" || ")); continue; }
+        out.push(Object.assign({ tierA: ctxA.tier, tierB: H.teamCtx(c.team).tier }, c));
+      }
+      return out;
     };
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);

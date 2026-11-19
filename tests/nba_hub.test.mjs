@@ -67,11 +67,11 @@ test('re-signing a player keeps him on the roster after his deal ends', () => {
   delete H.keep[p.id]; H.reset();
 });
 
-test('surplus: value minus salary, discounted; the market view never pays past the max', () => {
+test('surplus: value minus salary at the salary weight, discounted; the market view never pays past the max', () => {
   const p = H.players().sort((a, b) => H.salary(b, 0) - H.salary(a, 0))[0];
   const s = H.surplus(p, 'prod');
   assert.ok(s.rows.length >= 1);
-  for (const r of s.rows) assert.ok(Math.abs(r.surplus - (r.value - r.sal)) < 1);
+  for (const r of s.rows) { assert.ok(Math.abs(r.cost - r.sal * (H.cfg.salW ?? 1)) < 1); assert.ok(Math.abs(r.surplus - (r.value - r.cost)) < 1); }
   const m = H.surplus(p, 'market');
   for (const r of m.rows) assert.ok(r.value <= H.CBA.maxSal(p.yos + r.j, r.j) * (r.part || 1) + 1);
 });
