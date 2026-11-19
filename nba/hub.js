@@ -882,6 +882,27 @@
     H.matchMax = (out, post) => CBA.matchMax(out, 0, post);
     H.matchRule = (out, post) => CBA.matchRule(out, 0, post);
     H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(H.pickById(m.id), mode);
+    // What a change in luxury tax is worth to a team. Tax a deal adds counts in full this season, and later seasons
+    // count less (more can change). Tax a deal saves counts only up to what getting under some other way would cost:
+    // a team can shed salary in another deal at roughly 40 cents a dollar (what absorbing teams charge, by the salary
+    // weight), 60 this season with fewer chances left, so a team $20 million over next season isn't really facing its
+    // whole bill. Later seasons count less again, since the team may not be over then after all.
+    const TAX_W = [1, 0.6, 0.45, 0.35, 0.25], SAVE_U = [1, 0.85, 0.7, 0.6, 0.5];
+    H.taxValue = (c, d) => {                         // d: payroll change by season
+      const rep = H.tools(c, 0).rep, rows = [];
+      let v = 0;
+      for (let j = 0; j < YEARS; j++) {
+        const dj = d[j] || 0;
+        if (!dj) { rows.push({ j, bill: 0, counted: 0 }); continue; }
+        const pb = H.payroll(c, j), pa = pb + dj, line = CBA.tax(j);
+        const bill = CBA.taxBill(pb, j, rep) - CBA.taxBill(pa, j, rep);       // positive: saved
+        let counted;
+        if (bill > 0) { const shed = Math.max(0, pb - line) - Math.max(0, pa - line); counted = Math.min(bill, (j === 0 ? 0.6 : 0.4) * shed) * SAVE_U[j]; }
+        else counted = bill * TAX_W[j];
+        rows.push({ j, bill, counted }); v += counted;
+      }
+      return { v, rows };
+    };
     H.tradeSummary = tr => {
       const out = {};
       for (const c of tr.teams) out[c] = { prod: 0, market: 0, salIn: 0, salOut: 0, inn: [], out: [] };
@@ -911,13 +932,13 @@
         const rep = H.tools(c, 0).rep;
         const payJ = j => { let pay = H.payroll(c, j); for (const m of tr.moves) if (m.kind === "p") { const q = W.P[m.id], sj = H.salary(q, j) + (j === 0 && m.to === c ? H.kicker(q) : 0); if (m.to === c) pay += sj; if (m.from === c) pay -= sj; } return pay; };
         // every season the contracts run: salary change and tax, later seasons counting less (more can change)
-        const TW = [1, 0.6, 0.45, 0.35, 0.25], dPay = [], dTax = [];
-        let taxSave = 0;
+        const dPay = [], dTax = [];
         for (let j = 0; j < YEARS; j++) {
-          const pb = H.payroll(c, j), pa = payJ(j), bt = CBA.taxBill(pb, j, rep), at = CBA.taxBill(pa, j, rep);
-          dPay.push(pa - pb); dTax.push(bt - at); taxSave += (TW[j] ?? 0.2) * (bt - at);
+          const pb = H.payroll(c, j), pa = payJ(j);
+          dPay.push(pa - pb); dTax.push(CBA.taxBill(pb, j, rep) - CBA.taxBill(pa, j, rep));
         }
-        Object.assign(out[c], { taxBefore: CBA.taxBill(H.payroll(c, 0), 0, rep), taxAfter: CBA.taxBill(payJ(0), 0, rep), taxSave, dPay, dTax });
+        const tv = H.taxValue(c, dPay), taxSave = tv.v, taxRows = tv.rows;
+        Object.assign(out[c], { taxBefore: CBA.taxBill(H.payroll(c, 0), 0, rep), taxAfter: CBA.taxBill(payJ(0), 0, rep), taxSave, taxRows, dPay, dTax });
       }
       return out;
     };
@@ -1096,13 +1117,10 @@
       let u = 0;
       for (const m of moves) { if (m.to === c) u += dv(c, m); if (m.from === c) u -= dv(c, m); }
       const dw = winsFor(c, moves);
-      // luxury tax saved (a dump) or added, every season the contracts run, weighted as on the trade card
-      const rep = H.tools(c, 0).rep, TW = [1, 0.6, 0.45, 0.35, 0.25];
-      let tax = 0;
-      for (let j = 0; j < YEARS; j++) {
-        let d = 0; for (const m of moves) if (m.kind === "p") { const q = W.P[m.id], sj = H.salary(q, j) + (j === 0 && m.to === c ? H.kicker(q) : 0); if (m.to === c) d += sj; if (m.from === c) d -= sj; }
-        if (d) { const pj = H.payroll(c, j); tax += TW[j] * (CBA.taxBill(pj, j, rep) - CBA.taxBill(pj + d, j, rep)); }
-      }
+      // luxury tax saved (a dump) or added, every season the contracts run, valued as on the trade card
+      const d = [];
+      for (let j = 0; j < YEARS; j++) { d.push(0); for (const m of moves) if (m.kind === "p") { const q = W.P[m.id], sj = H.salary(q, j) + (j === 0 && m.to === c ? H.kicker(q) : 0); if (m.to === c) d[j] += sj; if (m.from === c) d[j] -= sj; } }
+      const tax = H.taxValue(c, d).v;
       return { u: u + H.teamCtx(c).winW * dw + tax, dw, value: u, tax };
     };
     // opts: { team, mode: "win" | "buy" | "sell", player (optional: a player on team who must go out) }
