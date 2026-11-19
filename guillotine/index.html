@@ -484,6 +484,25 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .cl-tick{position:absolute;top:-3px;bottom:-3px;width:2px;margin-left:-1px;background:var(--blade)}
 .claims-none{margin:.8rem 0 0;color:var(--muted);font-size:.85rem}
 .spend{margin:1.4rem 0 0}
+.money-t{margin:0}
+#money-foot{margin-top:1rem}
+.est-all{margin:.7rem 0 0}
+.est-all summary{cursor:pointer;color:var(--muted);font-size:.8rem;font-weight:600}
+.est-all summary:hover{color:var(--ink)}
+.est-all ul{list-style:none;margin:.35rem 0 0;padding:0}
+.est-all li{display:flex;justify-content:space-between;gap:.6rem;padding:.2rem 0;border-bottom:1px solid var(--rule);font-size:.8rem}
+.est-all li small{color:var(--muted)}
+.est-all li.unc{color:var(--muted)}
+.bigbids li div{min-width:0}
+.bigbids small{color:var(--muted)}
+.bb-sub{display:block;color:var(--muted);font-size:.78rem;margin-top:.1rem}
+.bb-v{font:700 1.15rem var(--f-display,inherit);font-variant-numeric:tabular-nums}
+.chart .mbar{fill:rgb(var(--bleu-rgb))}
+.chart .mval{fill:var(--ink);font:700 11px var(--f-body)}
+.mweeks{list-style:none;margin:.6rem .3rem 0;padding:0;font-size:.8rem;color:var(--muted);display:grid;gap:.2rem}
+.mweeks b{color:var(--ink)}
+.est-all li span:last-child{white-space:nowrap;text-align:right}
+@media (max-width:520px){.money-t td:first-child small{display:none}}
 .spend h4{margin:0 0 .4rem;font:700 .7rem/1.2 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .spend table{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
 .spend th,.spend td{position:static;background:none;padding:.45rem .4rem;border-bottom:1px solid var(--rule);text-align:right;white-space:nowrap}
@@ -620,6 +639,7 @@ th.line{border-left:1px solid var(--rule)}
   <a href="#week" data-sec="week">Odds</a>
   <a href="#ahead" data-sec="ahead">Road ahead</a>
   <a href="#recap" data-sec="recap">Last week</a>
+  <a href="#money" data-sec="money">Money</a>
   <a href="#fallen-sec" data-sec="fallen-sec">Fallen</a>
 </div></nav>
 
@@ -766,6 +786,31 @@ th.line{border-left:1px solid var(--rule)}
     <div id="recap-top" class="panel" role="tabpanel" aria-labelledby="tab-top" hidden></div>
     <div id="recap-over" class="panel" role="tabpanel" aria-labelledby="tab-over" hidden></div>
     <div id="recap-under" class="panel" role="tabpanel" aria-labelledby="tab-under" hidden></div>
+  </section>
+
+  <section id="money" class="group" aria-labelledby="money-title" hidden>
+    <div class="section-head"><h2 id="money-title">The money</h2><p id="money-lede"></p></div>
+    <div class="tabs" role="tablist" aria-label="The money">
+      <button type="button" role="tab" id="tab-wallets" aria-controls="wallets">Wallets</button>
+      <button type="button" role="tab" id="tab-bigbids" aria-controls="bigbids">Biggest bids</button>
+      <button type="button" role="tab" id="tab-byweek" aria-controls="byweek">Week by week</button>
+    </div>
+    <section id="wallets" aria-labelledby="tab-wallets" class="panel" role="tabpanel" hidden>
+      <h3 class="sr">Each surviving team's money and how it spends</h3>
+      <p class="panel-note">What every team still alive has left, what it has spent, and how it has bid on the players cut teams leave behind.</p>
+      <div class="spend money-t" id="wallets-body"></div>
+    </section>
+    <section id="bigbids" aria-labelledby="tab-bigbids" class="panel" role="tabpanel" hidden>
+      <h3 class="sr">The season's biggest winning bids</h3>
+      <p class="panel-note">The biggest winning bids of the season on cut teams' players.</p>
+      <ol class="claims bigbids" id="bigbids-list"></ol>
+    </section>
+    <section id="byweek" aria-labelledby="tab-byweek" class="panel" role="tabpanel" hidden>
+      <h3 class="sr">Estate money by week</h3>
+      <p class="panel-note">What each week's cut team fetched on waivers, and the biggest buy. The money dries up as the budgets do.</p>
+      <div class="chart"><div id="byweek-chart"></div></div>
+    </section>
+    <p class="claims-none" id="money-foot"></p>
   </section>
 
   <section id="fallen-sec" class="group band" aria-labelledby="fallen-title" hidden>
@@ -1086,14 +1131,14 @@ th.line{border-left:1px solid var(--rule)}
         var meta = [m ? esc(m) : null, score ? "<b>" + score + "</b> pts" : null,
           snap && !e.hide_odds ? "given " + pct(snap.chop) + " cut odds" : null].filter(Boolean).join(" · ");
         var haiku = Array.isArray(e.haiku) ? e.haiku.join("\n") : (e.haiku || "");
-        var facts = autopsy(f.week, f.name), est = estateFact(f.week, f.name);
+        var facts = autopsy(f.week, f.name), est = estateFact(f.week, f.name), extra = est ? est[2] : "";
         if (est) facts.push(est);
         var img = e.image ? '<div class="fimg"><img class="bg" src="' + esc(e.image) + '" alt="" loading="lazy"><img src="' + esc(e.image) + '" alt="' + esc(e.alt || ("Send-off image for " + f.name)) + '" loading="lazy"><span class="fwk">Week ' + f.week + "</span></div>"
           : '<div class="fimg empty"><span class="fwk">Week ' + f.week + "</span>Send-off coming</div>";
         return '<li class="fcard">' + img + '<div class="fbody"><h3 class="ft">' + esc(f.name) + "</h3>" +
           (meta ? '<p class="fm">' + meta + "</p>" : "") +
           (haiku ? '<p class="haiku">' + esc(haiku) + "</p>" : "") +
-          (facts.length ? '<dl class="facts">' + facts.map(function (x) { return "<dt>" + x[0] + "</dt><dd>" + x[1] + "</dd>"; }).join("") + "</dl>" : "") +
+          (facts.length ? '<dl class="facts">' + facts.map(function (x) { return "<dt>" + x[0] + "</dt><dd>" + x[1] + "</dd>"; }).join("") + "</dl>" : "") + extra +
           "</div></li>";
       }).join("");
       $("fallen").hidden = !fallen.length;
@@ -1111,9 +1156,10 @@ th.line{border-left:1px solid var(--rule)}
     // the odds. Once games start, it drops below the road ahead.
     var early = !started && !(data.live && data.live.anyStarted);
     renderClaims();
+    renderMoney();
     var app = $("app");
     if (early) { app.insertBefore($("recap"), $("week")); }
-    else app.insertBefore($("recap"), $("fallen-sec"));
+    else app.insertBefore($("recap"), $("money"));
     var jin = document.querySelector("#jump .jump-in");
     Array.prototype.slice.call(jin.querySelectorAll("a")).sort(function (a, b) {
       var A = $(a.getAttribute("data-sec")), B = $(b.getAttribute("data-sec"));
@@ -1256,12 +1302,107 @@ th.line{border-left:1px solid var(--rule)}
     var bid = ps.filter(function (p) { return typeof p.bid === "number" && p.bid > 0; });
     var total = bid.reduce(function (n, p) { return n + p.bid; }, 0);
     var name = function (t) { return esc(state.mgr(t) || t); };
-    var left = est.from === "rosters" || est.from === "yahoo" ? est.players.length - ps.length : 0;
+    var known = est.from === "rosters" || est.from === "yahoo";
+    var left = known ? est.players.length - ps.length : 0;
+    var all = "";
     var txt = (total ? "$" + total + " for " : "") + ps.length + " player" + (ps.length > 1 ? "s" : "") +
-      (bid.length ? ": " + bid.slice(0, 3).map(function (p) { return esc(short(p.n)) + " $" + p.bid + " to " + name(p.claimed_by); }).join(", ") +
-        (ps.length > 3 ? ", +" + (ps.length - 3) + " more" : "") : "") + "." +
+      (bid.length ? ": " + bid.slice(0, 3).map(function (p) { return esc(short(p.n)) + " $" + p.bid + " to " + name(p.claimed_by); }).join(", ") : "") + "." +
       (left ? " " + left + " went unclaimed." : "");
-    return ["Estate", txt];
+    // The rest of the roster, one line each, behind a toggle: every claim, then who nobody wanted.
+    if (est.players.length > Math.min(3, bid.length)) {
+      var rows = ps.slice().sort(function (a, b) { return (b.bid || 0) - (a.bid || 0); }).map(function (p) {
+        return "<li><span>" + esc(p.n) + " <small>" + esc(p.pos || "") + "</small></span><span>" + (typeof p.bid === "number" ? "$" + p.bid : "") + " " + name(p.claimed_by) + "</span></li>";
+      }).concat(est.players.filter(function (p) { return !p.claimed_by; }).map(function (p) {
+        return '<li class="unc"><span>' + esc(p.n) + " <small>" + esc(p.pos || "") + "</small></span><span>" + (known ? "unclaimed" : "no claim on record") + "</span></li>";
+      }));
+      all = '<details class="est-all"><summary>All ' + est.players.length + " players from the estate</summary><ul>" + rows.join("") + "</ul></details>";
+    }
+    return ["Estate", txt, all];
+  }
+
+  // The money: every team's $1,000 budget, the cut teams' estates (history.json) and who bought them.
+  // Wallets for the teams still alive, the season's biggest winning bids, and estate money by week.
+  // Yahoo only reports the winning bid; losing bids exist only for weeks with a pasted Transactions page.
+  var BUDGET = 1000;
+  function renderMoney() {
+    var weeks = HIST.weeks || {}, mg = state.mgr, teams = state.data.teams || [];
+    var who = function (t) { return mg(t) || t; };
+    var cell = function (t) { return mg(t) ? "<b>" + esc(mg(t)) + "</b><small>" + esc(t) + "</small>" : esc(t); };
+    var buys = [], byWeek = [];
+    Object.keys(weeks).map(Number).sort(function (a, b) { return a - b; }).forEach(function (w) {
+      var e = weeks[String(w)], est = e.estate;
+      if (!est || !e.cut_team) return;
+      var tot = 0, top = null;
+      (est.players || []).forEach(function (p) {
+        if (!p.claimed_by || typeof p.bid !== "number") return;
+        var losers = (p.bids || []).filter(function (b) { return b.team !== p.claimed_by; }).map(function (b) { return b.bid; });
+        var b = { n: p.n, pos: p.pos, bid: p.bid, team: p.claimed_by, w: w, from: e.cut_team, second: losers.length ? Math.max.apply(null, losers) : null };
+        buys.push(b);
+        tot += p.bid;
+        if (!top || b.bid > top.bid) top = b;
+      });
+      byWeek.push({ w: w, total: tot, top: top, team: e.cut_team });
+    });
+    if (!buys.length) return;
+
+    // Lede: where the league's money went, and who took the most of it to the grave
+    var alive = teams.filter(function (t) { return !t.out && typeof t.faab === "number"; });
+    var dead = teams.filter(function (t) { return t.out && typeof t.faab === "number"; });
+    var spent = teams.reduce(function (n, t) { return n + (typeof t.faab === "number" ? BUDGET - t.faab : 0); }, 0);
+    var held = alive.reduce(function (n, t) { return n + t.faab; }, 0);
+    var grave = dead.slice().sort(function (a, b) { return b.faab - a.faab; }).filter(function (t, i, a) { return t.faab > 0 && t.faab === a[0].faab; });
+    $("money-lede").innerHTML = "Every team started with $" + BUDGET.toLocaleString("en-US") + ". $" + spent.toLocaleString("en-US") + " has been spent, and the " +
+      alive.length + " teams still standing hold $" + held.toLocaleString("en-US") + "." +
+      (grave.length ? " Most money taken to the grave: " + grave.map(function (t) { return esc(who(t.name)); }).join(" and ") + ", $" + grave[0].faab.toLocaleString("en-US") + (grave.length > 1 ? " each" : "") + "." : "");
+
+    // Wallets: the survivors, most money left first
+    var rows = alive.slice().sort(function (a, b) { return b.faab - a.faab; }).map(function (t) {
+      var mine = buys.filter(function (b) { return b.team === t.name && b.bid > 0; });
+      var won = mine.reduce(function (n, b) { return n + b.bid; }, 0);
+      var big = mine.slice().sort(function (a, b) { return b.bid - a.bid; })[0];
+      var pos = {};
+      mine.forEach(function (b) { pos[b.pos] = (pos[b.pos] || 0) + b.bid; });
+      var fav = Object.keys(pos).sort(function (a, b) { return pos[b] - pos[a]; })[0];
+      var over = mine.filter(function (b) { return b.second !== null; });
+      var avgOver = over.length ? Math.round(over.reduce(function (n, b) { return n + b.bid - b.second; }, 0) / over.length) : null;
+      return "<tr><td>" + cell(t.name) + "</td><td><b>" + money(t.faab) + "</b></td><td>" + money((BUDGET - t.faab).toLocaleString("en-US")) + "</td>" +
+        "<td>" + (mine.length ? money(won) + "<small>" + mine.length + " player" + (mine.length > 1 ? "s" : "") + "</small>" : "–") + "</td>" +
+        "<td>" + (big ? money(big.bid) + "<small>" + esc(short(big.n)) + ", Wk " + big.w + "</small>" : "–") + "</td>" +
+        "<td>" + (fav ? esc(fav) + "<small>" + Math.round(100 * pos[fav] / won) + "% of it</small>" : "–") + "</td>" +
+        "<td>" + (avgOver !== null ? "+" + money(avgOver) + "<small>" + over.length + " known</small>" : "–") + "</td></tr>";
+    });
+    $("wallets-body").innerHTML = '<div class="scroll" style="border:0;background:none"><table><thead><tr><th>Team</th><th>Left</th><th>Spent</th>' +
+      "<th>Estate buys</th><th>Biggest</th><th>Spends on</th><th>Over next bid</th></tr></thead><tbody>" + rows.join("") + "</tbody></table></div>";
+    $("wallets").hidden = !rows.length;
+
+    // Biggest bids
+    var top = buys.filter(function (b) { return b.bid > 0; }).sort(function (a, b) { return b.bid - a.bid; }).slice(0, 12);
+    $("bigbids-list").innerHTML = top.map(function (b, i) {
+      return "<li><div><b>" + (i + 1) + ". " + esc(b.n) + "</b> <small>" + esc(b.pos || "") + "</small><span class=\"bb-sub\">to " + esc(who(b.team)) +
+        " · Week " + b.w + ", from " + esc(b.from) + (b.second !== null ? " · next best $" + b.second : "") + "</span></div><span class=\"bb-v\">" + money(b.bid) + "</span></li>";
+    }).join("");
+    $("bigbids").hidden = !top.length;
+
+    // Week by week: one bar per cut, labeled with its total
+    var W = 640, H = 210, padL = 8, padB = 26, padT = 22, n = byWeek.length;
+    var max = Math.max.apply(null, byWeek.map(function (d) { return d.total; })) || 1;
+    var bw = (W - padL * 2) / n, svg = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Estate money by week">';
+    byWeek.forEach(function (d, i) {
+      var h = Math.round((H - padB - padT) * d.total / max), x = padL + i * bw + bw * 0.15, y = H - padB - h, wdt = bw * 0.7;
+      svg += "<g><title>Week " + d.w + ": $" + d.total + " for " + esc(d.team) + "'s players" + (d.top ? ". Biggest: " + esc(d.top.n) + " $" + d.top.bid + " to " + esc(who(d.top.team)) : "") + "</title>" +
+        '<rect class="mbar" x="' + x.toFixed(1) + '" y="' + y + '" width="' + wdt.toFixed(1) + '" height="' + Math.max(h, 1) + '" rx="2"></rect>' +
+        '<text class="mval" x="' + (x + wdt / 2).toFixed(1) + '" y="' + (y - 6) + '" text-anchor="middle">$' + d.total + "</text>" +
+        '<text class="ax" x="' + (x + wdt / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">Wk ' + d.w + "</text></g>";
+    });
+    svg += "</svg>";
+    $("byweek-chart").innerHTML = svg + '<ol class="mweeks">' + byWeek.slice().reverse().map(function (d) {
+      return "<li><b>Wk " + d.w + "</b> " + esc(d.team) + ": $" + d.total + (d.top ? ", led by " + esc(short(d.top.n)) + " $" + d.top.bid + " to " + esc(who(d.top.team)) : "") + "</li>";
+    }).join("") + "</ol>";
+    $("byweek").hidden = false;
+
+    var withLosers = byWeek.filter(function (d) { return buys.some(function (b) { return b.w === d.w && b.second !== null; }); }).map(function (d) { return d.w; });
+    $("money-foot").textContent = "Spent counts every claim, not just estates. Yahoo reports only the winning bid, so \"Over next bid\" uses the weeks with every bid on record" +
+      (withLosers.length ? " (Weeks " + withLosers[0] + (withLosers.length > 1 ? " to " + withLosers[withLosers.length - 1] : "") + ")" : "") + ".";
   }
 
   // Waivers, under last week: where the cut team's players went, biggest bid first, with the best losing
