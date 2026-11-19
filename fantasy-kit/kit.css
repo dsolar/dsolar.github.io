@@ -2791,3 +2791,8 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .rs-open .rs-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0}
 .rs-open .slot.sm{font-size:10.5px;padding:2px 6px;min-width:0}
 .pav.has-face.espn img.ds-face-img{object-position:50% 0;transform:scale(1.45);transform-origin:50% 18%}
+/* player lists on a desktop: headshots big enough to read a face */
+@media (min-width:701px){
+  table.t .pname>.pav:not(.sm):not(.lg){width:40px;height:40px;font-size:12px}
+  table.t .pname{gap:11px}
+}
