@@ -552,6 +552,8 @@
 
     // ---------- Surplus: what a contract is worth against what it pays ----------
     const discAt = j => Math.pow(1 + cfg.disc, -j);
+    const MARKET_PICK = (slot, round) => round === 1 ? 110e6 * Math.exp(-(Math.max(1, slot) - 1) / 5.5) + 5e6 : 2.5e6;
+    const pickCurve = s => curve[clamp(Math.round(s), 1, 60) - 1] || 0;
     H.surplus = (p, mode) => {
       mode = mode || cfg.mode;
       return cache("sur" + p.id + mode + cfg.disc + cfg.growth, () => {
@@ -565,14 +567,28 @@
           const opt = p.c.opt && p.c.opt[j] ? p.c.opt[j] : "";
           rows.push({ j, season: CBA.seasonName(j), r: H.rating(p, j), value: v * part, sal: sal * part, surplus: (v - sal) * part, pv: (v - sal) * part * discAt(j), opt, part });
         }
-        const pv = sum(rows.map(r => r.pv));
-        return { rows, pv, total: sum(rows.map(r => r.surplus)), years: rows.length, salLeft: sum(rows.map(r => r.sal)) };
+        let pv = sum(rows.map(r => r.pv));
+        // A player still on his rookie deal is mostly his draft slot: the No. 1 pick doesn't lose most of its value the
+        // night it's made because a 19-year-old's first box scores are rough. Start from what his slot has produced
+        // (or, in the market view, what teams pay for it) over the part of a draftee's first eight seasons still ahead,
+        // which also counts the restricted free agency and Bird rights after the rookie deal, and let his own projection
+        // take over as he plays: about half by the end of his second season, most of it by his fourth.
+        let prior = null;
+        const rk = p.c && p.c.rk;
+        if (rk && rk[1] >= 1 && (p.yos ?? 9) <= 3) {
+          const a = stats.avg && stats.avg[String(2027)] && stats.avg[String(2027)][p.id];
+          const xp = (p.yos || 0) + (a ? a[0] * a[1] : 0) / 2000;           // seasons of evidence (about 2,000 minutes a season)
+          const w = clamp(xp / (xp + 2), 0, 0.9);
+          const left = clamp((8 - (p.yos || 0) - (1 - frac0)) / 8, 0, 1);
+          const slotV = (mode === "market" ? MARKET_PICK(rk[1], 1) : pickCurve(rk[1])) * left;
+          prior = { slot: rk[1], year: rk[0], value: slotV, w, model: pv };
+          pv = w * pv + (1 - w) * slotV;
+        }
+        return { rows, pv, prior, total: sum(rows.map(r => r.surplus)), years: rows.length, salLeft: sum(rows.map(r => r.sal)) };
       });
     };
 
     // ---------- Draft picks ----------
-    const MARKET_PICK = (slot, round) => round === 1 ? 110e6 * Math.exp(-(Math.max(1, slot) - 1) / 5.5) + 5e6 : 2.5e6;
-    const pickCurve = s => curve[clamp(Math.round(s), 1, 60) - 1] || 0;
     // Where a team's pick could land: the simulations for 2027, a spread around the projected slot after that
     H.slotDist = (from, year, round) => cache("sd" + from + year + round, () => {
       if (year === 2027) {

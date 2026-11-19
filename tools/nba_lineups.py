@@ -108,7 +108,7 @@ def main():
             old, old_names = prev.get("teams") or {}, prev.get("names") or {}
     except (OSError, ValueError):
         pass
-    with ThreadPoolExecutor(max_workers=3) as ex:
+    with ThreadPoolExecutor(max_workers=5) as ex:
         got = list(ex.map(lambda t: team_lineups(season, t), TEAM_IDS))
         opp_rows = dict(ex.map(lambda t: team_lineups(season, t, "LineupOpponent"), TEAM_IDS))
     if got and got[0][1]:
