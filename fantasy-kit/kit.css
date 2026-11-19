@@ -2796,3 +2796,16 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   table.t .pname>.pav:not(.sm):not(.lg){width:40px;height:40px;font-size:12px}
   table.t .pname{gap:11px}
 }
+/* the finished draft: your own team leads the results; on a phone the room drops its pick strip and status */
+.res-mine{margin-bottom:12px}
+.res-mine ol{margin:0;padding:6px 0 8px;list-style:none;font-size:13px}
+.res-mine li{display:flex;gap:7px;align-items:center;padding:3px 14px;break-inside:avoid}
+.res-mine .grade{font-size:44px}
+@media (min-width:701px){.res-mine ol{columns:2;column-gap:12px}}
+@media (max-width:700px){
+  .droom.done{grid-template-rows:auto minmax(0,1fr)}
+  .droom.done > #fk-ticker{display:none}
+  .droom.done .otc{display:none}
+  .droom.done .dr-top .acts{flex-wrap:wrap;justify-content:flex-start;flex:1 1 100%}
+  .droom.done .dr-top .acts > .btn,.droom.done .dr-top .acts > a.btn{flex:1 1 auto;justify-content:center}
+}

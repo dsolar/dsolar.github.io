@@ -1520,9 +1520,12 @@
     function results() {
       // your team's grade first, then everyone by projected finish
       const d = D(), st = F.standings(d, ctx).sort((a, b) => (isMe(team(b.team)) - isMe(team(a.team))) || a.rank - b.rank), R = F.recap(d, ctx);
-      return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${recapCard()}<div class="teams">${st.map((r) => { const t = team(r.team), bv = R.best[r.team];
-        return `<div class="card"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, ${recapGap(bv, true)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
-          <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; }).join("")}</div></div>`;
+      // your own card leads, full width, above the league's recap; everyone else follows in the grid
+      const cardOf = (r) => { const t = team(r.team), bv = R.best[r.team];
+        return `<div class="card${isMe(t) ? " res-me" : ""}"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, ${recapGap(bv, true)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
+          <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; };
+      const mine = st.filter((r) => isMe(team(r.team))), rest = st.filter((r) => !isMe(team(r.team)));
+      return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${mine.length ? `<div class="res-mine">${mine.map(cardOf).join("")}</div>` : ""}${recapCard()}<div class="teams">${rest.map(cardOf).join("")}</div></div>`;
     }
     // Projected standings from the rosters so far: each team's best lineup, its category totals and the roto points
     // they'd earn (or its projected points), on the stats or projections the switch shows.
@@ -1794,7 +1797,8 @@
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;
       const unread = opts.chat && ui.right !== "chat" ? opts.chat.unread() : 0;
-      const rights = (me() != null ? [["team", "My team"], ["queue", "Queue"], ["teams", "Teams"]].concat(d.trading ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]])
+      const over = d.phase === "done";
+      const rights = (me() != null ? [["team", "My team"]].concat(over ? [] : [["queue", "Queue"]], [["teams", "Teams"]], d.trading && !over ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]])
         .concat(opts.chat ? [["chat", unread ? `Chat (${unread})` : "Chat"]] : []);
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
       const keep = { f: focusKey(el), scroll: {} };
@@ -1818,7 +1822,7 @@
         if (opts.onChange) opts.onChange(d);
         return;
       }
-      el.innerHTML = `<div class="droom fk-dark">${top()}${ticker()}${offerStrip()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
+      el.innerHTML = `<div class="droom fk-dark${d.phase === "done" ? " done" : ""}">${top()}${ticker()}${offerStrip()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? phoneNeeds() + posFilter(sport, ui.f.pos, [], d.lineup, needChips(me())) : ""}${left}</section>
         <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
