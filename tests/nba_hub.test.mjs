@@ -287,3 +287,9 @@ test('stars re-sign in future seasons (Bird rights), lottery table sums to one',
   const T = H.lottoTable();
   for (let k = 1; k <= 30; k++) assert.ok(Math.abs(T[k].reduce((a, x) => a + x, 0) - 1) < 1e-6);
 });
+
+test('every NBA Hub script parses (a stray quote in copy once broke the live page)', () => {
+  for (const f of ['nba/app.js', 'nba/hub.js', 'nba/lib/cba.js', 'nba/lib/league.js', 'nba/lib/season.js', 'nba/lib/offseason.js', 'nba/lib/model.js', 'nba/lib/contracts.js']) {
+    assert.doesNotThrow(() => new Function(readFileSync(new URL('../' + f, import.meta.url), 'utf8')), f);
+  }
+});
