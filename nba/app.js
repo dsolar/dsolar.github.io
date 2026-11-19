@@ -39,8 +39,9 @@
     var j = H.injuryTag && H.injuryTag(p);
     if (!j) return "";
     var txt = j.season ? "Out for season" : j.dtd ? "Day-to-day" : "Out" + (j.back && j.back > H.asOf ? " to ~" + fmtShort(j.back) : "");
-    return ' <span class="injb' + (j.dtd ? " dtd" : "") + (j.season ? " sea" : "") + '" title="' + esc((j.note || txt) + (j.date ? " (" + j.date + ")" : "")) + '"><i aria-hidden="true">+</i>' + esc(txt) + "</span>";
+    return ' <span class="injb' + (j.dtd ? " dtd" : "") + (j.season ? " sea" : "") + '" title="' + esc((j.note || txt) + (j.date ? " (" + j.date + ")" : "")) + '"><i aria-hidden="true">+</i><span class="ijt">' + esc(txt) + "</span></span>";
   }
+  function shortName(n) { var w = String(n || "").split(" "); if (w.length < 2) return n; var suf = /^(Jr\.?|Sr\.?|II|III|IV)$/.test(w[w.length - 1]) ? w.pop() : ""; return w[0].charAt(0) + ". " + w.slice(1).join(" ") + (suf ? " " + suf : ""); }
   function pname(p, size, extra) {
     extra = (extra || "") + (p.fill || p.rook ? "" : injTag(p));
     if (p.fill || p.rook) return '<span class="pl static">' + face(p, size || 22) + '<span class="nm">' + esc(p.n) + "</span>" + (extra || "") + "</span>";
@@ -653,7 +654,7 @@
     var html = '<div class="dbell"><div class="dbaxis"><span></span><span class="dbscale"><i style="left:' + dbX(-20) + '%">-20</i><i style="left:' + dbX(-10) + '%">-10</i><i style="left:50%">0</i><i style="left:' + dbX(10) + '%">+10</i><i style="left:' + dbX(20) + '%">+20</i></span><span>On/off</span></div>';
     list.forEach(function (x) {
       var p = luP(x.nid), a = dbX(x.off), b = dbX(x.on), lo = Math.min(a, b), hi = Math.max(a, b);
-      html += '<div class="dbrow"><span class="dbwho"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ">" + (showTeam ? logo(x.c, 16) : "") + luFace(x.nid, 26) + '<span class="nm">' + esc(p ? p.n : H.lu.names[x.nid]) + '</span></span><span class="dbplot"><i class="z"></i><i class="ln ' + netCls(x.diff) + '" style="left:' + lo.toFixed(1) + "%;width:" + (hi - lo).toFixed(1) + '%"></i><i class="off" style="left:' + a.toFixed(1) + '%" title="Off: ' + signedNet(x.off) + '"></i><i class="on ' + netCls(x.diff) + '" style="left:' + b.toFixed(1) + '%" title="On: ' + signedNet(x.on) + '"></i></span><b class="dbd ' + netCls(x.diff) + '">' + signedNet(x.diff) + "</b></div>";
+      html += '<div class="dbrow"><span class="dbwho"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ">" + (showTeam ? logo(x.c, 16) : "") + luFace(x.nid, 26) + '<span class="nm"><span class="full">' + esc(p ? p.n : H.lu.names[x.nid]) + '</span><span class="short">' + esc(shortName(p ? p.n : H.lu.names[x.nid])) + '</span></span></span><span class="dbplot"><i class="z"></i><i class="ln ' + netCls(x.diff) + '" style="left:' + lo.toFixed(1) + "%;width:" + (hi - lo).toFixed(1) + '%"></i><i class="off" style="left:' + a.toFixed(1) + '%" title="Off: ' + signedNet(x.off) + '"></i><i class="on ' + netCls(x.diff) + '" style="left:' + b.toFixed(1) + '%" title="On: ' + signedNet(x.on) + '"></i></span><b class="dbd ' + netCls(x.diff) + '">' + signedNet(x.diff) + "</b></div>";
     });
     return html + '<p class="dbkey"><span class="k off"></span>Team net rating with him off <span class="k on"></span>with him on (per 100 possessions)</p></div>';
   }

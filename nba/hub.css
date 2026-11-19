@@ -653,3 +653,12 @@ table.sz{width:100%;font-size:13px}
 .lgt td.tm{min-width:120px;padding-right:14px}
 .lgt td.lo,.lgt td.lo0{width:38px}
 .lgt td.lo0{background:var(--card)}
+
+/* phone: injury badges shrink to the cross inside tables and lists (the words stay on hover and on the card) */
+.dbwho .short{display:none}
+@media (max-width:760px){
+  .t .injb .ijt,.ldr .injb .ijt,.dpc .injb .ijt,.org-row .injb .ijt{display:none}
+  .t .injb,.ldr .injb{padding:0 4px}
+  .dbwho .full{display:none} .dbwho .short{display:inline}
+}
+@media (max-width:760px){ .dbaxis,.dbrow{grid-template-columns:150px 1fr 46px;gap:6px} .dbell{padding:6px 10px 4px} .dbwho .lg,.dbwho img.tlogo{display:none} }
