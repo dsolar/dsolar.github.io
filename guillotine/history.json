@@ -7412,7 +7412,7 @@
       "nfl": "DET",
       "claimed_by": "Holofernes",
       "bid": 2,
-      "next_proj": 10.69
+      "next_proj": 10.78
      },
      {
       "n": "Omarion Hampton",
@@ -7427,7 +7427,7 @@
       "nfl": "PHI",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 14.4
+      "next_proj": 14.39
      },
      {
       "n": "Corey Kiner",
@@ -7548,7 +7548,7 @@
       "pos": "RB",
       "nfl": "DET",
       "slot": "RB",
-      "proj": 21.03,
+      "proj": 21.12,
       "pts": null
      },
      {
@@ -7572,7 +7572,7 @@
       "pos": "WR",
       "nfl": "DET",
       "slot": "WR",
-      "proj": 15.49,
+      "proj": 15.69,
       "pts": null
      },
      {
@@ -7710,7 +7710,7 @@
       "pos": "TE",
       "nfl": "DET",
       "slot": "TE",
-      "proj": 9.68,
+      "proj": 9.82,
       "pts": null
      },
      {
@@ -7918,11 +7918,11 @@
       "pts": null
      },
      {
-      "n": "David Montgomery",
+      "n": "Cam Skattebo",
       "pos": "RB",
-      "nfl": "HOU",
+      "nfl": "NYG",
       "slot": "RB",
-      "proj": 13.13,
+      "proj": 15.22,
       "pts": null
      },
      {
@@ -7958,11 +7958,11 @@
       "pts": null
      },
      {
-      "n": "Cam Skattebo",
+      "n": "Breece Hall",
       "pos": "RB",
-      "nfl": "NYG",
+      "nfl": "NYJ",
       "slot": "W/R/T",
-      "proj": 15.22,
+      "proj": 11,
       "pts": null
      },
      {
@@ -7970,15 +7970,15 @@
       "pos": "QB",
       "nfl": "DET",
       "slot": "Q/W/R/T",
-      "proj": 16.66,
+      "proj": 16.93,
       "pts": null
      },
      {
-      "n": "Breece Hall",
+      "n": "David Montgomery",
       "pos": "RB",
-      "nfl": "NYJ",
+      "nfl": "HOU",
       "slot": "BN",
-      "proj": 11,
+      "proj": 13.13,
       "pts": null
      },
      {
@@ -8010,7 +8010,7 @@
       "pos": "WR",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 7.79,
+      "proj": 7.92,
       "pts": null
      },
      {
@@ -8052,7 +8052,7 @@
       "pos": "RB",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 15.64,
+      "proj": 15.75,
       "pts": null
      },
      {
@@ -8108,7 +8108,7 @@
       "pos": "WR",
       "nfl": "DET",
       "slot": "BN",
-      "proj": 10.28,
+      "proj": 10.46,
       "pts": null
      },
      {
