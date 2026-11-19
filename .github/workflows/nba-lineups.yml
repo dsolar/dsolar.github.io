@@ -1,0 +1,48 @@
+# Pulls every team's five-man lineups from pbpstats (tools/nba_lineups.py) into nba/data/lineups.json for the NBA
+# Hub: best units, duos and trios, and on/off. Runs every morning, when the script or this file changes, or by hand.
+name: NBA lineups
+
+on:
+  schedule:
+    - cron: "41 15 * * *"   # 10:41am ET, after the overnight games settle
+  push:
+    branches: [main]
+    paths:
+      - tools/nba_lineups.py
+      - .github/workflows/nba-lineups.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-lineups
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull the lineups
+        run: python3 tools/nba_lineups.py
+
+      - name: Commit the lineups
+        run: |
+          git add nba/data/lineups.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update NBA lineups"
+          # another job may push at the same moment: pull and try again, up to five times
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
