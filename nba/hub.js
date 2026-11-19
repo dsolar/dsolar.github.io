@@ -38,6 +38,7 @@
     fill: true,          // teams fill open roster spots with free agents they can afford
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
     growth: 0.5,         // share of a young player's projected improvement that counts in his value
+    lean: 1,             // how strongly a team's situation tilts values (age, picks, this season for rebuilders); 0 = no tilt
     salW: 0.5,           // what a dollar of salary costs a team in value. Teams must spend to the salary floor and unused
                          // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
                          // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
@@ -149,6 +150,7 @@
     for (const p of Object.values(W.P)) if (!p.c.sal.length) p.c.sal = [0, 0, 0, 0, 0];
     // a player acquired by trade can't be combined with other salaries for two months (from the daily roster changes)
     if (inp.moves && inp.moves.moves) for (const m of inp.moves.moves) {
+      if (m.kind === "sign") continue;                     // the two-month wait is for players acquired by trade
       const p = W.P[m.id] || W.P[Object.keys(W.P).find(k => NC.nameKeys(k)[0] === NC.nameKeys(m.id)[0])];
       if (!p || p.t !== m.to) continue;
       const d = new Date(m.date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 60);
@@ -191,6 +193,15 @@
         const until = d.toISOString().slice(0, 10);
         if (until > asOf) (p.noBack = p.noBack || []).push({ team: from, date: t.date, until });
       }
+    }
+    // and trades since, as the daily roster snapshot saw them (a player straight from one team to another)
+    if (inp.moves && inp.moves.moves) for (const m of inp.moves.moves) {
+      if (m.kind !== "trade" || !m.from || m.from === "FA") continue;
+      const p = W.P[m.id] || W.P[Object.keys(W.P).find(k => NC.nameKeys(k)[0] === NC.nameKeys(m.id)[0])];
+      if (!p || p.t === m.from || (p.noBack || []).some(x => x.team === m.from && x.date >= m.date)) continue;
+      const d = new Date(m.date + "T12:00:00Z"); d.setUTCFullYear(d.getUTCFullYear() + 1);
+      const until = d.toISOString().slice(0, 10);
+      if (until > asOf) (p.noBack = p.noBack || []).push({ team: m.from, date: m.date, until });
     }
     // Stepien worst case: a protected first that rolls over can convey in a later year instead, so the team can't count
     // on owning its own first in those years either ("Lottery protected; unprotected in 2028")
@@ -379,8 +390,16 @@
         bench = pool.filter(e => !starters.includes(e));
         let tot = 0;
         for (const e of entries) { mins[e.p.id] = want(e); tot += mins[e.p.id]; }
-        const k = tot > 0 ? 240 / tot : 0;
-        for (const id in mins) mins[id] = Math.min(38, mins[id] * k);
+        if (tot > 240) {
+          // more minutes than a game has (a trade brought someone in): the worst players give theirs up first, the
+          // way a coach would bury the end of the bench, rather than everyone (stars too) losing a slice
+          let extra = tot - 240;
+          for (const e of entries.slice().sort((a, b) => a.r - b.r)) { if (extra <= 0) break; const cut = Math.min(mins[e.p.id], extra); mins[e.p.id] -= cut; extra -= cut; }
+          for (const id in mins) mins[id] = Math.min(38, mins[id]);
+        } else {
+          const k = tot > 0 ? 240 / tot : 0;
+          for (const id in mins) mins[id] = Math.min(38, mins[id] * k);
+        }
       } else {
         const { five, rest } = bySlots(entries);
         starters = SLOTS.map(sl => five[sl]).filter(Boolean);
@@ -398,7 +417,13 @@
     function strengthOf(entries, i, code) {
       const lu = buildLineup(entries, i, code);
       const list = entries.map(e => ({ id: e.p.id, pos: e.p.pos || "W", o: e.r * 0.6, d: e.r * 0.4 }));
-      return { raw: Mo.raw(list, lu.mins), lu };
+      let raw = Mo.raw(list, lu.mins);
+      // a team short of big-man minutes plays a power forward at center: up to half of those forwards' minutes count
+      // toward the bigs a lineup needs, so losing a backup center doesn't read as having nobody to play the five
+      const b = Mo.posMinutes(list, lu.mins), pf = sum(entries.filter(e => (e.p.pos || "W") === "W" && posList(e.p)[0] === "PF").map(e => lu.mins[e.p.id] || 0));
+      const move = Math.min(pf / 2, Math.max(0, 40 - b.B));
+      if (move > 0) raw += Mo.posPenalty(b) - Mo.posPenalty({ G: b.G, W: b.W - move, B: b.B + move });
+      return { raw, lu };
     }
     H.lineup = (code, i) => cache("lu" + code + ":" + i, () => buildLineup(H.rosterAt(code, i).filter(e => i > 0 || !injured[e.p.id]), i, code));
     function netsFrom(raws) {
@@ -912,16 +937,17 @@
         out[m.to].prod += vp; out[m.to].market += vm; out[m.to].salIn += sal; out[m.to].inn.push(m);
         out[m.from].prod -= vp; out[m.from].market -= vm; out[m.from].salOut += sal; out[m.from].out.push(m);
       }
-      // This season's wins, before and after
-      const { nets } = H.nets0();
-      const raws = {};
+      // This season's wins, before and after. Both sides are built the same way (the same rosters, the same depth-chart
+      // logic): the standings' own lineups use real minutes, and mixing the two put a gap into every trade
       const moved = {};
       for (const m of tr.moves) if (m.kind === "p") moved[m.id] = m.to;
-      for (const c of codes) {
-        const entries = Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0 && !injured[p.id] && (moved[p.id] || p.t) === c).map(p => ({ p, r: H.rating(p, 0), sal: H.salary(p, 0) }));
-        raws[c] = strengthOf(entries, 0, c).raw;
-      }
-      const after = netsFrom(raws);
+      const rawsFor = (mv, only) => { const raws = {}; for (const c of only || codes) {
+        const entries = Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0 && !injured[p.id] && (mv[p.id] || p.t) === c).map(p => ({ p, r: H.rating(p, 0), sal: H.salary(p, 0) }));
+        raws[c] = strengthOf(entries, 0, c).raw; } return raws; };
+      const base = cache("tradeBase", () => rawsFor({}));
+      const raws = Object.assign({}, base);
+      const aft = rawsFor(moved, tr.teams); for (const c of tr.teams) raws[c] = aft[c];
+      const nets = netsFrom(base), after = netsFrom(raws);
       for (const c of tr.teams) {
         const opp = n => codes.filter(x => x !== c).map(x => n[x]);
         const wLeft = 82 - W.T[c].w - W.T[c].l;
@@ -1057,7 +1083,9 @@
     };
     // How much a team's timeline favors a player of this age: a rebuilding team wants players who'll still be good when
     // it is, so a 23-year-old counts for 30% more and a 31-year-old about half; a contender leans slightly the other way
-    H.ageMul = (p, c) => {
+    const tilt = m => 1 + (cfg.lean ?? 1) * (m - 1);
+    H.ageMul = (p, c) => tilt(ageMul0(p, c));
+    const ageMul0 = (p, c) => {
       const t = H.teamCtx(c).tier, a = p.age + (p.c && p.c.rk && (p.yos ?? 9) <= 3 ? -1 : 0);
       if (t === "rebuild") return a <= 24 ? 1.3 : a === 25 ? 1.15 : a === 26 ? 1.05 : a === 27 ? 0.95 : a === 28 ? 0.85 : a === 29 ? 0.7 : 0.55;
       if (t === "middle") return a <= 24 ? 1.1 : a <= 28 ? 1 : a === 29 ? 0.95 : 0.9;
@@ -1076,14 +1104,14 @@
     // A player's worth to team c: each season's production (both views averaged) scaled by the team's age lean and fit,
     // minus his salary at the team's weight, discounted. A rebuilding team counts this season's play at 40%: it's out of
     // it, so what matters is next year on. Players on rookie deals blend in their draft slot as in surplus.
-    H.teamPV = (p, c) => cache("tpv" + p.id + c + cfg.disc + cfg.growth + cfg.salW, () => {
+    H.teamPV = (p, c) => cache("tpv" + p.id + c + cfg.disc + cfg.growth + cfg.salW + "|" + cfg.lean, () => {
       const ctx = H.teamCtx(c), sp = H.surplus(p, "prod"), sm = H.surplus(p, "market");
       let mul = H.ageMul(p, c) * (0.95 + 0.3 * H.fit(p, c).score);
       // a rebuilding team would lose an expiring veteran for nothing this summer, so it counts him for less
-      if (ctx.tier === "rebuild" && H.lastYear(p) <= 0 && H.faKind(p) !== "RFA") mul = Math.min(mul, 0.5);
+      if (ctx.tier === "rebuild" && H.lastYear(p) <= 0 && H.faKind(p) !== "RFA") mul = Math.min(mul, tilt(0.5));
       let pv = 0;
       sp.rows.forEach((r, k) => {
-        const m = sm.rows[k] || r, v = (r.value + m.value) / 2, sw = r.j === 0 && ctx.tier === "rebuild" ? 0.4 : 1;
+        const m = sm.rows[k] || r, v = (r.value + m.value) / 2, sw = r.j === 0 && ctx.tier === "rebuild" ? tilt(0.4) : 1;
         pv += (sw * mul * v - H.salWeight(c, r.j) * r.sal) * discAt(r.j);
       });
       if (sp.prior && sm.prior) {
@@ -1095,7 +1123,7 @@
     H.dealValue = (c, m) => {                      // what one piece is worth to team c
       const ctx = H.teamCtx(c);
       if (m.kind === "c") return m.amt || 0;
-      if (m.kind === "k") return pickBlend(H.pickById(m.id)) * ctx.youth;
+      if (m.kind === "k") return pickBlend(H.pickById(m.id)) * tilt(ctx.youth);
       return H.teamPV(W.P[m.id], c);
     };
     // The trade card's grade for one team: the deal's value by its own situation, the wins it adds (worth more to a
@@ -1266,8 +1294,23 @@
         }
       }
       cands.sort((x, y) => y.score - x.score);
+      // the quick wins estimate finds candidates; the shortlist gets the full season simulation (the trade card's), and
+      // the floors and the contender rule apply again on those wins
+      const fl = { A: mode === "buy" ? -15e6 : 1e6, B: 1e6 };
+      const rescored = [];
+      for (const c of cands.slice(0, 40)) {
+        const sm = H.tradeSummary({ teams: [A, c.team], moves: c.moves });
+        const re = (team, u) => { const dw = sm[team].winsAfter - sm[team].winsBefore; return Object.assign({}, u, { dw, u: u.value + H.teamCtx(team).winW * dw + u.tax }); };
+        const uA = re(A, c.uA), uB = re(c.team, c.uB), tierB = H.teamCtx(c.team).tier;
+        if (uA.u < fl.A || uB.u < fl.B) continue;
+        if (mode === "win" && ((ctxA.tier === "contend" && uA.dw < -0.3) || (tierB === "contend" && uB.dw < -0.3))) continue;
+        if (mode === "sell" && uB.dw < 0) continue;
+        if (mode === "buy" && uA.dw < 0.5) continue;
+        rescored.push(Object.assign({}, c, { uA, uB, score: mode === "buy" ? uA.dw * 10e6 + uA.u : mode === "sell" ? uA.value : Math.min(uA.u, uB.u) }));
+      }
+      rescored.sort((x, y) => y.score - x.score);
       const out = [];
-      for (const c of cands.slice(0, 30)) {
+      for (const c of rescored) {
         if (out.length >= 12) break;
         // the full rules; the only thing allowed to bend is a date (Dec. 15, the two-month aggregation wait)
         const chk = H.checkTrade({ teams: [A, c.team], moves: c.moves });
@@ -1277,6 +1320,16 @@
         out.push(Object.assign({ tierA: ctxA.tier, tierB: H.teamCtx(c.team).tier, after }, c));
       }
       return out;
+    };
+    // Which of a team's first-round picks it could trade on their own, and why the rest can't go
+    H.firstsStatus = c => {
+      const ok = [], blocked = [];
+      for (const pk of H.picksOf(c).filter(x => x.r === 1)) {
+        if (pk.frozen) { blocked.push({ pk, why: "frozen (second apron)" }); continue; }
+        const st = L.stepienAll(W, c, [pk.id], []);
+        if (!st.ok) blocked.push({ pk, why: st.why.replace(" (Stepien rule)", "") }); else ok.push(pk);
+      }
+      return { ok, blocked };
     };
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);
