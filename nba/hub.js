@@ -57,6 +57,31 @@
     const idx = NC.rosterIndex(stats);
     const players = [];
     const injured = {};
+    // What an injury report means for this season: the feed gives a status (Out, Day-To-Day) and the latest news line.
+    // A torn Achilles or ACL, or a note that says so, is out for the season; "four weeks", "re-evaluated in four
+    // months" and the like give a return date from the note's date. A bare "Out" with no timeline gets a week.
+    const SEASON_END = "2027-04-11";
+    const NUM = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+    const readInjury = inj => {
+      const st = inj[0] || "", note = inj[1] || "", date = inj[2] || null, out = { st, note, date, season: false, back: null };
+      if (/out for the (rest of the )?season|season-ending|remainder of the season|miss the (entire |rest of the |20\d\d-\d\d )?season|torn (right |left )?(achilles|acl)|(achilles|acl) (tear|rupture|surgery|reconstruction)|stepping away from basketball|step away from basketball|announced (his|her) retirement/i.test(note)) { out.season = true; return out; }
+      const n = x => (/^\d+$/.test(x) ? +x : NUM[String(x).toLowerCase()] || 0);
+      let wk = 0, m;
+      if ((m = /(\w+)\s*(?:to|-)\s*(\w+)\s+(weeks|months)/i.exec(note))) wk = (n(m[1]) + n(m[2])) / 2 * (/month/i.test(m[3]) ? 4.3 : 1);
+      else if ((m = /(?:at least|approximately|about|another|re-evaluated in|for)\s+(?:approximately |about |another )?(\w+)\s+(weeks?|months?)/i.exec(note))) wk = n(m[1]) * (/month/i.test(m[2]) ? 4.3 : 1);
+      else if (/\bmonths\b/i.test(note)) wk = 13;                     // "will miss months"
+      else if (/^out$/i.test(st)) wk = 1;
+      if (wk > 0 && date) { const d = new Date(date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + Math.round(wk * 7)); out.back = d.toISOString().slice(0, 10); if (out.back >= SEASON_END) { out.season = true; out.back = null; } }
+      return out;
+    };
+    // the share of what's left of this season he'll miss
+    const outShare = p => {
+      const j = p.injury; if (!j) return 0; if (j.season) return 1;
+      const day = x => new Date(x + "T12:00:00Z").getTime(), left = day(SEASON_END) - day(asOf);
+      // still listed as out past the note's timeline: another week
+      let back = j.back && j.back > asOf ? day(j.back) : /^out$/i.test(j.st) ? day(asOf) + 7 * 864e5 : 0;
+      return back && left > 0 ? clamp((back - day(asOf)) / left, 0, 1) : 0;
+    };
     const seenName = new Set();
     // DARKO, pulled daily from darko.app: half of every cap-sheet rating is DARKO as of June 3, so swap in today's
     const slug = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/['’.]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -90,7 +115,7 @@
       // Today's DARKO in place of June's (DARKO already folds in this season's games). A player DARKO didn't rate
       // in June (this year's rookies) moves halfway from his draft-slot guess to DARKO's number.
       const inj0 = stats.inj && stats.inj[p.id];
-      const out0 = inj0 && /out for the (rest of the )?season|season-ending|remainder of the season/i.test(inj0[1] || "");
+      const out0 = inj0 && readInjury(inj0).season;
       const dr = dk && dk[NC.nameKeys(p.id)[0]];
       if (dr && dr !== "?" && !out0) {                              // DARKO shrinks players who sit; leave the season-long injured be
         const jn = dkJune[NC.nameKeys(p.id)[0]];
@@ -114,7 +139,8 @@
       const inj = stats.inj && stats.inj[p.id];
       if (inj) {
         p.inj = inj[0];
-        if (/out for the (rest of the )?season|season-ending|remainder of the season/i.test(inj[1] || "")) injured[p.id] = true;
+        p.injury = readInjury(inj);
+        if (p.injury.season) injured[p.id] = true;
       }
       players.push(p);
     }
@@ -181,6 +207,11 @@
     }
     // Pick ledger: 2027 from the current draft order (who owns each team's pick), 2028-33 from every future pick owed
     setPicks(W, board, codes);
+    // Denver owes Oklahoma City two firsts that hang together: the 2027 pick (top-5 protected, rolling to 2028 and 2029)
+    // and a second one two years after the first conveys (2029 if the 2027 pick goes, 2030 if it rolls to 2028)
+    { const a = W.picks.find(x => x.id === "2027-1-DEN"), b = W.picks.find(x => x.id === "2029-1-DEN");
+      if (a && a.owner === "OKC") a.note = "Top-5 protected (rolls to 2028, 2029)" + (a.note && !/protected/i.test(a.note) ? "; " + a.note : "");
+      if (b && b.owner === "OKC") b.note = "Top-5 protected; the second of two Denver firsts to OKC, conveying two years after the 2027 pick does (2030 if that one rolls to 2028)"; }
     // a team can't reacquire by trade a player it traded away within the past year (nba/data/trades.json)
     if (inp.trades && inp.trades.trades) {
       const byKey = {}; for (const id of Object.keys(W.P)) byKey[NC.nameKeys(id)[0]] = id;
@@ -237,7 +268,7 @@
     }
     const dec = L.decider(W);
 
-    const H = { cfg, W, CBA, Mo, L, teams: teamInfo, codes, asOf, frac0, played, injured, curve, board, set, reset: () => memo.clear() };
+    const H = { cfg, W, CBA, Mo, L, teams: teamInfo, codes, asOf, frac0, played, injured, curve, board, set, reset: () => memo.clear(), readInjury, outShare };
     const memo = new Map();
     const cache = (k, f) => { if (!memo.has(k)) memo.set(k, f()); return memo.get(k); };
     function set(k, v) { cfg[k] = v; memo.clear(); }
@@ -636,7 +667,7 @@
           const sal = H.salary(p, j);
           if (!sal) continue;
           const part = j === 0 ? frac0 : 1;
-          const v = mode === "market" ? marketAt(p, j) : prodAt(p, j);
+          const v = (mode === "market" ? marketAt(p, j) : prodAt(p, j)) * (j === 0 ? 1 - H.outShare(p) : 1);   // games he'll miss hurt now
           const opt = p.c.opt && p.c.opt[j] ? p.c.opt[j] : "";
           // a salary dollar counts at the salary weight this season and next, then 10 points more each season after:
           // money further out eats flexibility a team would otherwise have (cap room, the aprons, extensions)
@@ -903,10 +934,33 @@
     // ---------- Trades ----------
     // tr: { teams: [codes], moves: [{ kind: "p" | "k", id, from, to }] }
     // soft: a roster overage or a not-yet-tradable player is a footnote (waive someone, or wait until a date), not a failure
-    H.checkTrade = tr => L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves.map(m => m.kind === "k" && m.id.indexOf("@") > 0 ? Object.assign({}, m, { id: m.id.split("@")[0] }) : m), soft: tr.strict ? false : true });
+    // Pick swaps made in a trade: "s" moves with id "2029-1-BOS", sent by Boston, give the team receiving it the right
+    // to take Boston's 2029 first in place of its own if Boston's lands higher. Both teams have to own their own pick
+    // that year, with no swap, protection or condition on either, and neither pick can move in the same trade.
+    H.swapOf = (m, moves) => {
+      const [y, r, from] = String(m.id).split("-"), Y = +y, R = +r, holder = m.to;
+      const own = c => W.picks.find(x => x.id === `${Y}-${R}-${c}`);
+      const a = own(from), b = own(holder);
+      let why = "";
+      const nm = c => "The " + (teamInfo[c] ? teamInfo[c].short : c);
+      if (!a || a.owner !== from) why = `${nm(from)} don't own their ${Y} ${R === 1 ? "1st" : "2nd"}`;
+      else if (!b || b.owner !== holder) why = `${nm(holder)} don't own their ${Y} ${R === 1 ? "1st" : "2nd"}, so there's nothing to swap`;
+      else if (a.frozen || b.frozen) why = `A frozen ${Y} first can't be swapped`;
+      else if (a.prot || b.prot || a.group || b.group || a.locked || b.locked || W.swaps.some(x => x.y === Y && x.r === R && (x.from === from || x.from === holder || x.holder === from || x.holder === holder))) why = `The ${Y} picks already carry a swap or condition`;
+      else if ((moves || []).some(x => x.kind === "k" && (x.id.split("@")[0] === a.id || x.id.split("@")[0] === b.id))) why = `Can't swap a ${Y} pick that's moving in the same trade`;
+      return { y: Y, r: R, from, holder, ok: !why, why, id: `vs-${Y}-${R}-${from}-${holder}`, name: `Swap of ${Y} ${R === 1 ? "1sts" : "2nds"} with ${teamInfo[from] ? teamInfo[from].short : from}` };
+    };
+    H.checkTrade = tr => {
+      const res = L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves.filter(m => m.kind !== "s").map(m => m.kind === "k" && m.id.indexOf("@") > 0 ? Object.assign({}, m, { id: m.id.split("@")[0] }) : m), soft: tr.strict ? false : true });
+      for (const m of tr.moves) if (m.kind === "s") {
+        const sw = H.swapOf(m, tr.moves);
+        if (!sw.ok && res.teams[m.from]) { res.teams[m.from].ok = false; res.teams[m.from].msgs.push(sw.why + "."); res.ok = false; }
+      }
+      return res;
+    };
     H.matchMax = (out, post) => CBA.matchMax(out, 0, post);
     H.matchRule = (out, post) => CBA.matchRule(out, 0, post);
-    H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(H.pickById(m.id), mode);
+    H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : m.kind === "s" ? H.swapValue(H.swapOf(m), mode) : H.pickValue(H.pickById(m.id), mode);
     // What a change in luxury tax is worth to a team. Tax a deal adds counts in full this season, and later seasons
     // count less (more can change). Tax a deal saves counts only up to what getting under some other way would cost:
     // a team can shed salary in another deal at roughly 40 cents a dollar (what absorbing teams charge, by the salary
@@ -1059,7 +1113,7 @@
     const isVet = p => p.age >= 29;
     const blendV = p => cache("bl" + p.id + cfg.disc + cfg.growth + cfg.salW, () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
     const pickBlend = pk => cache("pb" + pk.id + cfg.disc, () => (H.pickValue(pk, "prod") + H.pickValue(pk, "market")) / 2);
-    const contrib = p => Math.max(0, H.rating(p, 0) + 2) * H.mpgAt(p, 0) / 48 * (p.h ?? 0.85);
+    const contrib = p => Math.max(0, H.rating(p, 0) + 2) * H.mpgAt(p, 0) / 48 * (p.h ?? 0.85) * (1 - H.outShare(p));
     // Positional fit: a team's rotation skills (minutes-weighted percentiles, nine heaviest-minute players) show what it
     // lacks; a player strong where it's weak is worth more to it (up to 25%), one whose strengths it already has a bit less
     const FIT_CATS = ["shoot", "finish", "create", "pass", "secure", "rimd", "reb", "steal"];
@@ -1118,12 +1172,33 @@
         const w = sp.prior.w, slotV = (sp.prior.value + sm.prior.value) / 2;
         pv = w * pv + (1 - w) * slotV * mul;
       }
+      else pv += H.birdValue(p, c) * mul;                 // (a rookie's draft-slot value already counts his second deal)
       return pv;
+    });
+    // Bird rights: when his deal ends, the team holding him can re-sign him over the cap. Worth the gap between what he
+    // produces and what the market charges (half of it, averaging in the market view, where a fair deal is worth
+    // nothing extra), plus a premium for a team over the cap, which couldn't replace him in free agency (15% of his
+    // production a season; 5% with room). Three seasons of a new deal, discounted, times the chance he re-signs
+    // (60% for an unrestricted free agent, 85% restricted).
+    H.birdValue = (p, c) => cache("bird" + p.id + (c || p.t) + cfg.disc, () => {
+      c = c || p.t;
+      const e = H.lastYear(p);
+      if (e < 0 || e >= YEARS - 1) return 0;
+      const keep = H.faKind(p) === "RFA" ? 0.85 : 0.6;
+      let v = 0;
+      for (let j = e + 1; j <= Math.min(e + 3, YEARS - 1); j++) {
+        const pr = prodAt(p, j), mk = marketAt(p, j);
+        if (pr <= CBA.minSal((p.yos ?? 3) + j, j) * 1.5) continue;
+        const over = H.payroll(c, j) > CBA.cap(j), prem = over ? 0.15 : 0.05;
+        v += (0.5 * Math.max(0, pr - mk) + prem * (pr + mk) / 2) * discAt(j);
+      }
+      return v * keep;
     });
     H.dealValue = (c, m) => {                      // what one piece is worth to team c
       const ctx = H.teamCtx(c);
       if (m.kind === "c") return m.amt || 0;
       if (m.kind === "k") return pickBlend(H.pickById(m.id)) * tilt(ctx.youth);
+      if (m.kind === "s") { const sw = H.swapOf(m); return (H.swapValue(sw, "prod") + H.swapValue(sw, "market")) / 2 * tilt(ctx.youth); }
       return H.teamPV(W.P[m.id], c);
     };
     // The trade card's grade for one team: the deal's value by its own situation, the wins it adds (worth more to a
@@ -1238,6 +1313,8 @@
           dbg.sal++;
           let moves = mv(outA, A, B).concat(mv(inA, B, A));
           if (!rosterOK(moves)) continue;
+          // a team trying to win now doesn't trade for a player who's out for the season (a rebuilding team might, as salary)
+          if ((ctxA.tier !== "rebuild" && inA.some(q => q.injury && q.injury.season)) || (ctxB.tier !== "rebuild" && outA.some(q => q.injury && q.injury.season))) continue;
           if (inA.some(q => (q.noBack || []).some(x => x.team === A)) || outA.some(q => (q.noBack || []).some(x => x.team === B))) continue;
           let uA = util(A, moves), uB = util(B, moves);
           // sweeteners: the side short of what it needs adds picks (and, buying, a young player) until it's there
@@ -1330,6 +1407,13 @@
         if (!st.ok) blocked.push({ pk, why: st.why.replace(" (Stepien rule)", "") }); else ok.push(pk);
       }
       return { ok, blocked };
+    };
+    // For the badge: "Out for the season", "Out, back about Dec. 15", "Day-to-day"
+    H.injuryTag = p => {
+      const j = p && p.injury; if (!j) return null;
+      const share = outShare(p);
+      const label = j.season ? "Out for season" : /^out$/i.test(j.st) ? "Out" : j.st || "Injured";
+      return { label, season: j.season, share, dtd: !/^out$/i.test(j.st) && !j.season, note: j.note, date: j.date, back: j.season ? null : j.back };
     };
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);

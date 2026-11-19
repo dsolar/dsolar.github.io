@@ -264,3 +264,19 @@ test('valuation: team-aware value, poison pill, 3-2-1 lottery for future drafts'
   const kg = H.W.P['keyonte-george'];
   if (kg && kg.c.sal[1] > 2 * kg.c.sal[0]) assert.ok(L.pillSal(kg, 0) > kg.c.sal[0] * 2);
 });
+
+test('injuries, pick swaps and Bird rights', () => {
+  const r = H.readInjury(['Out', 'Simmons underwent successful surgery Tuesday to repair a torn right Achilles tendon.', '2026-10-21']);
+  assert.equal(r.season, true, 'a torn Achilles is out for the season');
+  const w = H.readInjury(['Out', 'Wilson (hand) is expected to miss four to six weeks.', '2026-11-05']);
+  assert.equal(w.season, false); assert.equal(w.back, '2026-12-10');
+  // a contender's finder deals never bring in a player out for the season
+  const con = H.codes.find(c => H.teamCtx(c).tier === 'contend');
+  for (const d of H.findDeals({ team: con, mode: 'win' })) for (const m of d.moves) if (m.kind === 'p' && m.to === con) assert.ok(!(H.W.P[m.id].injury && H.W.P[m.id].injury.season), H.W.P[m.id].n);
+  // a swap needs both teams to own their own pick that year
+  const bad = H.checkTrade({ teams: ['MIA', 'BOS'], moves: [{ kind: 's', id: '2031-1-MIA', from: 'MIA', to: 'BOS' }] });
+  assert.equal(bad.ok, false);
+  // an expiring good player carries Bird rights
+  const exp = Object.values(H.W.P).find(p => H.lastYear(p) === 0 && H.rating(p, 0) > 2 && !(p.c && p.c.rk));
+  if (exp) assert.ok(H.birdValue(exp) > 0);
+});

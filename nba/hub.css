@@ -593,6 +593,7 @@ table.sz{width:100%;font-size:13px}
 .dlbl{font:700 10.5px var(--cond);color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-bottom:-2px}
 .grade.sm{width:28px;height:28px;font-size:14px;border-radius:8px;margin-left:6px;box-shadow:none}
 .dnum{flex-wrap:wrap;row-gap:2px}
+.dnum .nil{color:var(--faint)}
 @media (max-width:760px){ .dcardf{grid-template-columns:1fr} .dswap{display:none} .dact{flex-direction:row;justify-self:start;width:auto} }
 
 /* trade card v2: bigger logos, tiers, remove buttons, waiting state, cap detail */
@@ -625,3 +626,15 @@ table.sz{width:100%;font-size:13px}
 .paystrip span i{display:block;font:600 10px/1.2 var(--body);font-style:normal;color:var(--faint)}
 .paystrip span.z{color:var(--faint)}
 .tneeds{display:block;font:500 12px/1.3 var(--body);opacity:.85;margin-top:3px;max-width:30ch}
+
+/* injury badge */
+.injb{display:inline-flex;align-items:center;gap:3px;font:700 10.5px/1.5 var(--cond);letter-spacing:.02em;color:#A32020;background:#F9D9D9;border-radius:5px;padding:0 5px 0 4px;margin-left:4px;vertical-align:1px;white-space:nowrap;cursor:help}
+.injb i{font-style:normal;font-weight:800;font-size:12px;line-height:1}
+.injb.dtd{color:#8A5300;background:#FBE5CC}
+.injb.sea{color:#fff;background:#B42525}
+.injnote{margin:4px 0 0;max-width:46ch}
+.tile .tl .injb,.dpc .injb,.org-row .injb{display:inline-flex;width:auto;flex:none;font:700 10.5px/1.5 var(--cond);margin-left:5px;vertical-align:2px}
+.tile .tl .injb i,.dpc .injb i{display:inline;font-size:12px}
+.tile .tl .injb,.dpc .injb,.org-row .injb{color:#A32020}
+.tile .tl .injb.dtd,.dpc .injb.dtd,.org-row .injb.dtd{color:#8A5300}
+.tile .tl .injb.sea,.dpc .injb.sea,.org-row .injb.sea{color:#fff}
