@@ -99,6 +99,30 @@ def after_night(d):
     return datetime(d.year, d.month, d.day, tzinfo=timezone.utc) + timedelta(days=1, hours=8)
 
 
+def nfl_trending(by):
+    """Sleeper's trending adds and drops across all its leagues, over the last day and the last week, for the Trends
+    page (data/trend-nfl.json): {"updated", "windows": {"24": {"add": [[id, count]], "drop": [...]}, "168": {...}}}.
+    Pool ids are Sleeper's own, so they match as they are."""
+    out = {}
+    for hrs in (24, 168):
+        win = {}
+        for kind in ("add", "drop"):
+            try:
+                rows = get(f"https://api.sleeper.app/v1/players/nfl/trending/{kind}?lookback_hours={hrs}&limit=50") or []
+            except Exception as e:
+                print(f"Sleeper trending {kind}s ({hrs}h) didn't load: {type(e).__name__}: {e}")
+                continue
+            win[kind] = [[str(r["player_id"]), int(r.get("count") or 0)] for r in rows if str(r.get("player_id")) in by][:25]
+        if win:
+            out[str(hrs)] = win
+    if not out:
+        return
+    path = os.path.join(OUT, "trend-nfl.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"updated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "source": "Sleeper", "windows": out}, f, separators=(",", ":"))
+    print(f"Wrote {path}")
+
+
 def num_or_none(x):
     try:
         v = float(str(x).strip())
@@ -1006,6 +1030,7 @@ def nfl():
     except Exception as e:
         print(f"Last season's NFL stats didn't load: {type(e).__name__}: {e}")
     print(f"NFL last season: {prev_n} players")
+    nfl_trending(by)
     write("nfl", {"sport": "nfl", "season": str(season), "prev": str(int(season) - 1) if prev_n else None, "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com)",
                   "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS},
                             "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17},

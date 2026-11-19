@@ -207,7 +207,7 @@
       // before the draft: what Yahoo shows then, standings at 0-0, every roster's empty spots, the player pool
       if (pre()) return tab === "league" ? [["overview", "Overview"], ["standings", gl() ? "Survivors" : "Standings"], ["managers", "Managers"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : [])
         : tab === "team" ? [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]])
-        : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : []) : [];
+        : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : sport.key === "nfl" ? [["trends", "Trends"]] : []) : [];
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
@@ -2764,7 +2764,13 @@
     /* ---------- Ownership trends ----------
        Yahoo's % rostered, pulled once a day into data/own-mlb.json ({ dates, players: { id: [% each date] } }),
        for who's rising and falling across all of Yahoo; and this league's own adds and drops. */
-    let ownFile, ownAsked = false;
+    let ownFile, ownAsked = false, trendFile, trendAsked = false;
+    // football: Sleeper's trending adds and drops across its leagues (data/trend-nfl.json, tools/fantasykit_data.py)
+    function trendData() {
+      if (sport.key !== "nfl") return null;
+      if (!trendAsked) { trendAsked = true; fetch("data/trend-nfl.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { trendFile = j && j.windows ? j : null; const r = route(); if (r.tab === "players" && r.sub === "trends") render(); }).catch(() => { trendFile = null; }); }
+      return trendFile;
+    }
     function ownData() {
       if (sport.key !== "mlb") return null;
       if (!ownAsked) { ownAsked = true; fetch("data/own-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { ownFile = j && Array.isArray(j.dates) ? j : null; const r = route(); if (r.tab === "players" && r.sub === "trends") render(); }).catch(() => { ownFile = null; }); }
@@ -2807,6 +2813,18 @@
             ${free.length ? `<div class="dstars-g tr-free"><div><b class="ps">Most rostered on Yahoo, free here</b><ul class="dl tr-l">${free.map(([id, o]) => prow(id, `<span class="tr-v"><b class="num">${o.cur}%</b></span>`)).join("")}</ul></div></div>` : ""}</div>`;
         } else yahoo = `<div class="card"><div class="bd"><p class="ps" style="margin:0">Yahoo's % rostered isn't in yet. It's pulled once a day.</p></div></div>`;
       }
+      // Sleeper: the last day or the last week (this page's 7 days or longer reads its week)
+      let sleeper = "";
+      if (sport.key === "nfl") {
+        const td = trendData();
+        if (td === undefined) sleeper = `<div class="card"><div class="bd"><p class="ps" style="margin:0">Loading Sleeper's trends…</p></div></div>`;
+        else if (td) {
+          const hrs = ui.trSl === 24 ? "24" : "168", wv = td.windows[hrs] || td.windows["168"] || td.windows["24"] || {};
+          const scol = (title, list, up) => `<div><b class="ps">${title}</b><ul class="dl tr-l">${(list || []).filter(([id]) => ctx.byId[id]).slice(0, 15).map(([id, c]) => prow(id, `<span class="tr-v"><b class="num ${up ? "up" : "dn"}">${c.toLocaleString("en-US")}</b><small class="ps">${up ? "adds" : "drops"}</small></span>`)).join("") || `<li class="empty">Nothing yet.</li>`}</ul></div>`;
+          const sseg = `<div class="seg" role="group" aria-label="Sleeper over"><button type="button" data-trsl="24" aria-pressed="${hrs === "24"}">24 hours</button><button type="button" data-trsl="168" aria-pressed="${hrs === "168"}">7 days</button></div>`;
+          sleeper = `<div class="card tr-card"><div class="mod-h"><h2>Across Sleeper</h2><span class="grow"></span>${sseg}</div><div class="dstars-g">${scol("Most added", wv.add, true)}${scol("Most dropped", wv.drop, false)}</div><div class="bd" style="padding-top:0"><p class="ps" style="margin:0">Adds and drops in Sleeper leagues. Updated ${esc(U.ago ? U.ago(Date.parse(td.updated)) : td.updated)}.</p></div></div>`;
+        } else sleeper = `<div class="card"><div class="bd"><p class="ps" style="margin:0">Sleeper's trends aren't in yet. They're pulled a few times a day.</p></div></div>`;
+      }
       // this league: adds and drops in the window
       const adds = {}, drops = {};
       for (const x of L().tx || []) {
@@ -2818,7 +2836,7 @@
       const lcol = (title, list, verb) => `<div><b class="ps">${title}</b><ul class="dl tr-l">${list.map(([id, c]) => prow(id, `<span class="tr-v"><b class="num">${c}</b><small class="ps">${verb}${c === 1 ? "" : "s"}</small></span>`)).join("") || `<li class="empty">None ${win ? `in the last ${win} days` : "this season"}.</li>`}</ul></div>`;
       const league = `<div class="card tr-card"><div class="mod-h"><h2>In this league</h2><span class="grow"></span><span class="ps">Adds and drops</span></div><div class="dstars-g">${lcol("Most added", top(adds), "add")}${lcol("Most dropped", top(drops), "drop")}</div></div>`;
       const seg = `<div class="seg" role="group" aria-label="Over">${[[7, "7 days"], [30, "30 days"], [0, "Season"]].map(([k, n]) => `<button type="button" data-trwin="${k}" aria-pressed="${win === k}">${n}</button>`).join("")}</div>`;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Ownership trends</h1><span class="ps">Who's being picked up and let go</span></div><div class="tools">${seg}</div><div class="stack">${yahoo}${pre() ? "" : league}</div></div>`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Ownership trends</h1><span class="ps">Who's being picked up and let go</span></div>${pre() && !yahoo ? "" : `<div class="tools">${seg}</div>`}<div class="stack">${yahoo}${sleeper}${pre() ? "" : league}</div></div>`;
     }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
@@ -3102,7 +3120,7 @@
       if (tone) { stories.set("tone", tone.dataset.storyTone === "banter" ? "banter" : "straight"); render(); return; }
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-rspan],[data-prange],[data-pflag],[data-pfopen],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-rspan],[data-prange],[data-pflag],[data-pfopen],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-trsl],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -3169,6 +3187,7 @@
         else if (d.statset) { U.setStatSet(sport, d.statset); if (ui.psort && /^s\d+$/.test(ui.psort.k)) ui.psort = { k: "rank", dir: 1 }; render(); }
         else if (d.mbtab != null) { const box = b.closest(".mb-tabs").nextElementSibling; if (box && box.children[+d.mbtab]) box.scrollTo({ left: box.children[+d.mbtab].offsetLeft - box.children[0].offsetLeft, behavior: "smooth" }); }
         else if (d.trwin != null) { ui.trWin = +d.trwin; render(); }
+        else if (d.trsl != null) { ui.trSl = +d.trsl; render(); }
         else if (d.nkind != null) { ui.newsKind = d.nkind; render(); }
         else if (b.hasAttribute("data-nmore")) { ui.newsMore = true; render(); }
         else if (d.mday != null) { ui.mday = d.mday === "" ? null : +d.mday; ui.mdayW = +d.mdw; render(); }
