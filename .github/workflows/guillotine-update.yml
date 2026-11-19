@@ -113,8 +113,8 @@ jobs:
           if [ "$DATA_SAME" = 1 ]; then git checkout -- guillotine/data.json; fi
           git add guillotine/data.json guillotine/history.json guillotine/yahoo.json
           git commit -m "Update guillotine odds data"
-          git pull --rebase -q origin main   # someone may have pushed while this ran
-          git push
+          # another job may push at the same moment: pull and try again, up to five times (someone may have pushed while this ran)
+          for i in 1 2 3 4 5; do (git pull --rebase -q origin main || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
           echo "pushed=true" >> "$GITHUB_OUTPUT"
 
       - name: Rebuild the site

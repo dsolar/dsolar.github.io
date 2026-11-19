@@ -41,5 +41,5 @@ jobs:
           git add tools/yahoo_probe.json
           if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
           git commit -m "Yahoo probe results"
-          git pull --rebase -q origin main
-          git push
+          # another job may push at the same moment: pull and try again, up to five times
+          for i in 1 2 3 4 5; do (git pull --rebase -q origin main || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done

@@ -62,5 +62,5 @@ jobs:
             exit 0
           fi
           git commit -m "Update Hard Cap stats"
-          git pull --rebase -X theirs -q   # the fresh pull wins over an older stats commit
-          git push
+          # another job may push at the same moment: pull and try again, up to five times (the fresh pull wins over an older stats commit)
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done

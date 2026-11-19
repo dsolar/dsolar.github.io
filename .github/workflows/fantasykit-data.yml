@@ -96,8 +96,8 @@ jobs:
             exit 0
           fi
           git commit -m "Update Fantasy Kit player pools"
-          git pull --rebase -X theirs -q
-          git push
+          # another job may push at the same moment: pull and try again, up to five times
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
 
       - name: Fail if any data looks wrong (GitHub emails about a failed run)
         if: steps.health.outputs.bad == '1'
