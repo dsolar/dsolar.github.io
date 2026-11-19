@@ -561,7 +561,9 @@
         if (p.two) { r.ok = false; r.msgs.push(`${p.n} is on a two-way deal.`); }
         const until = (p.noTrade && W.date < p.noTrade ? p.noTrade : null) || (p.tradeOk && W.date < p.tradeOk && !(tr.snt && tr.snt[p.id]) ? p.tradeOk : null);
         if (!until) continue;
-        if (tr.soft) { if (!r.after || until > r.after) r.after = until; r.notes.push(`${p.n} can be traded starting ${L.fmtDate(until)}.`); }
+        // past the trade deadline it can't happen this season at all, so it isn't a matter of waiting
+        if (W.deadline && W.date <= W.deadline && until > W.deadline) { r.ok = false; r.msgs.push(`${p.n} can't be traded until ${L.fmtDate(until)}, after the ${L.fmtDate(W.deadline)} deadline, so not this season.`); }
+        else if (tr.soft) { if (!r.after || until > r.after) r.after = until; r.notes.push(`${p.n} can be traded starting ${L.fmtDate(until)}.`); }
         else { r.ok = false; r.msgs.push(`${p.n} can't be traded until ${L.fmtDate(until)}.`); }
       }
       // every trade needs something going each way, even if it's a protected second or a little cash
@@ -587,6 +589,12 @@
       const sendsFirst = (out.picks || []).some(id => { const pk = W.picks.find(x => x.id === id); return pk && pk.r === 1; });
       const st = sendsFirst ? L.stepienAll(W, code, out.picks || [], inn.picks || []) : { ok: true };
       if (!st.ok) { r.ok = false; r.msgs.push(st.why); }
+      // any other wait (two-month aggregation, no trading a player back) that runs past the deadline: not this season
+      if (r.after && W.deadline && W.date <= W.deadline && r.after > W.deadline) {
+        const d = L.fmtDate(r.after), why = r.notes.filter(n => n.includes(d));
+        r.notes = r.notes.filter(n => !n.includes(d));
+        r.ok = false; r.msgs.push((why.length ? why.join(" ") + " " : `It can't go through until ${d}. `) + `That's after the ${L.fmtDate(W.deadline)} trade deadline, so not this season.`); r.after = null;
+      }
       return r;
     }
   };

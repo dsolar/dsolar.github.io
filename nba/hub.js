@@ -172,7 +172,7 @@
     // Banner 19's world, set to today: real records, this season's remaining schedule, the real pick ledger
     const asOf = (live && live.updated ? live.updated : stats.updated || "2026-11-09").slice(0, 10);
     const W = L.newWorld(Object.assign({}, data, { players }), live ? Object.assign({}, live, { players: null }) : null, 19);
-    W.phase = "reg"; W.date = asOf;
+    W.phase = "reg"; W.date = asOf; W.deadline = "2027-02-11";     // the 2026-27 trade deadline (Feb. 11, 3 p.m. ET)
     for (const p of Object.values(W.P)) if (!p.c.sal.length) p.c.sal = [0, 0, 0, 0, 0];
     // a player acquired by trade can't be combined with other salaries for two months (from the daily roster changes)
     if (inp.moves && inp.moves.moves) for (const m of inp.moves.moves) {
