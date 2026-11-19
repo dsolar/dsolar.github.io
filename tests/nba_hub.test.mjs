@@ -247,3 +247,20 @@ test('trade rules: no trading a player back within a year; Stepien counts the wo
     assert.equal(t.teams.MIA.ok, false, 'Miami can\'t trade its 2029 first while its 2028 could convey');
   }
 });
+
+test('valuation: team-aware value, poison pill, 3-2-1 lottery for future drafts', () => {
+  // the worst team isn't the likeliest No. 1 under 3-2-1: its expected slot is worse than the fifth-worst team's
+  const T = H.lottoTable(), ev = k => T[k].reduce((a, p, s) => a + p * s, 0);
+  assert.ok(ev(1) > ev(5), 'worst record picks lower on average than fifth-worst');
+  assert.ok(T[1].slice(13).every(p => p < 1e-9), 'the three worst never fall below 12th');
+  // future picks run through the lottery too
+  const d = H.slotDist('SAC', 2028, 1), avg = d.reduce((a, x) => a + x[0] * x[1], 0);
+  assert.ok(avg > 3, `SAC 2028 expected slot ${avg} reflects the lottery, not straight order`);
+  // rebuilding teams lean young; contenders don't
+  const young = Object.values(H.W.P).find(p => p.age <= 23), vet = Object.values(H.W.P).find(p => p.age >= 31);
+  const reb = H.codes.find(c => H.teamCtx(c).tier === 'rebuild'), con = H.codes.find(c => H.teamCtx(c).tier === 'contend');
+  if (reb && con) { assert.ok(H.ageMul(young, reb) > H.ageMul(young, con)); assert.ok(H.ageMul(vet, reb) < H.ageMul(vet, con)); }
+  // poison pill: a pending rookie extension counts at its average for the team taking him
+  const kg = H.W.P['keyonte-george'];
+  if (kg && kg.c.sal[1] > 2 * kg.c.sal[0]) assert.ok(L.pillSal(kg, 0) > kg.c.sal[0] * 2);
+});

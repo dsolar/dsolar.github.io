@@ -487,6 +487,14 @@
     }
     return res;
   };
+  // The poison pill: a player whose rookie-scale extension hasn't started yet counts, for the team getting him, as the
+  // average salary of this season and every extension season (his old team sends out just this season's salary)
+  L.pillSal = (p, i) => {
+    const sal = (p.c && p.c.sal) || [], now = sal[i] || 0, next = sal[i + 1] || 0;
+    if (!now || (p.yos ?? 9) > 3 || p.c.signed === i || next < Math.max(1.8 * now, 10e6)) return 0;
+    const yrs = sal.slice(i).filter(x => x > 0);
+    return yrs.reduce((a, x) => a + x, 0) / yrs.length;
+  };
   // One team's side of a trade: out is what it sends, inn what it gets back.
   L.checkSide = (W, tr, code, out, inn) => {
     const i = W.season, dec = L.decider(W);
@@ -506,7 +514,8 @@
       const post = CBA.status(P2, i);
       Object.assign(r, { P, P2, outSal, inSal, post, kick: sum(inP.map(p => (tr.kickWaive || {})[p.id] ? 0 : CBA.kicker(p, i, dec))) });
       const tpes = t.tpes.filter(tp => !(tp.exp && W.date > tp.exp)).map(tp => Object.assign({}, tp, L.tpeUsable(W, t, tp, post), { usable: L.tpeUsable(W, t, tp, post).ok }));
-      const sol = (outL.length || inL.length) ? CBA.solveStructure(outL, inL, tpes, i, post, P2 <= CBA.cap(i)) : { ok: true, subs: [], newTpes: [], used: [] };
+      const inM = inL.map((x, k) => { const pill = L.pillSal(inP[k], i); if (!pill) return x; r.notes.push(`Poison pill: ${inP[k].n} counts as ${L.fmtMoney ? L.fmtMoney(pill) : "$" + (pill / 1e6).toFixed(1) + "M"} coming in (the average of this season and his extension), not his ${"$" + (x.sal / 1e6).toFixed(1) + "M"} salary.`); return Object.assign({}, x, { sal: pill + (x.sal - CBA.salaryIn(inP[k], i, dec)) }); });
+      const sol = (outL.length || inL.length) ? CBA.solveStructure(outL, inM, tpes, i, post, P2 <= CBA.cap(i)) : { ok: true, subs: [], newTpes: [], used: [] };
       r.sol = sol;
       if (!sol.ok) { r.ok = false; r.msgs.push(sol.why); }
       // hard caps: existing and new

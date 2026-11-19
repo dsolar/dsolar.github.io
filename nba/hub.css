@@ -588,8 +588,12 @@ table.sz{width:100%;font-size:13px}
 .dpc small{font-size:11.5px;color:var(--faint)}
 .dnum{display:flex;gap:12px;font:700 13px var(--cond);margin-top:auto;padding-top:4px;border-top:1px solid var(--rule-2)}
 .dswap{align-self:center;font-size:22px;color:var(--faint)}
-.dcardf>.btn{align-self:center}
-@media (max-width:760px){ .dcardf{grid-template-columns:1fr} .dswap{display:none} .dcardf>.btn{justify-self:start} }
+.dact{align-self:center;display:flex;flex-direction:column;align-items:center;gap:6px;width:118px}
+.dafter{font:700 11.5px var(--cond);color:#9A5B00;background:#FBE5CC;border-radius:6px;padding:2px 6px;white-space:nowrap}
+.dlbl{font:700 10.5px var(--cond);color:var(--faint);letter-spacing:.06em;text-transform:uppercase;margin-bottom:-2px}
+.grade.sm{width:28px;height:28px;font-size:14px;border-radius:8px;margin-left:6px;box-shadow:none}
+.dnum{flex-wrap:wrap;row-gap:2px}
+@media (max-width:760px){ .dcardf{grid-template-columns:1fr} .dswap{display:none} .dact{flex-direction:row;justify-self:start;width:auto} }
 
 /* trade card v2: bigger logos, tiers, remove buttons, waiting state, cap detail */
 .tside header{overflow:hidden;padding:16px 16px 16px 14px;min-height:96px}
