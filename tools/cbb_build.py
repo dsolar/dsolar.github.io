@@ -357,6 +357,23 @@ def main():
  # Last season's per-game lines, for the player card: final, so fetched once a season (cbb/data/prev.json, by athlete
  # id, which follows a player who transferred)
  prevf=read(PREV,{}) or {}
+ # where each player was last season (byathlete reports his current team), from last season's rosters, once a season:
+ # the projection reads a transfer's numbers at his old team's level
+ if prevf.get("season")==year-1 and len(prevf.get("players") or {})>=1000 and not prevf.get("teams"):
+  try:
+   def old_roster(t):
+    try:
+     d=json.loads(get(f'{WEB}/apis/common/v3/sports/basketball/mens-college-basketball/teams/{t["id"]}/roster?{Q}&season={year-1}'))
+     return [(str(a.get("id")),t["id"]) for a in d.get("athletes",[]) if a.get("id")]
+    except Exception:return []
+   was={}
+   with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
+    for rows in pool.map(old_roster,teams.values()):
+     for aid,tid in rows:was[aid]=tid
+   if len(was)<3000:raise ValueError(f"only {len(was)} players on last season's rosters")
+   prevf["teams"]=was;PREV.write_text(json.dumps(prevf,ensure_ascii=False,separators=(",",":"))+"\n")
+   print(f"Last season's rosters: {len(was)} players",flush=True)
+  except Exception as e:errors.append("Last season's rosters: "+str(e))
  if prevf.get("season")!=year-1 or len(prevf.get("players") or {})<1000:
   try:
    rows={};page,pages=1,1

@@ -156,7 +156,8 @@
     const low = live.length ? live[Math.floor(live.length * 0.3)] : 0;
     for (const p of players) {
       const g = gOf(p), w = g / (g + smp.k), g0 = p.l0 && p.l0[smp.line] ? S.stat(sport, { l: p.l0 }, smp.line, smp.col) || 0 : 0;
-      const prior = p.fpg0 != null && g0 >= 8 ? p.fpg0 : low;
+      // a transfer's last season, translated to his new team's level (p.l0x, tools/cbb_dfs.py)
+      const prior = p.fpg0 != null && g0 >= 8 ? p.fpg0 * (p.l0x || 1) : low;
       p.v = w * p.v + (1 - w) * prior;
     }
   }

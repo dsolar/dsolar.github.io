@@ -99,7 +99,7 @@ def main():
 
     # last season's per-game lines (tools/cbb_build.py, cbb/data/prev.json), in the pool's columns
     pv = read(ROOT / "cbb/data/prev.json", {}) or {}
-    prev = {}
+    prev, prev_team = {}, {}
     for aid, s in (pv.get("players") or {}).items():
         gp = num(s.get("gp"))
         if not gp:
@@ -108,6 +108,10 @@ def main():
         row = {"gp": gp, "eg": 0, "min": g("min"), "fgm": g("fgm"), "fga": g("fga"), "ftm": g("ftm"), "fta": g("fta"), "tpm": g("tpm"), "pts": g("pts"), "reb": g("reb"),
                "ast": g("ast"), "stl": g("stl"), "blk": g("blk"), "tov": g("tov"), "oreb": 0, "dreb": g("reb"), "pf": g("pf"), "tpa": g("threeAtt"), "pm": 0, "dd": g("dd") / gp, "td": 0}
         prev[aid] = [round(row[c], 1) for c in COLS]
+        prev_team[aid] = str((pv.get("teams") or {}).get(aid) or "")
+
+    rank_of = {str(t["id"]): t.get("bpiRank") or t.get("haslamRank") for t in hub.get("teams") or []}
+    name_of = {str(t["id"]): t.get("short") or t.get("name") for t in hub.get("teams") or []}
 
     # the player pool: anyone who has played real minutes
     players = []
@@ -136,6 +140,14 @@ def main():
             rec["wt"] = wt
         if prev.get(p["id"]):
             rec["l0"] = {"pg": prev[p["id"]]}
+            # a transfer: where he played, and how his numbers there translate to his new team's level (l0x, for the
+            # projection's prior only; the card shows what he really did). Level runs from 1.0 for the best team in BPI
+            # to 0.65 for the worst
+            old = prev_team.get(p["id"])
+            if old and old != str(p.get("teamId") or ""):
+                lvl = lambda tid: 1 - 0.35 * ((rank_of.get(tid) or 300) - 1) / 364
+                rec["l0t"] = name_of.get(old) or ""
+                rec["l0x"] = round(min(1.25, lvl(old) / lvl(str(p.get("teamId") or ""))), 2)
         players.append(rec)
     pool = {"sport": "cbb", "season": season, "prev": pv.get("label") if prev else None, "updated": now.isoformat(), "source": "ESPN season stats via the CBB Hub; projections scale each player's line by his team's projected points next game",
             "lines": {"pg": {"label": "Per game", "cols": COLS}, "ppg": {"label": "Next game projection", "cols": COLS, "proj": True}},

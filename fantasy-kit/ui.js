@@ -702,7 +702,7 @@
     const lines = Object.entries(sport.data.lines || {}).filter(([k]) => p.l[k]).map(([k, def]) => lineHtml(p, k, def)).filter(Boolean);
     // his last season (p.l0, the pool's data.prev), on the same lines as this season's
     const prevSeason = sport.data.prev || "last season";
-    const past = p.l0 ? Object.entries(sport.data.lines || {}).filter(([k, def]) => Array.isArray(p.l0[k]) && p.l0[k].some((x) => x) && !def.proj && def.week == null).map(([k, def]) => lineHtml({ l: p.l0 }, k, def, prevSeason)).filter(Boolean).join("") : "";
+    const past = p.l0 ? Object.entries(sport.data.lines || {}).filter(([k, def]) => Array.isArray(p.l0[k]) && p.l0[k].some((x) => x) && !def.proj && def.week == null).map(([k, def]) => lineHtml({ l: p.l0 }, k, def, p.l0t ? `${prevSeason}, at ${p.l0t}` : prevSeason)).filter(Boolean).join("") : "";
     // his advanced stats this season (football: the ones for his position), each from its category's formula
     const adv = (() => {
       if (!hasAdv(sport)) return "";
@@ -726,7 +726,7 @@
     const keep = opts.fold ? (typeof opts.fold === "number" ? opts.fold : 1) : lines.length;
     const contract = opts.contract === "fold" ? "" : contractPanel(sport, p);
     const more = lines.slice(keep).join("") + past + adv + (opts.contract === "fold" ? contractPanel(sport, p) : "") + (zs ? `<div class="ps"><b>Strength by category</b>, against the player pool</div>${zs}` : "");
-    const pastFold = past ? `<details class="pc-more"><summary>Last season, ${esc(prevSeason)}</summary><div class="stack">${past}</div></details>` : "";
+    const pastFold = past ? `<details class="pc-more"><summary>Last season, ${esc(prevSeason)}${p.l0t ? `, at ${esc(p.l0t)}` : ""}</summary><div class="stack">${past}</div></details>` : "";
     const linesHtml = opts.lines === false ? adv + pastFold : opts.fold ? `${lines.slice(0, keep).join("")}${more ? `<details class="pc-more"><summary>${opts.contract === "fold" && sport.key === "nhl" ? "More stats and his contract" : "More stats"}</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + pastFold + adv;
     const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
     // opts.logo: his pro team's logo at the right of the header
