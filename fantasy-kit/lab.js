@@ -245,7 +245,7 @@
     const tip = (t, b) => `<div class="mk-tip"><b>${esc(t)}</b><p>${b}</p></div>`;
     return `<div class="wrap page"><a class="start-back" href="#home">← Back to quick start</a><div class="su sp-${sport.key}">
       <div class="nl-band">${K.FIELD[sport.key]}<div class="nl-bi">
-        <div class="nl-sports" role="radiogroup" aria-label="Sport">${S.SEASON_SPORTS.map((x) => `<label class="nl-sp"><input type="radio" name="sport" value="${x.key}"${x.key === c.sport ? " checked" : ""}>${K.icon(x.key)}<span>${esc(x.short || x.name)}</span></label>`).join("")}</div>
+        <div class="nl-sports" role="radiogroup" aria-label="Sport">${S.SEASON_SPORTS.map((x) => `<label class="nl-sp"><input type="radio" name="sport" value="${x.key}"${x.key === c.sport ? " checked" : ""}>${K.icon(x.key)}<span class="sp-l">${esc(x.short || x.name)}</span><span class="sp-a">${esc(x.key.toUpperCase())}</span></label>`).join("")}</div>
         <h1 class="disp">Mock a ${esc(sport.name.toLowerCase())} draft</h1>
         <p>Draft against bots that know positions, budgets and the clock, with real player data. It saves on this device, so you can leave and come back.</p>
       </div></div>

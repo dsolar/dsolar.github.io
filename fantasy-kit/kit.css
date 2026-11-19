@@ -2882,3 +2882,6 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 @media (max-width:600px){.lh-go,.lh-go .btn{width:100%;justify-items:stretch;text-align:center;justify-content:center}.lh-id h1{font-size:22px}}
 /* on a phone the league page's name is in its first card, so the header keeps just the crest */
 @media (max-width:600px){body.fk-home .fk-mast .switch summary .ell{display:none}body.fk-home .fk-mast .switch summary{padding-right:10px}}
+/* the sport picker on a phone: short names (NFL, NBA, CBB...) rather than icons, which don't tell NBA from college hoops */
+.nl-sp .sp-a{display:none}
+@media (max-width:420px){.nl-sports{display:flex;flex-wrap:wrap}.nl-sp .sp-ic,.nl-sp .sp-logo{display:none}.nl-sp span.sp-l{display:none}.nl-sp span.sp-a{display:inline}.nl-sp{padding:7px 9px;font-size:13px;letter-spacing:.02em}}
