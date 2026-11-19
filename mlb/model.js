@@ -36,9 +36,11 @@
     fillWar: { bat: 1.5, sp: 1.5, rp: 0.4 },
     haircut: 1,        // share of projected WAR to count. 100%: the price of a win is already read off what teams pay per projected WAR
     fade: 1,           // yearly shrink of WAR further out (projections get less certain each year)
-    youngFade: 0.3,    // share of an unproven player's projection counted after the coming season, for a player with no big
+    batPros: 1.3,      // hitting prospects against pitching ones of the same grade: pitchers get hurt more (the way Baseball
+                       // Trade Values prices them; its hitting prospects ran 35% above the hub's, its pitchers even)
+    youngFade: 0.2,    // share of an unproven player's projection counted after the coming season, for a player with no big
                        // league record (scaled toward 100% as he builds one)
-    extFade: 0.3,      // the same for a young player already signed to an extension for unproven big leaguers (under 3 years of service): long control on a
+    extFade: 0.2,      // the same for a young player already signed to an extension for unproven big leaguers (under 3 years of service): long control on a
                        // short track record is worth less than its projection adds up to
     lens: "production",// "production": what he should produce; "market": what free agents get for that many years,
                        // length premium included (the way Baseball Trade Values reads field value)
@@ -61,12 +63,14 @@
   // Change in full-time WAR rate going into this season age (hitters and starters; relievers scaled)
   // Modest gains into the mid-20s (Steamer already builds some growth into a young player's line), flat at 27-28,
   // then a steepening decline
-  var DECLINE = 0.75; // scales the decline side of the curve: 75% of the classic "half a win a year after 30" rule
+  // OLD steepens it from 33 on (by half again): mid-30s seasons fall off faster, and Baseball Trade Values' veterans
+  // (Judge, Ramirez, Marte, Ohtani) sat well under the hub without it (Nov 19 2026 sample)
+  var DECLINE = 0.75, OLD = 1.5; // scales the decline side of the curve: 75% of the classic "half a win a year after 30" rule
   function agingDelta(age) {
     if (age <= 23) return 0.25;
     var t = { 24: 0.2, 25: 0.15, 26: 0.1, 27: 0.05, 28: 0, 29: -0.15, 30: -0.3, 31: -0.4, 32: -0.45, 33: -0.5, 34: -0.55 };
     var d = age in t ? t[age] : -0.6;
-    return d < 0 ? d * DECLINE : d;
+    return d < 0 ? d * DECLINE * (age >= 33 ? OLD : 1) : d;
   }
 
   // Full-time WAR a prospect's FV grade implies at his peak (FanGraphs' scale: 50 = average regular, 60 = plus,
@@ -234,7 +238,9 @@
     return Math.max(0.5, Math.min(1.6, r / p.rate * av));
   }
   // Seasons more than lateAfter years out count lateFade of the projection, compounding: projections that far ahead
-  // miss more often, and teams (and Baseball Trade Values) value them for less
+  // miss more often, and teams (and Baseball Trade Values) value them for less. Only for players short of six years'
+  // service (long control or an early extension on a short record); a veteran's later years already carry the aging
+  // curve, and fading them too sank every long free agent deal (Baseball Trade Values sample, Nov 19 2026)
   function farShare(year, season, cfg) {
     var k = year - season - (cfg.lateAfter == null ? 3 : cfg.lateAfter);
     return cfg.lateFade != null && cfg.lateFade < 1 && k >= 0 ? Math.pow(cfg.lateFade, k + 1) : 1;
@@ -244,7 +250,7 @@
     var young = p && !prospect && p.g !== "min" && (p.st || 0) < 3 && !(p.c && p.c.type === "Free Agent") // a free agent signing (from Japan, say) is established
       && !provenRecord(p); // so is a young player who has already put in two full seasons' work
     // (a prospect's value is already scaled by his risk grade, so far-off seasons don't count less again)
-    return Math.max(0, war) * outlookShare(p, cfg) * (prospect ? 1 : farShare(year, season, cfg)) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
+    return Math.max(0, war) * outlookShare(p, cfg) * (prospect || (p && (p.st || 0) >= 6) ? 1 : farShare(year, season, cfg)) * (p && p.faith ? p.faith : 1) * (prospect || cfg.haircut == null ? 1 : cfg.haircut) * Math.pow(cfg.fade == null ? 1 : cfg.fade, year - season)
       // after the coming season, an unproven player's projection counts at youngKeep, less of a cut the more big league
       // work he's already done (flat, not compounding: a player who keeps producing is still worth his projection)
       * (young && year > season ? 1 - (1 - youngKeep(p, cfg)) * (1 - recordShare(p)) : 1);
@@ -307,10 +313,12 @@
       if (code === "PO" || code === "OO") {
         // he walks when the rest of the deal pays less than he'd be worth over those years, not on one season: a
         // 31-year-old owed $46M a year for ten years stays even if his next season alone is worth a little more
-        var restS = 0, restV = 0;
+        // ...and what he'd be worth is what the open market would pay him for those years (the market price, length
+        // premium included), since that's the deal he'd be walking into
+        var restS = 0, restV = 0, mcfg = Object.assign({}, cfg, { lens: "market" });
         p.c.yrs.forEach(function (y) {
           if (y[0] < year || !/^(G|OO|PO)$/.test(y[2])) return;
-          restS += (y[1] || 0) / 1e6; restV += fieldValue(warAt(p, y[0], season), y[0], season, cfg, p);
+          restS += (y[1] || 0) / 1e6; restV += fieldValue(warAt(p, y[0], season), y[0], season, mcfg, p);
         });
         var stays = restS >= restV;
         return { on: stays, salary: stays ? sal : 0, kind: stays ? (code === "OO" ? "Stays (opt-out)" : "Player option") : "Opts out", value: value, war: war, option: true };
@@ -353,7 +361,8 @@
     cfg = cfg || DEFAULTS;
     var rows = [], pv = 0, total = 0, valuePV = 0, contractPV = 0, prospect = isProspect(p);
     var start = prospect ? Math.max(season, arrival(p, season)) : season;
-    var hit = prospect ? (RISK_HIT[p.risk] || 0.75) : 1;
+    var hit = prospect ? RISK_HIT[p.risk] || 0.75 : 1;
+    var bat = prospect && !p.p ? (cfg.batPros == null ? 1 : cfg.batPros) : 1; // hitters carry less injury risk than pitchers
     for (var y = season; y <= season + 11; y++) {
       if (y < start) continue;
       var t = yearTerms(p, y, season, cfg, resigned);
@@ -363,7 +372,7 @@
       if (t.kind === "Opts out") { value = 0; salary = 0; }
       if (t.control && value < salary) break;        // he'd be cut before the team paid more than he's worth
       var disc = Math.pow(1 + cfg.discount, y - season);
-      value *= hit; salary *= hit;
+      value *= hit * bat; salary *= hit * bat;
       var s = value - salary;
       rows.push({ y: y, war: t.on ? t.war : 0, cw: t.on ? countedWar(t.war, y, season, cfg, p) * hit : 0, value: value, salary: salary, kind: t.kind, surplus: s, pv: s / disc, est: !!t.est });
       total += s;
@@ -986,7 +995,7 @@
 
   function mean(a) { return a.length ? a.reduce(function (s, x) { return s + x; }, 0) / a.length : 0; }
 
-  var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
+  var api = { Hub: Hub, DEFAULTS: DEFAULTS, tierMult: tierMult, setDecline: function (x) { DECLINE = x; }, setOld: function (x) { OLD = x; }, agingDelta: agingDelta, fvWar: fvWar, rateAt: rateAt, warAt: warAt,
     yearTerms: yearTerms, controlStatus: controlStatus, surplus: surplus, simulate: simulate, seriesWin: seriesWin,
     marketRead: marketRead, outlookShare: outlookShare, recentRead: recentRead, gradeDeal: gradeDeal, gradeTrade: gradeTrade, valueRange: valueRange, spreadOf: spreadOf, warPath: warPath, canPlay: canPlay, FIELD_ORDER: FIELD_ORDER, arrival: arrival };
   if (typeof module === "object" && module.exports) module.exports = api;
