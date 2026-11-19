@@ -209,3 +209,12 @@ test('ratings and lineups join to the league: apostrophe names, pbpstats team co
     assert.ok(ids.filter(i => H.luIds[i]).length / ids.length > 0.97, 'lineup players matched');
   }
 });
+
+test('value: a top-three pick in his first season is worth something in both views', () => {
+  const top = Object.values(H.W.P).filter(p => p.c && p.c.rk && p.c.rk[1] <= 3 && (p.yos || 0) === 0);
+  assert.ok(top.length >= 1, 'no top-three rookies found');
+  for (const p of top) {
+    assert.ok(H.surplus(p, 'prod').pv > 0, p.id + ' production value ' + H.surplus(p, 'prod').pv);
+    assert.ok(H.surplus(p, 'market').pv > 0, p.id + ' market value ' + H.surplus(p, 'market').pv);
+  }
+});
