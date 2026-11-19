@@ -2806,6 +2806,30 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   .droom.done{grid-template-rows:auto minmax(0,1fr)}
   .droom.done > #fk-ticker{display:none}
   .droom.done .otc{display:none}
-  .droom.done .dr-top .acts{flex-wrap:wrap;justify-content:flex-start;flex:1 1 100%}
+  .droom.done .dr-top{flex-wrap:nowrap;align-items:flex-start}
+  .droom.done .dr-top .acts{flex-wrap:wrap;justify-content:flex-start;flex:1 1 0;min-width:0}
   .droom.done .dr-top .acts > .btn,.droom.done .dr-top .acts > a.btn{flex:1 1 auto;justify-content:center}
 }
+/* the auction block on a phone: the player and the price on one line, the bid buttons under them */
+@media (max-width:600px){
+  .lot{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"p b" "a a";gap:6px 12px!important}
+  .lot .lotp{grid-area:p}.lot .bid{grid-area:b;justify-items:end}.lot .acts{grid-area:a}
+  .lot>span:empty{display:none}
+  .lot .lotp b{font-size:18px}
+  .lot .lotp .ps{font-size:12px;line-height:1.35}
+}
+/* a league's front page on a phone: your matchup on the first screen. The data-source note, the long demo
+   explainer and the story's side panel (its numbers are in the matchup card right below) give way */
+@media (max-width:700px){
+  .lgm:not(.slim) .lgm-note{display:none}
+  .lgm:not(.slim) .lgm-side{padding-top:8px}
+  .lgm:not(.slim) .wrap.lgm-in{padding-bottom:10px}
+  .league-pulse .pulse-grid{display:none}
+  .league-pulse{padding-bottom:16px}
+  aside.demo-notice .wrap{display:flex;align-items:center;gap:10px;padding-top:6px;padding-bottom:6px}
+  aside.demo-notice p{margin:0;flex:1;min-width:0;font-size:12.5px;line-height:1.3}
+  aside.demo-notice p strong~*{display:none}
+  aside.demo-notice .btn{flex:none;white-space:nowrap}
+}
+@media (max-width:700px){aside.demo-notice .dn-l{display:none}}
+@media (max-width:700px){.league-pulse>p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}

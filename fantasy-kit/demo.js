@@ -156,7 +156,7 @@
         leagues.map(([s, g]) => ({ href: `?s=${s.key}&f=${g ? "g" : "h"}`, name: nameOf(s.key, g), sub: `${s.name}, ${g ? "best ball guillotine" : "head to head"}`, crest: U.leagueCrest(U.leagueBrand(nameOf(s.key, g)), "sm") })),
         `<a href="${N.HOME}">Draft Lab home<small>Every sport, league and tool</small></a><a href="/fantasy/mock/#draft">Mock draft<small>Draft against bots in any format</small></a>`),
       right: () => `<button class="btn sm ghost" data-theme>${theme.dark() ? "Light" : "Dark"}</button>`,
-      notice: () => `<aside class="demo-notice"><div class="wrap"><p><strong>Demo league · saved on this device.</strong> Explore every page and try moves against bots.</p><a class="btn sm go" href="/fantasy/leagues/?${new URLSearchParams({ rules: window.FK.experience.encode(window.FK.experience.fromDraft(L.draft, L.settings)) })}">Create this league with friends</a></div></aside>`,
+      notice: () => `<aside class="demo-notice"><div class="wrap"><p><strong>Demo league · saved on this device.</strong> <span>Explore every page and try moves against bots.</span></p><a class="btn sm go" href="/fantasy/leagues/?${new URLSearchParams({ rules: window.FK.experience.encode(window.FK.experience.fromDraft(L.draft, L.settings)) })}">Create<span class="dn-l"> this league</span> with friends</a></div></aside>`,
       draftHref: "/fantasy/mock/#draft",
       commishTools,
     });
