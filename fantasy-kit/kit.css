@@ -2880,3 +2880,5 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .lh-go{display:grid;gap:4px;justify-items:start}
 .lh-go .btn{min-height:44px;padding:0 20px;font-size:15px}
 @media (max-width:600px){.lh-go,.lh-go .btn{width:100%;justify-items:stretch;text-align:center;justify-content:center}.lh-id h1{font-size:22px}}
+/* on a phone the league page's name is in its first card, so the header keeps just the crest */
+@media (max-width:600px){body.fk-home .fk-mast .switch summary .ell{display:none}body.fk-home .fk-mast .switch summary{padding-right:10px}}

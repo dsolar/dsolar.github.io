@@ -140,7 +140,7 @@
     const was = mode;
     mode = modeNow();
     if (room) { room.stop(); room = null; }
-    clearInterval(homeT); homeT = null; homeLast = "";
+    clearInterval(homeT); homeT = null; homeLast = ""; document.body.classList.remove("fk-home");
     if (was && was !== mode) window.scrollTo(0, 0);
     if (mode === "practice") mountPractice(); else if (mode === "home") mountHome(); else if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
   }
@@ -180,7 +180,7 @@
   /* ---------- the league's front page before the draft: the lobby, and the way into the draft room ---------- */
   let homeT = null, homeLast = "";
   function mountHome() {
-    document.body.classList.remove("fk-room");
+    document.body.classList.remove("fk-room"); document.body.classList.add("fk-home");
     const name = info.name || D.name;
     $("#top").innerHTML = U.shell({
       brand: { name: "Draft Lab", href: "/fantasy/leagues/", mark: `<img src="mark.svg" alt="">` },
@@ -252,8 +252,12 @@
     if (tw.length) out.push(`Twists: ${tw.join(", ")}`);
     return out;
   }
+  // a practice mock you left partway, waiting where you left it
+  function practiceMid() {
+    try { const sv = JSON.parse(localStorage.getItem(PK) || "null"); return !!(sv && sv.D && sv.pre && sv.me === practiceMe() && sv.D.phase !== "done" && ((sv.D.board || []).some((pk) => pk && !pk.keeper) || (sv.D.sales || []).length > 0)); } catch (e) { return false; }
+  }
   function lobbyHtml(home) {
-    return window.FK.lobby.html({ D, home, now: now(), me: info.me, commish: info.commish, seats: info.seats || {}, invite: info.invite, rules: lobbyRules(), teamAv: (t) => U.teamAv(t, "sm"), canDraw: canDraw(), name: info.name || D.name, url: lobbyUrl() });
+    return window.FK.lobby.html({ D, home, resume: practiceMid(), now: now(), me: info.me, commish: info.commish, seats: info.seats || {}, invite: info.invite, rules: lobbyRules(), teamAv: (t) => U.teamAv(t, "sm"), canDraw: canDraw(), name: info.name || D.name, url: lobbyUrl() });
   }
   // a live draw: every page in the room redraws as the slots come up
   let drawT = null;
@@ -294,7 +298,7 @@
   function practiceOpen(fresh) {
     let saved = null;
     if (!fresh) try { saved = JSON.parse(localStorage.getItem(PK) || "null"); } catch (e) { saved = null; }
-    practice = saved && saved.D && saved.me === practiceMe() && !!saved.pre === !L ? saved : practiceBuild();
+    practice = saved && saved.D && saved.D.phase !== "done" && saved.me === practiceMe() && !!saved.pre === !L ? saved : practiceBuild();
     practiceSave(); history.replaceState(null, "", location.pathname + location.search + "#practice"); mount();
   }
   // leaving a finished practice draft throws it away, so the next one starts fresh
