@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19T11:53:02Z",
+ "updated": "2026-11-19T20:47:49Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -1096,6 +1096,36 @@
    "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-14-2027/event/01006537BF0F93CE",
    "src": null,
    "low": null
+  },
+  "sg-18796822": {
+   "history": [],
+   "sg": 18796822,
+   "title": "moe.",
+   "date": "2026-12-14",
+   "venue": "Infinity Hall",
+   "url": "https://seatgeek.com/moe-tickets/norfolk-connecticut-infinity-hall-2026-12-14-8-pm/concert/18796822",
+   "src": null,
+   "low": null
+  },
+  "sg-18796829": {
+   "history": [],
+   "sg": 18796829,
+   "title": "moe.",
+   "date": "2026-12-15",
+   "venue": "Infinity Hall",
+   "url": "https://seatgeek.com/moe-tickets/norfolk-connecticut-infinity-hall-2026-12-15-8-pm/concert/18796829",
+   "src": null,
+   "low": null
+  },
+  "sg-18818460": {
+   "history": [],
+   "sg": 18818460,
+   "title": "moe.",
+   "date": "2026-12-16",
+   "venue": "Infinity Hall Hartford",
+   "url": "https://seatgeek.com/moe-tickets/hartford-connecticut-infinity-hall-hartford-2026-12-16-8-pm/concert/18818460",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
@@ -1122,8 +1152,7 @@
   "tm-vv177Z_KGknM09Yr": "2026-11-17",
   "tm-k7vGF_KBmAa9o": "2026-11-18",
   "tm-1AdZZ_KGklJMams": "2026-11-18",
-  "tm-vv177Z_pGklqR-Eh": "2026-11-17",
-  "tm-vv1AvZkfSGkdTcSmB": "2026-11-18"
+  "tm-vv177Z_pGklqR-Eh": "2026-11-17"
  },
  "drops": []
 }
