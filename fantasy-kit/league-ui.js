@@ -133,10 +133,11 @@
       return out;
     }
     let recentCache = null;
-    function recentOf(p) {
-      const n = recentSpan(), ws = recentWeeks(n), key = `${n}:${ws.join(",")}:${L().week}`;
-      if (!recentCache || recentCache.key !== key || recentCache.R !== ctx.hooks.real) recentCache = { key, R: ctx.hooks.real, m: {} };
-      if (recentCache.m[p.id]) return recentCache.m[p.id];
+    function recentOf(p, span) {
+      const n = span || recentSpan(), ws = recentWeeks(n), key = `${n}:${ws.join(",")}:${L().week}`;
+      recentCache = recentCache || {};
+      const C = recentCache[n] && recentCache[n].key === key && recentCache[n].R === ctx.hooks.real ? recentCache[n] : (recentCache[n] = { key, R: ctx.hooks.real, m: {} });
+      if (C.m[p.id]) return C.m[p.id];
       const R = ctx.hooks.real, sc = G.scoring(L(), ctx), lines = sport.data.lines || {}, acc = {};
       const RATE = /^(avg|obp|ops|slg|era|whip|gaa|svp)$/;
       let pts = 0, any = false;
@@ -168,7 +169,7 @@
         const g = gl ? out.l[gl][lines[gl].cols.indexOf(lines[gl].cols.includes(gk) ? gk : "gp")] : 0;
         out.fpts = any ? pts : null; out.fpg = g ? pts / g : null;
       }
-      return (recentCache.m[p.id] = out);
+      return (C.m[p.id] = out);
     }
     // where a player went in this league's draft: { r: round, n: overall pick }
     let draftIdx = null;
@@ -2396,6 +2397,18 @@
       const keptNow = new Set(((L().draft && L().draft.board) || []).filter((x) => x && x.keeper).map((x) => x.pid));
       if (sub === "fa" || sub === "all" || !sub) rows = rows.filter((p) => { const o = ctx.own[p.id]; return show === "all" ? true : show === "avail" ? o == null : show === "fa" ? o == null && !onW(p) : show === "w" ? o == null && onW(p) : show === "taken" ? o != null : show === "mine" ? o === mid : show === "il" ? o == null && G.irEligible(p) : show === "keep" ? keptNow.has(p.id) : show === "watch" ? w.includes(p.id) : o === +show; });
       if (sub === "watch") rows = rows.filter((p) => w.includes(p.id));
+      // two quick filters: healthy players only, and players who'd start for you over someone in your lineup now
+      const OUT = /^(out|o|ir|il|doubtful|d|suspended|susp|pup|nfi|inj)/i;
+      if (ui.phealthy) rows = rows.filter((p) => !p.inj || !OUT.test(String(p.inj)));
+      const startsFor = (() => {
+        if (mid == null || !ui.pstarts) return null;
+        const lu = G.lineupFor(L(), ctx, mid, curWeek()), sl = L().settings.lineup;
+        return (p) => ctx.own[p.id] !== mid && sl.some((slot, i) => S.fits(sport, p, slot) && (!lu[i] || !ctx.byId[lu[i]] || (p.vor || 0) > (ctx.byId[lu[i]].vor || 0)));
+      })();
+      if (startsFor) rows = rows.filter(startsFor);
+      // recent form: the table reads each player's last 1, 2 or 4 weeks of box scores instead of his season
+      const range = recentOn() && RECENT.some((x) => x[0] === ui.prange) ? ui.prange : null;
+      if (range) rows = rows.map((p) => recentOf(p, range));
       const actions = (p) => {
         const own = ctx.own[p.id];
         const star = mid != null ? `<button class="star${w.includes(p.id) ? " on" : ""}" data-watch="${esc(p.id)}" aria-label="Watch ${esc(p.n)}" aria-pressed="${w.includes(p.id)}">${w.includes(p.id) ? "&#9733;" : "&#9734;"}</button>` : "";
@@ -2416,12 +2429,21 @@
             { k: "ros", label: "% Ros", cls: "r num hide-s", title: `Rostered in ${L().ext.source} leagues`, sort: (p) => (xr(p).own != null ? xr(p).own : -1), html: (p) => (xr(p).own != null ? `${Math.round(xr(p).own)}%` : `<span class="ps">-</span>`) }] : []);
         const at = Math.max(1, cols.findIndex((c) => c.k === "pos" || c.k === "prank") + 1);
         if (add.length) cols.splice(at, 0, ...add); }
-      rows = U.sortRows(rows, cols, ui.psort);
+      // switching to recent form sorts by fantasy points over it (points leagues), unless you've picked a sort
+      const fptsCol = range && pts() ? cols.find((c) => c.label === "FPTS") || cols.find((c) => c.label === "FP/G") : null;
+      if (ui.prSort) { ui.prSort = false; ui.psort = fptsCol ? { k: fptsCol.k, dir: -1 } : range ? ui.psort : { k: "rank", dir: 1 }; }
+      const psort = ui.psort;
+      rows = U.sortRows(rows, cols, psort);
       if (sub === "watch") return watchPage(actions);
       return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
         ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
-        <div class="tools">${U.search(ui.pf)}${U.statSwitch ? U.statSwitch(sport) : ""}${U.setSwitch ? U.setSwitch(sport) : ""}${sub === "watch" ? "" : `<label class="sr" for="fk-pshow">Show</label><select id="fk-pshow" class="txsel"><optgroup label="Players">${[["all", "All players"], ["avail", "All available"], ["fa", "Free agents only"], ["w", "Waivers only"], ["il", "IL eligible, available"], ["keep", "Kept this season"], ["watch", "My watch list"], ["taken", "All taken"]].map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}${mid != null ? `<option value="mine"${show === "mine" ? " selected" : ""}>My team</option>` : ""}</optgroup><optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`}${proTeams.length > 1 ? `<label class="sr" for="fk-pro">Pro team</label><select id="fk-pro" class="txsel"><option value="">Every ${esc(sport.league || "pro")} team</option>${proTeams.map((t) => `<option value="${esc(t)}"${ui.ppro === t ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>` : ""}</div>${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
-        ${U.table({ cols, rows, sort: ui.psort, dense: true, limit: ui.plimit || 250, id: "fk-players", empty: sub === "watch" ? "Star players to watch them here." : "No one matches.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
+        ${(() => {
+          // how many filters are on beyond the defaults, for the phone's Filters button
+          const n = [range, ui.phealthy, ui.pstarts, ui.ppro, ui.pshow && ui.pshow !== (sub === "fa" ? "avail" : "all") ? 1 : 0, U.statSet && U.statSet(sport) === "adv"].filter(Boolean).length;
+          return `<div class="tools pf-top">${U.search(ui.pf)}<button type="button" class="btn pf-btn${ui.pfOpen ? " on" : ""}" data-pfopen aria-expanded="${!!ui.pfOpen}">Filters${n ? ` <b>${n}</b>` : ""}</button></div>`;
+        })()}
+        <div class="tools pf-more${ui.pfOpen ? " open" : ""}">${U.statSwitch ? U.statSwitch(sport) : ""}${recentOn() ? `<div class="seg stsw" role="group" aria-label="Stats from"><button type="button" data-prange="0" aria-pressed="${!range}">Season</button>${RECENT.map(([k, n]) => `<button type="button" data-prange="${k}" aria-pressed="${range === k}">${n.replace(/^Last 2 weeks$/, "2 weeks").replace(/^Last 4 weeks$/, "4 weeks")}</button>`).join("")}</div>` : ""}${U.setSwitch ? U.setSwitch(sport) : ""}${sub === "watch" ? "" : `<label class="sr" for="fk-pshow">Show</label><select id="fk-pshow" class="txsel"><optgroup label="Players">${[["all", "All players"], ["avail", "All available"], ["fa", "Free agents only"], ["w", "Waivers only"], ["il", "IL eligible, available"], ["keep", "Kept this season"], ["watch", "My watch list"], ["taken", "All taken"]].map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}${mid != null ? `<option value="mine"${show === "mine" ? " selected" : ""}>My team</option>` : ""}</optgroup><optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`}${proTeams.length > 1 ? `<label class="sr" for="fk-pro">Pro team</label><select id="fk-pro" class="txsel"><option value="">Every ${esc(sport.league || "pro")} team</option>${proTeams.map((t) => `<option value="${esc(t)}"${ui.ppro === t ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>` : ""}<div class="pf-tg" role="group" aria-label="Quick filters"><button type="button" class="tgl${ui.phealthy ? " on" : ""}" data-pflag="phealthy" aria-pressed="${!!ui.phealthy}">Healthy only</button>${mid != null ? `<button type="button" class="tgl${ui.pstarts ? " on" : ""}" data-pflag="pstarts" aria-pressed="${!!ui.pstarts}" title="Players who'd start for you over someone in your lineup now">Would start for me</button>` : ""}</div></div>${range ? `<p class="ps rc-note">${(() => { const ws = recentWeeks(range), md2 = (t) => new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" }); return ws.length ? `Stats from ${md2(G.weekStart(L(), ws[ws.length - 1]))} to ${md2(Math.min(now(), G.weekStart(L(), ws[0] + 1) - 864e5))}. Rank and projection stay season-long.` : "No games yet."; })()}</p>` : ""}${U.posFilter(sport, ui.pf.pos, [], L().settings.lineup)}
+        ${U.table({ cols, rows, sort: psort, dense: true, limit: ui.plimit || 250, id: "fk-players", empty: sub === "watch" ? "Star players to watch them here." : "No one matches.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
     }
     function claimsPage() {
       const mid = me();
@@ -3057,7 +3079,7 @@
       if (tone) { stories.set("tone", tone.dataset.storyTone === "banter" ? "banter" : "straight"); render(); return; }
       const mb = e.target.closest("[data-more]");
       if (mb) { ui.plimit = (ui.plimit || 250) + 250; render(); return; }
-      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-rspan],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
+      const b = e.target.closest("[data-ctsave],[data-ctinv],[data-ctall],[data-day],[data-tssort],[data-tfmode],[data-tfprop],[data-dview],[data-rview],[data-rspan],[data-prange],[data-pflag],[data-pfopen],[data-txmore],[data-tr-rival],[data-rematch],[data-pyo],[data-ladder],[data-deal],[data-mgr],[data-editprofile],[data-unblock],[data-editteam],[data-toir],[data-activate],[data-totaxi],[data-promote],[data-bite],[data-swapb],[data-add],[data-drop],[data-trade],[data-move],[data-here],[data-optimize],[data-week],[data-watch],[data-unclaim],[data-editclaim],[data-cup],[data-cdown],[data-sbweek],[data-mweek],[data-mday],[data-nkind],[data-nmore],[data-trwin],[data-mbtab],[data-statview],[data-statset],[data-autostart],[data-txf],[data-fpos],[data-tr-accept],[data-tr-reject],[data-tr-counter],[data-tr-cancel],[data-tr-ok],[data-tr-veto],[data-tr-cmveto],[data-copyfinal],[data-rcweek],[data-copyrecap],[data-sharerecap],th[data-sort]");
       if (b) {
         e.preventDefault(); e.stopPropagation();
         const d = b.dataset, mid = me();
@@ -3120,7 +3142,7 @@
         else if (d.sbweek) { ui.sbWeek = +d.sbweek; location.hash = `#league/scoreboard/${d.sbweek}`; }
         else if (d.mweek) { location.hash = `#matchup/${d.mweek}`; }
         else if (b.hasAttribute("data-autostart")) { const on = !T(mid).autoStart; act(() => G.setAutoStart(L(), mid, on), on ? (G.daily(L()) ? "Auto-start is on: each day your players with a game start, unless you set the lineup yourself." : "Auto-start is on: each week your players with games start, unless you set the lineup yourself.") : "Auto-start is off."); }
-        else if (d.statview) { U.setView(sport, d.statview); render(); }
+        else if (d.statview) { U.setView(sport, d.statview); if (d.statview === "proj") ui.prange = null; render(); }
         else if (d.statset) { U.setStatSet(sport, d.statset); if (ui.psort && /^s\d+$/.test(ui.psort.k)) ui.psort = { k: "rank", dir: 1 }; render(); }
         else if (d.mbtab != null) { const box = b.closest(".mb-tabs").nextElementSibling; if (box && box.children[+d.mbtab]) box.scrollTo({ left: box.children[+d.mbtab].offsetLeft - box.children[0].offsetLeft, behavior: "smooth" }); }
         else if (d.trwin != null) { ui.trWin = +d.trwin; render(); }
@@ -3139,6 +3161,9 @@
         else if (d.trVeto) act(() => G.vote(L(), ctx, +d.trVeto, mid, true, now()), "You voted to veto.");
         else if (d.rview) { ui.rview = d.rview; render(); }
         else if (d.rspan) { ui.rspan = +d.rspan; render(); }
+        else if (d.prange != null) { ui.prange = +d.prange || null; ui.prSort = true; if (ui.prange && sport.statView === "proj") U.setView(sport, "stats"); render(); }
+        else if (d.pflag) { ui[d.pflag] = !ui[d.pflag]; render(); }
+        else if (d.pfopen != null) { ui.pfOpen = !ui.pfOpen; render(); }
         else if (d.tfprop != null) openTrade(+d.tfprop, null, { give: d.give.split(","), get: d.get.split(",") });
         else if (d.dview) { ui.dview = d.dview; render(); }
         else if (b.hasAttribute("data-txmore")) { ui.txlim = (ui.txlim || 200) + 300; render(); }

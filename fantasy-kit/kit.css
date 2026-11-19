@@ -2760,3 +2760,25 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 #fk-pool td.fbl-c{white-space:normal!important;min-width:200px}
 .t.vs .pj{font-weight:700;color:var(--muted)}
 .game .st{gap:6px;flex-wrap:wrap}.game .st>span:last-child{text-align:right}
+/* the players page: quick filter toggles, and on a phone one Filters button over the rest */
+.pf-tg{display:flex;gap:6px;flex-wrap:wrap}
+.tgl{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.tgl.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pf-btn{display:none}.pf-btn b{display:inline-grid;place-items:center;min-width:18px;height:18px;border-radius:9px;background:var(--brand);color:#111;font-size:11px;margin-left:4px}
+.rc-note{margin:6px 0 0}
+@media (max-width:700px){
+  .pf-top{display:flex!important;flex-wrap:nowrap!important;gap:8px;align-items:center}.pf-top input{flex:1 1 auto;min-width:0;width:auto!important}
+  .pf-btn{display:inline-flex;align-items:center;flex:none}
+  .pf-more{display:none!important}.pf-more.open{display:grid!important;gap:8px;grid-template-columns:1fr}
+  .pf-more .seg,.pf-more select{width:100%}
+  #fk-players td.nm .pav{display:none}
+  #fk-players td.nm{min-width:138px;max-width:150px;width:150px}
+  #fk-players td.nm .pname>span{min-width:0;overflow:hidden}
+  #fk-players td.nm .pn{display:block;max-width:none;overflow:hidden;text-overflow:ellipsis}
+}
+.fk-more{display:none}
+@media (max-width:700px){
+  .fk-subs a.x{display:none}
+  .fk-more{display:block;flex:none;border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 26px 5px 12px;font:inherit;font-size:13px;font-weight:700;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 13px) 55%,calc(100% - 9px) 55%;background-size:4px 4px;background-repeat:no-repeat}
+}
+@media (max-width:600px){table.t.stand td.nm{max-width:none;width:auto}}

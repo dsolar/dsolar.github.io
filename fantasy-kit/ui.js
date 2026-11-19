@@ -326,7 +326,12 @@
         ${SITE}<a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
         ${opts.title || ""}<span class="grow"></span><div class="fk-who">${opts.right || ""}${ACCOUNT}</div></div></div>`}
       ${opts.tabs && opts.tabs.length && !(opts.inline && !m) ? `<div class="fk-nav${opts.tabbar ? " has-bar" : ""}"><div class="wrap"><nav aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}${opts.navEnd ? `<a class="nav-end" href="${esc(opts.navEnd[0])}"${opts.navEnd[3] ? ' aria-current="page"' : ""}>${CHAT_ICON}${esc(opts.navEnd[1])}${badge(opts.navEnd[2])}</a>` : ""}</nav></div></div>` : ""}
-      ${opts.subs && opts.subs.length ? `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b]) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</div></nav>` : ""}
+      ${opts.subs && opts.subs.length ? (() => {
+        // on a phone a long row keeps its first three pages (and the one you're on) and puts the rest under More
+        const many = opts.subs.length > 4, extra = many ? opts.subs.filter(([k], i) => i >= 3 && k !== opts.sub) : [];
+        const more = extra.length ? `<label class="sr" for="fk-more">More pages</label><select id="fk-more" class="fk-more" onchange="if(this.value)location.hash=this.value"><option value="">More</option>${extra.map(([k, n, b]) => `<option value="${esc(href(opts.tab, k))}">${esc(n)}${b ? ` (${b})` : ""}</option>`).join("")}</select>` : "";
+        return `<nav class="fk-subs" aria-label="Pages"><div class="wrap">${opts.subs.map(([k, n, b], i) => `<a href="${href(opts.tab, k)}"${k === opts.sub ? ' aria-current="page"' : ""}${many && i >= 3 && k !== opts.sub ? ' class="x"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}${more}</div></nav>`;
+      })() : ""}
       ${opts.tabbar && opts.tabs && opts.tabs.length ? `<nav class="fk-tabbar" aria-label="Sections, phone" style="--n:${opts.tabs.length}">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${TAB_ICON[k] || TAB_ICON.league}<span>${esc(SHORT_TAB[k] || n)}</span>${b ? `<i class="tb-n">${b}</i>` : ""}</a>`).join("")}</nav>` : ""}`;
   }
   // phone tab bar icons, drawn on a 24 grid with a 1.8 stroke
