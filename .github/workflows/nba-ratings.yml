@@ -1,0 +1,50 @@
+# Builds the NBA Hub's player ratings (tools/nba_ratings.py) from pbpstats, Basketball-Reference and DARKO into
+# nba/data/ratings.json. Runs after DARKO's morning pull and again in the evening, when the script or this file
+# changes, or by hand.
+name: NBA ratings
+
+on:
+  schedule:
+    - cron: "13 14 * * *"   # 9:13am ET in winter, after DARKO
+    - cron: "47 22 * * *"   # 5:47pm ET
+  push:
+    branches: [main]
+    paths:
+      - tools/nba_ratings.py
+      - .github/workflows/nba-ratings.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-ratings
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build the ratings
+        run: python3 tools/nba_ratings.py
+
+      - name: Commit the ratings
+        run: |
+          git add nba/data/ratings.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update NBA ratings"
+          # another job may push at the same moment: pull and try again, up to five times
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
