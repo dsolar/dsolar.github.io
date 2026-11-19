@@ -1912,9 +1912,21 @@
       } else if (!d.packs && !mystery() && Array.isArray(d.order)) {
         const next = F.nextPickOf(d, mine), first = d.board.findIndex((x, i) => !x && d.order[i] != null) + 1;
         if (next != null && first > 0) {
+          // Bots draft by these rankings, so against bots the rankings say who lasts. With other people in the draft,
+          // the market does: ESPN's average draft position before a season, the experts' rest-of-season rank during one
+          const humans = d.round1.some((x) => x !== mine && !F.isBot(team(x))), mk = p.mk || {}, ros = sport.market && sport.market.fp === "rest of season";
+          const mpos = !humans ? null : !ros && mk.adp ? { at: mk.adp, how: "Drafters on ESPN take him around pick" } : mk.fp ? { at: mk.fp, how: "The experts rank him" } : null;
           const wait = next - first, ahead = ctx.available.indexOf(p);
           if (wait <= 0) bits.push(`<b>You're on the clock.</b>`);
-          else if (ahead >= 0) {
+          else if (mpos) {
+            // scaled to this league's size: where he's taken is roughly normal around it, wider the later he goes;
+            // given he's still here at this pick, the chance he's still here at yours
+            const n = d.round1.length, at = mpos.at * (n / 10), sd = Math.max(2, at * 0.22), adp = true;
+            const cdf = (x) => 0.5 * (1 + Math.tanh(0.7978845608 * (x + 0.044715 * x * x * x)));
+            const stay = (k) => 1 - cdf((k - at) / sd), q = Math.max(0, Math.min(1, stay(next) / Math.max(1e-6, stay(first))));
+            const pct = q > 0.97 ? "almost surely" : q < 0.03 ? "almost no chance" : (() => { const v = Math.round(q * 20) * 5; return `about ${/^(8|11|18)/.test(String(v)) ? "an" : "a"} ${v}% chance`; })();
+            bits.push(`<b>Your next pick is ${esc(F.pickLabel(d, next - 1))}</b>, ${wait} pick${wait === 1 ? "" : "s"} away. ${mpos.how} ${mpos.how.endsWith("pick") ? Math.round(at) : ord(Math.round(mpos.at))}${n !== 10 && mpos.how.endsWith("pick") ? ` in a ${n}-team league` : ""}, so ${q > 0.97 ? "he'll almost surely be there" : q < 0.03 ? "he almost surely won't last" : `${pct} he's there`}.${ahead > 0 ? ` ${ahead} left rank ahead of him here.` : ""}`);
+          } else if (ahead >= 0) {
             const verdict = ahead < wait * 0.6 ? "he likely won't last" : ahead >= wait * 1.5 ? "he should still be there" : "he may not last";
             bits.push(`<b>Your next pick is ${esc(F.pickLabel(d, next - 1))}</b>, ${wait} pick${wait === 1 ? "" : "s"} away. ${ahead ? `${ahead} player${ahead === 1 ? "" : "s"} left rank ahead of him, so ${verdict}.` : `He's the top player left, so ${verdict}.`}`);
           }
