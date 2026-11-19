@@ -403,8 +403,8 @@
     return S.stat(sport, P, line, c.col);
   }
   function statCell(sport, p, c) {
-    if (c.fpts) return p.fpts;
-    if (c.fpg) return p.fpg;
+    if (c.fpts) return sport.statView === "prev" ? (p.fpts0 != null ? p.fpts0 : null) : p.fpts;
+    if (c.fpg) return sport.statView === "prev" ? (p.fpg0 != null ? p.fpg0 : null) : p.fpg;
     if (sport.statView === "prev" && c.line && !c.fpts) return prevStat(sport, p, c);
     const line = c.line ? lineOf(sport, p, c.line) : c.line;
     if (line !== c.line && !(p.l && p.l[line])) return null;
@@ -440,16 +440,16 @@
     sport.statView = v === "stats" || v === "proj" || (v === "prev" && hasPrev(sport)) ? v : sport.key === "mlb" ? "proj" : "stats";
   }
   function viewSelect(sport, id) {
-    if (!hasProj(sport)) return "";
+    if (!hasProj(sport) && !hasPrev(sport)) return "";
     if (!sport.statView) initView(sport);
-    return `<label class="sr" for="${id}">Stats or projections</label><select id="${id}" class="pill-sel">${[["proj", projLabel(sport)], ["stats", statsLabel(sport)]].concat(hasPrev(sport) ? [["prev", prevLabel(sport)]] : []).map(([v, l]) => `<option value="${v}"${sport.statView === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
+    return `<label class="sr" for="${id}">Stats or projections</label><select id="${id}" class="pill-sel">${(hasProj(sport) ? [["proj", projLabel(sport)]] : []).concat([["stats", statsLabel(sport)]]).concat(hasPrev(sport) ? [["prev", prevLabel(sport)]] : []).map(([v, l]) => `<option value="${v}"${sport.statView === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
   }
   // the seasons as a switch: next season's projection, this season, the season before
   function statSwitch(sport) {
-    if (!hasProj(sport)) return "";
+    if (!hasProj(sport) && !hasPrev(sport)) return "";
     if (!sport.statView) initView(sport);
     const yr = +(sport.data && sport.data.season) || null;
-    return `<div class="seg stsw" role="group" aria-label="Numbers">${[["proj", sport.key === "mlb" && yr ? `${yr + 1} proj` : "Projected"], ["stats", yr ? `${yr}` : "Stats"]].concat(hasPrev(sport) ? [["prev", String(sport.data.prev)]] : []).map(([v, l]) => `<button type="button" data-statview="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
+    return `<div class="seg stsw" role="group" aria-label="Numbers">${(hasProj(sport) ? [["proj", sport.key === "mlb" && yr ? `${yr + 1} proj` : "Projected"]] : []).concat([["stats", yr ? `${yr}` : sport.data.season ? String(sport.data.season) : "Stats"]]).concat(hasPrev(sport) ? [["prev", String(sport.data.prev)]] : []).map(([v, l]) => `<button type="button" data-statview="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
   }
   function setView(sport, v) { sport.statView = v === "proj" ? "proj" : v === "prev" && hasPrev(sport) ? "prev" : "stats"; try { localStorage.setItem(viewKey(sport), sport.statView); } catch (e) { /* no storage */ } }
   const isPoints = (sport, scoring) => (sport.scorings[scoring] || Object.values(sport.scorings)[0]).type === "points";

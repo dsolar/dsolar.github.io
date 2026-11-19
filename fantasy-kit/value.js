@@ -292,6 +292,13 @@
       }
     } else {
       pointValues(sport, players, sc);
+      // last season's fantasy points the same way (p.fpts0, p.fpg0), for the tables' last-season view
+      for (const p of players) {
+        if (!p.l0) { p.fpts0 = p.fpg0 = null; continue; }
+        const q = { id: p.id, pos: p.pos, t: p.t, l: p.l0 };
+        pointValues(sport, [q], sc);
+        p.fpts0 = q.fpts; p.fpg0 = q.fpg;
+      }
       // What a player scores per game from here: his own rate this season (shrunk for small samples) blended with the
       // projection, the real games counting more as they pile up (half and half after six). A rest-of-season
       // projection already leaves out the weeks a player is hurt; a season projection set in the summer doesn't, so

@@ -202,9 +202,12 @@
     const watch = () => { if (pre()) return pre().queue(); const w = L().watch; return (w[me()] = w[me()] || []); };
 
     /* ---------- routing ---------- */
-    const TABS = () => pre() ? [["league", "League"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []) : [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : tot() ? "This week" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
+    const TABS = () => pre() ? [["league", "League"], ["team", "My Team"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []) : [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : tot() ? "This week" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
-      if (pre()) return tab === "league" ? [["overview", "Overview"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []) : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]] : [];
+      // before the draft: what Yahoo shows then, standings at 0-0, every roster's empty spots, the player pool
+      if (pre()) return tab === "league" ? [["overview", "Overview"], ["standings", gl() ? "Survivors" : "Standings"], ["managers", "Managers"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : [])
+        : tab === "team" ? [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]])
+        : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : []) : [];
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
@@ -1606,7 +1609,7 @@
       return `<div class="wrap page">${teamHead(id)}
         ${hcBar(id)}
         ${G.daily(L()) && !over() ? dayTabs(w, day, today) : ""}
-        <div class="row wk-bar" style="flex-wrap:wrap">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">${weekLabel(x)}${x === L().week ? now() < L().start ? ", upcoming" : ", now" : ""}</button>`).join("")}</div>` : ""}
+        <div class="row wk-bar" style="flex-wrap:wrap${pre() ? ";display:none" : ""}">${weeks.length > 1 ? `<div class="seg" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-week="${x}" aria-pressed="${x === w}">${weekLabel(x)}${x === L().week ? now() < L().start ? ", upcoming" : ", now" : ""}</button>`).join("")}</div>` : ""}
           ${game ? `<a class="pill" href="${matchHref(w, game.i)}" style="text-decoration:none">vs ${esc(T(game.a === id ? game.b : game.a).name)}${w === L().week && frac(w) > 0 ? `: ${fmtS(game.a === id ? game.sa : game.sb)} to ${fmtS(game.a === id ? game.sb : game.sa)}` : ""}</a>` : ""}
           ${brow ? `<a class="pill" href="#matchup/${w}" style="text-decoration:none">${fmtS(brow.score)}, ${ord(brow.rank)} of ${L().alive.length}, ${pct(brow.chop)} to be chopped</a>` : ""}
           <span class="grow"></span>${mine && !over() && !bb() ? `<button class="btn sm autost${T(id).autoStart ? " on" : ""}" data-autostart aria-pressed="${!!T(id).autoStart}" title="${G.daily(L()) ? "Each day, starts your players with a game, best first, unless you've set that day yourself" : "Each week, starts your players with games, best first, unless you've set that week yourself"}"><i aria-hidden="true"></i>Auto-start</button>` : ""}${mine && !locked && !moving && hasGames(id, w) ? `<button class="btn sm" data-optimize="active" title="${G.daily(L()) ? "Starts everyone with a game that day" : "Starts everyone with a game this week"}, best first, and sits the rest"><span class="hide-xs">Start active players</span><span class="show-xs">Start active</span></button>` : ""}${mine && !locked && !moving ? `<button class="btn sm" data-optimize><span class="hide-xs">Start my best lineup</span><span class="show-xs">Best lineup</span></button>` : ""}</div>
@@ -2815,7 +2818,7 @@
       const lcol = (title, list, verb) => `<div><b class="ps">${title}</b><ul class="dl tr-l">${list.map(([id, c]) => prow(id, `<span class="tr-v"><b class="num">${c}</b><small class="ps">${verb}${c === 1 ? "" : "s"}</small></span>`)).join("") || `<li class="empty">None ${win ? `in the last ${win} days` : "this season"}.</li>`}</ul></div>`;
       const league = `<div class="card tr-card"><div class="mod-h"><h2>In this league</h2><span class="grow"></span><span class="ps">Adds and drops</span></div><div class="dstars-g">${lcol("Most added", top(adds), "add")}${lcol("Most dropped", top(drops), "drop")}</div></div>`;
       const seg = `<div class="seg" role="group" aria-label="Over">${[[7, "7 days"], [30, "30 days"], [0, "Season"]].map(([k, n]) => `<button type="button" data-trwin="${k}" aria-pressed="${win === k}">${n}</button>`).join("")}</div>`;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Ownership trends</h1><span class="ps">Who's being picked up and let go</span></div><div class="tools">${seg}</div><div class="stack">${yahoo}${league}</div></div>`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Ownership trends</h1><span class="ps">Who's being picked up and let go</span></div><div class="tools">${seg}</div><div class="stack">${yahoo}${pre() ? "" : league}</div></div>`;
     }
     function playerCard(pid) {
       const p = ctx.byId[pid], mid = me(), own = ctx.own[pid];
@@ -2935,6 +2938,7 @@
       let html = "";
       if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, teamstats: teamStatsPage, rosters: rostersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: () => tradesPage(r.arg) }[r.sub]();
+      if (pre() && (r.tab === "team" || (r.tab === "league" && (r.sub === "standings" || r.sub === "managers")))) html = `<div class="wrap" style="padding-top:12px"><div class="banner pre-note"><b>Before the draft.</b> ${r.tab === "team" ? (r.sub === "schedule" ? "The schedule as it stands. It's set when the draft ends." : "These are the spots to fill. Rosters fill in at the draft; build your queue on the Players tab.") : "Everyone's 0-0 until the season starts after the draft."} <a href="#draft">Enter the draft room</a></div></div>` + html;
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
       else if (r.tab === "draft") html = draftPage();
