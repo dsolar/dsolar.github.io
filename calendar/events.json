@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-18T19:02:45Z",
+ "updated": "2026-11-19T12:32:05Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,81 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv177Z_FGkD86gqb",
-   "date": "2026-11-18",
-   "time": "19:00",
-   "title": "Low Cut Connie (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/low-cut-connie-18-boston-massachusetts-11-18-2026/event/0100648ED01F5758",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18201332"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18666676",
-   "date": "2026-11-18",
-   "time": "19:00",
-   "title": "Michael Palascak",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/michael-palascak-tickets/comedy/2026-11-18-7-pm/18666676",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZk36GkdFNKEx",
-   "date": "2026-11-18",
-   "time": "19:00",
-   "title": "SOMBR - You Are The Reason Tour",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/sombr-you-are-the-reason-tour-boston-massachusetts-11-18-2026/event/01006487C88D39E2",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18175608",
-    "2026-11-18-sombr-td-garden"
-   ],
-   "sub": "with Dove Cameron and Hannah Jadagu",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_3GkD_ZpTh",
-   "date": "2026-11-18",
-   "time": "19:00",
-   "title": "Tune-Yards (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tuneyards-18-boston-massachusetts-11-18-2026/event/0100652ED9016FDB",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18603775",
-    "2026-11-18-tune-yards-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZg-z",
-   "date": "2026-11-18",
-   "time": "20:00",
-   "title": "Sadurn w/ Kitchen",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZg-z",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18702702"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkf_GkdFG42E",
    "date": "2026-11-19",
@@ -205,7 +130,6 @@
    "drive_hours": 1.75,
    "act": "Metallica",
    "aka": [
-    "sg-18164314",
     "sg-18164315"
    ],
    "score": 2,
@@ -2526,6 +2450,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA704M",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18787068"
+   ],
    "score": 0
   },
   {
@@ -7869,13 +7796,17 @@
   {
    "id": "tm-vv177Z_pGkl7LqnU",
    "date": "2027-03-21",
-   "time": "19:00",
+   "time": "18:00",
    "title": "Midrift",
    "cat": "music",
    "venue": "Brighton Music Hall presented by Citizens",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/midrift-boston-massachusetts-03-21-2027/event/0100656AC47DDAB6",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
    "aka": [
     "sg-18785494"
    ],
@@ -7981,11 +7912,11 @@
    "id": "sg-18761536",
    "date": "2027-03-24",
    "time": "20:00",
-   "title": "Tiffany Day",
+   "title": "Tiffany Day (Moved from Royale)",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Roadrunner - Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/tiffany-day-tickets/boston-massachusetts-royale-boston-2027-03-24-8-pm/concert/18761536",
+   "url": "https://seatgeek.com/tiffany-day-tickets/boston-massachusetts-roadrunner-boston-2027-03-24-8-pm/concert/18761536",
    "source": "seatgeek",
    "score": 0
   },
@@ -9009,6 +8940,18 @@
    "aka": [
     "sg-18778559"
    ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv168vPjtPaZ7Gde2",
+   "date": "2027-04-14",
+   "time": "20:00",
+   "title": "Cleo Sol - Gentlewoman Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/cleo-sol-gentlewoman-tour-boston-massachusetts-04-14-2027/event/010065729949B21E",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -10203,6 +10146,18 @@
    "url": "https://www.ticketmaster.com/kingfishr-weight-of-the-feather-tour-boston-massachusetts-05-17-2027/event/0100656DF63B77D3",
    "source": "ticketmaster",
    "score": 0
+  },
+  {
+   "id": "sg-18724084",
+   "date": "2027-05-18",
+   "time": "20:00",
+   "title": "Damien Rice",
+   "cat": "music",
+   "venue": "Orpheum Theatre - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/damien-rice-tickets/boston-massachusetts-orpheum-theatre-boston-2027-05-18-8-pm/concert/18724084",
+   "source": "seatgeek",
+   "score": 0
   }
  ],
  "movies": [
@@ -10281,7 +10236,7 @@
   "picks": 2,
   "venues": 1,
   "espn": 67,
-  "ticketmaster": 511,
+  "ticketmaster": 508,
   "seatgeek": 104
  }
 }
