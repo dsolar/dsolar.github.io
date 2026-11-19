@@ -2836,3 +2836,7 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 @media (max-width:700px){.league-pulse>p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}}
 .hl-a{display:none}
 @media (max-width:600px){.hl-t .hl-n{display:none}.hl-t .hl-a{display:inline}.hl-t .tag{padding:1px 5px;font-size:10px}}
+/* the draft room's More menu opens leftward from its button, inside the screen (the site menu rule sets left:0) */
+.dr-more .menu{left:auto;right:0;min-width:180px;width:max-content;max-width:calc(100vw - 24px)}
+.dr-more .menu .btn{white-space:nowrap}
+.dr-more .menu a.btn{display:flex;align-items:center}
