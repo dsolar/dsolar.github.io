@@ -17,6 +17,10 @@
   function leagueApp(opts) {
     const { sport } = opts;
     const L = () => opts.league();
+    // before the draft (opts.pre: { overview, commish, queue, when }): the hub runs on a stand-in league with no rosters
+    // or schedule. League, Players, Draft and Commissioner only, nothing to add or trade, and the star is the draft queue
+    const pre = () => (opts.pre ? opts.pre() : null);
+    let dead = false;
     let ctx = G.context(L(), opts.players, sport, opts.hooks);
     const refresh = () => (ctx = G.context(L(), opts.players, sport, opts.hooks));
     const save = () => { opts.save(L()); refresh(); };
@@ -49,9 +53,9 @@
     const standings = () => G.standings(L());
     const gl = () => G.isGuillotine(L());
     // moves are open while the season runs and your team is alive; trades also stop at the deadline
-    const canMove = () => me() != null && !over() && G.isAlive(L(), me());
+    const canMove = () => !pre() && me() != null && !over() && G.isAlive(L(), me());
     // a dynasty keeps trading through the offseason, until next season starts
-    const canTrade = () => me() != null && L().settings.trades !== false && (G.offseason(L()) || (canMove() && !(L().settings.deadline && L().week > L().settings.deadline)));
+    const canTrade = () => !pre() && me() != null && L().settings.trades !== false && (G.offseason(L()) || (canMove() && !(L().settings.deadline && L().week > L().settings.deadline)));
     const bb = () => !!L().settings.bestBall;
     const roto = () => G.isRoto(L());
     // total points: no weekly games, the season's points add up; flat: either format with no schedule
@@ -195,11 +199,12 @@
     const act = (fn, okMsg) => { const r = fn(); if (r && r.ok === false) { U.toast(r.why, true); return false; } save(); if (okMsg) U.toast(okMsg); if (U.dialogOpen()) setTimeout(render, 0); else render(); return true; };
     // review windows and offer lifetimes read in plain time
     const fmtHours = (h) => (h < 1 ? `${Math.max(1, Math.round(h * 60))} minutes` : h < 48 ? `${Math.round(h)} hour${Math.round(h) === 1 ? "" : "s"}` : `${Math.round(h / 24)} days`);
-    const watch = () => { const w = L().watch; return (w[me()] = w[me()] || []); };
+    const watch = () => { if (pre()) return pre().queue(); const w = L().watch; return (w[me()] = w[me()] || []); };
 
     /* ---------- routing ---------- */
-    const TABS = () => [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : tot() ? "This week" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
+    const TABS = () => pre() ? [["league", "League"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []) : [["league", "League"], ["team", "My Team"], ["matchup", gl() ? "The block" : roto() ? "Categories" : tot() ? "This week" : allplay1() ? "Board" : "Matchup"], ["players", "Players"], ["draft", "Draft"]].concat(opts.commishTools ? [["commish", "Commissioner"]] : []);
     function subsOf(tab) {
+      if (pre()) return tab === "league" ? [["overview", "Overview"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []) : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]] : [];
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
@@ -526,6 +531,7 @@
         <div class="pulse-grid">${q != null ? `<div><span class="pulse-k">Your matchup</span><b>${Math.round(q * 100)}% to win</b><small>Model estimate, updated with the matchup</small></div>` : ""}${focus[0] ? `<div><span class="pulse-k">Closest category</span><b>${esc(focus[0].category.label)}</b><small>${Math.round(focus[0].probability * 100)}% chance to win it</small></div>` : ""}${leader ? `<div><span class="pulse-k">Team to catch</span><b>${esc(T(leader.team).name)}</b><small>${esc(recOf(leader.team))}</small></div>` : ""}</div></section>`;
     }
     function overview() {
+      if (pre()) return pre().overview();
       if (allplay1()) return weekBoardPage();
       if (gl()) return guillotineOverview();
       if (roto()) return rotoOverview();
@@ -2419,7 +2425,7 @@
       if (range) rows = rows.map((p) => recentOf(p, range));
       const actions = (p) => {
         const own = ctx.own[p.id];
-        const star = mid != null ? `<button class="star${w.includes(p.id) ? " on" : ""}" data-watch="${esc(p.id)}" aria-label="Watch ${esc(p.n)}" aria-pressed="${w.includes(p.id)}">${w.includes(p.id) ? "&#9733;" : "&#9734;"}</button>` : "";
+        const star = mid != null ? `<button class="star${w.includes(p.id) ? " on" : ""}" data-watch="${esc(p.id)}" aria-label="${pre() ? "Queue" : "Watch"} ${esc(p.n)}" aria-pressed="${w.includes(p.id)}">${w.includes(p.id) ? "&#9733;" : "&#9734;"}</button>` : "";
         if (mid == null || !canMove()) return star;
         const myClaim = own == null ? L().claims.find((c) => c.team === mid && c.add === p.id && c.status === "open") : null;
         if (myClaim) return `${star}<a class="tag gold" href="#players/claims" title="Your pending claim">Bid $${myClaim.bid}</a>`;
@@ -2427,7 +2433,7 @@
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
-      const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() && !over() && !G.offseason(L()) ? [{ k: "wkp", label: `Wk ${curWeek()}`, cls: "r num", title: `Projected fantasy points for the rest of week ${curWeek()}: his projection for the games he has left`, sort: (p) => projFor(p, 0, curWeek()), html: (p) => { const v = projFor(p, 0, curWeek()); return v > 0.05 ? `<b>${v.toFixed(1)}</b>` : `<span class="ps">0.0</span>`; } }] : [] });
+      const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() && !over() && !G.offseason(L()) && !pre() ? [{ k: "wkp", label: `Wk ${curWeek()}`, cls: "r num", title: `Projected fantasy points for the rest of week ${curWeek()}: his projection for the games he has left`, sort: (p) => projFor(p, 0, curWeek()), html: (p) => { const v = projFor(p, 0, curWeek()); return v > 0.05 ? `<b>${v.toFixed(1)}</b>` : `<span class="ps">0.0</span>`; } }] : [] });
       // Yahoo's columns beside ours: games played, last season's preseason and final ranks, and % rostered (another
       // site's, when the league came from one: L.ext)
       { const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, yr = Number(L().season) || "", grp = U.groupOf(sport, ui.pf);
@@ -2443,7 +2449,7 @@
       const psort = ui.psort;
       rows = U.sortRows(rows, cols, psort);
       if (sub === "watch") return watchPage(actions);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? "Watchlist" : "All players"}</h1><span class="ps">${rows.length} players. FA is free to add now; W is on waivers, so put in a claim.</span></div>
+      return `<div class="wrap page"><div class="head"><h1 class="disp">${sub === "fa" ? "Free agents" : sub === "watch" ? (pre() ? "Your queue" : "Watchlist") : "All players"}</h1><span class="ps">${rows.length} players. ${pre() ? (sub === "watch" ? "Your draft queue, in order: when you're on the clock with auto-pick on, the top one left is yours. Reorder it in the draft room." : "Star a player to put him in your draft queue.") : "FA is free to add now; W is on waivers, so put in a claim."}</span></div>
         ${L().openWaivers > now() && sub !== "all" ? `<div class="banner" style="margin-bottom:12px"><b>Everyone the draft left is on waivers until ${esc(G.waiverWhen(L().openWaivers))}.</b> <span class="muted">Put in claims now${L().settings.waivers === "faab" ? " with a bid" : ""}. They all run then${L().settings.waivers === "faab" ? ", highest bid first" : ", in waiver order"}.</span></div>` : ""}
         ${(() => {
           // how many filters are on beyond the defaults, for the phone's Filters button
@@ -2817,7 +2823,7 @@
       let actions = "";
       if (mid != null) {
         const w = watch();
-        actions += `<button class="btn" data-card="watch">${w.includes(pid) ? "Unwatch" : "Watch"}</button>`;
+        actions += pre() ? `<button class="btn${w.includes(pid) ? "" : " go"}" data-card="watch">${w.includes(pid) ? "Take out of your queue" : "Add to your queue"}</button>` : `<button class="btn" data-card="watch">${w.includes(pid) ? "Unwatch" : "Watch"}</button>`;
         if (own == null && canMove()) actions += `<button class="btn go" data-card="add">${G.onWaivers(L(), pid, now()) ? "Put in a claim" : "Add"}</button>`;
         else if (own === mid && canMove()) actions += `${L().settings.trades !== false && !over() ? `<button class="btn" data-card="block">${G.blockOf(L(), ctx, mid).includes(pid) ? "Take off the block" : "Put on the block"}</button>` : ""}<button class="btn warn" data-card="drop">Drop</button>`;
         else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
@@ -2885,6 +2891,7 @@
     }
     /* ---------- the league's masthead, on its front page ---------- */
     function mastVM() {
+      if (pre()) { const Lg = L(); return { brand: U.leagueBrand(Lg.name, Lg.settings.brand), sub: `${esc(sport.name)}, ${Lg.teams.length} teams, ${esc(sc().label.replace(/ \(.*\)$/, ""))}.`, weeks: [], weekLine: pre().when(), note: "", champs: [] }; }
       const Lg = L(), br = U.leagueBrand(Lg.name, Lg.settings.brand), total = G.totalWeeks(Lg), reg = Lg.settings.weeks, w = Lg.week;
       const st = gl() || flat() ? null : standings(), my = me() != null && st ? st.find((r) => r.team === me()) : null;
       const currentCollege = FK.experience.sportWeek(sport, now());
@@ -2900,8 +2907,12 @@
     }
 
     /* ---------- render ---------- */
+    let drawn = false;
     function render() {
-      if (U.dialogOpen()) return;
+      if (dead) return;
+      // a dialog open before the page's first draw (the invite dialog on a new league): draw it when that closes
+      if (U.dialogOpen()) { const d = document.getElementById("fk-dlg"); if (!drawn && d && !d.dataset.redraw) { d.dataset.redraw = "1"; d.addEventListener("close", () => { delete d.dataset.redraw; render(); }, { once: true }); } return; }
+      drawn = true;
       blockCache = {};
       // the league's accent and band colors for every page's branded modules (--lc, --lband)
       { const br = U.leagueBrand(L().name, L().settings.brand); opts.el.style.setProperty("--lc", br.hex || `var(--t${br.color})`); if (br.bg) opts.el.style.setProperty("--lband", br.bg); }
@@ -2927,7 +2938,7 @@
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
       else if (r.tab === "players") html = playersPage(r.sub);
       else if (r.tab === "draft") html = draftPage();
-      else if (r.tab === "commish") html = `<div class="wrap page">${opts.commishTools(r.sub, { contacts: contactsCard })}</div>`;
+      else if (r.tab === "commish") html = `<div class="wrap page">${pre() ? pre().commish() : opts.commishTools(r.sub, { contacts: contactsCard })}</div>`;
       // every page names itself: in the tab title, and as a heading for screen readers when the page has none
       const tabName = (TABS().find(([k]) => k === r.tab) || [, ""])[1], subName = (subs.find(([k]) => k === r.sub) || [, ""])[1];
       const pageName = subName && subName !== "Overview" ? subName : tabName;
@@ -3198,7 +3209,7 @@
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });
     window.addEventListener("hashchange", () => { ui.moving = null; render(); window.scrollTo(0, 0); });
     render();
-    return { render, refresh: () => { refresh(); render(); }, get ctx() { return ctx; }, openTrade };
+    return { render, refresh: () => { if (dead) return; refresh(); render(); }, stop: () => { dead = true; }, get ctx() { return ctx; }, openTrade };
   }
 
   FK.ui.leagueApp = leagueApp;

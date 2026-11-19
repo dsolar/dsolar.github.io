@@ -69,11 +69,12 @@
     }).join("");
     const head = D.type === "auction" ? "Nomination order" : D.type === "mystery" ? "Teams" : "Draft order";
     const mineBtns = mine ? `<button type="button" class="btn${imReady ? "" : " go"}" data-live="ready">${imReady ? "I'm not ready" : "I'm ready"}</button>` : "";
-    const commish = o.commish ? `<div class="lb-cm"><b class="ps">Commissioner</b><div class="lb-acts">
+    const commish = o.commish ? `<div class="lb-cm"><b class="ps">${o.part === "commish" ? "Draft order and invites" : "Commissioner"}</b><div class="lb-acts">
         ${o.canDraw ? `<button type="button" class="btn sm" data-live="draw"${live ? " disabled" : ""}>Draw the order live</button><button type="button" class="btn sm ghost" data-live="draft-order">Set it by hand</button>` : ""}
         <button type="button" class="btn sm ghost" data-live="league">${D.startAt ? "Change the draft time" : "Set a draft time"}</button>
         ${o.invite && c.open ? `<button type="button" class="btn sm ghost" data-live="invite">Invite (${c.open} open)</button>` : ""}
       </div><p class="ps" style="margin:6px 0 0">${c.all ? `Everyone with a team is ready. Start the draft from ${o.home ? "the draft room" : "the top bar"}.` : c.claimed <= 1 ? (c.ready ? "You're ready. No one else has joined yet." : "No one else has joined yet.") : `${c.ready} of ${c.claimed} managers ready.`}${c.open ? ` ${c.open} team${c.open > 1 ? "s are" : " is"} open and will be bots.` : ""}</p></div>` : "";
+    if (o.part === "commish") return commish;
     return `<div class="lobby">
       <section class="lb-card lb-when"><span class="ps lb-k">The draft</span>${when}${cal}</section>
       <section class="lb-card lb-go">

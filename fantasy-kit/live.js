@@ -136,13 +136,15 @@
   function mount() {
     // a reload on #practice picks the saved practice draft back up
     if (!practice && location.hash === "#practice" && L && seasonOver()) { try { const sv = JSON.parse(localStorage.getItem(PK) || "null"); if (sv && sv.D) practice = sv; } catch (e) { /* no storage */ } }
-    if (modeNow() === "league" && !U.leagueApp) { need("league-ui.js").then(mount, (e) => fatal(e.message, `<span class="muted">Reload the page to try again.</span>`)); return; }
+    if ((modeNow() === "league" || modeNow() === "home") && !U.leagueApp) { need("league-ui.js").then(mount, (e) => fatal(e.message, `<span class="muted">Reload the page to try again.</span>`)); return; }
     const was = mode;
     mode = modeNow();
     if (room) { room.stop(); room = null; }
+    // the league hub's handlers stay with its old page
+    if (app) { if (app.stop) app.stop(); const fresh = $("#app").cloneNode(false); $("#app").replaceWith(fresh); app = null; }
     clearInterval(homeT); homeT = null; homeLast = ""; document.body.classList.remove("fk-home");
     if (was && was !== mode) window.scrollTo(0, 0);
-    if (mode === "practice") mountPractice(); else if (mode === "home") mountHome(); else if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
+    if (mode === "practice") mountPractice(); else if (mode === "home") { if (!mountHub()) mountHome(); } else if (mode === "draft") mountRoom(); else if (mode === "entry") mountEntry(); else { mountLeague(); loadSeries(); }
   }
   // a salary cap game or a sealed draft: entries go to the server, hidden until the lock
   function mountEntry() {
@@ -174,8 +176,64 @@
     if (!r || !r.open || Z.sealedKind(D) !== kind) { revealT = setTimeout(reveal, 5000); return; }
     if (Z.driveDraft(D, F.context(D, players, sport), now(), r.open)) push();
   }
-  function refreshView() { if (mode !== modeNow()) mount(); else if (room) { room.refresh(); if (!drawT) watchDraw(); } else if (mode === "home") { paintHome(); if (!drawT) watchDraw(); } else if (app) app.refresh(); }
-  const paint = () => { if (room) room.refresh(); else if (mode === "home") paintHome(); };
+  function refreshView() { if (mode !== modeNow()) mount(); else if (room) { room.refresh(); if (!drawT) watchDraw(); } else if (mode === "home") { if (app) app.refresh(); else paintHome(); if (!drawT) watchDraw(); } else if (app) app.refresh(); }
+  const paint = () => { if (room) room.refresh(); else if (mode === "home") { if (app) app.refresh(); else paintHome(); } };
+
+  /* ---------- the league hub before the draft: League, Players, Draft and Commissioner, on a stand-in league built from
+     the draft's teams and rules (no rosters but keepers, no schedule that counts). It's never saved. ---------- */
+  let preL = null, preKey = "";
+  function preLeague() {
+    const key = JSON.stringify([info.name, D.teams.map((t) => [t.name, t.abbr, t.owner, t.color]), D.season, D.scoring, D.lineup, D.bench, (D.board || []).filter((x) => x && x.keeper).map((x) => x.pid)]);
+    if (preL && key === preKey) return preL;
+    try {
+      const D2 = JSON.parse(JSON.stringify(D));
+      D2.round1 = D2.round1 || D2.teams.map((t, i) => i); D2.phase = "done"; D2.done = null;
+      preL = Z.begin(D2, sport, { name: info.name || D.name, season: data.season, now: now(), real: false });
+      preL.tx = [];
+    } catch (e) { console.warn("pre-draft hub", e); preL = null; }
+    preKey = key;
+    return preL;
+  }
+  const preWhen = () => {
+    if (!D.startAt) return "Pre-draft. No draft time set yet";
+    return `Draft ${new Date(D.startAt).toLocaleString("en-US", { weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }).replace(":00", "")}`;
+  };
+  const preQueue = () => { const t = info.me != null && D.teams[info.me]; return t ? (t.queue = t.queue || []) : []; };
+  function mountHub() {
+    if (!U.leagueApp || !preLeague()) return false;
+    document.body.classList.remove("fk-room");
+    const name = () => info.name || D.name;
+    app = U.leagueApp({
+      top: $("#top"), el: $("#app"), sport, players, league: () => preLeague() || preL, save: () => push(), me: () => info.me, now, frac: () => 0, hooks: {},
+      brand: { name: "Draft Lab", href: "/fantasy/leagues/", mark: `<img src="mark.svg" alt="">` },
+      switcher: () => U.switcher({ name: name(), crest: U.leagueCrest(U.leagueBrand(name(), (D.season || {}).brand), "sm") },
+        mine.filter((m) => m.id !== id).map((m) => ({ href: `/fantasy/league/?id=${encodeURIComponent(m.id)}`, name: m.name, sub: S[m.sport].name, crest: U.leagueCrest(U.leagueBrand(m.name, m.brand), "sm") })),
+        `<a href="/fantasy/leagues/">My leagues<small>Start or join a league</small></a><a href="/fantasy/">Draft Lab<small>Mock drafts and rankings</small></a>`),
+      right: () => `${info.invite && openSeats() ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm ghost" data-live="league">League</button>`,
+      get commishTools() { return info.commish ? () => "" : null; },
+      notice: () => guestNote(),
+      get invite() { return info.invite ? openSeats() : null; },
+      chat,
+      faces: () => faces,
+      editProfile: C.user() ? editProfile : null,
+      pre: () => ({
+        when: preWhen,
+        queue: preQueue,
+        overview: () => `<div class="wrap page lh">
+          <section class="lh-hero"><div class="lh-id"><b>${D.phase === "setup" ? "Before the draft" : "The draft"}</b><p class="ps">${info.commish ? "Build your queue in the draft room, and start the draft from there." : "Build your queue now: star players on the Players tab or in the draft room."}</p></div>
+            <div class="lh-go"><a class="btn go" href="#draft">Enter the draft room</a></div></section>
+          ${lobbyHtml(true)}</div>`,
+        commish: () => `<div class="head"><h1 class="disp">Commissioner</h1></div><div class="stack" style="max-width:760px">
+          ${window.FK.lobby.html(Object.assign(lobbyOpts(true), { part: "commish" }))}
+          <section class="lb-card"><div class="lb-h"><b>League settings</b></div><p class="ps" style="margin:4px 0 10px">Teams, scoring, rosters, the draft and the season's rules. Most can still change after the draft.</p><button type="button" class="btn" data-live="league">Edit league settings</button></section>
+          <section class="lb-card"><div class="lb-h"><b>Start the draft</b></div><p class="ps" style="margin:4px 0 10px">The Start button is in the draft room's top bar, so nobody starts it from here by accident.</p><a class="btn" href="#draft">Enter the draft room</a></section></div>`,
+      }),
+    });
+    loadPosts(); loadFaces();
+    // the countdown, and the move into the draft room ten minutes before it
+    homeT = setInterval(() => { if (mode !== modeNow()) mount(); else if (app && !U.dialogOpen()) app.refresh(); }, 30000);
+    return true;
+  }
 
   /* ---------- the league's front page before the draft: the lobby, and the way into the draft room ---------- */
   let homeT = null, homeLast = "";
@@ -256,8 +314,9 @@
   function practiceMid() {
     try { const sv = JSON.parse(localStorage.getItem(PK) || "null"); return !!(sv && sv.D && sv.pre && sv.me === practiceMe() && sv.D.phase !== "done" && ((sv.D.board || []).some((pk) => pk && !pk.keeper) || (sv.D.sales || []).length > 0)); } catch (e) { return false; }
   }
-  function lobbyHtml(home) {
-    return window.FK.lobby.html({ D, home, resume: practiceMid(), now: now(), me: info.me, commish: info.commish, seats: info.seats || {}, invite: info.invite, rules: lobbyRules(), teamAv: (t) => U.teamAv(t, "sm"), canDraw: canDraw(), name: info.name || D.name, url: lobbyUrl() });
+  function lobbyHtml(home) { return window.FK.lobby.html(lobbyOpts(home)); }
+  function lobbyOpts(home) {
+    return ({ D, home, resume: practiceMid(), now: now(), me: info.me, commish: info.commish, seats: info.seats || {}, invite: info.invite, rules: lobbyRules(), teamAv: (t) => U.teamAv(t, "sm"), canDraw: canDraw(), name: info.name || D.name, url: lobbyUrl() });
   }
   // a live draw: every page in the room redraws as the slots come up
   let drawT = null;
