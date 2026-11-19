@@ -364,7 +364,8 @@ def main():
    def old_roster(t):
     try:
      d=json.loads(get(f'{WEB}/apis/common/v3/sports/basketball/mens-college-basketball/teams/{t["id"]}/roster?{Q}&season={year-1}'))
-     return [(str(a.get("id")),t["id"]) for a in d.get("athletes",[]) if a.get("id")]
+     if (d.get("season") or {}).get("year") not in (None,year-1):return []  # ESPN sent this season's roster instead
+     return [(str(a.get("id")),t["id"]) for g in d.get("positionGroups",[]) for a in g.get("athletes",[]) if a.get("id")]
     except Exception:return []
    was={}
    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
