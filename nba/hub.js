@@ -112,6 +112,17 @@
       }
       players.push(p);
     }
+    // Availability. The cap sheet's health is last season's share of games played, so one long, one-off injury (a
+    // torn Achilles) read as a player who'll always miss that much. One season says only so much about the next
+    // (about 40% carries over), so shrink it toward a typical 85%, then add this season's games played out of his
+    // team's games, with the history worth two seasons, so a short early injury barely moves it.
+    const teamG = {};
+    for (const p of players) if (p.line) teamG[p.t] = Math.max(teamG[p.t] || 0, p.line.gp);
+    for (const p of players) {
+      const h0 = 0.85 + 0.4 * ((p.h ?? 0.85) - 0.85), G = teamG[p.t] || 0, gp = Math.min(G, p.line ? p.line.gp : 0);
+      p.h0 = p.h ?? 0.85;
+      p.h = +clamp(G ? (h0 * 160 + gp) / (160 + G) : h0, 0.4, 0.96).toFixed(3);
+    }
     // Over 15 standard contracts: anyone whose contract row sits with another team is playing on a two-way or 10-day
     // deal here while his old team pays off the rest (a waived player catching on), so he doesn't take a spot
     const count = {};
