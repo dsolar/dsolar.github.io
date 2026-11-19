@@ -642,8 +642,9 @@
         const list = now[c.k].slice().sort((a, b) => (c.low ? a[1] - b[1] : b[1] - a[1]));
         const best = list[0], worst = list[list.length - 1], all = past[c.k], better = (a, b) => (c.low ? a < b : a > b);
         const sHigh = all.every((v) => !better(v, best[1])), sLow = all.every((v) => !better(worst[1], v));
-        const who = (x, flag) => `<span class="row" style="gap:7px;min-width:0">${teamAv(T(x[0]), "sm")}<span class="ell">${esc(T(x[0]).name)}</span><b class="num">${f(c, x[1])}</b>${flag}</span>`;
-        return `<tr${i > 0 && (c.line || "") !== (cats[i - 1].line || "") ? ` class="gs"` : ""}><th scope="row">${esc(c.label)}</th><td>${who(best, sHigh && w > 1 ? `<span class="tag win" title="The best any team has done all season">Season best</span>` : "")}</td><td>${who(worst, sLow && w > 1 ? `<span class="tag loss" title="The worst any team has done all season">Season worst</span>` : "")}</td></tr>`;
+        // on a phone each side reads as the team's short name, the number and a mark for a season record
+        const who = (x, flag) => `<span class="row" style="gap:7px;min-width:0">${teamAv(T(x[0]), "sm")}<span class="ell"><span class="hl-n">${esc(T(x[0]).name)}</span><span class="hl-a">${esc(T(x[0]).abbr || T(x[0]).name)}</span></span><b class="num">${f(c, x[1])}</b>${flag}</span>`;
+        return `<tr${i > 0 && (c.line || "") !== (cats[i - 1].line || "") ? ` class="gs"` : ""}><th scope="row">${esc(c.label)}</th><td>${who(best, sHigh && w > 1 ? `<span class="tag win" title="The best any team has done all season"><span class="hl-n">Season best</span><span class="hl-a">Best</span></span>` : "")}</td><td>${who(worst, sLow && w > 1 ? `<span class="tag loss" title="The worst any team has done all season"><span class="hl-n">Season worst</span><span class="hl-a">Worst</span></span>` : "")}</td></tr>`;
       }).join("");
       return `<div class="card"><div class="mod-h"><h2>Highs and lows</h2><span class="ps">The best and worst in every category, league-wide</span></div><div class="table-wrap"><table class="t hl-t"><thead><tr><th>Cat</th><th>Best</th><th>Worst</th></tr></thead><tbody>${rows}</tbody></table></div></div>`;
     }
