@@ -780,7 +780,7 @@
      ],
      "faab": 282
     },
-    "Braelon’s Pieces": {
+    "Breece’s Pieces": {
      "chop": 0.0864,
      "win": 0.0415,
      "expected": 119,
@@ -1594,7 +1594,7 @@
       "pts": 0
      }
     ],
-    "Braelon’s Pieces": [
+    "Breece’s Pieces": [
      {
       "n": "Caleb Williams",
       "pos": "QB",
@@ -2090,7 +2090,7 @@
         "bid": 169
        },
        {
-        "team": "Braelon’s Pieces",
+        "team": "Breece’s Pieces",
         "bid": 115
        },
        {
@@ -2138,7 +2138,7 @@
       "n": "Trey McBride",
       "pos": "TE",
       "nfl": "ARI",
-      "claimed_by": "Braelon’s Pieces",
+      "claimed_by": "Breece’s Pieces",
       "bid": 114,
       "bids": [
        {
@@ -2184,7 +2184,7 @@
         "bid": 47
        },
        {
-        "team": "Braelon’s Pieces",
+        "team": "Breece’s Pieces",
         "bid": 38
        },
        {
@@ -2240,7 +2240,7 @@
         "bid": 11
        },
        {
-        "team": "Braelon’s Pieces",
+        "team": "Breece’s Pieces",
         "bid": 7
        },
        {
@@ -2354,7 +2354,7 @@
      ],
      "faab": 275
     },
-    "Braelon’s Pieces": {
+    "Breece’s Pieces": {
      "chop": 0.0876,
      "win": 0.0032,
      "expected": 129,
@@ -2844,7 +2844,7 @@
       "pts": 0
      }
     ],
-    "Braelon’s Pieces": [
+    "Breece’s Pieces": [
      {
       "n": "Caleb Williams",
       "pos": "QB",
@@ -3615,7 +3615,7 @@
         "bid": 28
        },
        {
-        "team": "Braelon’s Pieces",
+        "team": "Breece’s Pieces",
         "bid": 1
        }
       ],
@@ -3669,7 +3669,7 @@
         "bid": 1
        },
        {
-        "team": "Braelon’s Pieces",
+        "team": "Breece’s Pieces",
         "bid": 0
        }
       ],
@@ -3688,7 +3688,7 @@
         "bid": 4
        },
        {
-        "team": "Braelon’s Pieces",
+        "team": "Breece’s Pieces",
         "bid": 0
        },
        {
@@ -3755,7 +3755,7 @@
       "n": "KC Concepcion Jr.",
       "pos": "WR",
       "nfl": "CLE",
-      "claimed_by": "Braelon’s Pieces",
+      "claimed_by": "Breece’s Pieces",
       "next_proj": 7.96
      },
      {
@@ -3862,7 +3862,7 @@
      ],
      "faab": 207
     },
-    "Braelon’s Pieces": {
+    "Breece’s Pieces": {
      "chop": 0.1577,
      "win": 0.0433,
      "expected": 127.3,
@@ -4733,7 +4733,7 @@
       "pts": 5.7
      }
     ],
-    "Braelon’s Pieces": [
+    "Breece’s Pieces": [
      {
       "n": "Caleb Williams",
       "pos": "QB",
@@ -4920,7 +4920,7 @@
       "n": "Kirk Cousins",
       "pos": "QB",
       "nfl": "LV",
-      "claimed_by": "Braelon’s Pieces",
+      "claimed_by": "Breece’s Pieces",
       "bid": 0,
       "next_proj": 14.76
      },
@@ -5045,7 +5045,7 @@
      ],
      "faab": 135
     },
-    "Braelon’s Pieces": {
+    "Breece’s Pieces": {
      "chop": 0.2255,
      "win": 0.0177,
      "expected": 128,
@@ -5557,7 +5557,7 @@
       "pts": 0
      }
     ],
-    "Braelon’s Pieces": [
+    "Breece’s Pieces": [
      {
       "n": "Caleb Williams",
       "pos": "QB",
@@ -5925,101 +5925,6 @@
     ]
    },
    "frozen": true,
-   "estate": {
-    "from": "rosters",
-    "players": [
-     {
-      "n": "Blake Corum",
-      "pos": "RB",
-      "nfl": "LAR",
-      "next_proj": 0
-     },
-     {
-      "n": "Braelon Allen",
-      "pos": "RB",
-      "nfl": "NYJ",
-      "next_proj": 10.68
-     },
-     {
-      "n": "Breece Hall",
-      "pos": "RB",
-      "nfl": "NYJ",
-      "next_proj": 8.8
-     },
-     {
-      "n": "Caleb Williams",
-      "pos": "QB",
-      "nfl": "CHI",
-      "next_proj": 20.26
-     },
-     {
-      "n": "Cam Skattebo",
-      "pos": "RB",
-      "nfl": "NYG",
-      "next_proj": 9.7
-     },
-     {
-      "n": "Devin Singletary",
-      "pos": "RB",
-      "nfl": "NYG",
-      "next_proj": 6.1
-     },
-     {
-      "n": "Drake London",
-      "pos": "WR",
-      "nfl": "ATL",
-      "next_proj": 0
-     },
-     {
-      "n": "Jaxon Smith-Njigba",
-      "pos": "WR",
-      "nfl": "SEA",
-      "next_proj": 0
-     },
-     {
-      "n": "Kirk Cousins",
-      "pos": "QB",
-      "nfl": "LV",
-      "next_proj": 16.86
-     },
-     {
-      "n": "Lamar Jackson",
-      "pos": "QB",
-      "nfl": "BAL",
-      "next_proj": 0
-     },
-     {
-      "n": "Malik Nabers",
-      "pos": "WR",
-      "nfl": "NYG",
-      "next_proj": 13.59
-     },
-     {
-      "n": "Stefon Diggs",
-      "pos": "WR",
-      "nfl": "WAS",
-      "next_proj": 10.95
-     },
-     {
-      "n": "Trey McBride",
-      "pos": "TE",
-      "nfl": "ARI",
-      "next_proj": 13.02
-     },
-     {
-      "n": "Tyler Warren",
-      "pos": "TE",
-      "nfl": "IND",
-      "next_proj": 8.73
-     },
-     {
-      "n": "Zach Charbonnet",
-      "pos": "RB",
-      "nfl": "SEA",
-      "next_proj": 0
-     }
-    ]
-   },
    "cut_team": "Breece’s Pieces",
    "cut_score": 87.7,
    "scores": {
@@ -7648,7 +7553,7 @@
     "season": 877.48,
     "points": 0
    },
-   "Braelon’s Pieces": {
+   "Breece’s Pieces": {
     "season": 841.36,
     "points": 0
    },

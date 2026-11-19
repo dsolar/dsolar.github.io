@@ -401,6 +401,10 @@ def build(y, league_id):
         tx = []
     if tx:
         data["transactions"] = tx
+    try:
+        backfill_estates(y, key, text(lg, "start_date"))
+    except Exception as e:  # the fallen cards can wait; never lose the scores over them
+        print(f"::warning::Couldn't backfill estates from Yahoo: {e}")
     url = text(lg, "url")
     data["league_url"] = url if url and url.startswith("https://") else \
         f"https://football.fantasysports.yahoo.com/f1/{league_id}"
@@ -428,6 +432,82 @@ def waiver_claims(y, key, count=60):
                         "from": text(td, "source_type"), "ts": ts,
                         "date": datetime.fromtimestamp(ts, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ") if ts else None})
     return out
+
+
+HIST_PATH = os.path.join(HERE, "..", "guillotine", "history.json")
+
+
+def season_adds(y, key, page=25, max_pages=60):
+    """Every successful add this season (waivers and free agents), oldest first, paging through Yahoo's
+    full transaction log. Unfiltered on purpose: add/drop swaps don't come back under types=add."""
+    out, start = [], 0
+    for _ in range(max_pages):
+        root = y.get(f"league/{key}/transactions;start={start};count={page}", soft=True)
+        rows = root.findall(".//transactions/transaction") if root is not None else []
+        for t in rows:
+            if text(t, "status") != "successful":
+                continue
+            bid, ts = num(t, "faab_bid"), int(num(t, "timestamp") or 0)
+            for pl in t.findall("players/player"):
+                td = pl.find("transaction_data")
+                if td is None or text(td, "type") != "add":
+                    continue
+                out.append({"player": text(pl, "name/full"), "pos": (text(pl, "display_position") or "").split(",")[0],
+                            "team": text(td, "destination_team_name"), "bid": int(bid) if bid is not None else 0, "ts": ts})
+        if len(rows) < page:
+            break
+        start += page
+    return sorted(out, key=lambda a: a["ts"])
+
+
+def backfill_estates(y, key, start_date, path=HIST_PATH):
+    """Fill the estate (where the cut team's players went, and for how much) on any past fallen card that
+    has none, from Yahoo's full transaction log. Weeks before the estate tracker existed, or whose live
+    record never caught the claims, otherwise stay blank. A player's first add by another team after
+    that week's games is his claim; none means he went unclaimed. Skips the API calls when nothing's missing."""
+    if not start_date or not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as f:
+        hist = json.load(f)
+    weeks = hist.get("weeks") or {}
+    def claimed(e):
+        return any(p.get("claimed_by") for p in (e.get("estate") or {}).get("players") or [])
+    need = [wk for wk, e in weeks.items()
+            if e.get("cut_team") and (e.get("lineups") or {}).get(e["cut_team"])
+            and not claimed(e) and (e.get("estate") or {}).get("from") != "yahoo"]
+    if not need:
+        return
+    adds = season_adds(y, key)
+    if not adds:
+        return
+    first = datetime.fromisoformat(start_date).replace(tzinfo=EASTERN)
+    nrm = lambda s: re.sub(r"[^a-z0-9]+", "", (s or "").lower())
+    now = time.time()
+    for wk in sorted(need, key=int):
+        e = weeks[wk]
+        # The cut is final after Monday night; claims on its players run that Wednesday.
+        after = (first.timestamp() + (int(wk) - 1) * 7 * 86400 + 5 * 86400)
+        if after + 2 * 86400 > now:
+            continue  # this week's waiver run hasn't happened yet; the live estate covers it
+        players = []
+        for r in e["lineups"][e["cut_team"]]:
+            row = {"n": r["n"], "pos": r["pos"], "nfl": r.get("nfl", "")}
+            for a in adds:
+                if a["ts"] >= after and nrm(a["player"]) == nrm(r["n"]) and nrm(a["team"]) != nrm(e["cut_team"]) \
+                        and (not a["pos"] or a["pos"] == r["pos"]):
+                    row["claimed_by"], row["bid"] = a["team"], a["bid"]
+                    break
+            players.append(row)
+        if not any(p.get("claimed_by") for p in players):
+            print(f"::warning::Yahoo's log shows no claims on the week {wk} estate ({e['cut_team']}); left it blank.")
+            continue  # a cut team's roster always draws some claim, so the log probably doesn't reach back
+        players.sort(key=lambda p: (0 if p.get("claimed_by") else 1, -(p.get("bid") or 0), p["n"]))
+        e["estate"] = {"from": "yahoo", "players": players}
+        print(f"Backfilled the week {wk} estate ({e['cut_team']}): "
+              f"{sum(1 for p in players if p.get('claimed_by'))} of {len(players)} claimed.")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(hist, f, ensure_ascii=False, indent=1)
+        f.write("\n")
 
 
 def write_if_changed(data, path):

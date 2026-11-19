@@ -1256,7 +1256,7 @@ th.line{border-left:1px solid var(--rule)}
     var bid = ps.filter(function (p) { return typeof p.bid === "number" && p.bid > 0; });
     var total = bid.reduce(function (n, p) { return n + p.bid; }, 0);
     var name = function (t) { return esc(state.mgr(t) || t); };
-    var left = est.from === "rosters" ? est.players.length - ps.length : 0;
+    var left = est.from === "rosters" || est.from === "yahoo" ? est.players.length - ps.length : 0;
     var txt = (total ? "$" + total + " for " : "") + ps.length + " player" + (ps.length > 1 ? "s" : "") +
       (bid.length ? ": " + bid.slice(0, 3).map(function (p) { return esc(short(p.n)) + " $" + p.bid + " to " + name(p.claimed_by); }).join(", ") +
         (ps.length > 3 ? ", +" + (ps.length - 3) + " more" : "") : "") + "." +
