@@ -52,6 +52,8 @@
                        // and international pool money)
     availW: 0.5,       // weight on how much of a full season he has actually played against FanGraphs' playing time
     spread: true,      // show a low-high range on values and grade trades with it
+    youngReg: 0.5,     // how far a young player's projection leans toward an average regular (youngTo WAR a full season)
+    youngTo: 2,        // before two full seasons' playing time; less as his record grows (calibrated to BTV, Nov 19 2026)
     blend: 0.5,        // weight on his last three seasons' actual WAR against FanGraphs' projection (the hub's own
                        // outlook), scaled by playing time; 0 is FanGraphs alone
     years: 5,          // seasons on the slider
@@ -230,11 +232,13 @@
     return p._rr;
   }
   function outlookShare(p, cfg) {
-    if (!cfg.blend || !p || isProspect(p) || p.rate == null || p.rate <= 0.3) return 1;
-    var rr = recentRead(p);
-    if (!rr) return 1;
-    var r = p.rate + cfg.blend * rr.rel * (rr.rate - p.rate);
-    var av = 1 + (cfg.availW == null ? 0.5 : cfg.availW) * rr.rel * (rr.avail - 1); // missed time counts half
+    if (!p || isProspect(p) || p.rate == null || p.rate <= 0.3) return 1;
+    var rr = cfg.blend ? recentRead(p) : null, rel = rr ? rr.rel : 0;
+    var r = rr ? p.rate + cfg.blend * rr.rel * (rr.rate - p.rate) : p.rate;
+    // a young player's projection (under three years' service) leans toward an average regular until he has two full
+    // seasons behind him, the way teams and Baseball Trade Values hold back on a short record
+    if (cfg.youngReg && (p.st || 0) < 3) r += cfg.youngReg * (1 - rel) * ((isReliever(p) ? 0.4 : 1) * (cfg.youngTo == null ? 2 : cfg.youngTo) - r);
+    var av = rr ? 1 + (cfg.availW == null ? 0.5 : cfg.availW) * rr.rel * (rr.avail - 1) : 1; // missed time counts half
     return Math.max(0.5, Math.min(1.6, r / p.rate * av));
   }
   // Seasons more than lateAfter years out count lateFade of the projection, compounding: projections that far ahead

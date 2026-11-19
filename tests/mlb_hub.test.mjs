@@ -48,7 +48,8 @@ test('surplus: a cheap good player is worth more than an expensive one', () => {
   const cheap = { g: 'sl', st: 1, age: 25, rate: 4, pjs: 'dc', pj: { war: 4 } };
   const pricey = { g: 'sl', st: 9, age: 31, rate: 4, pjs: 'dc', pj: { war: 4 }, c: { type: 'Free Agent', yrs: [[2027, 45e6, 'G'], [2028, 45e6, 'G'], [2029, 45e6, 'G']] } };
   const a = M.surplus(cheap, cfg, S), b = M.surplus(pricey, cfg, S);
-  assert.ok(a.pv > 50, `cheap star ${a.pv}`);
+  // no big league record yet, so his projection leans halfway toward an average regular (youngReg)
+  assert.ok(a.pv > 30, `cheap star ${a.pv}`);
   assert.ok(b.pv < 0, `overpaid star ${b.pv}`);
   assert.equal(a.rows.length, 5, 'one year of service leaves five seasons of control');
 });

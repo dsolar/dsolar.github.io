@@ -571,6 +571,10 @@
     }
     html += "</tbody></table></div>";
     var share = M.outlookShare(p, H.cfg), rr = M.recentRead(p);
+    if (H.cfg.youngReg && (p.st || 0) < 3 && !s.prospect && p.rate > 0.3) {
+      var lean = H.cfg.youngReg * (1 - (rr ? rr.rel : 0));
+      if (lean > 0.02) html += '<p class="note">Young player: with ' + (rr ? pct(rr.rel, 0) : "none") + " of two full seasons' playing time behind him, his projection leans " + pct(lean, 0) + " of the way toward an average regular (" + f1(H.cfg.youngTo == null ? 2 : H.cfg.youngTo) + " WAR a full season), since short records miss often. The lean fades as his record grows.</p>";
+    }
     if (Math.abs(share - 1) > 0.02 && rr) html += '<p class="note">Outlook: FanGraphs projects ' + f1(p.rate) + " WAR a full season; his last three seasons ran at " + f1(rr.rate) + " (weighted toward the latest" + (Math.abs(rr.rate - rr.avg) > 0.05 ? ", with a career year that isn't his latest tempered toward his median season" : "") + ")" + (rr.avail < 0.97 ? ", and he's played " + pct(rr.avail, 0) + " of the time FanGraphs projects for him (missed time counts half)" : "") + ", so he's counted at " + pct(share, 0) + " of the projection.</p>";
     // why counted WAR differs from the projection, in one note
     var why = [];
