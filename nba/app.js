@@ -570,58 +570,124 @@
     });
     return out;
   }
+  // ----- lineup modules -----
+  function luFace(nid, size) {
+    var p = luP(nid);
+    return p ? face(p, size) : window.DSFaces.html({ sport: "nba", name: H.lu.names[nid] || "?", size: size });
+  }
+  function signedNet(v) { return v == null ? "—" : (v > 0 ? "+" : "") + f1(v); }
+  function netCls(v) { return v == null ? "" : v >= 0 ? "pos" : "neg"; }
+  // a five-man unit as a card: team color, five faces with names, net rating up top
+  function unitCard(x) {
+    var t = team(x.c);
+    return '<article class="ucard" style="--tc:' + esc(t.color) + '"><header>' + logo(x.c, 22) + "<span>" + esc(t.short) + '</span><b class="unet ' + netCls(x.net) + '">' + signedNet(x.net) + "</b></header>" +
+      '<div class="ufive">' + x.ids.map(function (nid) {
+        var p = luP(nid);
+        return '<span class="uman"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ">" + luFace(nid, 46) + "<small>" + esc(luLast(nid)) + "</small></span>";
+      }).join("") + "</div>" +
+      '<footer><span><b>' + f1(x.o) + "</b> off</span><span><b>" + f1(x.d) + "</b> def</span><span><b>" + f0(x.min) + "</b> min</span><span><b>" + x.poss + "</b> poss</span></footer></article>";
+  }
+  function duoCard(x) {
+    var t = team(x.c);
+    return '<article class="dcard" style="--tc:' + esc(t.color) + '"><span class="dfaces">' + x.ids.map(function (nid) { var p = luP(nid); return "<span" + (p ? ' data-p="' + esc(p.id) + '"' : "") + ">" + luFace(nid, 40) + "</span>"; }).join("") + '</span><span class="dwho"><b>' + x.ids.map(function (nid) { return esc(luLast(nid)); }).join(" + ") + "</b><small>" + logo(x.c, 14) + " " + f0(x.min) + " min together</small></span><b class=\"unet " + netCls(x.net) + '">' + signedNet(x.net) + "</b></article>";
+  }
+  // a ranked row: faces, names, and a net bar out from zero
+  var NET_SPAN = 40;
+  function netBar(v) {
+    var w = v == null ? 0 : Math.min(1, Math.abs(v) / NET_SPAN) * 50;
+    return '<span class="nbar"><i class="z"></i><i class="b ' + netCls(v) + '" style="' + (v >= 0 ? "left:50%" : "right:50%") + ";width:" + w.toFixed(1) + '%"></i></span><b class="nval ' + netCls(v) + '">' + signedNet(v) + "</b>";
+  }
+  function lineRow(x, rank, showTeam) {
+    return '<li class="lrow' + (rank ? "" : " nork") + '">' + (rank ? '<span class="lrk">' + rank + "</span>" : "") + '<span class="lwho">' + (showTeam ? logo(x.c, 18) : "") + '<span class="fstack">' + x.ids.map(function (nid) { var p = luP(nid); return "<span" + (p ? ' data-p="' + esc(p.id) + '"' : "") + ' title="' + esc(p ? p.n : H.lu.names[nid] || "") + '">' + luFace(nid, 30) + "</span>"; }).join("") + '</span><span class="lnames">' + x.ids.map(function (nid) { return esc(luLast(nid)); }).join(", ") + "</span></span>" +
+      '<span class="lbar">' + netBar(x.net) + '</span><span class="lmeta">' + f1(x.o) + " / " + f1(x.d) + "<small>" + f0(x.min) + " min, " + x.poss + " poss</small></span></li>";
+  }
+  // on/off as a dumbbell: hollow dot with him off, filled dot with him on
+  var DB = 30;
+  function dbX(v) { return (Math.max(-DB, Math.min(DB, v)) + DB) / (2 * DB) * 100; }
+  function dumbbell(list, showTeam) {
+    var html = '<div class="dbell"><div class="dbaxis"><span></span><span class="dbscale"><i style="left:' + dbX(-20) + '%">-20</i><i style="left:' + dbX(-10) + '%">-10</i><i style="left:50%">0</i><i style="left:' + dbX(10) + '%">+10</i><i style="left:' + dbX(20) + '%">+20</i></span><span>On/off</span></div>';
+    list.forEach(function (x) {
+      var p = luP(x.nid), a = dbX(x.off), b = dbX(x.on), lo = Math.min(a, b), hi = Math.max(a, b);
+      html += '<div class="dbrow"><span class="dbwho"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ">" + (showTeam ? logo(x.c, 16) : "") + luFace(x.nid, 26) + '<span class="nm">' + esc(p ? p.n : H.lu.names[x.nid]) + '</span></span><span class="dbplot"><i class="z"></i><i class="ln ' + netCls(x.diff) + '" style="left:' + lo.toFixed(1) + "%;width:" + (hi - lo).toFixed(1) + '%"></i><i class="off" style="left:' + a.toFixed(1) + '%" title="Off: ' + signedNet(x.off) + '"></i><i class="on ' + netCls(x.diff) + '" style="left:' + b.toFixed(1) + '%" title="On: ' + signedNet(x.on) + '"></i></span><b class="dbd ' + netCls(x.diff) + '">' + signedNet(x.diff) + "</b></div>";
+    });
+    return html + '<p class="dbkey"><span class="k off"></span>Team net rating with him off <span class="k on"></span>with him on (per 100 possessions)</p></div>';
+  }
+  // two-man chemistry: every pair of a team's top players, net rating together
+  function duoGrid(code, minP) {
+    var t = H.luTeams[code], oo = ooRows(code).sort(function (a, b) { return b.min - a.min; }).slice(0, 9), ids = oo.map(function (x) { return x.nid; }), pair = {};
+    t.l2.forEach(function (u) { pair[u[0].slice().sort().join("|")] = u; });
+    var head = "<th></th>" + ids.map(function (nid) { var p = luP(nid); return '<th class="dgf"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ' title="' + esc(p ? p.n : "") + '">' + luFace(nid, 28) + "</th>"; }).join("");
+    var body = ids.map(function (r, i) {
+      var p = luP(r);
+      return '<tr><th class="dgn"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ">" + luFace(r, 26) + '<span class="dgl">' + esc(luLast(r)) + "</span></th>" + ids.map(function (c, j) {
+        if (i === j) { var me = oo[i]; return '<td class="dgself" title="' + esc(luLast(r)) + ' on the floor">' + signedNet(me.on) + "</td>"; }
+        var u = pair[[r, c].sort().join("|")];
+        if (!u || u[2] + u[3] < minP) return '<td class="dgnone"></td>';
+        var net = rate(u[4], u[2]) - rate(u[5], u[3]);
+        return '<td style="background:' + netColor(net) + '" title="' + esc(luLast(r) + " + " + luLast(c)) + ": " + signedNet(net) + " in " + u[1] + ' min">' + Math.round(net) + "</td>";
+      }).join("") + "</tr>";
+    }).join("");
+    return '<div class="dgrid scroll"><table><thead><tr>' + head + "</tr></thead><tbody>" + body + "</tbody></table></div><p class=\"note\">Net rating per 100 possessions with both on the floor; the diagonal is each player on his own. Blank: under " + minP + " possessions together.</p>";
+  }
+  function luSection(title, sub, body, more) {
+    return '<section class="lusec"><div class="lusec-h"><h3>' + esc(title) + "</h3>" + (sub ? "<small>" + sub + "</small>" : "") + (more || "") + "</div>" + body + "</section>";
+  }
   function lineupsPage() {
     if (!H.lu) { view.innerHTML = '<h2 class="sec">Lineups</h2><p class="lede">Lineups haven\'t loaded. They rebuild every morning; try again in a bit.</p>'; return; }
-    var q = state.q, kind = { "3": "3", "2": "2", oo: "oo" }[q.k] || "5", tm = q.t || "", sort = q.sort || "net";
-    var minDef = { "5": 150, "3": 300, "2": 500, oo: 300 }[kind], minP = +q.min || minDef;
-    var opt = function (v, l, cur) { return '<option value="' + v + '"' + (String(v) === String(cur) ? " selected" : "") + ">" + l + "</option>"; };
+    var q = state.q, tm = H.luTeams[q.t] ? q.t : "", list = { "5": 1, "3": 1, "2": 1, oo: 1 }[q.list] ? q.list : "", minP = +q.min || 150;
     var link = function (extra) { return href("lineups", Object.assign({}, q, { pg: null }, extra)); };
-    var html = '<h2 class="sec">Lineups</h2><p class="lede">The best and worst five-man units, trios and duos, and every player\'s on/off: how his team does per 100 possessions with him on the floor versus off it. All from pbpstats\' play-by-play this season (' + esc(H.lu.season) + "), updated every morning. Lineup numbers swing hard on small samples, so the possession minimum matters.</p>";
-    html += '<div class="seg" role="tablist">' + [["5", "Five-man units"], ["3", "Trios"], ["2", "Duos"], ["oo", "On/off"]].map(function (x) { return '<a href="' + href("lineups", { k: x[0] === "5" ? null : x[0], t: tm || null }) + '"' + (x[0] === kind ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
-    var sorts = kind === "oo" ? [["net", "On/off"], ["on", "Net with him on"], ["o", "Offense on/off"], ["d", "Defense on/off"], ["min", "Most minutes"]] : [["net", "Net rating"], ["o", "Offense"], ["d", "Defense"], ["min", "Most minutes"], ["worst", "Worst net"]];
-    html += '<div class="controls">' + teamSelect(tm) + '<label>Sort<select data-q="sort">' + sorts.map(function (x) { return opt(x[0] === "net" ? "" : x[0], x[1], sort === "net" ? "" : sort); }).join("") + "</select></label>" +
-      '<label>At least<select data-q="min">' + [50, 100, 150, 200, 300, 500, 800, 1200].map(function (v) { return opt(v === minDef ? "" : v, v + " possessions", minP === minDef ? "" : minP); }).join("") + "</select></label></div>";
-    var list, head, row;
-    if (kind === "oo") {
-      list = ooRows(tm).filter(function (x) { return x.poss >= minP && x.possOff >= 50; });
-      var key = { net: function (x) { return x.diff; }, on: function (x) { return x.on; }, o: function (x) { return x.oOn - x.oOff; }, d: function (x) { return x.dOff - x.dOn; }, min: function (x) { return x.min; } }[sort] || function (x) { return x.diff; };
-      list.sort(function (a, b) { return (key(b) == null ? -999 : key(b)) - (key(a) == null ? -999 : key(a)); });
-      head = '<th class="pn">Player</th><th>Min</th><th class="hm">Poss</th><th class="hc">On/off</th><th class="hc">Net on</th><th class="hc">Net off</th><th class="hm">Off on / off</th><th class="hm">Def on / off</th>';
-      row = function (x, k) {
-        var p = luP(x.nid);
-        return '<tr><td class="pn"><span class="rk">' + k + "</span>" + logo(x.c, 16) + (p ? pname(p, 22) : '<span class="pl static"><span class="nm">' + esc(H.lu.names[x.nid]) + "</span></span>") + "</td><td>" + x.min + '</td><td class="hm">' + x.poss + "</td>" + netCell(x.diff, "big") + netCell(x.on) + netCell(x.off) +
-          '<td class="hm">' + f1(x.oOn) + " / " + f1(x.oOff) + '</td><td class="hm">' + f1(x.dOn) + " / " + f1(x.dOff) + "</td></tr>";
-      };
-    } else {
-      list = luRows(kind, tm).filter(function (x) { return x.poss >= minP; });
-      var k2 = { net: function (x) { return x.net; }, o: function (x) { return x.o; }, d: function (x) { return -x.d; }, min: function (x) { return x.min; }, worst: function (x) { return -x.net; } }[sort] || function (x) { return x.net; };
-      list.sort(function (a, b) { return k2(b) - k2(a); });
-      head = '<th class="pn">' + (kind === "5" ? "Lineup" : kind === "3" ? "Trio" : "Duo") + "</th><th>Min</th><th class=\"hm\">Poss</th><th>Off</th><th>Def</th><th class=\"hc\">Net</th>" + (kind === "5" ? '<th class="hm" title="Share of shots that are threes">3PA</th><th class="hm" title="Share of shots at the rim">Rim</th>' : "");
-      row = function (x, k) {
-        return '<tr><td class="pn lucell"><span class="rk">' + k + "</span>" + logo(x.c, 16) + luFaces(x.ids, 24) + "</td><td>" + f0(x.min) + '</td><td class="hm">' + x.poss + "</td><td>" + f1(x.o) + "</td><td>" + f1(x.d) + "</td>" + netCell(x.net, "big") +
-          (kind === "5" ? '<td class="hm">' + (x.f3 == null ? "—" : pct(x.f3)) + '</td><td class="hm">' + (x.rim == null ? "—" : pct(x.rim)) + "</td>" : "") + "</tr>";
-      };
-    }
-    var pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(pages, Math.max(1, +q.pg || 1)), start = (pg - 1) * PER;
-    html += '<div class="panel"><div class="scroll"><table class="t rt lut"><thead><tr>' + head + "</tr></thead><tbody>" +
-      (list.length ? list.slice(start, start + PER).map(function (x, k) { return row(x, start + k + 1); }).join("") : '<tr><td class="note" colspan="9">Nothing with that many possessions yet. Try a lower minimum.</td></tr>') + "</tbody></table></div></div>";
-    if (pages > 1) html += '<nav class="pager" aria-label="Pages">' + (pg > 1 ? '<a class="btn" href="' + link({ pg: pg - 1 }) + '">Previous</a>' : '<span class="btn off">Previous</span>') + "<span>" + (start + 1) + "-" + Math.min(list.length, start + PER) + " of " + list.length + "</span>" + (pg < pages ? '<a class="btn" href="' + link({ pg: pg + 1 }) + '">Next</a>' : '<span class="btn off">Next</span>') + "</nav>";
-    html += '<p class="note">Off and Def are points scored and allowed per 100 possessions; Net is the difference. Possessions count both ends. ' + (kind === "oo" ? "Off is every lineup he isn't in, so a starter's off numbers are mostly bench units. " : "") + "Updated " + esc(H.lu.updated.replace("T", " ").replace("Z", " UTC")) + ".</p>";
+    var html = '<h2 class="sec">Lineups</h2><p class="lede">Which units work, which pairs click and who swings his team most, from pbpstats\' play-by-play this season (' + esc(H.lu.season) + "). Ratings are points per 100 possessions; small samples swing hard, so set the possession floor to taste.</p>";
+    html += '<div class="luctl"><label>Team<select data-q="t"><option value="">The whole league</option>' + H.codes.slice().sort(function (a, b) { return team(a).name.localeCompare(team(b).name); }).map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label>" +
+      '<div class="chips" role="group" aria-label="Possession floor"><span>At least</span>' + [100, 150, 250, 400].map(function (v) { return '<a href="' + link({ min: v === 150 ? null : v }) + '"' + (v === minP ? ' aria-current="true"' : "") + ">" + v + "</a>"; }).join("") + "<span>possessions</span></div></div>";
+    if (list) { html += fullList(list, tm, minP, q, link); view.innerHTML = html; return; }
+    if (tm) { html += teamLab(tm, minP, link); view.innerHTML = html; return; }
+    var units = luRows("5", "").filter(function (x) { return x.poss >= minP; });
+    var best = units.slice().sort(function (a, b) { return b.net - a.net; }), duos = luRows("2", "").filter(function (x) { return x.poss >= minP * 3; }).sort(function (a, b) { return b.net - a.net; });
+    var oo = ooRows("").filter(function (x) { return x.poss >= minP * 2 && x.possOff >= 100 && x.diff != null; }).sort(function (a, b) { return b.diff - a.diff; });
+    var see = function (k, n) { return '<a class="more" href="' + link({ list: k }) + '">All ' + n + "</a>"; };
+    html += luSection("The best five-man units", units.length + " units with " + minP + "+ possessions", '<div class="ucards">' + best.slice(0, 6).map(unitCard).join("") + "</div>", see("5", units.length));
+    html += luSection("Biggest on/off swings", "Players with " + minP * 2 + "+ possessions on the floor", dumbbell(oo.slice(0, 12), true), see("oo", oo.length));
+    html += luSection("Best duos", minP * 3 + "+ possessions together", '<div class="dcards">' + duos.slice(0, 8).map(duoCard).join("") + "</div>", see("2", duos.length));
+    html += luSection("The worst five-man units", "", '<div class="ucards">' + best.slice(-3).reverse().map(unitCard).join("") + "</div>");
+    html += '<p class="note">Updated ' + esc(H.lu.updated.replace("T", " ").replace("Z", " UTC")) + ". Off is every lineup a player isn't in, so on/off flatters starters on deep teams. How it works has the details.</p>";
     view.innerHTML = html;
+  }
+  function fullList(kind, tm, minP, q, link) {
+    var names = { "5": "Five-man units", "3": "Trios", "2": "Duos", oo: "On/off" };
+    var html = '<div class="seg">' + ["5", "3", "2", "oo"].map(function (k) { return '<a href="' + link({ list: k }) + '"' + (k === kind ? ' aria-current="page"' : "") + ">" + names[k] + "</a>"; }).join("") + '<a href="' + link({ list: null }) + '">Back to overview</a></div>';
+    var worst = q.sort === "worst", floor = kind === "5" ? minP : kind === "oo" ? minP * 2 : kind === "3" ? minP * 2 : minP * 3;
+    var rows, pages, pg, start, body;
+    if (kind === "oo") {
+      rows = ooRows(tm).filter(function (x) { return x.poss >= floor && x.possOff >= 50 && x.diff != null; }).sort(function (a, b) { return worst ? a.diff - b.diff : b.diff - a.diff; });
+    } else {
+      rows = luRows(kind, tm).filter(function (x) { return x.poss >= floor; }).sort(function (a, b) { return worst ? a.net - b.net : b.net - a.net; });
+    }
+    pages = Math.max(1, Math.ceil(rows.length / PER)); pg = Math.min(pages, Math.max(1, +q.pg || 1)); start = (pg - 1) * PER;
+    var page = rows.slice(start, start + PER);
+    body = kind === "oo" ? dumbbell(page, !tm) : '<ol class="lrows">' + page.map(function (x, k) { return lineRow(x, start + k + 1, !tm); }).join("") + "</ol>";
+    html += luSection((worst ? "Worst " : "Best ") + names[kind].toLowerCase(), rows.length + " with " + floor + "+ possessions" + (tm ? ", " + esc(team(tm).short) : ""),
+      rows.length ? body : '<p class="note">Nothing that size yet. Lower the possession floor.</p>', '<a class="more" href="' + link({ sort: worst ? null : "worst" }) + '">' + (worst ? "Show best" : "Show worst") + "</a>");
+    if (pages > 1) html += '<nav class="pager">' + (pg > 1 ? '<a class="btn" href="' + link({ pg: pg - 1 }) + '">Previous</a>' : '<span class="btn off">Previous</span>') + "<span>" + (start + 1) + "-" + Math.min(rows.length, start + PER) + " of " + rows.length + "</span>" + (pg < pages ? '<a class="btn" href="' + link({ pg: pg + 1 }) + '">Next</a>' : '<span class="btn off">Next</span>') + "</nav>";
+    return html;
+  }
+  function teamLab(code, minP, link) {
+    var t = H.luTeams[code], tt = team(code), tot = t.tot, net = rate(tot[3], tot[1]) - rate(tot[4], tot[2]);
+    var units = luRows("5", code), used = units.slice().sort(function (a, b) { return b.min - a.min; }), top = used[0];
+    var good = units.filter(function (x) { return x.poss >= minP; }).sort(function (a, b) { return b.net - a.net; })[0];
+    var oo = ooRows(code).filter(function (x) { return x.min >= 40 && x.diff != null; }).sort(function (a, b) { return b.diff - a.diff; });
+    var html = '<div class="lab" style="--tc:' + esc(tt.color) + '"><div class="lab-h">' + '<span class="tlogo">' + logo(code, 36) + '</span><div><small>Lineup lab</small><b>' + esc(tt.name) + '</b></div><div class="lab-k"><span><b class="' + netCls(net) + '">' + signedNet(net) + "</b>Team net</span>" +
+      (top ? "<span><b class=\"" + netCls(top.net) + '">' + signedNet(top.net) + "</b>Most-used five (" + f0(top.min) + " min)</span>" : "") + (good ? "<span><b class=\"" + netCls(good.net) + '">' + signedNet(good.net) + "</b>Best five, " + minP + "+ poss</span>" : "") + "</div></div></div>";
+    html += luSection("Most-used lineups", "Five-man units by minutes", '<ol class="lrows">' + used.slice(0, 10).map(function (x) { return lineRow(x, 0, false); }).join("") + "</ol>", '<a class="more" href="' + link({ list: "5" }) + '">All ' + units.length + "</a>");
+    html += luSection("Two-man chemistry", "", duoGrid(code, Math.round(minP / 2)));
+    html += luSection("On/off", "Everyone with 40+ minutes", dumbbell(oo, false));
+    return html;
   }
   function teamLineups(code) {
     if (!H.lu || !H.luTeams[code]) return "";
-    var units = luRows("5", code).sort(function (a, b) { return b.min - a.min; }).slice(0, 6);
-    var oo = ooRows(code).filter(function (x) { return x.min >= 30; }).sort(function (a, b) { return b.min - a.min; });
-    var html = '<h3 class="subsec">Lineups and on/off</h3>';
-    html += tablePanel("Most-used lineups", '<th class="pn">Lineup</th><th>Min</th><th>Off</th><th>Def</th><th class="hc">Net</th>', units.map(function (x) {
-      return '<tr><td class="pn lucell">' + luFaces(x.ids, 22) + "</td><td>" + f0(x.min) + "</td><td>" + f1(x.o) + "</td><td>" + f1(x.d) + "</td>" + netCell(x.net, "big") + "</tr>";
-    }).join(""), '<a href="' + href("lineups", { t: code }) + '">Every lineup</a>');
-    html += tablePanel("On/off", '<th class="pn">Player</th><th>Min</th><th class="hc">On/off</th><th class="hc">Net on</th><th class="hc">Net off</th>', oo.map(function (x) {
-      var p = luP(x.nid);
-      return '<tr><td class="pn">' + (p ? pname(p, 22) : esc(H.lu.names[x.nid])) + "</td><td>" + x.min + "</td>" + netCell(x.diff, "big") + netCell(x.on) + netCell(x.off) + "</tr>";
-    }).join(""), "Per 100 possessions, this season");
-    return '<div class="rt lupanels">' + html + "</div>";
+    var used = luRows("5", code).sort(function (a, b) { return b.min - a.min; }).slice(0, 5);
+    var oo = ooRows(code).filter(function (x) { return x.min >= 60 && x.diff != null; }).sort(function (a, b) { return b.diff - a.diff; });
+    return '<div class="lupanels">' + luSection("Most-used lineups", "This season", '<ol class="lrows">' + used.map(function (x) { return lineRow(x, 0, false); }).join("") + "</ol>", '<a class="more" href="' + href("lineups", { t: code }) + '">Lineup lab</a>') +
+      luSection("On/off", "Everyone with 60+ minutes", dumbbell(oo, false)) + "</div>";
   }
 
   // ---------- ratings ----------
