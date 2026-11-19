@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -71,7 +71,7 @@ test('surplus: value minus salary at the salary weight, discounted; the market v
   const p = H.players().sort((a, b) => H.salary(b, 0) - H.salary(a, 0))[0];
   const s = H.surplus(p, 'prod');
   assert.ok(s.rows.length >= 1);
-  for (const r of s.rows) { assert.ok(Math.abs(r.cost - r.sal * (H.cfg.salW ?? 1)) < 1); assert.ok(Math.abs(r.surplus - (r.value - r.cost)) < 1); }
+  for (const r of s.rows) { assert.ok(Math.abs(r.cost - r.sal * Math.min(1, (H.cfg.salW ?? 1) + 0.1 * Math.max(0, r.j - 1))) < 1); assert.ok(Math.abs(r.surplus - (r.value - r.cost)) < 1); }
   const m = H.surplus(p, 'market');
   for (const r of m.rows) assert.ok(r.value <= H.CBA.maxSal(p.yos + r.j, r.j) * (r.part || 1) + 1);
 });
@@ -217,4 +217,20 @@ test('value: a top-three pick in his first season is worth something in both vie
     assert.ok(H.surplus(p, 'prod').pv > 0, p.id + ' production value ' + H.surplus(p, 'prod').pv);
     assert.ok(H.surplus(p, 'market').pv > 0, p.id + ' market value ' + H.surplus(p, 'market').pv);
   }
+});
+
+test('trade rules: frozen firsts, protected picks, the 2027 lottery bans, soft notes', () => {
+  const fz = H.W.picks.find(pk => pk.frozen);
+  assert.ok(fz, 'a frozen first exists');
+  const other = H.codes.find(c => c !== fz.owner);
+  const t = H.checkTrade({ teams: [fz.owner, other], moves: [{ kind: 'k', id: fz.id, from: fz.owner, to: other }] });
+  assert.equal(t.teams[fz.owner].ok, false);
+  const base = H.W.picks.find(pk => pk.r === 1 && !pk.prot && !pk.frozen && !pk.locked && pk.y === 2028);
+  const prot = H.pickById(base.id + '@10');
+  assert.equal(prot.newProt, 10);
+  const full = H.pickValue(base, 'prod'), p10 = H.pickValue(prot, 'prod');
+  assert.ok(p10 <= full + 1 && p10 > 0, 'protection lowers value: ' + p10 + ' vs ' + full);
+  const lot = H.season0();
+  assert.ok(lot.WAS.slots[1] === undefined || lot.WAS.slots[1] === 0, 'Washington never picks first in 2027');
+  for (const s of [1, 2, 3, 4, 5]) assert.ok(!lot.UTA.slots[s], 'Utah not top five in 2027');
 });

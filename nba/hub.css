@@ -614,3 +614,10 @@ table.sz{width:100%;font-size:13px}
 .caph{margin:0;padding-left:18px;color:var(--muted)}
 .caph li{margin:1px 0}
 .fixbtn .pill{margin-left:4px}
+.protsel{display:inline-block;margin-left:8px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);font:600 11.5px var(--body);padding:2px 4px;color:var(--ink)}
+.fitpill{display:inline-block;margin-top:3px;padding:2px 7px;border-radius:999px;background:#E3F2E6;color:#17663A;font:700 11px/1.3 var(--body);width:max-content;max-width:100%;white-space:normal}
+.paystrip{display:flex;gap:4px;margin:0 0 6px;flex-wrap:wrap}
+.paystrip span{flex:1;min-width:58px;background:var(--card);border:1px solid var(--rule-2);border-radius:6px;padding:3px 6px;font:700 12.5px/1.2 var(--cond);text-align:center}
+.paystrip span i{display:block;font:600 10px/1.2 var(--body);font-style:normal;color:var(--faint)}
+.paystrip span.z{color:var(--faint)}
+.tneeds{display:block;font:500 12px/1.3 var(--body);opacity:.85;margin-top:3px;max-width:30ch}

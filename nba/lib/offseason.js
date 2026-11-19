@@ -409,7 +409,9 @@
     }
     return lot;
   };
-  L.lotteryDraw = (lot, bottom3, r) => {
+  // bans (3-2-1 lottery, from 2027): no team's pick can be first two drafts running or top five three running.
+  // bans.no1: codes whose pick was No. 1 last year; bans.noTop5: codes whose pick was top five the last two years.
+  L.lotteryDraw = (lot, bottom3, r, bans) => {
     const pool = lot.slice(), order = [];
     while (pool.length) {
       const tot = sum(pool.map(x => x.balls)); let x = r() * tot, k = 0;
@@ -428,7 +430,12 @@
       top.push(c);
     }
     pushed.sort((a, b) => order.indexOf(a) - order.indexOf(b));
-    return top.concat(pushed, rest);
+    const out = top.concat(pushed, rest);
+    if (bans) {
+      for (const c of bans.noTop5 || []) { const k = out.indexOf(c); if (k >= 0 && k < 5) { out.splice(k, 1); out.splice(5, 0, c); } }
+      if ((bans.no1 || []).includes(out[0])) { const c = out.shift(); out.splice(1, 0, c); }
+    }
+    return out;
   };
   L.runLottery = W => {
     const r = L.rng(W), year = L.draftYear(W);

@@ -523,6 +523,16 @@
       if (!out.players.length && !(out.picks || []).length && !(out.cash > 0) && (inn.players.length || (inn.picks || []).length)) {
         r.ok = false; r.msgs.push(`${t.name} has to send something back, even a protected second-round pick or cash.`);
       }
+      // a player acquired by trade can't be combined with other salaries for two months
+      for (const sb of (r.sol && r.sol.subs) || []) if (sb.agg) for (const id of sb.out) {
+        const p = W.P[id];
+        if (p && p.aggOk && W.date < p.aggOk) {
+          const msg = `${p.n} joined on ${L.fmtDate(p.joined)} and can't be combined with other salaries until ${L.fmtDate(p.aggOk)}.`;
+          if (tr.soft) { if (!r.after || p.aggOk > r.after) r.after = p.aggOk; r.notes.push(msg); } else { r.ok = false; r.msgs.push(msg); }
+        }
+      }
+      // second-apron penalty: a frozen first can't be traded
+      for (const id of out.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.frozen) { r.ok = false; r.msgs.push(`The ${pk.y} first is frozen (finished a season over the second apron), so it can't be traded.`); } }
       // picks (Stepien)
       const firsts = {};
       for (const pk of W.picks) if (pk.owner === code && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1;

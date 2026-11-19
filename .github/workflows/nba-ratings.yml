@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - tools/nba_ratings.py
+      - tools/nba_moves.py
       - .github/workflows/nba-ratings.yml
   workflow_dispatch:
 
@@ -38,9 +39,12 @@ jobs:
       - name: Build the ratings
         run: python3 tools/nba_ratings.py
 
+      - name: Track team changes (for the two-month trade rule)
+        run: python3 tools/nba_moves.py
+
       - name: Commit the ratings
         run: |
-          git add nba/data/ratings.json nba/data/pbp_prev.json 2>/dev/null || git add nba/data/ratings.json
+          git add nba/data/ratings.json nba/data/moves.json; git add nba/data/pbp_prev.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

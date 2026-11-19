@@ -147,6 +147,14 @@
     const W = L.newWorld(Object.assign({}, data, { players }), live ? Object.assign({}, live, { players: null }) : null, 19);
     W.phase = "reg"; W.date = asOf;
     for (const p of Object.values(W.P)) if (!p.c.sal.length) p.c.sal = [0, 0, 0, 0, 0];
+    // a player acquired by trade can't be combined with other salaries for two months (from the daily roster changes)
+    if (inp.moves && inp.moves.moves) for (const m of inp.moves.moves) {
+      const p = W.P[m.id] || W.P[Object.keys(W.P).find(k => NC.nameKeys(k)[0] === NC.nameKeys(m.id)[0])];
+      if (!p || p.t !== m.to) continue;
+      const d = new Date(m.date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + 60);
+      const until = d.toISOString().slice(0, 10);
+      if (until > asOf) { p.aggOk = until; p.joined = m.date; }
+    }
     // free agents signed this summer can't be traded until Dec. 15 (rookie-scale signings excepted)
     for (const p of Object.values(W.P)) if (p.c && p.c.signed === 0 && !(p.c.rk && p.c.rk[1] > 0) && asOf < "2026-12-15") p.tradeOk = "2026-12-15";
     // The real tax history (the world starts with a rough one): who finished over the line in each of the last five seasons
@@ -171,6 +179,9 @@
     }
     // Pick ledger: 2027 from the current draft order (who owns each team's pick), 2028-33 from every future pick owed
     setPicks(W, board, codes);
+    // second-apron penalty: a team's first seven years out is frozen for finishing a season over the second apron
+    if (inp.frozen && inp.frozen.frozen) for (const [y, list] of Object.entries(inp.frozen.frozen))
+      for (const pk of W.picks) if (pk.r === 1 && pk.y === +y && list.includes(pk.from) && pk.owner === pk.from) pk.frozen = true;
     // Every team's real trade exceptions, mid-level use and hard caps
     const tp = (inp.tpes && inp.tpes.teams) || {}, ex = (inp.exceptions && inp.exceptions.teams) || {};
     for (const c of codes) {
@@ -410,11 +421,13 @@
     }
     // Full draft order for one simulated season: the lottery for the 16 lottery teams, then everyone else by record;
     // the second round worst to best
+    const LOTTO_BANS = (inp.lottoBans) || { no1: ["WAS"], noTop5: ["UTA"] };
     function draftOrder(rng, wins, br) {
       const all = codes.slice().sort((a, b) => wins[a] - wins[b] || (rng() - 0.5));
       const bottom3 = all.slice(0, 3);
       const lot = L.lotteryEntries(br.order, { E: br.playin.E.l78, W: br.playin.W.l78 }, bottom3);
-      const r1 = L.lotteryDraw(lot, bottom3, rng);
+      // 2027: Washington's pick was No. 1 in 2026; Utah's own pick was top five in 2025 and 2026
+      const r1 = L.lotteryDraw(lot, bottom3, rng, LOTTO_BANS);
       const rest = all.filter(c => !r1.includes(c));
       return { r1: r1.concat(rest), r2: all };
     }
@@ -570,7 +583,9 @@
           const part = j === 0 ? frac0 : 1;
           const v = mode === "market" ? marketAt(p, j) : prodAt(p, j);
           const opt = p.c.opt && p.c.opt[j] ? p.c.opt[j] : "";
-          const cost = sal * (cfg.salW ?? 1);
+          // a salary dollar counts at the salary weight this season and next, then 10 points more each season after:
+          // money further out eats flexibility a team would otherwise have (cap room, the aprons, extensions)
+          const cost = sal * Math.min(1, (cfg.salW ?? 1) + 0.1 * Math.max(0, j - 1));
           rows.push({ j, season: CBA.seasonName(j), r: H.rating(p, j), value: v * part, sal: sal * part, cost: cost * part, surplus: (v - cost) * part, pv: (v - cost) * part * discAt(j), opt, part });
         }
         let pv = sum(rows.map(r => r.pv));
@@ -646,6 +661,11 @@
     H.swapsOf = code => W.swaps.filter(s => s.holder === code);
     H.pickValue = (pk, mode) => {
       mode = mode || cfg.mode;
+      if (pk && pk.newProt) return cache("pvp" + pk.id + mode + cfg.disc, () => {
+        const info = H.pickInfo(pk), yrs = pk.y - 2027;
+        let fb = 0; for (const [sl, p] of info.dist) if (sl <= pk.newProt) fb += p * slotVal(sl, 2, mode);
+        return H.pickValue0(pk, mode) + fb * yearAdj(yrs, mode);
+      });
       const g = H.groupOf(pk);
       if (g) {
         const got = H.groupValues(g, mode), mine = W.picks.filter(x => x.group === g.id && x.owner === pk.owner).length || 1;
@@ -669,9 +689,21 @@
         return mode === "market" ? v * Math.pow(0.93, yrs) : v * grow * discAt(yrs);
       });
     };
+    // Protections added in the trade builder: "2028-1-BOS@10" is Boston's 2028 first, top-10 protected; if it lands in
+    // the top 10 it stays and turns into a second-rounder. (The 3-2-1 lottery bars new top-12 to top-15 protections.)
+    const virt = {};
+    H.PROTECT = [3, 5, 8, 10, 11, 16, 20];
+    H.pickById = id => {
+      if (!id || id.indexOf("@") < 0) return W.picks.find(x => x.id === id) || null;
+      if (virt[id]) return virt[id];
+      const [base, n] = id.split("@"), pk = W.picks.find(x => x.id === base);
+      if (!pk || pk.r !== 1 || pk.prot || !(+n >= 1)) return pk || null;
+      return (virt[id] = Object.assign({}, pk, { id, baseId: base, newProt: +n, prot: { lo: 1, hi: +n, back: pk.owner } }));
+    };
     H.pickName = pk => {
       const from = teamInfo[pk.from] ? teamInfo[pk.from].short : pk.from;
       let s = pk.y + " " + (pk.r === 1 ? "1st" : "2nd") + (pk.owner !== pk.from ? " (" + from + ")" : "");
+      if (pk.newProt) return s + ", top-" + pk.newProt + " protected (else a 2nd)";
       if (pk.prot) s += pk.r === 2 ? ", protected " + (pk.prot.lo + (pk.prot.hi <= 30 ? 30 : 0)) + "-" + (pk.prot.hi + (pk.prot.hi <= 30 ? 30 : 0)) : pk.prot.lo === 1 ? ", top-" + pk.prot.hi + " protected" : ", protected " + pk.prot.lo + "-" + pk.prot.hi;
       return s;
     };
@@ -799,10 +831,10 @@
     // ---------- Trades ----------
     // tr: { teams: [codes], moves: [{ kind: "p" | "k", id, from, to }] }
     // soft: a roster overage or a not-yet-tradable player is a footnote (waive someone, or wait until a date), not a failure
-    H.checkTrade = tr => L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves, soft: tr.strict ? false : true });
+    H.checkTrade = tr => L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves.map(m => m.kind === "k" && m.id.indexOf("@") > 0 ? Object.assign({}, m, { id: m.id.split("@")[0] }) : m), soft: tr.strict ? false : true });
     H.matchMax = (out, post) => CBA.matchMax(out, 0, post);
     H.matchRule = (out, post) => CBA.matchRule(out, 0, post);
-    H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(W.picks.find(x => x.id === m.id), mode);
+    H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(H.pickById(m.id), mode);
     H.tradeSummary = tr => {
       const out = {};
       for (const c of tr.teams) out[c] = { prod: 0, market: 0, salIn: 0, salOut: 0, inn: [], out: [] };
@@ -831,9 +863,14 @@
         // season's at half weight since a team has a summer to adjust
         const rep = H.tools(c, 0).rep;
         const payJ = j => { let pay = H.payroll(c, j); for (const m of tr.moves) if (m.kind === "p") { const q = W.P[m.id], sj = H.salary(q, j) + (j === 0 && m.to === c ? H.kicker(q) : 0); if (m.to === c) pay += sj; if (m.from === c) pay -= sj; } return pay; };
-        const b0 = CBA.taxBill(H.payroll(c, 0), 0, rep), a0 = CBA.taxBill(payJ(0), 0, rep);
-        const b1 = CBA.taxBill(H.payroll(c, 1), 1, rep), a1 = CBA.taxBill(payJ(1), 1, rep);
-        Object.assign(out[c], { taxBefore: b0, taxAfter: a0, tax1Before: b1, tax1After: a1, taxSave: (b0 - a0) + 0.5 * (b1 - a1), pay1After: payJ(1) });
+        // every season the contracts run: salary change and tax, later seasons counting less (more can change)
+        const TW = [1, 0.6, 0.45, 0.35, 0.25], dPay = [], dTax = [];
+        let taxSave = 0;
+        for (let j = 0; j < YEARS; j++) {
+          const pb = H.payroll(c, j), pa = payJ(j), bt = CBA.taxBill(pb, j, rep), at = CBA.taxBill(pa, j, rep);
+          dPay.push(pa - pb); dTax.push(bt - at); taxSave += (TW[j] ?? 0.2) * (bt - at);
+        }
+        Object.assign(out[c], { taxBefore: CBA.taxBill(H.payroll(c, 0), 0, rep), taxAfter: CBA.taxBill(payJ(0), 0, rep), taxSave, dPay, dTax });
       }
       return out;
     };
@@ -929,16 +966,36 @@
     const blendV = p => cache("bl" + p.id + cfg.disc + cfg.growth + cfg.salW, () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
     const pickBlend = pk => cache("pb" + pk.id + cfg.disc, () => (H.pickValue(pk, "prod") + H.pickValue(pk, "market")) / 2);
     const contrib = p => Math.max(0, H.rating(p, 0) + 2) * H.mpgAt(p, 0) / 48 * (p.h ?? 0.85);
+    // Positional fit: a team's rotation skills (minutes-weighted percentiles, nine heaviest-minute players) show what it
+    // lacks; a player strong where it's weak is worth more to it (up to 25%), one whose strengths it already has a bit less
+    const FIT_CATS = ["shoot", "finish", "create", "pass", "secure", "rimd", "reb", "steal"];
+    H.FIT_NAME = { shoot: "shooting", finish: "finishing", create: "shot creation", pass: "playmaking", secure: "ball security", rimd: "rim protection", reb: "rebounding", steal: "perimeter defense" };
+    H.teamNeeds = c => cache("needs" + c, () => {
+      const rows = Object.values(W.P).filter(p => p.t === c && p.adv && p.adv.mc > 0).sort((a, b) => b.adv.mc - a.adv.mc).slice(0, 9);
+      const avg = {}, need = {};
+      if (!rows.length) return { avg, need, top: [] };
+      for (const k of FIT_CATS) {
+        let sw = 0, sv = 0; for (const p of rows) if (p.adv.r[k] != null) { sw += p.adv.mc; sv += p.adv.mc * p.adv.r[k]; }
+        avg[k] = sw ? sv / sw : 50; need[k] = clamp((55 - avg[k]) / 25, -1, 1);
+      }
+      return { avg, need, top: FIT_CATS.filter(k => need[k] >= 0.2).sort((a, b) => need[b] - need[a]).slice(0, 3) };
+    });
+    H.fit = (p, c) => {
+      if (!p || !p.adv || !H.adv) return { score: 0, fills: [] };
+      const n = H.teamNeeds(c).need; let num = 0, den = 0; const fills = [];
+      for (const k of FIT_CATS) { const nd = Math.max(0, n[k] || 0), sk = Math.max(0, ((p.adv.r[k] ?? 50) - 50) / 50); num += nd * sk; den += nd; if (nd >= 0.2 && (p.adv.r[k] ?? 0) >= 70) fills.push(k); }
+      return { score: den > 0 ? clamp(num / Math.max(0.6, den), 0, 1) : 0, fills };
+    };
     H.dealValue = (c, m) => {                      // what one piece is worth to team c
       const ctx = H.teamCtx(c);
       if (m.kind === "c") return m.amt || 0;
-      if (m.kind === "k") return pickBlend(W.picks.find(x => x.id === m.id)) * ctx.youth;
+      if (m.kind === "k") return pickBlend(H.pickById(m.id)) * ctx.youth;
       const p = W.P[m.id], v = blendV(p);
       if (v <= 0) return v;
       let mul = isYoung(p) ? ctx.youth : isVet(p) ? ctx.vet : 1;
       // a rebuilding team would lose an expiring veteran for nothing this summer, so it counts him for less
       if (ctx.tier === "rebuild" && H.lastYear(p) <= 0 && H.faKind(p) !== "RFA") mul = Math.min(mul, 0.5);
-      return v * mul;
+      return v * mul * (0.95 + 0.3 * H.fit(p, c).score);
     };
     // The trade card's grade for one team: the deal's value by its own situation, the wins it adds (worth more to a
     // contender), and the luxury tax it saves or adds
@@ -970,7 +1027,7 @@
       const ctxA = H.teamCtx(A), payA = H.payroll(A, 0);
       const roster = c => Object.values(W.P).filter(q => q.t === c && !q.two && H.salary(q, 0) > 0 && !(q.tradeOk && asOf < q.tradeOk) && !(q.noTrade && asOf < q.noTrade));
       const core = c => new Set(roster(c).sort((a, b) => contrib(b) - contrib(a)).slice(0, 3).map(q => q.id));
-      const picks = c => H.picksOf(c).filter(pk => !pk.locked && (pk.r === 1 ? pk.y <= 2032 : pk.y <= 2028));
+      const picks = c => H.picksOf(c).filter(pk => !pk.locked && !pk.frozen && (pk.r === 1 ? pk.y <= 2032 : pk.y <= 2028));
       const salOK = (outA, inA, B) => {           // quick salary check for both sides (the full rules run on the shortlist)
         const S = sum(outA.map(q => H.salary(q, 0))), T = sum(inA.map(q => H.salary(q, 0)));
         const kA = sum(outA.map(q => H.kicker(q))), kB = sum(inA.map(q => H.kicker(q)));

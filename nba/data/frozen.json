@@ -1,0 +1,4 @@
+{
+  "src": "Spotrac and ESPN: Boston, Minnesota and Phoenix finished 2024-25 over the second apron (2032 firsts frozen); Cleveland was the only team over it in 2025-26 (2033 first frozen). A team thaws its pick by finishing under the second apron in three of the next four seasons.",
+  "frozen": { "2032": ["BOS", "MIN", "PHO"], "2033": ["CLE"] }
+}

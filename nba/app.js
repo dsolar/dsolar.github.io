@@ -988,13 +988,14 @@
       var m = /^([pkc]):([^~]+)(?:~([a-e]))?$/.exec(s);
       if (!m) return;
       if (m[1] === "p" && !H.W.P[m[2]]) return;
-      if (m[1] === "k" && !H.W.picks.find(function (x) { return x.id === m[2]; })) return;
+      if (m[1] === "k" && !H.pickById(m[2])) return;
       tr.assets.push({ kind: m[1], id: m[2], from: k, to: m[3] ? L5.indexOf(m[3]) : -1 });
     });
     return tr;
   }
   function destOf(tr, a) { return a.to >= 0 && a.to !== a.from && a.to < tr.sides.length ? a.to : (a.from + 1) % tr.sides.length; }
-  function pickOf(id) { return H.W.picks.find(function (x) { return x.id === id; }); }
+  function pickOf(id) { return H.pickById(id); }
+  function baseId(id) { return String(id).split("@")[0]; }
   // Salary matching at a glance: what comes in against what the rules let this team take back
   function gauge(r) {
     if (!r.inSal && !r.outSal) return "";
@@ -1043,7 +1044,7 @@
     }).join("") + "</div>";
   }
   function assetLine(a, tr, k, outgoing) {
-    var to = destOf(tr, a), right = "", sub = "", label;
+    var to = destOf(tr, a), right = "", sub = "", label, protSel = "";
     if (a.kind === "p") {
       var p = H.W.P[a.id], last = H.lastYear(p), left = 0;
       for (var j = 0; j <= last; j++) left += H.salary(p, j);
@@ -1056,9 +1057,10 @@
       }).join("") + "</span>";
       if (kick) sub += ' · <span class="pill warn">includes ' + money(kick) + " trade kicker</span>";
     } else if (a.kind === "k") {
-      var pk = pickOf(a.id);
+      var pk = pickOf(a.id), base = H.W.picks.find(function (x) { return x.id === baseId(a.id); });
       label = '<span class="pl static">' + logo(pk.from, 26) + '<span class="nm">' + esc(H.pickName(pk)) + "</span></span>";
       sub = "Projected slot " + f1(H.pickInfo(pk).avg) + (pk.note ? " · " + esc(pk.note) : "");
+      if (outgoing && base && base.r === 1 && !base.prot) protSel = '<select class="protsel" data-prot="' + esc(baseId(a.id)) + '" aria-label="Protection" title="Protect the pick: if it lands in the range, it stays and turns into a second-rounder. The 3-2-1 lottery bars new top-12 to top-15 protections."><option value="">Unprotected</option>' + H.PROTECT.map(function (n) { return '<option value="' + n + '"' + (pk.newProt === n ? " selected" : "") + ">Top " + n + "</option>"; }).join("") + "</select>";
       right = '<b class="sal pick">Pick</b>';
     } else {
       label = '<span class="pl static"><span class="cashicon">$</span><span class="nm">Cash</span></span>';
@@ -1067,7 +1069,7 @@
     }
     var dest = outgoing && tr.sides.length > 2 ? '<span class="dchips" role="group" aria-label="Sends to"><i>to</i>' + tr.sides.map(function (c, j) { return j === k || !c ? "" : '<button type="button" class="dchip' + (j === to ? " on" : "") + '" data-destto="' + esc(a.kind + ":" + a.id) + "|" + j + '" title="To ' + esc(team(c).short) + '" style="--tc:' + esc(team(c).color) + '">' + logo(c, 18) + "</button>"; }).join("") + "</span>" : "";
     var from = !outgoing ? '<span class="fromtag">' + logo(tr.sides[a.from], 14) + " from " + esc(team(tr.sides[a.from]).short) + "</span>" : "";
-    if (outgoing) sub = a.kind === "p" ? esc(posOf(H.W.P[a.id])) + ", thru " + sname(H.lastYear(H.W.P[a.id])) : a.kind === "k" ? "Projected slot " + f1(H.pickInfo(pickOf(a.id)).avg) : "";
+    if (outgoing) sub = a.kind === "p" ? esc(posOf(H.W.P[a.id])) + ", thru " + sname(H.lastYear(H.W.P[a.id])) : a.kind === "k" ? "Projected slot " + f1(H.pickInfo(pickOf(a.id)).avg) + (pickOf(a.id).newProt ? ", conveys " + pct(H.pickInfo(pickOf(a.id)).conveys) : "") + protSel : "";
     return '<li class="asset' + (outgoing ? " out" : "") + '"' + (outgoing ? ' draggable="true" data-akey="' + esc(a.kind + ":" + a.id) + '"' : "") + ">" + label + right + '<div class="asub">' + sub + from + "</div>" + (outgoing ? '<div class="aact">' + dest + '<button class="xbtn" data-rm="' + esc(a.kind + ":" + a.id) + '" aria-label="Remove">×</button></div>' : "") + "</li>";
   }
   // The trade card: what each team gets, in its colors, with a verdict, the money and a grade
@@ -1076,13 +1078,15 @@
     return m >= 60 ? "A+" : m >= 35 ? "A" : m >= 20 ? "A-" : m >= 8 ? "B+" : m >= -8 ? "B" : m >= -20 ? "B-" : m >= -35 ? "C+" : m >= -60 ? "C" : m >= -100 ? "D" : "F";
   }
   function tile(a, tr, k) {
+    var fitTag = "";
+    if (a.kind === "p" && tr.sides[k]) { var ft = H.fit(H.W.P[a.id], tr.sides[k]); if (ft.fills.length) fitTag = '<span class="fitpill" title="Strong where ' + esc(team(tr.sides[k]).short) + '\'s rotation is weak">Fills a need: ' + ft.fills.map(function (x) { return H.FIT_NAME[x]; }).join(", ") + "</span>"; }
     var from = tr.sides.length > 2 ? '<span class="tfrom">' + logo(tr.sides[a.from], 14) + " from " + esc(team(tr.sides[a.from]).short) + "</span>" : "";
     var rm = '<button type="button" class="trm" data-rm="' + esc(a.kind + ":" + a.id) + '" aria-label="Take out of the trade" title="Take out of the trade">×</button>';
     if (a.kind === "p") {
       var p = H.W.P[a.id], last = H.lastYear(p), left = 0, kick = H.kicker(p);
       for (var j = 0; j <= last; j++) left += H.salary(p, j);
       var lock = p.tradeOk && H.asOf < p.tradeOk ? ' <span class="pill warn">' + esc(fmtShort(p.tradeOk)) + "</span>" : "";
-      return '<div class="tile" data-p="' + esc(p.id) + '">' + face(p, 52) + '<div class="tl"><b>' + esc(p.n) + lock + "</b><span>" + esc(posOf(p)) + ", " + p.age + " " + rchip(H.rating(p, 0)) + "</span><small>" + (last > 0 ? "Thru " + sname(last) + ", " + money(left) + " total" : "Expiring") + (H.faKind(p) === "RFA" ? ", then RFA" : "") + "</small>" + from + '</div><div class="tsal">' + money(H.salary(p, 0) + kick) + (kick ? "<small>with kicker</small>" : "") + "</div>" + rm + "</div>";
+      return '<div class="tile" data-p="' + esc(p.id) + '">' + face(p, 52) + '<div class="tl"><b>' + esc(p.n) + lock + "</b><span>" + esc(posOf(p)) + ", " + p.age + " " + rchip(H.rating(p, 0)) + "</span><small>" + (last > 0 ? "Thru " + sname(last) + ", " + money(left) + " total" : "Expiring") + (H.faKind(p) === "RFA" ? ", then RFA" : "") + "</small>" + fitTag + from + '</div><div class="tsal">' + money(H.salary(p, 0) + kick) + (kick ? "<small>with kicker</small>" : "") + "</div>" + rm + "</div>";
     }
     if (a.kind === "k") {
       var pk = pickOf(a.id), info = H.pickInfo(pk);
@@ -1115,7 +1119,14 @@
     else if (P2 > tax) w.push(money(a1 - P2) + " under the first apron");
     w.push(rep ? "a repeat taxpayer" : "not a repeater");
     var taxLine = s.taxBefore || s.taxAfter ? "Tax bill " + money(s.taxBefore) + " → " + money(s.taxAfter) + (s.taxAfter !== s.taxBefore ? ' (<b class="' + (s.taxAfter < s.taxBefore ? "pos" : "neg") + '">' + (s.taxAfter < s.taxBefore ? "saves " : "adds ") + money(Math.abs(s.taxBefore - s.taxAfter)) + "</b>)" : "") : "";
-    return '<div class="capd"><p class="capw">' + w.join("; ") + "." + (taxLine ? " " + taxLine + "." : "") + "</p>" + (lines.length ? '<ul class="caph">' + lines.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>" : "") + "</div>";
+    var strip = "";
+    if (s.dPay && s.dPay.some(function (x) { return Math.abs(x) >= 1e5; })) {
+      var later = s.dPay.slice(1).reduce(function (a, x) { return a + x; }, 0);
+      strip = '<div class="paystrip" aria-label="Payroll change by season">' + s.dPay.map(function (x, j) {
+        return '<span class="' + (Math.abs(x) < 1e5 ? "z" : x > 0 ? "neg" : "pos") + '"><i>' + sname(j).slice(2) + "</i>" + (Math.abs(x) < 1e5 ? "—" : (x > 0 ? "+" : "-") + money(Math.abs(x))) + "</span>";
+      }).join("") + "</div>" + (Math.abs(later) >= 1e6 ? '<p class="capw">' + (later > 0 ? '<b class="neg">Takes on ' + money(later) + "</b> in salary after this season" : '<b class="pos">Clears ' + money(-later) + "</b> in salary after this season") + (s.dTax && s.dTax.slice(1).some(function (x) { return Math.abs(x) >= 1e5; }) ? ", with " + (s.dTax.slice(1).reduce(function (a, x) { return a + x; }, 0) >= 0 ? "tax savings of " : "added tax of ") + money(Math.abs(s.dTax.slice(1).reduce(function (a, x) { return a + x; }, 0))) + " on salary already committed" : "") + ".</p>" : "");
+    }
+    return '<div class="capd">' + strip + '<p class="capw">' + w.join("; ") + "." + (taxLine ? " " + taxLine + "." : "") + "</p>" + (lines.length ? '<ul class="caph">' + lines.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>" : "") + "</div>";
   }
   function tradeCard(tr, chk, sum, moves) {
     var n = tr.sides.length, fails = tr.sides.filter(function (c) { return !chk.teams[c].ok; });
@@ -1128,7 +1139,7 @@
       var t = team(c), r = chk.teams[c], s = sum[c], gd = H.tradeGrade(c, trm, sum), g = grade(gd.total), inc = tr.assets.filter(function (a) { return destOf(tr, a) === k && a.from !== k; });
       var tierName = { contend: "Contender", middle: "In the middle", rebuild: "Rebuilding" }[gd.tier];
       var why = "Value by their own situation " + signed(gd.value) + (gd.wins ? ", wins this season " + signed(gd.wins) : "") + (gd.tax ? ", luxury tax " + signed(gd.tax) : "");
-      html += '<section class="tside" style="--tc:' + esc(t.color) + '"><header><span class="twater" aria-hidden="true">' + logo(c, 150) + '</span><span class="tlogo">' + logo(c, 52) + '</span><div class="tname"><small>' + esc(t.city || "") + "</small><b>" + esc(t.short) + "</b><em>" + tierName + '</em></div><span class="grade g' + g.charAt(0) + '" title="' + esc(why) + '">' + g + "</span></header>" +
+      html += '<section class="tside" style="--tc:' + esc(t.color) + '"><header><span class="twater" aria-hidden="true">' + logo(c, 150) + '</span><span class="tlogo">' + logo(c, 52) + '</span><div class="tname"><small>' + esc(t.city || "") + "</small><b>" + esc(t.short) + "</b><em>" + tierName + "</em>" + (H.teamNeeds(c).top.length ? '<span class="tneeds">Needs ' + H.teamNeeds(c).top.map(function (x) { return H.FIT_NAME[x]; }).join(", ") + "</span>" : "") + '</div><span class="grade g' + g.charAt(0) + '" title="' + esc(why) + '">' + g + "</span></header>" +
         '<div class="tget"><h5>Receives</h5>' + (inc.length ? inc.map(function (a) { return tile(a, tr, k); }).join("") : '<p class="note">Nothing yet.</p>') + "</div>" +
         '<footer><p class="tverdict ' + (r.ok ? (r.after ? "wait" : "ok") : "bad") + '">' + (r.ok ? (r.after ? "◷ Works for " + esc(t.short) + " starting " + fmtShort(r.after) : "✓ Works for " + esc(t.short)) : "✕ " + esc(r.msgs[0] || "Fails the cap rules")) + "</p>" +
         (r.notes && r.notes.length ? '<ul class="tnotes">' + r.notes.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
@@ -1428,10 +1439,11 @@
   // A team's roster (by salary), its tradable picks and cash
   function assetPicker(code, k, tr) {
     var on = {};
-    tr.assets.forEach(function (a) { on[a.kind + ":" + a.id] = 1; });
+    tr.assets.forEach(function (a) { on[a.kind + ":" + baseId(a.id)] = 1; });
     var ps = Object.values(H.W.P).filter(function (p) { return p.t === code && !p.two && H.salary(p, 0) > 0 && !on["p:" + p.id]; })
       .sort(function (a, b) { return H.salary(b, 0) - H.salary(a, 0); });
-    var pks = H.picksOf(code).filter(function (pk) { return !on["k:" + pk.id] && !pk.locked && (pk.r === 1 || pk.y <= 2029); });
+    var pks = H.picksOf(code).filter(function (pk) { return !on["k:" + pk.id] && !pk.locked && !pk.frozen && (pk.r === 1 || pk.y <= 2029); });
+    var frozen = H.picksOf(code).filter(function (pk) { return pk.frozen; });
     var tpes = H.W.T[code].tpes;
     var dec15 = H.asOf < "2026-12-15";
     return '<details class="org" open><summary>Roster</summary><input class="rfilter" type="search" placeholder="Filter by name" data-rfilter="' + k + '"><div class="rhead"><span>Player</span><span>' + sname(0) + "</span><span>Thru</span></div>" + ps.map(function (p) {
@@ -1440,10 +1452,16 @@
     }).join("") + "</details>" +
       '<details class="org"><summary>Draft picks</summary>' + pks.map(function (pk) {
         return '<button type="button" draggable="true" class="org-row" data-pick="k:' + esc(pk.id) + '" data-side="' + k + '">' + logo(pk.from, 18) + '<span class="grow">' + esc(H.pickName(pk)) + '</span><span class="note">slot ' + f1(H.pickInfo(pk).avg) + "</span></button>";
-      }).join("") + "</details>" +
+      }).join("") + frozen.map(function (pk) { return '<div class="org-row locked" title="Frozen: the team finished a season over the second apron">' + logo(pk.from, 18) + '<span class="grow">' + esc(H.pickName(pk)) + ' <span class="pill warn">Frozen</span></span></div>'; }).join("") + "</details>" +
       '<details class="org"><summary>Cash and exceptions</summary><div class="cashrow"><input type="number" min="0.1" max="' + (CBA.cashLimit(0) / 1e6).toFixed(1) + '" step="0.5" placeholder="$M" data-cashamt="' + k + '"><button class="btn" data-addcash="' + k + '">Add cash</button></div>' +
       (tpes.length ? '<p class="note">Trade exceptions (used automatically when they help):</p><ul class="tpes">' + tpes.map(function (x) { return "<li>" + money(x.amt) + " · " + esc(x.from) + ' <span class="note">expires ' + esc(x.exp) + "</span></li>"; }).join("") + "</ul>" : '<p class="note">No trade exceptions.</p>') + "</details>";
   }
+  view.addEventListener("change", function (e) {
+    var ps = e.target.closest("select[data-prot]");
+    if (!ps) return;
+    var tr = tradeState(), b = ps.dataset.prot, a = tr.assets.find(function (x) { return x.kind === "k" && baseId(x.id) === b; });
+    if (a) { a.id = ps.value ? b + "@" + ps.value : b; location.hash = tradeHash(tr); }
+  });
   view.addEventListener("change", function (e) {
     var sel = e.target.closest("select[data-tside]"), dest = e.target.closest("select[data-dest]");
     if (!sel && !dest) return;
@@ -1581,6 +1599,7 @@
       "<h3>Cap holds, dead money and extensions</h3><p>Next summer's room is shown both ways: if a team renounces everyone, and with the cap holds for free agents it keeps rights to. Dead money is this season's team totals from Spotrac (later seasons only where Spotrac lists them). Extension eligibility and maximums follow the 2023 CBA: rookie-scale players the summer before their fourth season, veterans with two or fewer years left, up to 140% of their salary or the max.</p>" +
       "<h3>The trade card</h3><p>Each team's column shows what it receives, whether the deal passes the cap rules for that team, payroll and cap position before and after, its projected wins this season before and after, and a grade. The grade weighs the deal by the team's own situation, the same way the trade finder does: value averages the production and market views (they disagree most about picks and young players), a contender also counts this season's wins (about $6 million a win), a rebuilding team counts picks and young players for more and veterans for less, and an expiring veteran for half (it would lose him for nothing in the summer). Luxury tax saved or added counts too: this season's bill in full and next season's at half. Roster overages are a footnote (the team would waive someone), and a player who can't be traded yet makes the deal work starting that date. Each team's footer spells out how it's done under the cap rules (which trade exception takes whom, what new exception it creates), where it lands against the tax and aprons, and whether it's a repeater. Grades: A+ at $60M or more, A at $35M, A- at $20M, B+ at $8M, B within $8M either way, then B-, C+, C and D at -$20M, -$35M, -$60M and -$100M, and F below that. The grade only measures value; a contender giving up future value for wins now can still be making the right call.</p>" +
       "<h3>Salary weight</h3><p>Surplus counts salary at half its face value by default. Teams have to spend to the salary floor and unused cap room disappears, so a dollar of salary doesn't cost a team a dollar of value. Treating the 2025-26 deadline deals and the 2026 summer's big trades (Giannis, Kawhi, Morant) as fair to both sides puts the real cost at about a quarter to a half: at full face value the model missed those deals by about $59 million on average, at half by $25 million. You can set it from 25% to 100% on the Trade Value tab.</p>" +
+      "<h3>Timing, protections, fit and long-term money</h3><p><b>Timing rules.</b> Free agents signed in the summer can't be traded until Dec. 15, and a player acquired by trade can't be combined with other salaries for two months (tracked from the daily rosters, so any team change counts); either makes a deal work starting that date rather than failing it. A team's first-round pick seven years out is frozen when it finishes a season over the second apron (Boston, Minnesota and Phoenix's 2032 firsts; Cleveland's 2033), and frozen picks can't be traded. The 2027 lottery follows the 3-2-1 rules: Washington's pick can't be first again and Utah's can't be top five a third straight year. <b>Protections.</b> Any first-round pick you send can be protected (top 3, 5, 8, 10, 11, 16 or 20; the 3-2-1 lottery bars new top-12 to top-15 protections). In the protected range it stays and turns into a second-rounder, and its value counts only the slots where it conveys. <b>Fit.</b> Each team's needs come from its rotation: the minutes-weighted percentiles of its nine heaviest-minute players in shooting, finishing, shot creation, playmaking, ball security, rim protection, rebounding and perimeter defense. A player strong where his new team is weak counts for up to 25% more to it. <b>Long-term money.</b> Grades count the luxury tax for every season the contracts run (this season in full, then 60%, 45%, 35% and 25%), and salary further out costs more: a salary dollar counts at the salary weight this season and next, then 10 points more each season after, since money years out eats flexibility. The card shows each team's payroll change season by season.</p>" +
       "<h3>Trade finder</h3><p>Start from a team or from one player. Every team weighs a deal by where it is: contenders (65% or better to make the playoffs) also count the wins it adds this season, about $6 million a win; rebuilding teams (30% or worse) count picks and young players for 30% more and veterans 29 and older for 45% less; teams in between fall in the middle. That's what lets a deal work for both sides, since on one value scale every trade is zero-sum. <b>Win-win</b> finds deals both teams come out ahead on. <b>Buyer</b> adds win-now players for picks, young players and salary, keeping the overpay modest. <b>Seller</b> moves veterans to teams trying to win and asks for picks and young players while the buyer still comes out ahead. Every deal is checked against the full cap rules, roster limits and the Stepien rule, which only limits trading first-round picks away (a team already short from older deals can still trade players).</p>" +
       "<h3>What it doesn't do</h3><p>Aggregation windows and other timing rules aren't enforced (players signed this summer and the deadline get a warning). No second-round rookies on the slider, and the most tangled pick conditions (Oklahoma City's chain of 2027 swaps) stay with whoever holds them today. Mid-level use after mid-July isn't tracked.</p>" +
       '<p class="note">Built on the shared NBA library (nba/lib) that Banner 19 and Hard Cap also run on, so a cap rule or contract fix lands in all three.</p></div>';
@@ -1589,9 +1608,9 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board.";
