@@ -828,7 +828,9 @@
     const grpOf = (p) => playerGroup(sport, p);
     const statLine = (p) => {
       if (p.pick) return "";
-      const cs = cols.filter((c) => c.group ? c.group === grpOf(p) : !c.fpts && !c.fpg).filter((c) => (c.col !== "g" || sport.key === "nhl") && c.col !== "gp").slice(0, 6);
+      // football: his position's stats (no passing line for a receiver), led by fantasy points a game
+      const fb = S.football(sport);
+      const cs = cols.filter((c) => c.group ? c.group === grpOf(p) : fb ? !c.fpts : !c.fpts && !c.fpg).filter((c) => !c.pos || S.positions(p).some((x) => c.pos.includes(x))).filter((c) => (c.col !== "g" || sport.key === "nhl") && c.col !== "gp").slice(0, 6);
       const bits = cs.map((c) => { const v = statCell(sport, p, c); return v == null ? null : `<span><b>${c.fmt ? c.fmt(v) : Math.round(v)}</b> ${esc(c.label)}</span>`; }).filter(Boolean);
       return bits.length ? `<span class="tw2-sl">${bits.join("")}</span>` : `<span class="tw2-sl ps">No ${sport.statView === "proj" ? "projection" : "stats"}</span>`;
     };
