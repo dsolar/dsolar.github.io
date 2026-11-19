@@ -1,250 +1,204 @@
 {
- "players": {
+ "team_lineups": {
   "ok": true,
-  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=Player",
+  "tries": 1,
+  "secs": 62,
+  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=Lineup&TeamId=1610612738",
   "sample": {
-   "n": 472,
+   "n": 167,
    "row": {
-    "EntityId": "1628369",
+    "EntityId": "1628369-1628401-1629011-1641775-202331",
     "TeamId": "1610612738",
-    "Name": "Jayson Tatum",
-    "ShortName": "Jayson Tatum",
-    "RowId": "1628369",
+    "Name": "Jayson Tatum, Derrick White, Mitchell Robinson, Jordan Walsh, Paul George",
+    "ShortName": "Tatum, White, Robinson, Walsh, George",
+    "RowId": "1628369-1628401-1629011-1641775-202331",
     "TeamAbbreviation": "BOS",
-    "SecondsPlayed": 28613.3,
-    "GamesPlayed": 14,
-    "Minutes": 477,
-    "PlusMinus": 100,
-    "OffPoss": 976,
-    "DefPoss": 969,
-    "PenaltyOffPoss": 224,
-    "PenaltyDefPoss": 363,
-    "SecondChanceOffPoss": 124,
-    "TotalPoss": 1945,
-    "AtRimFGM": 45,
-    "AtRimFGA": 69,
-    "SecondChanceAtRimFGM": 7,
-    "SecondChanceAtRimFGA": 11,
-    "PenaltyAtRimFGM": 11,
-    "PenaltyAtRimFGA": 19,
-    "ShortMidRangeFGM": 18,
-    "ShortMidRangeFGA": 46,
-    "LongMidRangeFGM": 18,
-    "LongMidRangeFGA": 51,
-    "Corner3FGM": 2,
-    "Corner3FGA": 10,
+    "SecondsPlayed": 3135.2,
+    "GamesPlayed": 8,
+    "Minutes": 52,
+    "PlusMinus": 18,
+    "OffPoss": 106,
+    "DefPoss": 106,
+    "PenaltyOffPoss": 1,
+    "PenaltyDefPoss": 13,
+    "SecondChanceOffPoss": 17,
+    "TotalPoss": 212,
+    "AtRimFGM": 18,
+    "AtRimFGA": 28,
+    "SecondChanceAtRimFGM": 5,
+    "SecondChanceAtRimFGA": 5,
+    "ShortMidRangeFGM": 5,
+    "ShortMidRangeFGA": 11,
+    "LongMidRangeFGM": 4,
+    "LongMidRangeFGA": 11,
+    "Corner3FGM": 7,
+    "Corner3FGA": 14,
+    "SecondChanceCorner3FGM": 1,
     "SecondChanceCorner3FGA": 1,
-    "Arc3FGM": 35,
-    "Arc3FGA": 101,
+    "Arc3FGM": 14,
+    "Arc3FGA": 34,
     "SecondChanceArc3FGM": 2,
-    "SecondChanceArc3FGA": 6,
-    "PenaltyArc3FGM": 9,
-    "PenaltyArc3FGA": 24,
-    "FG2M": 81,
-    "FG2A": 166,
-    "FG3M": 37,
-    "FG3A": 111,
-    "FtPoints": 96,
-    "Points": 369,
-    "OpponentPoints": 1036,
-    "SecondChanceFG2M": 11,
-    "SecondChanceFG2A": 20,
-    "SecondChanceFG3M": 2,
-    "SecondChanceFG3A": 7,
-    "SecondChanceFtPoints": 15,
-    "SecondChancePoints": 43,
-    "PenaltyFG2M": 21,
-    "PenaltyFG2A": 38,
-    "PenaltyFG3M": 9,
-    "PenaltyFG3A": 24,
-    "PenaltyFtPoints": 41,
-    "PenaltyPoints": 110,
-    "PtsAssisted2s": 70,
-    "PtsUnassisted2s": 92,
-    "PtsAssisted3s": 54,
-    "PtsUnassisted3s": 57,
+    "SecondChanceArc3FGA": 3,
+    "FG2M": 27,
+    "FG2A": 50,
+    "FG3M": 21,
+    "FG3A": 48,
+    "FtPoints": 13,
+    "Points": 130,
+    "OpponentPoints": 112,
+    "SecondChanceFG2M": 5,
+    "SecondChanceFG2A": 8,
+    "SecondChanceFG3M": 3,
+    "SecondChanceFG3A": 4,
+    "SecondChanceFtPoints": 1,
+    "SecondChancePoints": 20,
+    "PtsAssisted2s": 32,
+    "PtsUnassisted2s": 22,
+    "PtsAssisted3s": 57,
+    "PtsUnassisted3s": 6,
     "PtsPutbacks": 4,
-    "NonHeaveArc3FGA": 101,
-    "NonHeaveArc3FGM": 35,
-    "Fg2aBlocked": 13,
-    "Fg3aBlocked": 1,
-    "TwoPtAssists": 50,
-    "ThreePtAssists": 45,
-    "Assists": 95,
-    "Arc3Assists": 28,
-    "Corner3Assists": 17,
-    "AtRimAssists": 41,
-    "ShortMidRangeAssists": 5,
-    "LongMidRangeAssists": 4,
-    "AssistPoints": 235,
-    "OffThreePtRebounds": 3,
-    "OffTwoPtRebounds": 8,
-    "DefThreePtRebounds": 40,
-    "DefTwoPtRebounds": 31,
-    "FTDefRebounds": 11,
-    "DefRebounds": 82,
-    "OffRebounds": 11,
-    "Rebounds": 93,
-    "SelfOReb": 7,
-    "Steals": 10,
-    "BadPassSteals": 6,
-    "LostBallSteals": 4,
-    "LiveBallTurnovers": 24,
-    "BadPassOutOfBoundsTurnovers": 11,
-    "BadPassTurnovers": 17,
-    "DeadBallTurnovers": 19,
-    "LostBallOutOfBoundsTurnovers": 2,
-    "LostBallTurnovers": 7,
-    "Turnovers": 43,
-    "SecondChanceTurnovers": 4,
-    "PenaltyTurnovers": 7,
+    "NonHeaveArc3FGA": 34,
+    "NonHeaveArc3FGM": 14,
+    "Fg2aBlocked": 4,
+    "TwoPtAssists": 16,
+    "ThreePtAssists": 19,
+    "Assists": 35,
+    "Arc3Assists": 12,
+    "Corner3Assists": 7,
+    "AtRimAssists": 14,
+    "ShortMidRangeAssists": 1,
+    "LongMidRangeAssists": 1,
+    "AssistPoints": 89,
+    "OffThreePtRebounds": 11,
+    "OffTwoPtRebounds": 7,
+    "DefThreePtRebounds": 23,
+    "DefTwoPtRebounds": 16,
+    "FTDefRebounds": 1,
+    "DefRebounds": 40,
+    "OffRebounds": 18,
+    "Rebounds": 58,
+    "SelfOReb": 2,
+    "Steals": 8,
+    "BadPassSteals": 5,
+    "LostBallSteals": 3,
+    "LiveBallTurnovers": 11,
+    "BadPassOutOfBoundsTurnovers": 2,
+    "BadPassTurnovers": 7,
+    "DeadBallTurnovers": 8,
+    "LostBallOutOfBoundsTurnovers": 1,
+    "LostBallTurnovers": 4,
+    "Turnovers": 19,
+    "SecondChanceTurnovers": 5,
     "ShootingFouls": 11,
-    "Fouls": 30,
-    "Charge Fouls": 1,
+    "Fouls": 25,
     "Loose Ball Fouls": 1,
     "Offensive Fouls": 4,
-    "FoulsDrawn": 77,
+    "FoulsDrawn": 21,
     "Charge Fouls Drawn": 1,
-    "Loose Ball Fouls Drawn": 1,
-    "Offensive Fouls Drawn": 1,
-    "FTA": 111,
-    "2pt And 1 Free Throw Trips": 4,
-    "Technical Free Throw Trips": 4,
-    "TwoPtShootingFoulsDrawn": 35,
-    "ThreePtShootingFoulsDrawn": 6,
-    "NonShootingFoulsDrawn": 12,
-    "Blocked2s": 10,
-    "BlockedAtRim": 5,
-    "BlockedLongMidRange": 1,
-    "BlockedShortMidRange": 4,
-    "Blocks": 10,
+    "Loose Ball Fouls Drawn": 2,
+    "Offensive Fouls Drawn": 4,
+    "FTA": 17,
+    "2pt And 1 Free Throw Trips": 1,
+    "TwoPtShootingFoulsDrawn": 6,
+    "ThreePtShootingFoulsDrawn": 2,
+    "Blocked2s": 7,
+    "BlockedAtRim": 4,
+    "BlockedShortMidRange": 3,
+    "Blocks": 7,
     "RecoveredBlocks": 3,
-    "Defensive 3 Seconds Violations": 1,
-    "FirstChancePoints": 326,
-    "PenaltyPointsExcludingTakeFouls": 110,
-    "PenaltyOffPossExcludingTakeFouls": 221,
-    "NonShootingPenaltyNonTakeFouls": 6,
-    "NonShootingPenaltyNonTakeFoulsDrawn": 10,
-    "Period1Fouls2Minutes": 2,
-    "Period2Fouls2Minutes": 13,
-    "Period2Fouls3Minutes": 1,
-    "Period3Fouls3Minutes": 15,
-    "Period4Fouls4Minutes": 17,
-    "OnOffRtg": 116.39344262295083,
-    "OnDefRtg": 106.91434468524253,
-    "Assisted2sPct": 0.43209876543209874,
-    "NonPutbacksAssisted2sPct": 0.4430379746835443,
-    "Assisted3sPct": 0.4864864864864865,
-    "Fg3Pct": 0.3333333333333333,
-    "SecondChanceFg3Pct": 0.2857142857142857,
-    "PenaltyFg3Pct": 0.375,
-    "NonHeaveFg3Pct": 0.3333333333333333,
-    "Fg2Pct": 0.4879518072289157,
-    "SecondChanceFg2Pct": 0.55,
-    "PenaltyFg2Pct": 0.5526315789473685,
-    "EfgPct": 0.4927797833935018,
-    "SecondChanceEfgPct": 0.5185185185185185,
-    "PenaltyEfgPct": 0.5564516129032258,
-    "TsPct": 0.5613496932515337,
-    "SecondChanceTsPct": 0.6,
-    "PenaltyTsPct": 0.6488095238095238,
-    "FG3APct": 0.4007220216606498,
-    "FG3APctBlocked": 0.009009009009009009,
-    "FG2APctBlocked": 0.0783132530120482,
-    "AtRimPctBlocked": 0.10144927536231885,
-    "ShortMidRangePctBlocked": 0.08695652173913043,
-    "LongMidRangePctBlocked": 0.0392156862745098,
-    "Arc3PctBlocked": 0.009900990099009901,
-    "Usage": 32.738626226583406,
-    "LiveBallTurnoverPct": 0.5581395348837209,
-    "DefFTReboundPct": 0.4583333333333333,
-    "DefTwoPtReboundPct": 0.14761904761904762,
-    "OffTwoPtReboundPct": 0.0392156862745098,
-    "DefThreePtReboundPct": 0.1520912547528517,
-    "OffThreePtReboundPct": 0.011194029850746268,
-    "DefFGReboundPct": 0.15010570824524314,
-    "OffFGReboundPct": 0.023305084745762712,
-    "OffAtRimReboundPct": 0.06493506493506493,
-    "OffShortMidRangeReboundPct": 0.04,
-    "OffArc3ReboundPct": 0.013824884792626729,
-    "DefAtRimReboundPct": 0.13513513513513514,
-    "DefShortMidRangeReboundPct": 0.1414141414141414,
-    "DefLongMidRangeReboundPct": 0.1891891891891892,
-    "DefArc3ReboundPct": 0.16393442622950818,
-    "DefCorner3ReboundPct": 0.125,
-    "SelfORebPct": 0.04895104895104895,
-    "BlocksRecoveredPct": 0.3,
-    "AtRimFrequency": 0.2490974729241877,
-    "AtRimAccuracy": 0.6521739130434783,
-    "UnblockedAtRimAccuracy": 0.7258064516129032,
-    "AtRimPctAssisted": 0.4888888888888889,
-    "ShortMidRangeFrequency": 0.16606498194945848,
-    "ShortMidRangeAccuracy": 0.391304347826087,
-    "UnblockedShortMidRangeAccuracy": 0.42857142857142855,
-    "ShortMidRangePctAssisted": 0.3333333333333333,
-    "LongMidRangeFrequency": 0.18411552346570398,
-    "LongMidRangeAccuracy": 0.35294117647058826,
-    "UnblockedLongMidRangeAccuracy": 0.3673469387755102,
-    "LongMidRangePctAssisted": 0.3888888888888889,
-    "Corner3Frequency": 0.036101083032490974,
-    "Corner3Accuracy": 0.2,
-    "UnblockedCorner3Accuracy": 0.2,
+    "FirstChancePoints": 110,
+    "PenaltyOffPossExcludingTakeFouls": 1,
+    "NonShootingPenaltyNonTakeFouls": 1,
+    "Assisted2sPct": 0.5925925925925926,
+    "NonPutbacksAssisted2sPct": 0.64,
+    "Assisted3sPct": 0.9047619047619048,
+    "Fg3Pct": 0.4375,
+    "SecondChanceFg3Pct": 0.75,
+    "NonHeaveFg3Pct": 0.4375,
+    "Fg2Pct": 0.54,
+    "SecondChanceFg2Pct": 0.625,
+    "EfgPct": 0.5969387755102041,
+    "SecondChanceEfgPct": 0.7916666666666666,
+    "TsPct": 0.6190476190476191,
+    "SecondChanceTsPct": 0.7692307692307693,
+    "FG3APct": 0.4897959183673469,
+    "FG2APctBlocked": 0.08,
+    "AtRimPctBlocked": 0.10714285714285714,
+    "ShortMidRangePctBlocked": 0.09090909090909091,
+    "LiveBallTurnoverPct": 0.5789473684210527,
+    "DefFTReboundPct": 1.0,
+    "DefTwoPtReboundPct": 0.7272727272727273,
+    "OffTwoPtReboundPct": 0.30434782608695654,
+    "DefThreePtReboundPct": 0.7666666666666667,
+    "OffThreePtReboundPct": 0.4074074074074074,
+    "DefFGReboundPct": 0.75,
+    "OffFGReboundPct": 0.36,
+    "OffAtRimReboundPct": 0.5,
+    "OffLongMidRangeReboundPct": 0.2857142857142857,
+    "OffArc3ReboundPct": 0.5,
+    "OffCorner3ReboundPct": 0.14285714285714285,
+    "DefAtRimReboundPct": 0.5,
+    "DefShortMidRangeReboundPct": 0.7272727272727273,
+    "DefLongMidRangeReboundPct": 1.0,
+    "DefArc3ReboundPct": 0.8,
+    "DefCorner3ReboundPct": 0.7,
+    "SelfORebPct": 0.043478260869565216,
+    "Pace": 97.37177851492729,
+    "BlocksRecoveredPct": 0.42857142857142855,
+    "SecondsPerPossOff": 15.495283018867925,
+    "SecondsPerPossDef": 14.082075471698113,
+    "SecondsExcludingORebsPerPossOff": 14.202830188679245,
+    "SecondsExcludingORebsPerPossDef": 13.616037735849057,
+    "AtRimFrequency": 0.2857142857142857,
+    "AtRimAccuracy": 0.6428571428571429,
+    "UnblockedAtRimAccuracy": 0.72,
+    "AtRimPctAssisted": 0.7777777777777778,
+    "ShortMidRangeFrequency": 0.11224489795918367,
+    "ShortMidRangeAccuracy": 0.45454545454545453,
+    "UnblockedShortMidRangeAccuracy": 0.5,
+    "ShortMidRangePctAssisted": 0.2,
+    "LongMidRangeFrequency": 0.11224489795918367,
+    "LongMidRangeAccuracy": 0.36363636363636365,
+    "UnblockedLongMidRangeAccuracy": 0.36363636363636365,
+    "LongMidRangePctAssisted": 0.25,
+    "Corner3Frequency": 0.14285714285714285,
+    "Corner3Accuracy": 0.5,
+    "UnblockedCorner3Accuracy": 0.5,
     "Corner3PctAssisted": 1.0,
-    "Arc3Frequency": 0.36462093862815886,
-    "Arc3Accuracy": 0.3465346534653465,
-    "UnblockedArc3Accuracy": 0.35,
-    "Arc3PctAssisted": 0.45714285714285713,
-    "SecondChanceAtRimFrequency": 0.4074074074074074,
-    "SecondChanceAtRimAccuracy": 0.6363636363636364,
-    "SecondChanceAtRimPctAssisted": 0.42857142857142855,
-    "SecondChanceCorner3Frequency": 0.037037037037037035,
-    "SecondChanceArc3Frequency": 0.2222222222222222,
-    "SecondChanceArc3Accuracy": 0.3333333333333333,
-    "SecondChanceArc3PctAssisted": 0.5,
-    "PenaltyAtRimFrequency": 0.3064516129032258,
-    "PenaltyAtRimAccuracy": 0.5789473684210527,
-    "PenaltyArc3Frequency": 0.3870967741935484,
-    "PenaltyArc3Accuracy": 0.375,
-    "AtRimFG3AFrequency": 0.6498194945848376,
-    "NonHeaveArc3Accuracy": 0.3465346534653465,
-    "ShotQualityAvg": 0.5295628623188405,
-    "SecondChanceShotQualityAvg": 0.56064,
-    "PenaltyShotQualityAvg": 0.5198677419354839,
-    "ShootingFoulsDrawnPct": 0.1305732484076433,
-    "TwoPtShootingFoulsDrawnPct": 0.17766497461928935,
-    "ThreePtShootingFoulsDrawnPct": 0.05128205128205128,
-    "SecondChancePointsPct": 0.11653116531165311,
-    "PenaltyPointsPct": 0.2981029810298103,
-    "Avg2ptShotDistance": 8.40722891566265,
-    "Avg3ptShotDistance": 25.82702702702703,
-    "AtRimOffReboundedPct": 0.4166666666666667,
-    "ShortMidRangeOffReboundedPct": 0.32142857142857145,
-    "LongMidRangeOffReboundedPct": 0.3125,
-    "ThreePtOffReboundedPct": 0.3150684931506849,
-    "PenaltyOffPossPct": 0.22950819672131148
+    "Arc3Frequency": 0.3469387755102041,
+    "Arc3Accuracy": 0.4117647058823529,
+    "UnblockedArc3Accuracy": 0.4117647058823529,
+    "Arc3PctAssisted": 0.8571428571428571,
+    "SecondChanceAtRimFrequency": 0.4166666666666667,
+    "SecondChanceAtRimAccuracy": 1.0,
+    "SecondChanceAtRimPctAssisted": 0.2,
+    "SecondChanceCorner3Frequency": 0.08333333333333333,
+    "SecondChanceCorner3Accuracy": 1.0,
+    "SecondChanceCorner3PctAssisted": 1.0,
+    "SecondChanceArc3Frequency": 0.25,
+    "SecondChanceArc3Accuracy": 0.6666666666666666,
+    "SecondChanceArc3PctAssisted": 1.0,
+    "AtRimFG3AFrequency": 0.7755102040816326,
+    "NonHeaveArc3Accuracy": 0.4117647058823529,
+    "ShotQualityAvg": 0.5649,
+    "SecondChanceShotQualityAvg": 0.59595,
+    "ShootingFoulsDrawnPct": 0.0761904761904762,
+    "TwoPtShootingFoulsDrawnPct": 0.10909090909090909,
+    "ThreePtShootingFoulsDrawnPct": 0.04,
+    "SecondChancePointsPct": 0.15384615384615385,
+    "Avg2ptShotDistance": 6.734,
+    "Avg3ptShotDistance": 25.516666666666666,
+    "PenaltyOffPossPct": 0.009433962264150943
    }
   }
  },
- "players_prev": {
-  "ok": false,
-  "url": "https://api.pbpstats.com/get-totals/nba?Season=2025-26&SeasonType=Regular%20Season&Type=Player",
-  "error": "HTTP Error 502: Bad Gateway"
- },
- "team_players": {
-  "ok": false,
-  "url": "https://api.pbpstats.com/get-team-players-for-season/nba?Season=2026-27&SeasonType=Regular%20Season&TeamId=1610612738",
-  "error": "HTTP Error 404: Not Found"
- },
- "team_lineups": {
-  "ok": false,
-  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=Lineup&TeamId=1610612738",
-  "error": "HTTP Error 502: Bad Gateway"
- },
- "team_lineup_opp": {
+ "all_lineups": {
   "ok": true,
-  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=LineupOpponent&TeamId=1610612738",
+  "tries": 3,
+  "secs": 110,
+  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=Lineup",
   "sample": {
-   "n": 168,
+   "n": 500,
    "keys": [
     "EntityId",
     "TeamId",
@@ -274,6 +228,7 @@
     "LongMidRangeFGA",
     "Corner3FGM",
     "Corner3FGA",
+    "SecondChanceCorner3FGM",
     "SecondChanceCorner3FGA",
     "PenaltyCorner3FGM",
     "PenaltyCorner3FGA",
@@ -305,681 +260,213 @@
     "PtsAssisted2s",
     "PtsUnassisted2s",
     "PtsAssisted3s",
-    "PtsPutbacks"
+    "PtsUnassisted3s",
+    "PtsPutbacks",
+    "NonHeaveArc3FGA",
+    "NonHeaveArc3FGM",
+    "Fg2aBlocked",
+    "Fg3aBlocked",
+    "TwoPtAssists",
+    "ThreePtAssists",
+    "Assists",
+    "Arc3Assists",
+    "Corner3Assists",
+    "AtRimAssists",
+    "ShortMidRangeAssists",
+    "LongMidRangeAssists",
+    "AssistPoints",
+    "OffThreePtRebounds",
+    "OffTwoPtRebounds",
+    "DefThreePtRebounds",
+    "DefTwoPtRebounds",
+    "FTDefRebounds",
+    "DefRebounds",
+    "OffRebounds",
+    "Rebounds",
+    "SelfOReb",
+    "Steals",
+    "BadPassSteals",
+    "LostBallSteals",
+    "LiveBallTurnovers",
+    "BadPassOutOfBoundsTurnovers",
+    "BadPassTurnovers",
+    "DeadBallTurnovers",
+    "LostBallOutOfBoundsTurnovers",
+    "LostBallTurnovers",
+    "StepOutOfBoundsTurnovers",
+    "Travels",
+    "Turnovers",
+    "SecondChanceTurnovers",
+    "PenaltyTurnovers",
+    "ShootingFouls",
+    "Fouls",
+    "Loose Ball Fouls",
+    "Offensive Fouls",
+    "FoulsDrawn",
+    "Charge Fouls Drawn",
+    "Loose Ball Fouls Drawn",
+    "Offensive Fouls Drawn",
+    "FTA",
+    "2pt And 1 Free Throw Trips",
+    "Technical Free Throw Trips",
+    "TwoPtShootingFoulsDrawn",
+    "ThreePtShootingFoulsDrawn",
+    "NonShootingFoulsDrawn",
+    "Blocked2s",
+    "Blocked3s",
+    "BlockedArc3",
+    "BlockedAtRim",
+    "BlockedLongMidRange",
+    "BlockedShortMidRange",
+    "Blocks",
+    "RecoveredBlocks",
+    "FirstChancePoints",
+    "PenaltyPointsExcludingTakeFouls",
+    "PenaltyOffPossExcludingTakeFouls",
+    "NonShootingPenaltyNonTakeFouls",
+    "NonShootingPenaltyNonTakeFoulsDrawn",
+    "Assisted2sPct",
+    "NonPutbacksAssisted2sPct",
+    "Assisted3sPct",
+    "Fg3Pct",
+    "SecondChanceFg3Pct",
+    "PenaltyFg3Pct",
+    "NonHeaveFg3Pct",
+    "Fg2Pct",
+    "SecondChanceFg2Pct",
+    "PenaltyFg2Pct",
+    "EfgPct",
+    "SecondChanceEfgPct",
+    "PenaltyEfgPct",
+    "TsPct",
+    "SecondChanceTsPct",
+    "PenaltyTsPct",
+    "FG3APct",
+    "FG3APctBlocked",
+    "FG2APctBlocked",
+    "AtRimPctBlocked",
+    "ShortMidRangePctBlocked",
+    "Corner3PctBlocked",
+    "LiveBallTurnoverPct",
+    "DefFTReboundPct",
+    "DefTwoPtReboundPct",
+    "OffTwoPtReboundPct",
+    "DefThreePtReboundPct",
+    "OffThreePtReboundPct",
+    "DefFGReboundPct",
+    "OffFGReboundPct",
+    "OffAtRimReboundPct",
+    "OffShortMidRangeReboundPct",
+    "OffLongMidRangeReboundPct",
+    "OffArc3ReboundPct",
+    "OffCorner3ReboundPct",
+    "DefAtRimReboundPct",
+    "DefShortMidRangeReboundPct",
+    "DefLongMidRangeReboundPct",
+    "DefArc3ReboundPct",
+    "DefCorner3ReboundPct",
+    "SelfORebPct",
+    "Pace",
+    "BlocksRecoveredPct",
+    "SecondsPerPossOff",
+    "SecondsPerPossDef",
+    "SecondsExcludingORebsPerPossOff",
+    "SecondsExcludingORebsPerPossDef",
+    "AtRimFrequency",
+    "AtRimAccuracy",
+    "UnblockedAtRimAccuracy",
+    "AtRimPctAssisted",
+    "ShortMidRangeFrequency",
+    "ShortMidRangeAccuracy",
+    "UnblockedShortMidRangeAccuracy",
+    "ShortMidRangePctAssisted",
+    "LongMidRangeFrequency",
+    "LongMidRangeAccuracy",
+    "UnblockedLongMidRangeAccuracy",
+    "LongMidRangePctAssisted",
+    "Corner3Frequency",
+    "Corner3Accuracy",
+    "UnblockedCorner3Accuracy",
+    "Corner3PctAssisted",
+    "Arc3Frequency",
+    "Arc3Accuracy",
+    "UnblockedArc3Accuracy",
+    "Arc3PctAssisted",
+    "SecondChanceAtRimFrequency",
+    "SecondChanceAtRimAccuracy",
+    "SecondChanceAtRimPctAssisted",
+    "SecondChanceCorner3Frequency",
+    "SecondChanceCorner3Accuracy",
+    "SecondChanceCorner3PctAssisted",
+    "SecondChanceArc3Frequency",
+    "SecondChanceArc3Accuracy",
+    "SecondChanceArc3PctAssisted",
+    "PenaltyAtRimFrequency",
+    "PenaltyAtRimAccuracy",
+    "PenaltyCorner3Frequency",
+    "PenaltyCorner3Accuracy",
+    "PenaltyArc3Frequency",
+    "PenaltyArc3Accuracy",
+    "AtRimFG3AFrequency",
+    "NonHeaveArc3Accuracy",
+    "ShotQualityAvg",
+    "SecondChanceShotQualityAvg",
+    "PenaltyShotQualityAvg",
+    "ShootingFoulsDrawnPct",
+    "TwoPtShootingFoulsDrawnPct",
+    "ThreePtShootingFoulsDrawnPct",
+    "SecondChancePointsPct",
+    "PenaltyPointsPct",
+    "Avg2ptShotDistance",
+    "Avg3ptShotDistance",
+    "PenaltyOffPossPct"
    ]
   }
  },
- "wowy": {
+ "teams": {
   "ok": false,
-  "url": "https://api.pbpstats.com/get-wowy-stats/nba?Season=2026-27&SeasonType=Regular%20Season&TeamId=1610612738&Type=Team&0Exactly1OnFloor=1628369",
+  "secs": 158,
+  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=Team",
   "error": "HTTP Error 502: Bad Gateway"
  },
  "on_off": {
   "ok": true,
+  "tries": 1,
+  "secs": 6,
   "url": "https://api.pbpstats.com/get-on-off/nba/stat?Season=2026-27&SeasonType=Regular%20Season&TeamId=1610612738&Stat=PlusMinus",
   "sample": {
    "keys": [
     "results",
     "headers"
    ],
-   "s": "{'results': [{'Name': 'Baylor Scheierman', 'On': '75.000', 'Off': '82.000', 'On-Off': '-7.000', 'MinutesOn': 291, 'MinutesOff': 434}, {'Name': 'Luka Garza', 'On': '65.000', 'Off': '92.000', 'On-Off': '-27.000', 'MinutesOn': 184, 'MinutesOff': 541}, {'Name': 'Chris Cenac Jr.', 'On': '-19.000', 'Off': '176.000', 'On-Off': '-195.000', 'MinutesOn': 46, 'MinutesOff': 679}, {'Name': 'Mike Conley', 'On': '-5.000', 'Off': '162.000', 'On-Off': '-167.000', 'MinutesOn': 32, 'MinutesOff': 693}, {'Name': 'Ron Harper Jr.', 'On': '-12.000', 'Off': '169.000', 'On-Off': '-181.000', 'MinutesOn': 47, 'MinutesOff': 678}, {'Name': 'Devin Carter', 'On': '4.000', 'Off': '153.000', 'On-Off': '-149.000', 'MinutesOn': 12, 'MinutesOff': 713}, {'Name': 'Dillon Mitchell', 'On': '-1.000', 'Off': '158.000', 'On-Off': '-159.000', 'MinutesOn': 2, 'MinutesOff': 723}, {'Name': 'Jayson Tatum', 'On': '100.000', 'Off': '57.0"
+   "s": "{'results': [{'Name': 'Baylor Scheierman', 'On': '75.000', 'Off': '82.000', 'On-Off': '-7.000', 'MinutesOn': 291, 'MinutesOff': 434}, {'Name': 'Luka Garza', 'On': '65.000', 'Off': '92.000', 'On-Off': '-27.000', 'MinutesOn': 184, 'MinutesOff': 541}, {'Name': 'Chris Cenac Jr.', 'On': '-19.000', 'Off': '176.000', 'On-Off': '-195.000', 'MinutesOn': 46, 'MinutesOff': 679}, {'Name': 'Mike Conley', 'On': '-5.000', 'Off': '162.000', 'On-Off': '-167.000', 'MinutesOn': 32, 'MinutesOff': 693}, {'Name': 'Ron Harper Jr.', 'On': '-12.000', 'Off': '169.000', 'On-Off': '-181.000', 'MinutesOn': 47, 'MinutesOff': 678}, {'Name': 'Devin Carter', 'On': '4.000', 'Off': '153.000', 'On-Off': '-149.000', 'MinutesOn': 12, 'MinutesOff': 713}, {'Name': 'Dillon Mitchell', 'On': '-1.000', 'Off': '158.000', 'On-Off': '-159.000', 'MinutesOn': 2, 'MinutesOff': 723}, {'Name': 'Jayson Tatum', 'On': '100.000', 'Off': '57.000', 'On-Off': '43.000', 'MinutesOn': 477, 'MinutesOff': 248}, {'Name': 'Paul George', 'On': '122.000', 'Off': '35.000', 'On-Off': '87.000', 'MinutesOn': 385, 'MinutesOff': 340}, {'Name': 'Mitchell Robinson', 'On': '-37.000', 'Off': '194.000', 'On-Off': '-231.000', 'MinutesOn': 246, 'MinutesOff': 479}, {'Name': 'Derrick White', 'On': '113.000', 'Off': '44.000', 'On-Off': '69.000', 'MinutesOn': 448, 'MinutesOff': 277}, {'Name': 'Jordan Walsh', 'On': '7.000', 'Off': '150.000', 'On-Off': '-143.000', 'MinutesOn': 236, 'MinutesOff': 489}, {'Name': 'Neemias Queta', 'On': '145.000', 'Off': '12.000', "
   }
  },
- "teams": {
+ "on_off_net": {
+  "ok": true,
+  "tries": 1,
+  "secs": 4,
+  "url": "https://api.pbpstats.com/get-on-off/nba/stat?Season=2026-27&SeasonType=Regular%20Season&TeamId=1610612738&Stat=NetRtg",
+  "sample": {
+   "keys": [
+    "results",
+    "headers"
+   ],
+   "s": "{'results': [], 'headers': [{'field': 'Name', 'label': 'Player'}, {'field': 'MinutesOn', 'label': 'Minutes On', 'type': 'number'}, {'field': 'MinutesOff', 'label': 'Minutes Off', 'type': 'number'}, {'field': 'On', 'label': 'Stat Value with Player On'}, {'field': 'Off', 'label': 'Stat Value without Player Off'}, {'field': 'On-Off', 'label': 'Difference', 'type': 'decimal'}]}"
+  }
+ },
+ "team_players": {
   "ok": false,
-  "url": "https://api.pbpstats.com/get-totals/nba?Season=2026-27&SeasonType=Regular%20Season&Type=Team",
-  "error": "HTTP Error 502: Bad Gateway"
+  "secs": 43,
+  "url": "https://api.pbpstats.com/get-team-players-for-season/nba?Season=2026-27&SeasonType=Regular%20Season&TeamId=1610612738",
+  "error": "HTTP Error 404: Not Found"
  },
- "bbref_adv": {
-  "ok": true,
-  "tables": [
-   "advanced"
-  ],
-  "t": {
-   "heads": [
-    "ranker",
-    "name_display",
-    "age",
-    "team_name_abbr",
-    "pos",
-    "games",
-    "games_started",
-    "mp",
-    "per",
-    "ts_pct",
-    "fg3a_per_fga_pct",
-    "fta_per_fga_pct",
-    "orb_pct",
-    "drb_pct",
-    "trb_pct",
-    "ast_pct",
-    "stl_pct",
-    "blk_pct",
-    "tov_pct",
-    "usg_pct",
-    "ows",
-    "dws",
-    "ws",
-    "ws_per_48",
-    "obpm",
-    "dbpm",
-    "bpm",
-    "vorp",
-    "awards"
-   ],
-   "first": [
-    [
-     "ranker",
-     "1"
-    ],
-    [
-     "name_display",
-     "Trae Young"
-    ],
-    [
-     "age",
-     "28"
-    ],
-    [
-     "team_name_abbr",
-     "WAS"
-    ],
-    [
-     "pos",
-     "PG"
-    ],
-    [
-     "games",
-     "16"
-    ],
-    [
-     "games_started",
-     "16"
-    ],
-    [
-     "mp",
-     "560"
-    ],
-    [
-     "per",
-     "15.9"
-    ],
-    [
-     "ts_pct",
-     ".553"
-    ],
-    [
-     "fg3a_per_fga_pct",
-     ".505"
-    ],
-    [
-     "fta_per_fga_pct",
-     ".574"
-    ],
-    [
-     "orb_pct",
-     "0.6"
-    ],
-    [
-     "drb_pct",
-     "7.8"
-    ],
-    [
-     "trb_pct",
-     "4.2"
-    ],
-    [
-     "ast_pct",
-     "37.2"
-    ],
-    [
-     "stl_pct",
-     "1.7"
-    ],
-    [
-     "blk_pct",
-     "0.3"
-    ],
-    [
-     "tov_pct",
-     "16.2"
-    ],
-    [
-     "usg_pct",
-     "23.2"
-    ],
-    [
-     "ows",
-     "0.7"
-    ],
-    [
-     "dws",
-     "0.1"
-    ],
-    [
-     "ws",
-     "0.8"
-    ],
-    [
-     "ws_per_48",
-     ".071"
-    ],
-    [
-     "obpm",
-     "0.8"
-    ],
-    [
-     "dbpm",
-     "-2.6"
-    ],
-    [
-     "bpm",
-     "-1.8"
-    ],
-    [
-     "vorp",
-     "0.0"
-    ],
-    [
-     "awards",
-     ""
-    ]
-   ]
-  }
+ "bbref_lineups": {
+  "ok": false,
+  "error": "HTTP Error 404: Not Found"
  },
- "bbref_pbp": {
-  "ok": true,
-  "tables": [
-   "pbp_stats"
-  ],
-  "t": {
-   "heads": [
-    "header_empty_0",
-    "header_pos_estimates",
-    "header_plus_minus",
-    "header_turnovers",
-    "header_fouls",
-    "header_drawn",
-    "header_misc2",
-    "ranker",
-    "name_display",
-    "age",
-    "team_name_abbr",
-    "pos",
-    "games",
-    "games_started",
-    "mp",
-    "pct_1",
-    "pct_2",
-    "pct_3",
-    "pct_4",
-    "pct_5",
-    "plus_minus_on",
-    "plus_minus_net",
-    "tov_bad_pass",
-    "tov_lost_ball",
-    "fouls_shooting",
-    "fouls_offensive",
-    "drawn_shooting",
-    "drawn_offensive",
-    "astd_pts",
-    "and1s",
-    "own_shots_blk",
-    "awards"
-   ],
-   "first": [
-    [
-     "ranker",
-     "1"
-    ],
-    [
-     "name_display",
-     "Trae Young"
-    ],
-    [
-     "age",
-     "28"
-    ],
-    [
-     "team_name_abbr",
-     "WAS"
-    ],
-    [
-     "pos",
-     "PG"
-    ],
-    [
-     "games",
-     "16"
-    ],
-    [
-     "games_started",
-     "16"
-    ],
-    [
-     "mp",
-     "560"
-    ],
-    [
-     "pct_1",
-     "100"
-    ],
-    [
-     "pct_2",
-     "0"
-    ],
-    [
-     "pct_3",
-     "0"
-    ],
-    [
-     "pct_4",
-     "0"
-    ],
-    [
-     "pct_5",
-     "0"
-    ],
-    [
-     "plus_minus_on",
-     "-9.9"
-    ],
-    [
-     "plus_minus_net",
-     "-9.8"
-    ],
-    [
-     "tov_bad_pass",
-     "41"
-    ],
-    [
-     "tov_lost_ball",
-     "6"
-    ],
-    [
-     "fouls_shooting",
-     "17"
-    ],
-    [
-     "fouls_offensive",
-     "1"
-    ],
-    [
-     "drawn_shooting",
-     "32"
-    ],
-    [
-     "drawn_offensive",
-     "10"
-    ],
-    [
-     "astd_pts",
-     "326"
-    ],
-    [
-     "and1s",
-     "5"
-    ],
-    [
-     "own_shots_blk",
-     "4"
-    ],
-    [
-     "awards",
-     ""
-    ]
-   ]
-  }
- },
- "bbref_shoot": {
-  "ok": true,
-  "tables": [
-   "shooting"
-  ],
-  "t": {
-   "heads": [
-    "header_empty_0",
-    "header_pct_fga",
-    "header_fg_pct",
-    "header_pct_ast",
-    "header_dunk_over",
-    "header_corner_over",
-    "header_heaves",
-    "ranker",
-    "name_display",
-    "age",
-    "team_name_abbr",
-    "pos",
-    "games",
-    "games_started",
-    "mp",
-    "fg_pct",
-    "avg_dist",
-    "pct_fga_fg2a",
-    "pct_fga_00_03",
-    "pct_fga_03_10",
-    "pct_fga_10_16",
-    "pct_fga_16_xx",
-    "pct_fga_fg3a",
-    "fg_pct_fg2a",
-    "fg_pct_00_03",
-    "fg_pct_03_10",
-    "fg_pct_10_16",
-    "fg_pct_16_xx",
-    "fg_pct_fg3a",
-    "pct_ast_fg2",
-    "pct_ast_fg3",
-    "pct_fga_dunk",
-    "fg_dunk",
-    "pct_fg3a_corner3",
-    "fg_pct_corner3",
-    "fg3a_heave",
-    "fg3_heave",
-    "awards"
-   ],
-   "first": [
-    [
-     "ranker",
-     "1"
-    ],
-    [
-     "name_display",
-     "Trae Young"
-    ],
-    [
-     "age",
-     "28"
-    ],
-    [
-     "team_name_abbr",
-     "WAS"
-    ],
-    [
-     "pos",
-     "PG"
-    ],
-    [
-     "games",
-     "16"
-    ],
-    [
-     "games_started",
-     "16"
-    ],
-    [
-     "mp",
-     "560"
-    ],
-    [
-     "fg_pct",
-     ".371"
-    ],
-    [
-     "avg_dist",
-     "18.5"
-    ],
-    [
-     "pct_fga_fg2a",
-     ".495"
-    ],
-    [
-     "pct_fga_00_03",
-     ".094"
-    ],
-    [
-     "pct_fga_03_10",
-     ".198"
-    ],
-    [
-     "pct_fga_10_16",
-     ".134"
-    ],
-    [
-     "pct_fga_16_xx",
-     ".069"
-    ],
-    [
-     "pct_fga_fg3a",
-     ".505"
-    ],
-    [
-     "fg_pct_fg2a",
-     ".440"
-    ],
-    [
-     "fg_pct_00_03",
-     ".684"
-    ],
-    [
-     "fg_pct_03_10",
-     ".275"
-    ],
-    [
-     "fg_pct_10_16",
-     ".593"
-    ],
-    [
-     "fg_pct_16_xx",
-     ".286"
-    ],
-    [
-     "fg_pct_fg3a",
-     ".304"
-    ],
-    [
-     "pct_ast_fg2",
-     ".273"
-    ],
-    [
-     "pct_ast_fg3",
-     ".419"
-    ],
-    [
-     "pct_fga_dunk",
-     ".000"
-    ],
-    [
-     "fg_dunk",
-     "0"
-    ],
-    [
-     "pct_fg3a_corner3",
-     ".078"
-    ],
-    [
-     "fg_pct_corner3",
-     ".375"
-    ],
-    [
-     "fg3a_heave",
-     "0"
-    ],
-    [
-     "fg3_heave",
-     "0"
-    ],
-    [
-     "awards",
-     ""
-    ]
-   ]
-  }
- },
- "bbref_per100": {
-  "ok": true,
-  "tables": [
-   "per_poss"
-  ],
-  "t": {
-   "heads": [
-    "ranker",
-    "name_display",
-    "age",
-    "team_name_abbr",
-    "pos",
-    "games",
-    "games_started",
-    "mp",
-    "fg_per_poss",
-    "fga_per_poss",
-    "fg_pct",
-    "fg3_per_poss",
-    "fg3a_per_poss",
-    "fg3_pct",
-    "fg2_per_poss",
-    "fg2a_per_poss",
-    "fg2_pct",
-    "efg_pct",
-    "ft_per_poss",
-    "fta_per_poss",
-    "ft_pct",
-    "orb_per_poss",
-    "drb_per_poss",
-    "trb_per_poss",
-    "ast_per_poss",
-    "stl_per_poss",
-    "blk_per_poss",
-    "tov_per_poss",
-    "pf_per_poss",
-    "pts_per_poss",
-    "off_rtg",
-    "def_rtg",
-    "awards"
-   ],
-   "first": [
-    [
-     "ranker",
-     "1"
-    ],
-    [
-     "name_display",
-     "Trae Young"
-    ],
-    [
-     "age",
-     "28"
-    ],
-    [
-     "team_name_abbr",
-     "WAS"
-    ],
-    [
-     "pos",
-     "PG"
-    ],
-    [
-     "games",
-     "16"
-    ],
-    [
-     "games_started",
-     "16"
-    ],
-    [
-     "mp",
-     "560"
-    ],
-    [
-     "fg_per_poss",
-     "6.5"
-    ],
-    [
-     "fga_per_poss",
-     "17.6"
-    ],
-    [
-     "fg_pct",
-     ".371"
-    ],
-    [
-     "fg3_per_poss",
-     "2.7"
-    ],
-    [
-     "fg3a_per_poss",
-     "8.9"
-    ],
-    [
-     "fg3_pct",
-     ".304"
-    ],
-    [
-     "fg2_per_poss",
-     "3.8"
-    ],
-    [
-     "fg2a_per_poss",
-     "8.7"
-    ],
-    [
-     "fg2_pct",
-     ".440"
-    ],
-    [
-     "efg_pct",
-     ".448"
-    ],
-    [
-     "ft_per_poss",
-     "8.6"
-    ],
-    [
-     "fta_per_poss",
-     "10.1"
-    ],
-    [
-     "ft_pct",
-     ".853"
-    ],
-    [
-     "orb_per_poss",
-     "0.3"
-    ],
-    [
-     "drb_per_poss",
-     "3.6"
-    ],
-    [
-     "trb_per_poss",
-     "3.8"
-    ],
-    [
-     "ast_per_poss",
-     "12.4"
-    ],
-    [
-     "stl_per_poss",
-     "1.7"
-    ],
-    [
-     "blk_per_poss",
-     "0.2"
-    ],
-    [
-     "tov_per_poss",
-     "4.3"
-    ],
-    [
-     "pf_per_poss",
-     "2.8"
-    ],
-    [
-     "pts_per_poss",
-     "24.4"
-    ],
-    [
-     "off_rtg",
-     "114"
-    ],
-    [
-     "def_rtg",
-     "122"
-    ],
-    [
-     "awards",
-     ""
-    ]
-   ]
-  }
+ "bbref_onoff": {
+  "ok": false,
+  "error": "HTTP Error 404: Not Found"
  }
 }
