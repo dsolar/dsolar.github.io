@@ -2758,3 +2758,5 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   #fk-pool .pn{font-size:14px}
 }
 #fk-pool td.fbl-c{white-space:normal!important;min-width:200px}
+.t.vs .pj{font-weight:700;color:var(--muted)}
+.game .st{gap:6px;flex-wrap:wrap}.game .st>span:last-child{text-align:right}

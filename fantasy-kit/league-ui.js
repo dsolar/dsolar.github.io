@@ -257,11 +257,14 @@
       if (isMe(m.b)) m = flip(m);
       const live = !m.final;
       const pj = live && m.proj ? m.proj : null;
+      // before anyone has played, the projection is the score worth reading, not two zeros
+      const pre = live && !m.live && pts() && !(m.sa || m.sb) && m.pa != null;
       // counting stats are whole numbers (runs, hits, strikeouts); rates keep their own format. The first pitching
       // category starts a new group, so hitting and pitching read apart
       const cats = !pts() && m.cats ? sc().cats.map((c, i, all) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => String(Math.round(v))); const q = pj && pj.probs[c.k], px = pj && pj.cats[c.k]; return { label: c.label, fa: f(x), fb: f(y), d, p: q, pa: px ? f(px[0]) : null, pb: px ? f(px[1]) : null, grp: i > 0 && (c.line || "") !== (all[i - 1].line || "") }; }) : null;
       // a category week projects to a record: "Projected 6-3"
       const rec = (x, y, t) => `${x}-${y}${t ? `-${t}` : ""}`;
+      if (pre) return { a: { team: T(m.a), rec: recOf(m.a), score: m.pa, projText: "Projected" }, b: { team: T(m.b), rec: recOf(m.b), score: m.pb, projText: "Projected" }, wp: m.winProb, status: "No games yet", live: false, cats: null, fmt: fmtS };
       return { a: { team: T(m.a), rec: recOf(m.a), score: m.sa, proj: live && pts() ? m.pa : null, projText: pj ? `Projected ${rec(pj.sa, pj.sb, pj.ties)}` : null }, b: { team: T(m.b), rec: recOf(m.b), score: m.sb, proj: live && pts() ? m.pb : null, projText: pj ? `Projected ${rec(pj.sb, pj.sa, pj.ties)}` : null },
         wp: live ? m.winProb : null, status: m.final ? "Final" : m.live ? `Live, ${Math.round((m.frac || 0) * 100)}% played` : "Projected", live: m.live, cats, fmt: fmtS };
     }
@@ -542,15 +545,18 @@
           ${watchCard()}
           ${offers.length ? `<div class="card"><div class="mod-h"><h2>Trade offers for you</h2><span class="badge">${offers.length}</span><a href="#team/trades">Review</a></div>${U.feed(offers.map((t) => ({ team: T(t.from), when: U.ago(t.at, now()), lines: t.get.map((id) => U.txLine(sport, "drop", playerVM(id), "you send")).concat(t.give.map((id) => U.txLine(sport, "add", playerVM(id), "you get"))) })))}</div>` : ""}`;
       const total = G.totalWeeks(L());
+      // your matchup: first thing on a phone, under the week's story; in the main column on a desktop
+      const myMatchCard = mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">${weekLabel(w)}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : "";
       return `<div class="wrap page">
         <div class="head sr"><h1 class="disp">${over() ? "Season over" : w > L().settings.weeks ? `Playoffs, ${weekLabel(w).replace(/Week/, "week")}` : `${weekLabel(w)}`}</h1><span class="ps">${esc(L().season || "")}${L().season ? " season, " : ""}${over() ? `${total} weeks played` : `${Math.max(0, total - w)} week${total - w === 1 ? "" : "s"} after this one`}${myRow ? `. You're ${ord(myRow.rank)} at ${myRow.w}-${myRow.l}${myRow.t ? "-" + myRow.t : ""}` : ""}.</span></div>
         ${noteCard()}
         ${nextActions()}${leaguePulse(mine)}
         ${champ != null && oneWeekLg() ? finishCard() : champ != null ? champHero(champ) : ""}
+        ${mine ? `<div class="m-only stack">${myMatchCard}</div>` : ""}
         ${!games.length || over() ? "" : `<div class="stack" style="gap:8px"><div class="row"><h2 style="margin:0;font-size:15px">${over() ? "Final week" : mine ? `Around the league, ${weekLabel(w).replace(/Week/, "week")}` : `${weekLabel(w)} scoreboard`}</h2><a href="#league/scoreboard" class="small" style="margin-left:auto">All scores</a></div>${U.scoreboard(mine ? games.filter((g) => !g.me) : games, fmtS)}</div>`}
         <div class="cols"><div class="stack">
           ${myCards.trim() ? `<div class="m-only stack">${myCards}</div>` : ""}
-          ${mine ? `<div class="card"><div class="mod-h"><h2>Your matchup</h2><span class="ps">${weekLabel(w)}${w > L().settings.weeks ? `, ${esc(kindName(mine.kind, w).toLowerCase())}` : ""}</span><a href="${matchHref(w, mine.i)}">Full matchup</a></div>${U.versus(versusVM(w, mine))}</div>` : ""}
+          ${mine ? `<div class="hide-m">${myMatchCard}</div>` : ""}
           ${categoryPlan(mine, w)}
           ${lastWeekCard()}
           <div class="card"><div class="mod-h"><h2>Standings</h2><a href="#league/standings">Full standings</a></div>${U.standingsTable(st, { compact: true, pfLabel: pts() ? "PF" : "Cats", fmt: fmtS })}</div>
@@ -2209,9 +2215,11 @@
       const la = (bb() && m.ta && m.ta.lineup) || G.lineupFor(L(), ctx, m.a, w), lb = (bb() && m.tb && m.tb.lineup) || G.lineupFor(L(), ctx, m.b, w);
       const ptsA = (m.ta && m.ta.players) || {}, ptsB = (m.tb && m.tb.players) || {};
       const wk = G.WEEK[sport.key] || { weeks: 20 };
+      // before the week's first game, each line shows his projection, not a zero
+      const preWk = pts() && !m.final && !m.live && !(m.sa || m.sb);
       const rows = L().settings.lineup.map((slot, k) => {
         const pa = la[k] && ctx.byId[la[k]], pb = lb[k] && ctx.byId[lb[k]];
-        const xa = pa ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
+        const xa = pa && !preWk ? (pts() ? ptsA[pa.id] : weekLine(pa, w)) : null, xb = pb && !preWk ? (pts() ? ptsB[pb.id] : weekLine(pb, w)) : null;
         const cmp = pts() && xa != null && xb != null;
         return { slot, a: { p: pa, pts: xa, proj: pts() && pa && !m.final ? (xa || 0) + (projFor(pa, xa, w) - (xa || 0)) * G.slotMult(L(), k, pa.id) : null, w: cmp && xa > xb, game: pa ? gameChip(pa, w) : "" }, b: { p: pb, pts: xb, proj: pts() && pb && !m.final ? (xb || 0) + (projFor(pb, xb, w) - (xb || 0)) * G.slotMult(L(), k, pb.id) : null, w: cmp && xb > xa, game: pb ? gameChip(pb, w) : "" } };
       });
@@ -2239,7 +2247,7 @@
         <div class="head"><h1 class="disp">${w > L().settings.weeks ? esc(kindName(m.kind, w)) : L().settings.showdown ? `${esc(L().settings.showdown.label)} showdown` : `${weekLabel(w)} matchup`}</h1>${!pts() ? `<span class="ps">Each starter's line for the week so far.</span>` : ""}</div>
         <div class="row" style="flex-wrap:wrap"><div class="chips" role="group" aria-label="Week">${weeks.map((x) => `<button type="button" data-mweek="${x}" aria-pressed="${x === w}">${weekChip(x)}</button>`).join("")}</div></div>
         ${over() && oneWeekLg() ? finishCard() : ""}<div class="card">${U.versus(versusVM(w, m))}${leftHtml || outlookLine(m)}${medianLine(w, m)}${dealLine(m)}</div>${categoryPlan(m, w)}${w === 1 && L().heist ? heistCard(m.a) : ""}${playsHtml}${gamedayStatus(w)}
-        ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? { a: m.sa, b: m.sb } : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
+        ${wd ? dayStrip(w, wd, dsel) : ""}${boxes}<div class="cols2" style="grid-template-columns:minmax(0,1fr)${!pts() ? ";display:none" : ""}">${U.vsTable(sport, rows, pts() ? (preWk ? { a: m.pa, b: m.pb, proj: true } : { a: m.sa, b: m.sb }) : null, (x) => (x == null ? "-" : typeof x === "string" ? (/^(No games|Didn't play|Yet to play|Playing now|Done this week|No games this week|\d+ games? left)$/.test(x) ? `<span class="ps">${x}</span>` : x) : x.toFixed(1)))}</div>
         <div class="stack" style="gap:8px"><b class="ps">Other games, ${weekLabel(w).replace(/Week/, "week")}</b>${U.scoreboard(gamesVM(w), fmtS)}</div></div>`;
     }
 
@@ -2253,6 +2261,8 @@
     function gamedayStatus(w) {
       if (!L().settings.real) return "";
       const lv = liveWeek(w), age = lv ? now() - Date.parse(lv.updated) : Infinity;
+      // nothing to wait for before the week's first game
+      if (!lv && (w > L().week || frac(w) === 0)) return "";
       const delayed = !lv || lv.stale || (lv.errors || []).length || age > 180000;
       return `<div class="gameday-status" role="status"><b>Game box scores</b><span>${!lv ? "Waiting for the game feed" : `${delayed ? "Feed delayed · " : ""}Updated ${esc(new Date(lv.updated).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"}))}`}. Refreshes about once a minute. Fantasy totals use your league’s scoring.</span></div>`;
     }
