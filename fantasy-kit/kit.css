@@ -2701,7 +2701,7 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .rtab table.t.roster td.nm{width:auto}
 .rtab table.t.roster th.two-h,.rtab table.t.roster td.two-h{white-space:nowrap;padding-left:22px}
 /* football's one-line season stats in the draft room's All view */
-td.fbl-c{font-size:12.5px;color:var(--ink);line-height:1.5}
+td.fbl-c{font-size:12.5px;color:var(--ink);line-height:1.5;max-width:270px}
 td.fbl-c .fbl{display:inline-block;white-space:nowrap;margin-right:14px}
 td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing:.02em;margin-right:4px;text-transform:uppercase}
 /* the draft room card's note on timing, fit and money */
@@ -2740,3 +2740,21 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   .kt-k{white-space:normal}
 }
 .rc-bar{gap:10px;align-items:center;flex-wrap:wrap;margin:8px 0 2px}
+/* draft room: names on one line (the season line wraps instead), and a phone list that starts sooner */
+#fk-pool td.nm .pn{white-space:nowrap}
+#fk-pool td.nm{min-width:228px}
+.pf-fit button{background:none;border:0;padding:0;font:inherit;font-weight:800;color:var(--brand);cursor:pointer}
+@media (max-width:640px){
+  .fk-room .lab-coach{display:none}
+  #fk-pool td.nm{min-width:136px;max-width:160px;width:160px}
+  #fk-pool td.nm .pname>span{min-width:0;overflow:hidden}
+  #fk-pool td.nm .pn{display:block;overflow:hidden;text-overflow:ellipsis}
+  .psort{padding:0 2px 6px}
+  .psort label{display:none}
+}
+@media (max-width:640px){
+  #fk-pool td.nm .pav{display:none}
+  #fk-pool td.nm{min-width:150px;max-width:170px;width:170px}
+  #fk-pool .pn{font-size:14px}
+}
+#fk-pool td.fbl-c{white-space:normal!important;min-width:200px}

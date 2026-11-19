@@ -576,7 +576,9 @@
       if (!opts.group && c.posOnly) continue;
       // opts.players: the table's pool, for the least volume a rate stat needs to rank (a table without it ranks every rate)
       const small = (p) => !!(c.ratio && opts.players) && (rateVol(sport, p, c) || 0) < rateFloor(sport, c, opts.players);
-      cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: c.hide, asc: !!c.low, sort: (p) => (small(p) ? null : statCell(sport, p, c)),
+      // the draft room on a phone: games played gives way to the numbers you pick on
+      const gpCol = c.col === "gp" || (c.col === "g" && !c.title);
+      cols.push({ k: "s" + i, label: c.label, title: c.title || STAT_TITLE[c.label] || "", cls: "r num", hide: opts.compact && gpCol ? "s" : c.hide, asc: !!c.low, sort: (p) => (small(p) ? null : statCell(sport, p, c)),
         html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : small(p) ? `<span class="ps" title="Small sample: too little volume to rank">${c.fmt(v)}</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
     // the draft room's All view in football: the season's key stats as one line, instead of a wide empty name column
@@ -1326,12 +1328,15 @@
 
     /* left side: players, board, picks, results */
     let adviceCache = null;
-    function draftCoach() {
+    function draftCoachAdvice() {
       const E = FK.experience, d = D(), mine = me();
-      if (!E || mine == null) return "";
+      if (!E || mine == null) return null;
       const key = `${d.created}:${d.phase}:${F.made(d).length}:${mine}:${sport.statView}:${ctx.players[0] && ctx.players[0].v}:${d.teams[mine].budget}`;
       if (!adviceCache || adviceCache.key !== key) adviceCache = { key, advice: E.draftAdvice(F, d, ctx, mine) };
-      const a = adviceCache.advice; if (!a) return "";
+      return adviceCache.advice;
+    }
+    function draftCoach() {
+      const a = draftCoachAdvice(); if (!a) return "";
       const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button><span>${why}</span></div>`;
       return `<div class="lab-coach" aria-label="Draft guidance">${item("Best available", a.best, `#${a.best.rank} for this scoring`)}${item("Roster fit", a.fit, auction() ? "Values your open slots and budget" : "Values your open slots")}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
     }
@@ -1595,8 +1600,11 @@
         if (c && c.team !== id && next != null) { const away = next - 1 - c.index; bits.push(`<b>${away <= 1 ? "You're on deck" : `Your pick in ${away}`}</b>`); }
       }
       const open = Object.entries(openSpots(id));
-      bits.push(open.length ? `<span>Need ${open.map(([sl, k]) => `${esc(sl)}${k > 1 ? `&nbsp;&times;${k}` : ""}`).join(", ")}</span>` : `<span>Starters set. Bench from here.</span>`);
-      return `<div class="pf-now show-m" role="status">${bits.join("")}</div>`;
+      // the position chips below carry what's still open; this line adds the coach's pick for your roster
+      const a = FK.experience && d.phase !== "setup" ? (draftCoachAdvice() || {}) : {};
+      if (a.fit) bits.push(`<span class="pf-fit">Best fit <button type="button" data-player="${esc(a.fit.id)}">${esc(a.fit.n)}</button></span>`);
+      if (!open.length) bits.push(`<span>Starters set. Bench from here.</span>`);
+      return bits.length ? `<div class="pf-now show-m" role="status">${bits.join("")}</div>` : "";
     }
     // your draft at a glance: when you pick next, the starting spots still open, and the top of your queue
     function brief(id, starters) {
