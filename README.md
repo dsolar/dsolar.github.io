@@ -515,3 +515,11 @@ Draft Lab opens with quick start, custom setup, and demo/shared-league choices. 
 - Quick games supports NFL, NCAAF, NBA and NCAAB with sport-specific windows. NCAAF uses the current and next FBS weeks, with Saturday main/night, Friday, midweek, single-game and custom selections. Its named-game box scores score only the chosen matchups and finish when those games are final; live draft, salary cap, sealed lists and full customization remain available.
 - Accessibility: axe-clean on the lab, draft room, league, matchup and leagues pages; the focus ring uses the darker gold on light surfaces.
 - League look: each league has a color and banner letters (`settings.brand`, picked from the name until the commissioner sets them in Commissioner > League look). The league's front page opens with a masthead: the banner crest, the name, a line about the league and your record, the season as a strip of weeks, the score source, and past champions as pennants. Other pages keep the one-line bar, with the crest in the league menu, and the crest shows in Your leagues (`fk_mine` returns `brand`).
+
+## Repost Board: the private picks board
+
+`repost-board/` is a daily over/under board for the group, listed nowhere (no entry in `assets/projects.js`). It needs the site account plus an invite code once: share `davidsolar.dev/repost-board/?join=CODE`, where CODE is `rb_config.code` in Supabase. Change that value to cut off new joins; remove a row from `rb_members` to remove someone.
+
+Everything lives in Supabase (`tools/repost_board_supabase.sql`): `rb_days` (counts by New York day and topic), `rb_lines` (the half-number line per market, never changed once posted), `rb_picks`, `rb_members`. Picks lock at noon New York time, enforced in `rb_pick`. A slate settles when its day is marked `final`.
+
+The page never reads X. A daily scheduled Claude task counts the reposts through a signed-in browser, upserts `rb_days` (yesterday as final, today so far) and runs `select public.rb_post_lines();`, which posts lines for today and tomorrow as the median of the last 14 final days plus a half.

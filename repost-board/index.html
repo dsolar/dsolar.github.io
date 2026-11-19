@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Repost Board | David Solar</title>
+<meta name="description" content="A private board for the group.">
+<meta name="theme-color" content="#002244">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../assets/navigation.css?v=202611201000">
+<script src="../assets/projects.js?v=202611201000" defer></script>
+<script src="../assets/navigation.js?v=202611201000" defer></script>
+<script src="../assets/analytics.js" defer></script>
+<style>
+/* Repost Board: the site's house style, light only. Navy scoreboard band, warm stage, slab display.
+   Layout: navy scoreboard band, then a sportsbook slate (markets left, pick slip right), with standings, results and trends on tabs. */
+:root{
+  --navy:#002244; --navy-2:#0c3157; --gold:#F6C445; --red:#C8102E;
+  --stage:#F3EFE6; --panel:#FFFDF8; --panel-hi:#F1EBDD; --line:#E6E0D3; --line-strong:#B9B1A0;
+  --chalk:#17191E; --dim:#4A4E55; --faint:#5B5F66; --accent:#1F4FBF; --cream:#F7F4EB;
+  --win:#1B7A46; --loss:#B4531A;
+  --t-celtics:#007A33; --t-habs:#C8102E; --t-sports:#002244; --t-uspol:#1F4FBF; --t-mideast:#6B3FA0; --t-other:#B9B1A0;
+  --display:"Zilla Slab",Georgia,serif; --body:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--stage);color:var(--chalk);font-family:var(--body);font-size:16px;line-height:1.4;font-variant-numeric:tabular-nums}
+a{color:inherit}
+button{font-family:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+
+.wrap{max-width:1120px;margin:0 auto;padding:26px 16px 64px;display:flex;flex-direction:column;gap:18px}
+#board{display:flex;flex-direction:column;gap:18px}
+.hero{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:14px}
+.eyebrow{font-size:12px;letter-spacing:.2em;font-weight:700;color:var(--faint);text-transform:uppercase}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(40px,7vw,64px);line-height:.95;margin:6px 0 10px;letter-spacing:-.01em}
+.lede{color:var(--dim);max-width:56ch;margin:0}
+.seg{display:inline-flex;border:1px solid var(--chalk);background:var(--panel)}
+.seg button{border:0;background:transparent;color:var(--chalk);font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;padding:9px 16px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--chalk);color:var(--stage)}
+.seg small{display:block;font-size:11px;font-weight:500;letter-spacing:.02em;text-transform:none;opacity:.8}
+
+.banner{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--gold);padding:10px 12px;border-radius:6px;font-size:15px}
+.banner[hidden]{display:none}
+
+.score{background:var(--navy);color:var(--cream);border-radius:6px;display:grid;grid-template-columns:1.3fr repeat(3,1fr);overflow:hidden;border-bottom:3px solid var(--red)}
+.score .cell{padding:14px 18px;border-left:1px solid rgba(247,244,235,.14)}
+.score .cell:first-child{border-left:0;background:var(--navy-2)}
+.score .k{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:8px}
+.score .v{font-family:var(--display);font-weight:700;font-size:46px;line-height:1.05;font-variant-numeric:normal}
+.score .d{font-size:13px;color:rgba(247,244,235,.75)}
+.livedot{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px rgba(200,16,46,.3)}
+@media (prefers-reduced-motion:no-preference){.livedot{animation:pulse 1.8s ease-in-out infinite}}
+@keyframes pulse{50%{box-shadow:0 0 0 6px rgba(200,16,46,0)}}
+
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--chalk);overflow-x:auto;overflow-y:hidden;padding-bottom:1px}
+.tabs a{font-family:var(--display);font-weight:500;font-size:20px;color:var(--dim);text-decoration:none;padding:8px 12px;border-bottom:3px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tabs a[aria-current="page"]{color:var(--chalk);font-weight:700;border-bottom-color:var(--chalk)}
+.view[hidden]{display:none}
+h2{font-family:var(--display);font-weight:700;font-size:28px;line-height:1.1;margin:0}
+h3{font-family:var(--display);font-weight:700;font-size:19px;margin:0}
+.viewhead{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 16px;margin-bottom:12px}
+.note{color:var(--dim);font-size:14px;margin:0}
+
+.slate{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;align-items:start}
+.markets{display:flex;flex-direction:column;gap:10px}
+.mkt{background:var(--panel);border:1px solid var(--line);border-radius:6px;display:grid;grid-template-columns:6px minmax(0,1fr) 150px auto;align-items:stretch;overflow:hidden}
+.mkt .stripe{background:var(--chalk)}
+.mkt .info{padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.mkt .name{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.1}
+.mkt .meta{font-size:13px;color:var(--faint)}
+.mkt .live{font-size:13px;font-weight:700;color:var(--red);text-transform:uppercase;letter-spacing:.08em}
+.spark{align-self:center;padding:0 6px}
+.spark svg{display:block;width:100%;height:44px;margin-bottom:3px}
+.spark .cap{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);text-align:center}
+.bets{display:flex;gap:8px;padding:10px 12px 10px 4px;align-items:center}
+.bet{width:92px;border:1px solid var(--line-strong);background:var(--stage);border-radius:6px;padding:7px 6px 6px;cursor:pointer;color:var(--chalk);text-align:center;display:flex;flex-direction:column;gap:0;line-height:1.1}
+.bet .side{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.bet .num{font-family:var(--display);font-weight:700;font-size:25px}
+.bet .hit{font-size:12px;color:var(--faint)}
+.bet:hover:not(:disabled){border-color:var(--chalk);background:var(--panel-hi)}
+.bet[aria-pressed="true"]{background:var(--navy);border-color:var(--navy);color:var(--cream)}
+.bet[aria-pressed="true"] .side{color:var(--gold)}
+.bet[aria-pressed="true"] .hit{color:rgba(247,244,235,.8)}
+.bet:disabled{cursor:default}
+.bet:disabled:not([aria-pressed="true"]){opacity:.5}
+
+.side-col{display:flex;flex-direction:column;gap:14px;position:sticky;top:12px}
+.slip{background:var(--panel);border:1px solid var(--chalk);border-radius:6px;overflow:hidden}
+.slip header{background:var(--chalk);color:var(--stage);padding:10px 14px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.slip header h3{color:var(--stage)}
+.slip header span{font-size:13px;color:var(--gold);font-weight:600}
+.slip ul{list-style:none;margin:0;padding:4px 14px}
+.slip li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line-strong);font-size:15px}
+.slip li:last-child{border-bottom:0}
+.slip .pick{font-weight:700}
+.slip .none{color:var(--faint);font-weight:400}
+.slip footer{border-top:1px solid var(--line);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;background:var(--panel-hi)}
+.chip{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid currentColor}
+.chip.open{color:var(--win)}.chip.lock{color:var(--red)}
+.w{color:var(--win);font-weight:700}.l{color:var(--loss);font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.mini{list-style:none;margin:0;padding:0;font-size:15px}
+.mini li{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--line)}
+.mini li:last-child{border-bottom:0}
+.mini .rk{font-family:var(--display);font-weight:700;width:18px;color:var(--faint)}
+.mini .rec{margin-left:auto;font-weight:600}
+.more{font-size:14px;font-weight:600;color:var(--accent)}
+
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--faint);text-align:right;font-weight:700;padding:8px 10px;border-bottom:1px solid var(--chalk);white-space:nowrap}
+td{padding:10px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tbody tr:hover{background:var(--panel-hi)}
+td.rank{font-family:var(--display);font-weight:700;font-size:20px;color:var(--faint);width:36px}
+td.player{font-weight:600;font-size:16px}
+.you{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--stage);background:var(--accent);padding:2px 5px;border-radius:3px;margin-left:8px;vertical-align:middle}
+.form{display:inline-flex;gap:3px;vertical-align:middle}
+.form i{width:16px;height:16px;border-radius:3px;font-style:normal;font-size:10px;font-weight:700;line-height:16px;text-align:center;color:#fff}
+.form .fw{background:var(--win)}.form .fl{background:var(--loss)}
+.res{display:inline-flex;flex-direction:column;align-items:flex-end;line-height:1.15}
+.res b{font-family:var(--display);font-size:19px;font-weight:700}
+.res small{font-size:12px;color:var(--faint)}
+.res small.w{color:var(--win)}.res small.l{color:var(--loss)}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:2px;flex:none;background:var(--chalk)}
+#chart{width:100%;height:auto;display:block}
+#chart text{font-family:var(--body);font-size:11px;fill:var(--faint)}
+.src{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:0 22px;margin:0;padding:0;list-style:none;font-size:15px}
+.src li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)}
+.src .rk{font-family:var(--display);font-weight:700;color:var(--faint);width:20px}
+.src .n{margin-left:auto;font-weight:700}
+.stack{display:flex;flex-direction:column;gap:18px}
+
+@media (max-width:900px){.slate{grid-template-columns:1fr}.side-col{position:static}}
+@media (max-width:640px){
+  .score{grid-template-columns:1fr 1fr}.score .cell{border-left:0;border-top:1px solid rgba(247,244,235,.14)}.score .v{font-size:36px}
+  .mkt{grid-template-columns:6px minmax(0,1fr)}.spark{display:none}.bets{grid-column:2;padding:0 12px 12px}.bet{flex:1;width:auto}
+}
+
+.asof{font-size:13px;color:var(--faint)}
+.gate{background:var(--panel);border:1px solid var(--chalk);border-radius:6px;padding:22px;max-width:520px;display:flex;flex-direction:column;gap:12px}
+.gate p{margin:0;color:var(--dim)}
+.gate form{display:flex;gap:8px;flex-wrap:wrap}
+.gate input{flex:1 1 180px;min-height:44px;padding:8px 12px;border:1px solid var(--chalk);border-radius:4px;font:600 16px var(--body);letter-spacing:.12em;text-transform:uppercase;background:#fff;color:var(--chalk)}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border:1px solid var(--navy);border-radius:4px;background:var(--navy);color:var(--cream);font:700 15px var(--body);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;align-self:flex-start}
+.btn:hover{background:var(--navy-2)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../">← Home</a>
+  <a href="../#projects">Explore all projects</a>
+</nav>
+<main>
+<div class="wrap">
+  <div class="hero">
+    <div>
+      <div class="eyebrow">Nick's timeline &middot; daily lines</div>
+      <h1>Repost Board</h1>
+      <p class="lede">Over or under on what Nick reposts each day. Six markets, one point per correct pick, bragging rights only.</p>
+      <p class="asof" id="asof"></p>
+    </div>
+    <div class="seg" id="seg" role="group" aria-label="Slate day"></div>
+  </div>
+
+  <div class="banner" id="banner" role="status" hidden></div>
+
+  <section class="gate" id="gate" hidden></section>
+
+  <div id="board" hidden>
+
+  <section class="score" aria-label="Scoreboard">
+    <div class="cell"><div class="k"><span class="livedot"></span>Today so far</div><div class="v" id="t-today">-</div><div class="d" id="t-today-d">&nbsp;</div></div>
+    <div class="cell"><div class="k">Last 7 days</div><div class="v" id="t-7">-</div><div class="d">reposts per day</div></div>
+    <div class="cell"><div class="k">Last 30 days</div><div class="v" id="t-30">-</div><div class="d">reposts per day</div></div>
+    <div class="cell"><div class="k">Biggest day</div><div class="v" id="t-max">-</div><div class="d" id="t-max-d">&nbsp;</div></div>
+  </section>
+
+  <nav class="tabs" id="tabs" aria-label="Sections">
+    <a href="#slate">Slate</a><a href="#standings">Standings</a><a href="#results">Results</a><a href="#trends">Trends</a>
+  </nav>
+
+  <section class="view" id="v-slate">
+    <div class="viewhead"><h2 id="slate-title">Slate</h2><span class="chip" id="slate-status"></span></div>
+    <div class="slate">
+      <div class="markets" id="markets"></div>
+      <aside class="side-col">
+        <div class="slip">
+          <header><h3>Your slip</h3><span id="slip-count"></span></header>
+          <ul id="slip-list"></ul>
+          <footer><span id="slip-foot"></span><span id="slip-clock"></span></footer>
+        </div>
+        <div class="card">
+          <h3>Top of the table</h3>
+          <ol class="mini" id="mini"></ol>
+          <a class="more" href="#standings">Full standings</a>
+        </div>
+      </aside>
+    </div>
+    <p class="note" style="margin-top:12px">A day's count is the number of tweets posted that day (Eastern time) that Nick reposted. Picks lock at noon ET and save as you tap. Each slate settles the next morning.</p>
+  </section>
+
+  <section class="view" id="v-standings" hidden>
+    <div class="viewhead"><h2>Standings</h2><p class="note" id="lb-note"></p></div>
+    <div class="card"><div class="scroll"><table id="lb"><thead><tr><th>#</th><th style="text-align:left">Player</th><th>W</th><th>L</th><th>Pct</th><th>Streak</th><th>Last 5</th><th>Live</th></tr></thead><tbody></tbody></table></div></div>
+  </section>
+
+  <section class="view" id="v-results" hidden>
+    <div class="viewhead"><h2>Results</h2><p class="note">Final count, then over (O) or under (U) against that day's line. Your pick is marked.</p></div>
+    <div class="card"><div class="scroll"><table id="results"><thead></thead><tbody></tbody></table></div></div>
+  </section>
+
+  <section class="view" id="v-trends" hidden>
+    <div class="stack">
+      <div>
+        <div class="viewhead"><h2>What he reposts, by day</h2><div class="legend" id="legend"></div></div>
+        <div class="card">
+          <svg id="chart" viewBox="0 0 1000 300" role="img" aria-label="Stacked bars of reposts per day by topic"></svg>
+          <p class="note">Days are counted by when the original tweet was posted, since X does not show when Nick hit repost. Each repost gets one topic.</p>
+        </div>
+      </div>
+      <div>
+        <div class="viewhead"><h2>Most reposted accounts</h2><p class="note" id="src-note"></p></div>
+        <div class="card"><ol class="src" id="src"></ol></div>
+      </div>
+    </div>
+  </section>
+  </div>
+</div>
+</main>
+<script src="app.js?v=1" defer></script>
+</body>
+</html>
