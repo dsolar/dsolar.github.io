@@ -345,7 +345,7 @@ def main():
         "score": ("Scoring", [("pts100", 0.6), ("ts_adj", 0.4)]),
         "create": ("Creation", [("unast100", 0.75), ("usg", 0.25)]),
         "pass": ("Playmaking", [("ast", 0.5), ("astpts100", 0.5)]),
-        "secure": ("Ball security", [("tov_x", 0.75), ("tov", -0.25)]),
+        "secure": ("Ball security", [("tov_x", 0.6), ("usg", 0.25), ("tov", -0.15)]),
         "reb": ("Rebounding", [("drb", 0.6), ("orb", 0.4)]),
         "rimd": ("Rim protection", [("blk", 0.75), ("drb", 0.25)]),
         "steal": ("Disruption", [("stl", 1.0)]),
@@ -375,8 +375,9 @@ def main():
         if g == "B":
             if R("pass") >= 85 and R("create") >= 60: return "Playmaking big"
             if R("score") >= 85 and R("create") >= 75: return "Scoring big"
-            if P("rimd") >= 70 and R("shoot") >= 55: return "Stretch rim protector"
-            if P("rimd") >= 70: return "Rim protector"
+            guard_rim = P("rimd") >= 70 or (P("def") >= 85 and R("rimd") >= 70)
+            if guard_rim and R("shoot") >= 55: return "Stretch rim protector"
+            if guard_rim: return "Rim protector"
             if R("shoot") >= 60: return "Stretch big"
             if R("finish") >= 70: return "Rim runner"
             return "Rotation big"
