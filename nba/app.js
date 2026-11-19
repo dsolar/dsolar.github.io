@@ -114,7 +114,7 @@
     var html = '<h2 class="sec">' + sname(i) + (first ? " Projected Standings" : " Projection") + "</h2>" +
       '<p class="lede">' + (first
         ? "Each team's real record (" + Math.round(H.played) + " games in), then the rest of the season played out " + H.cfg.sims.toLocaleString() + " times from today's rosters: play-in, playoffs and the 3-2-1 lottery included. Click a team for its rotation and cap sheet."
-        : "Built from contracts: players leave when their deals end (restricted free agents worth their price are matched), everyone ages a year at a time, and each team's draft picks arrive at their projected slot. " + (H.cfg.fill ? "Open spots go to the free agents a team's cap position can buy." : "Open spots are left at replacement level.") + " Rougher every year out.") + "</p>";
+        : "Built from contracts: a player whose deal ends re-signs if he's worth at least 85% of his market price and 33 or younger (teams pay a little over value to keep their own) (his team holds his Bird rights, so it can go over the cap to keep him; restricted free agents are matched at a lower bar), everyone else leaves, everyone ages a year at a time, and each team's draft picks arrive where the 3-2-1 lottery is likeliest to put them. " + (H.cfg.fill ? "Open spots go to the free agents a team's cap position can buy." : "Open spots are left at replacement level.") + " Rougher every year out.") + "</p>";
     html += '<div class="leagues stack">';
     ["E", "W"].forEach(function (conf) {
       var d = rows.filter(function (r) { return r.conf === conf; });
@@ -130,7 +130,7 @@
       html += "</tbody></table></div></div>";
     });
     html += "</div>";
-    if (first) html += lotteryPanel(rows);
+    if (first) html += lotteryPanel(rows) + lotteryGrid(rows) + lotteryRules();
     html += '<p class="note">Seeds 1-6 make the playoffs; 7-10 go to the play-in (lines mark the cuts). Net is projected points per 100 possessions better than an average team.</p>';
     view.innerHTML = html;
   }
@@ -144,6 +144,35 @@
         var w = Math.round(r.projW);
         return '<tr class="go" data-team="' + r.code + '"><td class="tm">' + logo(r.code) + '<span class="nm">' + esc(r.name) + "</span></td><td>" + w + "-" + (82 - w) + "</td><td>" + pct(r.no1, 1) + "</td><td>" + pct(r.top4) + "</td><td><b>" + f1(r.avgPick) + '</b></td><td style="text-align:left;white-space:normal">' + to + "</td></tr>";
       }).join(""), "The worst three records get two balls, not three, and can't fall below 12th");
+  }
+  // Every lottery team's odds at each pick, from the season simulations (which play out the season, the play-in and the
+  // 3-2-1 draw); shaded by likelihood
+  function oddsCell(p) {
+    if (!(p > 0.0005)) return '<td class="lo0"></td>';
+    var a = Math.min(1, Math.sqrt(p / 0.35));
+    return '<td class="lo" style="background:rgba(29,66,138,' + (0.08 + 0.82 * a).toFixed(2) + ");color:" + (a > 0.55 ? "#fff" : "inherit") + '" title="' + (p * 100).toFixed(1) + '%">' + (p < 0.01 ? "&lt;1" : Math.round(p * 100)) + "</td>";
+  }
+  function lotteryGrid(rows) {
+    var lot = rows.slice().sort(function (a, b) { return a.avgPick - b.avgPick; }).slice(0, 18);
+    var head = "<th>Team</th>" + [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16].map(function (k) { return "<th>" + k + "</th>"; }).join("") + "<th>17+</th>";
+    return '<div class="panel lotgrid"><h3>Odds at every pick <small>percent, from ' + H.cfg.sims.toLocaleString() + " simulated seasons and lotteries</small></h3><div class=\"scroll\"><table class=\"t lgt\"><thead><tr>" + head + "</tr></thead><tbody>" +
+      lot.map(function (r) {
+        var sl = r.slots || [], rest = 0; for (var k = 17; k < sl.length; k++) rest += sl[k] || 0;
+        var cells = ""; for (k = 1; k <= 16; k++) cells += oddsCell(sl[k] || 0);
+        return '<tr class="go" data-team="' + r.code + '"><td class="tm">' + logo(r.code) + '<span class="nm">' + esc(team(r.code).short) + "</span></td>" + cells + oddsCell(rest) + "</tr>";
+      }).join("") + '</tbody></table></div><p class="note">Under the 3-2-1 lottery the worst records aren\'t the likeliest No. 1: the three worst get two balls each, the next seven three each, so a team finishing fourth to tenth-worst has the best shot. The worst three can\'t fall below 12th, and every one of the 16 lottery picks is drawn.</p></div>';
+  }
+  function lotteryRules() {
+    var T = H.lottoTable && H.lottoTable();
+    if (!T) return "";
+    var balls = function (k) { return k <= 3 ? 2 : k <= 10 ? 3 : k <= 14 ? 2 : 1; };
+    var who = function (k) { return k <= 10 ? (k === 1 ? "Worst record" : k + (k === 2 ? "nd" : k === 3 ? "rd" : "th") + "-worst") : k <= 14 ? "9-10 seed (play-in)" : "7-8 play-in loser"; };
+    var rowsH = []; for (var k = 1; k <= 16; k++) {
+      var t = T[k], ev = 0, top4 = 0, worst = 0;
+      for (var sl = 1; sl <= 30; sl++) { ev += t[sl] * sl; if (sl <= 4) top4 += t[sl]; if (t[sl] > 0.0005) worst = sl; }
+      rowsH.push("<tr><td style=\"text-align:left\">" + who(k) + "</td><td>" + balls(k) + "</td><td>" + pct(t[1], 1) + "</td><td>" + pct(top4) + "</td><td>" + f1(ev) + "</td><td>" + worst + "</td></tr>");
+    }
+    return tablePanel("How 3-2-1 works, by finish", "<th>Finish</th><th>Balls</th><th>No. 1</th><th>Top 4</th><th>Avg pick</th><th>Lowest</th>", rowsH.join(""), "The odds for each lottery spot on its own, before the season decides who lands where");
   }
   view.addEventListener("click", function (e) {
     var tr = e.target.closest("[data-team]");
@@ -302,7 +331,7 @@
     }, "Contracts that ran out") + listPanel("Arriving", come, function (x) {
       return pname(x.p, 26) + '<span class="grow"></span><span class="sub">' + (x.how === "rookie" ? (x.p.school ? esc(x.p.school) + " · " : "") : "") + money(x.sal) + " · " + rt(x.r) + "</span>";
     }, "Draft picks and free agent signings") + "</div>" +
-      '<p class="note">Re-signing keeps a player at his market price for as long as the market would go. Restricted free agents are matched by default when they\'re worth it.</p>';
+      '<p class="note">Re-signing keeps a player at his market price for as long as the market would go. By default a team keeps anyone worth at least 85% of that price who's 33 or younger, since his Bird rights let it go over the cap to do it; restricted free agents are matched at a lower bar. Tap to change a call.</p>';
   }
   view.addEventListener("click", function (e) {
     var b = e.target.closest("[data-resign]");

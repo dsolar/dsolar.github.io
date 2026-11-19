@@ -343,12 +343,15 @@
       const aav = marketAt(p, start);
       return { start, yrs, aav, sal: k => Math.round(aav * Math.pow(1.05, k - start)) };
     };
-    // Default call when his deal is up: restricted free agents worth their price get matched; everyone else walks
+    // Default call when his deal is up. His team holds his Bird rights, so it can go over the cap to keep him: a player
+    // worth close to his market price (85%) re-signs (33 and under; older players mostly move on or retire). Restricted free agents
+    // are matched at a lower bar, since the team controls the offer sheet. Everyone else walks.
     H.defaultKeep = p => {
       const e = H.lastYear(p);
       if (e < 0 || e >= YEARS - 1) return false;
-      if (H.faKind(p) !== "RFA") return false;
-      return prodAt(p, e + 1) >= 0.8 * marketAt(p, e + 1);
+      const pr = prodAt(p, e + 1), mk = marketAt(p, e + 1);
+      if (H.faKind(p) === "RFA") return pr >= 0.8 * mk;
+      return (p.age + e + 1) <= 33 && mk > CBA.minSal((p.yos ?? 3) + e + 1, e + 1) * 1.5 && pr >= 0.85 * mk;   // teams pay a little over value to keep their own
     };
     H.kept = p => (p.id in H.keep ? H.keep[p.id] : H.defaultKeep(p));
     H.salaryAt = (p, i) => {

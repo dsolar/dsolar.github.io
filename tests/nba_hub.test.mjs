@@ -280,3 +280,10 @@ test('injuries, pick swaps and Bird rights', () => {
   const exp = Object.values(H.W.P).find(p => H.lastYear(p) === 0 && H.rating(p, 0) > 2 && !(p.c && p.c.rk));
   if (exp) assert.ok(H.birdValue(exp) > 0);
 });
+
+test('stars re-sign in future seasons (Bird rights), lottery table sums to one', () => {
+  const stars = Object.values(H.W.P).filter(p => { const e = H.lastYear(p); return e >= 0 && e < 3 && H.rating(p, 0) > 4 && p.age + e + 1 <= 31; });
+  for (const p of stars) assert.ok(H.kept(p), p.n + ' should re-sign by default');
+  const T = H.lottoTable();
+  for (let k = 1; k <= 30; k++) assert.ok(Math.abs(T[k].reduce((a, x) => a + x, 0) - 1) < 1e-6);
+});
