@@ -263,7 +263,10 @@
     if (!best) {
       const outSal = out.reduce((a, p) => a + p.sal, 0), inSal = inn.reduce((a, p) => a + p.sal, 0);
       const max = CBA.matchMax(outSal, i, post);
-      const blocked = tpes.filter(t => !t.usable && t.why).map(t => `its ${(t.amt / 1e6).toFixed(1)}M trade exception is off-limits (${t.why.toLowerCase()})`);
+      // blocked trade exceptions, grouped by reason so four from one deadline read as one line
+      const byWhy = {};
+      for (const t of tpes) if (!t.usable && t.why) (byWhy[t.why] = byWhy[t.why] || []).push("$" + (t.amt / 1e6).toFixed(1) + "M");
+      const blocked = Object.entries(byWhy).map(([w, a]) => a.length === 1 ? `its ${a[0]} trade exception is off-limits (${w.toLowerCase()})` : `its ${a.length} trade exceptions (${a.join(", ")}) are off-limits (${w.toLowerCase()})`);
       const why = post === "a2" && n > 1
         ? "Over the second apron after this trade, so it can't combine salaries, and no single player matches."
         : n === 0

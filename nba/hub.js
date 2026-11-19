@@ -1240,9 +1240,9 @@
       return { u: u + H.teamCtx(c).winW * dw + tax, dw, value: u, tax };
     };
     // opts: { team, mode: "win" | "buy" | "sell", player (optional: a player on team who must go out) }
-    H.findDeals = (opts) => {
+    H.findDeals = (opts, async) => {
       const A = opts.team, mode = opts.mode || "win", forced = opts.player && W.P[opts.player] && W.P[opts.player].t === A ? W.P[opts.player] : null;
-      if (!W.T[A]) return [];
+      if (!W.T[A]) return async ? Promise.resolve([]) : [];
       const ctxA = H.teamCtx(A), payA = H.payroll(A, 0);
       const dvMemo = new Map(), dv = (c, m) => { if (m.kind === "c") return m.amt || 0; const k = c + m.id; let v = dvMemo.get(k); if (v === undefined) { v = H.dealValue(c, m); dvMemo.set(k, v); } return v; };
       const util = (c, moves) => H.dealUtility(c, moves, dv), poolMemo = {};
@@ -1292,11 +1292,11 @@
       const cands = [];
       const coreA = core(A);
       const dbg = H._dealDbg = { combos: 0, sal: 0, floors: 0 };
-      for (const B of codes) {
-        if (B === A) continue;
+      const perTeam = B => {
+        if (B === A) return;
         const ctxB = H.teamCtx(B), coreB = core(B), rB = roster(B), rA = roster(A);
-        if (mode === "sell" && ctxB.tier === "rebuild") continue;      // sellers sell to teams trying to win
-        if (mode === "buy" && ctxB.tier === "contend") continue;       // buyers buy from teams that aren't
+        if (mode === "sell" && ctxB.tier === "rebuild") return;      // sellers sell to teams trying to win
+        if (mode === "buy" && ctxB.tier === "contend") return;       // buyers buy from teams that aren't
         // what A puts on the table
         let outSets;
         if (forced) outSets = [[forced]].concat(rA.filter(q => q.id !== forced.id && !coreA.has(q.id) && !(isYoung(q) && ctxA.tier !== "contend")).sort((a, b) => H.salary(a, 0) - H.salary(b, 0)).slice(0, 6).map(q => [forced, q]));
@@ -1388,7 +1388,8 @@
           if (cands.some(o => o.team === B && o.moves.filter(m => m.kind === "p").map(m => m.id).sort().join() === c.moves.filter(m => m.kind === "p").map(m => m.id).sort().join())) continue;
           cands.push(c); kept++;
         }
-      }
+      };
+      const finish = () => {
       cands.sort((x, y) => y.score - x.score);
       // the quick wins estimate finds candidates; the shortlist gets the full season simulation (the trade card's), and
       // the floors and the contender rule apply again on those wins
@@ -1416,6 +1417,15 @@
         out.push(Object.assign({ tierA: ctxA.tier, tierB: H.teamCtx(c.team).tier, after }, c));
       }
       return out;
+      };
+      // async: work through the league a few teams at a time so the page stays responsive (resolves to the same list)
+      if (async) return new Promise(res => {
+        let i = 0;
+        const step = () => { const t = Date.now(); while (i < codes.length && Date.now() - t < 35) perTeam(codes[i++]); if (i < codes.length) setTimeout(step, 0); else setTimeout(() => res(finish()), 0); };
+        step();
+      });
+      for (const B of codes) perTeam(B);
+      return finish();
     };
     // Which of a team's first-round picks it could trade on their own, and why the rest can't go
     H.firstsStatus = c => {

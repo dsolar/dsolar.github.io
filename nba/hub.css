@@ -638,3 +638,9 @@ table.sz{width:100%;font-size:13px}
 .tile .tl .injb,.dpc .injb,.org-row .injb{color:#A32020}
 .tile .tl .injb.dtd,.dpc .injb.dtd,.org-row .injb.dtd{color:#8A5300}
 .tile .tl .injb.sea,.dpc .injb.sea,.org-row .injb.sea{color:#fff}
+
+.moremsg{margin-top:4px;font-weight:600}
+.moremsg summary{cursor:pointer;font:700 12.5px var(--cond);color:inherit;opacity:.85}
+.moremsg[open] summary{margin-bottom:3px}
+@media (max-width:760px){ .tverdict{font-size:13px} }
+.tile .tl .tlock{display:inline-flex;width:auto;flex:none;margin-left:5px;vertical-align:2px;font-size:10.5px}
