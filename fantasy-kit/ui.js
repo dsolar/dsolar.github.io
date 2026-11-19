@@ -1165,7 +1165,7 @@
         const st = F.auctionState(d, n);
         // the high bidder shows once, by the bid itself; up here is who's on the block
         const t = st.kind === "lot" ? team(st.lot.team) : team(st.team), lp = st.kind === "lot" ? ctx.byId[st.lot.pid] : null;
-        mid = `<div class="otc${isMe(t) && st.kind === "nominate" ? " me" : ""}">${lp ? playerAv(sport, lp, "md") : teamAv(t, "md")}<span class="who"><small>${st.kind === "lot" ? "On the block" : isMe(t) ? "Your nomination" : "Nominating"}</small><b>${esc(lp ? lp.n : t.name)}</b><span>${d.sales.length} of ${d.teams.length * d.rounds} bought${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
+        mid = `<div class="otc${isMe(t) && st.kind === "nominate" ? " me" : ""}${lp ? " lotc" : ""}">${lp ? playerAv(sport, lp, "md") : teamAv(t, "md")}<span class="who"><small>${st.kind === "lot" ? "On the block" : isMe(t) ? "Your nomination" : "Nominating"}</small><b>${esc(lp ? lp.n : t.name)}</b><span>${d.sales.length} of ${d.teams.length * d.rounds} bought${d.paused ? ", paused" : ""}</span></span><span class="ring" id="fk-ring"><span id="fk-timer"></span></span></div>`;
       } else if (d.packs) {
         // a pack draft: everyone picks from the pack in front of them at once, on one clock
         const tt = F.packTurnNow(d), at = F.packAt(d, tt), mineUp = me() != null && F.packSlot(d, me()) >= 0;
@@ -1339,6 +1339,18 @@
 
     /* left side: players, board, picks, results */
     let adviceCache = null;
+    // On a phone, your turn as a bar pinned to the bottom: the clock, and one tap to draft the top of your queue
+    // (or the coach's best fit)
+    function turnBar() {
+      const d = D(), mine = me();
+      if (mine == null || d.phase !== "live" || auction() || d.packs || mystery()) return "";
+      const c = F.onClock(d, now());
+      if (!c || c.team !== mine || c.trivia || team(mine).auto) return "";
+      const ok = (p) => p && ctx.own[p.id] == null && F.canAdd(d, ctx, mine, p).ok;
+      const q = team(mine).queue.map((id) => ctx.byId[id]).find(ok);
+      const a = draftCoachAdvice() || {}, p = q || (ok(a.fit) ? a.fit : null) || ctx.available.find(ok);
+      return `<div class="turn-bar show-m" role="status"><span class="ring" id="fk-ring3"><span id="fk-timer3"></span></span><span class="tb-who"><small>You're on the clock</small>${p ? `<b>${esc(p.n)}</b><span>${q ? "Top of your queue" : "Best fit for your roster"}, ${esc(S.positions(p).join(", "))}</span>` : `<b>Pick a player</b>`}</span>${p ? `<button type="button" class="btn go" data-pick="${esc(p.id)}">Draft</button>` : ""}</div>`;
+    }
     function draftCoachAdvice() {
       const E = FK.experience, d = D(), mine = me();
       if (!E || mine == null) return null;
@@ -1808,7 +1820,14 @@
       const left = { lobby, players, board, picks, results, packages, steal: steals, proj: projected }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
       // one view switch: the left views, plus the right panels as views on narrow screens
-      const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" data-left="${k}" aria-pressed="${!ui.mobileRight && ui.left === k}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m" data-mright="${k}" aria-pressed="${ui.mobileRight && ui.right === k}">${esc(n)}</button>`).join("")}</div>`;
+      // On a phone the views that matter while you draft stay as buttons (the lobby, players, the board, your team,
+      // your queue, chat, results); the rest go under More, unless you're on one
+      const PRIME = { lobby: 1, players: 1, board: 1, results: 1, team: 1, queue: 1, chat: 1 };
+      const onL = (k) => !ui.mobileRight && ui.left === k, onR = (k) => ui.mobileRight && ui.right === k;
+      const extraM = lefts.filter(([k]) => !PRIME[k] && !onL(k)).map(([k, n]) => ["data-left=" + k, n]).concat(rights.filter(([k]) => !PRIME[k] && !onR(k)).map(([k, n]) => ["data-mright=" + k, n]));
+      const xm = (attr) => extraM.some(([v]) => v === attr) ? " x-m" : "";
+      const moreM = extraM.length ? `<select class="seg-more show-m" aria-label="More views" onchange="var v=this.value.split('=');var b=this.parentNode.querySelector('['+v[0]+'=&quot;'+v[1]+'&quot;]');if(b)b.click();this.selectedIndex=0"><option value="">More</option>${extraM.map(([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`).join("")}</select>` : "";
+      const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" class="${xm("data-left=" + k).trim()}" data-left="${k}" aria-pressed="${onL(k)}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m${xm("data-mright=" + k)}" data-mright="${k}" aria-pressed="${onR(k)}">${esc(n)}</button>`).join("")}${moreM}</div>`;
       const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option>${d.prospects ? `<option value="pros"${ui.show === "pros" ? " selected" : ""}>Prospects</option>` : ""}</select>${statSeg()}` : "";
       const tq = d.phase === "live" && !auction() && me() != null ? F.onClock(d, now()) : null;
       if (tq && tq.trivia && tq.team === me() && !team(me()).auto) {
@@ -1824,7 +1843,7 @@
       }
       el.innerHTML = `<div class="droom fk-dark${d.phase === "done" ? " done" : ""}">${top()}${ticker()}${offerStrip()}<div class="dr-main${ui.mobileRight ? " right" : ""}">
         <section class="dr-left"><div class="dr-bar">${seg}${filters}</div>${ui.left === "players" ? phoneNeeds() + posFilter(sport, ui.f.pos, [], d.lineup, needChips(me())) : ""}${left}</section>
-        <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div></div>`;
+        <aside class="dr-right"><div class="seg hide-m" role="group" aria-label="Panel">${rights.map(([k, n]) => `<button type="button" data-right="${k}" aria-pressed="${ui.right === k}">${esc(n)}</button>`).join("")}</div><div class="show-m" style="padding:10px 12px 0">${seg.replace('id="fk-seg"', 'id="fk-seg2"')}</div><div class="dr-panel">${right}</div></aside></div>${turnBar()}</div>`;
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => { const v = keep.scroll[x.id || x.className]; if (v) { x.scrollTop = v[0]; x.scrollLeft = v[1]; } });
       const tk = $("#fk-ticker", el), cur = tk && $(".tk.now", tk);
       const bd = $("#fk-board", el), mineH = bd && $(".bgrid .h.me", bd);
@@ -1881,7 +1900,7 @@
       else if (F.onClock(d, n) && F.onClock(d, n).trivia) { const c = F.onClock(d, n); left = Math.max(0, c.left - 2500); total = (d.trivia.sec || 15) * 1000; }   // the grace for the question to arrive isn't shown
       else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
       const fin = left != null && Number.isFinite(left);
-      for (const [ti, ri] of [["#fk-timer", "#fk-ring"], ["#fk-timer2", "#fk-ring2"]]) {
+      for (const [ti, ri] of [["#fk-timer", "#fk-ring"], ["#fk-timer2", "#fk-ring2"], ["#fk-timer3", "#fk-ring3"]]) {
         const t = $(ti, el), ring = $(ri, el);
         if (t) t.textContent = fin ? fmtLeft(left) : "";
         if (ring) { ring.style.setProperty("--p", fin ? Math.max(0, Math.min(1, left / total)).toFixed(3) : 1); ring.classList.toggle("hot", fin && left < 10000); }
