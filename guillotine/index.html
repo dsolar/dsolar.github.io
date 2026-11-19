@@ -485,6 +485,19 @@ dialog.team::backdrop{background:rgba(6,12,24,.6)}
 .claims-none{margin:.8rem 0 0;color:var(--muted);font-size:.85rem}
 .spend{margin:1.4rem 0 0}
 .money-t{margin:0}
+.ifgo{margin:1.2rem 0 0;padding:1rem 1rem .9rem;background:var(--surface);border:1px solid var(--rule);border-radius:3px}
+.ifgo h3{margin:0;font:700 1.1rem/1.2 var(--f-display)}
+.ifgo > p{margin:.2rem 0 .8rem;color:var(--muted);font-size:.85rem}
+.ifgo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.2rem}
+.ifgo-team h4{margin:0 0 .35rem;font-size:.9rem}
+.ifgo-team h4 span{color:var(--muted);font-weight:500;font-size:.8rem}
+.ifgo-team ol{list-style:none;margin:0;padding:0}
+.ifgo-team li{display:flex;justify-content:space-between;gap:.6rem;padding:.25rem 0;border-bottom:1px solid var(--rule);font-size:.82rem}
+.ifgo-team li small{color:var(--muted)}
+.ifgo-team li span:last-child{white-space:nowrap;color:var(--muted);font-variant-numeric:tabular-nums}
+.ifgo-bid{margin:.5rem 0 0;font-size:.8rem;line-height:1.5}
+.ifgo-bid span{white-space:nowrap}
+.ifgo-bid .broke{color:var(--muted);text-decoration:line-through}
 #money-foot{margin-top:1rem}
 .est-all{margin:.7rem 0 0}
 .est-all summary{cursor:pointer;color:var(--muted);font-size:.8rem;font-weight:600}
@@ -708,6 +721,7 @@ th.line{border-left:1px solid var(--rule)}
       <span><i class="k-blade"></i>Projected cut line</span>
     </div>
     <div class="tiers" id="tiers"></div>
+    <div class="ifgo" id="ifgo" hidden></div>
     <p class="book"><b>Bastille Book</b><span>Lines are the cut odds as American odds with a 4.5% house edge. OFF means the board is closed: it can't happen. Just for fun, no real wagers.</span></p>
   </section>
 
@@ -1043,6 +1057,7 @@ th.line{border-left:1px solid var(--rule)}
       '<span class="t-bubble"><i></i><b>Bubble</b> ' + avg + "% to " + (Math.round(200 / n) - 1) + "%</span>" +
       '<span class="t-safe"><i></i><b>Safe</b> under ' + avg + "%</span>";
     $("week").hidden = false;
+    renderBlock(r);
 
     renderShowcase(r);
     renderSpotlight(r, before);
@@ -1166,6 +1181,29 @@ th.line{border-left:1px solid var(--rule)}
       return A && B && (A.compareDocumentPosition(B) & Node.DOCUMENT_POSITION_FOLLOWING) ? -1 : 1;
     }).forEach(function (a) { jin.appendChild(a); });
     setupTabs();
+  }
+
+  // If they go: for the teams likeliest to be cut, the players their estate would put on waivers and the
+  // most each surviving team could bid on them (its whole remaining FAB; the cut team's money dies with it).
+  function renderBlock(r) {
+    var raw = state.raw, mg = state.mgr, who = function (t) { return esc(mg(t) || t); };
+    var risk = r.teams.filter(function (t) { return t.pChop >= 0.15 && raw[t.name] && (raw[t.name].roster || []).length; })
+      .sort(function (a, b) { return b.pChop - a.pChop; }).slice(0, 2);
+    if (!risk.length || r.teams.length < 3) { $("ifgo").hidden = true; return; }
+    $("ifgo").innerHTML = "<h3>If they go</h3><p>What each estate would put on waivers, and the most every other team could bid.</p>" +
+      '<div class="ifgo-grid">' + risk.map(function (t) {
+        var val = function (p) { return typeof p.next_proj === "number" ? p.next_proj : typeof p.proj === "number" ? p.proj : 0; };
+        var ps = (raw[t.name].roster || []).filter(function (p) { return p.name && ["K", "DEF"].indexOf(p.pos) < 0; })
+          .sort(function (a, b) { return val(b) - val(a); }).slice(0, 5);
+        var bidders = r.teams.filter(function (x) { return x.name !== t.name && raw[x.name] && typeof raw[x.name].faab === "number"; })
+          .sort(function (a, b) { return raw[b.name].faab - raw[a.name].faab; });
+        return '<div class="ifgo-team"><h4>' + esc(t.name) + " <span>" + pct(t.pChop) + " to be cut</span></h4><ol>" +
+          ps.map(function (p) {
+            return "<li><span>" + esc(p.name) + " <small>" + esc(p.rank || p.pos || "") + "</small></span><span>" + (val(p) ? val(p).toFixed(1) + " next wk" : "") + "</span></li>";
+          }).join("") + '</ol><p class="ifgo-bid"><b>Can bid:</b> ' +
+          bidders.map(function (x) { var f = raw[x.name].faab; return '<span class="' + (f ? "" : "broke") + '">' + who(x.name) + " $" + f + "</span>"; }).join(" · ") + "</p></div>";
+      }).join("") + "</div>";
+    $("ifgo").hidden = false;
   }
 
   // ---- Tabbed groups (the road ahead, the fallen): one panel at a time. Panels with nothing to show drop

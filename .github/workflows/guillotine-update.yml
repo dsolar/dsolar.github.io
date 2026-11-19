@@ -15,6 +15,8 @@ on:
     branches: [main]
     paths:
       - guillotine/paste.txt
+      - guillotine/offers.txt
+      - tools/guillotine_offers.py
       - tools/guillotine_update.py
       - tools/guillotine_paste.py
       - tools/guillotine_projections.py
@@ -79,6 +81,12 @@ jobs:
           else
             python3 tools/guillotine_paste.py
           fi
+
+      - name: Merge every bid from the copied Transactions page
+        # guillotine/offers.txt: Yahoo's FAB Offers page, saved each Wednesday after the waiver run.
+        # Only data.json's "offers" changes, so it works alongside the Yahoo pull.
+        continue-on-error: true
+        run: python3 tools/guillotine_offers.py
 
       - name: Refresh player projections
         run: python3 tools/guillotine_projections.py
