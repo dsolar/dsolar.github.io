@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19T12:32:05Z",
+ "updated": "2026-11-19T19:10:07Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -70,7 +70,6 @@
    "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
    "source": "ticketmaster",
    "aka": [
-    "sg-18617576",
     "2026-11-19-trippie-redd-citizens-house-of-bl"
    ],
    "score": 0
@@ -922,18 +921,28 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe_7z",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18830707"
+   ],
    "score": 0
   },
   {
-   "id": "sg-18337408",
+   "id": "sg-18813573",
    "date": "2026-11-24",
-   "time": "20:00",
+   "time": "12:00",
    "title": "Father of Peace",
    "cat": "music",
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/father-of-peace-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-24-8-pm/concert/18337408",
+   "url": "https://seatgeek.com/father-of-peace-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-24-12-pm/concert/18813573",
    "source": "seatgeek",
+   "times": [
+    "12:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18337408"
+   ],
    "score": 0
   },
   {
@@ -1009,6 +1018,18 @@
    "score": 0
   },
   {
+   "id": "sg-18798837",
+   "date": "2026-11-25",
+   "time": "21:00",
+   "title": "Vintage Culture (21+)",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/vintage-culture-tickets/boston-massachusetts-royale-boston-2026-11-25-9-pm/concert/18798837",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_4GkwLmmiX",
    "date": "2026-11-25",
    "time": "21:30",
@@ -1018,6 +1039,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/tribe-21-boston-massachusetts-11-25-2026/event/0100655C9FBAEB3E",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18828678"
+   ],
    "score": 0
   },
   {
@@ -1091,6 +1115,9 @@
    "city": "Somerville, MA",
    "url": "https://www.ticketmaster.com/poly-diaz-somerville-massachusetts-11-27-2026/event/0100655CA425FC0D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18827281"
+   ],
    "score": 0
   },
   {
@@ -1464,6 +1491,18 @@
    "why": "love"
   },
   {
+   "id": "sg-18825155",
+   "date": "2026-11-30",
+   "time": "19:00",
+   "title": "Draft Night",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/draft-night-tickets/beverly-massachusetts-the-cabot-2026-11-30-7-pm/concert/18825155",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7ZFp",
    "date": "2026-11-30",
    "time": "19:00",
@@ -1585,6 +1624,9 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7bqx",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18825218"
+   ],
    "score": 0
   },
   {
@@ -1735,6 +1777,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dax-the-anger-management-tour-18-boston-massachusetts-12-03-2026/event/010064AEC6FA7601",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18254016"
    ],
@@ -1904,6 +1950,18 @@
    "score": 0
   },
   {
+   "id": "sg-18670568",
+   "date": "2026-12-04",
+   "time": "19:00",
+   "title": "Gabby Bryan",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/gabby-bryan-tickets/comedy/2026-12-04-7-pm/18670568",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZkC3Gkd2Wo0b",
    "date": "2026-12-04",
    "time": "19:00",
@@ -2034,6 +2092,18 @@
    "score": 0
   },
   {
+   "id": "sg-18797419",
+   "date": "2026-12-04",
+   "time": "21:30",
+   "title": "Abby Govindan",
+   "cat": "comedy",
+   "venue": "The Rockwell - Somerville",
+   "city": "Somerville, MA",
+   "url": "https://seatgeek.com/abby-govindan-tickets/comedy/2026-12-04-9-30-pm/18797419",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1k7Z_8QpG7SRer",
    "date": "2026-12-04",
    "time": "22:00",
@@ -2117,6 +2187,25 @@
     "sg-18601253"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18666675",
+   "date": "2026-12-05",
+   "time": "18:30",
+   "title": "Gabby Bryan",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/gabby-bryan-tickets/comedy/2026-12-05-6-30-pm/18666675",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18666681"
+   ],
+   "score": 1
   },
   {
    "id": "tm-vv1avZkfEFAjEZe2u",
@@ -2263,6 +2352,9 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvAvK",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18825160"
+   ],
    "score": 0
   },
   {
@@ -2597,6 +2689,18 @@
    "score": 0
   },
   {
+   "id": "sg-18825165",
+   "date": "2026-12-10",
+   "time": "20:00",
+   "title": "Blood Sweat and Tears",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/blood-sweat-and-tears-tickets/beverly-massachusetts-the-cabot-2026-12-10-8-pm/concert/18825165",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "sg-18634491",
    "date": "2026-12-10",
    "time": "20:00",
@@ -2642,6 +2746,18 @@
    ],
    "score": 2,
    "why": "like"
+  },
+  {
+   "id": "sg-18827245",
+   "date": "2026-12-10",
+   "time": "20:00",
+   "title": "Whitmer Thomas",
+   "cat": "comedy",
+   "venue": "The Center for Arts at the Armory",
+   "city": "Somerville, MA",
+   "url": "https://seatgeek.com/whitmer-thomas-tickets/comedy/2026-12-10-8-pm/18827245",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "espn-401873109",
@@ -2919,6 +3035,18 @@
    "score": 1
   },
   {
+   "id": "sg-18797434",
+   "date": "2026-12-12",
+   "time": "19:00",
+   "title": "Janine Harouni",
+   "cat": "comedy",
+   "venue": "The Rockwell - Somerville",
+   "city": "Somerville, MA",
+   "url": "https://seatgeek.com/janine-harouni-tickets/comedy/2026-12-12-7-pm/18797434",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_uJSOdeF",
    "date": "2026-12-12",
    "time": "19:00",
@@ -3139,6 +3267,18 @@
    "score": 1
   },
   {
+   "id": "sg-18803700",
+   "date": "2026-12-13",
+   "time": "20:00",
+   "title": "Miel San Marcos",
+   "cat": "music",
+   "venue": "Lynn Memorial Auditorium",
+   "city": "Lynn, MA",
+   "url": "https://seatgeek.com/miel-san-marcos-tickets/lynn-massachusetts-lynn-memorial-auditorium-2026-12-13-8-pm/concert/18803700",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-rZ7HnEZ1Af83j7",
    "date": "2026-12-13",
    "time": "20:30",
@@ -3164,6 +3304,21 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910107/wizards-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "sg-18796822",
+   "date": "2026-12-14",
+   "time": "20:00",
+   "title": "moe.",
+   "cat": "music",
+   "venue": "Infinity Hall",
+   "city": "Norfolk, CT",
+   "url": "https://seatgeek.com/moe-tickets/norfolk-connecticut-infinity-hall-2026-12-14-8-pm/concert/18796822",
+   "source": "seatgeek",
+   "drive_hours": 2.5,
+   "act": "moe.",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "tm-vvG17Z_GNZuBvC",
@@ -3193,6 +3348,21 @@
    "score": 1
   },
   {
+   "id": "sg-18796829",
+   "date": "2026-12-15",
+   "time": "20:00",
+   "title": "moe.",
+   "cat": "music",
+   "venue": "Infinity Hall",
+   "city": "Norfolk, CT",
+   "url": "https://seatgeek.com/moe-tickets/norfolk-connecticut-infinity-hall-2026-12-15-8-pm/concert/18796829",
+   "source": "seatgeek",
+   "drive_hours": 2.5,
+   "act": "moe.",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "espn-401910117",
    "date": "2026-12-16",
    "time": "19:00",
@@ -3203,6 +3373,21 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910117/wizards-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "sg-18818460",
+   "date": "2026-12-16",
+   "time": "20:00",
+   "title": "moe.",
+   "cat": "music",
+   "venue": "Infinity Hall Hartford",
+   "city": "Hartford, CT",
+   "url": "https://seatgeek.com/moe-tickets/hartford-connecticut-infinity-hall-hartford-2026-12-16-8-pm/concert/18818460",
+   "source": "seatgeek",
+   "drive_hours": 2.25,
+   "act": "moe.",
+   "score": 3,
+   "why": "love"
   },
   {
    "id": "espn-401892946",
@@ -3325,6 +3510,21 @@
    "score": 0
   },
   {
+   "id": "sg-18798841",
+   "date": "2026-12-18",
+   "time": "19:00",
+   "title": "Night Lovell",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/night-lovell-tickets/boston-massachusetts-royale-boston-2026-12-18-7-pm/concert/18798841",
+   "source": "seatgeek",
+   "aka": [
+    "2026-12-18-night-lovell-royale"
+   ],
+   "score": 0
+  },
+  {
    "id": "espn-401910136",
    "date": "2026-12-18",
    "time": "19:30",
@@ -3334,6 +3534,18 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nba/game/_/gameId/401910136/jazz-celtics",
    "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "sg-18792005",
+   "date": "2026-12-18",
+   "time": "19:30",
+   "title": "Jacques Ze Whipper",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/jacques-ze-whipper-tickets/comedy/2026-12-18-7-30-pm/18792005",
+   "source": "seatgeek",
    "score": 1
   },
   {
@@ -3358,6 +3570,9 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7Jfr3",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18825174"
+   ],
    "score": 0
   },
   {
@@ -3378,6 +3593,18 @@
    "sub": "a Phish tribute",
    "score": 2,
    "why": "like"
+  },
+  {
+   "id": "sg-18803699",
+   "date": "2026-12-18",
+   "time": "20:00",
+   "title": "Whindersson Nunes",
+   "cat": "comedy",
+   "venue": "Lynn Memorial Auditorium",
+   "city": "Lynn, MA",
+   "url": "https://seatgeek.com/whindersson-nunes-tickets/comedy/2026-12-18-8-pm/18803699",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-1AtZkfsGkdhCsax",
@@ -3422,18 +3649,6 @@
    "from": 44,
    "score": 2,
    "why": "big"
-  },
-  {
-   "date": "2026-12-18",
-   "time": null,
-   "title": "Night Lovell",
-   "cat": "music",
-   "venue": "Royale",
-   "city": "Boston, MA",
-   "url": "https://labs.songkick.com/venues/895621-royale-boston/calendar",
-   "source": "venues",
-   "id": "2026-12-18-night-lovell-royale",
-   "score": 0
   },
   {
    "id": "sg-18601269",
@@ -3726,6 +3941,18 @@
    "score": 1
   },
   {
+   "id": "sg-18825179",
+   "date": "2026-12-26",
+   "time": "20:00",
+   "title": "Musical Bingo",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/musical-bingo-tickets/beverly-massachusetts-the-cabot-2026-12-26-8-pm/concert/18825179",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkfUGkePsCVF",
    "date": "2026-12-26",
    "time": "22:00",
@@ -3768,6 +3995,18 @@
    ],
    "sub": "Wrap It Up!",
    "score": 1
+  },
+  {
+   "id": "sg-18825230",
+   "date": "2026-12-27",
+   "time": "19:00",
+   "title": "The Grateful Ball",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/the-grateful-ball-tickets/beverly-massachusetts-the-cabot-2026-12-27-7-pm/concert/18825230",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-rZ7HnEZ1Af83j0",
@@ -3906,6 +4145,25 @@
    "score": 0
   },
   {
+   "id": "sg-18835584",
+   "date": "2026-12-31",
+   "time": "18:00",
+   "title": "New Years Eve Comedy Showcase",
+   "cat": "comedy",
+   "venue": "Off Cabot Comedy and Events",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/new-years-eve-comedy-showcase-tickets/comedy/2026-12-31-6-pm/18835584",
+   "source": "seatgeek",
+   "times": [
+    "18:00",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18835585"
+   ],
+   "score": 1
+  },
+  {
    "id": "tm-vvG17Z_CTNmdDP",
    "date": "2026-12-31",
    "time": "19:00",
@@ -3934,6 +4192,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/test-eventflow-1-boston-massachusetts-12-31-2026/event/0100654C0D1C6DDE",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18818160",
+   "date": "2026-12-31",
+   "time": "19:30",
+   "title": "Paul Dangelo",
+   "cat": "comedy",
+   "venue": "Larcom Theatre",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/paul-dangelo-tickets/comedy/2026-12-31-7-30-pm/18818160",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4265,6 +4535,18 @@
    "score": 0
   },
   {
+   "id": "sg-18339463",
+   "date": "2027-01-09",
+   "time": "18:30",
+   "title": "Kyle Kinane",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/kyle-kinane-tickets/comedy/2027-01-09-6-30-pm/18339463",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1A8vPAbGAGMlOF",
    "date": "2027-01-09",
    "time": "19:00",
@@ -4278,6 +4560,18 @@
     "sg-18533198"
    ],
    "score": 1
+  },
+  {
+   "id": "sg-18825233",
+   "date": "2027-01-09",
+   "time": "20:00",
+   "title": "EagleMania - The Worlds Greatest Eagles Tribute Band",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/eaglemania-tickets/beverly-massachusetts-the-cabot-2027-01-09-8-pm/concert/18825233",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-Z7r9jZ1AA7b7Y",
@@ -4433,6 +4727,18 @@
    "why": "love"
   },
   {
+   "id": "sg-18825186",
+   "date": "2027-01-15",
+   "time": "20:00",
+   "title": "Rage Against The Machine",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/rage-against-the-machine-tickets/beverly-massachusetts-the-cabot-2027-01-15-8-pm/concert/18825186",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_pGkUoXM1u",
    "date": "2027-01-16",
    "time": "17:00",
@@ -4506,6 +4812,13 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7NZ3",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18825237"
+   ],
    "score": 0
   },
   {
@@ -4654,6 +4967,18 @@
    "score": 1
   },
   {
+   "id": "sg-18813614",
+   "date": "2027-01-21",
+   "time": "20:00",
+   "title": "The Jack Wharff Band",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-jack-wharff-band-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-01-21-8-pm/concert/18813614",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_fGkS0J2rq",
    "date": "2027-01-22",
    "time": "18:30",
@@ -4706,6 +5031,18 @@
     "sg-18593670"
    ],
    "score": 1
+  },
+  {
+   "id": "sg-18825190",
+   "date": "2027-01-22",
+   "time": "20:00",
+   "title": "The Fab Four",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/the-fab-four-the-ultimate-tribute-tickets/beverly-massachusetts-the-cabot-2027-01-22-8-pm/concert/18825190",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vv177Z_aGkM2Eox8",
@@ -4912,6 +5249,9 @@
    "city": "Cambridge, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA6Ja",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18813576"
+   ],
    "score": 0
   },
   {
@@ -4996,6 +5336,18 @@
    "score": 0
   },
   {
+   "id": "sg-18825111",
+   "date": "2027-01-28",
+   "time": "19:30",
+   "title": "Jenny Tian",
+   "cat": "comedy",
+   "venue": "City Winery - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/jenny-tian-tickets/comedy/2027-01-28-7-30-pm/18825111",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "espn-401910446",
    "date": "2027-01-29",
    "time": "19:30",
@@ -5032,6 +5384,33 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA3Zf",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18825197"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18825194",
+   "date": "2027-01-29",
+   "time": "20:00",
+   "title": "The Young Americans",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/the-young-americans-tickets/beverly-massachusetts-the-cabot-2027-01-29-8-pm/concert/18825194",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18798830",
+   "date": "2027-01-30",
+   "time": "15:00",
+   "title": "90s Dance Party (21+)",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/90s-dance-party-tickets/boston-massachusetts-royale-boston-2027-01-30-3-pm/concert/18798830",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -5196,6 +5575,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7P47",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18798832"
+   ],
    "score": 0
   },
   {
@@ -5242,6 +5624,18 @@
    "score": 0
   },
   {
+   "id": "sg-18797452",
+   "date": "2027-02-04",
+   "time": "19:00",
+   "title": "Charles McBee",
+   "cat": "comedy",
+   "venue": "The Rockwell - Somerville",
+   "city": "Somerville, MA",
+   "url": "https://seatgeek.com/charles-mcbee-tickets/comedy/2027-02-04-7-pm/18797452",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "sg-18747184",
    "date": "2027-02-04",
    "time": "19:15",
@@ -5250,6 +5644,18 @@
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/bren-lukens-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-04-7-15-pm/concert/18747184",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18830719",
+   "date": "2027-02-05",
+   "time": "16:30",
+   "title": "Something In The Way Fest (Friday Pass)",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/something-in-the-way-music-festival-tickets/boston-massachusetts-roadrunner-boston-2027-02-05-4-30-pm/music-festival/18830719",
    "source": "seatgeek",
    "score": 0
   },
@@ -5297,6 +5703,18 @@
     "sg-18739687",
     "2027-02-05-boyz-ii-men-mgm-music-hall-at-fe"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18830711",
+   "date": "2027-02-06",
+   "time": "13:30",
+   "title": "Something In The Way Fest (Saturday Pass)",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/something-in-the-way-music-festival-tickets/boston-massachusetts-roadrunner-boston-2027-02-06-1-30-pm/music-festival/18830711",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -5405,6 +5823,30 @@
    "score": 0
   },
   {
+   "id": "sg-18825240",
+   "date": "2027-02-07",
+   "time": "15:00",
+   "title": "Symphony by the Sea: A Walk Through the English Countryside",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/symphony-by-the-sea-tickets/beverly-massachusetts-the-cabot-2027-02-07-3-pm/concert/18825240",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18670246",
+   "date": "2027-02-07",
+   "time": "19:30",
+   "title": "Raul Di Blasio",
+   "cat": "music",
+   "venue": "Lynn Memorial Auditorium",
+   "city": "Lynn, MA",
+   "url": "https://seatgeek.com/raul-di-blasio-tickets/lynn-massachusetts-lynn-memorial-auditorium-2027-02-07-7-30-pm/music-festival/18670246",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4kGkd0-op_",
    "date": "2027-02-07",
    "time": "20:00",
@@ -5417,6 +5859,18 @@
    "aka": [
     "sg-18672968"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18825242",
+   "date": "2027-02-08",
+   "time": "19:00",
+   "title": "Sutton Foster",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/sutton-foster-tickets/beverly-massachusetts-the-cabot-2027-02-08-7-pm/concert/18825242",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -5568,6 +6022,18 @@
    "score": 0
   },
   {
+   "id": "sg-18825126",
+   "date": "2027-02-11",
+   "time": "19:30",
+   "title": "Amber Wallin",
+   "cat": "comedy",
+   "venue": "City Winery - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/amber-wallin-tickets/comedy/2027-02-11-7-30-pm/18825126",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_KGkS9d4wI",
    "date": "2027-02-11",
    "time": "19:30",
@@ -5577,6 +6043,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dancing-with-the-stars-live-2027-boston-massachusetts-02-11-2027/event/0100653CD70D5CA8",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18825200",
+   "date": "2027-02-11",
+   "time": "20:00",
+   "title": "The Four Tops",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/the-four-tops-tickets/beverly-massachusetts-the-cabot-2027-02-11-8-pm/concert/18825200",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -5592,6 +6070,18 @@
    "aka": [
     "sg-18612703"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18829465",
+   "date": "2027-02-12",
+   "time": "19:00",
+   "title": "Juston McKinney",
+   "cat": "comedy",
+   "venue": "Marilyn Rodman Performing Arts Center",
+   "city": "Foxborough, MA",
+   "url": "https://seatgeek.com/juston-mckinney-tickets/comedy/2027-02-12-7-pm/18829465",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -5771,6 +6261,18 @@
    "score": 0
   },
   {
+   "id": "sg-18829468",
+   "date": "2027-02-13",
+   "time": "19:00",
+   "title": "Juston McKinney",
+   "cat": "comedy",
+   "venue": "Marilyn Rodman Performing Arts Center",
+   "city": "Foxborough, MA",
+   "url": "https://seatgeek.com/juston-mckinney-tickets/comedy/2027-02-13-7-pm/18829468",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAefp9",
    "date": "2027-02-13",
    "time": "20:00",
@@ -5800,6 +6302,18 @@
     "sg-18657151",
     "2027-02-13-state-radio-mgm-music-hall-at-fe"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18825204",
+   "date": "2027-02-13",
+   "time": "20:00",
+   "title": "TUSK - The Classic Fleetwood Mac Tribute",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/tusk-tribute-to-fleetwood-mac-tickets/beverly-massachusetts-the-cabot-2027-02-13-8-pm/concert/18825204",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6028,6 +6542,30 @@
    "score": 0
   },
   {
+   "id": "sg-18807693",
+   "date": "2027-02-21",
+   "time": "19:00",
+   "title": "Bob Marley (Comedian)",
+   "cat": "comedy",
+   "venue": "Salvatore's",
+   "city": "Lawrence, MA",
+   "url": "https://seatgeek.com/bob-marley-comedian-tickets/comedy/2027-02-21-7-pm/18807693",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18825208",
+   "date": "2027-02-21",
+   "time": "19:00",
+   "title": "Clay Aiken",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/clay-aiken-tickets/beverly-massachusetts-the-cabot-2027-02-21-7-pm/concert/18825208",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZkf0GkdvymfY",
    "date": "2027-02-21",
    "time": "19:00",
@@ -6188,6 +6726,18 @@
    "score": 1
   },
   {
+   "id": "sg-18813580",
+   "date": "2027-02-25",
+   "time": "20:00",
+   "title": "Paris Jackson",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/paris-jackson-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-25-8-pm/concert/18813580",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_fGkDZXRx4",
    "date": "2027-02-26",
    "time": "19:00",
@@ -6320,6 +6870,21 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAebAZ",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18830723"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18825245",
+   "date": "2027-02-27",
+   "time": "20:00",
+   "title": "FJ - A Tribute to Foreigner and Journey",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/foreign-journey-tribute-to-foreigner-and-journey-tickets/beverly-massachusetts-the-cabot-2027-02-27-8-pm/concert/18825245",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6352,6 +6917,18 @@
    ],
    "score": 2,
    "why": "big"
+  },
+  {
+   "id": "sg-18813582",
+   "date": "2027-02-27",
+   "time": "20:00",
+   "title": "Mod Sun",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/mod-sun-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-27-8-pm/concert/18813582",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vv1avZk4kOwvsZeGk",
@@ -6522,6 +7099,18 @@
    "score": 0
   },
   {
+   "id": "sg-18813585",
+   "date": "2027-03-03",
+   "time": "20:00",
+   "title": "ROAR",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/roar-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-03-8-pm/concert/18813585",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4kGkdrWRfA",
    "date": "2027-03-03",
    "time": "20:00",
@@ -6534,6 +7123,18 @@
    "aka": [
     "sg-18693829"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18797443",
+   "date": "2027-03-04",
+   "time": "19:00",
+   "title": "Liz Miele",
+   "cat": "comedy",
+   "venue": "The Rockwell - Somerville",
+   "city": "Somerville, MA",
+   "url": "https://seatgeek.com/liz-miele-tickets/comedy/2027-03-04-7-pm/18797443",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6651,6 +7252,33 @@
    "score": 1
   },
   {
+   "id": "tm-Z7r9jZ1AAA4PI",
+   "date": "2027-03-05",
+   "time": "20:30",
+   "title": "Sullivan King (18 and Over)",
+   "cat": "music",
+   "venue": "Roadrunner-Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA4PI",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18830725"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18813623",
+   "date": "2027-03-05",
+   "time": "20:30",
+   "title": "SuperSonic - North America's Tribute To OASIS",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/supersonic-oasis-tribute-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-05-8-30-pm/concert/18813623",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "espn-401893462",
    "date": "2027-03-06",
    "time": "12:30",
@@ -6735,6 +7363,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe_7d",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18830727"
+   ],
    "score": 0
   },
   {
@@ -6879,6 +7510,18 @@
    "score": 1
   },
   {
+   "id": "sg-18813628",
+   "date": "2027-03-07",
+   "time": "20:00",
+   "title": "Johnnie Guilbert",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/johnnie-guilbert-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-07-8-pm/concert/18813628",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_1B5Nnhl",
    "date": "2027-03-07",
    "time": "20:00",
@@ -6904,6 +7547,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe_Gt",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18798809"
+   ],
    "score": 0
   },
   {
@@ -6977,8 +7623,7 @@
    "url": "https://www.ticketmaster.com/gabriel-jacoby-gutta-child-tour-boston-massachusetts-03-09-2027/event/0100656CD7A9176F",
    "source": "ticketmaster",
    "aka": [
-    "sg-18785496",
-    "sg-18786587"
+    "sg-18785496"
    ],
    "score": 0
   },
@@ -7043,6 +7688,18 @@
    "aka": [
     "sg-18777983"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18813588",
+   "date": "2027-03-10",
+   "time": "20:00",
+   "title": "Gang Of Four",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/gang-of-four-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-10-8-pm/concert/18813588",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -7125,6 +7782,18 @@
    "score": 0
   },
   {
+   "id": "sg-18813592",
+   "date": "2027-03-11",
+   "time": "20:00",
+   "title": "Flower Face",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/flower-face-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-11-8-pm/concert/18813592",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk48GkeSgCZP",
    "date": "2027-03-11",
    "time": "20:00",
@@ -7136,6 +7805,26 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18703273"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AA7fC7",
+   "date": "2027-03-12",
+   "time": "12:00",
+   "title": "DeathbyRomy w/ bodyimage",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7fC7",
+   "source": "ticketmaster",
+   "times": [
+    "12:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18813595",
+    "sg-18675603"
    ],
    "score": 0
   },
@@ -7201,21 +7890,6 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910713/thunder-celtics",
    "source": "espn",
    "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1AA7fC7",
-   "date": "2027-03-12",
-   "time": "20:00",
-   "title": "DeathbyRomy w/ bodyimage",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7fC7",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18675603"
-   ],
-   "score": 0
   },
   {
    "id": "tm-vv1AvZkf0GkdknLtE",
@@ -7447,7 +8121,8 @@
     "20:00"
    ],
    "aka": [
-    "sg-18709470"
+    "sg-18709470",
+    "sg-18728587"
    ],
    "score": 0
   },
@@ -7528,6 +8203,42 @@
    "score": 0
   },
   {
+   "id": "tm-vv1AvZk4wGkdL_7dD",
+   "date": "2027-03-17",
+   "time": "19:00",
+   "title": "Himra",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/himra-boston-massachusetts-03-17-2027/event/01006572DF6440FB",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18798812",
+   "date": "2027-03-17",
+   "time": "20:00",
+   "title": "Gang of Youths",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/gang-of-youths-tickets/boston-massachusetts-royale-boston-2027-03-17-8-pm/concert/18798812",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18813635",
+   "date": "2027-03-17",
+   "time": "20:00",
+   "title": "Radio Free Alice",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/radio-free-alice-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-17-8-pm/concert/18813635",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vvG17Z_1UqvuP8",
    "date": "2027-03-18",
    "time": "19:00",
@@ -7602,6 +8313,18 @@
    "url": "https://www.espn.com/nba/game/_/gameId/401910759/magic-celtics",
    "source": "espn",
    "score": 1
+  },
+  {
+   "id": "sg-18813642",
+   "date": "2027-03-18",
+   "time": "20:00",
+   "title": "The Brothers Comatose",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/the-brothers-comatose-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-18-8-pm/concert/18813642",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vv177Z_fGkDoCxUq",
@@ -7779,6 +8502,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAZkK",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18830714"
+   ],
    "score": 0
   },
   {
@@ -7794,6 +8520,18 @@
    "score": 1
   },
   {
+   "id": "sg-18825211",
+   "date": "2027-03-21",
+   "time": "15:00",
+   "title": "Symphony by the Sea: Symphony By The Sea - Brahms Violin Concerto",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/symphony-by-the-sea-tickets/beverly-massachusetts-the-cabot-2027-03-21-3-pm/concert/18825211",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_pGkl7LqnU",
    "date": "2027-03-21",
    "time": "18:00",
@@ -7803,10 +8541,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/midrift-boston-massachusetts-03-21-2027/event/0100656AC47DDAB6",
    "source": "ticketmaster",
-   "times": [
-    "18:00",
-    "19:00"
-   ],
    "aka": [
     "sg-18785494"
    ],
@@ -7909,15 +8643,18 @@
    "score": 0
   },
   {
-   "id": "sg-18761536",
+   "id": "tm-Z7r9jZ1AAAfb0",
    "date": "2027-03-24",
    "time": "20:00",
-   "title": "Tiffany Day (Moved from Royale)",
+   "title": "Tiffany Day",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/tiffany-day-tickets/boston-massachusetts-roadrunner-boston-2027-03-24-8-pm/concert/18761536",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAfb0",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18761536"
+   ],
    "score": 0
   },
   {
@@ -8099,6 +8836,21 @@
    "score": 0
   },
   {
+   "id": "sg-18813646",
+   "date": "2027-03-27",
+   "time": "20:00",
+   "title": "Addison Groove Project",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/addison-groove-project-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-27-8-pm/concert/18813646",
+   "source": "seatgeek",
+   "aka": [
+    "sg-18813646"
+   ],
+   "score": 0
+  },
+  {
    "id": "tm-vv1AvZk4AGkeJXnEm",
    "date": "2027-03-27",
    "time": "20:00",
@@ -8109,7 +8861,6 @@
    "url": "https://www.ticketmaster.com/jay-wheeler-lvf-tour-boston-massachusetts-03-27-2027/event/01006545A6FAA9EE",
    "source": "ticketmaster",
    "aka": [
-    "sg-18649625",
     "2027-03-27-jay-wheeler-mgm-music-hall-at-fe"
    ],
    "score": 0
@@ -8139,6 +8890,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7UfK",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18798816"
+   ],
    "score": 0
   },
   {
@@ -8336,6 +9090,18 @@
    "score": 0
   },
   {
+   "id": "sg-18813597",
+   "date": "2027-04-02",
+   "time": "20:00",
+   "title": "Teenage Fanclub",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/teenage-fanclub-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-02-8-pm/concert/18813597",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "espn-401893669",
    "date": "2027-04-03",
    "time": "15:00",
@@ -8387,6 +9153,9 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/jimmy-o-yang-has-no-friends-medford-massachusetts-04-03-2027/event/01006548212F4F3B",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18807769"
+   ],
    "score": 1
   },
   {
@@ -8429,6 +9198,30 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/cyclops-tickets/boston-massachusetts-royale-boston-2027-04-03-10-pm/concert/18689170",
    "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18830730",
+   "date": "2027-04-04",
+   "time": "17:00",
+   "title": "Haywire",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/haywire-tickets/boston-massachusetts-roadrunner-boston-2027-04-04-5-pm/concert/18830730",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_pGkY9hlLL",
+   "date": "2027-04-04",
+   "time": "19:00",
+   "title": "CHVRCHES - LIVE 2027",
+   "cat": "music",
+   "venue": "Citizens House of Blues Boston",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/chvrches-live-2027-boston-massachusetts-04-04-2027/event/0100656C176EB7DF",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -8584,6 +9377,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-vnv-nation-18-boston-massachusetts-04-07-2027/event/0100634DED91D53E",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18793518"
+   ],
    "score": 0
   },
   {
@@ -8644,6 +9440,18 @@
    "score": 0
   },
   {
+   "id": "sg-18798819",
+   "date": "2027-04-08",
+   "time": "20:00",
+   "title": "Goldie Boutilier",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/goldie-boutilier-tickets/boston-massachusetts-royale-boston-2027-04-08-8-pm/concert/18798819",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAAFqw",
    "date": "2027-04-09",
    "time": "18:30",
@@ -8688,6 +9496,18 @@
    "url": "https://seatgeek.com/ian-bagg-tickets/comedy/2027-04-09-7-pm/18747825",
    "source": "seatgeek",
    "score": 1
+  },
+  {
+   "id": "sg-18825153",
+   "date": "2027-04-09",
+   "time": "19:30",
+   "title": "Basketmouth",
+   "cat": "comedy",
+   "venue": "City Winery - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/basketmouth-tickets/comedy/2027-04-09-7-30-pm/18825153",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vvG17Z_GCHlChD",
@@ -8799,6 +9619,18 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/monster-hunter-orchestra-concert-boston-massachusetts-04-10-2027/event/0100653EA2F7FB28",
    "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "sg-18830732",
+   "date": "2027-04-10",
+   "time": "22:00",
+   "title": "Soca Therapy",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/soca-therapy-tickets/boston-massachusetts-roadrunner-boston-2027-04-10-10-pm/concert/18830732",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -8952,6 +9784,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/cleo-sol-gentlewoman-tour-boston-massachusetts-04-14-2027/event/010065729949B21E",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18830197"
+   ],
    "score": 0
   },
   {
@@ -9086,6 +9921,18 @@
    "why": "fav"
   },
   {
+   "id": "sg-18813650",
+   "date": "2027-04-16",
+   "time": "20:00",
+   "title": "MC4D",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/mc4d-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-16-8-pm/concert/18813650",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_4GkUU6K-9",
    "date": "2027-04-17",
    "time": "18:00",
@@ -9131,6 +9978,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/one-night-of-queen-a-tribute-boston-massachusetts-04-17-2027/event/0100656B437F0EF7",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18800569"
+   ],
    "score": 0
   },
   {
@@ -9448,6 +10298,9 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe3jd",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18825214"
+   ],
    "score": 0
   },
   {
@@ -9460,6 +10313,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/panchiko-boston-massachusetts-04-25-2027/event/0100656FC1EA847E",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18793496"
+   ],
    "score": 0
   },
   {
@@ -9657,6 +10513,18 @@
    "score": 1
   },
   {
+   "id": "sg-18813602",
+   "date": "2027-04-30",
+   "time": "20:00",
+   "title": "Friendly Fires",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/friendly-fires-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-30-8-pm/concert/18813602",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_8GkINn93w",
    "date": "2027-05-01",
    "time": "17:20",
@@ -9796,6 +10664,18 @@
    "score": 0
   },
   {
+   "id": "sg-18813609",
+   "date": "2027-05-03",
+   "time": "20:00",
+   "title": "Leo Middea",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/leo-middea-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-03-8-pm/concert/18813609",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AA7IPx",
    "date": "2027-05-03",
    "time": "20:00",
@@ -9820,6 +10700,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/sim-hooman-after-all-world-tour-boston-massachusetts-05-04-2027/event/010064B2B5F2CFFB",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18793521"
+   ],
    "score": 0
   },
   {
@@ -9835,6 +10718,18 @@
    "aka": [
     "sg-18748265"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18813612",
+   "date": "2027-05-04",
+   "time": null,
+   "title": "Leo Middea",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/leo-middea-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-04-3-30-am/concert/18813612",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -9923,6 +10818,30 @@
    "url": "https://www.ticketmaster.com/are-you-garbage-army-of-garbage-boston-massachusetts-05-08-2027/event/01006542C303E459",
    "source": "ticketmaster",
    "score": 1
+  },
+  {
+   "id": "sg-18813572",
+   "date": "2027-05-08",
+   "time": "20:00",
+   "title": "Getdown Services",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/getdown-services-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-08-8-pm/concert/18813572",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18813656",
+   "date": "2027-05-09",
+   "time": "20:30",
+   "title": "Gurriers",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/gurriers-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-09-8-30-pm/concert/18813656",
+   "source": "seatgeek",
+   "score": 0
   },
   {
    "id": "tm-vv177Z_KGkDfKWRm",
@@ -10107,13 +11026,21 @@
   {
    "id": "tm-vv1AvZk4aGkdKuVOs",
    "date": "2027-05-16",
-   "time": "19:00",
+   "time": "00:30",
    "title": "JOSH JOHNSON'S COMEDY BAND CAMP",
    "cat": "comedy",
    "venue": "Boch Center Wang Theatre",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/josh-johnsons-comedy-band-camp-boston-massachusetts-05-16-2027/event/01006549D3374831",
    "source": "ticketmaster",
+   "times": [
+    "00:30",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18797123",
+    "sg-18797126"
+   ],
    "score": 1
   },
   {
@@ -10145,6 +11072,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/kingfishr-weight-of-the-feather-tour-boston-massachusetts-05-17-2027/event/0100656DF63B77D3",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18793497"
+   ],
    "score": 0
   },
   {
@@ -10234,9 +11164,9 @@
  ],
  "sources": {
   "picks": 2,
-  "venues": 1,
+  "venues": 0,
   "espn": 67,
-  "ticketmaster": 508,
-  "seatgeek": 104
+  "ticketmaster": 512,
+  "seatgeek": 168
  }
 }
