@@ -1808,7 +1808,7 @@
       ui.phase = d.phase;
       // the lobby (opts.lobby) is the first tab until the draft starts, and opens first
       const lobbyOn = !!opts.lobby && d.phase === "setup";
-      if (lobbyOn && !ui.lobbySeen) { ui.lobbySeen = true; ui.left = "lobby"; }
+      if (lobbyOn && !ui.lobbySeen) { ui.lobbySeen = true; if (opts.lobbyFirst !== false) ui.left = "lobby"; }
       const lefts = (lobbyOn ? [["lobby", "Lobby"]] : []).concat([["players", "Players"], ["board", "Board"], ["picks", auction() ? "Sales" : "Picks"], ["proj", "Projected"]].concat(mystery() ? [["packages", "Packages"]] : [], elephant() && d.phase !== "done" ? [["steal", "Steal"]] : [], d.phase === "done" ? [["results", "Results"]] : []));
       if (!lefts.some((x) => x[0] === ui.left)) ui.left = "players";
       const offers = me() != null ? d.trades.filter((T) => T.status === "pending" && T.to === me()).length : 0;

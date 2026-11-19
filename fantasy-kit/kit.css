@@ -2870,3 +2870,13 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   .dr-bar .seg.sv{flex:none}.dr-bar .seg.sv button{padding:0 10px;min-height:36px}
   .turn-bar .tb-who b{cursor:pointer}
 }
+/* the league's front page before the draft (live.js mountHome) */
+.lh{max-width:760px}
+.lh .lobby{padding:0;max-width:none}
+.lh-hero{display:flex;align-items:center;gap:12px 20px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;background:var(--surface);padding:16px 18px}
+.lh-id{flex:1 1 260px;min-width:0}
+.lh-id h1{margin:0;font-size:26px;line-height:1.15}
+.lh-id p{margin:4px 0 0}
+.lh-go{display:grid;gap:4px;justify-items:start}
+.lh-go .btn{min-height:44px;padding:0 20px;font-size:15px}
+@media (max-width:600px){.lh-go,.lh-go .btn{width:100%;justify-items:stretch;text-align:center;justify-content:center}.lh-id h1{font-size:22px}}
