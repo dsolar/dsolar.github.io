@@ -1153,7 +1153,9 @@
       if (opts.commish && d.phase === "live") menu.push(`${d.paused && !d.hold ? "" : `<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause the draft"}</button>`}<button class="btn sm" data-act="undo">Undo the last pick</button>`);
       if (d.phase === "done" && opts.extra) prim.push(opts.extra());
       if (opts.tools) side.push(opts.tools());
-      if (opts.exit) side.push(`<a class="btn sm ghost" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
+      // a finished practice draft: the way back to the league is a button you can see, not one tucked in More
+      if (opts.exit && d.phase === "done" && /^Back to/.test(opts.exit.label || "")) prim.unshift(`<a class="btn sm go" href="${esc(opts.exit.href)}">${esc(opts.exit.label)}</a>`);
+      else if (opts.exit) side.push(`<a class="btn sm ghost" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>`);
       const more = menu.length || side.length ? `<details class="dr-more"><summary class="btn sm ghost" aria-label="More draft settings">More</summary><div class="menu">${side.length ? `<div class="dr-mo">${side.join("")}</div>` : ""}${menu.join("")}</div></details>` : "";
       const ctl = prim.concat(side.length ? [`<span class="dr-sec">${side.join("")}</span>`] : [], more ? [more] : []);
       let mid = "";
@@ -1349,7 +1351,9 @@
       const ok = (p) => p && ctx.own[p.id] == null && F.canAdd(d, ctx, mine, p).ok;
       const q = team(mine).queue.map((id) => ctx.byId[id]).find(ok);
       const a = draftCoachAdvice() || {}, p = q || (ok(a.fit) ? a.fit : null) || ctx.available.find(ok);
-      return `<div class="turn-bar show-m" role="status"><span class="ring" id="fk-ring3"><span id="fk-timer3"></span></span><span class="tb-who"><small>You're on the clock</small>${p ? `<b>${esc(p.n)}</b><span>${q ? "Top of your queue" : "Best fit for your roster"}, ${esc(S.positions(p).join(", "))}</span>` : `<b>Pick a player</b>`}</span>${p ? `<button type="button" class="btn go" data-pick="${esc(p.id)}">Draft</button>` : ""}</div>`;
+      // what you need to decide: the pick, the player, where he ranks, and what's still open on your roster
+      const open = Object.entries(openSpots(mine)).map(([sl, k]) => `${sl}${k > 1 ? `×${k}` : ""}`).join(" ");
+      return `<div class="turn-bar show-m" role="status"><span class="ring" id="fk-ring3"><span id="fk-timer3"></span></span><span class="tb-who"><small>Your pick, ${esc(F.pickLabel(d, c.index))}${open ? ` · Need ${esc(open)}` : ""}</small>${p ? `<b data-player="${esc(p.id)}">${esc(p.n)}</b><span>${q ? "Top of your queue" : "Best fit"} · ${esc(S.positions(p).join(", "))} ${esc(p.t || "")} · #${p.rank}${p.prank ? `, ${esc(p.prank)}` : ""}</span>` : `<b>Pick a player</b>`}</span>${p ? `<button type="button" class="btn go" data-pick="${esc(p.id)}">Draft</button>` : ""}</div>`;
     }
     function draftCoachAdvice() {
       const E = FK.experience, d = D(), mine = me();

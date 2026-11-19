@@ -271,7 +271,7 @@
       el: $("#room"), sport, players, draft: () => P.D, save: practiceSave, me: () => P.me, now, commish: true, solo: true, ...roomCols(P.D),
       get drive() { return !document.hidden; },
       brand: { name: "Practice draft", mark: `<img src="mark.svg" alt="">` },
-      exit: { href: P.pre ? "#draft" : "#league", label: P.pre ? "Back to the draft room" : "Back to the league" },
+      exit: { href: P.pre ? "#draft" : "#league", label: "Back to the league" },
       tools: () => `<span class="ps">Only you see this. Nothing counts.</span>`,
       extra: () => `<button class="btn sm" data-live="practice-new">Start over</button>`,
     });

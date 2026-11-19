@@ -2859,3 +2859,14 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .turn-bar .btn.go{background:#111;color:var(--brand,#F6C445);border-color:#111;flex:none;min-height:40px;padding:0 18px}
 @media (max-width:860px){body:has(.turn-bar) .toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}}
 @media (max-width:600px){.otc.lotc>.pav,.otc.lotc .who b{display:none}.otc.lotc{padding-top:6px;padding-bottom:6px}}
+/* on the clock on a phone the bottom bar carries the clock and the pick, so the room gives its space to the list:
+   the header's on-the-clock box, the best-fit line and the row stars step aside, and the stats switch shares the
+   search row */
+@media (max-width:860px){
+  .droom:has(.turn-bar) .dr-top .otc{display:none}
+  .droom:has(.turn-bar) .pf-now,.droom:has(.turn-bar) .psort{display:none!important}
+  .droom:has(.turn-bar) #fk-pool .star{display:none}
+  .dr-bar #fk-q{flex:1 1 110px;min-width:0}
+  .dr-bar .seg.sv{flex:none}.dr-bar .seg.sv button{padding:0 10px;min-height:36px}
+  .turn-bar .tb-who b{cursor:pointer}
+}
