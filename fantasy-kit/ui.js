@@ -284,10 +284,13 @@
     const logo = sport && p && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
     const face = p ? facePhoto(sport, p) : null;
     const src = face ? face.src : logo;
-    const fall = face && logo ? `if(!this.dataset.l){this.dataset.l=1;this.parentNode.classList.remove('face','espn');this.parentNode.classList.add('lgo');this.src='${esc(logo)}'}else{this.parentNode.classList.remove('lgo');this.remove()}`
-      : `this.parentNode.classList.remove('lgo','face','espn');this.remove()`;
+    // a headshot that won't load falls back to the team logo, then to his initials; the headshot sits in its own
+    // circle (.pav-c) so the team's logo can ride on its corner (.pav-b)
+    const fall = face && logo ? `var a=this.closest('.pav'),b=a.querySelector('.pav-b');if(b)b.remove();if(!this.dataset.l){this.dataset.l=1;a.classList.remove('face','espn');a.classList.add('lgo');this.src='${esc(logo)}'}else{a.classList.remove('lgo');this.remove()}`
+      : `var a=this.closest('.pav'),b=a.querySelector('.pav-b');if(b)b.remove();a.classList.remove('lgo','face','espn');this.remove()`;
     const ask = !face && p && p.n && sport && /^(nba|nfl|mlb)$/.test(sport.key) ? ` data-face-sport="${sport.key}" data-face-name="${esc(p.n)}"` : "";
-    return `<span class="pav c${colorOf(sport, p)}${size ? " " + size : ""}${face ? " face" + (face.espn ? " espn" : "") : src ? " lgo" : ""}" aria-hidden="true"${ask}>${src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="${fall}">` : ""}${esc(initials(p.n))}</span>`;
+    const img = src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="${fall}">` : "";
+    return `<span class="pav c${colorOf(sport, p)}${size ? " " + size : ""}${face ? " face" + (face.espn ? " espn" : "") : src ? " lgo" : ""}" aria-hidden="true"${ask}>${face ? `<span class="pav-c">${img}</span>${logo ? `<img class="pav-b" src="${esc(S.teamLogo(sport.key, p.t, 48))}" alt="" loading="lazy" onerror="this.remove()">` : ""}` : img}${esc(initials(p.n))}</span>`;
   };
   const injTag = (p) => (p && p.inj ? ` <span class="tag inj" title="${esc(p.inj)}">${esc(String(p.inj).replace(/^day.*/i, "DTD").replace(/^questionable/i, "Q").slice(0, 3).toUpperCase())}</span>` : "");
   // Avatar, name and a small line (positions and team) for any player.

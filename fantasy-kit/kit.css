@@ -59,8 +59,8 @@ a{color:var(--accent)}
 .av.logo.img img{width:100%;height:100%;object-fit:cover;display:block}
 .av.c0{--c:var(--t0)}.av.c1{--c:var(--t1)}.av.c2{--c:var(--t2)}.av.c3{--c:var(--t3)}.av.c4{--c:var(--t4)}.av.c5{--c:var(--t5)}
 .av.c6{--c:var(--t6)}.av.c7{--c:var(--t7)}.av.c8{--c:var(--t8)}.av.c9{--c:var(--t9)}.av.c10{--c:var(--t10)}.av.c11{--c:var(--t11)}
-.pav{display:inline-flex;align-items:center;justify-content:center;flex:none;width:30px;height:30px;border-radius:50%;background:var(--pc,var(--p6));color:var(--pci,var(--p6i));font-weight:800;font-size:11px;font-variation-settings:"wdth" 80}
-.pav.sm{width:24px;height:24px;font-size:9.5px}
+.pav{display:inline-flex;align-items:center;justify-content:center;flex:none;width:34px;height:34px;border-radius:50%;background:var(--pc,var(--p6));color:var(--pci,var(--p6i));font-weight:800;font-size:11px;font-variation-settings:"wdth" 80}
+.pav.sm{width:26px;height:26px;font-size:9.5px}
 .pav.lg{width:64px;height:64px;font-size:22px}
 .pname{display:flex;align-items:center;gap:9px;min-width:0}
 .pname .pn{font-weight:700;line-height:1.15;font-variation-settings:"wdth" 92;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -854,8 +854,14 @@ table.roto td small.rp{display:block;font-size:10.5px;font-weight:650;color:var(
 /* player faces: the photo fills the avatar inside the position ring (a registry face replaces the team logo) */
 .pav.face,.pav.has-face{position:relative;background:#e9edf3;font-size:0;overflow:hidden}
 .pav.face img,.pav.has-face img.ds-face-img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+/* the headshot in its own circle, on a wash of his position color, with the team's logo on the corner */
+.pav.face{overflow:visible;background:transparent}
+.pav.face .pav-c{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 30%,#fff 0,color-mix(in srgb,var(--pc,var(--p6)) 28%,#eef1f5) 70%)}
+.pav.face .pav-c img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.pav.face .pav-b{position:absolute;inset:auto;right:-4px;bottom:-3px;width:46%;height:46%;border-radius:50%;background:#fff;object-fit:contain;padding:1.5px;box-shadow:0 0 0 1.5px var(--surface,#fff),0 1px 2px rgba(0,0,0,.25);z-index:1;transform:none}
+.pav.sm.face .pav-b{width:50%;height:50%;right:-4px;bottom:-4px;padding:1px}
 .pav.has-face img:not(.ds-face-img){display:none}
-.pav.espn img{object-position:50% 0;transform:scale(1.45);transform-origin:50% 18%}
+.pav.espn .pav-c img{object-position:50% 0;transform:scale(1.45);transform-origin:50% 18%}
 .pav.face::after,.pav.has-face::after{content:"";position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px var(--pc,var(--p6))}
 .pav.lg.face::after,.pav.lg.has-face::after{box-shadow:inset 0 0 0 3px var(--pc,var(--p6))}
 /* a compact select that sits in a row of chips and pills (stats or projections, and the like) */
@@ -2568,7 +2574,7 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
   table.t.roster .slot{min-width:34px;padding-left:4px;padding-right:4px}
   table.t.roster .grip{display:none}
   table.t.roster .pname{gap:7px}
-  table.t.roster .pname .pav,table.t.roster .pname .av{width:26px;height:26px;font-size:9.5px}
+  table.t.roster .pname .pav,table.t.roster .pname .av{width:30px;height:30px;font-size:9.5px}
   table.t.roster .pname .pn,table.t.roster .pname .sub{max-width:129px}
   table.t.roster td.num,table.t.roster th.r{min-width:44px;padding-left:4px;padding-right:8px}
   .table-wrap table.t.roster td.act,.table-wrap table.t.roster th.act{position:static;box-shadow:none;padding-left:8px}
@@ -2784,3 +2790,4 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 @media (max-width:600px){table.t.stand td.nm{max-width:none;width:auto}}
 .rs-open .rs-chips{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-width:0}
 .rs-open .slot.sm{font-size:10.5px;padding:2px 6px;min-width:0}
+.pav.has-face.espn img.ds-face-img{object-position:50% 0;transform:scale(1.45);transform-origin:50% 18%}
