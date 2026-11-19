@@ -21,7 +21,7 @@
   "num_keepers": null,
   "keeper_deadline_date": null
  },
- "pulled": "2026-11-16T23:25:40Z",
+ "pulled": "2026-11-19T12:31:25Z",
  "teams": {
   "469.l.30639.t.12": {
    "name": "Newton South Loins",
@@ -807,7 +807,7 @@
    "player": "469.p.9459",
    "name": "Sonny Gray",
    "pos": "SP",
-   "mlb": "BOS"
+   "mlb": "MIN"
   },
   {
    "pick": 81,
@@ -996,7 +996,7 @@
    "player": "469.p.10691",
    "name": "Emilio Pagán",
    "pos": "RP",
-   "mlb": "CIN"
+   "mlb": "DET"
   },
   {
    "pick": 102,
@@ -2868,7 +2868,7 @@
    "player": "469.p.12540",
    "name": "Bryce Miller",
    "pos": "SP",
-   "mlb": "SEA"
+   "mlb": "KC"
   },
   {
    "pick": 310,
@@ -2940,7 +2940,7 @@
    "player": "469.p.12723",
    "name": "José A. Ferrer",
    "pos": "RP",
-   "mlb": "SEA"
+   "mlb": "KC"
   },
   {
    "pick": 318,
@@ -3408,7 +3408,7 @@
    "player": "469.p.12336",
    "name": "Maikel Garcia",
    "pos": "2B,3B,SS,OF",
-   "mlb": "KC"
+   "mlb": "SEA"
   },
   {
    "pick": 370,
@@ -4540,7 +4540,7 @@
     "key": "469.p.10691",
     "name": "Emilio Pagán",
     "pos": "RP",
-    "mlb": "CIN",
+    "mlb": "DET",
     "yk": {
      "status": "",
      "cost": "",
@@ -6290,7 +6290,7 @@
     "key": "469.p.9459",
     "name": "Sonny Gray",
     "pos": "SP",
-    "mlb": "BOS",
+    "mlb": "MIN",
     "yk": {
      "status": "",
      "cost": "",
@@ -8644,7 +8644,7 @@
     "key": "469.p.10898",
     "name": "Dustin May",
     "pos": "SP",
-    "mlb": "MIL",
+    "mlb": "CWS",
     "yk": {
      "status": "",
      "cost": "",
@@ -8862,7 +8862,7 @@
     "key": "469.p.12336",
     "name": "Maikel Garcia",
     "pos": "2B,3B,SS,OF",
-    "mlb": "KC",
+    "mlb": "SEA",
     "yk": {
      "status": "1",
      "cost": "",
