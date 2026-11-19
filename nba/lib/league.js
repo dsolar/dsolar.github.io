@@ -438,6 +438,42 @@
   };
   // Trades among three or more teams. tr.teams: codes; tr.moves: [{ kind: "p" | "k", id, from, to }].
   // Each team is checked on everything it sends and everything it gets, the same way as a two-team deal.
+  // Stepien counts only firsts a team is sure to have. Another team's protected pick might go back, so it doesn't count.
+  // A protected first a team owes that rolls over ("Lottery protected; unprotected in 2028") leaves one of its own firsts
+  // in those years gone, so each way it could convey is checked: every scenario has to pass.
+  L.firstCounts = (pk, code) => pk.r === 1 && pk.owner === code && pk.y >= 2027 && !pk.atRisk && !(pk.prot && pk.from !== code);
+  L.firstsScenarios = (W, code, outIds = [], inIds = []) => {
+    const gone = new Set(outIds), base = {};
+    const add = (m, y, n = 1) => { m[y] = (m[y] || 0) + n; };
+    for (const pk of W.picks) if (L.firstCounts(pk, code) && !gone.has(pk.id)) add(base, pk.y);
+    for (const id of inIds) { const pk = W.picks.find(x => x.id === id); if (pk && pk.r === 1 && !pk.atRisk && !(pk.prot && pk.from !== code)) add(base, pk.y); }
+    let scen = [base];
+    for (const owed of W.picks) {
+      if (owed.r !== 1 || owed.from !== code || owed.owner === code) continue;
+      const roll = W.picks.filter(x => x.atRisk === owed.id).sort((a, b) => a.y - b.y);
+      if (!roll.length) continue;
+      const next = [];
+      for (const m of scen) for (let i = 0; i <= roll.length; i++) {
+        // conveys in year i of the chain (0 = this year); the team keeps its own first in every other year of the chain
+        const c = Object.assign({}, m);
+        if (i > 0) add(c, owed.y);
+        roll.forEach((pk, j) => { if (j !== i - 1 && pk.owner === code && !gone.has(pk.id)) add(c, pk.y); });
+        next.push(c);
+      }
+      scen = next;
+    }
+    return scen;
+  };
+  // a scenario that already broke the rule before the trade (messy or overlapping pick data) doesn't block it; the
+  // trade fails only if it breaks a way the picks could convey that was fine before
+  L.stepienAll = (W, code, outIds, inIds) => {
+    const before = L.firstsScenarios(W, code), after = L.firstsScenarios(W, code, outIds, inIds), y0 = 2027 + W.season;
+    for (let i = 0; i < after.length; i++) {
+      const st = CBA.stepien(after[i], y0);
+      if (!st.ok && CBA.stepien(before[i], y0).ok) return st;
+    }
+    return { ok: true };
+  };
   L.checkTradeMulti = (W, tr) => {
     const res = { ok: true, teams: {}, issues: [] };
     const side = (code, key) => {
@@ -531,16 +567,16 @@
           if (tr.soft) { if (!r.after || p.aggOk > r.after) r.after = p.aggOk; r.notes.push(msg); } else { r.ok = false; r.msgs.push(msg); }
         }
       }
+      // a team can't reacquire by trade a player it traded away within the past year
+      for (const p of inP) for (const nb of p.noBack || []) if (nb.team === code && W.date < nb.until) {
+        const msg = `${t.name} traded ${p.n} on ${L.fmtDate(nb.date)} and can't trade for him again until ${L.fmtDate(nb.until)}.`;
+        if (tr.soft) { if (!r.after || nb.until > r.after) r.after = nb.until; r.notes.push(msg); } else { r.ok = false; r.msgs.push(msg); }
+      }
       // second-apron penalty: a frozen first can't be traded
       for (const id of out.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.frozen) { r.ok = false; r.msgs.push(`The ${pk.y} first is frozen (finished a season over the second apron), so it can't be traded.`); } }
       // picks (Stepien)
-      const firsts = {};
-      for (const pk of W.picks) if (pk.owner === code && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1;
-      for (const id of out.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.r === 1) firsts[pk.y]--; }
-      for (const id of inn.picks || []) { const pk = W.picks.find(x => x.id === id); if (pk && pk.r === 1) firsts[pk.y] = (firsts[pk.y] || 0) + 1; }
-      // the rule limits trading first-round picks away: a team already short (from older deals) can still trade players
       const sendsFirst = (out.picks || []).some(id => { const pk = W.picks.find(x => x.id === id); return pk && pk.r === 1; });
-      const st = sendsFirst ? CBA.stepien(firsts, 2027 + W.season) : { ok: true };
+      const st = sendsFirst ? L.stepienAll(W, code, out.picks || [], inn.picks || []) : { ok: true };
       if (!st.ok) { r.ok = false; r.msgs.push(st.why); }
       return r;
     }

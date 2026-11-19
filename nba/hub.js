@@ -1,3 +1,9 @@
+      const stepienOK = (c, moves) => {
+        const ks = moves.filter(m => m.kind === "k");
+        // like the trade check: a team that sends a first can't be left with back-to-back years missing one, in any way its picks could convey
+        if (!ks.some(m => m.from === c && W.picks.find(x => x.id === m.id).r === 1)) return true;
+        return L.stepienAll(W, c, ks.filter(m => m.from === c).map(m => m.id), ks.filter(m => m.to === c).map(m => m.id)).ok;
+      };
 /* NBA Hub: the model. No DOM, no network: the page and the tests both load it.
 
    Everything is built on the shared NBA library (nba/lib): Banner 19's ratings, aging, contract value, cap rules and
@@ -179,6 +185,32 @@
     }
     // Pick ledger: 2027 from the current draft order (who owns each team's pick), 2028-33 from every future pick owed
     setPicks(W, board, codes);
+    // a team can't reacquire by trade a player it traded away within the past year (nba/data/trades.json)
+    if (inp.trades && inp.trades.trades) {
+      const byKey = {}; for (const id of Object.keys(W.P)) byKey[NC.nameKeys(id)[0]] = id;
+      const keyOf = n => [NC.nameKeys(slug(n))[0], NC.nameKeys(slug(n.replace(/['’]/g, " ")))[0]].map(k => byKey[k]).find(Boolean);
+      for (const t of inp.trades.trades) for (const [n, from] of t.p) {
+        if (!from) continue;
+        const p = W.P[keyOf(n)];
+        if (!p || p.t === from) continue;
+        const d = new Date(t.date + "T12:00:00Z"); d.setUTCFullYear(d.getUTCFullYear() + 1);
+        const until = d.toISOString().slice(0, 10);
+        if (until > asOf) (p.noBack = p.noBack || []).push({ team: from, date: t.date, until });
+      }
+    }
+    // Stepien worst case: a protected first that rolls over can convey in a later year instead, so the team can't count
+    // on owning its own first in those years either ("Lottery protected; unprotected in 2028")
+    const ruleNotes = {};   // the draft board's pick rules carry rollover notes the picks file sometimes doesn't
+    for (const x of ((((inp.board || {}).rules || {}).first) || [])) if (x.orig && x.note) ruleNotes[`${(inp.board.rules.year || 2027)}-1-${NC.teamCode ? NC.teamCode(x.orig) : x.orig}`] = x.note;
+    for (const pk of W.picks) {
+      if (pk.r !== 1 || pk.owner === pk.from) continue;
+      const notes = [pk.note, ruleNotes[pk.id], ruleNotes[pk.id.replace(/PHO$/, "PHX").replace(/BRK$/, "BKN").replace(/CHO$/, "CHA")]].filter(Boolean).join(" ");
+      if (!notes) continue;
+      const yrs = []; let m;
+      const re = /(?:unprotected in|rolls to)\s+([\d, and]+)/gi;
+      while ((m = re.exec(notes))) for (const y of m[1].match(/\d{4}/g) || []) yrs.push(+y);
+      for (const y of yrs) { const own = W.picks.find(x => x.r === 1 && x.from === pk.from && x.y === y); if (own) own.atRisk = pk.id; }
+    }
     // second-apron penalty: a team's first seven years out is frozen for finishing a season over the second apron
     if (inp.frozen && inp.frozen.frozen) for (const [y, list] of Object.entries(inp.frozen.frozen))
       for (const pk of W.picks) if (pk.r === 1 && pk.y === +y && list.includes(pk.from) && pk.owner === pk.from) pk.frozen = true;
@@ -1051,7 +1083,7 @@
         return Object.keys(d).every(c => nRoster[c] + d[c] <= 15 && nRoster[c] + d[c] >= 13);
       };
       // Stepien rule: never leave a team without a first-round pick in back-to-back future drafts
-      const firstsOf = c => { const y = {}; for (const pk of W.picks) if (pk.r === 1 && pk.owner === c && pk.y >= 2027) y[pk.y] = (y[pk.y] || 0) + 1; return y; };
+      const firstsOf = c => { const y = {}; for (const pk of W.picks) if (L.firstCounts(pk, c)) y[pk.y] = (y[pk.y] || 0) + 1; return y; };
       const stepienOK = (c, moves) => {
         const y = Object.assign({}, firstsOf(c));
         for (const m of moves) if (m.kind === "k") { const pk = W.picks.find(x => x.id === m.id); if (pk.r !== 1) continue; if (m.from === c) y[pk.y] = (y[pk.y] || 0) - 1; if (m.to === c) y[pk.y] = (y[pk.y] || 0) + 1; }
@@ -1092,6 +1124,7 @@
           dbg.sal++;
           let moves = mv(outA, A, B).concat(mv(inA, B, A));
           if (!rosterOK(moves)) continue;
+          if (inA.some(q => (q.noBack || []).some(x => x.team === A)) || outA.some(q => (q.noBack || []).some(x => x.team === B))) continue;
           let uA = H.dealUtility(A, moves), uB = H.dealUtility(B, moves);
           // sweeteners: the side short of what it needs adds picks (and, buying, a young player) until it's there
           const sweeten = (payer, other, need) => {

@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json'), trades: opt('nba/data/trades.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -233,4 +233,17 @@ test('trade rules: frozen firsts, protected picks, the 2027 lottery bans, soft n
   const lot = H.season0();
   assert.ok(lot.WAS.slots[1] === undefined || lot.WAS.slots[1] === 0, 'Washington never picks first in 2027');
   for (const s of [1, 2, 3, 4, 5]) assert.ok(!lot.UTA.slots[s], 'Utah not top five in 2027');
+});
+
+test('trade rules: no trading a player back within a year; Stepien counts the worst case', () => {
+  const ware = Object.values(H.W.P).find(p => /ware/.test(p.id) && (p.noBack || []).some(x => x.team === 'MIA'));
+  if (ware) {
+    const t = H.checkTrade({ teams: ['MIA', ware.t], moves: [{ kind: 'p', id: ware.id, from: ware.t, to: 'MIA' }], strict: true });
+    assert.equal(t.teams.MIA.ok, false, 'Miami cannot trade for a player it traded in July');
+  }
+  const mia29 = H.W.picks.find(pk => pk.id === '2029-1-MIA');
+  if (mia29 && mia29.owner === 'MIA' && H.W.picks.find(pk => pk.id === '2028-1-MIA' && pk.atRisk)) {
+    const t = H.checkTrade({ teams: ['MIA', 'BOS'], moves: [{ kind: 'k', id: '2029-1-MIA', from: 'MIA', to: 'BOS' }], strict: true });
+    assert.equal(t.teams.MIA.ok, false, 'Miami can\'t trade its 2029 first while its 2028 could convey');
+  }
 });
