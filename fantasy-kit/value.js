@@ -150,6 +150,16 @@
   }
 
   // Pulls small samples toward a below-replacement line: g / (g + k) of a player's own rate.
+  function priorShrink(sport, players) {
+    const smp = sport.sample, gOf = (p) => S.stat(sport, p, smp.line, smp.col) || 0;
+    const live = players.filter((p) => gOf(p) >= smp.k).map((p) => p.v).sort((a, b) => a - b);
+    const low = live.length ? live[Math.floor(live.length * 0.3)] : 0;
+    for (const p of players) {
+      const g = gOf(p), w = g / (g + smp.k), g0 = p.l0 && p.l0[smp.line] ? S.stat(sport, { l: p.l0 }, smp.line, smp.col) || 0 : 0;
+      const prior = p.fpg0 != null && g0 >= 8 ? p.fpg0 : low;
+      p.v = w * p.v + (1 - w) * prior;
+    }
+  }
   function shrink(sport, players, key) {
     const smp = sport.sample;
     if (!smp) return;
@@ -304,7 +314,12 @@
       // projection already leaves out the weeks a player is hurt; a season projection set in the summer doesn't, so
       // injuries come off it. Value stays on a season scale so a week is v / games anywhere it's used.
       for (const p of players) p.v = p.fpg;
-      shrink(sport, players, "v");
+      // College hoops: a handful of games is all anyone has in November, and the pool's own floor (its 60th
+      // percentile) lifts a 4-point bench guard to a starter's projection. A player with a real last season leans on it
+      // instead (scored this league's way, p.fpg0), and one without (a freshman, a walk-on) leans toward the pool's
+      // 30th percentile, so the bench stays the bench.
+      if (sport.key === "cbb" && sport.sample) priorShrink(sport, players);
+      else shrink(sport, players, "v");
       const meta = (sport.data && sport.data.lines && sport.data.lines.proj) || {};
       const games = sc.games || 17, left = meta.ros ? Math.max(1, meta.weeks || 1) : games;
       for (const p of players) {

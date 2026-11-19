@@ -122,3 +122,6 @@
 .q-stale{flex-basis:100%;color:var(--loss);font-weight:700}
 @media(max-width:700px){.q-sports{grid-template-columns:repeat(2,minmax(0,1fr))}.q-cfb .q-hero h1{font-size:46px}}
 @media(max-width:420px){.q-cfb .q-hero h1{font-size:39px}}
+/* the next game's names sit beside the logo even when a logo doesn't load, and break between words */
+.q-feature-teams b{overflow-wrap:normal;word-break:normal}
+@media(max-width:420px){.q-feature-teams>div>b,.q-feature-teams>div>small{grid-column:2}}

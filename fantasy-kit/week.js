@@ -11,7 +11,8 @@
   const current = () => Q.view(state(), dataFor[sport], S, SL, infoFor[sport] && infoFor[sport].counts);
   const date = (iso) => new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { timeZone: "UTC", month: "short", day: "numeric" });
   const time = (iso) => new Date(iso).toLocaleString("en-US", { timeZone: "America/New_York", weekday: "short", hour: "numeric", minute: "2-digit" });
-  const periodName = (w) => w.day ? `${sport === "cbb" && SL.dayName(w.day) === "Tonight" ? "Today" : SL.dayName(w.day)} · ${date(w.day)}` : `Week ${w.week} · ${date(w.start)}–${date(w.end)}`;
+  // "Today · Nov 19", "Tomorrow · Nov 20", then just "Sat, Nov 21" (the day's name already has its date)
+  const periodName = (w) => w.day ? (() => { const nm = sport === "cbb" && SL.dayName(w.day) === "Tonight" ? "Today" : SL.dayName(w.day); return /\d/.test(nm) ? nm : `${nm} · ${date(w.day)}`; })() : `Week ${w.week} · ${date(w.start)}–${date(w.end)}`;
   const gamesN = (n) => `${n} game${n === 1 ? "" : "s"}`;
   const info = () => infoFor[sport] || {};
   const teamName = (t) => (info().teams && info().teams[t] && info().teams[t].n) || t;

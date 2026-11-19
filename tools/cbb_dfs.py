@@ -61,7 +61,9 @@ def main():
     pct = {tid: 100 * (i + 1) / len(nets) for i, (_, tid) in enumerate(nets)}
     now = datetime.now(timezone.utc)
     today = now.astimezone(NY).date()
-    days = [today.isoformat(), (today + timedelta(days=1)).isoformat()]
+    # today and the next two days: the schedule job can run hours late, and a morning run that never came shouldn't
+    # leave only last night's games on the board
+    days = [(today + timedelta(days=k)).isoformat() for k in range(3)]
     season = hub.get("seasonLabel") or f"{hub['season'] - 1}-{str(hub['season'])[2:]}"
 
     # each team's points a game so far, and its projected points in its next game (today or tomorrow)

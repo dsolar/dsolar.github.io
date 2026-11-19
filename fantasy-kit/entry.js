@@ -88,7 +88,7 @@
       const what = cap() ? `Salary cap, ${M(d.cap.budget)}${d.cap.bonus ? `, unique picks ${d.cap.bonus}x` : ""}` : `Sealed draft, ${d.rounds} rounds`;
       const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><b>${esc(d.name || "Draft")}</b><small>${esc(what)}, ${d.teams.length} teams</small></span></a>`;
       const when = new Date(due()).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
-      const mid = `<div class="otc${lk ? "" : " en-due"}"><span class="ring" style="--p:1"><span id="fk-lockin">${lk ? "0:00" : esc(U.startIn ? U.startIn(due()) : "")}</span></span><span class="who"><small>${lk ? "Locked" : cap() ? "Lineups lock" : "Lists lock"}</small><b>${lk ? (cap() ? "Revealing the lineups" : "Running the draft") : esc(when)}</b><span>${lk ? "One moment…" : cap() ? "At the first kickoff. Change yours until then." : "Then the draft runs itself from everyone's list."}</span></span></div>`;
+      const mid = `<div class="otc${lk ? "" : " en-due"}"><span class="ring" style="--p:1"><span id="fk-lockin">${lk ? "0:00" : esc(U.startIn ? U.startIn(due()) : "")}</span></span><span class="who"><small>${lk ? "Locked" : cap() ? "Lineups lock" : "Lists lock"}</small><b>${lk ? (cap() ? "Revealing the lineups" : "Running the draft") : esc(when)}</b><span>${lk ? "One moment…" : cap() ? `At the first ${sport.key === "nba" || sport.key === "cbb" ? "tip-off" : "kickoff"}. Change yours until then.` : "Then the draft runs itself from everyone's list."}</span></span></div>`;
       const sec = (opts.tools ? opts.tools() : "") + (opts.exit ? `<a class="btn sm" href="${esc(opts.exit.href)}">${esc(opts.exit.label || "Exit")}</a>` : "");
       return `<div class="dr-top">${lg}${mid}<div class="acts">${sec}</div></div>`;
     }
@@ -162,7 +162,7 @@
       const fid = document.activeElement && document.activeElement.id === "fk-q", ss = fid ? document.activeElement.selectionStart : null;
       const scroll = el.querySelector(".table-wrap") ? el.querySelector(".table-wrap").scrollTop : 0, pscroll = el.querySelector(".dr-panel") ? el.querySelector(".dr-panel").scrollTop : 0;
       const n = cap() ? ui.entry ? ui.entry.filter(Boolean).length : 0 : ui.entry ? ui.entry.length : 0;
-      const tabs = `<div class="seg show-m en-tabs" role="group" aria-label="View"><button type="button" data-eview="players" aria-pressed="${!ui.right}">Players</button><button type="button" data-eview="mine" aria-pressed="${ui.right}">${cap() ? `Your lineup ${n}/${lu().length}${ui.entry ? `, ${M(left())}` : ""}` : `Your list (${n})`}</button></div>`;
+      const tabs = `<div class="seg show-m en-tabs" role="group" aria-label="View"><button type="button" data-eview="players" aria-pressed="${!ui.right}">Players</button><button type="button" data-eview="mine" aria-pressed="${ui.right}">${cap() ? `Your lineup ${n}/${lu().length}${ui.entry ? `, ${M(left())} left` : ""}` : `Your list (${n})`}</button></div>`;
       el.innerHTML = `<div class="droom fk-dark en">${top()}<div class="dr-main${ui.right ? " right" : ""}">
         <section class="dr-left">${tabs}${filters()}${rows()}</section>
         <aside class="dr-right">${me() != null ? `<div class="show-m" style="padding:10px 12px 0">${tabs}</div>` : ""}${panel()}</aside></div></div>`;

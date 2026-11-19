@@ -65,13 +65,15 @@ test('sealed draft: everyone\'s list runs the draft the moment it closes', () =>
   assert.ok(D.teams.every((t) => !t.auto), 'autodraft turned back off');
 });
 
-test('salary cap prices: a star costs about twice an even share, and bots spend most of the cap on good lineups', () => {
+test('salary cap prices: in proportion to the projection, a star well above an even share, and bots spend most of the cap on good lineups', () => {
   for (const kind of ['full', 'prime']) {
     const { D, ctx, sport, players, sl } = pool(kind, 6, { bench: 0 });
     D.cap = { budget: 100, due: sl.first, bonus: 1.25 };
     D.cap.prices = F.capPrices(D, players, sport);
     const avg = 100 / D.lineup.length, top = ctx.players.slice().sort((a, b) => b.v - a.v)[0];
-    assert.ok(Math.abs(F.capPrice(D, top) - avg * 1.9) <= 1, `${kind}: top price`);
+    const tp = F.capPrice(D, top);
+    assert.ok(tp >= avg * 1.3 && tp <= avg * 2 + 1, `${kind}: top price ${tp} of an even share ${avg}`);
+
     const spent = [];
     for (let s = 1; s <= 6; s++) { const e = F.capAuto(D, ctx, s * 31), c = F.capCheck(D, ctx, e); assert.ok(c.ok, c.why); spent.push(c.spent); }
     assert.ok(Math.min(...spent) >= 85, `${kind}: bots use the cap (${spent})`);

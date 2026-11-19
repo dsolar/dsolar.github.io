@@ -65,6 +65,13 @@ test('salary cap prices: a $50,000 cap, $100 steps, stars cost more than role pl
   const best = players.slice().sort((a, b) => b.v - a.v)[0], role = players.slice().sort((a, b) => a.v - b.v)[Math.floor(players.length / 3)];
   assert.ok(prices[best.id] > prices[role.id]);
   assert.ok(prices[best.id] <= 50000 / lu.lineup.length * 2, 'the best player is under twice an even share');
+  // in proportion to the projection: the bottom of the pool shares the floor, not half of it, so a bench player
+  // isn't the best buy on the board
+  const floor = Math.min(...vals);
+  assert.ok(vals.filter((x) => x === floor).length < vals.length / 3, 'under a third of the pool at the floor');
+  const ppk = (p) => p.v / prices[p.id], ranked = players.filter((p) => prices[p.id]).sort((a, b) => b.v - a.v);
+  const top = ranked.slice(0, 10).reduce((t, p) => t + ppk(p), 0) / 10, mid = ranked.slice(60, 100).reduce((t, p) => t + ppk(p), 0) / 40;
+  assert.ok(mid / top < 1.3, `points a dollar about even from stars to the middle (${(mid / top).toFixed(2)})`);
 });
 
 test('one-game projections follow the matchup: the season line scaled by the team\'s projected points', () => {

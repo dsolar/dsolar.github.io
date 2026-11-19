@@ -1617,7 +1617,7 @@
   // be on any number of teams. Entries are sealed on the server until due (the first kickoff), then capReveal makes
   // them the board. A player only one team picked scores D.cap.bonus times (1.25x) for that team.
   // Prices are set once, when the game is made (D.cap.prices), so they can't move under a saved lineup: by projection,
-  // like a daily game, from 40% of an even share of the budget for a fringe player to 1.9x it for the best one. A
+  // like a daily game, in proportion to each projection, from 40% of an even share of the budget to twice it. A
   // captain costs 1.5x. A $50,000 cap prices in $100 steps, like DraftKings; a small one ($100) in whole dollars.
   // The projection is this week's (this matchup), which backtested as well calibrated at every position: over weeks
   // 3 to 10 of 2026, players Sleeper projected for 5 to 8 half-PPR points scored 6.3 to 6.9 on average at every
@@ -1633,10 +1633,14 @@
     const n = D.lineup.length, avg = D.cap.budget / n, step = capStep(D);
     const fit = players.filter((p) => D.lineup.some((sl) => S.fits(sport, p, sl))).map((p) => ({ p, b: capBasis(p) })).sort((a, b) => b.b - a.b);
     if (!fit.length) return {};
-    const hi = fit[0].b, lo = fit[Math.floor(fit.length / 2)].b, out = {};
+    // in proportion to the projection: the player ranked 4n (four lineups deep) costs an even share, a slight premium
+    // on the stars (the 1.1 power), from 40% of an even share at the bottom to twice it at the top. A flat price for the
+    // whole bottom half (how it was) made a cheap bench player the best buy on the board.
+    const ref = fit[Math.min(fit.length - 1, n * 4)].b, out = {};
+    const lo = Math.max(step, Math.round((avg * 0.4) / step) * step), hi = Math.round((avg * 2) / step) * step;
     for (const { p, b } of fit) {
-      const t = hi > lo ? Math.max(0, Math.min(1, (b - lo) / (hi - lo))) : 0;
-      out[p.id] = Math.max(step, Math.round((avg * (0.4 + 1.5 * Math.pow(t, 1.1))) / step) * step);
+      const x = ref > 0 ? avg * Math.pow(Math.max(0, b) / ref, 1.1) : avg;
+      out[p.id] = Math.max(lo, Math.min(hi, Math.round(x / step) * step));
     }
     return out;
   }
