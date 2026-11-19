@@ -331,7 +331,7 @@
     }, "Contracts that ran out") + listPanel("Arriving", come, function (x) {
       return pname(x.p, 26) + '<span class="grow"></span><span class="sub">' + (x.how === "rookie" ? (x.p.school ? esc(x.p.school) + " · " : "") : "") + money(x.sal) + " · " + rt(x.r) + "</span>";
     }, "Draft picks and free agent signings") + "</div>" +
-      '<p class="note">Re-signing keeps a player at his market price for as long as the market would go. By default a team keeps anyone worth at least 85% of that price who's 33 or younger, since his Bird rights let it go over the cap to do it; restricted free agents are matched at a lower bar. Tap to change a call.</p>';
+      '<p class="note">Re-signing keeps a player at his market price for as long as the market would go. By default a team keeps anyone worth at least 85% of that price who\'s 33 or younger, since his Bird rights let it go over the cap to do it; restricted free agents are matched at a lower bar. Tap to change a call.</p>';
   }
   view.addEventListener("click", function (e) {
     var b = e.target.closest("[data-resign]");
@@ -1294,11 +1294,12 @@
         incs[k].forEach(function (a, j) {
           var yy = ty + j * TILE, im = ims[ii++];
           if (j) { ctx.fillStyle = "#E8EAED"; ctx.fillRect(x + 16, yy, colW - 32, 1); }
-          var title, sub, sub2, right;
+          var title, sub, sub2, right, injLbl = "";
           if (a.kind === "p") {
             var p = H.W.P[a.id], last = H.lastYear(p);
             circleImg(ctx, im, x + 16, yy + 12, 66, team(p.t).color, window.DSFaces.initials(p.n), true);
             title = p.n; sub = posOf(p) + ", age " + p.age + ", " + rt(H.rating(p, 0)) + " impact"; sub2 = last > 0 ? "Thru " + sname(last) : "Expiring"; right = money(H.salary(p, 0) + H.kicker(p));
+            var ij = H.injuryTag(p); injLbl = ij ? (ij.season ? "OUT FOR SEASON" : ij.dtd ? "DAY-TO-DAY" : "OUT") : "";
           } else if (a.kind === "k") {
             var pk = pickOf(a.id);
             circleImg(ctx, im, x + 16, yy + 12, 66, "#ECEBE6", pk.from);
@@ -1314,7 +1315,15 @@
           if (n > 2) sub2 = (sub2 ? sub2 + ", " : "") + "from " + team(tr.sides[a.from]).short;
           ctx.font = "700 21px 'Barlow Condensed', sans-serif"; var rw = ctx.measureText(right).width;
           ctx.fillStyle = "#002244"; ctx.textAlign = "right"; ctx.fillText(right, x + colW - 18, yy + 52);
-          ctx.textAlign = "left"; ctx.font = "700 18px Barlow, sans-serif"; ctx.fillText(fit(ctx, title, colW - 100 - rw - 30), x + 96, yy + 38);
+          ctx.textAlign = "left"; ctx.font = "700 18px Barlow, sans-serif";
+          var tmax = colW - 100 - rw - 30;
+          if (injLbl) { ctx.font = "700 11px 'Barlow Condensed', sans-serif"; var iw = ctx.measureText(injLbl).width + 12; ctx.font = "700 18px Barlow, sans-serif"; tmax -= iw + 8; }
+          var tt = fit(ctx, title, tmax); ctx.fillText(tt, x + 96, yy + 38);
+          if (injLbl) {
+            var tx = x + 96 + ctx.measureText(tt).width + 8;
+            ctx.fillStyle = injLbl === "DAY-TO-DAY" ? "#FBE5CC" : "#B42525"; rrect(ctx, tx, yy + 24, iw, 18, 5); ctx.fill();
+            ctx.fillStyle = injLbl === "DAY-TO-DAY" ? "#8A5300" : "#FFFFFF"; ctx.font = "700 11px 'Barlow Condensed', sans-serif"; ctx.fillText(injLbl, tx + 6, yy + 37);
+          }
           ctx.fillStyle = "#56637A"; ctx.font = "500 14px Barlow, sans-serif"; ctx.fillText(fit(ctx, sub, colW - 100 - rw - 30), x + 96, yy + 59);
           if (sub2) { ctx.fillStyle = "#66717F"; ctx.font = "500 13px Barlow, sans-serif"; ctx.fillText(fit(ctx, sub2, colW - 100 - rw - 30), x + 96, yy + 78); }
         });
