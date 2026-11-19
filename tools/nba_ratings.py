@@ -304,6 +304,28 @@ def main():
         if p["o_imp"] is not None and p["d_imp"] is not None:
             p["imp"] = p["o_imp"] + p["d_imp"]
 
+    # ball security: turnovers against what his usage and passing load would predict (low-usage spot-up players
+    # rarely turn it over, which isn't the same skill as a lead guard who doesn't)
+    fit = [p for p in pool if p.get("tov") is not None and p.get("usg") is not None and p.get("ast") is not None]
+    n = len(fit)
+    xs = [(1.0, p["usg"], p["ast"]) for p in fit]
+    ys = [p["tov"] for p in fit]
+    XtX = [[sum(x[i] * x[j] for x in xs) for j in range(3)] for i in range(3)]
+    Xty = [sum(x[i] * y for x, y in zip(xs, ys)) for i in range(3)]
+    # solve the 3x3 normal equations (Gaussian elimination)
+    M = [row[:] + [v] for row, v in zip(XtX, Xty)]
+    for c in range(3):
+        piv = max(range(c, 3), key=lambda r: abs(M[r][c]))
+        M[c], M[piv] = M[piv], M[c]
+        for r in range(3):
+            if r != c and M[c][c]:
+                f = M[r][c] / M[c][c]
+                M[r] = [a - f * b for a, b in zip(M[r], M[c])]
+    beta = [M[i][3] / M[i][i] if M[i][i] else 0 for i in range(3)]
+    for p in players:
+        if p.get("tov") is not None and p.get("usg") is not None and p.get("ast") is not None:
+            p["tov_x"] = beta[0] + beta[1] * p["usg"] + beta[2] * p["ast"] - p["tov"]
+
     # categories: each a weighted sum of z-scores over the pool
     def comp(fields):
         zs = {}
@@ -323,10 +345,10 @@ def main():
         "score": ("Scoring", [("pts100", 0.6), ("ts_adj", 0.4)]),
         "create": ("Creation", [("unast100", 0.75), ("usg", 0.25)]),
         "pass": ("Playmaking", [("ast", 0.5), ("astpts100", 0.5)]),
-        "secure": ("Ball security", [("tov", -1.0)]),
+        "secure": ("Ball security", [("tov_x", 0.75), ("tov", -0.25)]),
         "reb": ("Rebounding", [("drb", 0.6), ("orb", 0.4)]),
         "rimd": ("Rim protection", [("blk", 0.75), ("drb", 0.25)]),
-        "steal": ("Defensive playmaking", [("stl", 1.0)]),
+        "steal": ("Disruption", [("stl", 1.0)]),
         "off": ("Offensive impact", [("o_imp", 1.0)]),
         "def": ("Defensive impact", [("d_imp", 1.0)]),
         "overall": ("Overall impact", [("imp", 1.0)]),

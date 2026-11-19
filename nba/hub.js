@@ -875,6 +875,16 @@
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);
     H.darkoThrough = (inp.darko && inp.darko.through) || null;
+    // Skill ratings (tools/nba_ratings.py): joined to the league by name; a row with no contract here still shows
+    H.adv = inp.ratings && inp.ratings.players ? inp.ratings : null;
+    if (H.adv) {
+      const byKey = {};
+      for (const p of Object.values(W.P)) byKey[NC.nameKeys(p.id)[0]] = byKey[NC.nameKeys(p.id)[0]] ? "?" : p;
+      for (const r of H.adv.players) {
+        const p = byKey[NC.nameKeys(slug(r.n))[0]];
+        if (p && p !== "?") { r.id = p.id; p.adv = r; if (!r.t) r.t = p.t; }
+      }
+    }
     return H;
   }
 

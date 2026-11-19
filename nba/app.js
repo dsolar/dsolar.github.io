@@ -83,7 +83,7 @@
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if (state.route === "team" && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, method: methodPage }[state.route] || standings;
+    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, method: methodPage }[state.route] || standings;
     fn();
   }
   function drawYears() {
@@ -454,6 +454,7 @@
     if (p.darko != null) html += kv(rt(p.darko), "DARKO today");
     if (p.bpm != null) html += kv(rt(p.bpm), "BPM this season");
     html += "</div>";
+    html += skillProfile(p);
     if (contractYears(p, 0).length) html += '<h4 class="card-sec">Contract</h4>' + contractStrip(p, 0);
     var vt = s.rows.reduce(function (a, r) { return a + r.value * Math.pow(1 + H.cfg.disc, -r.j); }, 0), ct = s.rows.reduce(function (a, r) { return a + r.sal * Math.pow(1 + H.cfg.disc, -r.j); }, 0);
     html += '<div class="vcs"><div><span>Value</span><b>' + money(vt) + "</b><small>" + (H.cfg.mode === "market" ? "what teams would pay him" : "what he should produce") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(ct) +
@@ -492,6 +493,101 @@
     }
   });
 
+
+  // ---------- ratings ----------
+  // Skill ratings come from tools/nba_ratings.py: every category is a percentile among players with real minutes,
+  // league-wide or against his position group (guards, wings, bigs).
+  var CAT_OFF = ["shoot", "finish", "score", "create", "pass", "secure"], CAT_DEF = ["rimd", "reb", "steal"], CAT_IMP = ["overall", "off", "def"];
+  var CAT_SHORT = { overall: "Overall", off: "Off", def: "Def", shoot: "Shoot", finish: "Finish", score: "Score", create: "Create", pass: "Pass", secure: "Secure", reb: "Reb", rimd: "Rim D", steal: "Steals" };
+  var GROUP = { G: "Guards", W: "Wings", B: "Bigs" }, GROUP1 = { G: "guards", W: "wings", B: "bigs" };
+  function heat(v) { return v == null ? "h-" : v >= 90 ? "h5" : v >= 75 ? "h4" : v >= 55 ? "h3" : v >= 40 ? "h2" : v >= 20 ? "h1" : "h0"; }
+  function hcell(v, title) { return '<td class="hc ' + heat(v) + '"' + (title ? ' title="' + esc(title) + '"' : "") + ">" + (v == null ? "—" : v) + "</td>"; }
+  function advName(r, size) {
+    var p = r.id && H.W.P[r.id];
+    if (p) return pname(p, size || 22);
+    return '<span class="pl static">' + window.DSFaces.html({ sport: "nba", name: r.n, color: team(r.t).color, size: size || 22 }) + '<span class="nm">' + esc(r.n) + "</span></span>";
+  }
+  function ord(n) { return n == null ? "—" : ordinal(n); }
+  function ratingsPage() {
+    var A = H.adv;
+    if (!A) { view.innerHTML = '<h2 class="sec">Ratings</h2><p class="lede">The skill ratings haven\'t loaded. They rebuild every morning; try again in a bit.</p>'; return; }
+    var q = state.q, by = A.cats[q.by] ? q.by : "overall", vs = q.vs === "pos" ? "rp" : "r", g = GROUP[q.g] ? q.g : "", tm = q.t || "", all = q.all === "1";
+    var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
+    var pool = A.players.filter(function (r) { return all || r.q; });
+    var list = pool.filter(function (r) {
+      if (g && r.g !== g) return false;
+      if (tm && r.t !== tm) return false;
+      if (q.s && r.n.toLowerCase().indexOf(q.s.toLowerCase()) < 0) return false;
+      if (q.a && r.arch !== q.a) return false;
+      return true;
+    }).sort(function (a, b) { return ((b[vs][by] == null ? -1 : b[vs][by]) - (a[vs][by] == null ? -1 : a[vs][by])) || ((b.s.imp || -9) - (a.s.imp || -9)); });
+    var html = '<h2 class="sec">Ratings</h2><p class="lede">Every player\'s game, broken into the skills that win: shooting, finishing, scoring, creating his own shot, playmaking, ball security, rim protection, rebounding and defensive playmaking, plus offensive, defensive and overall impact. Each is a percentile among the ' + A.pool + " players with real minutes (99 is the best in the league), from pbpstats' play-by-play, Basketball-Reference and DARKO, rebuilt every morning. Early in the season last year (" + esc(A.prev) + ") still counts, at half weight, and small samples are pulled toward average. Click a player for his skill profile and shot chart.</p>";
+    // leaders
+    html += '<div class="leaders">' + Object.keys(A.cats).map(function (c) {
+      var top = pool.filter(function (r) { return !g || r.g === g; }).slice().sort(function (a, b) { return (b[vs][c] || 0) - (a[vs][c] || 0) || (b.s.imp || -9) - (a.s.imp || -9); }).slice(0, 3);
+      return '<div class="ldr' + (c === by ? " on" : "") + '"><a class="ldr-h" href="' + href("ratings", Object.assign({}, q, { by: c === "overall" ? null : c })) + '">' + esc(A.cats[c]) + "</a><ol>" +
+        top.map(function (r) { return "<li>" + advName(r, 20) + "</li>"; }).join("") + "</ol></div>";
+    }).join("") + "</div>";
+    var archs = {};
+    pool.forEach(function (r) { archs[r.arch] = (archs[r.arch] || 0) + 1; });
+    html += '<div class="controls">' + ('<label>Rank by<select data-q="by">' + Object.keys(A.cats).map(function (c) { return opt(c === "overall" ? "" : c, A.cats[c], by === "overall" ? "" : by); }).join("") + "</select></label>" +
+      '<label>Position<select data-q="g">' + opt("", "Everyone", g) + opt("G", "Guards", g) + opt("W", "Wings", g) + opt("B", "Bigs", g) + "</select></label>" +
+      '<label>Compare to<select data-q="vs">' + opt("", "The league", q.vs || "") + opt("pos", "His position", q.vs || "") + "</select></label>" +
+      teamSelect(tm) +
+      '<label>Type<select data-q="a">' + opt("", "Any", q.a || "") + Object.keys(archs).sort().map(function (a) { return opt(a, a + " (" + archs[a] + ")", q.a || ""); }).join("") + "</select></label>" +
+      '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>' +
+      '<label class="chk"><input type="checkbox" data-q="all" value="1"' + (all ? " checked" : "") + "> Include low minutes</label>") + "</div>";
+    var cols = CAT_IMP.concat(CAT_OFF, CAT_DEF);
+    var th = function (c) { return '<th class="hc' + (c === by ? " on" : "") + '"><a href="' + href("ratings", Object.assign({}, q, { by: c === "overall" ? null : c })) + '" title="' + esc(A.cats[c]) + '">' + CAT_SHORT[c] + "</a></th>"; };
+    html += '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class="pn">Player</th><th class="hm">Team</th><th class="hm">Pos</th><th class="hm">Age</th><th class="hm">Min</th><th class="ar hm">Type</th><th>Impact</th>' + cols.map(th).join("") + "</tr></thead><tbody>";
+    list.slice(0, q.more ? 600 : 150).forEach(function (r, k) {
+      var mins = r.mc + (r.mp ? ' <span class="note">(' + r.mp + ")</span>" : "");
+      html += '<tr><td class="pn"><span class="rk">' + (k + 1) + "</span>" + advName(r, 22) + "</td><td class=\"hm\">" + (r.t ? logo(r.t, 18) : "") + "</td><td class=\"hm\">" + esc(r.g) + "</td><td class=\"hm\">" + (r.age != null ? Math.floor(r.age) : "—") + '</td><td class="mn hm" title="Minutes this season (last season)">' + mins + '</td><td class="ar hm">' + esc(r.arch) + "</td><td>" + (r.s.imp != null ? rchip(r.s.imp) : "—") + "</td>" +
+        cols.map(function (c) { return hcell(r[vs][c], A.cats[c] + ": " + ord(r.r[c]) + " in the league, " + ord(r.rp[c]) + " among " + GROUP1[r.g]); }).join("") + "</tr>";
+    });
+    html += "</tbody></table></div></div>";
+    if (list.length > 150 && !q.more) html += '<p><a class="btn" href="' + href("ratings", Object.assign({}, q, { more: 1 })) + '">Show all ' + list.length + "</a></p>";
+    html += '<p class="note">Minutes are this season, with last season in parentheses. Impact is points per 100 possessions better than average (DARKO, or box plus-minus where DARKO has no number). Updated ' + esc(A.updated.replace("T", " ").replace("Z", " UTC")) + ". How it works explains every category.</p>";
+    view.innerHTML = html;
+  }
+  // skill profile on the player card
+  function zoneColor(z) { if (!z || z[1] == null) return "z-n"; var d = z[1] - z[2]; return d >= 0.06 ? "z5" : d >= 0.02 ? "z4" : d > -0.02 ? "z3" : d > -0.06 ? "z2" : "z1"; }
+  function shotChart(zs) {
+    var lab = function (k, x, y) {
+      var z = zs[k]; if (!z) return "";
+      return '<text x="' + x + '" y="' + y + '" class="zl">' + (z[1] == null ? "—" : Math.round(z[1] * 100) + "%") + '</text><text x="' + x + '" y="' + (y + 17) + '" class="zf">' + Math.round(z[0] * 100) + "% of shots</text>";
+    };
+    return '<div class="shot"><svg viewBox="0 0 500 330" role="img" aria-label="Shot chart: field goal percentage by zone">' +
+      '<rect width="500" height="330" class="zw ' + zoneColor(zs.a3) + '"/>' +
+      '<rect x="0" y="0" width="30" height="141.5" class="' + zoneColor(zs.c3) + '"/><rect x="470" y="0" width="30" height="141.5" class="' + zoneColor(zs.c3) + '"/>' +
+      '<path d="M30,0 L30,141.5 A237.5,237.5 0 0 0 470,141.5 L470,0 Z" class="' + zoneColor(zs.lmid) + '"/>' +
+      '<path d="M120,0 A140,140 0 1 0 380,0 Z" class="' + zoneColor(zs.smid) + '"/>' +
+      '<circle cx="250" cy="52" r="58" class="' + zoneColor(zs.rim) + '"/>' +
+      '<g class="cl"><path d="M30,0 L30,141.5 A237.5,237.5 0 0 0 470,141.5 L470,0"/><path d="M120,0 A140,140 0 1 0 380,0"/><circle cx="250" cy="52" r="58"/><line x1="220" y1="40" x2="280" y2="40"/><circle cx="250" cy="52" r="9"/></g>' +
+      lab("rim", 250, 62) + lab("smid", 250, 150) + lab("lmid", 250, 222) + lab("a3", 250, 288) +
+      (zs.c3 ? '<text x="12" y="320" class="zf sm">Corner 3s: ' + (zs.c3[1] == null ? "—" : Math.round(zs.c3[1] * 100) + "%") + ", " + Math.round(zs.c3[0] * 100) + "% of shots</text>" : "") +
+      '</svg><div class="zkey"><span class="z1"></span>Well below average<span class="z3"></span>Average<span class="z5"></span>Well above</div></div>';
+  }
+  function skillProfile(p) {
+    var r = p.adv, A = H.adv;
+    if (!r || !A) return "";
+    var bar = function (c) {
+      var v = r.r[c];
+      return '<div class="sk"><span class="skn">' + esc(A.cats[c]) + '</span><span class="skb"><i class="' + heat(v) + '" style="width:' + (v == null ? 0 : Math.max(2, v)) + '%"></i></span><b>' + (v == null ? "—" : v) + '</b><small title="Percentile among ' + GROUP1[r.g] + '">' + (r.rp[c] == null ? "" : ord(r.rp[c]) + " of " + GROUP1[r.g]) + "</small></div>";
+    };
+    var s = r.s, pc = function (x) { return x == null ? "—" : (x * 100).toFixed(1) + "%"; };
+    var html = '<h4 class="card-sec">Skill profile <span class="pill new">' + esc(r.arch) + "</span></h4>";
+    html += '<div class="skills"><div><h5>Impact</h5>' + CAT_IMP.map(bar).join("") + "<h5>Defense</h5>" + CAT_DEF.map(bar).join("") + "</div><div><h5>Offense</h5>" + CAT_OFF.map(bar).join("") + "</div></div>";
+    html += '<p class="note">Percentiles among players with real minutes (99 is best), then where he ranks among ' + GROUP1[r.g] + ". " + (r.mp ? "Last season counts at half weight while this one is young." : "") + "</p>";
+    html += '<div class="kv">' + kv(f1(s.pts100), "Points per 100") + kv(pc(s.ts), "True shooting") + kv(f1(s.usg) + "%", "Usage") + kv(f1(s.unast100), "Unassisted pts / 100") + kv(f1(s.ast) + "%", "Assist rate") + kv(f1(s.tov) + "%", "Turnover rate") +
+      (s.onoff != null ? kv((s.onoff > 0 ? "+" : "") + f1(s.onoff), "On/off per 100") : "") + (s.ortg ? kv(f0(s.ortg) + " / " + f0(s.drtg), "Off / def rating") : "") + "</div>";
+    if (r.zones && r.zones.rim) html += '<h4 class="card-sec">Where he shoots</h4>' + shotChart(r.zones);
+    var nm = encodeURIComponent(r.n);
+    html += '<p class="deeper">Go deeper: ' + (r.nba ? '<a href="https://www.nba.com/player/' + esc(r.nba) + '" target="_blank" rel="noopener">NBA.com</a> · ' : "") +
+      '<a href="https://www.basketball-reference.com/search/search.fcgi?search=' + nm + '" target="_blank" rel="noopener">Basketball-Reference</a> · <a href="https://www.darko.app/" target="_blank" rel="noopener">DARKO</a> · <a href="https://craftednba.com/" target="_blank" rel="noopener">CraftedNBA</a> · <a href="https://dunksandthrees.com/epm" target="_blank" rel="noopener">Dunks &amp; Threes</a> · <a href="https://www.nbarapm.com/" target="_blank" rel="noopener">NBA RAPM</a> · <a href="https://cleaningtheglass.com/" target="_blank" rel="noopener">Cleaning the Glass</a> · <a href="https://www.pbpstats.com/" target="_blank" rel="noopener">pbpstats</a></p>';
+    return html;
+  }
+
   // ---------- trade value ----------
   function controls(extra) {
     return '<div class="controls">' +
@@ -512,7 +608,7 @@
     var c = e.target.closest("[data-q]");
     if (!c) return;
     var q = Object.assign({}, state.q);
-    q[c.dataset.q] = c.value || null;
+    q[c.dataset.q] = c.type === "checkbox" ? (c.checked ? c.value : null) : c.value || null;
     location.hash = href(state.route, q);
   });
   function teamSelect(cur, key) {
@@ -834,6 +930,7 @@
     var html = '<h2 class="sec">How it works</h2><div class="method">' +
       "<h3>The league today</h3><p>Built fresh every time the page opens, from feeds the site already refreshes every day: contracts from Basketball-Reference and rosters, injuries and season stats from ESPN (twice a day, the same feed Hard Cap uses), standings every morning, and the draft order, every pick owed and the consensus 2027 board from the Big Board. A waived player catching on somewhere new counts as a two-way there while his old team pays off the rest.</p>" +
       "<h3>Ratings</h3><p>Every player has an impact rating per 100 possessions, offense plus defense, from Banner 19's blend of DARKO (half), RAPM, CraftedNBA and the box score. The DARKO half is live: Kostya Medvedovsky and Andrew Patton's daily plus-minus is pulled from <a href=\"https://www.darko.app/\">darko.app</a> every morning" + (H.darkoThrough ? " (ratings through " + esc(H.darkoThrough) + ")" : "") + " and replaces the June numbers the cap sheet was built on; this year's rookies move halfway from their draft-slot guess to DARKO's number. Basketball-Reference's Box Plus/Minus moves the other half, faded in by minutes (about " + H.cfg.blend.toLocaleString() + " minutes to move it halfway). Ratings age on Stephen Noh's curve, and young players grow toward their ceiling.</p>" +
+      "<h3>Skill ratings</h3><p>The Ratings tab breaks every player into twelve categories, rebuilt every morning from <a href=\"https://www.pbpstats.com/\">pbpstats</a> (possessions, shots by zone, assisted and unassisted points, assists by shot type), Basketball-Reference (advanced, per-100, shooting and play-by-play tables) and DARKO. Each category is a weighted blend of a few stats, scored against everyone with real minutes and shown as a percentile, league-wide or against his position group (guards, wings and bigs, from Basketball-Reference's estimate of the positions he's actually played). <b>Shooting</b>: 3-point percentage and volume, free throws and mid-range accuracy. <b>Finishing</b>: accuracy and volume at the rim, plus free-throw rate. <b>Scoring</b>: points per 100 possessions and true shooting. <b>Creation</b>: unassisted points per 100 and usage. <b>Playmaking</b>: assist rate and points created by assists. <b>Ball security</b>: turnovers against what his usage and passing load predict, so a lead guard isn't graded against a corner shooter. <b>Rim protection</b>: block rate and defensive rebounding. <b>Rebounding</b>: both glass rates. <b>Disruption</b>: steal rate. <b>Offensive, defensive and overall impact</b>: DARKO's plus-minus, or box plus-minus shrunk by minutes where DARKO has no number. Shooting percentages are pulled toward the league average by how many shots back them up (75 threes, 40 free throws, 40 rim attempts), and early in the season last year counts at half weight. The archetype is a label read off the profile (a big with 70th-percentile rim protection among bigs is a rim protector, a guard or wing with top-15% creation and 75th-percentile playmaking is a primary creator).</p>" +
       "<h3>Lineups and minutes</h3><p>This season uses real rotations: each team's starting five from its most recent game and the minutes every player is averaging, scaled to 240 a game among the players available (anyone ruled out for the season sits). Later seasons don't have that, so the best player at each position starts (by the positions he plays, so two centers don't start together) and the bench plays by rating: 34, 33, 32, 30 and 28 minutes for the starters, then 24, 20, 16, 13 and 10.</p>" +
       "<h3>Standings and odds</h3><p>Ratings times minutes give each team a net rating, and every game left on a fresh schedule is played " + H.cfg.sims.toLocaleString() + " times from each team's real record. Then the play-in, the playoffs and the lottery: 16 lottery teams, three balls each, two for the 9 and 10 seeds and the three worst records, one for each 7-8 play-in loser, and the worst three can't fall below 12th.</p>" +
       "<h3>The year slider</h3><p>" + sname(0) + " is today's rosters. Every later season is built from contracts: options are called on value (a team option is picked up when he's worth it, a player option comes back when it's bad for the team), and when a deal ends he's gone, unless he's a restricted free agent worth his price (matched by default) or you re-sign him on his team's page. Each team's first-round picks arrive at their projected slot on rookie-scale deals (2027 from the simulations, using the Big Board's player at that slot; later drafts from the season before). Better-of picks go to whoever gets them where the picks are projected to land. Open spots go to the free agents a team's cap position can buy: a starter with real cap room, a rotation player with the mid-level, minimums after that.</p>" +
@@ -851,12 +948,12 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
-      $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO and the Big Board.";
+      $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board.";
       render();
     })
     .catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
