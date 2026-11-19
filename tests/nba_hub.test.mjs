@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -194,4 +194,18 @@ test('a declined team option elsewhere does not count against the new team', () 
   const p = H.findPlayer('devin-carter');
   if (p) assert.equal(H.salary(p, 0), 0);
   assert.ok(H.payroll('BOS', 0) < 200428000, 'Boston is under the 2026-27 tax line');
+});
+
+test('ratings and lineups join to the league: apostrophe names, pbpstats team codes', () => {
+  if (H.adv) {
+    const q = H.adv.players.filter(r => r.q);
+    assert.ok(q.filter(r => r.id).length / q.length > 0.95, 'ratings rows matched to players');
+    assert.ok(H.W.P['de-aaron-fox'] ? H.W.P['de-aaron-fox'].adv : true, "De'Aaron Fox has ratings");
+  }
+  if (H.lu) {
+    assert.equal(Object.keys(H.luTeams).length, 30);
+    for (const c of Object.keys(H.luTeams)) assert.ok(H.codes.includes(c), c);
+    const ids = Object.keys(H.lu.names);
+    assert.ok(ids.filter(i => H.luIds[i]).length / ids.length > 0.97, 'lineup players matched');
+  }
 });

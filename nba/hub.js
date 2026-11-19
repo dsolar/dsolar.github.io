@@ -56,10 +56,12 @@
     const seenName = new Set();
     // DARKO, pulled daily from darko.app: half of every cap-sheet rating is DARKO as of June 3, so swap in today's
     const slug = (n) => n.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/['’.]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    // both spellings of an apostrophe name: "deaaron-fox" and "de-aaron-fox" (the cap sheet's)
+    const keysOf = (n) => [...new Set([NC.nameKeys(slug(n))[0], NC.nameKeys(slug(n.replace(/['’]/g, " ")))[0]])];
     const dk = inp.darko && inp.darko.p ? {} : null, dkJune = {};
     if (dk) {
-      for (const r of inp.darko.p) { const k = NC.nameKeys(slug(r[0]))[0]; dk[k] = dk[k] ? "?" : r; }
-      for (const [n, v] of Object.entries(inp.darko.june || {})) dkJune[NC.nameKeys(slug(n))[0]] = v;
+      for (const r of inp.darko.p) for (const k of keysOf(r[0])) dk[k] = dk[k] ? "?" : r;
+      for (const [n, v] of Object.entries(inp.darko.june || {})) for (const k of keysOf(n)) dkJune[k] = v;
     }
     const DARKO_W = 0.5;
     for (const p0 of nba.players) {
@@ -892,8 +894,34 @@
       const byKey = {};
       for (const p of Object.values(W.P)) byKey[NC.nameKeys(p.id)[0]] = byKey[NC.nameKeys(p.id)[0]] ? "?" : p;
       for (const r of H.adv.players) {
-        const p = byKey[NC.nameKeys(slug(r.n))[0]];
-        if (p && p !== "?") { r.id = p.id; p.adv = r; if (!r.t) r.t = p.t; }
+        const p = keysOf(r.n).map(k => byKey[k]).find(x => x && x !== "?");
+        if (p) { r.id = p.id; p.adv = r; if (!r.t) r.t = p.t; }
+      }
+    }
+    // Lineups (tools/nba_lineups.py): pbpstats keys players by NBA id and teams by its own abbreviations (BKN, PHX),
+    // so players join through the ratings' NBA ids, then by name, and each team goes to the hub code most of its
+    // players are on
+    H.lu = inp.lineups && inp.lineups.teams ? inp.lineups : null;
+    if (H.lu) {
+      const byNba = {}, byKey = {};
+      if (H.adv) for (const r of H.adv.players) if (r.nba && r.id) byNba[String(r.nba)] = r.id;
+      for (const p of Object.values(W.P)) { const k = NC.nameKeys(p.id)[0]; byKey[k] = byKey[k] ? "?" : p.id; }
+      H.luIds = {};
+      for (const [nid, nm] of Object.entries(H.lu.names || {})) {
+        const k = byNba[nid] || keysOf(nm).map(x => byKey[x]).find(x => x && x !== "?");
+        if (k) H.luIds[nid] = k;
+      }
+      H.luTeams = {};
+      for (const [ab, t] of Object.entries(H.lu.teams)) {
+        const votes = {};
+        for (const nid of Object.keys(t.onoff || {})) { const p = W.P[H.luIds[nid]]; if (p) votes[p.t] = (votes[p.t] || 0) + (t.onoff[nid][0] || 0); }
+        const code = Object.keys(votes).sort((a, b) => votes[b] - votes[a])[0];
+        if (code) { t.code = code; H.luTeams[code] = t; }
+      }
+      // on/off on each player: his current team's numbers (a traded player keeps his biggest sample)
+      for (const t of Object.values(H.luTeams)) for (const [nid, v] of Object.entries(t.onoff)) {
+        const p = W.P[H.luIds[nid]];
+        if (p && (!p.oo || p.oo[1] < v[1])) p.oo = v;
       }
     }
     return H;

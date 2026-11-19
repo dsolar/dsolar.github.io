@@ -83,7 +83,7 @@
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if (state.route === "team" && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, method: methodPage }[state.route] || standings;
+    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, lineups: lineupsPage, method: methodPage }[state.route] || standings;
     fn();
   }
   function drawYears() {
@@ -188,6 +188,7 @@
         var line = i === 0 ? (p.line ? f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast) : "—") : money(x.sal);
         return "<tr" + (k === 5 || k === 10 ? ' class="cut"' : "") + "><td>" + pname(p, 24, p.inj ? ' <span class="pill warn" title="' + esc(p.inj) + '">' + esc(p.inj) + "</span>" : "") + "</td><td>" + esc(posOf(p)) + "</td><td>" + (p.fill || p.age == null ? "—" : p.rook ? p.age + i - p.arrive : p.age + i) + "</td><td>" + rchip(x.r) + "</td><td>" + (mins ? f0(mins) : "—") + "</td><td>" + line + "</td><td>" + contractCell(x, i) + "</td></tr>";
       }).join(""), (i === 0 ? "This season's numbers" : "") + (inj.length && i === 0 ? " · " + inj.length + " on the injury report" : ""));
+    if (i === 0) html += teamLineups(code);
     html += '<p class="note">Cap sheet, exceptions and draft picks are on the <a href="' + href("contracts/" + code, { y: yq(i) }) + '">Contracts tab</a>.</p>';
     view.innerHTML = html;
   }
@@ -458,7 +459,10 @@
     if (p.line) ov += kv(f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast), "Pts / reb / ast (" + p.line.gp + " gp)");
     if (p.darko != null) ov += kv(rt(p.darko), "DARKO today");
     if (p.bpm != null) ov += kv(rt(p.bpm), "BPM this season");
-    if (r && r.s.onoff != null) ov += kv((r.s.onoff > 0 ? "+" : "") + f1(r.s.onoff), "On/off per 100");
+    if (p.oo && p.oo[2] != null && p.oo[4] != null) {
+      var non = p.oo[2] - p.oo[3], noff = p.oo[4] - p.oo[5];
+      ov += kv((non - noff > 0 ? "+" : "") + f1(non - noff), "On/off per 100 (" + p.oo[1] + " poss)");
+    } else if (r && r.s.onoff != null) ov += kv((r.s.onoff > 0 ? "+" : "") + f1(r.s.onoff), "On/off per 100");
     ov += kv(signed(s.pv), "Contract surplus") + "</div>";
     if (r) {
       var top = Object.keys(H.adv.cats).filter(function (c) { return CAT_IMP.indexOf(c) < 0 && r.r[c] != null; }).sort(function (a, b) { return r.r[b] - r.r[a]; });
@@ -528,6 +532,97 @@
     }
   });
 
+
+  // ---------- lineups ----------
+  // Five-man units, trios and duos and on/off, all from pbpstats' possessions this season (tools/nba_lineups.py).
+  // Ratings are points per 100 possessions; net color runs red to green from -20 to +20.
+  function netColor(v) { return v == null ? "transparent" : xl(Math.max(0, Math.min(99, 50 + v * 2.5))); }
+  function netCell(v, cls) { return '<td class="hc' + (cls ? " " + cls : "") + '" style="background:' + netColor(v) + '">' + (v == null ? "—" : (v > 0 ? "+" : "") + f1(v)) + "</td>"; }
+  function luP(nid) { return H.luIds && H.W.P[H.luIds[nid]]; }
+  function luLast(nid) { var p = luP(nid), n = p ? p.n : (H.lu.names[nid] || "?"); return n.split(" ").slice(1).join(" ") || n; }
+  function luFaces(ids, size) {
+    return '<span class="lu">' + ids.map(function (nid) {
+      var p = luP(nid), f = p ? face(p, size || 24) : window.DSFaces.html({ sport: "nba", name: H.lu.names[nid] || "?", size: size || 24 });
+      return '<span class="lup"' + (p ? ' data-p="' + esc(p.id) + '"' : "") + ' title="' + esc(p ? p.n : H.lu.names[nid] || "") + '">' + f + '<span class="lun">' + esc(luLast(nid)) + "</span></span>";
+    }).join("") + '<span class="lunames">' + ids.map(function (nid) { return esc(luLast(nid)); }).join(", ") + "</span></span>";
+  }
+  function rate(pts, poss) { return poss ? 100 * pts / poss : null; }
+  function luRows(kind, code) {
+    var out = [];
+    Object.keys(H.luTeams).forEach(function (c) {
+      if (code && c !== code) return;
+      var t = H.luTeams[c];
+      if (kind === "5") t.l5.forEach(function (u) { out.push({ c: c, ids: u[0], min: u[1], op: u[2], dp: u[3], o: rate(u[4], u[2]), d: rate(u[5], u[3]), f3: u[6], rim: u[7] }); });
+      else (kind === "3" ? t.l3 : t.l2).forEach(function (u) { out.push({ c: c, ids: u[0], min: u[1], op: u[2], dp: u[3], o: rate(u[4], u[2]), d: rate(u[5], u[3]) }); });
+    });
+    out.forEach(function (x) { x.poss = x.op + x.dp; x.net = x.o != null && x.d != null ? x.o - x.d : null; });
+    return out;
+  }
+  function ooRows(code) {
+    var out = [];
+    Object.keys(H.luTeams).forEach(function (c) {
+      if (code && c !== code) return;
+      var t = H.luTeams[c];
+      Object.keys(t.onoff).forEach(function (nid) {
+        var v = t.onoff[nid], on = v[2] != null && v[3] != null ? v[2] - v[3] : null, off = v[4] != null && v[5] != null ? v[4] - v[5] : null;
+        out.push({ c: c, nid: nid, min: v[0], poss: v[1], oOn: v[2], dOn: v[3], oOff: v[4], dOff: v[5], on: on, off: off, diff: on != null && off != null ? on - off : null, possOff: v[6] });
+      });
+    });
+    return out;
+  }
+  function lineupsPage() {
+    if (!H.lu) { view.innerHTML = '<h2 class="sec">Lineups</h2><p class="lede">Lineups haven\'t loaded. They rebuild every morning; try again in a bit.</p>'; return; }
+    var q = state.q, kind = { "3": "3", "2": "2", oo: "oo" }[q.k] || "5", tm = q.t || "", sort = q.sort || "net";
+    var minDef = { "5": 150, "3": 300, "2": 500, oo: 300 }[kind], minP = +q.min || minDef;
+    var opt = function (v, l, cur) { return '<option value="' + v + '"' + (String(v) === String(cur) ? " selected" : "") + ">" + l + "</option>"; };
+    var link = function (extra) { return href("lineups", Object.assign({}, q, { pg: null }, extra)); };
+    var html = '<h2 class="sec">Lineups</h2><p class="lede">The best and worst five-man units, trios and duos, and every player\'s on/off: how his team does per 100 possessions with him on the floor versus off it. All from pbpstats\' play-by-play this season (' + esc(H.lu.season) + "), updated every morning. Lineup numbers swing hard on small samples, so the possession minimum matters.</p>";
+    html += '<div class="seg" role="tablist">' + [["5", "Five-man units"], ["3", "Trios"], ["2", "Duos"], ["oo", "On/off"]].map(function (x) { return '<a href="' + href("lineups", { k: x[0] === "5" ? null : x[0], t: tm || null }) + '"' + (x[0] === kind ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
+    var sorts = kind === "oo" ? [["net", "On/off"], ["on", "Net with him on"], ["o", "Offense on/off"], ["d", "Defense on/off"], ["min", "Most minutes"]] : [["net", "Net rating"], ["o", "Offense"], ["d", "Defense"], ["min", "Most minutes"], ["worst", "Worst net"]];
+    html += '<div class="controls">' + teamSelect(tm) + '<label>Sort<select data-q="sort">' + sorts.map(function (x) { return opt(x[0] === "net" ? "" : x[0], x[1], sort === "net" ? "" : sort); }).join("") + "</select></label>" +
+      '<label>At least<select data-q="min">' + [50, 100, 150, 200, 300, 500, 800, 1200].map(function (v) { return opt(v === minDef ? "" : v, v + " possessions", minP === minDef ? "" : minP); }).join("") + "</select></label></div>";
+    var list, head, row;
+    if (kind === "oo") {
+      list = ooRows(tm).filter(function (x) { return x.poss >= minP && x.possOff >= 50; });
+      var key = { net: function (x) { return x.diff; }, on: function (x) { return x.on; }, o: function (x) { return x.oOn - x.oOff; }, d: function (x) { return x.dOff - x.dOn; }, min: function (x) { return x.min; } }[sort] || function (x) { return x.diff; };
+      list.sort(function (a, b) { return (key(b) == null ? -999 : key(b)) - (key(a) == null ? -999 : key(a)); });
+      head = '<th class="pn">Player</th><th>Min</th><th class="hm">Poss</th><th class="hc">On/off</th><th class="hc">Net on</th><th class="hc">Net off</th><th class="hm">Off on / off</th><th class="hm">Def on / off</th>';
+      row = function (x, k) {
+        var p = luP(x.nid);
+        return '<tr><td class="pn"><span class="rk">' + k + "</span>" + logo(x.c, 16) + (p ? pname(p, 22) : '<span class="pl static"><span class="nm">' + esc(H.lu.names[x.nid]) + "</span></span>") + "</td><td>" + x.min + '</td><td class="hm">' + x.poss + "</td>" + netCell(x.diff, "big") + netCell(x.on) + netCell(x.off) +
+          '<td class="hm">' + f1(x.oOn) + " / " + f1(x.oOff) + '</td><td class="hm">' + f1(x.dOn) + " / " + f1(x.dOff) + "</td></tr>";
+      };
+    } else {
+      list = luRows(kind, tm).filter(function (x) { return x.poss >= minP; });
+      var k2 = { net: function (x) { return x.net; }, o: function (x) { return x.o; }, d: function (x) { return -x.d; }, min: function (x) { return x.min; }, worst: function (x) { return -x.net; } }[sort] || function (x) { return x.net; };
+      list.sort(function (a, b) { return k2(b) - k2(a); });
+      head = '<th class="pn">' + (kind === "5" ? "Lineup" : kind === "3" ? "Trio" : "Duo") + "</th><th>Min</th><th class=\"hm\">Poss</th><th>Off</th><th>Def</th><th class=\"hc\">Net</th>" + (kind === "5" ? '<th class="hm" title="Share of shots that are threes">3PA</th><th class="hm" title="Share of shots at the rim">Rim</th>' : "");
+      row = function (x, k) {
+        return '<tr><td class="pn lucell"><span class="rk">' + k + "</span>" + logo(x.c, 16) + luFaces(x.ids, 24) + "</td><td>" + f0(x.min) + '</td><td class="hm">' + x.poss + "</td><td>" + f1(x.o) + "</td><td>" + f1(x.d) + "</td>" + netCell(x.net, "big") +
+          (kind === "5" ? '<td class="hm">' + (x.f3 == null ? "—" : pct(x.f3)) + '</td><td class="hm">' + (x.rim == null ? "—" : pct(x.rim)) + "</td>" : "") + "</tr>";
+      };
+    }
+    var pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(pages, Math.max(1, +q.pg || 1)), start = (pg - 1) * PER;
+    html += '<div class="panel"><div class="scroll"><table class="t rt lut"><thead><tr>' + head + "</tr></thead><tbody>" +
+      (list.length ? list.slice(start, start + PER).map(function (x, k) { return row(x, start + k + 1); }).join("") : '<tr><td class="note" colspan="9">Nothing with that many possessions yet. Try a lower minimum.</td></tr>') + "</tbody></table></div></div>";
+    if (pages > 1) html += '<nav class="pager" aria-label="Pages">' + (pg > 1 ? '<a class="btn" href="' + link({ pg: pg - 1 }) + '">Previous</a>' : '<span class="btn off">Previous</span>') + "<span>" + (start + 1) + "-" + Math.min(list.length, start + PER) + " of " + list.length + "</span>" + (pg < pages ? '<a class="btn" href="' + link({ pg: pg + 1 }) + '">Next</a>' : '<span class="btn off">Next</span>') + "</nav>";
+    html += '<p class="note">Off and Def are points scored and allowed per 100 possessions; Net is the difference. Possessions count both ends. ' + (kind === "oo" ? "Off is every lineup he isn't in, so a starter's off numbers are mostly bench units. " : "") + "Updated " + esc(H.lu.updated.replace("T", " ").replace("Z", " UTC")) + ".</p>";
+    view.innerHTML = html;
+  }
+  function teamLineups(code) {
+    if (!H.lu || !H.luTeams[code]) return "";
+    var units = luRows("5", code).sort(function (a, b) { return b.min - a.min; }).slice(0, 6);
+    var oo = ooRows(code).filter(function (x) { return x.min >= 30; }).sort(function (a, b) { return b.min - a.min; });
+    var html = '<h3 class="subsec">Lineups and on/off</h3>';
+    html += tablePanel("Most-used lineups", '<th class="pn">Lineup</th><th>Min</th><th>Off</th><th>Def</th><th class="hc">Net</th>', units.map(function (x) {
+      return '<tr><td class="pn lucell">' + luFaces(x.ids, 22) + "</td><td>" + f0(x.min) + "</td><td>" + f1(x.o) + "</td><td>" + f1(x.d) + "</td>" + netCell(x.net, "big") + "</tr>";
+    }).join(""), '<a href="' + href("lineups", { t: code }) + '">Every lineup</a>');
+    html += tablePanel("On/off", '<th class="pn">Player</th><th>Min</th><th class="hc">On/off</th><th class="hc">Net on</th><th class="hc">Net off</th>', oo.map(function (x) {
+      var p = luP(x.nid);
+      return '<tr><td class="pn">' + (p ? pname(p, 22) : esc(H.lu.names[x.nid])) + "</td><td>" + x.min + "</td>" + netCell(x.diff, "big") + netCell(x.on) + netCell(x.off) + "</tr>";
+    }).join(""), "Per 100 possessions, this season");
+    return '<div class="rt lupanels">' + html + "</div>";
+  }
 
   // ---------- ratings ----------
   // Skill ratings come from tools/nba_ratings.py: every category is a percentile among players with real minutes,
@@ -987,6 +1082,7 @@
       "<h3>The league today</h3><p>Built fresh every time the page opens, from feeds the site already refreshes every day: contracts from Basketball-Reference and rosters, injuries and season stats from ESPN (twice a day, the same feed Hard Cap uses), standings every morning, and the draft order, every pick owed and the consensus 2027 board from the Big Board. A waived player catching on somewhere new counts as a two-way there while his old team pays off the rest.</p>" +
       "<h3>Ratings</h3><p>Every player has an impact rating per 100 possessions, offense plus defense, from Banner 19's blend of DARKO (half), RAPM, CraftedNBA and the box score. The DARKO half is live: Kostya Medvedovsky and Andrew Patton's daily plus-minus is pulled from <a href=\"https://www.darko.app/\">darko.app</a> every morning" + (H.darkoThrough ? " (ratings through " + esc(H.darkoThrough) + ")" : "") + " and replaces the June numbers the cap sheet was built on; this year's rookies move halfway from their draft-slot guess to DARKO's number. Basketball-Reference's Box Plus/Minus moves the other half, faded in by minutes (about " + H.cfg.blend.toLocaleString() + " minutes to move it halfway). Ratings age on Stephen Noh's curve, and young players grow toward their ceiling.</p>" +
       "<h3>Skill ratings</h3><p>The Ratings tab breaks every player into twelve categories, rebuilt every morning from <a href=\"https://www.pbpstats.com/\">pbpstats</a> (possessions, shots by zone, assisted and unassisted points, assists by shot type), Basketball-Reference (advanced, per-100, shooting and play-by-play tables) and DARKO. Each category is a weighted blend of a few stats, scored against everyone with real minutes and shown as a percentile, league-wide or against his position group (guards, wings and bigs, from Basketball-Reference's estimate of the positions he's actually played). <b>Shooting</b>: 3-point percentage and volume, free throws and mid-range accuracy. <b>Finishing</b>: accuracy and volume at the rim, plus free-throw rate. <b>Scoring</b>: points per 100 possessions and true shooting. <b>Creation</b>: unassisted points per 100 and usage. <b>Playmaking</b>: assist rate and points created by assists. <b>Ball security</b>: turnovers against what his usage and passing load predict, so a lead guard isn't graded against a corner shooter. <b>Rim protection</b>: block rate and defensive rebounding. <b>Rebounding</b>: both glass rates. <b>Disruption</b>: steal rate. <b>Offensive, defensive and overall impact</b>: DARKO's plus-minus, or box plus-minus shrunk by minutes where DARKO has no number. Shooting percentages are pulled toward the league average by how many shots back them up (75 threes, 40 free throws, 40 rim attempts), and early in the season last year counts at half weight. The archetype is a label read off the profile (a big with 70th-percentile rim protection among bigs is a rim protector, a guard or wing with top-15% creation and 75th-percentile playmaking is a primary creator).</p>" +
+      "<h3>Lineups and on/off</h3><p>Every team's five-man units come from <a href=\"https://www.pbpstats.com/\">pbpstats</a> each morning: possessions, points scored and allowed. Trios and duos add up every five-man unit they were part of, and a player's on/off compares every lineup he's in with every one he isn't, so all three come from the same possessions and agree with each other. Ratings are points per 100 possessions. Small samples swing wildly (a +40 lineup over 30 minutes means little), which is why every view has a possession minimum. A starter's off numbers are mostly bench units, so on/off flatters starters on deep teams and punishes them on thin ones.</p>" +
       "<h3>Lineups and minutes</h3><p>This season uses real rotations: each team's starting five from its most recent game and the minutes every player is averaging, scaled to 240 a game among the players available (anyone ruled out for the season sits). Later seasons don't have that, so the best player at each position starts (by the positions he plays, so two centers don't start together) and the bench plays by rating: 34, 33, 32, 30 and 28 minutes for the starters, then 24, 20, 16, 13 and 10.</p>" +
       "<h3>Standings and odds</h3><p>Ratings times minutes give each team a net rating, and every game left on a fresh schedule is played " + H.cfg.sims.toLocaleString() + " times from each team's real record. Then the play-in, the playoffs and the lottery: 16 lottery teams, three balls each, two for the 9 and 10 seeds and the three worst records, one for each 7-8 play-in loser, and the worst three can't fall below 12th.</p>" +
       "<h3>The year slider</h3><p>" + sname(0) + " is today's rosters. Every later season is built from contracts: options are called on value (a team option is picked up when he's worth it, a player option comes back when it's bad for the team), and when a deal ends he's gone, unless he's a restricted free agent worth his price (matched by default) or you re-sign him on his team's page. Each team's first-round picks arrive at their projected slot on rookie-scale deals (2027 from the simulations, using the Big Board's player at that slot; later drafts from the season before). Better-of picks go to whoever gets them where the picks are projected to land. Open spots go to the free agents a team's cap position can buy: a starter with real cap room, a rotation player with the mid-level, minimums after that.</p>" +
@@ -1005,9 +1101,9 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board.";

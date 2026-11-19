@@ -319,3 +319,28 @@ table.rt td.mn{font-variant-numeric:tabular-nums}
   .skn{font-size:13px}
   .sk small{font-size:10.5px}
 }
+
+/* lineups */
+.seg{display:inline-flex;gap:2px;background:var(--paper-2);border-radius:10px;padding:3px;margin:4px 0 2px;flex-wrap:wrap}
+.seg a{padding:7px 12px;border-radius:8px;font:700 13px/1 var(--body);color:var(--muted);text-decoration:none}
+.seg a[aria-current="page"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+table.lut td.big,.lupanels td.big{font-size:15px;min-width:54px}
+.lu{display:inline-flex;flex-wrap:wrap;gap:4px 10px;vertical-align:middle}
+.lup{display:inline-flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.lup:not([data-p]){cursor:default}
+.lun{font-size:13px;font-weight:600}
+.lup[data-p]:hover .lun{text-decoration:underline}
+table.rt td.lucell{white-space:normal;min-width:0}
+table.lut td.lucell .logo{margin-right:6px}
+.lupanels table.t td.hc{font:700 14px/1 var(--cond);text-align:center;padding:7px 4px;color:#1d2330;min-width:48px}
+.lupanels table.t th.hc{text-align:center}
+.lupanels table.t td.pn{text-align:left}
+@media (max-width:640px){ .lun{font-size:12px} .lu{gap:3px 8px} table.rt td.lucell .rk{display:none} }
+.lunames{display:none}
+@media (max-width:640px){
+  .lu{display:inline-block;max-width:58vw}
+  .lup{margin-right:-7px}
+  .lup .face{box-shadow:0 0 0 2px var(--card)}
+  .lun{display:none}
+  .lunames{display:block;font-size:12px;font-weight:600;line-height:1.3;margin-top:3px;white-space:normal}
+}
