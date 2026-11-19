@@ -668,34 +668,41 @@
       K: ["g", "fgm", "fga", "fgm_50p", "xpm", "xpmiss"], DEF: ["g", "def_sack", "def_int", "fum_rec", "def_td", "pts_allow", "yds_allow"], DL: ["g", ...idp], LB: ["g", ...idp], DB: ["g", ...idp] };
   })();
   const HOOPS_MINOR = new Set(["oreb", "dreb", "pf", "tpa", "pm", "dd", "td"]);
+  // his height and weight (p.ht in inches, p.wt in pounds), for the card's header
+  const bodyOf = (p) => { const h = +p.ht, w = +p.wt, out = []; if (h > 48 && h < 96) out.push(`${Math.floor(h / 12)}'${Math.round(h % 12)}"`); if (w > 80 && w < 450) out.push(`${Math.round(w)} lbs`); return out.length ? `, ${out.join(", ")}` : ""; };
   const commas = (txt, v) => (Math.abs(v) >= 1000 && /^-?\d+$/.test(txt) ? Number(txt).toLocaleString("en-US") : txt);
   function playerCard(sport, p, opts = {}) {
     const sc = sport.scorings[opts.scoring] || Object.values(sport.scorings)[0];
     const kd = S.positions(p).some((x) => x === "K" || x === "DEF");
     // each stat line as one compact row: a label over each number, the columns the pool has numbers in, a per-game
     // line to one decimal throughout
-    const tbl = (title, cells) => (cells.length && cells.length <= 2 ? `<div class="pc-line pc-line-s"><span class="ps"><b>${esc(title)}</b>, ${esc(sport.data.season)}</span><span>${cells.map(([l, v]) => `<b class="num">${v}</b> <small class="ps">${esc(l)}</small>`).join(" &nbsp; ")}</span></div>` : cells.length ? `<div class="pc-line"><div class="ps"><b>${esc(title)}</b>, ${esc(sport.data.season)}</div><div class="table-wrap"><table class="t dense pc-tbl"><thead><tr>${cells.map(([l, , t]) => `<th class="r"${t ? ` title="${esc(t)}"` : ""}>${esc(l)}</th>`).join("")}</tr></thead><tbody><tr>${cells.map(([, v]) => `<td class="r num">${v}</td>`).join("")}</tr></tbody></table></div></div>` : "");
+    const tbl = (title, cells, season = sport.data.season) => (cells.length && cells.length <= 2 ? `<div class="pc-line pc-line-s"><span class="ps"><b>${esc(title)}</b>, ${esc(season)}</span><span>${cells.map(([l, v]) => `<b class="num">${v}</b> <small class="ps">${esc(l)}</small>`).join(" &nbsp; ")}</span></div>` : cells.length ? `<div class="pc-line"><div class="ps"><b>${esc(title)}</b>, ${esc(season)}</div><div class="table-wrap"><table class="t dense pc-tbl"><thead><tr>${cells.map(([l, , t]) => `<th class="r"${t ? ` title="${esc(t)}"` : ""}>${esc(l)}</th>`).join("")}</tr></thead><tbody><tr>${cells.map(([, v]) => `<td class="r num">${v}</td>`).join("")}</tr></tbody></table></div></div>` : "");
     const fb = S.football(sport) ? FB_CARD[S.positions(p)[0]] : null, ptsCol = fb ? sc.col : null;
     const curWeek = +(sport.data && sport.data.week) || 0;
     // basketball's lesser columns (offensive boards, fouls, double-doubles) only when the league scores them
     const hoops = sport.key === "nba" || sport.key === "cbb", scJson = JSON.stringify(sc), scUses = (c) => scJson.includes(`"${c}"`);
     let bye = null;
-    const lines = Object.entries(sport.data.lines || {}).filter(([k]) => p.l[k]).map(([k, def]) => {
+    // one stat line; pp is the player, or his last season ({ l: p.l0 }), which reads through the same columns
+    const lineHtml = (pp, k, def, season) => {
       // a past week's projection is history; this week's with no games in it is his bye
       if (def.week != null && curWeek && def.week < curWeek) return "";
       const empty = (sport.empty && sport.empty[k]) || new Set(), perGame = /per game/i.test(def.label || "") || /^p?pg$/.test(k);
       // football: his position's columns, then the league's fantasy points (and per game, on a season line)
       const order = fb ? fb.filter((c) => def.cols.includes(c)).concat(ptsCol && def.cols.includes(ptsCol) ? [ptsCol] : []) : def.cols;
       const cells = order.filter((c) => c !== "eg" && !empty.has(c) && !(hoops && HOOPS_MINOR.has(c) && !scUses(c))).map((c) => {
-        const v = S.stat(sport, p, k, c);
+        const v = S.stat(sport, pp, k, c);
         if (v == null || (S.football(sport) && v === 0 && (kd ? /^(pass|rush|rec|fum)/.test(c) : /^(fg|xpm|def_|pts_allow)/.test(c)))) return null;
         const f = /^(avg|obp|ops|slg|svp)$/.test(c) ? S.fmt.r3 : /^(era|whip|gaa)$/.test(c) ? S.fmt.f2 : /^(gp|g|gs)$/.test(c) ? S.fmt.f0 : perGame ? S.fmt.f1 : Number.isInteger(v) || Math.abs(v) >= 100 ? S.fmt.f0 : S.fmt.f1;
         return [c === ptsCol ? "Fantasy pts" : label(c), commas(f(v), v)];
       }).filter(Boolean);
-      if (fb && ptsCol && !def.proj) { const g = S.stat(sport, p, k, "g"), t = S.stat(sport, p, k, ptsCol); if (g && t != null) cells.push(["FP/G", S.fmt.f1(t / g)]); }
+      if (fb && ptsCol && !def.proj) { const g = S.stat(sport, pp, k, "g"), t = S.stat(sport, pp, k, ptsCol); if (g && t != null) cells.push(["FP/G", S.fmt.f1(t / g)]); }
       if (def.week != null && def.week === curWeek && !cells.some(([, v]) => v !== "0" && v !== "0.0")) { bye = def.week; return ""; }
-      return tbl(def.label, cells);
-    }).filter(Boolean);
+      return tbl(def.label, cells, season);
+    };
+    const lines = Object.entries(sport.data.lines || {}).filter(([k]) => p.l[k]).map(([k, def]) => lineHtml(p, k, def)).filter(Boolean);
+    // his last season (p.l0, the pool's data.prev), on the same lines as this season's
+    const prevSeason = sport.data.prev || "last season";
+    const past = p.l0 ? Object.entries(sport.data.lines || {}).filter(([k, def]) => Array.isArray(p.l0[k]) && p.l0[k].some((x) => x) && !def.proj && def.week == null).map(([k, def]) => lineHtml({ l: p.l0 }, k, def, prevSeason)).filter(Boolean).join("") : "";
     // his advanced stats this season (football: the ones for his position), each from its category's formula
     const adv = (() => {
       if (!hasAdv(sport)) return "";
@@ -713,19 +720,22 @@
     // a league's card leads with the week and the league; the season lines fold away under one heading
     // opts.lines === false: the card already shows his season and projection its own way (a category league's lines)
     // folded (a league's card, which leads with the week): his main line stays open, the rest folds under one heading
+    // strength by category (z-scores against the pool) is a detail: it sits at the bottom, folded
+    const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
+    const zsFold = zs ? `<details class="pc-more"><summary>Strength by category</summary><p class="ps" style="margin:6px 0">Against the player pool, in standard deviations</p>${zs}</details>` : "";
     const keep = opts.fold ? (typeof opts.fold === "number" ? opts.fold : 1) : lines.length;
     const contract = opts.contract === "fold" ? "" : contractPanel(sport, p);
-    const more = lines.slice(keep).join("") + adv + (opts.contract === "fold" ? contractPanel(sport, p) : "");
-    const linesHtml = opts.lines === false ? adv : opts.fold ? `${lines.slice(0, keep).join("")}${more ? `<details class="pc-more"><summary>${opts.contract === "fold" && sport.key === "nhl" ? "More stats and his contract" : "More stats"}</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + adv;
+    const more = lines.slice(keep).join("") + past + adv + (opts.contract === "fold" ? contractPanel(sport, p) : "") + (zs ? `<div class="ps"><b>Strength by category</b>, against the player pool</div>${zs}` : "");
+    const pastFold = past ? `<details class="pc-more"><summary>Last season, ${esc(prevSeason)}</summary><div class="stack">${past}</div></details>` : "";
+    const linesHtml = opts.lines === false ? adv + pastFold : opts.fold ? `${lines.slice(0, keep).join("")}${more ? `<details class="pc-more"><summary>${opts.contract === "fold" && sport.key === "nhl" ? "More stats and his contract" : "More stats"}</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + pastFold + adv;
     const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
-    const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="ps"><b>Strength by category</b>, against the player pool</div><div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     // opts.logo: his pro team's logo at the right of the header
     const lg = opts.logo && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
-    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.school ? ` ${esc(p.school)}` : ""}${p.yr && YR[p.yr] ? `, ${YR[p.yr]}` : ""}${p.age ? `, age ${p.age}` : ""}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}${bye ? `, bye in week ${bye}` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
+    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.school ? ` ${esc(p.school)}` : ""}${p.yr && YR[p.yr] ? `, ${YR[p.yr]}` : ""}${p.age ? `, age ${Math.floor(p.age)}` : ""}${bodyOf(p)}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}${bye ? `, bye in week ${bye}` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
       ${(() => { const s = sampleOf(sport, p); return s ? `<p class="small pc-ss" style="margin:0 0 12px"><span class="tag ss">Small sample</span> ${s.g} of ${s.of} games so far, so his rates can still move a lot.</p>` : ""; })()}
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${opts.extra || ""}${zs}${contract}${opts.after || ""}${linesHtml}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
+      <div class="stack">${opts.extra || ""}${contract}${opts.after || ""}${linesHtml}${opts.fold && opts.lines !== false ? "" : zsFold}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
   }
 
   const capMoney = (n) => n == null || !Number.isFinite(+n) ? "—" : +n >= 1e6 ? `$${(+n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${Math.round(+n).toLocaleString("en-US")}`;

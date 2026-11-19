@@ -8,7 +8,7 @@ Runs after tools/cbb_build.py and tools/cbb_extras.py and writes:
   cbb/data/dfs.json                today's and tomorrow's featured games (the best 14 by the hub's watchability), which
                                    the fk-live relay serves as the night's slates
 """
-import json, math, sys
+import json, math, re, sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -28,6 +28,17 @@ def read(p, d=None):
         return json.loads(Path(p).read_text())
     except (OSError, ValueError):
         return d
+
+
+def inches(txt):
+    """ESPN's display height ('6\' 4"') in inches."""
+    m = re.match(r"\s*(\d)\D+(\d{1,2})", str(txt or ""))
+    return int(m.group(1)) * 12 + int(m.group(2)) if m else None
+
+
+def pounds(txt):
+    m = re.match(r"\s*(\d{2,3})", str(txt or ""))
+    return int(m.group(1)) if m else None
 
 
 def watch(h, a, ln, pct):
@@ -84,6 +95,18 @@ def main():
                                               "watch": watch(h, a, ln, pct), "spread": ln and ln["spread"], "total": ln and ln["total"]} for g, h, a, ln in rows if g.get("at")]})
     (ROOT / "cbb/data/dfs.json").write_text(json.dumps({"sport": "cbb", "season": season, "updated": now.isoformat(), "featured": FEATURED, "days": out_days}, separators=(",", ":")) + "\n")
 
+    # last season's per-game lines (tools/cbb_build.py, cbb/data/prev.json), in the pool's columns
+    pv = read(ROOT / "cbb/data/prev.json", {}) or {}
+    prev = {}
+    for aid, s in (pv.get("players") or {}).items():
+        gp = num(s.get("gp"))
+        if not gp:
+            continue
+        g = lambda k: num(s.get(k)) or 0
+        row = {"gp": gp, "eg": 0, "min": g("min"), "fgm": g("fgm"), "fga": g("fga"), "ftm": g("ftm"), "fta": g("fta"), "tpm": g("tpm"), "pts": g("pts"), "reb": g("reb"),
+               "ast": g("ast"), "stl": g("stl"), "blk": g("blk"), "tov": g("tov"), "oreb": 0, "dreb": g("reb"), "pf": g("pf"), "tpa": g("threeAtt"), "pm": 0, "dd": g("dd") / gp, "td": 0}
+        prev[aid] = [round(row[c], 1) for c in COLS]
+
     # the player pool: anyone who has played real minutes
     players = []
     for p in hub["players"]:
@@ -104,8 +127,15 @@ def main():
                "school": t["short"], "yr": (p.get("year") or "")[:2]}
         if num(p.get("draftRank")):
             rec["bb"] = int(p["draftRank"])
+        ht, wt = inches(p.get("height")), pounds(p.get("weight"))
+        if ht:
+            rec["ht"] = ht
+        if wt:
+            rec["wt"] = wt
+        if prev.get(p["id"]):
+            rec["l0"] = {"pg": prev[p["id"]]}
         players.append(rec)
-    pool = {"sport": "cbb", "season": season, "updated": now.isoformat(), "source": "ESPN season stats via the CBB Hub; projections scale each player's line by his team's projected points next game",
+    pool = {"sport": "cbb", "season": season, "prev": pv.get("label") if prev else None, "updated": now.isoformat(), "source": "ESPN season stats via the CBB Hub; projections scale each player's line by his team's projected points next game",
             "lines": {"pg": {"label": "Per game", "cols": COLS}, "ppg": {"label": "Next game projection", "cols": COLS, "proj": True}},
             "teams": {t["abbr"]: {"n": t["short"], "c": t.get("color"), "logo": t.get("logo"), "conf": t.get("conference")} for t in hub["teams"]},
             "players": players}

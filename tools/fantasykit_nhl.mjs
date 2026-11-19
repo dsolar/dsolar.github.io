@@ -99,6 +99,9 @@ export async function buildPool() {
     const out = { id, n: p?.name || row?.skaterFullName || row?.goalieFullName, t: team, pos: [ps],
       age: p?.age || undefined, head: p?.head || `https://assets.nhle.com/mugs/nhl/${year}${year + 1}/${team}/${id}.png`,
       l: { [line]: cur.map((x) => round(x)), ["p" + line]: pr }, l0: { [line]: prev.map((x) => round(x)) }, projGames: pr[0] };
+    if (p?.ht) out.ht = p.ht;
+    if (p?.wt) out.wt = p.wt;
+    if (!old?.gamesPlayed) delete out.l0;
     if (!old?.gamesPlayed && (p?.age || 40) <= 25) out.rk = 1;
     if (ltir.has(id)) out.inj = "IR";
     const contract = contractOf(p, hub); if (contract) out.contract = contract;

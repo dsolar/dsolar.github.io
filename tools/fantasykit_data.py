@@ -99,6 +99,14 @@ def after_night(d):
     return datetime(d.year, d.month, d.day, tzinfo=timezone.utc) + timedelta(days=1, hours=8)
 
 
+def num_or_none(x):
+    try:
+        v = float(str(x).strip())
+        return v if v == v else None
+    except (TypeError, ValueError):
+        return None
+
+
 def age_on(birth, today=None):
     """Age in years, to a tenth, from a YYYY-MM-DD birth date; None if it doesn't parse."""
     try:
@@ -183,6 +191,17 @@ def nba():
         team = (rosters.get(pid) or [None])[0] or (names.get(pid) or [None, None])[1] or p.get("t") or "FA"
         pos = p.get("ps") or LETTER_POS.get((rosters.get(pid) or [None, None, "F"])[2] or "F", ["SF", "PF"])
         row = {"id": pid, "n": nm, "t": team, "pos": pos, "l": {"pg": line}}
+        # his last season as it was, for the player card
+        if b and gb:
+            l0 = [gb if c in ("gp", "eg") else 0 if c in prev_blank else round(hc_val(b, ix, c), 1) for c in NBA_COLS]
+            l0[NBA_COLS.index("dreb")] = round(max(0, l0[NBA_COLS.index("reb")] - l0[NBA_COLS.index("oreb")]), 1)
+            row["l0"] = {"pg": l0}
+        rr = rosters.get(pid) or []
+        if len(rr) > 5:
+            if rr[4]:
+                row["ht"] = rr[4]
+            if rr[5]:
+                row["wt"] = rr[5]
         if p.get("age"):
             row["age"] = p["age"]
         if prev and not b and (not p.get("age") or p["age"] <= 24):    # no line last season, and young
@@ -197,7 +216,8 @@ def nba():
     src = sleeper_nba(out)
     if src:
         lines["ppg"] = {"label": "Sleeper season projection, per game", "cols": NBA_COLS, "proj": True}
-    write("nba", {"sport": "nba", "season": season_label(st),
+    prev_label = f"{int(years[-2]) - 1}-{years[-2][2:]}" if len(years) > 1 else None
+    write("nba", {"sport": "nba", "season": season_label(st), "prev": prev_label,
                   "updated": st.get("updated") or NOW, "source": "ESPN box scores via Hard Cap" + (", projections from Sleeper" if src else ""),
                   "lines": lines, "players": out})
 
@@ -396,7 +416,13 @@ def mlb():
     try:
         for i in range(0, len(ids), 100):
             chunk = ",".join(str(x) for x in ids[i:i + 100])
-            for person in (get(f"{MLB_API}people?personIds={chunk}&fields=people,id,birthDate") or {}).get("people", []):
+            for person in (get(f"{MLB_API}people?personIds={chunk}&fields=people,id,birthDate,height,weight") or {}).get("people", []):
+                # height comes as 6' 2" and weight in pounds, for the player card
+                m = re.match(r"\s*(\d)\D+(\d{1,2})", str(person.get("height") or ""))
+                if m and person["id"] in by:
+                    by[person["id"]]["ht"] = int(m.group(1)) * 12 + int(m.group(2))
+                if isinstance(person.get("weight"), (int, float)) and person["id"] in by:
+                    by[person["id"]]["wt"] = int(person["weight"])
                 a = age_on(person.get("birthDate"))
                 if a and person.get("id") in by:
                     by[person["id"]]["age"] = a
@@ -930,6 +956,11 @@ def nfl():
                 p["col"] = q["college"]
             if q.get("espn_id"):
                 p["espn"] = str(q["espn_id"])  # ESPN athlete id, for his photo
+            ht, wt = num_or_none(q.get("height")), num_or_none(q.get("weight"))
+            if ht and 60 < ht < 90:
+                p["ht"] = round(ht)
+            if wt and 140 < wt < 400:
+                p["wt"] = round(wt)
     except Exception as e:
         print(f"Sleeper's player list didn't load: {type(e).__name__}: {e}")
         # keep the colleges from the last file
@@ -959,7 +990,23 @@ def nfl():
         nfl_weeks(season, state, nv)
     except Exception as e:
         print(f"NFL weeks didn't build: {type(e).__name__}: {e}")
-    write("nfl", {"sport": "nfl", "season": str(season), "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com)",
+    # last season's totals, for the player card (Sleeper's, in the same columns; nflverse's columns stay zero)
+    prev_n = 0
+    try:
+        for r in nfl_rows(f"https://api.sleeper.com/stats/nfl/{int(season) - 1}?season_type=regular{POS_Q}"):
+            pid = str(r.get("player_id"))
+            if pid not in by:
+                continue
+            st0 = r.get("stats") or {}
+            g = st0.get("gp") or st0.get("gms_active") or 0
+            if not g:
+                continue
+            by[pid]["l0"] = {"tot": [g] + [round(st0.get(c, 0) or 0, 2) for c in NFL_COLS[1:]]}
+            prev_n += 1
+    except Exception as e:
+        print(f"Last season's NFL stats didn't load: {type(e).__name__}: {e}")
+    print(f"NFL last season: {prev_n} players")
+    write("nfl", {"sport": "nfl", "season": str(season), "prev": str(int(season) - 1) if prev_n else None, "week": state.get("week"), "updated": NOW, "source": "Sleeper (sleeper.com)",
                   "lines": {"tot": {"label": "Season totals", "cols": NFL_COLS},
                             "proj": {"label": "Rest-of-season projection" if use_ros else "Season projection", "cols": PROJ_COLS, "ros": use_ros, "weeks": len(left) if use_ros else 17},
                             **{f"wk{w}": {"label": f"Week {w} projection", "cols": NFL_COLS, "proj": True, "week": w, **week_dates(state, season, w)} for w in wk_lines}},

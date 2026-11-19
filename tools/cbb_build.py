@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 
 ROOT=pathlib.Path(__file__).resolve().parents[1]
 DATA=ROOT/"cbb/data/hub.json"
+PREV=ROOT/"cbb/data/prev.json"
 UA="Mozilla/5.0 (compatible; davidsolar-cbb/1.0; +https://davidsolar.dev/cbb/)"
 Q="region=us&lang=en&contentorigin=espn"
 WEB="https://site.web.api.espn.com"
@@ -353,6 +354,20 @@ def main():
   oldstats={p["id"]:p for p in old.get("players",[]) if p.get("statsSource")}
   for p in players:
    if p["id"] in oldstats:p["stats"]=oldstats[p["id"]]["stats"];p["statsSource"]=oldstats[p["id"]]["statsSource"]
+ # Last season's per-game lines, for the player card: final, so fetched once a season (cbb/data/prev.json, by athlete
+ # id, which follows a player who transferred)
+ prevf=read(PREV,{}) or {}
+ if prevf.get("season")!=year-1 or len(prevf.get("players") or {})<1000:
+  try:
+   rows={};page,pages=1,1
+   while page<=pages and page<=15:
+    r,pg=parse_byathlete(json.loads(get(f"{WEB}/apis/common/v3/sports/basketball/mens-college-basketball/statistics/byathlete?{Q}&isqualified=false&limit=1000&page={page}&sort=offensive.avgPoints:desc&season={year-1}&seasontype=2")))
+    rows.update(r);pages=int(pg.get("pages") or 1);page+=1
+   if len(rows)<1000:raise ValueError(f"only {len(rows)} players")
+   PREV.write_text(json.dumps({"season":year-1,"label":f"{year-2}-{str(year-1)[2:]}","updated":stamp,"source":"ESPN player season stats",
+    "players":{k:{c:x for c,x in v.items() if x is not None} for k,v in rows.items()}},ensure_ascii=False,separators=(",",":"))+"\n")
+   print(f"Last season: {len(rows)} players",flush=True)
+  except Exception as e:errors.append("Last season's stats: "+str(e))
  # Every team's full season schedule, refreshed every run after six hours (365 small requests).
  sched=read(SCHEDULE,{}) or {}
  if sched.get("season")!=year:sched={}

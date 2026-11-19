@@ -245,7 +245,7 @@ def pull_injuries(notes):
 
 
 def pull_rosters(notes):
-    """{slug: [team, name, position, ESPN athlete id]} for everyone on an NBA roster right now, plus how many of the 30
+    """{slug: [team, name, position, ESPN athlete id, height in inches, weight in pounds]} for everyone on an NBA roster right now, plus how many of the 30
     teams answered. The ESPN id (the fourth item) is for player photos (assets/faces.js).
     Hard Cap releases a fantasy player who is on no roster (waived, bought out, retired) once all 30 come back."""
     out, teams = {}, 0
@@ -263,7 +263,11 @@ def pull_rosters(notes):
         teams += 1
         for a in athletes:
             pos = (a.get("position") or {}).get("abbreviation", "")
-            out[slug(a.get("displayName"))] = [ab, a.get("displayName"), pos, str(a.get("id") or "")]
+            # height in inches and weight in pounds come last, for the Draft Lab player card
+            ht, wt = a.get("height"), a.get("weight")
+            ht = round(ht) if isinstance(ht, (int, float)) and 60 < ht < 96 else None
+            wt = round(wt) if isinstance(wt, (int, float)) and 120 < wt < 400 else None
+            out[slug(a.get("displayName"))] = [ab, a.get("displayName"), pos, str(a.get("id") or ""), ht, wt]
     return out, teams
 
 
