@@ -1003,28 +1003,43 @@
     return '<div class="gauge ' + (ok ? "ok" : "bad") + '"><div class="gbar"><b style="width:' + (r.inSal / top * 100).toFixed(1) + '%"></b>' + (max != null ? '<i style="left:' + (max / top * 100).toFixed(1) + '%" title="Most it can take back"></i>' : "") + "</div><small>" +
       (room ? "Takes back " + money(r.inSal) + " into cap room" : "Takes back <b>" + money(r.inSal) + "</b> of " + money(max) + " allowed" + (ok ? "" : ": " + money(r.inSal - max) + " too much")) + "</small></div>";
   }
-  // When a deal fails, look for the one roster player a team could add (or take off) that makes it legal
+  // When a deal fails, look for one or two roster players a team could add that make it legal, including players who
+  // only become tradable later (shown with the date)
   function fixes(tr, chk) {
     var out = [], fail = tr.sides.filter(function (c) { return !chk.teams[c].ok; });
     var base = tr.assets.map(function (a) { return { kind: a.kind, id: a.id, amt: a.kind === "c" ? +a.id : 0, from: tr.sides[a.from], to: tr.sides[destOf(tr, a)] }; });
     var used = {}; tr.assets.forEach(function (a) { used[a.kind + ":" + a.id] = 1; });
-    var tries = 0;
+    var budget = 160, seen = {};
+    var tryAdd = function (k, to, players) {
+      if (budget-- <= 0) return;
+      var key = k + ">" + players.map(function (p) { return p.id; }).sort().join(",");
+      if (seen[key]) return; seen[key] = 1;
+      var mv = base.concat(players.map(function (p) { return { kind: "p", id: p.id, amt: 0, from: tr.sides[k], to: tr.sides[to] }; }));
+      var t = H.checkTrade({ teams: tr.sides, moves: mv });
+      if (!t.ok) return;
+      var after = tr.sides.map(function (c) { return t.teams[c].after; }).filter(Boolean).sort().pop() || null;
+      var waive = tr.sides.reduce(function (a, c) { return a + (t.teams[c].waive || 0); }, 0);
+      out.push({ k: k, to: to, players: players, after: after, waive: waive, sal: players.reduce(function (a, p) { return a + H.salary(p, 0); }, 0), cost: players.reduce(function (a, p) { return a + Math.max(0, H.surplus(p).pv); }, 0) });
+    };
     tr.sides.forEach(function (c, k) {
-      if (out.length >= 4) return;
-      // a failing team sends more salary, or a partner sends filler to a team under its limit
       var partner = tr.sides.map(function (x, j) { return j; }).filter(function (j) { return j !== k; })
         .sort(function (a, b) { return (fail.indexOf(tr.sides[b]) >= 0) - (fail.indexOf(tr.sides[a]) >= 0); })[0];
       var pool = Object.values(H.W.P).filter(function (p) { return p.t === c && !p.two && H.salary(p, 0) > 0 && !used["p:" + p.id]; }).sort(function (a, b) { return H.salary(a, 0) - H.salary(b, 0); });
-      for (var n = 0; n < pool.length && tries < 40 && out.length < 4; n++) {
-        tries++;
-        var mv = base.concat([{ kind: "p", id: pool[n].id, amt: 0, from: c, to: tr.sides[partner] }]);
-        var t = H.checkTrade({ teams: tr.sides, moves: mv });
-        if (t.ok) out.push({ p: pool[n], k: k, to: partner });
-      }
+      pool.forEach(function (p) { tryAdd(k, partner, [p]); });
+      var mid = pool.filter(function (p) { return H.salary(p, 0) >= 2e6; }).slice(-10);
+      for (var x = 0; x < mid.length; x++) for (var y = x + 1; y < mid.length; y++) tryAdd(k, partner, [mid[x], mid[y]]);
     });
     if (!out.length) return "";
-    return '<div class="fixes"><b>Ways to make it work</b>' + out.map(function (f) {
-      return '<button type="button" class="fixbtn" data-pick="p:' + esc(f.p.id) + '" data-side="' + f.k + '" data-to="' + f.to + '">' + logo(tr.sides[f.k], 16) + " " + esc(team(tr.sides[f.k]).short) + " add " + esc(f.p.n) + " (" + money(H.salary(f.p, 0)) + ")</button>";
+    // a pair that includes a player who works alone adds nothing
+    var soloOK = {}; out.forEach(function (f) { if (f.players.length === 1) soloOK[f.k + ":" + f.players[0].id] = 1; });
+    out = out.filter(function (f) { return f.players.length === 1 || !f.players.some(function (p) { return soloOK[f.k + ":" + p.id]; }); });
+    // fewest players, available now, no waivers, least salary
+    out.sort(function (a, b) { return (a.players.length - b.players.length) || ((a.after ? 1 : 0) - (b.after ? 1 : 0)) || (a.waive - b.waive) || (a.cost - b.cost) || (a.sal - b.sal); });
+    var pick = [], singles = 0, pairs = 0;
+    out.forEach(function (f) { if (f.players.length === 1 ? singles < 3 : pairs < 3) { pick.push(f); if (f.players.length === 1) singles++; else pairs++; } });
+    return '<div class="fixes"><b>Ways to make it work</b>' + pick.map(function (f) {
+      return '<button type="button" class="fixbtn" data-picks="' + esc(f.players.map(function (p) { return "p:" + p.id; }).join(",")) + '" data-side="' + f.k + '" data-to="' + f.to + '">' + logo(tr.sides[f.k], 16) + " " + esc(team(tr.sides[f.k]).short) + " add " + f.players.map(function (p) { return esc(p.n) + " (" + money(H.salary(p, 0)) + ")"; }).join(" + ") +
+        (f.after ? ' <span class="pill warn">after ' + esc(fmtShort(f.after)) + "</span>" : "") + (f.waive ? ' <span class="pill">waive ' + f.waive + "</span>" : "") + "</button>";
     }).join("") + "</div>";
   }
   function assetLine(a, tr, k, outgoing) {
@@ -1062,31 +1077,64 @@
   }
   function tile(a, tr, k) {
     var from = tr.sides.length > 2 ? '<span class="tfrom">' + logo(tr.sides[a.from], 14) + " from " + esc(team(tr.sides[a.from]).short) + "</span>" : "";
+    var rm = '<button type="button" class="trm" data-rm="' + esc(a.kind + ":" + a.id) + '" aria-label="Take out of the trade" title="Take out of the trade">×</button>';
     if (a.kind === "p") {
       var p = H.W.P[a.id], last = H.lastYear(p), left = 0, kick = H.kicker(p);
       for (var j = 0; j <= last; j++) left += H.salary(p, j);
-      return '<div class="tile" data-p="' + esc(p.id) + '">' + face(p, 52) + '<div class="tl"><b>' + esc(p.n) + "</b><span>" + esc(posOf(p)) + ", " + p.age + " " + rchip(H.rating(p, 0)) + "</span><small>" + (last > 0 ? "Thru " + sname(last) + ", " + money(left) + " total" : "Expiring") + (H.faKind(p) === "RFA" ? ", then RFA" : "") + "</small>" + from + '</div><div class="tsal">' + money(H.salary(p, 0) + kick) + (kick ? "<small>with kicker</small>" : "") + "</div></div>";
+      var lock = p.tradeOk && H.asOf < p.tradeOk ? ' <span class="pill warn">' + esc(fmtShort(p.tradeOk)) + "</span>" : "";
+      return '<div class="tile" data-p="' + esc(p.id) + '">' + face(p, 52) + '<div class="tl"><b>' + esc(p.n) + lock + "</b><span>" + esc(posOf(p)) + ", " + p.age + " " + rchip(H.rating(p, 0)) + "</span><small>" + (last > 0 ? "Thru " + sname(last) + ", " + money(left) + " total" : "Expiring") + (H.faKind(p) === "RFA" ? ", then RFA" : "") + "</small>" + from + '</div><div class="tsal">' + money(H.salary(p, 0) + kick) + (kick ? "<small>with kicker</small>" : "") + "</div>" + rm + "</div>";
     }
     if (a.kind === "k") {
       var pk = pickOf(a.id), info = H.pickInfo(pk);
-      return '<div class="tile pk"><span class="tpk">' + logo(pk.from, 34) + '</span><div class="tl"><b>' + esc(H.pickName(pk)) + "</b><small>Projected slot " + f1(info.avg) + (pk.note ? ", " + esc(pk.note) : "") + "</small>" + from + '</div><div class="tsal">Pick</div></div>';
+      return '<div class="tile pk"><span class="tpk">' + logo(pk.from, 34) + '</span><div class="tl"><b>' + esc(H.pickName(pk)) + "</b><small>Projected slot " + f1(info.avg) + (pk.note ? ", " + esc(pk.note) : "") + "</small>" + from + '</div><div class="tsal">Pick</div>' + rm + "</div>";
     }
-    return '<div class="tile pk"><span class="tpk cash">$</span><div class="tl"><b>Cash</b><small>Counts against the ' + money(CBA.cashLimit(0)) + " limit</small>" + from + '</div><div class="tsal">' + money(+a.id) + "</div></div>";
+    return '<div class="tile pk"><span class="tpk cash">$</span><div class="tl"><b>Cash</b><small>Counts against the ' + money(CBA.cashLimit(0)) + " limit</small>" + from + '</div><div class="tsal">' + money(+a.id) + "</div>" + rm + "</div>";
   }
-  function tradeCard(tr, chk, sum) {
+  function fmtShort(d) { var m = /^(\d{4})-(\d\d)-(\d\d)/.exec(d || ""); return m ? ["Jan.", "Feb.", "March", "April", "May", "June", "July", "Aug.", "Sept.", "Oct.", "Nov.", "Dec."][+m[2] - 1] + " " + (+m[3]) : d; }
+  // how each team gets it done under the cap rules, and where it lands
+  function capDetail(c, r, s) {
+    var t = H.W.T[c], rep = H.tools(c, 0).rep, P0 = r.P, P2 = r.P2, tax = CBA.tax(0), a1 = CBA.a1(0), a2 = CBA.a2(0), lines = [], sol = r.sol || {};
+    var nameOf = function (id) { return esc((H.W.P[id] || {}).n || id); };
+    // salary mechanics
+    if (sol.room) lines.push("Absorbs the incoming salary into cap room.");
+    (sol.subs || []).forEach(function (sb) {
+      if (sb.tpe) { var tp = (t.tpes || []).find(function (x) { return x.id === sb.tpe; }) || {}; lines.push("Takes " + sb.in.map(nameOf).join(" and ") + " (" + money(sb.inSal) + ") into its " + money(sb.tpeAmt) + " trade exception" + (tp.from ? " from " + esc(tp.from) : "") + "."); }
+      else if (sb.agg) lines.push("Combines " + sb.out.map(nameOf).join(" + ") + " (" + money(sb.outSal) + ") to take back " + sb.in.map(nameOf).join(" and ") + " (" + money(sb.inSal) + ").");
+      else lines.push("Matches " + sb.out.map(nameOf).join("") + " (" + money(sb.outSal) + ") for " + sb.in.map(nameOf).join(" and ") + " (" + money(sb.inSal) + ").");
+    });
+    (sol.newTpes || []).filter(function (x) { return x.amt >= 250000; }).forEach(function (x) { lines.push("Creates a new " + money(x.amt) + " trade exception from " + nameOf(x.from) + (x.partial ? " (the difference)" : "") + ", good for a year."); });
+    if (r.newHard) lines.push("Hard-caps them at the " + esc(CBA.LEVEL_NAME[r.newHard]) + " for the rest of the season.");
+    // where they land
+    var w = [], was = CBA.status(P0, 0), now = CBA.status(P2, 0), order = { room: 0, over: 1, tax: 2, a1: 3, a2: 4 };
+    if (P2 > tax && P0 <= tax) w.push('<b class="neg">Moves into the tax</b>, ' + money(P2 - tax) + " over");
+    else if (P2 <= tax && P0 > tax) w.push('<b class="pos">Gets out of the tax</b>, ' + money(tax - P2) + " under");
+    else if (P2 > tax) w.push("In the tax, " + money(P2 - tax) + " over (was " + money(P0 - tax) + ")");
+    else w.push(money(tax - P2) + " under the tax (was " + money(tax - P0) + ")");
+    if (P2 > a2) w.push('<b class="neg">over the second apron</b> by ' + money(P2 - a2));
+    else if (P2 > a1) w.push((order[was] < 3 ? '<b class="neg">over the first apron</b>' : "over the first apron") + " by " + money(P2 - a1) + ", " + money(a2 - P2) + " under the second");
+    else if (P2 > tax) w.push(money(a1 - P2) + " under the first apron");
+    w.push(rep ? "a repeat taxpayer" : "not a repeater");
+    var taxLine = s.taxBefore || s.taxAfter ? "Tax bill " + money(s.taxBefore) + " → " + money(s.taxAfter) + (s.taxAfter !== s.taxBefore ? ' (<b class="' + (s.taxAfter < s.taxBefore ? "pos" : "neg") + '">' + (s.taxAfter < s.taxBefore ? "saves " : "adds ") + money(Math.abs(s.taxBefore - s.taxAfter)) + "</b>)" : "") : "";
+    return '<div class="capd"><p class="capw">' + w.join("; ") + "." + (taxLine ? " " + taxLine + "." : "") + "</p>" + (lines.length ? '<ul class="caph">' + lines.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>" : "") + "</div>";
+  }
+  function tradeCard(tr, chk, sum, moves) {
     var n = tr.sides.length, fails = tr.sides.filter(function (c) { return !chk.teams[c].ok; });
-    var nm = { room: "Under the cap", over: "Over the cap", tax: "In the tax", a1: "Over the 1st apron", a2: "Over the 2nd apron" };
-    var html = '<div class="tcard"><div class="tcard-top ' + (chk.ok ? "ok" : "bad") + '"><span class="tmark">' + (chk.ok ? "✓" : "✕") + "</span><div><b>" + (chk.ok ? "Trade works" : "Trade doesn't work") + "</b><span>" +
-      (chk.ok ? "Every team passes the cap rules." : fails.map(function (c) { return esc(team(c).short); }).join(" and ") + (fails.length === 1 ? " fails" : " fail") + " the cap rules.") + '</span></div><button class="btn" data-snap>Save image</button><button class="btn" data-copy>Copy link</button></div><div class="tcard-cols n' + n + '">';
+    var after = tr.sides.map(function (c) { return chk.teams[c].after; }).filter(Boolean).sort().pop();
+    var trm = { teams: tr.sides, moves: moves };
+    var cls = !chk.ok ? "bad" : after ? "wait" : "ok";
+    var html = '<div class="tcard"><div class="tcard-top ' + cls + '"><span class="tmark">' + (cls === "bad" ? "✕" : cls === "wait" ? "◷" : "✓") + "</span><div><b>" + (cls === "bad" ? "Trade doesn't work" : cls === "wait" ? "Trade works starting " + fmtShort(after) : "Trade works") + "</b><span>" +
+      (cls === "bad" ? fails.map(function (c) { return esc(team(c).short); }).join(" and ") + (fails.length === 1 ? " fails" : " fail") + " the cap rules." : cls === "wait" ? "Someone in it can't be traded until then; every cap rule passes." : "Every team passes the cap rules.") + '</span></div><button class="btn" data-snap>Save image</button><button class="btn" data-copy>Copy link</button></div><div class="tcard-cols n' + n + '">';
     tr.sides.forEach(function (c, k) {
-      var t = team(c), r = chk.teams[c], s = sum[c], bv = (s.prod + s.market) / 2, g = grade(bv), inc = tr.assets.filter(function (a) { return destOf(tr, a) === k && a.from !== k; });
-      var before = H.payroll(c, 0), dw = s.winsAfter - s.winsBefore;
-      html += '<section class="tside" style="--tc:' + esc(t.color) + '"><header><span class="tlogo">' + logo(c, 34) + '</span><div class="tname"><small>' + esc(t.city || "") + "</small><b>" + esc(t.short) + '</b></div><span class="grade g' + g.charAt(0) + '" title="Value grade: ' + signed(bv) + ', the average of production (' + signed(s.prod) + ') and market (' + signed(s.market) + ') surplus">' + g + "</span></header>" +
+      var t = team(c), r = chk.teams[c], s = sum[c], gd = H.tradeGrade(c, trm, sum), g = grade(gd.total), inc = tr.assets.filter(function (a) { return destOf(tr, a) === k && a.from !== k; });
+      var tierName = { contend: "Contender", middle: "In the middle", rebuild: "Rebuilding" }[gd.tier];
+      var why = "Value by their own situation " + signed(gd.value) + (gd.wins ? ", wins this season " + signed(gd.wins) : "") + (gd.tax ? ", luxury tax " + signed(gd.tax) : "");
+      html += '<section class="tside" style="--tc:' + esc(t.color) + '"><header><span class="twater" aria-hidden="true">' + logo(c, 150) + '</span><span class="tlogo">' + logo(c, 52) + '</span><div class="tname"><small>' + esc(t.city || "") + "</small><b>" + esc(t.short) + "</b><em>" + tierName + '</em></div><span class="grade g' + g.charAt(0) + '" title="' + esc(why) + '">' + g + "</span></header>" +
         '<div class="tget"><h5>Receives</h5>' + (inc.length ? inc.map(function (a) { return tile(a, tr, k); }).join("") : '<p class="note">Nothing yet.</p>') + "</div>" +
-        '<footer><p class="tverdict ' + (r.ok ? "ok" : "bad") + '">' + (r.ok ? "✓ Works for " + esc(t.short) : "✕ " + esc(r.msgs[0] || "Fails the cap rules")) + "</p>" +
-        '<dl class="tnums"><div><dt>Payroll</dt><dd>' + money(before) + " → <b>" + money(r.P2) + "</b></dd></div><div><dt>After</dt><dd>" + esc(nm[r.post] || nm[CBA.status(r.P2, 0)]) + "</dd></div>" +
-        "<div><dt>Wins this season</dt><dd>" + f1(s.winsBefore) + " → <b>" + f1(s.winsAfter) + '</b> <span class="' + (dw >= 0 ? "pos" : "neg") + '">' + (dw >= 0 ? "+" : "") + f1(dw) + "</span></dd></div>" +
-        '<div><dt>Value</dt><dd class="' + (bv >= 0 ? "pos" : "neg") + '"><b>' + signed(bv) + '</b><small class="vsplit">' + signed(s.prod) + " production, " + signed(s.market) + " market</small></dd></div></dl>" + gauge(r) + "</footer></section>";
+        '<footer><p class="tverdict ' + (r.ok ? (r.after ? "wait" : "ok") : "bad") + '">' + (r.ok ? (r.after ? "◷ Works for " + esc(t.short) + " starting " + fmtShort(r.after) : "✓ Works for " + esc(t.short)) : "✕ " + esc(r.msgs[0] || "Fails the cap rules")) + "</p>" +
+        (r.notes && r.notes.length ? '<ul class="tnotes">' + r.notes.map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("") + "</ul>" : "") +
+        '<dl class="tnums"><div><dt>Payroll</dt><dd>' + money(r.P) + " → <b>" + money(r.P2) + '</b></dd></div><div><dt>Wins this season</dt><dd>' + f1(s.winsBefore) + " → <b>" + f1(s.winsAfter) + '</b> <span class="' + (gd.dw >= 0 ? "pos" : "neg") + '">' + (gd.dw >= 0 ? "+" : "") + f1(gd.dw) + "</span></dd></div>" +
+        '<div class="span2"><dt>Grade</dt><dd class="' + (gd.total >= 0 ? "pos" : "neg") + '"><b>' + signed(gd.total) + '</b><small class="vsplit">' + esc(why) + "</small></dd></div></dl>" +
+        capDetail(c, r, s) + gauge(r) + "</footer></section>";
     });
     return html + "</div></div>";
   }
@@ -1151,7 +1199,7 @@
       ctx.fillStyle = "#fff"; ctx.textAlign = "center"; ctx.fillText(vt, W - pad - vw / 2, 55);
       var ii = 0, y0 = H0 + 22;
       tr.sides.forEach(function (c, k) {
-        var t = team(c), r = chk.teams[c], sm = sum[c], bvs = (sm.prod + sm.market) / 2, g = grade(bvs), x = pad + k * (colW + gap), colH = HEAD + 36 + rows * TILE + FOOT;
+        var t = team(c), r = chk.teams[c], sm = sum[c], gdS = H.tradeGrade(c, { teams: tr.sides, moves: tr.assets.map(function (a) { return { kind: a.kind, id: a.id, amt: a.kind === "c" ? +a.id : 0, from: tr.sides[a.from], to: tr.sides[destOf(tr, a)] }; }) }, sum), bvs = gdS.total, g = grade(bvs), x = pad + k * (colW + gap), colH = HEAD + 36 + rows * TILE + FOOT;
         ctx.save(); ctx.shadowColor = "rgba(0,34,68,.10)"; ctx.shadowBlur = 16; ctx.shadowOffsetY = 3; rrect(ctx, x, y0, colW, colH, 16); ctx.fillStyle = "#fff"; ctx.fill(); ctx.restore();
         ctx.save(); rrect(ctx, x, y0, colW, colH, 16); ctx.clip();
         ctx.fillStyle = t.color; ctx.fillRect(x, y0, colW, HEAD);
@@ -1209,7 +1257,7 @@
         cell("SALARY IN / OUT", money(r.inSal) + " / " + money(r.outSal), x + colW / 2 + 6, fy + 98);
       });
       ctx.fillStyle = "#56637A"; ctx.font = "600 14px Barlow, sans-serif"; ctx.textAlign = "left";
-      ctx.fillText("Checked against the 2023 CBA. Value grade: production and market surplus, averaged.", pad, Hh - 26);
+      ctx.fillText("Checked against the 2023 CBA. Grades weigh value by each team's situation, wins and luxury tax.", pad, Hh - 26);
       ctx.textAlign = "right"; ctx.fillStyle = "#002244"; ctx.font = "700 15px Barlow, sans-serif"; ctx.fillText("davidsolar.dev/nba", W - pad, Hh - 26);
       return cv;
     });
@@ -1257,7 +1305,7 @@
     html += finderPanel();
     var warns = ready && moves.length ? H.tradeWarnings({ teams: tr.sides, moves: moves }) : [];
     if (warns.length) html += '<div class="tbanner warnb"><b>Heads up</b><span>' + warns.map(esc).join("<br>") + "</span></div>";
-    if (chk) html += tradeCard(tr, chk, sum);
+    if (chk) html += tradeCard(tr, chk, sum, moves);
     else if (ready) html += '<div class="tcard empty"><p>Add players, picks or cash from each team below. The trade card fills in as you go.</p></div>';
     if (chk && !chk.ok) html += fixes(tr, chk);
     html += '<div class="tcols n' + n + '">';
@@ -1411,10 +1459,10 @@
     location.hash = tradeHash(tr);
   });
   view.addEventListener("click", function (e) {
-    var pick = e.target.closest("[data-pick]"), rm = e.target.closest("[data-rm]"), clear = e.target.closest("[data-clear]"), add = e.target.closest("[data-addteam]"),
+    var picks = e.target.closest("[data-picks]"), pick = picks ? null : e.target.closest("[data-pick]"), rm = e.target.closest("[data-rm]"), clear = e.target.closest("[data-clear]"), add = e.target.closest("[data-addteam]"),
       drop = e.target.closest("[data-dropteam]"), cash = e.target.closest("[data-addcash]"), copy = e.target.closest("[data-copy]"), snap = e.target.closest("[data-snap]"),
       chg = e.target.closest("[data-chteam]"), setT = e.target.closest("[data-setteam]"), dto = e.target.closest("[data-destto]");
-    if (!pick && !rm && !clear && !add && !drop && !cash && !copy && !snap && !chg && !setT && !dto) return;
+    if (!picks && !pick && !rm && !clear && !add && !drop && !cash && !copy && !snap && !chg && !setT && !dto) return;
     e.stopPropagation();
     if (snap) { openSnap(); return; }
     if (chg) { var ck = +chg.dataset.chteam; tradePicking = tradePicking === ck ? -1 : ck; render(); return; }
@@ -1432,6 +1480,11 @@
       tr.assets = tr.assets.filter(function (a) { return !(a.kind === kind && a.id === id); });
       tr.assets.push({ kind: kind, id: id, from: +pick.dataset.side, to: pick.dataset.to != null ? +pick.dataset.to : -1 });
     }
+    if (picks) picks.dataset.picks.split(",").forEach(function (pp) {
+      var m2 = pp.split(":"), kd = m2[0], id2 = m2.slice(1).join(":");
+      tr.assets = tr.assets.filter(function (a) { return !(a.kind === kd && a.id === id2); });
+      tr.assets.push({ kind: kd, id: id2, from: +picks.dataset.side, to: picks.dataset.to != null ? +picks.dataset.to : -1 });
+    });
     if (cash) {
       var k = +cash.dataset.addcash, inp = view.querySelector('[data-cashamt="' + k + '"]'), v = Math.round((+inp.value || 0) * 1e6);
       if (v > 0) { tr.assets = tr.assets.filter(function (a) { return !(a.kind === "c" && a.from === k); }); tr.assets.push({ kind: "c", id: String(Math.min(v, CBA.cashLimit(0))), from: k, to: -1 }); }
@@ -1526,7 +1579,7 @@
       "<h3>Draft picks</h3><p>What each slot is worth comes from what picks 1 to 60 in the 2001-2018 drafts actually produced: each of a player's first eight seasons valued with the same production model, minus what his slot pays today (the rookie scale, team options picked up only when he's worth it, and for stars the part of their second contract above the max). Busts count. The curve is fit to the averages (any one career capped at $350M, so one LeBron can't bend it): No. 1 is worth about " + money(pk[0]) + ", No. 5 " + money(pk[4]) + ", No. 15 " + money(pk[14]) + ", No. 30 " + money(pk[29]) + " and No. 45 " + money(pk[44]) + ". A pick's value averages over every slot it could land in: the simulations for 2027, a spread around the projected slot after that (wider each year out). A protected pick only counts the slots where it conveys. The market view uses what teams pay for picks in trades instead.</p>" +
       "<h3>Trades and team tools</h3><p>The same rules Banner 19 runs: salary matching by apron tier (200% plus $250K for small salaries, outgoing plus a set amount in the middle, 125% for big ones, 100% over the first apron), trade exceptions (each team's real ones, open as of Nov 2026; teams over the first apron can't use ones made last season), hard caps at the first or second apron when a team takes back more salary, combines salaries or sends cash, the cash limit, the 15-man roster limit and the Stepien rule. Deals with three to five teams check each team on everything it sends and gets. Each team's mid-level use and hard caps come from Hoops Rumors' July tracking; repeater status from the last four tax seasons.</p>" +
       "<h3>Cap holds, dead money and extensions</h3><p>Next summer's room is shown both ways: if a team renounces everyone, and with the cap holds for free agents it keeps rights to. Dead money is this season's team totals from Spotrac (later seasons only where Spotrac lists them). Extension eligibility and maximums follow the 2023 CBA: rookie-scale players the summer before their fourth season, veterans with two or fewer years left, up to 140% of their salary or the max.</p>" +
-      "<h3>The trade card</h3><p>Each team's column shows what it receives, whether the deal passes the cap rules for that team, payroll and cap position before and after, its projected wins this season before and after, and a value grade from the surplus it takes in, averaging the production view (what the players and picks should produce) and the market view (what teams pay for them), since the two disagree most about picks and young players: A+ at $60M or more, A at $35M, A- at $20M, B+ at $8M, B within $8M either way, then B-, C+, C and D at -$20M, -$35M, -$60M and -$100M, and F below that. The grade only measures value; a contender giving up future value for wins now can still be making the right call.</p>" +
+      "<h3>The trade card</h3><p>Each team's column shows what it receives, whether the deal passes the cap rules for that team, payroll and cap position before and after, its projected wins this season before and after, and a grade. The grade weighs the deal by the team's own situation, the same way the trade finder does: value averages the production and market views (they disagree most about picks and young players), a contender also counts this season's wins (about $6 million a win), a rebuilding team counts picks and young players for more and veterans for less, and an expiring veteran for half (it would lose him for nothing in the summer). Luxury tax saved or added counts too: this season's bill in full and next season's at half. Roster overages are a footnote (the team would waive someone), and a player who can't be traded yet makes the deal work starting that date. Each team's footer spells out how it's done under the cap rules (which trade exception takes whom, what new exception it creates), where it lands against the tax and aprons, and whether it's a repeater. Grades: A+ at $60M or more, A at $35M, A- at $20M, B+ at $8M, B within $8M either way, then B-, C+, C and D at -$20M, -$35M, -$60M and -$100M, and F below that. The grade only measures value; a contender giving up future value for wins now can still be making the right call.</p>" +
       "<h3>Salary weight</h3><p>Surplus counts salary at half its face value by default. Teams have to spend to the salary floor and unused cap room disappears, so a dollar of salary doesn't cost a team a dollar of value. Treating the 2025-26 deadline deals and the 2026 summer's big trades (Giannis, Kawhi, Morant) as fair to both sides puts the real cost at about a quarter to a half: at full face value the model missed those deals by about $59 million on average, at half by $25 million. You can set it from 25% to 100% on the Trade Value tab.</p>" +
       "<h3>Trade finder</h3><p>Start from a team or from one player. Every team weighs a deal by where it is: contenders (65% or better to make the playoffs) also count the wins it adds this season, about $6 million a win; rebuilding teams (30% or worse) count picks and young players for 30% more and veterans 29 and older for 45% less; teams in between fall in the middle. That's what lets a deal work for both sides, since on one value scale every trade is zero-sum. <b>Win-win</b> finds deals both teams come out ahead on. <b>Buyer</b> adds win-now players for picks, young players and salary, keeping the overpay modest. <b>Seller</b> moves veterans to teams trying to win and asks for picks and young players while the buyer still comes out ahead. Every deal is checked against the full cap rules, roster limits and the Stepien rule, which only limits trading first-round picks away (a team already short from older deals can still trade players).</p>" +
       "<h3>What it doesn't do</h3><p>Aggregation windows and other timing rules aren't enforced (players signed this summer and the deadline get a warning). No second-round rookies on the slider, and the most tangled pick conditions (Oklahoma City's chain of 2027 swaps) stay with whoever holds them today. Mid-level use after mid-July isn't tracked.</p>" +

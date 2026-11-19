@@ -147,6 +147,8 @@
     const W = L.newWorld(Object.assign({}, data, { players }), live ? Object.assign({}, live, { players: null }) : null, 19);
     W.phase = "reg"; W.date = asOf;
     for (const p of Object.values(W.P)) if (!p.c.sal.length) p.c.sal = [0, 0, 0, 0, 0];
+    // free agents signed this summer can't be traded until Dec. 15 (rookie-scale signings excepted)
+    for (const p of Object.values(W.P)) if (p.c && p.c.signed === 0 && !(p.c.rk && p.c.rk[1] > 0) && asOf < "2026-12-15") p.tradeOk = "2026-12-15";
     // The real tax history (the world starts with a rough one): who finished over the line in each of the last five seasons
     if (inp.taxhist && inp.taxhist.paid) {
       for (const c of Object.keys(W.T)) {
@@ -796,7 +798,8 @@
 
     // ---------- Trades ----------
     // tr: { teams: [codes], moves: [{ kind: "p" | "k", id, from, to }] }
-    H.checkTrade = tr => L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves });
+    // soft: a roster overage or a not-yet-tradable player is a footnote (waive someone, or wait until a date), not a failure
+    H.checkTrade = tr => L.checkTradeMulti(W, { teams: tr.teams, moves: tr.moves, soft: tr.strict ? false : true });
     H.matchMax = (out, post) => CBA.matchMax(out, 0, post);
     H.matchRule = (out, post) => CBA.matchRule(out, 0, post);
     H.assetValue = (m, mode) => m.kind === "c" ? (m.amt || 0) : m.kind === "p" ? H.surplus(W.P[m.id], mode).pv : H.pickValue(W.picks.find(x => x.id === m.id), mode);
@@ -824,6 +827,13 @@
         const wLeft = 82 - W.T[c].w - W.T[c].l;
         out[c].winsBefore = W.T[c].w + Mo.expWins(nets[c], opp(nets), wLeft);
         out[c].winsAfter = W.T[c].w + Mo.expWins(after[c], opp(after), wLeft);
+        // luxury tax: this season's bill before and after (the tax is figured on salaries at season's end), and next
+        // season's at half weight since a team has a summer to adjust
+        const rep = H.tools(c, 0).rep;
+        const payJ = j => { let pay = H.payroll(c, j); for (const m of tr.moves) if (m.kind === "p") { const q = W.P[m.id], sj = H.salary(q, j) + (j === 0 && m.to === c ? H.kicker(q) : 0); if (m.to === c) pay += sj; if (m.from === c) pay -= sj; } return pay; };
+        const b0 = CBA.taxBill(H.payroll(c, 0), 0, rep), a0 = CBA.taxBill(payJ(0), 0, rep);
+        const b1 = CBA.taxBill(H.payroll(c, 1), 1, rep), a1 = CBA.taxBill(payJ(1), 1, rep);
+        Object.assign(out[c], { taxBefore: b0, taxAfter: a0, tax1Before: b1, tax1After: a1, taxSave: (b0 - a0) + 0.5 * (b1 - a1), pay1After: payJ(1) });
       }
       return out;
     };
@@ -843,7 +853,6 @@
       if (asOf > deadline && asOf < L.dates(0).finals) out.push("It's past this season's trade deadline (" + L.fmtDate(deadline) + " in Banner 19's calendar): no trades until after the season.");
       for (const m of tr.moves) {
         const p = m.kind === "p" ? W.P[m.id] : null;
-        if (p && p.c && p.c.signed === 0 && !(p.c.rk && p.c.rk[1] > 0) && asOf < "2026-12-15") out.push(p.n + " signed this offseason; free agents who sign in the summer can't be traded until Dec. 15.");
       }
       return out;
     };
@@ -925,7 +934,20 @@
       if (m.kind === "c") return m.amt || 0;
       if (m.kind === "k") return pickBlend(W.picks.find(x => x.id === m.id)) * ctx.youth;
       const p = W.P[m.id], v = blendV(p);
-      return v <= 0 ? v : v * (isYoung(p) ? ctx.youth : isVet(p) ? ctx.vet : 1);
+      if (v <= 0) return v;
+      let mul = isYoung(p) ? ctx.youth : isVet(p) ? ctx.vet : 1;
+      // a rebuilding team would lose an expiring veteran for nothing this summer, so it counts him for less
+      if (ctx.tier === "rebuild" && H.lastYear(p) <= 0 && H.faKind(p) !== "RFA") mul = Math.min(mul, 0.5);
+      return v * mul;
+    };
+    // The trade card's grade for one team: the deal's value by its own situation, the wins it adds (worth more to a
+    // contender), and the luxury tax it saves or adds
+    H.tradeGrade = (c, tr, sum) => {
+      const ctx = H.teamCtx(c);
+      let value = 0;
+      for (const m of tr.moves) { if (m.to === c) value += H.dealValue(c, m); if (m.from === c) value -= H.dealValue(c, m); }
+      const s = sum[c], dw = s.winsAfter - s.winsBefore, wins = ctx.winW * dw, tax = s.taxSave || 0;
+      return { total: value + wins + tax, value, wins, dw, tax, tier: ctx.tier };
     };
     const winsFor = (c, moves) => {               // quick estimate of this season's wins added (full sim for the shortlist)
       let d = 0;
@@ -936,14 +958,17 @@
       let u = 0;
       for (const m of moves) { if (m.to === c) u += H.dealValue(c, m); if (m.from === c) u -= H.dealValue(c, m); }
       const dw = winsFor(c, moves);
-      return { u: u + H.teamCtx(c).winW * dw, dw, value: u };
+      // this season's luxury tax saved (a dump) or added
+      let d = 0; for (const m of moves) if (m.kind === "p") { const q = W.P[m.id]; if (m.to === c) d += H.salary(q, 0) + H.kicker(q); if (m.from === c) d -= H.salary(q, 0); }
+      const rep = H.tools(c, 0).rep, p0 = H.payroll(c, 0), tax = d ? CBA.taxBill(p0, 0, rep) - CBA.taxBill(p0 + d, 0, rep) : 0;
+      return { u: u + H.teamCtx(c).winW * dw + tax, dw, value: u, tax };
     };
     // opts: { team, mode: "win" | "buy" | "sell", player (optional: a player on team who must go out) }
     H.findDeals = (opts) => {
       const A = opts.team, mode = opts.mode || "win", forced = opts.player && W.P[opts.player] && W.P[opts.player].t === A ? W.P[opts.player] : null;
       if (!W.T[A]) return [];
       const ctxA = H.teamCtx(A), payA = H.payroll(A, 0);
-      const roster = c => Object.values(W.P).filter(q => q.t === c && !q.two && H.salary(q, 0) > 0);
+      const roster = c => Object.values(W.P).filter(q => q.t === c && !q.two && H.salary(q, 0) > 0 && !(q.tradeOk && asOf < q.tradeOk) && !(q.noTrade && asOf < q.noTrade));
       const core = c => new Set(roster(c).sort((a, b) => contrib(b) - contrib(a)).slice(0, 3).map(q => q.id));
       const picks = c => H.picksOf(c).filter(pk => !pk.locked && (pk.r === 1 ? pk.y <= 2032 : pk.y <= 2028));
       const salOK = (outA, inA, B) => {           // quick salary check for both sides (the full rules run on the shortlist)
@@ -1061,7 +1086,7 @@
       const out = [];
       for (const c of cands.slice(0, 30)) {
         if (out.length >= 12) break;
-        const chk = H.checkTrade({ teams: [A, c.team], moves: c.moves });
+        const chk = H.checkTrade({ teams: [A, c.team], moves: c.moves, strict: true });
         if (!chk.ok) { (dbg.fails = dbg.fails || []).push([A, c.team].map(x => chk.teams[x].msgs.join("; ")).join(" || ")); continue; }
         out.push(Object.assign({ tierA: ctxA.tier, tierB: H.teamCtx(c.team).tier }, c));
       }

@@ -445,7 +445,7 @@
       return { players: ms.filter(m => m.kind === "p").map(m => m.id), picks: ms.filter(m => m.kind === "k").map(m => m.id), cash: ms.filter(m => m.kind === "c").reduce((a, m) => a + (m.amt || 0), 0) };
     };
     for (const code of tr.teams) {
-      const r = L.checkSide(W, { snt: null, kickWaive: tr.kickWaive || {} }, code, side(code, "from"), side(code, "to"));
+      const r = L.checkSide(W, { snt: null, kickWaive: tr.kickWaive || {}, soft: !!tr.soft }, code, side(code, "from"), side(code, "to"));
       if (!r.ok) res.ok = false;
       res.teams[code] = r;
     }
@@ -456,7 +456,7 @@
     const i = W.season, dec = L.decider(W);
     {
       const t = W.T[code];
-      const r = { code, msgs: [], ok: true };
+      const r = { code, msgs: [], notes: [], ok: true, after: null, waive: 0 };
       const outP = out.players.map(id => W.P[id]), inP = inn.players.map(id => W.P[id]);
       const sal = (p, recv) => {
         if (tr.snt && tr.snt[p.id]) return tr.snt[p.id].sal[0];
@@ -495,7 +495,11 @@
       const n0 = L.rosterCount(W, code) + sntOut.length, n2 = n0 - outP.length + inP.length;
       const maxR = ["reg", "deadline", "reg2", "playoffs"].includes(W.phase) ? 15 : 21;
       r.n2 = n2;
-      if (n2 > maxR) { r.ok = false; r.msgs.push(`Roster would be ${n2}. The limit is ${maxR}; waive someone first.`); }
+      if (n2 > maxR) {
+        // soft (the hub's trade builder): legal once the team waives someone, so it's a footnote rather than a failure
+        if (tr.soft) { r.waive = n2 - maxR; r.notes.push(`Would need to waive ${n2 - maxR === 1 ? "a player" : n2 - maxR + " players"} (roster of ${n2}; the limit is ${maxR}).`); }
+        else { r.ok = false; r.msgs.push(`Roster would be ${n2}. The limit is ${maxR}; waive someone first.`); }
+      }
       if (L.inSeason(W) && n2 < 13) r.msgs.push(`Leaves ${n2} players. Teams must get back to 14 within two weeks.`);
       // sign-and-trades: three or four years, his old team must hold his Bird rights, the receiver ends under the first apron
       for (const p of outP) if (tr.snt && tr.snt[p.id]) {
@@ -509,9 +513,11 @@
       if (tr.snt && inP.some(p => tr.snt[p.id]) && P2 > CBA.a1(i)) { r.ok = false; r.msgs.push("A team taking a sign-and-trade must end under the first apron."); }
       // trade restrictions
       for (const p of outP) {
-        if (p.noTrade && W.date < p.noTrade) { r.ok = false; r.msgs.push(`${p.n} can't be traded until ${L.fmtDate(p.noTrade)}.`); }
         if (p.two) { r.ok = false; r.msgs.push(`${p.n} is on a two-way deal.`); }
-        if (p.tradeOk && W.date < p.tradeOk && !(tr.snt && tr.snt[p.id])) { r.ok = false; r.msgs.push(`${p.n} signed recently and can't be traded until ${L.fmtDate(p.tradeOk)}.`); }
+        const until = (p.noTrade && W.date < p.noTrade ? p.noTrade : null) || (p.tradeOk && W.date < p.tradeOk && !(tr.snt && tr.snt[p.id]) ? p.tradeOk : null);
+        if (!until) continue;
+        if (tr.soft) { if (!r.after || until > r.after) r.after = until; r.notes.push(`${p.n} can be traded starting ${L.fmtDate(until)}.`); }
+        else { r.ok = false; r.msgs.push(`${p.n} can't be traded until ${L.fmtDate(until)}.`); }
       }
       // every trade needs something going each way, even if it's a protected second or a little cash
       if (!out.players.length && !(out.picks || []).length && !(out.cash > 0) && (inn.players.length || (inn.picks || []).length)) {

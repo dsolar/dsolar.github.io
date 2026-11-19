@@ -590,3 +590,27 @@ table.sz{width:100%;font-size:13px}
 .dswap{align-self:center;font-size:22px;color:var(--faint)}
 .dcardf>.btn{align-self:center}
 @media (max-width:760px){ .dcardf{grid-template-columns:1fr} .dswap{display:none} .dcardf>.btn{justify-self:start} }
+
+/* trade card v2: bigger logos, tiers, remove buttons, waiting state, cap detail */
+.tside header{overflow:hidden;padding:16px 16px 16px 14px;min-height:96px}
+.twater{position:absolute;right:-26px;top:50%;transform:translateY(-50%);opacity:.16;pointer-events:none;filter:grayscale(1) brightness(3)}
+.twater img{width:150px!important;height:150px!important}
+.tside header .tlogo{width:68px;height:68px;position:relative}
+.tname em{display:block;font:700 11px/1.2 var(--body);font-style:normal;letter-spacing:.06em;text-transform:uppercase;opacity:.85;margin-top:3px}
+.tside header .grade{position:relative}
+.tile{position:relative}
+.trm{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;border:1px solid var(--rule);background:var(--card);color:var(--muted);font:700 15px/1 var(--body);display:inline-flex;align-items:center;justify-content:center;padding:0;opacity:0;transition:opacity .12s}
+.tile:hover .trm,.tile:focus-within .trm{opacity:1}
+.trm:hover{border-color:var(--down);color:var(--down)}
+@media (hover:none){ .trm{opacity:1} }
+.tile .tsal{margin-right:22px}
+.tcard-top.wait{background:var(--t-weak);color:var(--t-weak-i)}
+.tcard-top.wait .tmark{background:#C27A00}
+.tverdict.wait{color:#9A5B00}
+.tnotes{margin:-4px 0 8px;padding-left:18px;font-size:12.5px;color:var(--muted)}
+.tnums .span2{grid-column:1/-1}
+.capd{border-top:1px solid var(--rule);margin:0 -14px;padding:8px 14px 6px;font-size:12.5px;line-height:1.45;color:var(--ink)}
+.capw{margin:0 0 4px}
+.caph{margin:0;padding-left:18px;color:var(--muted)}
+.caph li{margin:1px 0}
+.fixbtn .pill{margin-left:4px}
