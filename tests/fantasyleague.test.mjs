@@ -273,7 +273,8 @@ test('game-time locks: a player whose game has started stays put, and a pickup b
   assert.ok(L.lineups[1][3], 'a bot lineup is saved once games start');
   // a free agent picked up before his game counts all of it
   const fa = ctx.free.find((p) => p.t && p.t !== starter.t && !G.onWaivers(L, p.id, now));
-  const cut = L.rosters[0].map((id) => ctx.byId[id]).find((p) => !G.lineupFor(L, ctx, 0, 1).includes(p.id) && p.id !== bench.id);
+  // someone to cut whose own game hasn't started (a bench teammate of the locked starter is locked too)
+  const cut = L.rosters[0].map((id) => ctx.byId[id]).find((p) => !G.lineupFor(L, ctx, 0, 1).includes(p.id) && p.id !== bench.id && !G.isLocked(L, p, 1, now));
   assert.ok(G.addDrop(L, ctx, 0, fa.id, cut.id, now).ok);
   assert.equal(L.joined[fa.id].f, 0);
 });
