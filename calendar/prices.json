@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-20T02:24:11Z",
+ "updated": "2026-11-20T11:54:24Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -122,16 +122,6 @@
    "venue": "The Capitol Theatre",
    "low": null,
    "src": null
-  },
-  "tm-G5vVZ_6nrIgoT": {
-   "history": [],
-   "sg": 18164314,
-   "title": "Metallica",
-   "date": "2026-11-19",
-   "venue": "Mohegan Sun Arena",
-   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-19-2026/event/1D00647A9EA3547F",
-   "src": null,
-   "low": null
   },
   "tm-vv1A8v0PYGAu7v5f": {
    "history": [],
@@ -312,6 +302,10 @@
     [
      "2026-11-19",
      56
+    ],
+    [
+     "2026-11-20",
+     56
     ]
    ],
    "sg": null,
@@ -471,6 +465,10 @@
     ],
     [
      "2026-11-19",
+     22
+    ],
+    [
+     "2026-11-20",
      22
     ]
    ],
@@ -694,6 +692,10 @@
     [
      "2026-11-19",
      28
+    ],
+    [
+     "2026-11-20",
+     28
     ]
    ],
    "sg": null,
@@ -762,16 +764,6 @@
    "date": "2026-12-11",
    "venue": "Bearsville Theater",
    "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
-   "src": null,
-   "low": null
-  },
-  "sg-18634478": {
-   "history": [],
-   "sg": 18634478,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-19",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-19-8-pm/concert/18634478",
    "src": null,
    "low": null
   },
@@ -940,6 +932,10 @@
     [
      "2026-11-19",
      44
+    ],
+    [
+     "2026-11-20",
+     44
     ]
    ],
    "sg": null,
@@ -975,6 +971,10 @@
     ],
     [
      "2026-11-19",
+     44
+    ],
+    [
+     "2026-11-20",
      44
     ]
    ],
@@ -1133,7 +1133,6 @@
   "tm-vv177Z_oGkXBi8-I": "2026-11-18",
   "tm-rZ7HnEZ1AfuNZ7": "2026-11-18",
   "tm-rZ7HnEZ1AfuYF0": "2026-11-18",
-  "tm-Z7r9jZ1AAvx-I": "2026-11-18",
   "tm-Z7r9jZ1AAvx-E": "2026-11-18",
   "tm-rZ7HnEZ1Afugk7": "2026-11-18",
   "tm-Z7r9jZ1AA77-E": "2026-11-18",
@@ -1152,7 +1151,8 @@
   "tm-vv177Z_KGknM09Yr": "2026-11-19",
   "tm-k7vGF_KBmAa9o": "2026-11-18",
   "tm-1AdZZ_KGklJMams": "2026-11-18",
-  "tm-vv177Z_pGklqR-Eh": "2026-11-19"
+  "tm-vv177Z_pGklqR-Eh": "2026-11-19",
+  "tm-vv1AvZkfSGkdTcSmB": "2026-11-20"
  },
  "drops": []
 }
