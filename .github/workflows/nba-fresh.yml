@@ -1,0 +1,32 @@
+# Checks every afternoon that the NBA Hub's data feeds are still updating (rosters, injuries, contracts, DARKO, skill
+# ratings, lineups, live standings, the draft board). Fails, which emails the repo owner, when an automatic feed has gone
+# stale; a feed updated by hand (the Ringer Top 100) only shows a warning.
+name: NBA data freshness
+
+on:
+  schedule:
+    - cron: "17 19 * * *"   # 2:17pm ET in winter, after the morning pulls and the midday lineups
+  push:
+    branches: [main]
+    paths:
+      - nba/lib/fresh.js
+      - tools/nba_fresh.mjs
+      - .github/workflows/nba-fresh.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Check each feed's last update
+        run: node tools/nba_fresh.mjs

@@ -836,3 +836,9 @@ table.tstand .nms{display:none}
 /* ratings vs. results */
 table.ttc tr.me td{background:var(--paper-2);font-weight:700}
 table.ttc td:first-child{white-space:nowrap}
+/* data freshness */
+.fresh{margin:0 0 14px;padding:9px 12px;border-left:3px solid var(--t-weak-i);background:var(--paper-2);font-size:14px;line-height:1.4}
+.fresh a{margin-left:4px}
+table.tfeed{margin:4px 0 6px}
+table.tfeed th,table.tfeed td{text-align:left}
+table.tfeed tr.stale td{color:var(--red)}
