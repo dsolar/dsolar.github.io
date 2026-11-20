@@ -43,8 +43,22 @@
                          // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
                          // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
     convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
+    vblend: "bal",       // what a player's value rating counts (VBLEND): impact only, or impact blended with his box score
+                         // and the Ringer's Top 100. Only prices players; win projections stay on impact
     blendRookie: 1000,   // a first- or second-year player's rating is mostly a draft-slot guess, so his play moves it faster
   };
+
+  // Value rating mixes: impact (Banner, BPM, DARKO), box production (Game Score per 100) and consensus (the Ringer's Top 100)
+  const VBLEND = { imp: [1, 0, 0], bal: [0.55, 0.25, 0.2], box: [0.4, 0.4, 0.2], con: [0.4, 0.25, 0.35] };
+  // Hollinger's Game Score, per 100 possessions, rebuilt from the blended rate stats in ratings.json (shots from points
+  // and true shooting, assists from assist points, boards and blocks from their rates)
+  function gs100(s) {
+    if (!s || s.pts100 == null || !s.ts) return null;
+    const ff = s.fta_fga ?? 0.25, tsa = s.pts100 / (2 * s.ts), fga = tsa / (1 + 0.44 * ff), fta = ff * fga, ft = (s.pft ?? 0.75) * fta;
+    const p3m = (s.p3 || 0) * (s.fg3a100 || 0), fg = Math.max(0, (s.pts100 - ft - p3m) / 2) + p3m;
+    const ast = (s.astpts100 || 0) / 2.25, orb = (s.orb || 0) * 0.45, drb = (s.drb || 0) * 0.45, blk = (s.blk || 0) * 0.5, tov = (s.tov || 0) * tsa / (100 - (s.tov || 0));
+    return s.pts100 + 0.4 * fg - 0.7 * fga - 0.4 * (fta - ft) + 0.7 * orb + 0.3 * drb + (s.stl || 0) + 0.7 * ast + 0.7 * blk - tov;
+  }
 
   function build(inp, opts) {
     const cfg = Object.assign({}, DEFAULTS, opts || {});
@@ -273,6 +287,48 @@
     const cache = (k, f) => { if (!memo.has(k)) memo.set(k, f()); return memo.get(k); };
     function set(k, v) { cfg[k] = v; memo.clear(); }
 
+    // Skill ratings (tools/nba_ratings.py): joined to the league by name; a row with no contract here still shows
+    H.adv = inp.ratings && inp.ratings.players ? inp.ratings : null;
+    if (H.adv) {
+      const byKey = {};
+      for (const p of Object.values(W.P)) byKey[NC.nameKeys(p.id)[0]] = byKey[NC.nameKeys(p.id)[0]] ? "?" : p;
+      for (const r of H.adv.players) {
+        const p = keysOf(r.n).map(k => byKey[k]).find(x => x && x !== "?");
+        if (p) { r.id = p.id; p.adv = r; if (!r.t) r.t = p.t; }
+      }
+    }
+    // The Ringer's Top 100 (nba/data/ringer100.json), joined by name
+    H.ringer = inp.ringer && inp.ringer.players ? inp.ringer : null;
+    if (H.ringer) {
+      const byKey = {};
+      for (const p of Object.values(W.P)) { const k = NC.nameKeys(p.id)[0]; byKey[k] = byKey[k] ? "?" : p; }
+      for (const x of H.ringer.players) { const p = keysOf(x.n).map(k => byKey[k]).find(q => q && q !== "?"); if (p) { x.id = p.id; p.ringer = x.rk; } }
+    }
+    // Value rating: impact, box production and consensus, each put on the impact scale by rank (the 20th-best box score
+    // gets the impact of our 20th-best player), then mixed (cfg.vblend). A box line from few minutes counts for less, and
+    // a part a player doesn't have (no Top 100 rank) hands its weight to the others. The gap to his impact today carries
+    // into later seasons, so aging still runs off the impact projection.
+    H.gs100 = gs100;
+    H.valRanks = () => cache("vr" + cfg.vblend, () => {
+      const [wi, wb, wc] = VBLEND[cfg.vblend] || VBLEND.bal, out = {};
+      const pool = Object.values(W.P).filter(p => !p.rook && p.adv && p.adv.mp >= 400 && gs100(p.adv.s) != null);
+      const imp = pool.map(p => H.rating(p, 0)).sort((a, b) => b - a), gsv = pool.map(p => gs100(p.adv.s)).sort((a, b) => b - a);
+      const at = k => imp[clamp(Math.round(k), 0, imp.length - 1)];
+      const rankIn = (arr, v) => { let k = 0; while (k < arr.length && arr[k] > v) k++; return k; };
+      for (const p of Object.values(W.P)) {
+        if (p.rook) continue;
+        const r0 = H.rating(p, 0), g = p.adv ? gs100(p.adv.s) : null, o = { imp: r0, iR: rankIn(imp, r0) + 1 };
+        let sum = wi * r0, w = wi;
+        if (g != null) { o.gs = g; o.bR = rankIn(gsv, g) + 1; o.box = at(o.bR - 1); const wt = wb * Math.min(1, (p.adv.mp || 0) / 1500); sum += wt * o.box; w += wt; }
+        if (p.ringer) { o.cR = p.ringer; o.con = at(p.ringer - 1); sum += wc * o.con; w += wc; }
+        o.val = sum / w; o.shift = o.val - r0; out[p.id] = o;
+      }
+      const vs = Object.values(out).filter(o => o.gs != null || o.cR).map(o => o.val).sort((a, b) => b - a);
+      for (const o of Object.values(out)) o.vR = rankIn(vs, o.val) + 1;
+      return out;
+    });
+    H.valRating = (p, i) => { const o = p.rook ? null : H.valRanks()[p.id]; return H.rating(p, i) + (o ? o.shift : 0); };
+
     // ---------- Contracts, re-signings and who's on each team in a season ----------
     H.keep = {};                     // user calls on expiring players: id -> true (re-sign) / false (let go)
     H.salary = (p, i) => CBA.salaryIn(p, i, dec);
@@ -310,7 +366,7 @@
     // and teams can't buy stars at any price because the max holds their pay down. Linear pricing made cheap
     // role players outrank stars.
     const rawProd = (p, i) => {
-      const r = H.rating(p, i), games = Math.min(76, 82 * (p.h ?? 0.85));
+      const r = H.valRating(p, i), games = Math.min(76, 82 * (p.h ?? 0.85));
       // minutes for valuation: the role his rating earns anywhere, plus part (cfg.minCtx) of what his own team's depth
       // chart adds or takes away, since a starter on a thin roster isn't paid for minutes he'd lose on a good one
       const mv = roleMin(r) + (cfg.minCtx ?? 1) * (H.mpgAt(p, i) - roleMin(r));
@@ -322,7 +378,7 @@
     // production is worth about what role players get, and a star's runs past his max. "payroll": scaled so the whole
     // league's production adds up to the whole league's payroll (which also spreads sunk money from bad contracts
     // onto everyone who produces, so it runs rich).
-    const Kfor = () => cache("K" + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
+    const Kfor = () => cache("K" + cfg.vblend + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
       let sv = 0, ss = 0;
       for (const p of Object.values(W.P)) {
         if (p.two) continue;
@@ -1470,16 +1526,6 @@
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);
     H.darkoThrough = (inp.darko && inp.darko.through) || null;
-    // Skill ratings (tools/nba_ratings.py): joined to the league by name; a row with no contract here still shows
-    H.adv = inp.ratings && inp.ratings.players ? inp.ratings : null;
-    if (H.adv) {
-      const byKey = {};
-      for (const p of Object.values(W.P)) byKey[NC.nameKeys(p.id)[0]] = byKey[NC.nameKeys(p.id)[0]] ? "?" : p;
-      for (const r of H.adv.players) {
-        const p = keysOf(r.n).map(k => byKey[k]).find(x => x && x !== "?");
-        if (p) { r.id = p.id; p.adv = r; if (!r.t) r.t = p.t; }
-      }
-    }
     // Lineups (tools/nba_lineups.py): pbpstats keys players by NBA id and teams by its own abbreviations (BKN, PHX),
     // so players join through the ratings' NBA ids, then by name, and each team goes to the hub code most of its
     // players are on

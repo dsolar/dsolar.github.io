@@ -801,6 +801,8 @@ td.lotm .lsub .nw{white-space:nowrap}
   /* names wrap instead of pushing the numbers off screen; the value board drops impact too */
   table.tval td:first-child,table.tfa td:first-child{white-space:normal;min-width:0;max-width:160px;display:flex;align-items:center;gap:3px}
   table.tval th:nth-child(5),table.tval td:nth-child(5){display:none}
+  table.trank th:nth-child(2),table.trank td:nth-child(2),table.trank th:nth-child(3),table.trank td:nth-child(3),table.trank th:nth-child(4),table.trank td:nth-child(4),table.trank th:nth-child(7),table.trank td:nth-child(7){display:none}
+  table.trank td:first-child{white-space:normal;min-width:0;max-width:150px}
   /* picks: logos stand in for team names */
   table.tpicks .tcell>span{display:none}
   table.tpicks th,table.tpicks td{padding-left:6px;padding-right:6px}

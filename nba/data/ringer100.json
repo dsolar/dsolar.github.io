@@ -1,0 +1,411 @@
+{
+"title": "The Ringer's Top 100 NBA Players",
+"updated": "2026-11-20",
+"note": "First in-season update of 2026-27",
+"url": "https://theringer.com/nba-ranked/top-100",
+"by": [
+"The Ringer NBA staff"
+],
+"players": [
+{
+"rk": 1,
+"n": "Victor Wembanyama"
+},
+{
+"rk": 2,
+"n": "Luka Doncic"
+},
+{
+"rk": 3,
+"n": "Shai Gilgeous-Alexander"
+},
+{
+"rk": 4,
+"n": "Nikola Jokic"
+},
+{
+"rk": 5,
+"n": "Giannis Antetokounmpo"
+},
+{
+"rk": 6,
+"n": "Jayson Tatum"
+},
+{
+"rk": 7,
+"n": "Jalen Brunson"
+},
+{
+"rk": 8,
+"n": "Cade Cunningham"
+},
+{
+"rk": 9,
+"n": "Anthony Edwards"
+},
+{
+"rk": 10,
+"n": "Stephen Curry"
+},
+{
+"rk": 11,
+"n": "Tyrese Maxey"
+},
+{
+"rk": 12,
+"n": "Karl-Anthony Towns"
+},
+{
+"rk": 13,
+"n": "Donovan Mitchell"
+},
+{
+"rk": 14,
+"n": "Scottie Barnes"
+},
+{
+"rk": 15,
+"n": "Jamal Murray"
+},
+{
+"rk": 16,
+"n": "Kawhi Leonard"
+},
+{
+"rk": 17,
+"n": "Cooper Flagg"
+},
+{
+"rk": 18,
+"n": "Deni Avdija"
+},
+{
+"rk": 19,
+"n": "Kevin Durant"
+},
+{
+"rk": 20,
+"n": "Jaylen Brown"
+},
+{
+"rk": 21,
+"n": "Devin Booker"
+},
+{
+"rk": 22,
+"n": "Alperen Sengun"
+},
+{
+"rk": 23,
+"n": "Tyrese Haliburton"
+},
+{
+"rk": 24,
+"n": "Franz Wagner"
+},
+{
+"rk": 25,
+"n": "Pascal Siakam"
+},
+{
+"rk": 26,
+"n": "Jalen Johnson"
+},
+{
+"rk": 27,
+"n": "Bam Adebayo"
+},
+{
+"rk": 28,
+"n": "LaMelo Ball"
+},
+{
+"rk": 29,
+"n": "OG Anunoby"
+},
+{
+"rk": 30,
+"n": "LeBron James"
+},
+{
+"rk": 31,
+"n": "Evan Mobley"
+},
+{
+"rk": 32,
+"n": "Paolo Banchero"
+},
+{
+"rk": 33,
+"n": "Anthony Davis"
+},
+{
+"rk": 34,
+"n": "Dylan Harper"
+},
+{
+"rk": 35,
+"n": "Stephon Castle"
+},
+{
+"rk": 36,
+"n": "Austin Reaves"
+},
+{
+"rk": 37,
+"n": "Kyrie Irving"
+},
+{
+"rk": 38,
+"n": "Chet Holmgren"
+},
+{
+"rk": 39,
+"n": "Amen Thompson"
+},
+{
+"rk": 40,
+"n": "Paul George"
+},
+{
+"rk": 41,
+"n": "Jaden McDaniels"
+},
+{
+"rk": 42,
+"n": "Lauri Markkanen"
+},
+{
+"rk": 43,
+"n": "Derrick White"
+},
+{
+"rk": 44,
+"n": "Rudy Gobert"
+},
+{
+"rk": 45,
+"n": "Jalen Duren"
+},
+{
+"rk": 46,
+"n": "Darius Garland"
+},
+{
+"rk": 47,
+"n": "Ty Jerome"
+},
+{
+"rk": 48,
+"n": "Ausar Thompson"
+},
+{
+"rk": 49,
+"n": "Yaxel Lendeborg"
+},
+{
+"rk": 50,
+"n": "Zion Williamson"
+},
+{
+"rk": 51,
+"n": "Desmond Bane"
+},
+{
+"rk": 52,
+"n": "De'Aaron Fox"
+},
+{
+"rk": 53,
+"n": "Nickeil Alexander-Walker"
+},
+{
+"rk": 54,
+"n": "James Harden"
+},
+{
+"rk": 55,
+"n": "Michael Porter Jr."
+},
+{
+"rk": 56,
+"n": "Joel Embiid"
+},
+{
+"rk": 57,
+"n": "Damian Lillard"
+},
+{
+"rk": 58,
+"n": "Jaren Jackson Jr."
+},
+{
+"rk": 59,
+"n": "Walker Kessler"
+},
+{
+"rk": 60,
+"n": "Donovan Clingan"
+},
+{
+"rk": 61,
+"n": "Brandon Miller"
+},
+{
+"rk": 62,
+"n": "Keyonte George"
+},
+{
+"rk": 63,
+"n": "Trey Murphy III"
+},
+{
+"rk": 64,
+"n": "Ayo Dosunmu"
+},
+{
+"rk": 65,
+"n": "Alex Caruso"
+},
+{
+"rk": 66,
+"n": "Ivica Zubac"
+},
+{
+"rk": 67,
+"n": "Toumani Camara"
+},
+{
+"rk": 68,
+"n": "Ajay Mitchell"
+},
+{
+"rk": 69,
+"n": "Fred VanVleet"
+},
+{
+"rk": 70,
+"n": "Aaron Gordon"
+},
+{
+"rk": 71,
+"n": "Jrue Holiday"
+},
+{
+"rk": 72,
+"n": "Trae Young"
+},
+{
+"rk": 73,
+"n": "Jarrett Allen"
+},
+{
+"rk": 74,
+"n": "Isaiah Hartenstein"
+},
+{
+"rk": 75,
+"n": "Andrew Nembhard"
+},
+{
+"rk": 76,
+"n": "VJ Edgecombe"
+},
+{
+"rk": 77,
+"n": "Payton Pritchard"
+},
+{
+"rk": 78,
+"n": "Julius Randle"
+},
+{
+"rk": 79,
+"n": "Domantas Sabonis"
+},
+{
+"rk": 80,
+"n": "Cameron Boozer"
+},
+{
+"rk": 81,
+"n": "Tyler Herro"
+},
+{
+"rk": 82,
+"n": "Dyson Daniels"
+},
+{
+"rk": 83,
+"n": "Dillon Brooks"
+},
+{
+"rk": 84,
+"n": "Darius Acuff Jr."
+},
+{
+"rk": 85,
+"n": "Norman Powell"
+},
+{
+"rk": 86,
+"n": "Jabari Smith Jr."
+},
+{
+"rk": 87,
+"n": "RJ Barrett"
+},
+{
+"rk": 88,
+"n": "Davion Mitchell"
+},
+{
+"rk": 89,
+"n": "Collin Murray-Boyles"
+},
+{
+"rk": 90,
+"n": "Naz Reid"
+},
+{
+"rk": 91,
+"n": "Duncan Robinson"
+},
+{
+"rk": 92,
+"n": "Josh Hart"
+},
+{
+"rk": 93,
+"n": "Cedric Coward"
+},
+{
+"rk": 94,
+"n": "Darryn Peterson"
+},
+{
+"rk": 95,
+"n": "Devin Vassell"
+},
+{
+"rk": 96,
+"n": "Brandin Podziemski"
+},
+{
+"rk": 97,
+"n": "Ja Morant"
+},
+{
+"rk": 98,
+"n": "Mikal Bridges"
+},
+{
+"rk": 99,
+"n": "Daniss Jenkins"
+},
+{
+"rk": 100,
+"n": "Kyshawn George"
+}
+]
+}

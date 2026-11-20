@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json'), trades: opt('nba/data/trades.json'), board2028: opt('draft/nba2028.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json'), trades: opt('nba/data/trades.json'), board2028: opt('draft/nba2028.json'), ringer: opt('nba/data/ringer100.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -325,4 +325,16 @@ test('default pricing: max stars mostly come out ahead, and nobody is worth more
   const ahead = top.filter(p => H.surplus(p).rows.reduce((a, r) => a + r.value - r.sal, 0) > 0).length;
   assert.ok(ahead >= 17, 'stars ahead ' + ahead);
   assert.ok(Math.max(...ps.map(p => H.prodAt(p, 0))) < 1.1 * 165e6 * 1.05, 'top value under ~a cap');
+});
+
+test('value rating: impact mixed with box score and the Ringer, on the impact scale; impact-only is a no-op', () => {
+  const V = H.valRanks(), by = n => H.players().find(p => p.n === n);
+  const brown = by('Jaylen Brown'), jokic = by('Nikola Jokic'), wemb = by('Victor Wembanyama');
+  assert.ok(brown.ringer && V[brown.id].cR === brown.ringer, 'Ringer rank joined');
+  assert.ok(V[brown.id].val > H.rating(brown, 0), 'a high-usage scorer the Ringer likes gains on impact');
+  assert.equal(V[wemb.id].vR, 1);
+  for (const p of [brown, jokic]) assert.ok(Math.abs(H.valRating(p, 2) - H.rating(p, 2) - V[p.id].shift) < 1e-9, 'the gap carries into later seasons');
+  const Hi = Hub.build(inputs, { sims: 20, futureSims: 10, vblend: 'imp' });
+  const b2 = Hi.players().find(p => p.n === 'Jaylen Brown');
+  assert.ok(Math.abs(Hi.valRating(b2, 0) - Hi.rating(b2, 0)) < 1e-9);
 });

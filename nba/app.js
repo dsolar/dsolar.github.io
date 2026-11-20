@@ -96,9 +96,9 @@
   }
   new MutationObserver(function () { scrollA11y(view); }).observe(view, { childList: true, subtree: true });
   var subtabs = $("#subtabs");
-  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
+  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", rank: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
   var SUBS = {
-    players: [["ratings", "Ratings"], ["value", "Contracts"], ["lineups", "Lineups"]],
+    players: [["ratings", "Ratings"], ["rank", "Rankings"], ["value", "Contracts"], ["lineups", "Lineups"]],
     draft: [["draft", "Lottery odds", "", "Lottery"], ["picks", "Traded picks", "", "Picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock", "Mock"], ["", "More", "../draft/#nba/challenge"]]
   };
   function render() {
@@ -121,7 +121,7 @@
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if ((state.route === "team" || state.route === "style") && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
+    var fn = { draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, rank: rankPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
     fn();
   }
   function drawYears() {
@@ -552,6 +552,9 @@
       var non = p.oo[2] - p.oo[3], noff = p.oo[4] - p.oo[5];
       ov += kv((non - noff > 0 ? "+" : "") + f1(non - noff), "On/off per 100 (" + p.oo[1] + " poss)");
     } else if (r && r.s.onoff != null) ov += kv((r.s.onoff > 0 ? "+" : "") + f1(r.s.onoff), "On/off per 100");
+    var vo = !p.rook && H.valRanks()[p.id];
+    if (vo && (vo.gs != null || vo.cR)) ov += kv(rt(vo.val), '<a href="' + href("rank", {}) + '">Value rating</a> (No. ' + vo.vR + ")");
+    if (p.ringer) ov += kv("No. " + p.ringer, "Ringer Top 100");
     ov += kv(signed(s.pv), "Contract surplus") + "</div>";
     if (r) {
       var top = Object.keys(H.adv.cats).filter(function (c) { return CAT_IMP.indexOf(c) < 0 && r.r[c] != null; }).sort(function (a, b) { return r.r[b] - r.r[a]; });
@@ -1001,11 +1004,12 @@
   // ---------- trade value ----------
   // Page filters stay in view; the model's knobs fold into "Model settings" (open state remembered)
   function controls(extra) {
-    var sum = (H.cfg.mode === "market" ? "Market" : "Production") + ", " + Math.round(H.cfg.disc * 100) + "% discount, " + H.cfg.convex + "x stars, " + Math.round(H.cfg.growth * 100) + "% growth, " + Math.round((H.cfg.salW ?? 1) * 100) + "% salary";
+    var sum = (H.cfg.mode === "market" ? "Market" : "Production") + ", " + Math.round(H.cfg.disc * 100) + "% discount, " + H.cfg.convex + "x stars, " + Math.round(H.cfg.growth * 100) + "% growth, " + Math.round((H.cfg.salW ?? 1) * 100) + "% salary" + (H.cfg.vblend === "imp" ? ", impact only" : "");
     return '<div class="controls">' + (extra || "") + '<details class="msets"' + (load("msets", false) ? " open" : "") + '><summary>Model settings <span>' + esc(sum) + '</span></summary><div class="msets-b">' +
       '<label title="Production: what he should produce, priced off the cap. Market: what teams would pay him (the market model, capped at the max)">Value as<select data-cfg="mode"><option value="prod"' + (H.cfg.mode !== "market" ? " selected" : "") + '>Production</option><option value="market"' + (H.cfg.mode === "market" ? " selected" : "") + ">Market price</option></select></label>" +
       '<label title="Each later season counts this much less. 7% matches the cap\'s growth, so values read in today\'s cap dollars">Discount %<input type="number" step="1" min="0" max="20" data-cfg="disc" value="' + (H.cfg.disc * 100).toFixed(0) + '"></label>' +
       '<label title="How much more a star\'s impact is worth than the same impact spread across role players. 1.0 is linear (minutes times impact); higher favors stars">Star premium<select data-cfg="convex">' + [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5].map(function (v) { return '<option value="' + v + '"' + (H.cfg.convex === v ? " selected" : "") + ">" + v.toFixed(2) + "</option>"; }).join("") + "</select></label>" +
+      '<label title="What a player\'s value rating counts. Impact only, or impact mixed with his box score (Game Score per 100) and his spot in the Ringer\'s Top 100. Win projections always use impact">Value counts<select data-cfg="vblend">' + [["imp", "Impact only"], ["bal", "Impact, box, Ringer"], ["box", "More box score"], ["con", "More Ringer"]].map(function (o) { return '<option value="' + o[0] + '"' + (H.cfg.vblend === o[0] ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select></label>" +
       '<label title="Share of a young player\'s projected improvement that counts in his value">Growth counted<select data-cfg="growth">' + [0, 0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + (H.cfg.growth === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label>" +
       '<label title="What a dollar of salary costs a team in value. Teams must spend to the salary floor and unused cap room disappears, so recent trades price salary at about a quarter to a half of face value. 100% counts every dollar">Salary weight<select data-cfg="salW">' + [0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + ((H.cfg.salW ?? 1) === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label></div></details></div>";
   }
@@ -1013,8 +1017,8 @@
   view.addEventListener("change", function (e) {
     var c = e.target.closest("[data-cfg]");
     if (!c) return;
-    var k = c.dataset.cfg, v = k === "mode" ? c.value : k === "convex" || k === "growth" || k === "salW" ? +c.value : +c.value / 100;
-    if (k !== "mode" && isNaN(v)) return;
+    var k = c.dataset.cfg, v = k === "mode" || k === "vblend" ? c.value : k === "convex" || k === "growth" || k === "salW" ? +c.value : +c.value / 100;
+    if (k !== "mode" && k !== "vblend" && isNaN(v)) return;
     H.set(k, v); save(k === "convex" ? "convex3" : k, v);
     render();
   });
@@ -1028,6 +1032,34 @@
   function teamSelect(cur, key) {
     return '<label>Team<select data-q="' + (key || "t") + '"><option value="">All teams</option>' + H.codes.slice().sort(function (a, b) { return team(a).name.localeCompare(team(b).name); }).map(function (c) { return '<option value="' + c + '"' + (c === cur ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label>";
   }
+  // ---------- rankings: our value rating against the Ringer's Top 100 ----------
+  function rankPage() {
+    var q = state.q, tm = q.t || "", sort = q.sort || "", only = q.r === "1", V = H.valRanks(), rg = H.ringer;
+    var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
+    var rows = H.players().filter(function (p) { var o = V[p.id]; return o && (o.gs != null || o.cR) && (o.vR <= 200 || o.cR); }).map(function (p) { return { p: p, o: V[p.id] }; });
+    var html = '<h2 class="sec">Rankings</h2><p class="lede">Our value rating next to the Ringer\'s Top 100' + (rg ? " (" + esc(fmtShort(rg.updated)) + ")" : "") + ". The value rating mixes impact, box score and the Ringer, and it\'s what prices every contract. " + howLink() + ".</p>";
+    var gap = function (x) { return x.o.cR ? x.o.iR - x.o.cR : null; };
+    var big = rows.filter(function (x) { return x.o.cR && x.o.cR <= 50 && x.p.adv && x.p.adv.mp >= 400; });
+    var rHigh = big.slice().sort(function (a, b) { return gap(b) - gap(a); }).slice(0, 8);
+    var nHigh = rows.filter(function (x) { return x.o.iR <= 50; }).map(function (x) { return { p: x.p, o: x.o, g: (x.o.cR || 130) - x.o.iR }; }).sort(function (a, b) { return b.g - a.g; }).slice(0, 8);
+    var line = function (x, txt) { return pname(x.p, 20) + ' <span class="note">' + txt + "</span>"; };
+    html += '<div class="two">' + listPanel("The Ringer likes more", rHigh, function (x) { return line(x, "Ringer " + x.o.cR + ", impact " + x.o.iR); }, "Ringer's top 50 vs. our impact rank") +
+      listPanel("The numbers like more", nHigh, function (x) { return line(x, "impact " + x.o.iR + ", " + (x.o.cR ? "Ringer " + x.o.cR : "not in the Top 100")); }, "Our top 50 by impact") + "</div>";
+    html += controls(teamSelect(tm) + '<label>Sort<select data-q="sort">' + opt("", "Value rating", sort) + opt("imp", "Impact", sort) + opt("box", "Box score", sort) + opt("rg", "Ringer", sort) + opt("gap", "Biggest gaps", sort) + "</select></label>" +
+      '<label class="chk"><input type="checkbox" data-q="r" value="1"' + (only ? " checked" : "") + "> Top 100 only</label>");
+    rows = rows.filter(function (x) { return (!tm || x.p.t === tm) && (!only || x.o.cR); });
+    var key = { "": function (o) { return o.vR; }, imp: function (o) { return o.iR; }, box: function (o) { return o.bR || 999; }, rg: function (o) { return o.cR || 999; }, gap: function (o) { return o.cR ? -Math.abs(o.iR - o.cR) : 999; } }[sort] || function (o) { return o.vR; };
+    rows.sort(function (a, b) { return key(a.o) - key(b.o); });
+    var rk = function (n, cur) { return n ? (cur ? "<b>" + n + "</b>" : String(n)) : '<span class="note">—</span>'; };
+    var body = rows.slice(0, 150).map(function (x) {
+      var o = x.o, g = gap(x);
+      return "<tr><td>" + pname(x.p, 20) + "</td><td>" + logo(x.p.t, 18) + "</td><td>" + x.p.age + "</td><td>" + rchip(o.val) + "</td><td>" + rk(o.vR, !sort) + "</td><td>" + rk(o.iR, sort === "imp") + "</td><td" + (o.gs != null ? ' title="Game Score ' + f1(o.gs) + ' per 100"' : "") + ">" + rk(o.bR, sort === "box") + "</td><td>" + rk(o.cR, sort === "rg") +
+        '</td><td title="Our impact rank minus the Ringer rank">' + (g == null ? "" : (g > 0 ? "+" : "") + g) + "</td></tr>";
+    }).join("");
+    html += tablePanel("Value rating", '<th>Player</th><th>Team</th><th>Age</th><th title="Impact, box score and Ringer, on the impact scale">Rating</th><th>Ours</th><th title="Impact (Banner, BPM, DARKO)">Impact</th><th title="Game Score per 100 possessions">Box</th><th>Ringer</th><th title="Our impact rank minus the Ringer rank. Plus: the Ringer is higher">Gap</th>', body, rows.length > 150 ? "Top 150 shown" : "", "trank");
+    view.innerHTML = html;
+  }
+
   function valuePage() {
     var q = state.q, kind = q.k || "players", tm = q.t || "", worst = q.sort === "worst";
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
@@ -1052,11 +1084,11 @@
     });
     if (worst) list = list.slice().reverse();
     list = list.slice(0, 150);
-    html += '<div class="panel"><div class="scroll"><table class="t tval"><thead><tr><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Impact</th><th>Thru</th><th>Value</th><th>Salary</th><th title="Value minus salary">Surplus</th><th title="Value minus salary at the trade-market weight; what this list ranks">Trade value</th></tr></thead><tbody>';
+    html += '<div class="panel"><div class="scroll"><table class="t tval"><thead><tr><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th title="Value rating: impact, box score and the Ringer. What prices the contract">Rating</th><th>Thru</th><th>Value</th><th>Salary</th><th title="Value minus salary">Surplus</th><th title="Value minus salary at the trade-market weight; what this list ranks">Trade value</th></tr></thead><tbody>';
     list.forEach(function (x, k) {
       var p = x.p, s = x.s, v = s.rows.reduce(function (a, r) { return a + r.value * Math.pow(1 + H.cfg.disc, -r.j); }, 0), c = s.rows.reduce(function (a, r) { return a + r.sal * Math.pow(1 + H.cfg.disc, -r.j); }, 0);
       var last = s.rows.length ? s.rows[s.rows.length - 1].season : "—";
-      html += "<tr><td>" + (k + 1) + ". " + pname(p, 22) + "</td><td>" + logo(p.t, 18) + "</td><td>" + esc(posOf(p)) + "</td><td>" + p.age + "</td><td>" + rchip(H.rating(p, 0)) + "</td><td>" + esc(last) + "</td><td>" + money(v) + "</td><td>" + money(c) +
+      html += "<tr><td>" + (k + 1) + ". " + pname(p, 22) + "</td><td>" + logo(p.t, 18) + "</td><td>" + esc(posOf(p)) + "</td><td>" + p.age + "</td><td>" + rchip(H.valRating(p, 0)) + "</td><td>" + esc(last) + "</td><td>" + money(v) + "</td><td>" + money(c) +
         '</td><td class="' + (v - c >= 0 ? "pos" : "neg") + '">' + signed(v - c) + '</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
     });
     html += "</tbody></table></div></div>";
@@ -1749,7 +1781,8 @@
       "<h3>Standings and odds</h3><p>Ratings times minutes give each team a net rating, and every game left on a fresh schedule is played " + H.cfg.sims.toLocaleString() + " times from each team's real record. Then the play-in, the playoffs and the lottery: 16 lottery teams, three balls each, two for the 9 and 10 seeds and the three worst records, one for each 7-8 play-in loser, and the worst three can't fall below 12th.</p>" +
       "<h3>The year slider</h3><p>" + sname(0) + " is today's rosters. Every later season is built from contracts: options are called on value (a team option is picked up when he's worth it, a player option comes back when it's bad for the team), and when a deal ends he's gone, unless he's a restricted free agent worth his price (matched by default) or you re-sign him on his team's page. Each team's first-round picks arrive at their projected slot on rookie-scale deals (2027 from the simulations, using the Big Board's player at that slot; later drafts from the season before). Better-of picks go to whoever gets them where the picks are projected to land. Open spots go to the free agents a team's cap position can buy: a starter with real cap room, a rotation player with the mid-level, minimums after that.</p>" +
       "<h3>Surplus value</h3><p>For each season left on a contract: value minus salary" + (H.cfg.disc > 0 ? ", discounted " + pct(H.cfg.disc) + " a year (about the cap's growth, so values read in today's cap dollars)" : ", in real dollars (set a discount rate, 7% is about the cap's growth, to see today's cap dollars)") + ". This season only counts the part still to play.</p>" +
-      "<p><b>Production</b> is minutes times impact above replacement (-2.5, what a free minimum-salary player gives you), with that impact raised to the power of the star premium (" + H.cfg.convex.toFixed(2) + "). The premium is there because minutes and roster spots are scarce: one +4 player is worth far more than two +1 players, and the max means stars are always paid less than they're worth. With a linear price (1.0), cheap role players on long minimum deals outranked stars. Minutes are what he actually plays, fading over a few seasons toward what his rating would earn. It's priced so the whole league's production adds up to the whole league's payroll: a dollar of production costs what teams actually spend on it, on average. The max holds star pay down, so stars come out well ahead of their contracts, and mid-priced deals, the worst value in free agency, come out somewhat behind. (Pricing off what role players get as free agents instead made the middle look half-wasted.) Only " + pct(H.cfg.growth) + " of a young player's projected improvement counts, since a lot of it never shows up; decline counts in full. A first- or second-year player's rating starts as a guess from his draft slot, so this season's play moves it faster than a veteran's. Both settings are adjustable on the Trade Value tab.</p>" +
+      "<p><b>Production</b> is minutes times value rating (below) above replacement (-2.5, what a free minimum-salary player gives you), with that margin raised to the power of the star premium (" + H.cfg.convex.toFixed(2) + "). The premium is there because minutes and roster spots are scarce: one +4 player is worth far more than two +1 players, and the max means stars are always paid less than they're worth. With a linear price (1.0), cheap role players on long minimum deals outranked stars. Minutes are what he actually plays, fading over a few seasons toward what his rating would earn. It's priced so the whole league's production adds up to the whole league's payroll: a dollar of production costs what teams actually spend on it, on average. The max holds star pay down, so stars come out well ahead of their contracts, and mid-priced deals, the worst value in free agency, come out somewhat behind. (Pricing off what role players get as free agents instead made the middle look half-wasted.) Only " + pct(H.cfg.growth) + " of a young player's projected improvement counts, since a lot of it never shows up; decline counts in full. A first- or second-year player's rating starts as a guess from his draft slot, so this season's play moves it faster than a veteran's. Both settings are adjustable on the Trade Value tab.</p>" +
+      "<p><b>Value rating.</b> Production doesn\'t run on impact alone. Each player\'s value rating mixes three reads, each put on the impact scale by rank (the 20th-best box score gets the impact of our 20th-best player): impact (Banner, BPM, DARKO; 55%), box production (Hollinger\'s Game Score per 100 possessions from this season blended with last; 25%, less on few minutes) and consensus (his spot in the Ringer\'s Top 100; 20%). A player outside the Top 100 splits that share between the other two. Impact still leads because it\'s the best single read on winning, but plus-minus metrics are noisy and miss the scarcity of high-usage scorers, which teams pay for and box scores catch, and the Ringer adds the film read and context the numbers can\'t. The gap between a player\'s value rating and his impact today carries into later seasons, so aging still runs off the impact projection. Win projections use impact only. Change the mix under Model settings; the Rankings tab lays all three side by side.</p>" +
       "<p><b>Availability</b> scales every season's production by the share of games he's expected to play. The cap sheet's number is last season's games played, which made one long injury (a torn Achilles) look permanent, so it's pulled 60% of the way to a typical 85%, then updated with this season's games played out of his team's games, with the history counting for two seasons.</p>" +
       "<p><b>Market</b> is what teams would pay him: Banner 19's market model, fit to 317 veteran contracts, capped at the max. It mostly prices minutes and scoring, barely impact, which is why it disagrees with production.</p>" +
       "<h3>Players on rookie deals</h3><p>A player in his first four seasons is valued mostly by his draft slot at first: what that slot has produced over a draftee's first eight seasons (or, in the market view, what teams pay for it), for the part of those eight seasons still ahead. That also covers the restricted free agency and Bird rights that come after the rookie deal. His own projection takes over as he plays: about half by the end of his second season, most of it by his fourth. Without that, a No. 1 pick lost most of his value the night he was drafted, because a 19-year-old's first box scores are rough.</p>" +
@@ -1770,9 +1803,9 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true), get("data/trades.json", true), get("../draft/nba2028.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true), get("data/trades.json", true), get("../draft/nba2028.json", true), get("data/ringer100.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16], board2028: r[17] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex3", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16], board2028: r[17], ringer: r[18] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex3", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5), vblend: load("vblend", "bal") });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board. " + howLink() + ".";
