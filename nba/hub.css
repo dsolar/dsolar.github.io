@@ -252,7 +252,9 @@ button.rc:hover{border-color:var(--ink)}
 /* skill ratings */
 table.rt td.hc{font:700 14px/1 var(--cond);text-align:center;min-width:40px;padding:7px 3px;color:#1d2330;border-left:1px solid var(--card)}
 table.rt th.hc,table.rt th.imp{text-align:center;padding-left:3px;padding-right:3px}
-table.rt th a{color:inherit;text-decoration:none}
+table.rt th a,table.t th.srt a{color:inherit;text-decoration:none}
+table.t th.srt.on{color:var(--red)}
+table.t th.srt.on a{text-decoration:underline;text-underline-offset:3px}
 table.rt th.on{color:var(--red)}
 table.rt th.on a{text-decoration:underline;text-underline-offset:3px}
 table.rt td.imp{text-align:center}

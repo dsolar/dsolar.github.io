@@ -926,6 +926,11 @@
 
     // ---------- Boards ----------
     H.players = () => Object.values(W.P).filter(p => !p.two && H.salary(p, 0) > 0);
+    // What a median first-round pick (the next three drafts) is worth: the yardstick for trade value
+    H.medianFirst = () => cache("mf" + cfg.disc + cfg.growth + cfg.salW + cfg.mode, () => {
+      const v = W.picks.filter(pk => pk.r === 1 && pk.owner !== "OUT" && pk.y >= 2027 && pk.y <= 2029).map(pk => H.pickValue(pk)).sort((a, b) => a - b);
+      return v.length ? v[v.length >> 1] : 0;
+    });
     H.valueBoard = mode => cache("vb" + (mode || cfg.mode) + cfg.disc + cfg.growth, () =>
       H.players().map(p => ({ p, s: H.surplus(p, mode) })).sort((a, b) => b.s.pv - a.s.pv));
     // This summer's class: everyone whose deal ends after this season (options as the model expects them to go)
