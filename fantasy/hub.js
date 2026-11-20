@@ -233,6 +233,13 @@
   }
   // a player's face: his photo; without one, his team's or school's logo; else his initials in the team color
   var HEADS = { nba: "nba", nfl: "nfl", cbb: "mens-college-basketball", cfb: "college-football" };
+  // white or near-black initials, whichever contrasts more with the team color (same rule as assets/faces.js)
+  function inkOn(hex) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#fff";
+    var n = parseInt(m[1], 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(function (x) { x /= 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+    var L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return 1.05 / (L + 0.05) >= (L + 0.05) / 0.0556 ? "#fff" : "#111";
+  }
   function face(k, p, size) {
     var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][p.t];
     var logo = S.teamLogo && p.t && p.t !== "FA" ? S.teamLogo(k, p.t, 96) : null, def = (p.pos || [])[0] === "DEF";
@@ -241,7 +248,7 @@
     var src = photo || logo;
     var toLogo = photo && logo ? "if(!this.dataset.l){this.dataset.l=1;this.parentNode.classList.remove('espn');this.parentNode.classList.add('lgo');this.src='" + esc(logo) + "'}else{this.parentNode.classList.remove('has-face','lgo');this.remove()}" : "this.parentNode.classList.remove('has-face','lgo');this.remove()";
     var cls = !photo && logo ? " lgo" : photo && HEADS[k] ? " espn" : "";
-    return '<span class="ds-face' + (src ? " has-face" : "") + cls + '" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:#fff" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("").slice(0, 3)) + "</span>" +
+    return '<span class="ds-face' + (src ? " has-face" : "") + cls + '" style="--face-size:' + size + 'px;--face-bg:' + (c || "#33415c") + ';--face-ink:' + inkOn(c || "#33415c") + '" aria-hidden="true"><span class="ds-face-ini">' + esc(p.n.split(" ").map(function (s) { return s[0]; }).join("").slice(0, 3)) + "</span>" +
       (src ? '<img src="' + esc(src) + '" alt="" loading="lazy" onerror="' + toLogo + '">' : "") + "</span>";
   }
   var team = function (k, abbr) { var c = S.TEAM_COLORS[k] && S.TEAM_COLORS[k][abbr]; return '<span class="tm"><i style="background:' + (c || "#8894a4") + '"></i>' + esc(abbr || "FA") + "</span>"; };

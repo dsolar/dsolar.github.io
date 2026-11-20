@@ -46,7 +46,7 @@
   var norm = function (x) { return String(x || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); };
   function findHtml(kit) {
     return '<form class="fk-find" role="search" data-kit="' + esc(kit || "") + '" onsubmit="return false"><label class="sr" for="fk-find-q">Find a player</label>' +
-      '<input id="fk-find-q" type="search" placeholder="Find a player" autocomplete="off" spellcheck="false" aria-controls="fk-find-r" aria-expanded="false">' +
+      '<input id="fk-find-q" type="search" placeholder="Find a player" autocomplete="off" spellcheck="false" role="combobox" aria-autocomplete="list" aria-controls="fk-find-r" aria-expanded="false">' +
       '<ul id="fk-find-r" class="fk-find-r" role="listbox" hidden></ul></form>';
   }
   var index = null;
