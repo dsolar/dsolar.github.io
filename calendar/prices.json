@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-20T11:54:24Z",
+ "updated": "2026-11-20T20:31:02Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -473,7 +473,7 @@
     ]
    ],
    "sg": null,
-   "title": "A Phish After-Party: Tad Cautious & Friends",
+   "title": "A Phish After-Party: Tad Cautious & Friends ft. Samiami Selects and Krim",
    "date": "2027-01-01",
    "venue": "Hill Country Live",
    "url": "https://www.ticketweb.com/event/a-phish-after-party-tad-hill-country-live-tickets/14370224",
@@ -1126,6 +1126,22 @@
    "url": "https://seatgeek.com/moe-tickets/hartford-connecticut-infinity-hall-hartford-2026-12-16-8-pm/concert/18818460",
    "src": null,
    "low": null
+  },
+  "tm-rZ7HnEZ1A4v9FN": {
+   "history": [
+    [
+     "2026-11-20",
+     34
+    ]
+   ],
+   "sg": null,
+   "title": "Night Zero: Dobbs’ Dead Phish MSG Run Pre-Party Featuring Cotter Ellis (Goose) Very Special Guests TBA",
+   "date": "2026-12-29",
+   "venue": "Cutting Room",
+   "url": "https://www.ticketweb.com/event/night-zero-dobbs-dead-phish-cutting-room-tickets/15057223",
+   "src": "Ticketmaster",
+   "low": 34,
+   "first": 34
   }
  },
  "misses": {
@@ -1152,7 +1168,8 @@
   "tm-k7vGF_KBmAa9o": "2026-11-18",
   "tm-1AdZZ_KGklJMams": "2026-11-18",
   "tm-vv177Z_pGklqR-Eh": "2026-11-19",
-  "tm-vv1AvZkfSGkdTcSmB": "2026-11-20"
+  "tm-vv1AvZkfSGkdTcSmB": "2026-11-20",
+  "tm-rZ7HnEZ1A4v9FN": "2026-11-20"
  },
  "drops": []
 }
