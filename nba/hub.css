@@ -792,7 +792,8 @@ td.lotm .lsub .nw{white-space:nowrap}
   /* Trade value: player, team, impact, trade value */
   table.tval th:nth-child(3),table.tval td:nth-child(3),table.tval th:nth-child(4),table.tval td:nth-child(4),
   table.tval th:nth-child(6),table.tval td:nth-child(6),table.tval th:nth-child(7),table.tval td:nth-child(7),
-  table.tval th:nth-child(8),table.tval td:nth-child(8),table.tval th:nth-child(9),table.tval td:nth-child(9){display:none}
+  table.tval th:nth-child(8),table.tval td:nth-child(8),table.tval th:nth-child(2),table.tval td:nth-child(2){display:none}
+  table.tval th,table.tval td{padding-left:6px;padding-right:6px}
   /* Free agents: player, team, market, gap */
   table.tfa th:nth-child(3),table.tfa td:nth-child(3),table.tfa th:nth-child(4),table.tfa td:nth-child(4),
   table.tfa th:nth-child(5),table.tfa td:nth-child(5),table.tfa th:nth-child(6),table.tfa td:nth-child(6),
@@ -801,9 +802,14 @@ td.lotm .lsub .nw{white-space:nowrap}
   table.tpicks th:nth-child(6),table.tpicks td:nth-child(6),table.tpicks th:nth-child(8),table.tpicks td:nth-child(8){display:none}
   table.tpicks td{white-space:normal}
   /* names wrap instead of pushing the numbers off screen; the value board drops impact too */
-  table.tval td:first-child,table.tfa td:first-child{white-space:normal;min-width:0;max-width:160px;display:flex;align-items:center;gap:3px}
+  table.tval td:first-child,table.tfa td:first-child{white-space:normal;min-width:0;max-width:160px;vertical-align:middle}
+  table.tval td:first-child .pl,table.tfa td:first-child .pl{display:inline-flex;align-items:center;gap:6px;vertical-align:middle;max-width:calc(100% - 2.4em)}
+  table.tval td:first-child .pl .nm,table.tfa td:first-child .pl .nm{white-space:normal}
   table.tval th:nth-child(5),table.tval td:nth-child(5){display:none}
-  table.trank th:nth-child(2),table.trank td:nth-child(2),table.trank th:nth-child(3),table.trank td:nth-child(3),table.trank th:nth-child(4),table.trank td:nth-child(4),table.trank th:nth-child(7),table.trank td:nth-child(7){display:none}
+  table.trank th:nth-child(2),table.trank td:nth-child(2),table.trank th:nth-child(3),table.trank td:nth-child(3),table.trank th:nth-child(4),table.trank td:nth-child(4),table.trank th:nth-child(6),table.trank td:nth-child(6),table.trank th:nth-child(7),table.trank td:nth-child(7){display:none}
+  .rlist .injb .ijt{display:none}
+  table.ttc th,table.ttc td{padding-left:6px;padding-right:6px}
+  table.tfeed th:nth-child(3),table.tfeed td:nth-child(3){display:none}
   table.trank td:first-child{white-space:normal;min-width:0;max-width:150px}
   /* picks: logos stand in for team names */
   table.tpicks .tcell>span{display:none}
