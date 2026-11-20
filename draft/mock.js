@@ -55,7 +55,7 @@
           ${BB.logo(D, t, 40)}<span class="tn">${esc(tm.name)}</span><span class="tr">${esc((D.records || {})[t] || "")}${n ? ` &middot; ${n} pick${n === 1 ? "" : "s"}` : " &middot; no pick"}</span></button>`;
       }).join("")}</div>
       <div class="go-row"><button type="button" class="btn go" data-act="start">${D.league === "nba" && M.draw ? "Draw the lottery" : "Start the draft"}</button>
-        <span class="note">${M.basis === "projected" ? `Projected order from ESPN's ${D.league === "nba" ? "Basketball" : "Football"} Power Index records, ${esc(BB.fmtDay((D.proj || {}).updated))}.` : `Order from today's standings, ${esc(BB.fmtDay(D.order.updated))}.`} ${D.league === "nba" ? "Protected picks resolve the way the trades are written." : "Traded picks as they stand."}</span></div>
+        <span class="note">${M.basis === "projected" ? ((D.proj || {}).source === "NBA Hub" ? `Projected order from the <a href="../nba/#/standings">NBA Hub</a>'s season simulations, ${esc(BB.fmtDay(D.proj.updated))}.` : `Projected order from ESPN's ${D.league === "nba" ? "Basketball" : "Football"} Power Index records, ${esc(BB.fmtDay((D.proj || {}).updated))}.`) : `Order from today's standings, ${esc(BB.fmtDay(D.order.updated))}.`} ${D.league === "nba" ? "Protected picks resolve the way the trades are written." : "Traded picks as they stand."}</span></div>
     </section>`;
   }
 

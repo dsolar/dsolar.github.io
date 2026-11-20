@@ -58,7 +58,7 @@
 
   /* Where every team stands, worst first, for one of two orders:
      "standings": the records right now (Tankathon's order breaks ties); "projected": ESPN's projected final
-     records (BPI and FPI). */
+     records (the NBA Hub's simulations when fresh, else ESPN's BPI; FPI for the NFL). */
   function standing(D, mode) {
     const base = D.order.picks.filter((p) => p[1] === 1).sort((a, b) => a[0] - b[0]).map((p) => p[3]);
     const tie = (t) => base.indexOf(t);
@@ -128,6 +128,9 @@
     // Simulated, so the No. 1 ban, the floor and the 7-8 play-in coin all count.
     D._odds = D._odds || {};
     if (D._odds[mode]) return D._odds[mode];
+    // Projected with the NBA Hub's numbers: its odds already play out the rest of the season, so use them as is
+    const pt = mode === "projected" && D.proj && D.proj.source === "NBA Hub" && D.proj.teams;
+    if (pt && Object.values(pt).every((x) => x.no1 != null)) return (D._odds[mode] = Object.fromEntries(Object.entries(pt).map(([t, x]) => [t, x.no1])));
     const N = 6000, hits = {}, rand = rng(20270);
     for (let k = 0; k < N; k++) {
       const t = lottery321(D, mode, rand).order[0];

@@ -206,6 +206,16 @@ def build(league, sources, aliases):
     seeds = (rec_all.get("seeds") or {}).get(league, {})
     proj_all = load(os.path.join(TOOLS, "draft_data", "projections.json"), {}) or {}
     proj = {"updated": proj_all.get("updated"), "source": proj_all.get("source"), "teams": proj_all.get(league, {})}
+    # NBA: the hub's own season simulations (tools/nba_proj.mjs) when fresh, so the board's projected order
+    # matches the NBA Hub's lottery table; ESPN's BPI otherwise
+    if league == "nba":
+        hub = load(os.path.join(ROOT, "nba", "data", "proj.json"), {}) or {}
+        try:
+            fresh = (date.today() - date.fromisoformat(hub.get("updated", ""))).days <= 3
+        except ValueError:
+            fresh = False
+        if fresh and len(hub.get("teams", {})) == 30:
+            proj = {"updated": hub["updated"], "source": "NBA Hub", "teams": hub["teams"]}
     rules = (load(os.path.join(TOOLS, "draft_rules.json"), {}) or {}).get(league)
     return {"league": league, "year": YEAR, "asof": today, "halfLife": HALF_LIFE, "dates": dates,
             "sources": src_out, "teams": teams, "records": records, "seeds": seeds, "proj": proj,
