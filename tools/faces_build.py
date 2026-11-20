@@ -196,8 +196,8 @@ def wanted():
     hc = jload("hardcap/stats.json", {}) or {}
     for v in (hc.get("names") or {}).values():
         w["nba"].add(v[0])
-    for lg, sp in (("nba", "ncaab"), ("nfl", "ncaaf")):
-        for p in (jload(f"draft/{lg}.json", {}) or {}).get("players", []):
+    for f, sp in (("nba", "ncaab"), ("nba2028", "ncaab"), ("nfl", "ncaaf")):
+        for p in (jload(f"draft/{f}.json", {}) or {}).get("players", []):
             w[sp].add(p["n"])
     g = jload("guillotine/data.json", {}) or {}
     for t in g.get("teams", []):
@@ -226,22 +226,31 @@ def espn_search(name, sport):
     d = get(f"https://site.web.api.espn.com/apis/search/v2?query={q}&limit=10&type=player")
     want = slug(name)
     best = None
-    for grp in d.get("results") or []:
-        for c in grp.get("contents") or []:
-            if slug(c.get("displayName")) != want:
-                continue
-            m = re.search(r"~a:(\d+)", c.get("uid") or "")
-            if not m:
-                continue
-            lg = c.get("defaultLeagueSlug") or ""
-            pid = m.group(1)
-            if lg == ESPN_LEAGUE[sport]:
-                return int(pid)
-            # a pro page showing a college player (or the reverse): keep his photo from the other league
-            if best is None and lg in ESPN_LEAGUE.values():
-                other = [k for k, v in ESPN_LEAGUE.items() if v == lg][0]
-                if (sport, other) in (("nba", "ncaab"), ("ncaab", "nba"), ("nfl", "ncaaf"), ("ncaaf", "nfl")):
-                    best = f"{other}:{pid}"
+    # Close spellings count too (JoJo/Jojo, Na'jai/Najai, O.J./OJ, a dropped middle name): same last name and the
+    # first names agree on their first three letters. The exact name still wins when ESPN has it.
+    w_parts = want.split("-")
+    def close(n):
+        k = slug(n)
+        if k == want:
+            return 2
+        p = k.split("-")
+        return 1 if len(p) >= 2 and p[-1] == w_parts[-1] and p[0][:3] == w_parts[0][:3] else 0
+    cands = sorted(((close(c.get("displayName")), c) for grp in d.get("results") or [] for c in grp.get("contents") or []), key=lambda x: -x[0])
+    for score, c in cands:
+        if not score:
+            continue
+        m = re.search(r"~a:(\d+)", c.get("uid") or "")
+        if not m:
+            continue
+        lg = c.get("defaultLeagueSlug") or ""
+        pid = m.group(1)
+        if lg == ESPN_LEAGUE[sport]:
+            return int(pid)
+        # a pro page showing a college player (or the reverse): keep his photo from the other league (exact names only)
+        if best is None and score == 2 and lg in ESPN_LEAGUE.values():
+            other = [k for k, v in ESPN_LEAGUE.items() if v == lg][0]
+            if (sport, other) in (("nba", "ncaab"), ("ncaab", "nba"), ("nfl", "ncaaf"), ("ncaaf", "nfl")):
+                best = f"{other}:{pid}"
     return best
 
 

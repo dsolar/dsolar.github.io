@@ -34,6 +34,8 @@ OUT = os.path.join(ROOT, "draft")
 HALF_LIFE = 90
 YEAR = 2027
 SUFFIX = {"jr", "sr", "ii", "iii", "iv", "v"}
+# Names Tankathon cuts short, when no other board spells them out
+SPELLED = {"Joaqu. Boumtje-Boumtje": "Joaquim Boumtje Boumtje", "Jaron-Ke. Sagapolutele": "Jaron-Keawe Sagapolutele"}
 
 
 def key(name):
@@ -107,7 +109,9 @@ def build(league, sources, aliases):
             for row in snap["ranks"]:
                 k = canon(row[1])
                 names.setdefault(k, {}).setdefault(row[1], 0)
-                names[k][row[1]] += (1000 if s["id"] == "tankathon" else 1) + (0.5 if key(row[1]) == k else 0)
+                # Tankathon's spelling wins, unless it's cut short ("Joaqu. Boumtje-Boumtje") and a board spells it out
+                short = bool(re.search(r"(^|\s)[\w'-]{2,}\.(\s|$)", row[1])) and not re.search(r"(^|\s)(Jr|Sr|St)\.", row[1])
+                names[k][row[1]] += (1000 if s["id"] == "tankathon" else 1) + (0.5 if key(row[1]) == k else 0) - (5000 if short else 0)
                 if row[2] and k not in school:
                     school[k] = row[2]
                 if len(row) > 3 and row[3] and k not in pos and s["id"] != "si":
@@ -178,7 +182,7 @@ def build(league, sources, aliases):
                 per[s["id"]] = ranks[p]
         players.append({
             "id": p,
-            "n": max(names.get(p, {p: 1}).items(), key=lambda x: x[1])[0],
+            "n": SPELLED.get(max(names.get(p, {p: 1}).items(), key=lambda x: x[1])[0], max(names.get(p, {p: 1}).items(), key=lambda x: x[1])[0]),
             "school": school.get(p, ""),
             "pos": pos.get(p, ""),
             "rank": c["rank"],
