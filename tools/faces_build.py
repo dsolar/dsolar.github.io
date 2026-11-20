@@ -13,7 +13,16 @@ Where the ids come from, in order (the first one found for a name wins):
   nba    ESPN ids: Hard Cap's ESPN rosters, then every NBA roster on ESPN
   ncaab, ncaaf   ESPN college ids for the draft Big Board's prospects
 Any name a page on the site shows that's still missing is looked up on ESPN's search, a few hundred a run, and
-remembered in tools/faces_cache.json (a miss is tried again after 30 days). Standard library only.
+remembered in tools/faces_cache.json (a miss is tried again after 30 days).
+
+Then, for every name a page shows:
+  tools/faces_fix.json   hand fixes, applied last: {"nba": {"Ron Holland": 4683771}} (an id, "league:id", another
+                         name whose photo to use, or null for no photo). This is where a wrong match gets corrected.
+  photo check            each photo address is asked for once every 14 days (tools/faces_checked.json); one the
+                         photo server answers 404 for is left out, so the page shows initials without a failed request.
+  assets/faces/report.json   coverage for each sport: names shown, how many have a photo, the ones that don't, and
+                         shared names (two players with one name key) worth a look. The daily freshness check reads it.
+Standard library only.
 """
 import glob
 import json
@@ -22,6 +31,7 @@ import re
 import sys
 import time
 import unicodedata
+import urllib.error
 import urllib.parse
 import urllib.request
 from datetime import date, timedelta
@@ -30,6 +40,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 OUT = os.path.join(ROOT, "assets", "faces")
 CACHE = os.path.join(HERE, "faces_cache.json")
+CHECKED = os.path.join(HERE, "faces_checked.json")
+FIX = os.path.join(HERE, "faces_fix.json")
+CHECK_DAYS = 14
+CHECK_PER_RUN = 2500
 UA = "davidsolar-faces/1.0 (+https://davidsolar.dev/)"
 SPORTS = ["mlb", "nba", "nfl", "ncaab", "ncaaf"]
 ESPN_LEAGUE = {"nba": "nba", "nfl": "nfl", "mlb": "mlb", "ncaab": "mens-college-basketball", "ncaaf": "college-football"}
@@ -78,14 +92,20 @@ def get(url, timeout=40):
 
 
 reg = {s: {} for s in SPORTS}
+# every id seen for a name key, with whether it came from a current list (a shared name between two current players
+# is the one that can show the wrong face)
+seen = {s: {} for s in SPORTS}
 
 
-def add(sport, name, pid, why=""):
+def add(sport, name, pid, why="", current=True):
     k = slug(name)
     if not k or pid in (None, "", 0, "0"):
         return
+    v = int(pid) if str(pid).isdigit() else pid
+    if current:
+        seen[sport].setdefault(k, set()).add(v)
     if k not in reg[sport]:
-        reg[sport][k] = int(pid) if str(pid).isdigit() else pid
+        reg[sport][k] = v
 
 
 # ---------------------------------------------------------------- what's already in the repo
@@ -125,10 +145,11 @@ def mlb_bulk():
         except Exception as e:
             print(f"  MLB {y}: {e}")
             continue
+        cur = y >= date.today().year - 1
         for p in d.get("people", []):
-            add("mlb", p.get("fullName"), p.get("id"))
+            add("mlb", p.get("fullName"), p.get("id"), current=cur)
             if p.get("useName") and p.get("lastName"):
-                add("mlb", f"{p['useName']} {p['lastName']}", p.get("id"))
+                add("mlb", f"{p['useName']} {p['lastName']}", p.get("id"), current=cur)
         time.sleep(0.3)
     print(f"  MLB: {len(reg['mlb'])} names")
 
@@ -143,7 +164,7 @@ def nfl_bulk():
     rows = sorted(allp.values(), key=lambda q: (not q.get("active"), -(q.get("years_exp") or 0)))
     for q in rows:
         if q.get("espn_id") and q.get("full_name"):
-            add("nfl", q["full_name"], q["espn_id"])
+            add("nfl", q["full_name"], q["espn_id"], current=bool(q.get("active")))
     print(f"  NFL: {len(reg['nfl'])} names")
 
 
@@ -213,6 +234,14 @@ def wanted():
             w["mlb"].add(k.get("p"))
     for n in (y.get("stats2026") or {}):
         w["mlb"].add(n)
+    # Draft Lab's pools and the NFL Hub: players without their own photo id ask by name
+    for sp in ("nfl", "nba"):
+        for p in (jload(f"fantasy-kit/data/{sp}.json", {}) or {}).get("players", []):
+            if not p.get("espn") and p.get("n") and not str(p.get("id", "")).startswith("DEF"):
+                w[sp].add(p["n"])
+    for p in (jload("nfl/data/league.json", {}) or {}).get("players") or []:
+        if not p.get("espn") and not p.get("hs") and p.get("n"):
+            w["nfl"].add(p["n"])
     ptc = os.path.join(ROOT, "paint-the-corners", "engine.js")
     if os.path.exists(ptc):
         for n in re.findall(r"name:\s*'([^']+)'", open(ptc, encoding="utf-8").read()):
@@ -292,9 +321,81 @@ def search_missing(want):
         json.dump(cache, f, separators=(",", ":"), ensure_ascii=False, sort_keys=True)
 
 
+def apply_fixes():
+    """tools/faces_fix.json: hand fixes, applied over everything else"""
+    if not os.path.exists(FIX):
+        return {}
+    fix = json.load(open(FIX, encoding="utf-8"))
+    for sport, names in fix.items():
+        if sport not in reg or not isinstance(names, dict):
+            continue
+        for name, v in names.items():
+            k = slug(name)
+            if v is None:
+                reg[sport].pop(k, None)
+            elif isinstance(v, str) and not re.match(r"^([a-z]+:)?\d+$", v):
+                if slug(v) in reg[sport]:
+                    reg[sport][k] = reg[sport][slug(v)]
+            else:
+                reg[sport][k] = int(v) if str(v).isdigit() else v
+    return fix
+
+
+def photo_url(sport, pid):
+    """the photo address assets/faces.js would use (the largest size it asks for)"""
+    s = str(pid)
+    m = re.match(r"^([a-z]+):(\d+)$", s)
+    if m:
+        sport, s = m.group(1), m.group(2)
+    if sport == "mlb":
+        return f"https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/{s}/headshot/67/current"
+    return f"https://a.espncdn.com/i/headshots/{ESPN_LEAGUE[sport]}/players/full/{s}.png"
+
+
+def head(url):
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": UA})
+            with urllib.request.urlopen(req, timeout=20) as r:
+                return r.status
+        except urllib.error.HTTPError as e:
+            return e.code
+        except Exception:
+            time.sleep(1)
+    return None
+
+
+def check_photos(want):
+    """Ask once every CHECK_DAYS days whether each shown name's photo is on the server; a 404 is left out"""
+    from concurrent.futures import ThreadPoolExecutor
+    done = json.load(open(CHECKED, encoding="utf-8")) if os.path.exists(CHECKED) else {}
+    today = date.today()
+    stale = (today - timedelta(days=CHECK_DAYS)).isoformat()
+    todo = []
+    for sport in SPORTS:
+        for n in want[sport]:
+            pid = reg[sport].get(slug(n))
+            if pid is None:
+                continue
+            key = f"{sport}|{pid}"
+            c = done.get(key)
+            if not c or c[1] < stale:
+                todo.append((key, photo_url(sport, pid)))
+    todo = list(dict.fromkeys(todo))[:CHECK_PER_RUN]
+    print(f"  photo check: {len(todo)} to ask for")
+    with ThreadPoolExecutor(16) as ex:
+        for (key, _), st in zip(todo, ex.map(lambda t: head(t[1]), todo)):
+            if st is not None:
+                done[key] = [st, today.isoformat()]
+    with open(CHECKED, "w", encoding="utf-8") as f:
+        json.dump(done, f, separators=(",", ":"), sort_keys=True)
+    return done
+
+
 def main():
     local_sources()
     want = wanted()
+    checked = {}
     if not LOCAL:
         for fn in (nba_bulk, nfl_bulk, mlb_bulk):
             try:
@@ -302,18 +403,38 @@ def main():
             except Exception as e:
                 print(f"  {fn.__name__} failed: {e}")
         search_missing(want)
+    fix = apply_fixes()
+    if not LOCAL:
+        checked = check_photos(want)
+    elif os.path.exists(CHECKED):
+        checked = json.load(open(CHECKED, encoding="utf-8"))
     os.makedirs(OUT, exist_ok=True)
+    report = {"built": date.today().isoformat(), "sports": {}}
     for sport in SPORTS:
+        ids = dict(reg[sport])
+        # a photo the server doesn't have: no id, so the page shows initials straight away
+        gone = {k for k, v in ids.items() if (checked.get(f"{sport}|{v}") or [0])[0] == 404}
+        for k in gone:
+            del ids[k]
         # keep the file to what pages can use: every name a page shows, plus current players for the league pages
-        ids = reg[sport]
         if sport == "mlb" and len(ids) > 25000:
             keep = {slug(n) for n in want["mlb"]} | {k for k, v in ids.items() if isinstance(v, int) and v >= 500000}
             ids = {k: v for k, v in ids.items() if k in keep}
         path = os.path.join(OUT, f"{sport}.json")
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"built": date.today().isoformat(), "ids": dict(sorted(ids.items()))}, f, separators=(",", ":"), ensure_ascii=False)
-        cov = sum(1 for n in want[sport] if slug(n) in ids)
-        print(f"wrote assets/faces/{sport}.json: {len(ids)} names, {cov}/{len(want[sport])} of the names pages show")
+        shown = {slug(n): n for n in want[sport]}
+        fixed = {slug(n) for n in (fix.get(sport) or {})}
+        missing = sorted(n for k, n in shown.items() if k not in ids and k not in gone)
+        no_photo = sorted(n for k, n in shown.items() if k in gone)
+        # [name, the id in use, every id seen for that name]
+        shared = sorted([n, str(ids.get(k, "")), sorted(map(str, seen[sport][k]))] for k, n in shown.items() if len(seen[sport].get(k, ())) > 1 and k not in fixed)
+        report["sports"][sport] = {"registry": len(ids), "shown": len(shown), "found": len(shown) - len(missing) - len(no_photo),
+                                   "missing": missing[:400], "noPhoto": no_photo[:400], "shared": shared[:200], "fixed": len(fixed)}
+        print(f"wrote assets/faces/{sport}.json: {len(ids)} names, {report['sports'][sport]['found']}/{len(shown)} of the names pages show"
+              f" ({len(no_photo)} with no photo on the server, {len(shared)} shared names)")
+    with open(os.path.join(OUT, "report.json"), "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=1, ensure_ascii=False)
 
 
 if __name__ == "__main__":

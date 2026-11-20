@@ -1,0 +1,9 @@
+{
+  "_how": "Hand fixes for the faces registry, applied last by tools/faces_build.py. By sport, the name as a page shows it: an id (MLBAM for mlb, ESPN otherwise), \"league:id\" for a photo from another league, another name whose photo to use, or null for no photo.",
+  "nba": {
+    "Ron Holland": 4683771
+  },
+  "mlb": {
+    "Carlos Peña": 150289
+  }
+}

@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - tools/faces_build.py
+      - tools/faces_fix.json
       - .github/workflows/faces.yml
   workflow_dispatch:
 
@@ -39,7 +40,7 @@ jobs:
 
       - name: Commit
         run: |
-          git add assets/faces tools/faces_cache.json
+          git add assets/faces tools/faces_cache.json tools/faces_checked.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

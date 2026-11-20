@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Player faces | David Solar</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="How many players across the site have a photo, which don't, and shared names to check.">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css?v=20261112">
+<link rel="stylesheet" href="/assets/faces.css">
+<script src="/assets/site.js" defer></script>
+<style>
+  .fh{max-width:56rem;padding-block:40px 72px}
+  .fh h1{margin:0 0 6px}
+  .fh .lede{margin:0 0 28px;color:var(--muted,#5c6878);line-height:1.55;max-width:42rem}
+  .fh h2{margin:36px 0 10px;font-size:1.3rem}
+  .fh table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+  .fh th,.fh td{padding:9px 10px;border-bottom:1px solid var(--line,#dde3ea);text-align:left}
+  .fh th{font-size:.82rem;color:var(--muted,#5c6878);font-weight:600}
+  .fh td.n,.fh th.n{text-align:right}
+  .fh .bar{display:inline-block;width:90px;height:8px;border-radius:4px;background:var(--line,#dde3ea);vertical-align:middle;margin-left:8px;overflow:hidden}
+  .fh .bar i{display:block;height:100%;background:#2f8f5b}
+  .fh .shared{display:grid;gap:10px}
+  .fh .sh{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line,#dde3ea);border-radius:10px}
+  .fh .sh b{min-width:10rem}
+  .fh .cand{display:flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted,#5c6878)}
+  .fh .cand.on{color:inherit;font-weight:600}
+  .fh .cand a{color:inherit}
+  .fh details{margin:8px 0;border-top:1px solid var(--line,#dde3ea);padding-top:8px}
+  .fh summary{cursor:pointer;font-weight:600}
+  .fh .names{columns:3 12rem;column-gap:24px;margin:10px 0 0;padding:0;list-style:none;font-size:.92rem;line-height:1.6}
+  .fh code{font-size:.88em}
+  @media (max-width:560px){.fh .bar{display:none}.fh th,.fh td{padding:8px 6px}}
+</style>
+<link rel="stylesheet" href="/assets/navigation.css?v=20261112">
+<script src="/assets/projects.js?v=20261119-nick" defer></script>
+<script src="/assets/navigation.js?v=202611171356" defer></script>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="/#projects">Explore all projects</a>
+</nav>
+<main class="wrap fh">
+<h1>Player faces</h1>
+<p class="lede" id="lede">Every player photo on the site is linked from MLB's or ESPN's servers and matched to a name each morning. This page shows how many names have a photo, which ones don't, and shared names worth a look.</p>
+<div id="out"><p>Loading…</p></div>
+</main>
+<script src="/assets/faces.js"></script>
+<script>
+(function () {
+  var NAME = { mlb: "MLB", nba: "NBA", nfl: "NFL", ncaab: "College basketball (Big Board)", ncaaf: "College football (Big Board)" };
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function day(s) { var d = new Date(s + "T12:00:00"); return isNaN(d) ? s : d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }); }
+  function link(sport, id) {
+    var m = /^([a-z]+):(\d+)$/.exec(id); if (m) { sport = m[1]; id = m[2]; }
+    if (sport === "mlb") return "https://www.mlb.com/player/" + id;
+    var lg = { nba: "nba", nfl: "nfl", ncaab: "mens-college-basketball", ncaaf: "college-football" }[sport];
+    return "https://www.espn.com/" + lg + "/player/_/id/" + id;
+  }
+  fetch("/assets/faces/report.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (rep) {
+    var out = document.getElementById("out");
+    if (!rep) { out.innerHTML = "<p>The report isn't built yet. It's written each morning with the faces registry.</p>"; return; }
+    var S = rep.sports, keys = Object.keys(NAME).filter(function (k) { return S[k]; });
+    var tot = keys.reduce(function (a, k) { return [a[0] + S[k].shown, a[1] + S[k].found]; }, [0, 0]);
+    document.getElementById("lede").insertAdjacentHTML("beforeend", " Checked " + esc(day(rep.built)) + ": " + tot[1].toLocaleString() + " of " + tot[0].toLocaleString() + " names (" + Math.round(100 * tot[1] / tot[0]) + "%) have a photo.");
+    var h = '<table><thead><tr><th>League</th><th class="n">Names on the site</th><th class="n">With a photo</th><th class="n">Without</th></tr></thead><tbody>';
+    keys.forEach(function (k) { var s = S[k], pct = s.shown ? s.found / s.shown : 1; h += "<tr><td>" + esc(NAME[k]) + '</td><td class="n">' + s.shown.toLocaleString() + '</td><td class="n">' + Math.round(100 * pct) + '%<span class="bar"><i style="width:' + (100 * pct).toFixed(1) + '%"></i></span></td><td class="n">' + (s.shown - s.found).toLocaleString() + "</td></tr>"; });
+    h += "</tbody></table>";
+    var shared = [];
+    keys.forEach(function (k) { (S[k].shared || []).forEach(function (x) { shared.push([k].concat(x)); }); });
+    h += "<h2>Shared names</h2><p>More than one player has each of these names, so a page that knows only the name shows the one in bold. If that's the wrong one, add the right id to <code>tools/faces_fix.json</code>.</p>";
+    h += shared.length ? '<div class="shared">' + shared.map(function (x) {
+      var sport = x[0], name = x[1], used = x[2], ids = x[3];
+      return '<div class="sh"><b>' + esc(name) + " <small>" + esc(sport.toUpperCase()) + "</small></b>" + ids.map(function (id) {
+        return '<span class="cand' + (id === used ? " on" : "") + '">' + DSFaces.html({ sport: sport, id: id, name: name, size: 40 }) + '<a href="' + esc(link(sport, id)) + '" target="_blank" rel="noopener">' + esc(id) + "</a>" + (id === used ? " (in use)" : "") + "</span>";
+      }).join("") + "</div>";
+    }).join("") + "</div>" : "<p>None right now.</p>";
+    h += "<h2>Names without a photo</h2><p>Mostly players new to a league, overseas prospects and international free agents, who aren't on MLB's or ESPN's photo servers yet. Each page shows their initials.</p>";
+    keys.forEach(function (k) {
+      var s = S[k], miss = (s.missing || []).concat(s.noPhoto || []);
+      if (!miss.length) return;
+      h += "<details><summary>" + esc(NAME[k]) + " (" + (s.shown - s.found).toLocaleString() + ")</summary>" + (s.noPhoto && s.noPhoto.length ? "<p>" + s.noPhoto.length + " matched a player whose photo the server doesn't have.</p>" : "") + '<ul class="names">' + miss.sort().map(function (n) { return "<li>" + esc(n) + "</li>"; }).join("") + "</ul></details>";
+    });
+    out.innerHTML = h;
+  });
+})();
+</script>
+</body>
+</html>
