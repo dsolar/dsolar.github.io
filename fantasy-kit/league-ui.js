@@ -738,8 +738,8 @@
         <div class="bd sr-wks">${sr.weeks.map((w) => `<a class="btn xs ghost" href="/fantasy/league/?id=${esc(w.id)}">Game ${w.n}${w.label ? `: ${esc(w.label)}` : ""}</a>`).join("")}</div></div>`;
     }
     function weekBoardPage() {
-      const mid = me(), { rows } = weekRows(), at = rows.findIndex((r) => r.t === mid);
-      return `<div class="wrap page"><div class="head"><h1 class="disp">${over() ? "Final" : dayL() ? S.football(sport) ? "Your slate" : "Tonight" : "This week"}</h1><span class="ps">${esc(slateName() || L().season || "")}${mid != null && at >= 0 ? `. You're ${ord(at + 1)} of ${rows.length}` : ""}.</span></div>
+      const mid = me(), { rows, started } = weekRows(), at = rows.findIndex((r) => r.t === mid);
+      return `<div class="wrap page"><div class="head"><h1 class="disp">${over() ? "Final" : dayL() ? S.football(sport) ? "Your slate" : "Tonight" : "This week"}</h1><span class="ps">${esc(slateName() || L().season || "")}${mid != null && at >= 0 ? `. You're ${started || over() ? "" : "projected "}${ord(at + 1)} of ${rows.length}` : ""}.</span></div>
         ${over() ? finishCard() : ""}<div class="cols2"><div class="stack">${leaderboardCard()}</div><div class="stack">${seriesCard()}${chatCard()}</div></div>${gamedayStatus(1)}${teamGameBoxes(1, rows.map(r => r.t))}</div>`;
     }
     function finishData() {
@@ -2920,7 +2920,9 @@
       if (currentCollege) lines.push(`NCAAF Week ${currentCollege} now`);
       if (gl()) lines.push("guillotine"); else if (roto()) lines.push("rotisserie"); else if (tot()) lines.push("total points");
       const champ = over() ? championOf() : null;
-      const you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
+      let you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
+      // a one-night or one-week game has no record to speak of: where you sit on its leaderboard, as the page below shows it
+      if (allplay1() && me() != null && champ == null) { const wr = weekRows(), i = wr.rows.findIndex((r) => r.t === me()); if (i >= 0) you = `You're <b>${wr.started ? "" : "projected "}${ord(i + 1)} of ${wr.rows.length}</b>.`; }
       const weeks = total > 1 ? Array.from({ length: total }, (_, i) => { const n = i + 1; return { n, label: weekLabel(n), po: n > reg, gap: n === reg + 1, k: over() || n < w ? "done" : n === w ? "now" : "next" }; }) : [];
       const weekLine = over() ? "Season over" : sport.key === "cfb" ? `${weekLabel(w)}${now() < Lg.start ? ", upcoming" : ""} · league period ${w} of ${total}` : oneWeekLg() ? "One week" : w > reg ? `Playoffs, ${weekLabel(w).replace(/Week/, "week")}` : `${weekLabel(w)} of ${reg}${total > reg ? `, then ${total - reg} of playoffs` : ""}`;
       const champs = seasonsAll().filter((x) => !x.live && x.champion).slice(-4).map((x) => { const t = Lg.teams[x.champion.team]; return { season: x.season || `Year ${x.year}`, name: x.champion.name, abbr: (t && t.name === x.champion.name && t.abbr) || U.initials(x.champion.name).slice(0, 3), color: t ? t.color : 0 }; });
