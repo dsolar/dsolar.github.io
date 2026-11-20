@@ -96,10 +96,9 @@
   }
   new MutationObserver(function () { scrollA11y(view); }).observe(view, { childList: true, subtree: true });
   var subtabs = $("#subtabs");
-  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", lineups: "players", trade: "trades", value: "trades", fa: "fa", draft: "draft", picks: "draft" };
+  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
   var SUBS = {
-    players: [["ratings", "Ratings"], ["lineups", "Lineups"]],
-    trades: [["trade", "Builder"], ["value", "Trade value"]],
+    players: [["ratings", "Ratings"], ["value", "Contracts"], ["lineups", "Lineups"]],
     draft: [["draft", "Lottery odds", "", "Lottery"], ["picks", "Traded picks", "", "Picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock", "Mock"], ["", "More", "../draft/#nba/challenge"]]
   };
   function render() {
@@ -455,11 +454,19 @@
   // Every traded pick in the league: who owns it, its protection, where it projects
   function tcell(c) { return '<span class="tcell">' + logo(c, 18) + "<span>" + esc(team(c).short) + "</span></span>"; }
   function picksPage() {
-    var q = state.q, yr = q.y2 || "", tm = q.t || "";
-    var all = H.allPicks().filter(function (pk) { return (!yr || String(pk.y) === yr) && (!tm || pk.from === tm || pk.owner === tm); });
+    var q = state.q, yr = q.y2 || "", tm = q.t || "", dir = tm ? (q.dir || "") : "";
+    // with a team picked: incoming (other teams' picks it owns) or outgoing (its own picks someone else owns)
+    var all = H.allPicks().filter(function (pk) {
+      if (yr && String(pk.y) !== yr) return false;
+      if (!tm) return true;
+      if (dir === "in") return pk.owner === tm && pk.from !== tm;
+      if (dir === "out") return pk.from === tm && pk.owner !== tm;
+      return pk.from === tm || pk.owner === tm;
+    });
     var years = []; H.allPicks().forEach(function (pk) { if (years.indexOf(pk.y) < 0) years.push(pk.y); });
     var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every traded pick, its protection and where it projects to land. Projected 2027 and 2028 firsts link to the <a href="' + boardHref() + '">Big Board</a>.</p>';
-    html += controls('<label>Year<select data-q="y2"><option value="">All</option>' + years.map(function (y) { return '<option value="' + y + '"' + (String(y) === yr ? " selected" : "") + ">" + y + "</option>"; }).join("") + "</select></label>" + teamSelect(tm));
+    html += controls('<label>Year<select data-q="y2"><option value="">All</option>' + years.map(function (y) { return '<option value="' + y + '"' + (String(y) === yr ? " selected" : "") + ">" + y + "</option>"; }).join("") + "</select></label>" + teamSelect(tm) +
+      (tm ? '<label>Direction<select data-q="dir"><option value="">Both</option><option value="in"' + (dir === "in" ? " selected" : "") + '>Incoming</option><option value="out"' + (dir === "out" ? " selected" : "") + ">Outgoing</option></select></label>" : ""));
     var protText = function (pk) {
       var bits = [];
       if (pk.prot) bits.push(pk.r === 2 ? "Protected " + (pk.prot.lo + (pk.prot.hi <= 30 ? 30 : 0)) + "-" + (pk.prot.hi + (pk.prot.hi <= 30 ? 30 : 0)) : pk.prot.lo === 1 ? "Top-" + pk.prot.hi + " protected" : "Protected " + pk.prot.lo + "-" + pk.prot.hi);
@@ -998,7 +1005,7 @@
     return '<div class="controls">' + (extra || "") + '<details class="msets"' + (load("msets", false) ? " open" : "") + '><summary>Model settings <span>' + esc(sum) + '</span></summary><div class="msets-b">' +
       '<label title="Production: what he should produce, priced off the cap. Market: what teams would pay him (the market model, capped at the max)">Value as<select data-cfg="mode"><option value="prod"' + (H.cfg.mode !== "market" ? " selected" : "") + '>Production</option><option value="market"' + (H.cfg.mode === "market" ? " selected" : "") + ">Market price</option></select></label>" +
       '<label title="Each later season counts this much less. 7% matches the cap\'s growth, so values read in today\'s cap dollars">Discount %<input type="number" step="1" min="0" max="20" data-cfg="disc" value="' + (H.cfg.disc * 100).toFixed(0) + '"></label>' +
-      '<label title="How much more a star\'s impact is worth than the same impact spread across role players. 1.0 is linear (minutes times impact); higher favors stars">Star premium<select data-cfg="convex">' + [1, 1.25, 1.5, 1.75, 2].map(function (v) { return '<option value="' + v + '"' + (H.cfg.convex === v ? " selected" : "") + ">" + v.toFixed(2) + "</option>"; }).join("") + "</select></label>" +
+      '<label title="How much more a star\'s impact is worth than the same impact spread across role players. 1.0 is linear (minutes times impact); higher favors stars">Star premium<select data-cfg="convex">' + [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5].map(function (v) { return '<option value="' + v + '"' + (H.cfg.convex === v ? " selected" : "") + ">" + v.toFixed(2) + "</option>"; }).join("") + "</select></label>" +
       '<label title="Share of a young player\'s projected improvement that counts in his value">Growth counted<select data-cfg="growth">' + [0, 0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + (H.cfg.growth === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label>" +
       '<label title="What a dollar of salary costs a team in value. Teams must spend to the salary floor and unused cap room disappears, so recent trades price salary at about a quarter to a half of face value. 100% counts every dollar">Salary weight<select data-cfg="salW">' + [0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + ((H.cfg.salW ?? 1) === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label></div></details></div>";
   }
@@ -1008,7 +1015,7 @@
     if (!c) return;
     var k = c.dataset.cfg, v = k === "mode" ? c.value : k === "convex" || k === "growth" || k === "salW" ? +c.value : +c.value / 100;
     if (k !== "mode" && isNaN(v)) return;
-    H.set(k, v); save(k, v);
+    H.set(k, v); save(k === "convex" ? "convex2" : k, v);
     render();
   });
   view.addEventListener("change", function (e) {
@@ -1024,7 +1031,7 @@
   function valuePage() {
     var q = state.q, kind = q.k || "players", tm = q.t || "", worst = q.sort === "worst";
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
-    var html = '<h2 class="sec">Trade Value</h2><p class="lede">What each player is worth in a trade, net of his salary. ' + howLink() + ' explains the settings.</p>';
+    var html = '<h2 class="sec">Contracts and value</h2><p class="lede">What every player is worth over his contract, against what he\'s paid, and what that makes him worth in a trade. ' + howLink() + ' explains the settings.</p>';
     html += controls(teamSelect(tm) + '<label>Show<select data-q="k">' + opt("players", "Players", kind) + opt("picks", "Draft picks", kind) + "</select></label>" +
       (kind === "players" ? '<label>Sort<select data-q="sort">' + opt("", "Most surplus", q.sort || "") + opt("worst", "Worst contracts", q.sort || "") + "</select></label>" +
         '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>' : ""));
@@ -1765,7 +1772,7 @@
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
   Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true), get("data/trades.json", true), get("../draft/nba2028.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16], board2028: r[17] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16], board2028: r[17] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex2", 2), growth: load("growth", 0.5), salW: load("salW", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board. " + howLink() + ".";

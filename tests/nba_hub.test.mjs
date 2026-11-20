@@ -155,7 +155,7 @@ test('valuation: stars outrank cheap role players, and the star premium setting 
   const before = H.surplus(star.p, 'prod').pv;
   H.set('convex', 1.0);
   assert.ok(H.surplus(star.p, 'prod').pv < before);
-  H.set('convex', 1.5);
+  H.set('convex', 2);
 });
 
 test('dead money counts in payroll; cap holds lower next summer\'s room', () => {
@@ -304,8 +304,16 @@ test('2028 class: the early board names projected 2028 rookies and links them to
 
 test('could opt out: player options the model calls in, with a 20-50% chance of opting out', () => {
   for (const y of [1, 2]) for (const x of H.maybeOut(y)) {
-    assert.ok(x.pOut >= 0.2 && x.pOut < 0.5, x.p.n + ' ' + x.pOut);
+    assert.ok(x.pOut >= 0.2 && x.pOut <= 0.5, x.p.n + ' ' + x.pOut);
     assert.ok(['PO', 'MO'].includes(x.kind));
     assert.ok(!H.faClass(y).some(f => f.p.id === x.p.id), x.p.n + ' is also in the class');
   }
+});
+
+test('option odds: a player out for the season takes his option; a max-level star opts out for the long deal', () => {
+  const L = require('../nba/lib/league.js');
+  const by = n => H.players().find(p => p.n === n);
+  const pz = by('Kristaps Porzingis'), gi = by('Giannis Antetokounmpo');
+  if (pz && pz.c.opt[1] === 'PO') assert.ok(1 - L.optionView(H.W, pz, 1).pIn < 0.2);
+  if (gi && gi.c.opt[1] === 'PO') assert.ok(1 - L.optionView(H.W, gi, 1).pIn > 0.8);
 });

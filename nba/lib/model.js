@@ -132,9 +132,28 @@
     // money a year from now isn't guaranteed (injury, decline, a cooler market), so it's worth less than a deal today
     const laterPart = later.total * (out.years - 1) / Math.max(1, later.years) * M.keepsPlaying(age + 1, M.rAhead(p, j - W.season + 1)) * 0.85;
     const inside = s + laterPart;
-    const ratio = out.total / Math.max(1, inside);
+    // Health: teams pay less for a player who misses time, and much less for one out for the season, so a hurt
+    // player takes the guaranteed option money (Porzingis) rather than testing the market
+    const avail = Math.max(0.4, Math.min(1, (p.h ?? 0.85) / 0.85));
+    const health = Math.pow(avail, 1.5) * (p.injury && p.injury.season ? 0.6 : 1);
+    // Security: several guaranteed years beat one year plus a gamble on next summer, more so from 28 on. That's why
+    // stars opt out (or extend, which replaces the option the same way) to lock in a long max deal.
+    const sec = 1 + 0.025 * Math.max(0, out.years - 1) * (age >= 28 ? 1.5 : 1);
+    // A max-level player can get the max for as long as the rules allow, by extension or a new deal
+    const maxNow = CBA.maxSal((p.yos ?? 3) + j - W.season, j);
+    let outside = out.total;
+    if (M.market(p, j, W) >= 0.9 * maxNow && age <= 34) {
+      const yrs = Math.max(out.years, Math.min(4, 36 - age));
+      let t = 0; for (let k = 0; k < yrs; k++) t += maxNow * Math.pow(1.08, k) * (k === 0 ? 1 : M.keepsPlaying(age + k, M.rAhead(p, j - W.season + k)));
+      outside = Math.max(outside, t);
+    }
+    outside *= health * sec;
+    const ratio = outside / Math.max(1, inside);
     const center = 1.02 + 0.10 * happy;
-    const pOut = 1 / (1 + Math.exp(-(ratio - center) / 0.05));
+    let pOut = 1 / (1 + Math.exp(-(ratio - center) / 0.05));
+    // At 40-plus the option is really a retirement call: about a coin flip whatever the money says
+    if (age >= 40) pOut = Math.max(pOut, 0.5);
+    pOut = Math.min(0.97, Math.max(0.03, pOut));     // nobody's a lock either way
     return { pIn: 1 - pOut, outside: out, inside, laterPart, option: s, happy };
   };
   // A player's view of an offer (re-sign, extension, opt-out deal). Returns acceptance odds.

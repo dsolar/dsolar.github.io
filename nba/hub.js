@@ -42,7 +42,7 @@
     salW: 0.5,           // what a dollar of salary costs a team in value. Teams must spend to the salary floor and unused
                          // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
                          // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
-    convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
+    convex: 2,           // production = minutes x (impact above replacement) ^ convex (2: stars the max holds down come out ahead of it, as they should)
     blendRookie: 1000,   // a first- or second-year player's rating is mostly a draft-slot guess, so his play moves it faster
   };
 
