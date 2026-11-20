@@ -136,10 +136,10 @@
     const W = 1080, H = 1350, cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    try { await document.fonts.load('700 80px "Zilla Slab"'); await document.fonts.load('700 40px "IBM Plex Sans Condensed"'); await document.fonts.ready; } catch (e) { /* system fonts */ }
+    try { await document.fonts.load('800 80px "Besley"'); await document.fonts.load('700 40px "Barlow"'); await document.fonts.ready; } catch (e) { /* system fonts */ }
     const ink = "#17191E", dim = "#4A4E55", paper = "#F3EFE6", panel = "#FFFDF8", line = "#E6E0D3", blue = "#1F4FBF";
-    const slab = (px) => `700 ${px}px "Zilla Slab", Georgia, serif`;
-    const sans = (w, px) => `${w} ${px}px "IBM Plex Sans Condensed", "Arial Narrow", sans-serif`;
+    const slab = (px) => `800 ${px}px "Besley", Georgia, serif`;
+    const sans = (w, px) => `${w} ${px}px "Barlow", "Arial Narrow", sans-serif`;
     g.fillStyle = paper; g.fillRect(0, 0, W, H);
     g.fillStyle = ink; g.fillRect(0, 0, W, 14);
     g.fillStyle = dim; g.font = sans(700, 28);

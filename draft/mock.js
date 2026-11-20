@@ -501,12 +501,12 @@
     const cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const g = cv.getContext("2d");
-    try { await document.fonts.load('700 80px "Zilla Slab"'); await document.fonts.load('700 40px "IBM Plex Sans Condensed"'); await document.fonts.ready; } catch (e) { /* system fonts */ }
+    try { await document.fonts.load('800 80px "Besley"'); await document.fonts.load('700 40px "Barlow"'); await document.fonts.ready; } catch (e) { /* system fonts */ }
     // The war-room paper look, with the team's color as the accent.
     const ink = "#17191E", dim = "#4A4E55", paper = "#F3EFE6", panel = "#FFFDF8", line = "#E6E0D3";
     const c1 = tm ? tm.c[0] : ink;
-    const slab = (px) => `700 ${px}px "Zilla Slab", Georgia, serif`;
-    const body = (w, px) => `${w} ${px}px "IBM Plex Sans Condensed", "Arial Narrow", sans-serif`;
+    const slab = (px) => `800 ${px}px "Besley", Georgia, serif`;
+    const body = (w, px) => `${w} ${px}px "Barlow", "Arial Narrow", sans-serif`;
     g.fillStyle = paper; g.fillRect(0, 0, W, H);
     g.fillStyle = c1; g.fillRect(0, 0, W, 18);
     g.fillStyle = dim; g.font = body(700, 28);

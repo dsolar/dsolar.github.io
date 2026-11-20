@@ -28,7 +28,7 @@
         <span class="when"><span>${fmtDay(s.date)}</span><span>${s.kind === "mock" ? `${s.count} picks` : `Top ${s.count}`}</span></span>
         ${s.kind === "board" ? `<span class="w" aria-hidden="true"><i style="width:${Math.round(100 * (s.w || 0) / maxW)}%"></i></span>` : ""}</a>`;
     }).join("") + (waiting.length ? `<div class="src pending" title="${esc(waiting.map((s) => s.analyst ? `${s.name} (${s.analyst})` : s.name).join(", "))}">
-        <b>Not out yet</b><span class="who wrap">${esc(waiting.map((s) => s.abbr).join(" · "))}</span>
+        <b>Not out yet</b><span class="who wrapt">${esc(waiting.map((s) => s.abbr).join(" · "))}</span>
         <span class="when"><span>Joins when out</span></span></div>` : "");
     $("#srcList").innerHTML = D.sources.map((s) => `<li><a href="${esc(s.link || s.url)}" target="_blank" rel="noopener">${esc(s.name)}${s.analyst ? ` (${esc(s.analyst)})` : ""}</a>: ${s.date ? `${s.kind === "mock" ? "mock draft" : `top ${s.count}`}, ${fmtDay(s.date)}${s.versions > 1 ? `, ${s.versions} readings` : ""}` : "not out for this class yet"}${s.kind === "mock" ? ". Shown, not counted" : ""}</li>`).join("")
       + (Object.keys(D.excluded || {}).length ? `<li>Left out on purpose: WalterFootball. PFF and The Athletic only if pasted from a subscription.</li>` : "")
@@ -73,7 +73,7 @@
       const pct = (r) => (100 * (Math.min(r, maxR) - 1) / (maxR - 1)).toFixed(1);
       const mockCell = mk.map((s) => p.mocks[s.id]).find(Boolean);
       const open = ui.open === p.id;
-      return `<tr class="p${open ? " open" : ""}" data-id="${esc(p.id)}" tabindex="0" aria-expanded="${open}">
+      return `<tr class="p${open ? " open" : ""}" data-id="${esc(p.id)}" tabindex="0">
         <td class="rk r">${p.rank}</td><td>${mvTxt}</td>
         <td><div class="who-cell">${BB.who(p)}<div class="nm">${esc(p.n)}<small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></div></div></td>
         ${st ? `<td class="stl hide-m">${BB.statLine(p) || `<span class="faint">&ndash;</span>`}</td>` : ""}

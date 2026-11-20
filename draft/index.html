@@ -17,10 +17,11 @@
 <meta property="og:description" content="Every board worth reading, one consensus.">
 <link rel="canonical" href="https://davidsolar.dev/draft/">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#0B1626">
+<meta name="theme-color" content="#F5F4F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#071628" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=Zilla+Slab:wght@600;700&family=Besley:wght@700&family=Libre+Franklin:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
 <link rel="stylesheet" href="../assets/faces.css?v=20261109c">
 <script src="../assets/analytics.js" defer></script>
@@ -68,11 +69,11 @@ a{color:var(--gold)}
 .src:hover{border-color:var(--line-strong)}
 .src b{display:block;font:800 17px/1 var(--display);letter-spacing:.05em}
 .src .who{display:block;font-size:12.5px;color:var(--dim);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.src .who.wrap{white-space:normal}
+.src .who.wrapt{white-space:normal}
 .src .when{margin-top:auto;padding-top:6px;display:flex;justify-content:space-between;gap:8px;font-size:12px;color:var(--faint)}
 .src .w{display:block;flex:none;height:3px;border-radius:2px;background:var(--line);margin-top:7px;overflow:hidden}
 .src .w i{display:block;height:100%;background:var(--gold)}
-.src.pending{opacity:.7;border-style:dashed}
+.src.pending{border-style:dashed}
 .src.mock b::after{content:"MOCK";font:700 9.5px/1 var(--body);letter-spacing:.12em;color:var(--stage-deep);background:var(--dim);border-radius:3px;padding:2px 4px;margin-left:6px;vertical-align:3px}
 
 .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0 10px}
@@ -284,83 +285,102 @@ a.btn{text-decoration:none;display:inline-block}
   td,th{padding-left:6px;padding-right:6px}
 }
 
-/* ---------- Themes: the Board is a war room (paper and ink), the Mock Draft is draft night (black, one loud accent) ---------- */
+/* ---------- Theme: the same look as the sports hubs (navy and red on paper; deep navy in dark mode) ---------- */
 :root{--surface:var(--panel);--head:var(--panel);--sheet:var(--panel);--accent:var(--gold);--ink-on-accent:#0A0A0B}
 body[data-screen]{
-  --stage:#F3EFE6;--stage-deep:#F3EFE6;--panel:#FFFDF8;--panel-hi:#F1EBDD;--surface:#FFFDF8;--head:#FFFDF8;--sheet:#FFFDF8;
-  --line:#E6E0D3;--line-strong:#B9B1A0;--chalk:#17191E;--dim:#4A4E55;--faint:#5B5F66;
-  --gold:#1F4FBF;--accent:#1F4FBF;--red-hi:#17191E;--up:#1F4FBF;--down:#B4531A;
-  --display:"Zilla Slab",Georgia,serif;--body:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --stage:#F5F4F0;--stage-deep:#F5F4F0;--panel:#FFFFFF;--panel-hi:#ECEBE6;--surface:#FFFFFF;--head:#FFFFFF;--sheet:#FFFFFF;
+  --line:#E8EAED;--line-strong:#D9DCE1;--chalk:#002244;--dim:#56637A;--faint:#66717F;
+  --gold:#C60C30;--accent:#C60C30;--red:#C60C30;--red-hi:#C60C30;--up:#16804A;--down:#C0392B;--hl:#FBF1D6;--hover:#F1F2F4;
+  --display:"Besley",Georgia,serif;--body:"Barlow",system-ui,-apple-system,"Segoe UI",sans-serif;--cond:"Barlow Condensed","Arial Narrow",sans-serif;
   color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  body[data-screen]{
+    --stage:#071628;--stage-deep:#071628;--panel:#0D1F36;--panel-hi:#12284A;--surface:#0D1F36;--head:#0D1F36;--sheet:#0D1F36;
+    --line:#1A2F4D;--line-strong:#22395A;--chalk:#EEF0F2;--dim:#A3AFBF;--faint:#8A97AA;
+    --gold:#F0475E;--accent:#F0475E;--red:#F0475E;--red-hi:#F0475E;--up:#5BC98A;--down:#F27A6B;--hl:#2A2A1C;--hover:#12284A;
+    color-scheme:dark;
+  }
 }
 body[data-screen]{background:var(--stage);background-image:none}
 html{background:var(--stage-deep)}
-body[data-screen] .mast h1{font-weight:700;letter-spacing:-.01em;text-transform:none}
-body[data-screen] .kicker{color:var(--faint)}
-body[data-screen] .tabs{border-bottom:1.5px solid var(--chalk)}
-body[data-screen] .tabs a{font-family:var(--display);text-transform:none;font-weight:600;font-size:21px;letter-spacing:0}
-body[data-screen] .tabs a[aria-current="page"]{border-bottom-color:var(--chalk);border-bottom-width:4px}
-body[data-screen] .seg{border-radius:6px;border:1.5px solid var(--chalk);background:transparent;padding:0}
-body[data-screen] .seg button{border-radius:0;min-height:40px}
-body[data-screen] .seg button[aria-pressed="true"]{background:var(--chalk);color:var(--stage)}
-body[data-screen] .big .seg button{font-family:var(--body);font-weight:700;letter-spacing:.08em;font-size:16px}
+body[data-screen] :focus-visible{outline-color:var(--chalk)}
+body[data-screen] a{color:var(--accent)}
+/* masthead and tabs, as on the hubs */
+body[data-screen] .kicker{color:var(--red);letter-spacing:.18em}
+body[data-screen] .mast h1{font:800 clamp(40px,8vw,64px)/1 var(--display);letter-spacing:-.01em;text-transform:none}
+body[data-screen] .mast h1 span{color:var(--red)}
+body[data-screen] .tabs{gap:4px;border-bottom:2px solid var(--chalk)}
+body[data-screen] .tabs a{font:700 14px/1 var(--body);letter-spacing:.04em;text-transform:uppercase;padding:10px 14px 9px;border:0;margin:0;border-radius:8px 8px 0 0;color:var(--dim)}
+body[data-screen] .tabs a:hover{color:var(--chalk);background:var(--panel-hi)}
+body[data-screen] .tabs a[aria-current="page"]{background:var(--chalk);color:var(--stage)}
+body[data-screen] .seg{display:inline-flex;gap:2px;background:var(--panel-hi);border:0;border-radius:10px;padding:3px}
+body[data-screen] .seg button{border-radius:8px;min-height:36px;padding:7px 12px;font:700 13px/1 var(--body);letter-spacing:0;color:var(--dim)}
+body[data-screen] .seg button[aria-pressed="true"]{background:var(--panel);color:var(--chalk);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+body[data-screen] .big .seg button{font:700 14px/1 var(--body);letter-spacing:.04em;padding:9px 16px}
+body[data-screen] .lab{color:var(--faint)}
 
-/* Board: paper, ink, index cards, highlighter */
-body[data-screen] .src{border-radius:4px;box-shadow:0 1px 0 var(--line)}
+/* Board */
+body[data-screen] .src{border-radius:10px;border:1px solid var(--line-strong);box-shadow:none}
+body[data-screen] .src b{font:700 16px/1 var(--cond);letter-spacing:.03em}
 body[data-screen] .src .w i{background:var(--chalk)}
 body[data-screen] .src.mock b::after{background:var(--chalk);color:var(--stage)}
-body[data-screen] .tools input{border:1.5px solid var(--chalk);border-radius:6px;min-height:44px}
-body[data-screen] .chips button{border:1.5px solid var(--line-strong);border-radius:6px;color:var(--chalk);min-height:40px}
+body[data-screen] .tools input{border:1px solid var(--line-strong);border-radius:8px;min-height:40px;background:var(--panel)}
+body[data-screen] .chips button{border:1px solid var(--line-strong);border-radius:8px;color:var(--dim);min-height:36px;font-weight:700}
 body[data-screen] .chips button[aria-pressed="true"]{background:var(--chalk);border-color:var(--chalk);color:var(--stage)}
-body[data-screen] .table-wrap{border-radius:4px}
-body[data-screen] th{border-bottom:1.5px solid var(--chalk)}
-body[data-screen] .rk{font-family:var(--display);font-size:30px;font-weight:700}
-body[data-screen] .nm{font-size:17px}
-body[data-screen] tr.open td{background:#FBF4D9}
-body[data-screen] tr.p:hover td{background:#FAF6EC}
-body[data-screen] .hot{background:#F5D547;color:var(--chalk);padding:1px 5px}
-body[data-screen] .bar{height:2px;background:var(--line);margin-top:8px}
-body[data-screen] .bar i{top:-2px;height:6px;border-radius:0;background:var(--chalk)}
-body[data-screen] .bar b{top:-6px;height:14px;width:4px;background:var(--accent);border-radius:0;margin-left:-2px}
+body[data-screen] .table-wrap{border-radius:12px;border-color:var(--line-strong)}
+body[data-screen] th{border-bottom:1px solid var(--line-strong);color:var(--faint)}
+body[data-screen] .rk{font:700 22px/1 var(--cond)}
+body[data-screen] .nm{font-size:15.5px}
+body[data-screen] tr.open td{background:var(--hl)}
+body[data-screen] tr.p:hover td{background:var(--hover)}
+body[data-screen] tr.p.hl td{background:var(--hl)} body[data-screen] tr.p.hl td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+body[data-screen] .hot{background:var(--hl);color:var(--chalk);padding:1px 5px;border-radius:4px}
+body[data-screen] .bar{height:4px;background:var(--line);margin-top:8px;border-radius:2px}
+body[data-screen] .bar i{top:0;height:4px;border-radius:2px;background:var(--dim)}
+body[data-screen] .bar b{top:-4px;height:12px;width:4px;background:var(--red);border-radius:2px;margin-left:-2px}
 body[data-screen] .chip{background:#FFFFFF;border:1px solid var(--line)}
-body[data-screen] .stat{background:var(--panel);border:1px solid var(--line);border-radius:4px}
-body[data-screen] .stat b{font-family:var(--display);font-weight:700}
+body[data-screen] .stat{background:var(--panel-hi);border:0;border-radius:8px}
+body[data-screen] .stat b{font:700 19px/1.1 var(--cond)}
 body[data-screen] .det li{border-bottom-color:var(--line-strong)}
-body[data-screen] .how div{background:none;border:0;border-top:3px solid var(--chalk);border-radius:0;padding:12px 0 0}
-body[data-screen] .how h3{text-transform:none;font-weight:700;font-size:22px}
+body[data-screen] .how div{background:var(--panel);border:1px solid var(--line-strong);border-radius:12px;padding:14px 16px}
+body[data-screen] .how h3{font:800 19px/1.2 var(--display);text-transform:none;letter-spacing:0}
 body[data-screen] .spark text{fill:var(--faint)}
+body[data-screen] .spark path{stroke:var(--red)} body[data-screen] .spark circle{stroke:var(--red);fill:var(--panel)}
 
-/* Mock draft: same paper, with the team's color where a team is on the clock */
-body[data-screen] .setup-head h2{font-weight:700;text-transform:none;font-size:36px}
-body[data-screen] .disp{text-transform:none;letter-spacing:0;font-weight:700}
-body[data-screen] .tm{border-radius:6px;background:var(--panel)}
+/* Mock draft */
+body[data-screen] .setup-head h2{font:800 32px/1.1 var(--display);text-transform:none}
+body[data-screen] .disp{font-family:var(--display);text-transform:none;letter-spacing:0;font-weight:800}
+body[data-screen] .tm{border-radius:12px;background:var(--panel);border-color:var(--line-strong)}
 body[data-screen] .tm::before{background:var(--t1);opacity:.08}
 body[data-screen] .tm:hover::before{opacity:.16}
 body[data-screen] .tm.on{border-color:var(--t1);box-shadow:0 0 0 2px var(--t1)}
 body[data-screen] .tm.on::before{opacity:.18}
-body[data-screen] .tm .tn{font-family:var(--body);font-weight:700;letter-spacing:.02em;font-size:15px;text-transform:none}
-body[data-screen] .clock{background:var(--t1);border-radius:6px;border:0}
-body[data-screen] .clock-txt b{font-family:"Anton",Impact,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.02em;font-size:clamp(30px,5vw,46px)}
-body[data-screen] .btn{border-radius:6px;background:var(--panel);border:1.5px solid var(--line-strong);color:var(--chalk)}
-body[data-screen] .btn.go{background:var(--chalk);border-color:var(--chalk);color:var(--stage)}
-body[data-screen] .btn.go:hover{background:#000}
+body[data-screen] .tm .tn{font:700 15px/1 var(--body);letter-spacing:0;text-transform:none}
+body[data-screen] .clock{background:var(--t1);border-radius:14px;border:0}
+body[data-screen] .clock-txt b{font:800 clamp(26px,4.6vw,40px)/1.05 var(--display);text-transform:none;letter-spacing:-.01em}
+body[data-screen] .btn{border-radius:999px;background:var(--panel);border:1px solid var(--line-strong);color:var(--chalk)}
+body[data-screen] .btn:hover{border-color:var(--chalk)}
+body[data-screen] .btn.go{background:#C60C30;border-color:#C60C30;color:#fff}
+body[data-screen] .btn.go:hover{filter:brightness(1.08)}
 body[data-screen] .clock-act .btn{background:rgba(0,0,0,.25);border-color:rgba(255,255,255,.4);color:#fff}
-body[data-screen] .rp,body[data-screen] .offer,body[data-screen] .lotto-list li{border-radius:6px}
-body[data-screen] .rp.cur{background:#FBF4D9;outline-color:var(--chalk)}
-body[data-screen] .rp.mine .rn{color:var(--accent)}
-body[data-screen] .lotto-list li.won{background:#FBF4D9}
+body[data-screen] .rp,body[data-screen] .offer,body[data-screen] .lotto-list li{border-radius:10px}
+body[data-screen] .rp.cur{background:var(--hl);outline-color:var(--chalk)}
+body[data-screen] .rp.mine .rn{color:var(--red)}
+body[data-screen] .rn,body[data-screen] .ln{font-family:var(--cond);font-weight:700}
+body[data-screen] .lotto-list li.won{background:var(--hl)}
 body[data-screen] .lotto-list li.mine{outline-color:var(--chalk)}
 body[data-screen] .res-head{background:var(--t1)}
-body[data-screen] .res-head b{font-family:"Anton",Impact,sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.02em}
-body[data-screen] .grade{font-family:"Anton",Impact,sans-serif;font-weight:400}
-body[data-screen] .vt.steal{background:rgba(31,79,191,.1);color:var(--up)}
-body[data-screen] .vt.reach{background:rgba(180,83,26,.12);color:var(--down)}
-body[data-screen] .meter i{background:var(--accent)}
-body[data-screen] .all-picks li.mine{background:#FBF4D9}
+body[data-screen] .res-head b{font:800 22px/1.1 var(--display);text-transform:none}
+body[data-screen] .grade{font:700 32px/1 var(--cond)}
+body[data-screen] .vt.steal{background:color-mix(in srgb,var(--up) 14%,transparent);color:var(--up)}
+body[data-screen] .vt.reach{background:color-mix(in srgb,var(--down) 14%,transparent);color:var(--down)}
+body[data-screen] .meter i{background:var(--up)}
+body[data-screen] .all-picks li.mine{background:var(--hl)}
 body[data-screen] .tmsg.ok{color:var(--up)}
-body[data-screen] .modal{background:rgba(23,25,30,.45)}
+body[data-screen] .modal{background:rgba(0,20,40,.5)}
 body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
-
+body[data-screen] .rc-title b,body[data-screen] .rc-grade b{font-family:var(--display);font-weight:800;text-transform:none}
 
 .qbtag{display:inline-block;margin-top:3px;font-weight:700;color:var(--down)!important}
 /* Draft recap */
@@ -411,7 +431,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 @media (max-width:980px){.rc-body{grid-template-columns:1fr}.rc-body>section{border-right:0;border-bottom:1px solid var(--line)}.all-picks.two{columns:1}}
 
 /* The pick is in */
-.reveal{position:fixed;inset:0;z-index:90;background:#0A0A0B;color:#fff;display:grid;grid-template-columns:minmax(0,36%) minmax(0,1fr);font-family:"IBM Plex Sans Condensed","Arial Narrow",sans-serif;cursor:pointer;animation:rv-in .18s ease-out}
+.reveal{position:fixed;inset:0;z-index:90;background:#0A0A0B;color:#fff;display:grid;grid-template-columns:minmax(0,36%) minmax(0,1fr);font-family:var(--body);cursor:pointer;animation:rv-in .18s ease-out}
 @keyframes rv-in{from{opacity:0}to{opacity:1}}
 .rv-team{background:var(--t1);position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(20px,4vw,44px)}
 .rv-num{position:absolute;right:-.05em;bottom:-.2em;font:400 clamp(220px,40vw,520px)/1 "Anton",Impact,sans-serif;color:rgba(0,0,0,.24);pointer-events:none}
@@ -477,7 +497,15 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   .ch-grid{grid-template-columns:1fr}
   .ch-list{max-height:380px}
   .tabs{overflow-x:auto;scrollbar-width:none}
-  body[data-screen] .tabs a,.tabs a{font-size:16px;padding:9px 9px 8px;white-space:nowrap}
+  body[data-screen] .tabs{gap:0;justify-content:space-between;overflow:visible}
+  body[data-screen] .tabs a,.tabs a{font-size:13px;padding:9px 7px 8px;white-space:nowrap;text-transform:none;letter-spacing:0}
+  body[data-screen] .sources{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  body[data-screen] .src{padding:7px 8px;border-radius:8px}
+  body[data-screen] .src .who{display:none}
+  body[data-screen] .src .when{font-size:11px;padding-top:4px;flex-direction:column;gap:0}
+  body[data-screen] .src.pending{grid-column:1/-1;flex-direction:row;flex-wrap:wrap;align-items:baseline;gap:2px 10px;min-height:0}
+  body[data-screen] .src.pending .who{display:block;font-size:12px;margin:0}
+  body[data-screen] .src.pending .when{margin:0;padding:0}
 }
 </style>
 
@@ -496,7 +524,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
     <div>
       <p class="kicker" id="kicker">2027 Draft</p>
       <h1>Big <span>Board</span></h1>
-      <p class="sub">Every board worth reading, rolled into one consensus, and a mock draft that runs off it. Who's climbing, who's sliding, and where the boards can't agree.</p>
+      <p class="sub">Every board worth reading in one consensus, plus a mock draft that runs off it.</p>
     </div>
     <div class="seg big" role="group" aria-label="League">
       <button type="button" data-lg="nba" aria-pressed="true">NBA</button>
@@ -555,9 +583,9 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 <script src="../assets/faces.js?v=20261120a"></script>
 <script src="common.js?v=31"></script>
 <script src="engine.js?v=31"></script>
-<script src="board.js?v=32"></script>
-<script src="mock.js?v=32"></script>
-<script src="challenge.js?v=30"></script>
+<script src="board.js?v=35"></script>
+<script src="mock.js?v=33"></script>
+<script src="challenge.js?v=31"></script>
 <script src="markets.js?v=30"></script>
 <script>
 (() => {
