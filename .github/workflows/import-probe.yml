@@ -1,0 +1,17 @@
+name: Import probe (temporary)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: ESPN through fk-import
+        run: |
+          for q in "sport=nfl&id=270405" "sport=nfl&id=270405&season=2025" "sport=nba&id=12345"; do
+            echo "== $q"; curl -s -m 20 "https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-import?src=espn&$q" | head -c 700; echo; done
+      - name: Sleeper direct
+        run: |
+          curl -s -m 20 https://api.sleeper.app/v1/league/289646328504385536 | head -c 1500; echo
+          curl -s -m 20 -I https://api.sleeper.app/v1/league/289646328504385536 | grep -i "access-control" || echo "no CORS header"
