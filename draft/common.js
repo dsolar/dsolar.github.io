@@ -24,9 +24,16 @@
       const src = `https://a.espncdn.com/combiner/i?img=/i/teamlogos/${D.league}/${dark ? "500-dark" : "500"}/${t.espn}.png&w=${size * 2}&h=${size * 2}`;
       return `<img class="${cls}" src="${src}" alt="" width="${size}" height="${size}" loading="lazy" data-badge="${BB.esc(abbr)}" data-lg="${D.league}">`;
     },
+    // white or near-black text, whichever contrasts more with the color behind it
+    ink(hex) {
+      const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#fff";
+      const n = parseInt(m[1], 16), c = [n >> 16, (n >> 8) & 255, n & 255].map((x) => { x /= 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+      const L = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+      return 1.05 / (L + 0.05) >= (L + 0.05) / 0.0556 ? "#fff" : "#111";
+    },
     badge(D, abbr, cls = "tl") {
       const t = BB.team(D, abbr);
-      return `<span class="${cls} badge" style="background:${t.c[0]};color:${BB.light(t.c[1]) ? t.c[1] : "#fff"}">${BB.esc(abbr)}</span>`;
+      return `<span class="${cls} badge" style="background:${t.c[0]};color:${BB.ink(t.c[0])}">${BB.esc(abbr)}</span>`;
     },
     light(hex) {
       const n = parseInt(String(hex || "#000").slice(1), 16);

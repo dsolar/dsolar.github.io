@@ -100,7 +100,7 @@
   var SUBS = {
     players: [["ratings", "Ratings"], ["lineups", "Lineups"]],
     trades: [["trade", "Builder"], ["value", "Trade value"]],
-    draft: [["draft", "Lottery odds"], ["picks", "Traded picks"], ["", "Big Board", "../draft/#nba"]]
+    draft: [["draft", "Lottery odds"], ["picks", "Traded picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock"], ["", "Challenge", "../draft/#nba/challenge"], ["", "Markets", "../draft/#nba/markets"]]
   };
   function render() {
     parse();
