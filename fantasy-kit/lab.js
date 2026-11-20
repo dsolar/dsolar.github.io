@@ -1,6 +1,8 @@
 /* Draft Lab: mock drafts against bots, built on the Fantasy Kit. Everything stays on this device. */
 (function () {
   "use strict";
+  // ESPN market data (ranks, ADP, auction prices) exists for these sports only: tools/market_pull.py
+  const MARKET_SPORTS = new Set(["nfl", "nba", "mlb"]);
   const { sports: S, value: V, draft: F, ui: U } = window.FK;
   const E = window.FK.experience;
   const { esc, $, $$ } = U;
@@ -50,7 +52,7 @@
   const mktCache = {};
   async function loadMarket(k) {
     if (k === "nhl") return null;
-    if (!(k in mktCache)) mktCache[k] = await fetch(`data/market-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (!(k in mktCache)) mktCache[k] = !MARKET_SPORTS.has(k) ? null : await fetch(`data/market-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return mktCache[k];
   }
   async function loadDynasty(k) {

@@ -4,6 +4,8 @@
    the season the same way the demo leagues do, on whichever page is open, and each save says who to email. */
 (function () {
   "use strict";
+  // ESPN market data (ranks, ADP, auction prices) exists for these sports only: tools/market_pull.py
+  const MARKET_SPORTS = new Set(["nfl", "nba", "mlb"]);
   const { sports: S, value: V, draft: F, league: G, season: Z, ui: U, cloud: C } = window.FK;
   const { esc, $ } = U;
   const theme = U.theme("fk-lab");
@@ -78,7 +80,7 @@
     }
     // daily lineups score day by day: the last two weeks' daily box scores ride along with the weeks file
     if (L && L.settings.daily) weeksP = Promise.all([weeksP, getJSON(`data/days-${k}.json`).catch(() => null)]).then(([w, dd]) => { if (w && dd && String(dd.season) === String(w.season)) w.days = dd; return w; });
-    const extras = Promise.all([getJSON(`data/market-${k}.json`), dyn ? dynastyRanks(k) : null, dyn ? getJSON(`../draft/${k}.json`) : null]);
+    const extras = Promise.all([MARKET_SPORTS.has(k) ? getJSON(`data/market-${k}.json`) : null, dyn ? dynastyRanks(k) : null, dyn ? getJSON(`../draft/${k}.json`) : null]);
     data = await dataP;
     if (!data || !Array.isArray(data.players)) return fatal("Couldn't load the players.", `<span class="muted">Reload the page to try again.</span>`);
     sport = S.withScoring(S.attach(Object.assign({}, S[k]), data), D.scoringSpec);   // the league's custom scoring, if it has one

@@ -204,7 +204,8 @@
   function sportData(k) {
     if (!cache[k]) cache[k] = fetch(KIT + "data/" + k + ".json").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
       if (!d || !d.players || !S || !V) return null;
-      return fetch(KIT + "data/market-" + k + ".json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (market) { return { sport: S.attach(Object.assign({}, S.ALL[k]), d), players: d.players, market: market }; });
+      // ESPN market data exists for NFL, NBA and MLB only (tools/market_pull.py)
+      return (["nfl", "nba", "mlb"].indexOf(k) >= 0 ? fetch(KIT + "data/market-" + k + ".json").then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }) : Promise.resolve(null)).then(function (market) { return { sport: S.attach(Object.assign({}, S.ALL[k]), d), players: d.players, market: market }; });
     }).catch(function () { return null; });
     return cache[k];
   }
