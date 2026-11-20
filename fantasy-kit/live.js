@@ -312,7 +312,9 @@
   }
   // a practice mock you left partway, waiting where you left it
   function practiceMid() {
-    try { const sv = JSON.parse(localStorage.getItem(PK) || "null"); return !!(sv && sv.D && sv.pre && sv.me === practiceMe() && sv.D.phase !== "done" && ((sv.D.board || []).some((pk) => pk && !pk.keeper) || (sv.D.sales || []).length > 0)); } catch (e) { return false; }
+    // the same test practiceOpen uses to pick a saved one back up: before the draft a practice mock (pre), between
+    // seasons the keeper practice draft; either counts once a real pick or sale is in
+    try { const sv = JSON.parse(localStorage.getItem(PK) || "null"); return !!(sv && sv.D && !!sv.pre === !L && sv.me === practiceMe() && sv.D.phase !== "done" && ((sv.D.board || []).some((pk) => pk && !pk.keeper) || (sv.D.sales || []).length > 0)); } catch (e) { return false; }
   }
   function lobbyHtml(home) { return window.FK.lobby.html(lobbyOpts(home)); }
   function lobbyOpts(home) {
@@ -380,7 +382,7 @@
   }
   function practiceLine() {
     if (!seasonOver() || L.settings.dynasty || !L.settings.keepers || !L.next) return "";
-    return `<p class="small" style="margin:0"><b>Practice draft:</b> next season's board with everyone's keepers in (teams that haven't picked keep their best values), the real draft order and traded picks. Bots draft for everyone else. Only you see it. <button type="button" class="btn sm" data-live="practice">Practice the draft</button></p>`;
+    return `<p class="small" style="margin:0"><b>Practice draft:</b> next season's board with everyone's keepers in (teams that haven't picked keep their best values), the real draft order and traded picks. Bots draft for everyone else. Only you see it.${practiceMid() ? " Yours is saved where you left off." : ""} <button type="button" class="btn sm" data-live="practice">${practiceMid() ? "Resume the practice draft" : "Practice the draft"}</button></p>`;
   }
   // the managers' photos (fk_faces), for members; your own profile to edit (fk_profile_me, fk_profile_set)
   let faces = {};
@@ -882,7 +884,7 @@
     if (!seasonOver() || !L.next || info.me == null || !L.settings.keepers) return "";
     const mine = L.next.picks && L.next.picks[info.me], lock = keepLocked();
     const left = keepDue() && !lock ? keepDue() - now() : 0, soon = left && left < 2 * 864e5 ? ` That's ${left < 36e5 ? "less than an hour" : `${Math.round(left / 36e5)} hours`} from now.` : "";
-    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button> <button class="btn sm ghost" data-live="practice">Practice the draft</button></div></div>`;
+    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button> <button class="btn sm ghost" data-live="practice">${practiceMid() ? "Resume the practice draft" : "Practice the draft"}</button></div></div>`;
   }
   // a team's keepers: every player with his cost (or why he can't be kept), and where the picks land in the draft
   function keeperDialog(teamId = info.me) {
