@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-19T19:10:07Z",
+ "updated": "2026-11-20T18:49:57Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,229 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkf_GkdFG42E",
-   "date": "2026-11-19",
-   "time": "19:00",
-   "title": "Frost Children",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/frost-children-boston-massachusetts-11-19-2026/event/01006519C83153E7",
-   "source": "ticketmaster",
-   "times": [
-    "19:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18537386"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18621492",
-   "date": "2026-11-19",
-   "time": "19:00",
-   "title": "Nacho Redondo",
-   "cat": "comedy",
-   "venue": "Wimberly Theatre at the BCA",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/nacho-redondo-tickets/comedy/2026-11-19-7-pm/18621492",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_29_YE1s",
-   "date": "2026-11-19",
-   "time": "19:00",
-   "title": "Patrick Wolf",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/patrick-wolf-boston-massachusetts-11-19-2026/event/010064F5D9C272B1",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18721192"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfwGkemSKbm",
-   "date": "2026-11-19",
-   "time": "19:00",
-   "title": "Trippie Redd - The Non-disclosure Agreement Tour",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/trippie-redd-the-nondisclosure-agreement-tour-boston-massachusetts-11-19-2026/event/01006532AECD362E",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-11-19-trippie-redd-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZk36GkeIgqfc",
-   "date": "2026-11-19",
-   "time": "19:00",
-   "title": "West 22nd: Places To Be",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/west-22nd-places-to-be-boston-massachusetts-11-19-2026/event/01006487A8D5D52D",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18168767"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfsGkdwE_dJ",
-   "date": "2026-11-19",
-   "time": "19:30",
-   "title": "Criminal Presents: Don't Worry with Phoebe Judge",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/criminal-presents-dont-worry-with-phoebe-boston-massachusetts-11-19-2026/event/01006531F29D90E6",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18609620"
-   ],
-   "score": 1
-  },
-  {
-   "id": "tm-vv1AvZkfYGkecrg7h",
-   "date": "2026-11-19",
-   "time": "19:30",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-19-2026/event/01006530AD7B511B",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-G5vVZ_6nrIgoT",
-   "date": "2026-11-19",
-   "time": "19:30",
-   "title": "Metallica",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-19-2026/event/1D00647A9EA3547F",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "act": "Metallica",
-   "aka": [
-    "sg-18164315"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "sg-18702704",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "AJ Lee and Blue Summit",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/aj-lee-blue-summit-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-19-8-pm/concert/18702704",
-   "source": "seatgeek",
-   "aka": [
-    "2026-11-19-aj-lee-and-blue-summit-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70IP0",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "Angine de Poitrine",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70IP0",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18253193"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A7PaCp",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "Cowboy Junkies",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7PaCp",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18676157"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAvx-I",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "Guster w/ Adam Pally",
-   "cat": "music",
-   "venue": "Music Hall of Williamsburg",
-   "city": "Brooklyn, NY",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvx-I",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Guster",
-   "aka": [
-    "sg-18584106"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZkoVGkdRTNgR",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "Il Volo LIVE IN CONCERT",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/il-volo-live-in-concert-boston-massachusetts-11-19-2026/event/01006474EFFE3D6F",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18634478",
-   "date": "2026-11-19",
-   "time": "20:00",
-   "title": "LCD Soundsystem",
-   "cat": "music",
-   "venue": "Knockdown Center",
-   "city": "Queens, NY",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-19-8-pm/concert/18634478",
-   "source": "seatgeek",
-   "drive_hours": 4.25,
-   "act": "LCD Soundsystem",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv1AvZk4PGkd_i7Av",
-   "date": "2026-11-19",
-   "time": "21:00",
-   "title": "Trippie Redd Non-Disclosure Agreement After Party - Studio B (18+)",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/trippie-redd-nondisclosure-agreement-after-party-boston-massachusetts-11-19-2026/event/01006565D9B04141",
-   "source": "ticketmaster",
-   "score": 0
-  },
   {
    "id": "sg-18747163",
    "date": "2026-11-20",
@@ -4051,6 +3828,25 @@
    "score": 1
   },
   {
+   "id": "tm-rZ7HnEZ1A4v9FN",
+   "date": "2026-12-29",
+   "time": "20:00",
+   "title": "Night Zero: Dobbs’ Dead Phish MSG Run Pre-Party Featuring Cotter Ellis (Goose) Very Special Guests TBA",
+   "cat": "music",
+   "venue": "Cutting Room",
+   "city": "New York, NY",
+   "url": "https://www.ticketweb.com/event/night-zero-dobbs-dead-phish-cutting-room-tickets/15057223",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Phish",
+   "aka": [
+    "tm-rZ7HnEZ1A4v9FN"
+   ],
+   "from": 34,
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "tm-vvG17Z_29NYHQR",
    "date": "2026-12-30",
    "time": "19:00",
@@ -4356,7 +4152,7 @@
    "id": "tm-rZ7HnEZ1AfuYF0",
    "date": "2027-01-01",
    "time": "23:59",
-   "title": "A Phish After-Party: Tad Cautious & Friends",
+   "title": "A Phish After-Party: Tad Cautious & Friends ft. Samiami Selects and Krim",
    "cat": "music",
    "venue": "Hill Country Live",
    "city": "New York, NY",
@@ -8845,9 +8641,6 @@
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/addison-groove-project-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-27-8-pm/concert/18813646",
    "source": "seatgeek",
-   "aka": [
-    "sg-18813646"
-   ],
    "score": 0
   },
   {
@@ -8861,6 +8654,7 @@
    "url": "https://www.ticketmaster.com/jay-wheeler-lvf-tour-boston-massachusetts-03-27-2027/event/01006545A6FAA9EE",
    "source": "ticketmaster",
    "aka": [
+    "sg-18649625",
     "2027-03-27-jay-wheeler-mgm-music-hall-at-fe"
    ],
    "score": 0
@@ -9078,15 +8872,18 @@
    "score": 1
   },
   {
-   "id": "sg-18786542",
+   "id": "tm-Z7r9jZ1AAAoFs",
    "date": "2027-04-02",
    "time": "20:00",
    "title": "Noga Erez",
    "cat": "music",
-   "venue": "Roadrunner - Boston",
+   "venue": "Roadrunner-Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/noga-erez-tickets/boston-massachusetts-roadrunner-boston-2027-04-02-8-pm/concert/18786542",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAoFs",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18786542"
+   ],
    "score": 0
   },
   {
@@ -10108,15 +9905,22 @@
    "score": 0
   },
   {
-   "id": "sg-18780309",
+   "id": "tm-Z7r9jZ1AAApOt",
    "date": "2027-04-21",
    "time": "19:00",
-   "title": "BigXthaPlug",
+   "title": "BigXThaPlug (18 and Over)",
    "cat": "music",
-   "venue": "Royale - Boston",
+   "venue": "Royale Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/bigxthaplug-tickets/boston-massachusetts-royale-boston-2027-04-21-7-pm/concert/18780309",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAApOt",
+   "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
+   "aka": [
+    "sg-18780309"
+   ],
    "score": 0
   },
   {
@@ -11078,15 +10882,33 @@
    "score": 0
   },
   {
-   "id": "sg-18724084",
+   "id": "tm-vv1AvZk49GkeIXi0R",
    "date": "2027-05-18",
    "time": "20:00",
-   "title": "Damien Rice",
+   "title": "Damien Rice o 25th Anniversary Tour",
    "cat": "music",
-   "venue": "Orpheum Theatre - Boston",
+   "venue": "Orpheum Theatre presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/damien-rice-tickets/boston-massachusetts-orpheum-theatre-boston-2027-05-18-8-pm/concert/18724084",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/damien-rice-o-25th-anniversary-tour-boston-massachusetts-05-18-2027/event/01006557A8FAC92F",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18724084"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-vv177Z_KGklSCrUt",
+   "date": "2027-05-19",
+   "time": "19:30",
+   "title": "Carly Rae Jepsen: Day and Night Tour",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/carly-rae-jepsen-day-and-night-boston-massachusetts-05-19-2027/event/0100653AF339EDA9",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18639042"
+   ],
    "score": 0
   }
  ],
@@ -11166,7 +10988,7 @@
   "picks": 2,
   "venues": 0,
   "espn": 67,
-  "ticketmaster": 512,
-  "seatgeek": 168
+  "ticketmaster": 505,
+  "seatgeek": 162
  }
 }
