@@ -11,4 +11,4 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - run: node tools/ringer_probe.mjs
+      - run: node tools/ringer_pull.mjs --dry
