@@ -346,6 +346,6 @@ test('value: bigs are position-adjusted, young stars count their restricted free
   assert.ok(pv('Dylan Harper') > pv('Brandin Podziemski'));
   assert.ok(H.surplus(by('Cooper Flagg')).rights > 0);
   const rank = H.valueBoard().findIndex(x => x.p.n === 'Jalen Duren');
-  assert.ok(rank > 15, 'Duren rank ' + (rank + 1));
+  assert.ok(rank > 12, 'Duren rank ' + (rank + 1));
   const f = by('Cooper Flagg'); assert.ok(H.rating(f, 3) - H.rating(f, 0) >= 0.6, 'a 19-year-old grows at least on the age curve');
 });

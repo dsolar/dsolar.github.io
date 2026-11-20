@@ -327,6 +327,8 @@
       const gsBy = {}; for (const g of ["G", "W", "B"]) gsBy[g] = pool.filter(p => grp(p) === g).map(p => gs100(p.adv.s)).sort((a, b) => b - a);
       const gsv = pool.map(p => gs100(p.adv.s)).sort((a, b) => b - a);
       const at = k => imp[clamp(Math.round(k), 0, imp.length - 1)];
+      // Not making the Ringer's Top 100 says something too: a player we'd rank higher reads as about No. 115 there
+      const OUT100 = at(114);
       for (const p of Object.values(W.P)) {
         if (p.rook) continue;
         const r0 = H.rating(p, 0), ra = adjR(p), g = p.adv ? gs100(p.adv.s) : null, o = { imp: r0, iR: rankIn(raw, r0) + 1, pos: posOff[grp(p)] || 0 };
@@ -336,6 +338,7 @@
           o.gs = g; o.bR = rankIn(gsv, g) + 1; o.box = at(q * imp.length); const wt = wb * Math.min(1, (p.adv.mp || 0) / 1500); sum += wt * o.box; w += wt;
         }
         if (p.ringer) { o.cR = p.ringer; o.con = at(p.ringer - 1); sum += wc * o.con; w += wc; }
+        else if (H.ringer && p.adv && p.adv.mp >= 400) { o.con = Math.min(ra, OUT100); sum += wc * o.con; w += wc; }
         o.val = sum / w; o.shift = o.val - r0; out[p.id] = o;
       }
       const vs = Object.values(out).filter(o => o.gs != null || o.cR).map(o => o.val).sort((a, b) => b - a);
@@ -376,7 +379,10 @@
     H.mpgAt = (p, i) => {
       const r = H.rating(p, i), base = roleMin(r), a = mpgNow(p);
       if (a == null || p.rook) return base;
-      return clamp(base + (a - roleMin(H.rating(p, 0))) * Math.pow(0.85, i), 0, 38);
+      // A gap to the minutes his rating earns fades 15% a season, except a veteran (25+) playing less than his rating
+      // earns: his coaches see him every day, so that gap is information, not noise, and it stays
+      const gap = a - roleMin(H.rating(p, 0));
+      return clamp(base + gap * (gap < 0 && p.age >= 25 ? 1 : Math.pow(0.85, i)), 0, 38);
     };
     // Production: Stephen Noh's salary model (minutes times impact, scaled to the cap) on real minutes, then scaled
     // once so the whole league's production adds up to what the whole league is paid this season. A dollar of
@@ -932,8 +938,12 @@
       const v = W.picks.filter(pk => pk.r === 1 && pk.owner !== "OUT" && pk.y >= 2027 && pk.y <= 2029).map(pk => H.pickValue(pk)).sort((a, b) => a - b);
       return v.length ? v[v.length >> 1] : 0;
     });
-    H.valueBoard = mode => cache("vb" + (mode || cfg.mode) + cfg.disc + cfg.growth, () =>
-      H.players().map(p => ({ p, s: H.surplus(p, mode) })).sort((a, b) => b.s.pv - a.s.pv));
+    // Trade value: the production and market views averaged, the same as the trade finder and grades use. Production is
+    // what he should produce (impact, box score, the Ringer); market is what teams pay for his minutes and scoring
+    // (fit to 317 veteran contracts). Teams trade on both, and on last season's deals the average fits real trades best.
+    H.tradeValue = p => cache("tv" + p.id + cfg.disc + cfg.growth + cfg.salW + cfg.vblend + cfg.posAdj, () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
+    H.valueBoard = mode => cache("vb" + (mode || cfg.mode) + cfg.disc + cfg.growth + cfg.salW, () =>
+      H.players().map(p => ({ p, s: H.surplus(p, mode), tv: H.tradeValue(p) })).sort((a, b) => b.tv - a.tv));
     // This summer's class: everyone whose deal ends after this season (options as the model expects them to go)
     // A summer's free agent class: everyone whose deal ends the season before (options as the model expects them).
     // i is the season they'd sign for: 1 = summer 2027.
@@ -1243,7 +1253,7 @@
     });
     const isYoung = p => p.age <= 24 || !!(p.c && p.c.rk && (p.yos ?? 9) <= 3);
     const isVet = p => p.age >= 29;
-    const blendV = p => cache("bl" + p.id + cfg.disc + cfg.growth + cfg.salW, () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
+    const blendV = p => H.tradeValue(p);
     const pickBlend = pk => cache("pb" + pk.id + cfg.disc, () => (H.pickValue(pk, "prod") + H.pickValue(pk, "market")) / 2);
     const contrib = p => Math.max(0, H.rating(p, 0) + 2) * H.mpgAt(p, 0) / 48 * (p.h ?? 0.85) * (1 - H.outShare(p));
     // Positional fit: a team's rotation skills (minutes-weighted percentiles, nine heaviest-minute players) show what it
