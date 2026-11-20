@@ -571,6 +571,7 @@
       return r;
     }
     const prospects = (board.players || []).slice().sort((a, b) => a.rank - b.rank);
+    H.prospects = prospects;
     // Where each team's pick lands in a draft: 2027 from the simulations, later drafts from the season before
     H.draftSlots = year => cache("slots" + year, () => {
       const i = year - 2027;                                  // the season that decides this draft

@@ -127,8 +127,11 @@
       <p class="note">Kalshi, ${fmtDay(D.markets.updated)}. <a href="#${D.league}/markets">All markets</a></p>`;
   }
 
-  async function render(lg) {
+  // A link from the NBA Hub: ?p=<id> opens that prospect, ?at=<n> marks No. n; both scroll to the row
+  let jump = null;
+  async function render(lg, q) {
     if (lg !== ui.lg) ui = { lg, q: "", pos: "all", sort: "rank", dir: 1, open: null };
+    if (q && (q.p || q.at)) { ui = { lg, q: "", pos: "all", sort: "rank", dir: 1, open: q.p || null }; jump = q; }
     $("#q").value = ui.q;
     try { D = await BB.data(lg); } catch (e) { $("#tbody").innerHTML = `<tr><td class="empty">Couldn't load the board. Try a refresh.</td></tr>`; return; }
     if (!BB.POS[lg].some(([k]) => k === ui.pos)) ui.pos = "all";
@@ -138,6 +141,15 @@
       ? `${live.length} board${live.length === 1 ? "" : "s"} so far. ${D.sources.filter((s) => !s.date).map((s) => s.analyst || s.name).join(", ")} join as they publish for this class.`
       : `${D.players.length} players across ${live.length} boards. Tap a player for his stats and line.`;
     sources(); head(); rows();
+    if (jump) {
+      const j = jump; jump = null;
+      const tr = j.p ? document.querySelector(`#tbody tr.p[data-id="${CSS.escape(j.p)}"]`) : [...document.querySelectorAll("#tbody tr.p")].find((r) => r.querySelector(".rk").textContent === String(+j.at));
+      if (tr) {
+        if (j.at) { ui.open = tr.dataset.id; rows(); }
+        const row = document.querySelector(`#tbody tr.p[data-id="${CSS.escape(tr.dataset.id)}"]`);
+        row.classList.add("hl"); row.scrollIntoView({ block: "center" }); row.focus({ preventScroll: true });
+      }
+    }
     $("#stamp").textContent = `Built ${new Date(D.updated).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}. Newest board: ${fmtDay(D.asof)}.`;
   }
 

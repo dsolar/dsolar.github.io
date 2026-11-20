@@ -57,6 +57,9 @@
   function save(k, v) { try { localStorage.setItem("nbahub." + k, JSON.stringify(v)); } catch (e) { /* storage off */ } }
   function load(k, d) { try { var v = localStorage.getItem("nbahub." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function stat(v, k) { return '<div class="stat"><b>' + v + "</b><span>" + k + "</span></div>"; }
+  // Links into the Big Board (draft/): ?p= opens a prospect, ?at= jumps to that spot on the board
+  function boardHref(q) { return "../draft/#nba" + (q ? "?" + q : ""); }
+  function boardAt(slot) { var x = H.prospects && H.prospects[Math.round(slot) - 1]; return x ? '<a href="' + boardHref("at=" + Math.round(slot)) + '" title="No. ' + Math.round(slot) + ' on the Big Board">' + esc(shortName(x.n)) + "</a>" : ""; }
   function kv(v, k) { return "<div><b>" + v + "</b><span>" + k + "</span></div>"; }
   function tablePanel(title, head, body, right) {
     return '<div class="panel"><h3>' + esc(title) + " <small>" + (right || "") + '</small></h3><div class="scroll"><table class="t"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody.</td></tr>') + "</tbody></table></div></div>";
@@ -137,13 +140,13 @@
   }
   function lotteryPanel(rows) {
     var lot = rows.slice().sort(function (a, b) { return a.avgPick - b.avgPick; }).slice(0, 16);
-    return tablePanel("The 2027 lottery", "<th>Team</th><th>Proj</th><th>No. 1</th><th>Top 4</th><th>Avg pick</th><th>Pick goes to</th>",
-      lot.map(function (r) {
+    return tablePanel("The 2027 lottery", "<th>Team</th><th>Proj</th><th>No. 1</th><th>Top 4</th><th>Avg pick</th><th>Board at that pick</th><th>Pick goes to</th>",
+      lot.map(function (r, k) {
         var pk = H.W.picks.find(function (x) { return x.y === 2027 && x.r === 1 && x.from === r.code; });
         var to = pk && pk.owner !== r.code ? logo(pk.owner, 16) + " " + esc(team(pk.owner).short) + (pk.prot ? ' <span class="note">(' + esc(pk.note || "protected") + ")</span>" : "") : '<span class="note">Own pick</span>';
         if (pk && pk.locked && pk.owner === r.code) to = '<span class="note">' + esc(pk.note || "") + "</span>";
         var w = Math.round(r.projW);
-        return '<tr class="go" data-team="' + r.code + '"><td class="tm">' + logo(r.code) + '<span class="nm">' + esc(r.name) + "</span></td><td>" + w + "-" + (82 - w) + "</td><td>" + pct(r.no1, 1) + "</td><td>" + pct(r.top4) + "</td><td><b>" + f1(r.avgPick) + '</b></td><td style="text-align:left;white-space:normal">' + to + "</td></tr>";
+        return '<tr class="go" data-team="' + r.code + '"><td class="tm">' + logo(r.code) + '<span class="nm">' + esc(r.name) + "</span></td><td>" + w + "-" + (82 - w) + "</td><td>" + pct(r.no1, 1) + "</td><td>" + pct(r.top4) + "</td><td><b>" + f1(r.avgPick) + '</b></td><td style="text-align:left">' + boardAt(k + 1) + '</td><td style="text-align:left;white-space:normal">' + to + "</td></tr>";
       }).join(""), "The worst three records get two balls, not three, and can't fall below 12th");
   }
   // Every lottery team's odds at each pick, from the season simulations (which play out the season, the play-in and the
@@ -414,7 +417,7 @@
     var q = state.q, yr = q.y2 || "", tm = q.t || "";
     var all = H.allPicks().filter(function (pk) { return (!yr || String(pk.y) === yr) && (!tm || pk.from === tm || pk.owner === tm); });
     var years = []; H.allPicks().forEach(function (pk) { if (years.indexOf(pk.y) < 0) years.push(pk.y); });
-    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every first- and second-round pick that has changed hands, with its protection and where it projects to land. Pick terms come from the Big Board\'s ledger (Tankathon and RealGM), refreshed daily.</p>';
+    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every first- and second-round pick that has changed hands, with its protection and where it projects to land. Pick terms come from the <a href="' + boardHref() + '">Big Board</a>\'s ledger (Tankathon and RealGM), refreshed daily. Projected 2027 slots link to who\'s ranked there.</p>';
     html += controls('<label>Year<select data-q="y2"><option value="">All</option>' + years.map(function (y) { return '<option value="' + y + '"' + (String(y) === yr ? " selected" : "") + ">" + y + "</option>"; }).join("") + "</select></label>" + teamSelect(tm));
     var protText = function (pk) {
       var bits = [];
@@ -425,7 +428,7 @@
     html += tablePanel(all.length + " picks", "<th>Pick</th><th>Original team</th><th>Owned by</th><th>Protection</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Notes</th>", all.map(function (pk) {
       var info = H.pickInfo(pk);
       return "<tr><td>" + pk.y + " " + (pk.r === 1 ? "1st" : "2nd") + "</td><td>" + tcell(pk.from) + "</td><td>" + (pk.owner === "OUT" ? "Forfeited" : tcell(pk.owner)) + "</td><td>" +
-        (pk.prot || pk.group ? "<b>" + esc(protText(pk)) + "</b>" : '<span class="note">Unprotected</span>') + "</td><td>" + f1(info.avg) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") + "</td><td>" + money(H.pickValue(pk, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
+        (pk.prot || pk.group ? "<b>" + esc(protText(pk)) + "</b>" : '<span class="note">Unprotected</span>') + "</td><td>" + (pk.y === 2027 && pk.r === 1 && info.avg ? '<a href="' + boardHref("at=" + Math.round(info.avg)) + '" title="Who\'s ranked there on the Big Board">' + f1(info.avg) + "</a>" : f1(info.avg)) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") + "</td><td>" + money(H.pickValue(pk, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
     }).join(""), "Conveys: share of simulations where the protection doesn't hold");
     var sw = (H.W.swaps || []).filter(function (s) { return (!yr || String(s.y) === yr) && (!tm || s.from === tm || s.owner === tm); });
     if (sw.length) html += tablePanel("Swap rights", "<th>Pick</th><th>Holder</th><th>Swaps with</th><th>Value</th><th>Notes</th>", sw.map(function (s) {
@@ -450,7 +453,7 @@
     var two = Object.values(H.W.P).filter(function (p) { return p.t === code && p.two; });
     var body = list.map(function (p) { return "<tr><td>" + pname(p, 20) + '</td><td class="note">' + esc(posOf(p)) + "</td>" + cols.map(function (j) { return cell(p, j); }).join("") + "</tr>"; }).join("") +
       rooks.map(function (p) {
-        var nm = p.year + " No. " + p.slot + " pick" + (p.from !== p.t ? " (via " + p.from + ")" : "") + (p.prospect ? ' <span class="note">proj. ' + esc(p.n) + "</span>" : "");
+        var nm = p.year + " No. " + p.slot + " pick" + (p.from !== p.t ? " (via " + p.from + ")" : "") + (p.prospect ? ' <span class="note">proj. <a href="' + boardHref("p=" + encodeURIComponent(p.prospect)) + '">' + esc(p.n) + "</a></span>" : "");
         return '<tr><td><span class="pl static">' + logo(p.from, 18) + '<span class="nm">' + nm + '</span></span></td><td class="note">Draft</td>' + cols.map(function (j) { return cell(p, j); }).join("") + "</tr>";
       }).join("");
     H.W.T[code].dead.forEach(function (d) {
@@ -548,7 +551,7 @@
     var e = H.lastYear(p);
     if (e >= 0 && e < Hub.YEARS - 1) ct += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
     html += '<div class="cpane" data-pane="ct"' + (cardTab === "ct" ? "" : " hidden") + ">" + ct + "</div>";
-    html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a></p></div>";
+    html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a>" + (p.prospect ? ' <a class="btn" href="' + boardHref("p=" + encodeURIComponent(p.prospect)) + '">On the Big Board</a>' : "") + "</p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
   }

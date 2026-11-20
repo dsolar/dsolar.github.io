@@ -93,6 +93,7 @@ th[aria-sort="descending"] button::after{content:" \25BC";font-size:8px}
 td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr.p{cursor:pointer}
 tr.p:hover td{background:rgba(255,255,255,.03)}
+tr.p.hl td{background:rgba(232,185,60,.14)} tr.p.hl td:first-child{box-shadow:inset 3px 0 0 var(--gold)}
 tr.open td{background:rgba(242,193,78,.05)}
 .r{text-align:right}.c{text-align:center}
 .rk{font:800 22px/1 var(--display);width:44px}
@@ -553,7 +554,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 <script src="../assets/faces.js?v=20261109c"></script>
 <script src="common.js?v=30"></script>
 <script src="engine.js?v=30"></script>
-<script src="board.js?v=30"></script>
+<script src="board.js?v=31"></script>
 <script src="mock.js?v=30"></script>
 <script src="challenge.js?v=30"></script>
 <script src="markets.js?v=30"></script>
@@ -562,12 +563,13 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
   // #nba, #nfl, then /mock, /challenge or /markets
   const VIEWS = ["board", "mock", "challenge", "markets"];
   const parse = () => {
-    const [lg, view] = location.hash.slice(1).split("/");
+    const [path, qs] = location.hash.slice(1).split("?");
+    const [lg, view] = path.split("/");
     const saved = BB.store.get("bigboard") || {};
-    return { lg: lg === "nfl" || lg === "nba" ? lg : (saved.lg || "nba"), view: VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board")) };
+    return { q: Object.fromEntries(new URLSearchParams(qs || "")), lg: lg === "nfl" || lg === "nba" ? lg : (saved.lg || "nba"), view: VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board")) };
   };
   async function go() {
-    const { lg, view } = parse();
+    const { lg, view, q } = parse();
     document.querySelectorAll("button[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
     document.querySelectorAll(".tabs [data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
     VIEWS.forEach((v) => { document.getElementById(v + "-view").hidden = view !== v; });
@@ -575,7 +577,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
     BB.store.set("bigboard", { lg, view });
     try { const D = await BB.data(lg); document.getElementById("kicker").textContent = `${D.year} ${lg.toUpperCase()} Draft`; } catch (e) { /* the view says so */ }
     if (view !== "mock") Mock.stop();
-    if (view === "board") Board.render(lg);
+    if (view === "board") Board.render(lg, q);
     else if (view === "mock") Mock.render(lg);
     else if (view === "challenge") Challenge.render(lg);
     else Markets.render(lg);
