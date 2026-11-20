@@ -23,6 +23,10 @@
     ["Team cap figures", "nfl/data/teamcap.json", j => j.asOf, 30, "otc"],                       // Over The Cap, every week or two: warns only
     ["Draft Big Board", "draft/nfl.json", j => j.updated, 3, "draft-board"],
   ];
+  // Site-wide feeds the daily check also watches
+  const SITE = [
+    ["Player faces", "assets/faces/report.json", j => j.built, 3, "faces"],
+  ];
   const day = s => { const t = Date.parse(/^\d{4}-\d\d-\d\d$/.test(s) ? s + "T12:00:00Z" : s); return isNaN(t) ? null : t; };
   // files: { "hardcap/stats.json": parsed JSON, ... }; now: ms. Returns every feed with its age, stale ones flagged.
   // Game feeds go quiet in the offseason (July to mid-October) and over the All-Star break, so they only count in season.
@@ -45,6 +49,6 @@
       return { label, file, when: s || null, age, max, how, manual: how === "by hand" || how === "nba-ringer" || how === "otc", stale: !off && (age == null || age > max), missing: !j };
     });
   }
-  const api = { FEEDS, NFL, check, files: [...new Set(FEEDS.map(f => f[1]))], nflFiles: [...new Set(NFL.map(f => f[1]))] };
+  const api = { FEEDS, NFL, SITE, check, files: [...new Set(FEEDS.map(f => f[1]))], nflFiles: [...new Set(NFL.map(f => f[1]))], siteFiles: [...new Set(SITE.map(f => f[1]))] };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Fresh = api;
 })(typeof self !== "undefined" ? self : this);
