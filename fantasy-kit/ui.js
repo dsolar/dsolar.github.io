@@ -2233,8 +2233,10 @@
       const name = (id) => (F.isPickId(id) ? `pick ${plab(F.pickIdx(id))}` : (ctx.byId[id] || {}).n || "a player");
       const list = (ids) => ids.map(name).join(" and ");
       const held = d.hold && d.hold.trade === T.id;
-      return `<div class="dr-offer" role="status"><span class="grow"><b>${esc(team(T.from).name)} offers ${esc(list(T.give))}</b> <span class="ps">for ${esc(list(T.get))}${held ? `. The draft waits up to ${Math.max(1, Math.round(F.holdLeft(d, now()) / 1000))} seconds while you decide.` : "."}</span></span>
-        <button type="button" class="btn sm go" data-offer-view="${T.id}">Review</button><button type="button" class="btn sm" data-tr-no="${T.id}">Decline</button><button type="button" class="btn sm ghost" data-offer-hide title="Hide this offer for now">Later</button></div>`;
+      // a phone gets one line (who, and how long the draft waits); Review opens the whole deal
+      const secs = held ? Math.max(1, Math.round(F.holdLeft(d, now()) / 1000)) : 0;
+      return `<div class="dr-offer" role="status"><span class="grow"><span class="hide-m"><b>${esc(team(T.from).name)} offers ${esc(list(T.give))}</b> <span class="ps">for ${esc(list(T.get))}${held ? `. The draft waits up to ${secs} seconds while you decide.` : "."}</span></span><span class="show-m of-m"><b>Offer: ${esc(team(T.from).name)}</b>${held ? `<span class="ps">Draft waits ${secs}s</span>` : ""}</span></span>
+        <button type="button" class="btn sm go" data-offer-view="${T.id}">Review</button><button type="button" class="btn sm" data-tr-no="${T.id}">Decline</button><button type="button" class="btn sm ghost" data-offer-hide title="Hide this offer for now" aria-label="Hide this offer for now"><span class="hide-m">Later</span><span class="show-m" aria-hidden="true">✕</span></button></div>`;
     }
     function offerDialog(T) {
       const d = D(), held = d.hold && d.hold.trade === T.id;

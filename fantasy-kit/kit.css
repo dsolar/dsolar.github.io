@@ -2908,3 +2908,12 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   /* on your pick the row keeps rank, name and the main number (plus whatever you sorted by) beside Draft */
   .droom #fk-pool table.turn .vc~.r.num:not(.srt):not(.on){display:none}
 }
+/* the trade offer on a phone: one line, buttons on the same row */
+@media (max-width:980px){
+  .dr-offer{flex-wrap:nowrap;padding:8px 10px;gap:6px}
+  .dr-offer .grow{min-width:0;flex:1 1 auto;overflow:hidden}
+  .dr-offer .of-m{display:flex!important;flex-direction:column;line-height:1.25;min-width:0}
+  .dr-offer .of-m b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+  .dr-offer .of-m .ps{font-size:12px}
+  .dr-offer .btn.sm{flex:none;padding:0 10px}
+}
