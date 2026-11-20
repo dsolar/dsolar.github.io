@@ -259,9 +259,19 @@
     if (pt != null) f.playoffs = snapDown(pt, PLAYOFFS.filter((x) => x <= (f.teams || 12)));
     const wk = num((po.match(/week (\d+)/i) || [])[1]); if (wk > 1) f.weeks = wk - 1;
     const keep = num((get(/Keepers?|Max Keepers/).match(/\d+/) || [])[0]); f.kind = keep ? "keeper" : "redraft"; if (keep) f.keepN = keep;
+    // the rest of Yahoo's settings table: pick clock, weekly and season pickup limits, trade review, reseeding, a late start
+    const clk = get(/Live Draft Pick Time/).match(/(\d+)\s*(second|minute|hour)/i);
+    if (clk) f.clock = snapNear(+clk[1] * (/hour/i.test(clk[2]) ? 3600 : /minute/i.test(clk[2]) ? 60 : 1), CLOCKS);
+    const wkAdds = num((get(/Max Acquisitions per Week/).match(/\d+/) || [])[0]); if (wkAdds) f.maxAdds = snapNear(wkAdds, [1, 2, 3, 4, 5, 7, 10]);
+    const seasonAdds = num((get(/Max Acquisitions for Entire Season/).match(/\d+/) || [])[0]); if (seasonAdds) f.maxAddsSeason = snapNear(seasonAdds, [10, 15, 20, 25, 30, 40, 50]);
+    const rev = get(/Trade Review/).toLowerCase(); if (rev) f.review = /vote/.test(rev) ? "vote" : /commission/.test(rev) ? "commish" : /none/.test(rev) ? "none" : f.review;
+    if (/^yes/i.test(get(/Playoff Reseeding/))) f.reseed = 1;
+    const startWk = num((get(/Start Scoring on/).match(/week (\d+)/i) || [])[1]);
+    if (startWk > 1 && f.weeks) { f.weeks = Math.max(1, f.weeks - (startWk - 1)); r.notes.push(`Yahoo's season starts in week ${startWk}, so the regular season here is ${f.weeks} weeks`); }
     if (get(/Trade End Date|Trade Deadline/)) r.notes.push("Set the trade deadline: Yahoo's is a date, Draft Lab's is a week");
     // scoring: categories from the Stat Categories line, points from Stat Modifiers
-    const cats = get(/Stat Categories/);
+    let cats = get(/Stat Categories/);
+    if (!cats) { const h = lines.findIndex((x) => /stat category/i.test(x)); if (h >= 0) cats = lines.slice(h + 1).filter((x) => /\([^)]+\)/.test(x) && !/-?\d+(\.\d+)?\s*$/.test(x)).join(", "); }
     const catMap = key === "nba" ? YAHOO_NBA_CATS : key === "mlb" ? YAHOO_MLB_CATS : key === "nhl" ? YAHOO_NHL_CATS : null;
     if (catMap && cats && f.season !== "h2h" || (catMap && cats && /categor/.test(stype))) {
       const out = [];
@@ -303,6 +313,8 @@
       if (id) return { source: "espn", id, sport: { football: "nfl", basketball: "nba", baseball: "mlb", hockey: "nhl" }[m[1].toLowerCase()], season: num(q.get("seasonId")) };
     }
     if (/^\d{4,12}$/.test(t)) return { source: "espn", id: t };
+    m = t.match(/(football|basketball|baseball|hockey)\.fantasysports\.yahoo\.com\/(?:f1|nba|b1|hockey|nfl|mlb|nhl)\/(\d+)/i);
+    if (m) return { source: "yahoo-link", id: m[2], sport: { football: "nfl", basketball: "nba", baseball: "mlb", hockey: "nhl" }[m[1].toLowerCase()] };
     if (/yahoo\.com/i.test(t) && t.length < 200) return { source: "yahoo-link" };
     if (t.split(/\n/).length > 3) return { source: "yahoo", text: t };
     return null;

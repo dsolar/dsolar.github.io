@@ -103,7 +103,59 @@ test('reading what was pasted', () => {
   assert.deepEqual(I.parseInput('https://sleeper.com/leagues/1180123456789012345/league'), { source: 'sleeper', id: '1180123456789012345' });
   assert.deepEqual(I.parseInput('https://fantasy.espn.com/basketball/league?leagueId=12345&seasonId=2027'), { source: 'espn', id: '12345', sport: 'nba', season: 2027 });
   assert.equal(I.parseInput('123456').source, 'espn');
-  assert.equal(I.parseInput('https://basketball.fantasysports.yahoo.com/nba/12345').source, 'yahoo-link');
+  assert.deepEqual(I.parseInput('https://basketball.fantasysports.yahoo.com/nba/282497/6'), { source: 'yahoo-link', id: '282497', sport: 'nba' });
   assert.equal(I.espnSeason('nba', Date.UTC(2026, 10, 20)), 2027);
   assert.equal(I.espnSeason('nfl', Date.UTC(2027, 0, 5)), 2026);
+});
+
+test("Yahoo: a real public league's Settings page (points basketball)", () => {
+  const text = `Yahoo Sports Fantasy Basketball
+Scoring & Settings
+Setting Value
+League ID#: 282497
+League Name: Yahoo H2H-Pts 282497
+Auto-renew Enabled: No
+Draft Type: Live Standard Draft
+Draft Time: Mon Nov 2 11:57am EST
+Max Teams: 10
+Live Draft Pick Time: 1 Minute
+Scoring Type: Head-to-Head - Points
+Max Acquisitions for Entire Season: No maximum
+Max Trades for Entire Season No maximum
+Trade End Date: March 4, 2027
+Allow Draft Pick Trades: No
+Waiver Time: 1 day
+Waiver Type: Continual rolling list
+Waiver Mode: Standard
+Allow injured players from waivers or free agents to be added directly to injury slot: No
+Can't Cut List Provider: Yahoo Sports
+Trade Review: League Votes
+Votes Required to Veto: Default
+Trade Reject Time: 2 days
+Post Draft Players: Follow Waiver Rules
+Max Acquisitions per Week: 4
+Weekly Deadline: Daily - Today
+Start Scoring on: Week 4
+Playoffs: 6 teams - Week 20, 21 and 22 (ends Sunday, Apr 4)
+Playoff Tie-Breaker: Higher seed wins
+Playoff Reseeding: Yes
+Lock Eliminated Teams: Yes
+Divisions: No
+Lock Benched Players: No
+Make League Publicly Viewable: Yes
+Send unjoined players email reminders: Yes
+Roster Positions: PG, SG, G, SF, PF, F, C, C, Util, Util, BN, BN, BN, IL, IL, IL
+Players Stat Category Value
+Points Scored (PTS) 1
+Total Rebounds (REB) 1.2
+Assists (AST) 1.5
+Blocked Shots (BLK) 3
+Steals (ST) 3
+Turnovers (TO) -1
+`;
+  const r = I.fromYahooText(text, S), f = r.form;
+  assert.equal(f.lineup, 'PG SG G SF PF F C C UTIL UTIL'); assert.equal(f.bench, 3); assert.equal(f.ir, 3);
+  assert.deepEqual(f.weights, { pts: 1, reb: 1.2, ast: 1.5, blk: 3, stl: 3, tov: -1 });
+  assert.equal(f.clock, 60); assert.equal(f.maxAdds, 4); assert.equal(f.review, 'vote'); assert.equal(f.reseed, 1);
+  assert.equal(f.playoffs, 6); assert.equal(f.weeks, 16); assert.equal(f.waivers, 'rolling'); assert.equal(f.waiverDays, 1);
 });

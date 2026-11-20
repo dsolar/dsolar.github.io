@@ -42,13 +42,31 @@ async function fromConnector(id: string, season: number) {
     settings: { name: row.name, size: row.size, rosterSettings: x.roster, scoringSettings: x.scoring, scheduleSettings: x.schedule, draftSettings: x.draft, acquisitionSettings: x.acquisition, tradeSettings: x.trade } };
 }
 
+const YAHOO_HOST: Record<string, string> = { nfl: "football.fantasysports.yahoo.com/f1", nba: "basketball.fantasysports.yahoo.com/nba", mlb: "baseball.fantasysports.yahoo.com/b1", nhl: "hockey.fantasysports.yahoo.com/hockey" };
+async function yahoo(sport: string, id: string) {
+  const r = await fetch(`https://${YAHOO_HOST[sport]}/${id}/settings`, { headers: { "user-agent": BROWSER_UA, accept: "text/html" }, redirect: "manual", signal: AbortSignal.timeout(15000) });
+  if (r.status >= 300 && r.status < 400) return { error: "private" };   // sent to sign in
+  if (r.status === 404) return { error: "not_found" };
+  if (!r.ok) return { error: "yahoo", status: r.status };
+  const html = await r.text();
+  // the settings table and stat values as lines of text, the way the page copies
+  const text = html.replace(/<(script|style|noscript)[\s\S]*?<\/\1>/gi, " ").replace(/<\/(tr|p|div|li|h\d|dt|dd|table|section)>/gi, "\n").replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/t[dh]>/gi, " ").replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#39;|&apos;/g, "'").replace(/&quot;/g, '"').replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .split("\n").map((l) => l.replace(/\s+/g, " ").trim()).filter(Boolean).join("\n");
+  if (!/Roster Positions/i.test(text)) return { error: "private" };
+  return { text };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   const q = new URL(req.url).searchParams;
   const src = q.get("src"), sport = q.get("sport") || "", id = q.get("id") || "";
-  if (src !== "espn") return reply({ error: "bad_source" }, 400);
+  if (src !== "espn" && src !== "yahoo") return reply({ error: "bad_source" }, 400);
   if (!GAME[sport]) return reply({ error: "bad_sport" }, 400);
   if (!/^\d{3,12}$/.test(id)) return reply({ error: "bad_id" }, 400);
+  if (src === "yahoo") {
+    try { const out: any = await yahoo(sport, id); return reply(out, out.error === "yahoo" ? 502 : 200); } catch (_e) { return reply({ error: "yahoo" }, 502); }
+  }
   const asked = Number(q.get("season")) || 0, now = seasonFor(sport);
   const season = asked >= 2018 && asked <= now + 1 ? asked : now;
   try {

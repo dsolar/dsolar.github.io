@@ -1,0 +1,12 @@
+name: Import probe (temporary)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          sleep 60
+          curl -s -m 25 "https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-import?src=yahoo&sport=nba&id=282497" | head -c 2500; echo

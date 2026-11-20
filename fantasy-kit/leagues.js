@@ -487,9 +487,9 @@
     const sports = [["nfl", "Football"], ["nba", "Basketball"], ["mlb", "Baseball"], ["nhl", "Hockey"]];
     const D = U.dialog(`<h3>Import a league's settings</h3>
       <p class="ps">Paste your league's link. Draft Lab copies the teams, lineup, scoring, draft, waivers and playoffs so you can set up the same league here, then shows anything that didn't carry over.</p>
-      <form class="imp-f"><label for="imp-link">Sleeper or ESPN league link (or ID)</label><input id="imp-link" name="link" type="text" autocomplete="off" placeholder="sleeper.com/leagues/… or fantasy.espn.com/…?leagueId=…">
+      <form class="imp-f"><label for="imp-link">League link (Sleeper, ESPN or Yahoo)</label><input id="imp-link" name="link" type="text" autocomplete="off" placeholder="Paste the link from your league's page">
       <div class="imp-espn"><label for="imp-sport">ESPN sport, for an ID without a link</label><select id="imp-sport" name="sport">${sports.map(([k, l]) => `<option value="${k}"${k === form.sport ? " selected" : ""}>${l}</option>`).join("")}</select></div>
-      <details class="imp-yahoo"><summary>Yahoo league?</summary><p class="ps">Yahoo only shares league data with signed-in members, so copy the settings instead: open your league, go to <b>League</b> &gt; <b>Settings</b>, select the whole page (Ctrl+A or Cmd+A), copy it and paste it here.</p>
+      <details class="imp-yahoo"><summary>Private Yahoo league?</summary><p class="ps">Yahoo only shares a private league with its members, so copy the settings instead: open your league, go to <b>League</b> &gt; <b>Settings</b>, select the whole page (Ctrl+A or Cmd+A), copy it and paste it here.</p>
         <label for="imp-text" class="sr-only">Yahoo settings page</label><textarea id="imp-text" name="text" rows="6" placeholder="Paste the whole Settings page"></textarea></details>
       <p class="imp-why" id="imp-why" role="alert"></p>
       <div class="row" style="gap:10px;justify-content:flex-end"><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn go" type="submit" id="imp-go">Import</button></div></form>`,
@@ -503,7 +503,7 @@
     if (!I) return why("The importer didn't load. Refresh the page and try again.");
     const inp = text.trim() ? { source: "yahoo", text } : I.parseInput(link);
     if (!inp) return why("Paste a Sleeper or ESPN league link, or a Yahoo settings page.");
-    if (inp.source === "yahoo-link") return why("Yahoo links can't be read from here. Open \"Yahoo league?\" below and paste the Settings page instead.");
+    if (inp.source === "yahoo-link" && !inp.id) return why("Paste the league's link (it has the league number in it), or open \"Private Yahoo league?\" below and paste the Settings page.");
     go.disabled = true; go.textContent = "Importing…"; why("");
     try {
       let r;
@@ -520,6 +520,12 @@
         if (j.error) throw new Error("ESPN didn't answer. Try again in a minute.");
         r = I.fromEspn(j, sport, S);
         if (j.via === "connector") r.notes.unshift(`This private league was read from the ESPN connector's last sync${j.synced ? ` (${new Date(j.synced).toLocaleDateString("en-US", { month: "short", day: "numeric" })})` : ""}`);
+      } else if (inp.source === "yahoo-link") {
+        const j = await C.importYahoo(inp.sport, inp.id);
+        if (!j || j.error === "private") throw new Error("That Yahoo league isn't public, so Yahoo won't share it. Open \"Private Yahoo league?\" below and paste its Settings page instead.");
+        if (j.error === "not_found") throw new Error("Yahoo has no league with that link. Check it, or paste the Settings page below.");
+        if (j.error) throw new Error("Yahoo didn't answer. Try again in a minute, or paste the Settings page below.");
+        r = I.fromYahooText(j.text, S);
       } else r = I.fromYahooText(inp.text, S);
       applyImport(r);
       document.getElementById("fk-dlg").close();
