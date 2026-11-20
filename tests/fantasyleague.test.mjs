@@ -207,7 +207,10 @@ test('category projections: so far plus the rest of the week, odds that settle a
   assert.equal(now.proj.sa + now.proj.sb + now.proj.ties, G.scoring(L, ctx).cats.length);
   // with the week over nothing is left to come: the projection is the result and the odds are certain
   const done = G.matchups(L, ctx, 1, 1).find((m) => m.a === a);
-  assert.deepEqual([done.proj.sa, done.proj.sb], [done.sa, done.sb]);
+  assert.deepEqual([done.proj.sa, done.proj.sb, done.proj.ties], [done.sa, done.sb, done.ties]);
+  assert.equal(done.winProb, done.sa > done.sb ? 1 : done.sa < done.sb ? 0 : 0.5, 'the odds are the result');
+  // every finished matchup of the week, ties and all, reads the same as its result
+  for (const m of G.matchups(L, ctx, 1, 1)) assert.deepEqual([m.proj.sa, m.proj.sb, m.proj.ties], [m.sa, m.sb, m.ties]);
   for (const q of Object.values(done.proj.probs)) assert.ok(q === 0 || q === 1 || q === 0.5);
   // a player who's out adds nothing more
   assert.equal(G.plays({ inj: 'Out' }), 0);

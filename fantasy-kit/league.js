@@ -910,19 +910,32 @@
   }
   const normal = (z) => 1 / (1 + Math.exp(-1.702 * z));
   // Each category's chance, then the chance of winning more categories than you lose, adding them up one at a time.
-  function catOdds(L, ctx, pa, pb) {
-    const sc = scoring(L, ctx), probs = {};
+  // A category with nothing left to come is settled by `pc` (compare() on the same projections), which rounds the
+  // way the page shows numbers and applies the minimum-innings and goalie rules, so a finished week's odds and
+  // projected record match its result. A settled tie counts for neither side.
+  function catOdds(L, ctx, pa, pb, pc) {
+    const sc = scoring(L, ctx), probs = {}, tied = new Set();
     for (const c of sc.cats) {
       const m = (pa.cats[c.k] - pb.cats[c.k]) * (c.low ? -1 : 1), sd = Math.hypot(catSpread(c, pa), catSpread(c, pb));
-      probs[c.k] = sd > 1e-9 ? normal(m / sd) : m > 0 ? 1 : m < 0 ? 0 : 0.5;
+      if (sd > 1e-9) { probs[c.k] = normal(m / sd); continue; }
+      const d = pc && pc.cats && pc.cats[c.k] ? pc.cats[c.k][2] : Math.sign(m);
+      probs[c.k] = d > 0 ? 1 : d < 0 ? 0 : 0.5;
+      if (!d) tied.add(c.k);
     }
-    let dist = [1];
-    for (const c of sc.cats) { const q = probs[c.k], next = new Array(dist.length + 1).fill(0); dist.forEach((v, i) => { next[i + 1] += v * q; next[i] += v * (1 - q); }); dist = next; }
-    const n = sc.cats.length; let win = 0;
-    dist.forEach((v, k) => { if (k > n - k) win += v; else if (k === n - k) win += v / 2; });
+    // the net margin in categories won, from -n to n (index + n)
+    const n = sc.cats.length;
+    let dist = new Array(2 * n + 1).fill(0); dist[n] = 1;
+    for (const c of sc.cats) {
+      if (tied.has(c.k)) continue;
+      const q = probs[c.k], next = new Array(2 * n + 1).fill(0);
+      dist.forEach((v, i) => { if (!v) return; if (i + 1 <= 2 * n) next[i + 1] += v * q; if (i - 1 >= 0) next[i - 1] += v * (1 - q); });
+      dist = next;
+    }
+    let win = 0;
+    dist.forEach((v, i) => { if (i > n) win += v; else if (i === n) win += v / 2; });
     // the projected record: categories each side is expected to win, so it reads the same way as the odds
-    const sa = Math.round(sum(Object.values(probs)));
-    return { probs, win, sa, sb: n - sa };
+    const ties = tied.size, sa = Math.round(sum(sc.cats.filter((c) => !tied.has(c.k)).map((c) => probs[c.k])));
+    return { probs, win, sa, sb: n - ties - sa, ties };
   }
   // How much a lineup slot counts: settings.mult, by slot name (a showdown's CPT, 1.5), or 1
   // ...times what a heist put on the player himself (L.pmult: a stolen player's 1.5x, a jinxed one's half)
@@ -981,8 +994,8 @@
       // a category week: where each category should end up, and the odds of winning more of them
       if (!ctx.hooks.score && scoring(L, ctx).type !== "points") {
         const oa = outlook(L, ctx, a, w), ob = outlook(L, ctx, b, w);
-        const ja = projectCats(L, ctx, a, w, frac), jb = projectCats(L, ctx, b, w, frac), pc = compare(L, ctx, ja, jb), od = catOdds(L, ctx, ja, jb);
-        return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: od.sa, pb: od.sb, winProb: od.win, proj: { cats: pc.cats, sa: od.sa, sb: od.sb, ties: 0, probs: od.probs }, outlook: oa && ob ? [oa, ob] : undefined }, c);
+        const ja = projectCats(L, ctx, a, w, frac), jb = projectCats(L, ctx, b, w, frac), pc = compare(L, ctx, ja, jb), od = catOdds(L, ctx, ja, jb, pc);
+        return Object.assign({ a, b, final: false, i, kind, live: frac > 0 && frac < 1, frac, ta: x, tb: y, pa: od.sa, pb: od.sb, winProb: od.win, proj: { cats: pc.cats, sa: od.sa, sb: od.sb, ties: od.ties, probs: od.probs }, outlook: oa && ob ? [oa, ob] : undefined }, c);
       }
       const pa = projection(L, ctx, a, w), pb = projection(L, ctx, b, w);
       // a real week with the live feed: the score so far plus what each starter has left to play
