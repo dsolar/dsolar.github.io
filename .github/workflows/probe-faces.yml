@@ -1,0 +1,19 @@
+name: probe faces (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in \
+            "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/4065648.png&w=120&h=88" \
+            "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/9999991.png&w=120&h=88" \
+            "https://a.espncdn.com/i/headshots/nba/players/full/4065648.png" \
+            "https://a.espncdn.com/i/headshots/nba/players/full/9999991.png" \
+            "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/4432577.png&w=120&h=88" \
+            "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/660271/headshot/67/current" \
+            "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/999999/headshot/67/current" \
+            "https://img.mlbstatic.com/mlb-photos/image/upload/d_people:generic:headshot:67:current.png/w_120,q_auto:best/v1/people/999999/headshot/67/current" \
+            "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/111188/headshot/67/current" ; do
+            curl -s -o /tmp/b -D /tmp/h -A "davidsolar-faces/1.0" "$u"; echo "== $u"; grep -iE '^(HTTP|content-type|content-length|x-cld-error|location)' /tmp/h | tr -d '\r'; echo "bytes $(wc -c </tmp/b) sha $(sha1sum </tmp/b | cut -c1-12)"; done
+          curl -sI -A x -X HEAD "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/9999991.png&w=120&h=88" | head -5
