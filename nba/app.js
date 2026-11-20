@@ -1542,7 +1542,7 @@
       var locked = dec15 && p.c && p.c.signed === 0 && !(p.c.rk && p.c.rk[1] > 0);
       return '<button type="button" draggable="true" class="org-row' + (locked ? " locked" : "") + '" data-pick="p:' + esc(p.id) + '" data-side="' + k + '" data-name="' + esc(p.n.toLowerCase()) + '"' + (locked ? ' title="Signed this offseason: can\'t be traded until Dec. 15"' : "") + ">" + face(p, 22) + '<span class="grow">' + esc(p.n) + ' <span class="note">' + esc(posOf(p)) + "</span>" + injTag(p) + (locked ? ' <span class="pill warn">Dec 15</span>' : "") + '</span><b class="sal">' + money(H.salary(p, 0)) + '</b><span class="thru">' + sname(H.lastYear(p)).slice(2) + "</span></button>";
     }).join("") + "</details>" +
-      '<details class="org"><summary>Draft picks</summary>' + pks.map(function (pk) {
+      '<div class="orgx">' + '<details class="org"><summary>Draft picks</summary>' + pks.map(function (pk) {
         return '<button type="button" draggable="true" class="org-row" data-pick="k:' + esc(pk.id) + '" data-side="' + k + '">' + logo(pk.from, 18) + '<span class="grow">' + esc(H.pickName(pk)) + '</span><span class="note">slot ' + f1(H.pickInfo(pk).avg) + "</span></button>";
       }).join("") + frozen.map(function (pk) { return '<div class="org-row locked" title="Frozen: the team finished a season over the second apron">' + logo(pk.from, 18) + '<span class="grow">' + esc(H.pickName(pk)) + ' <span class="pill warn">Frozen</span></span></div>'; }).join("") + "</details>" +
       (function () {
@@ -1554,7 +1554,7 @@
         }).join("") + "</details>" : "";
       })() +
       '<details class="org"><summary>Cash and exceptions</summary><div class="cashrow"><input type="number" min="0.1" max="' + (CBA.cashLimit(0) / 1e6).toFixed(1) + '" step="0.5" placeholder="$M" data-cashamt="' + k + '"><button class="btn" data-addcash="' + k + '">Add cash</button></div>' +
-      (tpes.length ? '<p class="note">Trade exceptions (used automatically when they help):</p><ul class="tpes">' + tpes.map(function (x) { return "<li>" + money(x.amt) + " · " + esc(x.from) + ' <span class="note">expires ' + esc(x.exp) + "</span></li>"; }).join("") + "</ul>" : '<p class="note">No trade exceptions.</p>') + "</details>";
+      (tpes.length ? '<p class="note">Trade exceptions (used automatically when they help):</p><ul class="tpes">' + tpes.map(function (x) { return "<li>" + money(x.amt) + " · " + esc(x.from) + ' <span class="note">expires ' + esc(x.exp) + "</span></li>"; }).join("") + "</ul>" : '<p class="note">No trade exceptions.</p>') + "</details></div>";
   }
   view.addEventListener("change", function (e) {
     var ps = e.target.closest("select[data-prot]");
