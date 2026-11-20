@@ -104,6 +104,7 @@
     $("[data-pf-clear]", D).addEventListener("click", () => { st.photo = null; draw(); });
     return D;
   }
+  const POOL_ROWS = 40;
   const dialogOpen = () => { const D = $("#fk-dlg"); return !!(D && D.open); };
   // Keyboard focus across a redraw: remember what had it (an id, or its tag and data attributes) and find it again,
   // or the nearest thing like it (the next Draft button after you draft), so focus doesn't fall back to the page.
@@ -374,7 +375,7 @@
       return `<th class="${cls}"${aria}${c.title ? ` title="${esc(c.title)}"` : ""}>${c.raw ? c.label : esc(c.label)}</th>`;
     };
     const lim = opts.limit || 400, rows = opts.rows.slice(0, lim);
-    const more = opts.rows.length > lim ? `<tr><td colspan="${cols.length}" class="more"><button type="button" class="btn sm" data-more="${esc(opts.id || "")}">Show ${Math.min(250, opts.rows.length - lim)} more</button> <span class="ps">Showing ${lim} of ${opts.rows.length}</span></td></tr>` : "";
+    const more = opts.rows.length > lim ? `<tr><td colspan="${cols.length}" class="more"><button type="button" class="btn sm" data-more="${esc(opts.id || "")}">Show ${Math.min(opts.step || 250, opts.rows.length - lim)} more</button> <span class="ps">Showing ${lim} of ${opts.rows.length}</span></td></tr>` : "";
     return `<div class="table-wrap"${opts.id ? ` id="${esc(opts.id)}"` : ""}${opts.style ? ` style="${opts.style}"` : ""}><table class="t${opts.dense ? " dense" : ""}${opts.cls ? " " + opts.cls : ""}"><thead><tr>${cols.map(th).join("")}</tr></thead><tbody>
       ${rows.map((r) => (r && r.__html) || `<tr${opts.rowAttr ? " " + opts.rowAttr(r) : ""}>${cols.map((c) => `<td class="${[c.cls || "", c.hide && !(c.sort && sort.k === c.k) ? "hide-" + c.hide : "", c.td || "", c.sort && sort.k === c.k ? "srt" : ""].join(" ").trim()}">${c.html(r)}</td>`).join("")}</tr>`).join("") || `<tr><td colspan="${cols.length}" class="empty">${esc(opts.empty || "Nothing here.")}</td></tr>`}${more}
       </tbody></table></div>`;
@@ -573,8 +574,8 @@
       html: (p) => p.contract && p.contract.capHit != null ? `${capMoney(p.contract.capHit)}${p.contract.estimated ? `<sup title="Estimated cap hit">est</sup>` : ""}` : `<span class="ps">—</span>` });
     // a one-week game or a showdown (sport.weekOf): the week's projected points
     const wkOf = pts ? sport.weekOf : null;
-    if (wkOf != null) cols.push({ k: "v", label: `Wk ${wkOf}`, cls: "r num", title: `Projected points in week ${wkOf}: Sleeper's projection for the week, scored for this league`, sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : (p.v / 17).toFixed(1)}</b>` });
-    else if (opts.value !== false) cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
+    if (wkOf != null) cols.push({ k: "v", label: `Wk ${wkOf}`, cls: "r num vc", title: `Projected points in week ${wkOf}: Sleeper's projection for the week, scored for this league`, sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : (p.v / 17).toFixed(1)}</b>` });
+    else if (opts.value !== false) cols.push({ k: "v", label: pts ? "Proj" : "Value", cls: "r num vc", title: pts ? "Season pace: this season's scoring per game blended with the projection, over a full season" : "Summed category z-scores", sort: (p) => p.v, html: (p) => `<b>${p.v == null ? "-" : p.v.toFixed(pts ? 0 : 1)}</b>` });
     if (pts && wkOf == null && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
@@ -1434,7 +1435,7 @@
       })() : "";
       const sortable = cols.filter((c) => c.sort && c.label && !c.raw);
       const sortSel = `<div class="psort show-m"><label for="fk-psort">Sort by</label><select id="fk-psort">${sortable.map((c) => `<option value="${esc(c.k)}"${ui.sort.k === c.k ? " selected" : ""}>${esc(c.title || c.label)}</option>`).join("")}</select><button type="button" class="btn xs ghost" data-act="sortdir" aria-label="Flip the order">${ui.sort.dir > 0 ? "Low to high" : "High to low"}</button></div>`;
-      return draftCoach() + fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "", limit: ui.limit || 100, empty: "No one matches.",
+      return draftCoach() + fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: (ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "") + (myTurn && !d.packs ? " turn" : ""), limit: ui.limit || POOL_ROWS, step: 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
@@ -1811,6 +1812,25 @@
       bar.insertAdjacentHTML("afterend", phoneNeeds() + posFilter(sport, ui.f.pos, [], D().lineup, needChips(me())) + players());
       keyboardPlayers(sec);
       refocus(el, k);
+      autoMore();
+    }
+    // The list draws its first POOL_ROWS players, then the next batch as you scroll near the end, so each pick
+    // redraws a short list (a phone lays out about half the room it used to)
+    let moreIO = null;
+    function autoMore() {
+      if (moreIO) { moreIO.disconnect(); moreIO = null; }
+      const b = $('#fk-pool button[data-more="fk-pool"]', el);
+      if (!b || !window.IntersectionObserver) return;
+      moreIO = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { moreIO.disconnect(); moreIO = null; poolMore(); } }, { rootMargin: "600px 0px" });
+      moreIO.observe(b);
+    }
+    // the next batch, keeping the list where it was scrolled
+    function poolMore() {
+      const pl = $("#fk-pool", el), at = pl ? [pl.scrollTop, pl.scrollLeft] : null;
+      ui.limit = (ui.limit || POOL_ROWS) + 100;
+      renderLeft();
+      const nl = $("#fk-pool", el);
+      if (nl && at) { nl.scrollTop = at[0]; nl.scrollLeft = at[1]; }
     }
     function render() {
       const d = D();
@@ -1870,6 +1890,7 @@
       ui.lastView = view;
       keyboardPlayers(el);
       refocus(el, keep.f);
+      autoMore();
       const cl = ui.right === "chat" && $("#fk-rchatl", el);
       if (cl) { const n = opts.chat.posts().length; if (ui.chatN !== n) { cl.scrollTop = cl.scrollHeight; ui.chatN = n; } }
       drawTimer();
@@ -1879,7 +1900,10 @@
         if (!auction()) {
           const c = F.onClock(d, now());
           if (c && c.team === me() && ui.told !== c.index) {
-            ui.told = c.index; toast(c.makeup ? "You were robbed. Pick again." : `You're on the clock: pick ${c.pick}.`);
+            ui.told = c.index;
+            // on a phone the gold bar along the bottom already says it's your pick; a toast there would cover the list
+            const tb = $(".turn-bar", el);
+            if (c.makeup || !tb || !tb.getClientRects().length) toast(c.makeup ? "You were robbed. Pick again." : `You're on the clock: pick ${c.pick}.`);
             alerts.chime("clock"); alerts.flash("Your pick!"); alerts.notify("You're on the clock", `${d.name || "Your draft"}: pick ${plab(c.index)}`);
           } else if (c && c.team !== me()) {
             alerts.stop();
@@ -2033,7 +2057,7 @@
       if (ov) { const T = (D().trades || []).find((x) => x.id === +ov.dataset.offerView); if (T) offerDialog(T); return; }
       if (e.target.closest("[data-offer-hide]")) { ui.offer = null; render(); return; }
       const mb = e.target.closest("button[data-more]");
-      if (mb) { ui.limit = (ui.limit || 100) + 250; mb.dataset.more === "fk-pool" ? renderLeft() : render(); return; }
+      if (mb) { if (mb.dataset.more === "fk-pool") poolMore(); else { ui.limit = (ui.limit || POOL_ROWS) + 100; render(); } return; }
       const sb = e.target.closest("button[data-steal]");
       if (sb) {
         e.stopPropagation();
@@ -2193,7 +2217,8 @@
         if (T.status !== "pending" || T.to !== me() || T.from === me()) { seenOffers.add(T.id); continue; }
         seenOffers.add(T.id);
         ui.offer = T.id;
-        toast(`${team(T.from).name} sent you a trade offer.`);
+        // the offer card at the top of the room is the notice; a toast too would sit over the list on a phone
+        if (dialogOpen()) toast(`${team(T.from).name} sent you a trade offer.`);
         // the clock chime, a flashing tab title and a desktop notification if they're on: an offer has a timer too
         alerts.chime("clock");
         alerts.flash("Trade offer");

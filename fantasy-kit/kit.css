@@ -2898,3 +2898,13 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .imp-f details{margin-top:6px}
 .imp-f details summary{cursor:pointer;font-weight:700}
 .imp-why{min-height:1.2em;margin:4px 0 0;color:var(--loss, #b42318);font-size:14px}
+/* Draft room on a phone: tab labels sit centered (show-m buttons are inline-flex), and on your pick the row
+   shows a full-size Draft button without the queue star, so it no longer covers the points column */
+.seg button{align-items:center;justify-content:center}
+@media (max-width:980px){
+  .droom #fk-pool td.act .btn[data-pick]{min-height:40px;padding:0 16px;font-size:14px}
+  .droom #fk-pool td.act .btn[data-pick]~.star{display:none}
+  .droom #fk-pool table.t.dense td.act:has(.btn[data-pick]){padding-left:18px}
+  /* on your pick the row keeps rank, name and the main number (plus whatever you sorted by) beside Draft */
+  .droom #fk-pool table.turn .vc~.r.num:not(.srt):not(.on){display:none}
+}

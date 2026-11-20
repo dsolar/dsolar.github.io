@@ -29,11 +29,12 @@
   let openPlayer = new URLSearchParams(location.search).get("p");
   const rank = { sport: cfg.sport, scoring: "", f: { q: "", pos: cfg.sport === "nhl" ? "g:sk" : "", team: "" }, sort: { k: "rank", dir: 1 }, mode: "default" };
 
+  // The fetch is shared while it's in flight, so a prefetch and the real load never download the file twice.
+  const loading = {};
   async function loadSport(key) {
     if (!cache[key]) {
-      const r = await fetch(`data/${key}.json`, { cache: "no-cache" });
-      if (!r.ok) throw new Error(`Couldn't load ${key} players`);
-      cache[key] = await r.json();
+      loading[key] = loading[key] || fetch(`data/${key}.json`, { cache: "no-cache" }).then((r) => { if (!r.ok) throw new Error(`Couldn't load ${key} players`); return r.json(); }).finally(() => { delete loading[key]; });
+      cache[key] = await loading[key];
     }
     return cache[key];
   }
@@ -52,15 +53,17 @@
   const mktCache = {};
   async function loadMarket(k) {
     if (k === "nhl") return null;
-    if (!(k in mktCache)) mktCache[k] = !MARKET_SPORTS.has(k) ? null : await fetch(`data/market-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (!(k in mktCache)) mktCache[k] = !MARKET_SPORTS.has(k) ? null : fetch(`data/market-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return mktCache[k];
   }
   async function loadDynasty(k) {
     if (k === "nhl") return null;
-    if (!(k in dynCache)) dynCache[k] = await fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+    if (!(k in dynCache)) dynCache[k] = fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
     return dynCache[k];
   }
   async function pool(c) {
+    // the outside rankings download alongside the players rather than after them
+    const mkt = loadMarket(c.sport), dynP = c.dynasty ? loadDynasty(c.sport) : null;
     const data = await loadSport(c.sport);
     const sport = S.attach(Object.assign({}, S[c.sport]), data);
     const have = new Set(data.players.flatMap((p) => p.pos));
@@ -75,10 +78,10 @@
     if (hcf) { S.addContracts(players, hcf, { year: hcf.year, min: hcf.min }); players = S.capPool(players); }
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
     const bench = ds ? ds.lineup.bench : sdOn(c) ? S.SHOWDOWN.bench : hzOn(c) ? 0 : c.bench == null ? sport.bench : c.bench;
-    const dyn = c.dynasty ? await loadDynasty(c.sport) : null;
+    const dyn = dynP ? await dynP : null;
     // a showdown of a real game on this week's or next week's schedule plays that week's projections
     const sdWk = sdOn(c) && sched ? (sched.weeks.find((w) => (w.games || []).some((g) => g.away === c.sdA && g.home === c.sdH)) || {}).week : null;
-    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, week: sdWk ? S.weekFor({ season: { showdown: { week: sdWk } } }, sport) : null, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await loadMarket(c.sport) });
+    V.evaluate(sport, players, { teams: c.teams, lineup, bench, scoring, budget: sdOn(c) ? 50 : c.budget, week: sdWk ? S.weekFor({ season: { showdown: { week: sdWk } } }, sport) : null, dynasty: !!c.dynasty, dynastyRanks: dyn, market: await mkt });
     return { sport, players, lineup, scoring, bench, data, slate: ds ? ds.slate : null, hcf, conf };
   }
   // college: a mock kept to one conference (cfg.conf), the way college leagues can keep their pool to chosen
@@ -201,6 +204,15 @@
         <article class="start-card"><p class="start-kicker">02 / Make it yours</p><h2 class="disp">Customize a draft</h2><p>Choose your format, scoring, roster, and clock. Try an auction, mystery packages, white elephant, or your own take on a snake.</p><a class="btn" href="#setup">Customize your draft</a></article>
         <article class="start-card"><p class="start-kicker">03 / Keep the season going</p><h2 class="disp">Play a league</h2><p>Explore a ready-made demo, or create a shared league and invite your friends.</p><div class="start-actions"><a class="btn" href="/fantasy/leagues/?s=${esc(cfg.sport)}">Start a league</a><a class="btn ghost" href="/fantasy/demo/?s=${esc(cfg.sport)}&f=h">Explore a demo</a></div></article>
       </section><p class="start-note">Mock drafts save on this device. You can leave and come back to the same seat.</p></div>`;
+    prefetch(cfg.sport);
+  }
+  // Once the start page is up and the browser is idle, fetch this sport's players and outside rankings, so Quick
+  // mock opens the room without waiting on the network. Skipped when the phone asks to save data.
+  function prefetch(key) {
+    const c = navigator.connection;
+    if (c && (c.saveData || /(^|-)2g$/.test(c.effectiveType || ""))) return;
+    const go = () => { loadSport(key).catch(() => {}); loadMarket(key); };
+    if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 2500 }); else setTimeout(go, 800);
   }
   async function quickMock(button) {
     const error = $("#quick-error");
