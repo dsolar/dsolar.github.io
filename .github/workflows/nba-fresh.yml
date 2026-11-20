@@ -1,4 +1,4 @@
-# Checks every afternoon that the NBA Hub's data feeds are still updating (rosters, injuries, contracts, DARKO, skill
+# Checks every afternoon that the NBA Hub's and NFL Hub's data feeds are still updating (rosters, injuries, contracts, DARKO, skill
 # ratings, lineups, live standings, the draft board). Fails, which emails the repo owner, when an automatic feed has gone
 # stale; a feed updated by hand (the Ringer Top 100) only shows a warning.
 name: NBA data freshness

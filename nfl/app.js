@@ -37,7 +37,7 @@
   function zScore(z) { return Math.max(1, Math.min(99, Math.round(50 + 15 * z))); }
   function score(p, y) { return zScore(y && y > W.season ? P.ratingZ(W, p, y) : P.quality(W, p).z); }
   function chipCls(s) { return s >= 75 ? "e" : s >= 60 ? "g" : s >= 40 ? "a" : "w"; }
-  function scoreChip(p, y) { var s = score(p, y); return '<span class="rscore ' + chipCls(s) + '" title="Player rating' + (y && y > W.season ? " projected for " + y + ", aging included" : "") + ': 50 is an average player at his position">' + s + "</span>"; }
+  function scoreChip(p, y) { var s = score(p, y), mine = W.adj && W.adj[p.id]; return '<span class="rscore ' + chipCls(s) + (mine ? " mine" : "") + '" title="Player rating' + (mine ? " with your read (" + (mine > 0 ? "+" : "") + mine + ")" : "") + (y && y > W.season ? " projected for " + y + ", aging included" : "") + ': 50 is an average player at his position">' + s + "</span>"; }
   function posOf(p) { return p.dpos && p.dpos !== "NA" ? p.dpos : p.pos; }
   function pname(p, size, extra) { return '<span class="pl" data-p="' + esc(p.id) + '">' + face(p, size || 22) + '<span class="nm">' + esc(p.n) + "</span>" + (extra || "") + "</span>"; }
   function href(route, q) {
@@ -831,7 +831,7 @@
     var t = team(p.t), c = p.c || {}, ys = Object.keys(c.rows || {}).map(Number).sort();
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) + " · age " + (p.age ? Math.floor(p.age) : "—") + " · " + p.exp + " yrs exp" + (p.draft ? " · " + p.draft[0] + " pick " + p.draft[1] : "") + "</div></div></div>";
     html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
-      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value / yr</span></div></div>" + ratingBlock(p) + nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
+      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value this season</span></div><div><b>" + m(P.value(W, p, W.season + 1)) + "</b><span>Value next season</span></div></div>" + ratingBlock(p) + nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
     html += statBlock(p) + '<div id="glog"></div>';
     if (ys.length) {
       html += '<h4 class="card-sec">Contract year by year</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th title="Base salary">Base</th><th title="Signing and option bonus money counted this year">Bonus</th><th title="Roster, workout and other bonuses">Other</th><th title="Guaranteed salary">Gtd</th><th>Cap hit</th><th title="Dead money if cut before June 1">Dead</th><th title="Cap saved by cutting him before June 1">Saves</th><th title="Cap saved with a post-June 1 cut">June 1</th></tr></thead><tbody>' + ys.map(function (y) {
@@ -840,6 +840,8 @@
       }).join("") + "</tbody></table></div>";
       html += '<p class="note">Bonus: signing and option bonus money spread over the deal. Dead and Saves: if he\'s cut before June 1. June 1: savings with a post-June 1 cut. Cutting before June 1 puts every remaining bonus dollar and guarantee on that year; after June 1 (or with one of the two post-June 1 designations) the later years\' share moves to the next year. Contract data from Over The Cap via nflverse.</p>';
     } else html += '<p class="note">No contract in the feed.</p>';
+    var mine = (W.adj && W.adj[p.id]) || 0, steps = [-15, -10, -5, 5, 10, 15];
+    html += '<p class="myadj"><label>Your read <select data-adj="' + esc(p.id) + '"><option value="0"' + (mine ? "" : " selected") + ">Model\'s rating</option>" + steps.map(function (v) { return '<option value="' + v + '"' + (v === mine ? " selected" : "") + ">" + (v > 0 ? "+" : "") + v + " rating points</option>"; }).join("") + '</select></label> <span class="note">Moves his rating, value, trade value and next contract for you only. The season odds don\'t use player ratings.</span></p>';
     html += '<p><a class="btn" href="' + href("team/" + p.t, { v: "plan" }) + '">' + esc(t.name) + " planner</a>" + (c.otc ? ' <a class="btn" href="https://overthecap.com/player/x/' + esc(c.otc) + '/" target="_blank" rel="noopener">Over The Cap page</a>' : "") + "</p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
@@ -916,6 +918,12 @@
     if (WEEKS) draw();
     else fetch("data/weeks.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { WEEKS = j || { cols: [], p: {} }; draw(); }).catch(function () { el.innerHTML = ""; });
   }
+  card.addEventListener("change", function (e) {
+    var a = e.target.closest("[data-adj]");
+    if (!a) return;
+    var v = +a.value; if (v) W.adj[a.dataset.adj] = v; else delete W.adj[a.dataset.adj];
+    save("adj", W.adj); P.resetCaches(W); openCard(a.dataset.adj); render();
+  });
   card.addEventListener("click", function (e) {
     if (e.target === card || e.target.closest("[data-close]")) { card.close(); return; }
     var ch = e.target.closest("[data-choose]"), un = e.target.closest("[data-unchoose]");
@@ -953,6 +961,7 @@
       sec("Likely cap casualties", P_("Every cut idea league-wide (a cut that saves at least 45% of his cap number on a player paid well past his value at his healthy role), with odds from how much the cut saves, how far he's overpaid, whether his team is tight on room, and age. Core special teamers are left out, since the model doesn't value special teams play.")) +
       sec("The cap rules", P_("<b>Cut</b> before June 1: every remaining year of bonus proration and every remaining guarantee counts that year. After June 1, or with a post-June 1 designation: that year keeps only its own proration and guarantee, and the rest moves to the next year. <b>Trade:</b> the old team keeps the bonus proration on the same June 1 split; the guarantees and salary go with the player. <b>Restructure:</b> base salary above the minimum becomes a signing bonus spread over the years left (up to five; with void years, always five). <b>Extension and re-signing:</b> new years at the estimated market price, with a signing bonus spread over up to five years and this year's base above the minimum folded in.")) +
       sec("Cap space ahead", P_("2026 and 2027 use Over The Cap's team cap, contracts and dead money, so the starting point matches theirs. 2028 on use a projected base cap (" + m(C.BASE[2028], 0) + " in 2028, up 7% a year) and only contracts signed today plus the draft classes: no carryover and no new signings, so later years look roomier than they will be.")) +
+      (W.fresh ? sec("Data feeds", '<table class="t tfeed"><thead><tr><th>Feed</th><th>Last updated</th><th>Refreshed</th></tr></thead><tbody>' + W.fresh.map(function (f) { var d = f.when ? Math.round((Date.parse(new Date().toISOString().slice(0, 10)) - Date.parse(String(f.when).slice(0, 10))) / 864e5) : null; return "<tr" + (f.stale ? ' class="stale"' : "") + "><td>" + esc(f.label) + "</td><td>" + (f.when ? esc(String(f.when).slice(0, 10)) + ' <span class="note">(' + (d <= 0 ? "today" : d === 1 ? "yesterday" : d + " days ago") + ")</span>" : "Didn\'t load") + (f.stale ? " <b>behind</b>" : "") + "</td><td>" + (f.how === "otc" ? "From Over The Cap every week or two" : f.label === "Player rating" ? "Every Monday" : "Daily, automatic") + "</td></tr>"; }).join("") + "</tbody></table>" + P_("A check runs every afternoon and flags any automatic feed that\'s gone quiet (game feeds are exempt from February to August).")) : "") +
       sec("The data", P_("Rosters, contracts, depth charts, snap counts and stats come from <a href=\"https://github.com/nflverse/nflverse-data\">nflverse</a>'s public data, refreshed every morning: Over The Cap's contract data (each year's base salary, bonus proration, roster bonuses, guarantees and cap number), the NFL's weekly rosters, ESPN's depth charts, Pro Football Reference's snap counts and three seasons of box scores. The play-by-play rating is rebuilt every Monday. Team cap figures with carryover and dead money for 2026 and 2027 are Over The Cap's (as of " + esc((W.teamcap || {}).asOf || "") + "). Deals signed this year that don't have a year-by-year breakdown yet are estimated and marked on the cap sheet. Draft order, prospects and future picks come from the <a href=\"../draft/\">Big Board</a>.")) +
       "</div>";
   }
@@ -998,6 +1007,14 @@
   Promise.all([get("data/league.json"), get("data/teamcap.json", true), get("../tools/draft_teams.json"), get("../draft/nfl.json", true), get("data/rating.json", true)]).then(function (r) {
     TEAMS = r[2].nfl;
     W = P.init(C.newWorld(r[0], r[1], r[4]));
+    // data freshness: a banner when a feed has gone quiet, and the list under How it works
+    if (window.Fresh) {
+      var inSeason = (function () { var mo = new Date().getMonth() + 1; return mo >= 9 || mo === 1; })();
+      W.fresh = Fresh.check({ "nfl/data/league.json": r[0], "nfl/data/teamcap.json": r[1], "draft/nfl.json": r[3], "nfl/data/rating.json": r[4] }, Date.now(), Fresh.NFL).map(function (f) { f.stale = f.stale && (inSeason || f.manual); return f; });
+      var stale = W.fresh.filter(function (f) { return f.stale; }), fb = $("#fresh");
+      if (stale.length && fb) { fb.hidden = false; fb.innerHTML = "<b>Some data is behind.</b> " + stale.map(function (f) { return esc(f.label) + (f.when ? " last updated " + esc(String(f.when).slice(0, 10)) : " didn't load"); }).join("; ") + '. Numbers that lean on it may be off. <a href="#/method">See the data feeds</a>'; }
+    }
+    W.adj = {}; var adj0 = load("adj", {}) || {}; Object.keys(adj0).forEach(function (id) { if (W.byId[id]) W.adj[id] = +adj0[id]; });
     W.draft = r[3] && r[3].order ? r[3].order : null;
     W.future = r[3] && r[3].future ? r[3].future : null;
     W.bbNeeds = r[3] && r[3].needs ? r[3].needs : null;

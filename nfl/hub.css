@@ -272,3 +272,15 @@ table.tcon th.on a{text-decoration:underline;text-underline-offset:3px}
   table.tcon th:nth-child(6),table.tcon td:nth-child(6),table.tcon th:nth-child(7),table.tcon td:nth-child(7),table.tcon th:nth-child(8),table.tcon td:nth-child(8){display:none}
   table.tcon td:first-child{white-space:normal;max-width:150px}
 }
+
+/* your read */
+.myadj{margin:12px 0 6px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:13.5px}
+.myadj label{display:flex;align-items:center;gap:8px;font-weight:700}
+.myadj select{font:inherit;padding:4px 6px}
+.rscore.mine{outline:2px dashed currentColor;outline-offset:1px}
+
+/* data freshness */
+.fresh{margin:0 0 14px;padding:9px 12px;border-left:3px solid #c2410c;background:var(--paper-2, #f4f4f2);font-size:14px;line-height:1.4}
+table.tfeed th,table.tfeed td{text-align:left}
+table.tfeed tr.stale td{color:#b42318}
+@media (max-width:640px){ table.tfeed th:nth-child(3),table.tfeed td:nth-child(3){display:none} }

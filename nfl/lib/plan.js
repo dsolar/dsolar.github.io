@@ -206,7 +206,16 @@
     }
     W.quality = z;
   };
-  P.quality = (W, p) => (W.quality && W.quality[p.id]) || { z: 0, mult: 1, zon: null, zpr: null };
+  // W.adj: the visitor's own read on a player, in rating points (15 = one standard deviation), set on the player card.
+  // It moves his rating, value, trade value and next contract for that visitor; the season odds don't use players.
+  P.quality = (W, p) => {
+    const q = (W.quality && W.quality[p.id]) || { z: 0, mult: 1, zon: null, zpr: null }, d = W.adj && W.adj[p.id];
+    if (!d) return q;
+    const z = Math.max(-3, Math.min(3.25, q.z + d / 15));
+    return Object.assign({}, q, { z, mult: Math.max(0.3, Math.min(2.3, 1 + 0.45 * z)), adj: d });
+  };
+  // a read changed: forget everything worked out from ratings
+  P.resetCaches = W => { for (const k of ["_ce", "_mkt", "_needArr", "_needs", "_pool", "_rc", "_slots", "_sp", "_tvc", "_tvAll", "_contracts"]) delete W[k]; };
   // Market price for an extension: the APY at the rank his value implies among players at his position
   // His next contract, from comparable deals: veterans at his position who signed in the last three years (no rookie
   // deals), nearest to him in rating, age at signing and playing time (starters compared with starters). The average per year leans 70/30 on what they
