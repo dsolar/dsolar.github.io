@@ -100,7 +100,7 @@
   var SUBS = {
     players: [["ratings", "Ratings"], ["lineups", "Lineups"]],
     trades: [["trade", "Builder"], ["value", "Trade value"]],
-    draft: [["draft", "Lottery odds"], ["picks", "Traded picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock"], ["", "Challenge", "../draft/#nba/challenge"], ["", "Markets", "../draft/#nba/markets"]]
+    draft: [["draft", "Lottery odds", "", "Lottery"], ["picks", "Traded picks", "", "Picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock", "Mock"], ["", "More", "../draft/#nba/challenge"]]
   };
   function render() {
     parse();
@@ -116,7 +116,7 @@
     subtabs.hidden = !subs;
     if (subs) {
       if (subs.some(function (x) { return x[0] === state.route; })) save("sub." + group, state.route);
-      subtabs.innerHTML = subs.map(function (x) { return x[2] ? '<a href="' + x[2] + '">' + x[1] + "</a>" : '<a href="' + href(x[0], {}) + '"' + (x[0] === state.route ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
+      subtabs.innerHTML = subs.map(function (x) { var l = x[3] ? '<span class="fl">' + x[1] + '</span><span class="sl">' + x[3] + "</span>" : x[1]; return x[2] ? '<a href="' + x[2] + '">' + l + "</a>" : '<a href="' + href(x[0], {}) + '"' + (x[0] === state.route ? ' aria-current="page"' : "") + ">" + l + "</a>"; }).join("");
     }
     var withYears = state.route === "standings" || state.route === "team" || state.route === "contracts";
     yearbar.hidden = !withYears;

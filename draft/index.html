@@ -523,6 +523,13 @@ body[data-screen] .hubtabs a{text-decoration:none}
 .subtabs a:hover{color:var(--chalk)!important}
 .subtabs a[aria-current=page]{background:var(--panel);color:var(--chalk)!important;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .yrrow{display:flex;align-items:center;gap:8px;margin:12px 0 0}
+.subtabs .sl{display:none}
+@media (max-width:760px){ .subtabs .fl{display:none} .subtabs .sl{display:inline} }
+.rules{margin:6px 0 4px;color:var(--dim);max-width:44rem}
+.rules summary{cursor:pointer;font-weight:700;color:var(--chalk)}
+.rules p{margin:6px 0 0}
+.moretabs{margin-top:6px;background:none;padding:0;gap:4px}
+.moretabs a{border:1px solid var(--line-strong)}
 .yrrow[hidden]{display:none}
 .yrrow .lab{margin:0}
 body[data-screen] .yrrow .seg button{min-height:30px;padding:6px 12px;font-size:12.5px}
@@ -616,6 +623,7 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
     <a href="../nba/#/standings">Standings</a><a href="../nba/#/teams">Teams</a><a href="../nba/#/ratings">Players</a><a href="../nba/#/trade">Trades</a><a href="../nba/#/fa">Free Agents</a><a href="../nba/#/draft" aria-current="page">Draft</a>
   </nav>
   <nav class="subtabs" id="subtabs" aria-label="Draft pages" hidden></nav>
+  <nav class="subtabs moretabs" id="moretabs" aria-label="More draft pages" hidden></nav>
   <div class="yrrow" id="yrrow" hidden><span class="lab">Class</span><div class="seg" role="group" aria-label="Draft class"><button type="button" data-lg="nba">2027</button><button type="button" data-lg="nba2028">2028</button></div></div>
   <nav class="tabs viewtabs" id="viewtabs" aria-label="Views">
     <a href="#" data-view="board" aria-current="page">Big Board</a>
@@ -676,7 +684,7 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
 <script src="engine.js?v=31"></script>
 <script src="board.js?v=36"></script>
 <script src="mock.js?v=33"></script>
-<script src="challenge.js?v=31"></script>
+<script src="challenge.js?v=32"></script>
 <script src="markets.js?v=30"></script>
 <script>
 (() => {
@@ -706,13 +714,19 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
     document.getElementById("viewtabs").hidden = nba;
     document.querySelector(".seg.big").hidden = nba;
     document.getElementById("yrrow").hidden = !nba || !["board", "mock"].includes(view);
+    if (!nba) document.getElementById("moretabs").hidden = true;
     if (nba) {
       document.getElementById("hubswitch").innerHTML = ["mlb", "nba", "nfl", "nhl", "cbb", "cfb"].map((h) => `<a href="../${h}/"${h === "nba" ? ' aria-current="page"' : ""}>${h.toUpperCase()}</a>`).join("");
       kick.textContent = "NBA · Projections"; title.innerHTML = "NBA <span>Hub</span>"; sub.textContent = HUB_SUB;
       const key = later ? "nba2028" : "nba";
-      const tabs = [["../nba/#/draft", "Lottery odds"], ["../nba/#/picks", "Traded picks"], ["#" + key, "Big Board", "board"], ["#" + key + "/mock", "Mock draft", "mock"]];
-      if (!later) tabs.push(["#nba/challenge", "Challenge", "challenge"], ["#nba/markets", "Markets", "markets"]);
-      document.getElementById("subtabs").innerHTML = tabs.map((t) => `<a href="${t[0]}"${t[2] === view ? ' aria-current="page"' : ""}>${t[1]}</a>`).join("");
+      const tabs = [["../nba/#/draft", "Lottery odds", "", "Lottery"], ["../nba/#/picks", "Traded picks", "", "Picks"], ["#" + key, "Big Board", "board"], ["#" + key + "/mock", "Mock draft", "mock", "Mock"]];
+      // Challenge and Markets sit under "More" so the row fits a phone; on those pages a second row picks between them
+      const more = view === "challenge" || view === "markets";
+      if (!later) tabs.push(["#nba/challenge", "More", more ? view : "more"]);
+      document.getElementById("subtabs").innerHTML = tabs.map((t) => `<a href="${t[0]}"${t[2] === view ? ' aria-current="page"' : ""}>${t[3] ? `<span class="fl">${t[1]}</span><span class="sl">${t[3]}</span>` : t[1]}</a>`).join("");
+      const m2 = document.getElementById("moretabs");
+      m2.hidden = !more;
+      m2.innerHTML = [["challenge", "Challenge"], ["markets", "Markets"]].map(([v, l]) => `<a href="#nba/${v}"${v === view ? ' aria-current="page"' : ""}>${l}</a>`).join("");
     } else {
       title.innerHTML = "Big <span>Board</span>"; sub.textContent = sub.dataset.text;
     }

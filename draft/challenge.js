@@ -97,8 +97,8 @@
     const left = Math.ceil((lock - Date.now()) / DAY), locked = left <= 0;
     const filled = C.picks.filter(Boolean).length;
     $("#challenge-view").innerHTML = `<section class="challenge">
-      <div class="setup-head"><h2 class="disp">Top 10 Challenge</h2><p class="sub">Call the top 10 of the ${D.year} ${D.league.toUpperCase()} draft. 3 points for the exact player at a pick, 1 if he goes within two picks of it, half a point if he goes somewhere else in the top 10. Trades don't matter: it's the pick number that counts.</p>
-        <p class="sub">Early calls pay: a pick set on opening day (Nov 3) counts double, and the bonus slides evenly to nothing by draft night. A pick keeps its date until you change it, and everyone's picks are public, so copying someone late costs you the bonus.</p>
+      <div class="setup-head"><h2 class="disp">Top 10 Challenge</h2><p class="sub">Call the top 10 of the ${D.year} ${D.league.toUpperCase()} draft. Early calls count more.</p>
+        <details class="rules"><summary>How scoring works</summary><p>3 points for the exact player at a pick, 1 if he goes within two picks of it, half a point if he goes somewhere else in the top 10. Trades don't matter: it's the pick number that counts.</p><p>Early calls pay: a pick set on opening day (Nov 3) counts double, and the bonus slides evenly to nothing by draft night. A pick keeps its date until you change it, and everyone's picks are public, so copying someone late costs you the bonus.</p></details>
         <p class="ch-lock">${locked ? "Picks are locked." : `Picks lock ${new Date(lock).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" })} ET, ${left} day${left === 1 ? "" : "s"} from now.`}${C.lockNote && /not announced/i.test(C.lockNote) ? " The NBA hasn't set its date yet; this moves when it does." : ""}</p></div>
       <div class="ch-grid">
         <div class="ch-mine">
