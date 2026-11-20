@@ -519,6 +519,7 @@
         if (j.error === "not_found") throw new Error(`ESPN has no ${sport === "nfl" ? "football" : sport === "nba" ? "basketball" : sport === "mlb" ? "baseball" : "hockey"} league with that ID. Check the link, or pick the right sport.`);
         if (j.error) throw new Error("ESPN didn't answer. Try again in a minute.");
         r = I.fromEspn(j, sport, S);
+        if (j.via === "connector") r.notes.unshift(`This private league was read from the ESPN connector's last sync${j.synced ? ` (${new Date(j.synced).toLocaleDateString("en-US", { month: "short", day: "numeric" })})` : ""}`);
       } else r = I.fromYahooText(inp.text, S);
       applyImport(r);
       document.getElementById("fk-dlg").close();

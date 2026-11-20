@@ -131,7 +131,8 @@
   // ESPN stat ids Draft Lab can score (football and basketball; baseball and hockey come over as settings only)
   const ESPN_NFL = { 0: "pass_att", 1: "pass_cmp", 3: "pass_yd", 4: "pass_td", 19: "pass_2pt", 20: "pass_int", 23: "rush_att", 24: "rush_yd", 25: "rush_td", 26: "rush_2pt", 42: "rec_yd", 43: "rec_td",
     44: "rec_2pt", 53: "rec", 58: "rec_tgt", 64: "pass_sacked", 68: "fum", 72: "fum_lost", 83: "fgm", 86: "xpm", 88: "xpmiss", 94: "def_td", 95: "def_int", 96: "fum_rec", 98: "safe", 99: "def_sack",
-    106: "ff", 101: "def_st_td", 102: "def_st_td", 107: "idp_tkl_ast", 108: "idp_tkl_solo", 113: "idp_pass_def" };
+    106: "ff", 101: "def_st_td", 102: "def_st_td", 103: "def_td", 104: "def_td", 63: "def_td", 93: "def_st_td", 107: "idp_tkl_ast", 108: "idp_tkl_solo", 113: "idp_pass_def" };
+  const ESPN_NFL_LABEL = { 97: "Blocked kicks", 117: "D/ST tackles for loss", 119: "D/ST 3-and-outs", 113: "Passes defended", 114: "Kickoff return yards", 115: "Punt return yards", 127: "Yards allowed", 64: "Times sacked" };
   const ESPN_NBA = { 0: "pts", 1: "blk", 2: "stl", 3: "ast", 4: "oreb", 5: "dreb", 6: "reb", 11: "tov", 13: "fgm", 14: "fga", 15: "ftm", 16: "fta", 17: "tpm", 18: "tpa", 37: "dd", 38: "td", 40: "min" };
   const ESPN_NBA_CATS = { 0: "pts", 1: "blk", 2: "stl", 3: "ast", 4: "oreb", 5: "dreb", 6: "reb", 11: "tov", 13: "fgm", 15: "ftm", 17: "tpm", 18: "tpa", 19: "fg", 20: "ft", 21: "tpp", 37: "dd", 38: "td", 40: "min" };
   const ESPN_SEASON = { H2H_POINTS: "h2h", H2H_CATEGORY: "h2hcats", H2H_MOST_CATEGORIES: "h2h", ROTO: "roto", TOTAL_POINTS: "h2h" };
@@ -157,6 +158,7 @@
     if (num(sch.matchupPeriodCount)) f.weeks = num(sch.matchupPeriodCount);
     if (num(sch.playoffTeamCount) != null) { const p = snapDown(num(sch.playoffTeamCount), PLAYOFFS.filter((x) => x <= f.teams)); f.playoffs = p; if (p !== num(sch.playoffTeamCount)) r.notes.push(`${sch.playoffTeamCount} playoff teams became ${p}`); }
     if (Array.isArray(sch.divisions) && sch.divisions.length > 1) f.divs = sch.divisions.length;
+    if (sch.playoffMatchupPeriodLengthByRound && Object.values(sch.playoffMatchupPeriodLengthByRound).some((x) => x > 1)) r.notes.push("Two-week playoff rounds aren't carried over: playoff rounds here are one week each");
     const dt = String(dr.type || "").toUpperCase();
     if (dt === "AUCTION") { f.type = "auction"; if (num(dr.auctionBudget)) f.aBudget = num(dr.auctionBudget); } else if (dt === "SNAKE") f.type = "snake";
     if (num(dr.timePerSelection)) f.clock = snapNear(num(dr.timePerSelection), CLOCKS);
@@ -172,20 +174,41 @@
         for (const it of items) { const c = ESPN_NBA_CATS[it.statId]; if (c) out.push(c); else r.unmapped.push(`ESPN stat ${it.statId}`); }
         if (out.length >= 2) { f.scoring = "cc"; f.cats = [...new Set(out)]; }
       } else {
-        const map = key === "nfl" ? ESPN_NFL : ESPN_NBA, w = {};
+        const map = key === "nfl" ? ESPN_NFL : ESPN_NBA, w = {}, add = (k, v) => { w[k] = +((w[k] || 0) + v).toFixed(4); };
+        // a stat's value: its points, or (team defense, slot 16) the override ESPN keeps for that slot
+        const val = (it) => num(it.points) || (it.pointsOverrides ? num(it.pointsOverrides["16"]) : 0) || 0;
+        const fgBand = {}, missBand = {};
         for (const it of items) {
-          const v = num(it.points);
+          const v = val(it);
           if (!v) continue;
-          const k = map[it.statId];
-          if (k) { w[k] = (w[k] || 0) + v; continue; }
-          // ESPN's field goal distance bands and defense tiers: keep the base field goal, note the rest
-          if (key === "nfl" && [74, 77, 80, 201].includes(it.statId)) { if (it.statId === 80) w.fgm = v; else if (it.statId === 74) w.fgm_50p = v; continue; }
-          if (key === "nfl" && it.statId >= 89 && it.statId <= 136) continue;
-          r.unmapped.push(`ESPN stat ${it.statId}`);
+          const id = it.statId, k = map[id];
+          if (key === "nfl") {
+            // incompletions (attempts minus completions) and missed kicks (tries minus makes) become those stats
+            if (id === 2) { add("pass_att", v); add("pass_cmp", -v); continue; }
+            if ([80, 77, 74, 201, 198].includes(id)) { fgBand[id] = v; continue; }
+            if ([82, 79, 85, 76, 73].includes(id)) { missBand[id] = v; continue; }
+            // 100-yard and 300-yard game bonuses
+            if (id === 37) { f.b100rOn = 1; f.b100rAmt = v; continue; }
+            if (id === 56) { f.b100cOn = 1; f.b100cAmt = v; continue; }
+            if (id === 17) { f.b300pOn = 1; f.b300pAmt = v; continue; }
+            if ([38, 57, 18].includes(id)) { r.notes.push(`ESPN's ${id === 38 ? "200-yard rushing" : id === 57 ? "200-yard receiving" : "400-yard passing"} bonus isn't carried over (the 100/300-yard one is)`); continue; }
+            if ((id >= 89 && id <= 92) || (id >= 120 && id <= 136)) continue;   // points/yards-allowed tiers
+          }
+          // several ESPN stats can land on one of ours (kick and punt return TDs are both special teams TDs): each is
+          // one event, so the first value stands rather than adding up
+          if (k) { if (w[k] == null) w[k] = v; continue; }
+          r.unmapped.push(ESPN_NFL_LABEL[id] || `ESPN stat ${id}`);
         }
-        if (w.fgm_50p && w.fgm) w.fgm_50p = Math.max(0, w.fgm_50p - w.fgm); else delete w.fgm_50p;
-        if (key === "nfl" && items.some((it) => it.statId >= 89 && it.statId <= 136)) r.notes.push("Team defense points- and yards-allowed tiers use Draft Lab's standard scale");
-        if (items.some((it) => it.pointsOverrides && Object.keys(it.pointsOverrides).length)) r.notes.push("Position-specific point values (like a TE premium) need setting by hand under scoring");
+        if (key === "nfl") {
+          // field goals: the shortest band's value per make, the 50+ value as a bonus on top; misses the same way
+          const base = fgBand[80] ?? fgBand[77] ?? fgBand[74];
+          if (base) { add("fgm", base); const long = fgBand[74] ?? fgBand[201] ?? fgBand[198]; if (long && long > base) w.fgm_50p = +(long - base).toFixed(2); }
+          if (Object.keys(fgBand).length > 1) r.notes.push(`Field goals: kept ${base} per make${w.fgm_50p ? ` and a ${w.fgm_50p}-point 50+ bonus` : ""}; ESPN's other distance bands (${Object.entries(fgBand).map(([i, v]) => `${{ 80: "under 40", 77: "40-49", 74: "50+", 201: "60+", 198: "50-59" }[i] || i}: ${v}`).join(", ")}) aren't separate here`);
+          const miss = missBand[82] ?? missBand[85] ?? missBand[79];
+          if (miss) { add("fga", miss); add("fgm", -miss); if (Object.keys(missBand).length > 1) r.notes.push(`Missed field goals: kept ${miss} for every miss`); }
+          if (items.some((it) => (it.statId >= 89 && it.statId <= 92) || (it.statId >= 120 && it.statId <= 136))) r.notes.push("Team defense points- and yards-allowed tiers use Draft Lab's standard scale");
+        }
+        if (items.some((it) => it.pointsOverrides && Object.keys(it.pointsOverrides).some((slot) => slot !== "16" && num(it.pointsOverrides[slot]) !== num(it.points)))) r.notes.push("Position-specific point values (like a TE premium) need setting by hand under scoring");
         if (Object.keys(w).length) { f.scoring = "cp"; f.weights = w; }
       }
     } else r.notes.push(`${key.toUpperCase()} scoring didn't carry over: pick the categories or points under scoring`);
