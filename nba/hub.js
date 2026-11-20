@@ -39,9 +39,10 @@
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
     growth: 0.5,         // share of a young player's projected improvement that counts in his value
     lean: 1,             // how strongly a team's situation tilts values (age, picks, this season for rebuilders); 0 = no tilt
-    salW: 0.5,           // what a dollar of salary costs a team in value. Teams must spend to the salary floor and unused
-                         // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
-                         // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
+    salW: 0.75,          // what a dollar of salary costs a team in value. Teams must spend to the salary floor and unused
+                         // cap room disappears, so salary isn't a dollar-for-dollar cost. On the 2025-26 deadline and 2026
+                         // summer trades (players only; the picks aren't in the data) 50% and 75% fit about equally well,
+                         // and the missing picks bias that test low, so 75%. 1.0 is face value.
     convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
     posAdj: 0.5,         // share of each position's average impact gap to the league taken out of value (bigs rate high)
     vblend: "bal",       // what a player's value rating counts (VBLEND): impact only, or impact blended with his box score
