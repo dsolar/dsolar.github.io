@@ -212,6 +212,7 @@ details.finder .rlist li{gap:8px}
 .repclock{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px;padding:4px 12px 2px;overflow-x:auto}
 .rc{display:flex;flex-direction:column;gap:2px;text-align:left;padding:8px;border-radius:8px;background:var(--paper-2);border:1px solid transparent;font:inherit;color:var(--ink);min-width:92px}
 .rc span{font:700 11px/1 var(--body);color:var(--muted);letter-spacing:.04em}
+.rc.hist span{color:var(--ink)}
 .rc b{font:700 13px/1.2 var(--body)}
 .rc small{font-size:10.5px;color:var(--faint);line-height:1.25}
 .rc em{font-style:normal;font-size:11px;color:var(--muted)}
@@ -349,7 +350,7 @@ table.rt td.mn{font-variant-numeric:tabular-nums}
 .uman:not([data-p]){cursor:default}
 .uman small{font:600 12px/1.1 var(--body);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink)}
 .uman[data-p]:hover small{text-decoration:underline}
-.ucard footer{display:flex;justify-content:space-between;gap:6px;padding:8px 14px;background:var(--paper-2);font-size:12px;color:var(--faint)}
+.ucard footer{display:flex;justify-content:space-between;gap:6px;padding:8px 14px;background:var(--paper-2);font-size:12px;color:var(--muted)}
 .ucard footer b{font:700 15px/1 var(--cond);color:var(--ink);margin-right:2px}
 
 /* duo cards */
@@ -738,3 +739,29 @@ table.sz{width:100%;font-size:13px}
 }
 .cn .cns{display:none}
 @media (max-width:640px){ .cn .cns{display:inline} }
+
+/* lineup lab header on a phone: the three numbers share one row */
+@media (max-width:760px){
+  .lab-k{flex-wrap:nowrap;gap:6px;width:100%}
+  .lab-k span{flex:1 1 0;min-width:0;padding:7px 8px;font-size:10.5px;line-height:1.25}
+  .lab-k b{font-size:18px}
+}
+
+/* scrolling tables get keyboard focus (tabindex added in app.js); show where focus is */
+.scroll:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* filters panel: page filters first, the model's knobs folded away */
+.controls .msets{flex-basis:100%;border-top:1px solid var(--rule-2);padding-top:8px}
+.controls .msets>summary{cursor:pointer;font:700 12px/1.4 var(--body);color:var(--ink);list-style-position:inside}
+.controls .msets>summary span{font-weight:500;color:var(--muted);margin-left:6px}
+.controls .msets-b{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:end;margin-top:10px}
+@media (max-width:760px){
+  .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px;padding:10px}
+  .controls>label{min-width:0}
+  .controls select,.controls input[type=search]{width:100%;min-width:0}
+  .controls .msets{grid-column:1/-1}
+  .controls .msets>summary span{display:block;margin:2px 0 0}
+  .controls .msets-b{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+  .controls .msets-b select,.controls .msets-b input{width:100%}
+  .controls label{font-size:10.5px}
+}

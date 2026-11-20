@@ -58,6 +58,7 @@
   function load(k, d) { try { var v = localStorage.getItem("nbahub." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function stat(v, k) { return '<div class="stat"><b>' + v + "</b><span>" + k + "</span></div>"; }
   // Links into the Big Board (draft/): ?p= opens a prospect, ?at= jumps to that spot on the board
+  function howLink() { return '<a href="' + href("method") + '">How it works</a>'; }
   function boardHref(q, key) { return "../draft/#" + (key || "nba") + (q ? "?" + q : ""); }
   function boardAt(slot, year) { var y = year || 2027, x = ((H.prospectsBy || {})[y] || [])[Math.round(slot) - 1]; return x ? '<a href="' + boardHref("at=" + Math.round(slot), y === 2027 ? "nba" : "nba" + y) + '" title="No. ' + Math.round(slot) + " on the " + y + ' Big Board">' + esc(shortName(x.n)) + "</a>" : ""; }
   function kv(v, k) { return "<div><b>" + v + "</b><span>" + k + "</span></div>"; }
@@ -84,6 +85,16 @@
     var y = +q.y;
     state.year = y >= 0 && y < Hub.YEARS ? y : 0;
   }
+  // Scrolling tables: focusable and named, so a keyboard can scroll them (WCAG 2.1.1)
+  function scrollA11y(root) {
+    root.querySelectorAll(".scroll:not([tabindex])").forEach(function (el) {
+      var h = el.closest(".panel, section, .lusec");
+      var name = h && h.querySelector("h3, h2");
+      el.setAttribute("tabindex", "0"); el.setAttribute("role", "region");
+      el.setAttribute("aria-label", name ? name.childNodes[0].textContent.trim() || "Table" : "Table");
+    });
+  }
+  new MutationObserver(function () { scrollA11y(view); }).observe(view, { childList: true, subtree: true });
   function render() {
     parse();
     document.querySelectorAll(".tabs a").forEach(function (a) {
@@ -117,8 +128,8 @@
     var i = state.year, rows = H.standings(i), first = i === 0;
     var html = '<h2 class="sec">' + sname(i) + (first ? " Projected Standings" : " Projection") + "</h2>" +
       '<p class="lede">' + (first
-        ? "Each team's real record (" + Math.round(H.played) + " games in), then the rest of the season played out " + H.cfg.sims.toLocaleString() + " times from today's rosters: play-in, playoffs and the 3-2-1 lottery included. Click a team for its rotation and cap sheet."
-        : "Built from contracts: a player whose deal ends re-signs if he's worth at least 85% of his market price and 33 or younger (teams pay a little over value to keep their own) (his team holds his Bird rights, so it can go over the cap to keep him; restricted free agents are matched at a lower bar), everyone else leaves, everyone ages a year at a time, and each team's draft picks arrive where the 3-2-1 lottery is likeliest to put them. " + (H.cfg.fill ? "Open spots go to the free agents a team's cap position can buy." : "Open spots are left at replacement level.") + " Rougher every year out.") + "</p>";
+        ? "Real records, then the rest of the season simulated " + H.cfg.sims.toLocaleString() + " times from today's rosters."
+        : 'Built from contracts, so it gets rougher every year out. ' + howLink() + ' has the rules.') + "</p>";
     html += '<div class="leagues stack">';
     ["E", "W"].forEach(function (conf) {
       var d = rows.filter(function (r) { return r.conf === conf; });
@@ -153,8 +164,10 @@
   // 3-2-1 draw); shaded by likelihood
   function oddsCell(p) {
     if (!(p > 0.0005)) return '<td class="lo0"></td>';
-    var a = Math.min(1, Math.sqrt(p / 0.35));
-    return '<td class="lo" style="background:rgba(29,66,138,' + (0.08 + 0.82 * a).toFixed(2) + ");color:" + (a > 0.55 ? "#fff" : "inherit") + '" title="' + (p * 100).toFixed(1) + '%">' + (p < 0.01 ? "&lt;1" : Math.round(p * 100)) + "</td>";
+    var a = Math.min(1, Math.sqrt(p / 0.35)), al = 0.08 + 0.82 * a, dark = al >= 0.6;
+    // no shade sits in the middle band where neither dark nor white text has enough contrast
+    if (dark) al = Math.max(al, 0.76);
+    return '<td class="lo" style="background:rgba(29,66,138,' + al.toFixed(2) + ");color:" + (dark ? "#fff" : "inherit") + '" title="' + (p * 100).toFixed(1) + '%">' + (p < 0.01 ? "&lt;1" : Math.round(p * 100)) + "</td>";
   }
   function lotteryGrid(rows) {
     var lot = rows.slice().sort(function (a, b) { return a.avgPick - b.avgPick; }).slice(0, 18);
@@ -417,7 +430,7 @@
     var q = state.q, yr = q.y2 || "", tm = q.t || "";
     var all = H.allPicks().filter(function (pk) { return (!yr || String(pk.y) === yr) && (!tm || pk.from === tm || pk.owner === tm); });
     var years = []; H.allPicks().forEach(function (pk) { if (years.indexOf(pk.y) < 0) years.push(pk.y); });
-    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every first- and second-round pick that has changed hands, with its protection and where it projects to land. Pick terms come from the <a href="' + boardHref() + '">Big Board</a>\'s ledger (Tankathon and RealGM), refreshed daily. Projected 2027 and 2028 firsts link to who\'s ranked there.</p>';
+    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every traded pick, its protection and where it projects to land. Projected 2027 and 2028 firsts link to the <a href="' + boardHref() + '">Big Board</a>.</p>';
     html += controls('<label>Year<select data-q="y2"><option value="">All</option>' + years.map(function (y) { return '<option value="' + y + '"' + (String(y) === yr ? " selected" : "") + ">" + y + "</option>"; }).join("") + "</select></label>" + teamSelect(tm));
     var protText = function (pk) {
       var bits = [];
@@ -685,7 +698,7 @@
     if (!H.lu) { view.innerHTML = '<h2 class="sec">Lineups</h2><p class="lede">Lineups haven\'t loaded. They rebuild every morning; try again in a bit.</p>'; return; }
     var q = state.q, tm = H.luTeams[q.t] ? q.t : "", list = { "5": 1, "3": 1, "2": 1, oo: 1 }[q.list] ? q.list : "", minP = +q.min || 150;
     var link = function (extra) { return href("lineups", Object.assign({}, q, { pg: null }, extra)); };
-    var html = '<h2 class="sec">Lineups</h2><p class="lede">Which units work, which pairs click and who swings his team most, from pbpstats\' play-by-play this season (' + esc(H.lu.season) + "). Ratings are points per 100 possessions; small samples swing hard, so set the possession floor to taste.</p>";
+    var html = '<h2 class="sec">Lineups</h2><p class="lede">Which units work, which pairs click and who swings his team most, per 100 possessions this season.</p>';
     html += '<div class="luctl"><label>Team<select data-q="t"><option value="">The whole league</option>' + H.codes.slice().sort(function (a, b) { return team(a).name.localeCompare(team(b).name); }).map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label>" +
       '<div class="chips" role="group" aria-label="Possession floor"><span>At least</span>' + [100, 150, 250, 400].map(function (v) { return '<a href="' + link({ min: v === 150 ? null : v }) + '"' + (v === minP ? ' aria-current="true"' : "") + ">" + v + "</a>"; }).join("") + "<span>possessions</span></div></div>";
     // One short tab row on every lineups view, so it fits a phone on one line
@@ -798,10 +811,12 @@
     var html = teamHead(code, 0, "style") + teamPicker(code, 0, "style");
     if (!st) { view.innerHTML = html + '<p class="lede">Team style numbers haven\'t loaded. They rebuild every morning with the lineups.</p>'; return; }
     var tags = styleTags(st), net = st.o.rtg - st.d.rtg;
+    // net rating rank across the league (1st is best)
+    var netRk = 1 + Object.keys(H.luTeams).filter(function (c) { var x = H.luTeams[c].style; return x && x.o.rtg - x.d.rtg > net + 1e-9; }).length;
     html += '<div class="sty-hero" style="--tc:' + esc(t.color) + '"><div class="sty-k">' +
       '<div><b>' + f1(st.o.rtg) + "</b><span>Offense</span>" + rankPill(bestRank(st, "o", "rtg")) + "</div>" +
       '<div><b>' + f1(st.d.rtg) + "</b><span>Defense</span>" + rankPill(bestRank(st, "d", "rtg")) + "</div>" +
-      '<div><b class="' + (net >= 0 ? "pos" : "neg") + '">' + (net >= 0 ? "+" : "") + f1(net) + "</b><span>Net rating</span></div>" +
+      '<div><b class="' + (net >= 0 ? "pos" : "neg") + '">' + (net >= 0 ? "+" : "") + f1(net) + "</b><span>Net rating</span>" + rankPill(netRk) + "</div>" +
       '<div><b>' + f1(st.o.pace) + "</b><span>Pace</span>" + rankPill(st.o.rk.pace, true) + "</div></div>" +
       (tags.length ? '<div class="sty-tags">' + tags.map(function (x) { return '<span class="stag ' + x[1] + '">' + esc(x[0]) + "</span>"; }).join("") + "</div>" : "") + "</div>";
     // four factors
@@ -872,7 +887,7 @@
       return true;
     }).sort(function (a, b) { return ((b[vs][by] == null ? -1 : b[vs][by]) - (a[vs][by] == null ? -1 : a[vs][by])) || ((b.s.imp || -9) - (a.s.imp || -9)); });
     var link = function (extra) { return href("ratings", Object.assign({}, q, { pg: null }, extra)); };
-    var html = '<h2 class="sec">Ratings</h2><p class="lede">Every player\'s game in twelve skills, each a percentile among the ' + A.pool + " players with real minutes (99 is the best). Built every morning from pbpstats, Basketball-Reference and DARKO; last season (" + esc(A.prev) + ") still counts at half weight. Click a player for his profile and shot chart.</p>";
+    var html = '<h2 class="sec">Ratings</h2><p class="lede">Every player\'s game in twelve skills, as percentiles among the ' + A.pool + " players with real minutes. 99 is best.</p>";
     // leaders: top three in each category
     html += '<div class="leaders">' + Object.keys(A.cats).map(function (c) {
       var top = pool.filter(hasPos).slice().sort(function (a, b) { return (b[vs][c] || 0) - (a[vs][c] || 0) || (b.s.imp || -9) - (a.s.imp || -9); }).slice(0, 3);
@@ -949,14 +964,17 @@
   }
 
   // ---------- trade value ----------
+  // Page filters stay in view; the model's knobs fold into "Model settings" (open state remembered)
   function controls(extra) {
-    return '<div class="controls">' +
+    var sum = (H.cfg.mode === "market" ? "Market" : "Production") + ", " + Math.round(H.cfg.disc * 100) + "% discount, " + H.cfg.convex + "x stars, " + Math.round(H.cfg.growth * 100) + "% growth, " + Math.round((H.cfg.salW ?? 1) * 100) + "% salary";
+    return '<div class="controls">' + (extra || "") + '<details class="msets"' + (load("msets", false) ? " open" : "") + '><summary>Model settings <span>' + esc(sum) + '</span></summary><div class="msets-b">' +
       '<label title="Production: what he should produce, priced off the cap. Market: what teams would pay him (the market model, capped at the max)">Value as<select data-cfg="mode"><option value="prod"' + (H.cfg.mode !== "market" ? " selected" : "") + '>Production</option><option value="market"' + (H.cfg.mode === "market" ? " selected" : "") + ">Market price</option></select></label>" +
       '<label title="Each later season counts this much less. 7% matches the cap\'s growth, so values read in today\'s cap dollars">Discount %<input type="number" step="1" min="0" max="20" data-cfg="disc" value="' + (H.cfg.disc * 100).toFixed(0) + '"></label>' +
       '<label title="How much more a star\'s impact is worth than the same impact spread across role players. 1.0 is linear (minutes times impact); higher favors stars">Star premium<select data-cfg="convex">' + [1, 1.25, 1.5, 1.75, 2].map(function (v) { return '<option value="' + v + '"' + (H.cfg.convex === v ? " selected" : "") + ">" + v.toFixed(2) + "</option>"; }).join("") + "</select></label>" +
       '<label title="Share of a young player\'s projected improvement that counts in his value">Growth counted<select data-cfg="growth">' + [0, 0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + (H.cfg.growth === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label>" +
-      '<label title="What a dollar of salary costs a team in value. Teams must spend to the salary floor and unused cap room disappears, so recent trades price salary at about a quarter to a half of face value. 100% counts every dollar">Salary weight<select data-cfg="salW">' + [0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + ((H.cfg.salW ?? 1) === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label>" + (extra || "") + "</div>";
+      '<label title="What a dollar of salary costs a team in value. Teams must spend to the salary floor and unused cap room disappears, so recent trades price salary at about a quarter to a half of face value. 100% counts every dollar">Salary weight<select data-cfg="salW">' + [0.25, 0.5, 0.75, 1].map(function (v) { return '<option value="' + v + '"' + ((H.cfg.salW ?? 1) === v ? " selected" : "") + ">" + (v * 100) + "%</option>"; }).join("") + "</select></label></div></details></div>";
   }
+  view.addEventListener("toggle", function (e) { if (e.target.classList && e.target.classList.contains("msets")) save("msets", e.target.open); }, true);
   view.addEventListener("change", function (e) {
     var c = e.target.closest("[data-cfg]");
     if (!c) return;
@@ -978,10 +996,7 @@
   function valuePage() {
     var q = state.q, kind = q.k || "players", tm = q.t || "", worst = q.sort === "worst";
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
-    var html = '<h2 class="sec">Trade Value</h2><p class="lede">' + (H.cfg.mode === "market"
-      ? "Value is what teams would pay each player on the open market (the market model behind Banner 19, fit to current veteran contracts and capped at the max). "
-      : "Value is what each player should produce over the rest of his contract: minutes times impact above replacement, with a premium for star impact, priced at what teams pay for production on the open market. ") +
-      "Salary is what he'll be paid. Surplus is value minus salary, in real dollars (set a discount to see today's cap dollars). Trade value, what the list ranks, counts salary the way real trades do (about half its face value near term, see the salary weight), since teams take on overpaid good players without getting full value back. Picks are valued by what their projected slot has produced in past drafts, or in the market view, by what teams pay for them. The star premium and growth settings change the whole board; How it works explains them.</p>";
+    var html = '<h2 class="sec">Trade Value</h2><p class="lede">What each player is worth in a trade, net of his salary. ' + howLink() + ' explains the settings.</p>';
     html += controls(teamSelect(tm) + '<label>Show<select data-q="k">' + opt("players", "Players", kind) + opt("picks", "Draft picks", kind) + "</select></label>" +
       (kind === "players" ? '<label>Sort<select data-q="sort">' + opt("", "Most surplus", q.sort || "") + opt("worst", "Worst contracts", q.sort || "") + "</select></label>" +
         '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>' : ""));
@@ -1394,7 +1409,7 @@
     var moves = ready ? tr.assets.map(function (a) { return { kind: a.kind, id: a.id, amt: a.kind === "c" ? +a.id : 0, from: tr.sides[a.from], to: tr.sides[destOf(tr, a)] }; }) : [];
     var chk = ready && moves.length ? H.checkTrade({ teams: tr.sides, moves: moves }) : null;
     var sum = chk ? H.tradeSummary({ teams: tr.sides, moves: moves }) : null;
-    var html = '<h2 class="sec">Trade Builder</h2><p class="lede">Up to five teams. Add players, picks or cash from each roster; every deal is checked against the 2023 CBA as it stands in ' + sname(0) + ": salary matching by apron tier, trade exceptions, hard caps, cash limits, roster limits and the Stepien rule.</p>";
+    var html = '<h2 class="sec">Trade Builder</h2><p class="lede">Up to five teams. Every deal is checked against the CBA\'s trade rules as they stand in ' + sname(0) + ".</p>";
     html += finderPanel();
     var warns = ready && moves.length ? H.tradeWarnings({ teams: tr.sides, moves: moves }) : [];
     if (warns.length) html += '<div class="tbanner warnb"><b>Heads up</b><span>' + warns.map(esc).join("<br>") + "</span></div>";
@@ -1661,7 +1676,7 @@
   function faPage() {
     var q = state.q, yr = Math.min(Hub.YEARS - 1, Math.max(1, +q.yr || 1)), fa = H.faClass(yr), cap = H.capOutlook(yr), prem = H.premium();
     var yopts = ""; for (var j = 1; j < Hub.YEARS; j++) yopts += '<option value="' + j + '"' + (j === yr ? " selected" : "") + ">Summer " + (2026 + j) + " (" + sname(j) + ")</option>";
-    var html = '<h2 class="sec">Free Agents</h2><p class="lede">Everyone whose contract ends before the season you pick, with options called the way the model expects. Fair value is what he should produce per year over the deal the market would give him; the market estimate is what teams would actually pay. Restricted free agents can be matched by their own team. Later summers are rougher: trades, extensions and re-signings between now and then aren\'t known.</p>';
+    var html = '<h2 class="sec">Free Agents</h2><p class="lede">Everyone whose contract ends before the season you pick, with options called the way the model expects.</p>';
     html += controls('<label>Class<select data-q="yr">' + yopts + "</select></label>" + teamSelect(q.t || ""));
     var list = fa.filter(function (x) { return !q.t || x.team === q.t; }).slice(0, 120);
     html += tablePanel("The " + (2026 + yr) + " class", "<th>Player</th><th>Team</th><th>Age</th><th>Type</th><th>Impact</th><th>Years</th><th>Fair value</th><th>Market</th><th>Gap</th>", list.map(function (x, k) {
@@ -1705,6 +1720,8 @@
       "<h3>Salary weight</h3><p>Surplus counts salary at half its face value by default. Teams have to spend to the salary floor and unused cap room disappears, so a dollar of salary doesn't cost a team a dollar of value. Treating the 2025-26 deadline deals and the 2026 summer's big trades (Giannis, Kawhi, Morant) as fair to both sides puts the real cost at about a quarter to a half: at full face value the model missed those deals by about $59 million on average, at half by $25 million. You can set it from 25% to 100% on the Trade Value tab. Player cards show both: surplus is value minus every dollar of salary, trade value counts salary at this weight. In the trade finder and the trade card's grades the weight also depends on the team: 15 points lower with $20 million or more of room under the tax (that's how the Nets could take Julius Randle, or Terance Mann with the 22nd pick attached), 5 lower with some room, and 10 more off this season's salary for a rebuilding team, whose season is gone either way. A taxpaying team's extra cost is the tax itself, counted separately.</p>" +
       "<h3>Timing, protections, fit and long-term money</h3><p><b>Timing rules.</b> Free agents signed in the summer can't be traded until Dec. 15, and a player acquired by trade can't be combined with other salaries for two months (tracked from the daily rosters, so any team change counts); either makes a deal work starting that date rather than failing it, unless the date falls after the Feb. 11 trade deadline, when the deal can't happen this season at all (a veteran extension with a raise over 40% blocks trades for six months, so Payton Pritchard's October extension keeps him off the market until April). A team's first-round pick seven years out is frozen when it finishes a season over the second apron (Boston, Minnesota and Phoenix's 2032 firsts; Cleveland's 2033), and frozen picks can't be traded. The 2027 lottery follows the 3-2-1 rules: Washington's pick can't be first again and Utah's can't be top five a third straight year. A team can't trade for a player it traded away within the past year: from the past year's trades, dated, plus any trade since, caught by the twice-daily roster snapshot (a player straight from one team to another between snapshots; one who drops off every roster and turns up later counts as a signing). <b>Stepien.</b> A team that trades a first can't be left without one in back-to-back future years, checked every way its picks could convey: a protected first it owes that rolls over (Miami's 2027 to Charlotte, unprotected in 2028) could take either year's pick, and another team's protected pick it holds might go back, so neither counts as owned. <b>Protections.</b> Any first-round pick you send can be protected (top 3, 5, 8, 10, 11, 16 or 20; the 3-2-1 lottery bars new top-12 to top-15 protections). In the protected range it stays and turns into a second-rounder, and its value counts only the slots where it conveys. <b>Fit.</b> Each team's needs come from its rotation: the minutes-weighted percentiles of its nine heaviest-minute players in shooting, finishing, shot creation, playmaking, ball security, rim protection, rebounding and perimeter defense. A player strong where his new team is weak counts for up to 25% more to it. <b>Long-term money.</b> Grades count the luxury tax for every season the contracts run (tax added: this season in full, then 60%, 45%, 35% and 25%; tax saved: up to what shedding the salary another way would cost), and salary further out costs more: a salary dollar counts at the salary weight this season and next, then 10 points more each season after, since money years out eats flexibility. The card shows each team's payroll change season by season.</p>" +
       "<h3>Trade finder</h3><p>Start from a team or from one player. Every team weighs a deal by where it is: contenders (65% or better to make the playoffs) also count the wins it adds this season, about $6 million a win; rebuilding teams (30% or worse) count picks for 30% more and players by age (24 and under 30% more, 25 a bit more, 27 a bit less, 29 30% less, 30 and older 45% less), count this season's play at 40% since it's next year on that matters to them, and count expiring veterans at half since they'd walk for nothing; teams in between lean the same way, more gently. A player whose deal ends inside the five-year window also brings his Bird rights: the gap between what he'd produce on his next deal and what the market charges (half of it, averaging in the market view), plus 15% of his production a season for a team over the cap that couldn't replace him in free agency (5% with room), over three seasons, times the chance he re-signs (60%, or 85% for a restricted free agent). So an expiring good player can beat a lesser one with years left. A team trying to win doesn't take on a player who's out for the season, and injured players lose the part of this season they'll miss. Each side's grade adds the luxury tax it saves or adds over every season the contracts run. Tax added counts in full this season and less after; tax saved counts only up to what getting under some other way would cost (about 40 cents per dollar shed over the line, 60 this season), so a team projected $20 million over next season doesn't value a dump at its whole $38 million bill, and rebuilding teams over the line stop attaching lottery picks just to save it. That's what lets a deal work for both sides, since on one value scale every trade is zero-sum. <b>Win-win</b> finds deals both teams come out ahead on, and a contender can't get worse this season in one. A team's young core (its top three by rating or minutes, 27 or under, and young players on 25% of the cap or more) isn't offered up. Players who can't be traded until Dec. 15 count when the date is within six weeks; those deals say when they work. A quick estimate of wins finds the candidates, then the shortlist runs the trade card's full season simulation, so the wins on a deal match what loading it shows. In that simulation a newcomer takes minutes from the end of the bench first, not a slice from everyone, and a power forward can cover center minutes when a team is short of bigs. <b>Buyer</b> adds win-now players for picks, young players and salary, keeping the overpay modest. <b>Seller</b> moves veterans to teams trying to win and asks for picks and young players while the buyer still comes out ahead. Every deal is checked against the full cap rules, roster limits and the Stepien rule, which only limits trading first-round picks away (a team already short from older deals can still trade players).</p>" +
+      "<h3>Free agents</h3><p>The list is everyone whose contract ends before the season you pick, with options called the way the model expects: a player option is declined when he's more likely to opt out than in, a team option when he's worth less than 80% of his salary. Fair value is what he should produce per year over the deal the market would give him; the market estimate is what teams would actually pay. Restricted free agents can be matched by their own team. Later summers are rougher, since trades, extensions and re-signings between now and then aren't known.</p>" +
+      "<h3>Later seasons</h3><p>A player whose deal ends re-signs if he's worth at least 85% of his market price and is 33 or younger (his team holds his Bird rights, so it can go over the cap to keep him; restricted free agents are matched at a lower bar). Everyone else leaves, everyone ages a year at a time, and each team's draft picks arrive where the 3-2-1 lottery is likeliest to put them. Open spots go to the free agents a team's cap position can buy, unless that box is unchecked.</p>" +
       "<h3>What it doesn't do</h3><p>Aggregation windows and other timing rules aren't enforced (players signed this summer and the deadline get a warning). No second-round rookies on the slider, and the most tangled pick conditions (Oklahoma City's chain of 2027 swaps) stay with whoever holds them today. Mid-level use after mid-July isn't tracked.</p>" +
       '<p class="note">Built on the shared NBA library (nba/lib) that Banner 19 and Hard Cap also run on, so a cap rule or contract fix lands in all three.</p></div>';
     view.innerHTML = html;
