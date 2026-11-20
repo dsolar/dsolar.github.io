@@ -723,3 +723,18 @@ table.sz{width:100%;font-size:13px}
   .tc details.org:last-child{margin-bottom:0}
   details.finder>summary h3 small{display:none}
 }
+/* legend caption on its own line, not squeezed into a sixth cell */
+.legend .note{grid-column:1/-1;background:none;text-align:left;padding:5px 2px 0;font-weight:500}
+/* court on a phone: smaller faces and labels so neighbors don't collide */
+@media (max-width:640px){
+  .cspot{width:92px}
+  .cspot .ds-face{--face-size:36px!important;width:36px;height:36px}
+  .cbtn{gap:2px}
+  .cn{font-size:11px;padding:1px 5px}
+  .cr{font-size:10px;padding:2px 4px}
+  .cspot .cg{margin-top:1px;padding:1px 5px;font-size:9.5px}
+  .cspot .cgw{display:none}
+  .cn .cnf{display:none}
+}
+.cn .cns{display:none}
+@media (max-width:640px){ .cn .cns{display:inline} }

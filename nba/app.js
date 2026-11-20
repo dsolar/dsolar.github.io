@@ -284,7 +284,7 @@
     five.forEach(function (x, k) {
       var s = spots[k], open = !(x.p.fill || x.p.rook);
       html += '<div class="cspot" style="left:' + s[0] + "%;top:" + s[1] + '%">' + (open ? '<button type="button" class="cbtn" data-p="' + esc(x.p.id) + '">' : '<div class="cbtn">') +
-        face(x.p, 52) + '<span class="cn">' + esc(x.p.n) + '</span><span class="cr T-' + tier(x.r) + '">' + lbl[k] + " · " + rt(x.r) + "</span>" + (x.starts && x.starts[1] ? '<span class="cg">' + x.starts[0] + " of " + x.starts[1] + " starts</span>" : "") + (open ? "</button>" : "</div>") + "</div>";
+        face(x.p, 52) + '<span class="cn"><span class="cnf">' + esc(x.p.n) + '</span><span class="cns">' + esc(shortName(x.p.n)) + '</span></span><span class="cr T-' + tier(x.r) + '">' + lbl[k] + " · " + rt(x.r) + "</span>" + (x.starts && x.starts[1] ? '<span class="cg">' + x.starts[0] + " of " + x.starts[1] + '<span class="cgw"> starts</span></span>' : "") + (open ? "</button>" : "</div>") + "</div>";
     });
     return html + "</div></div>";
   }
