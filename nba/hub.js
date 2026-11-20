@@ -519,6 +519,7 @@
     // Full draft order for one simulated season: the lottery for the 16 lottery teams, then everyone else by record;
     // the second round worst to best
     const LOTTO_BANS = (inp.lottoBans) || { no1: ["WAS"], noTop5: ["UTA"] };
+    H.lottoBans = LOTTO_BANS;
     function draftOrder(rng, wins, br) {
       const all = codes.slice().sort((a, b) => wins[a] - wins[b] || (rng() - 0.5));
       const bottom3 = all.slice(0, 3);

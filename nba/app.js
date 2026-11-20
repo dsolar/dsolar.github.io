@@ -172,13 +172,20 @@
   }
   function lotteryPanel(rows) {
     var lot = rows.slice().sort(function (a, b) { return a.avgPick - b.avgPick; }).slice(0, 16);
-    return tablePanel("The 2027 lottery", "<th>Team</th><th>Proj</th><th>No. 1</th><th>Top 4</th><th>Avg pick</th><th>Board at that pick</th><th>Pick goes to</th>",
+    var bans = H.lottoBans || {};
+    var short = function (t) { t = String(t || ""); return t.length > 34 ? t.slice(0, 32).replace(/[\s,;:]+\S*$/, "") + "…" : t; };
+    // one compact row per team: the numbers in columns, who gets the pick and who's ranked there in a line under the name
+    return tablePanel("The 2027 lottery", "<th>Team</th><th>Proj</th><th>No. 1</th><th>Top 4</th><th>Avg</th>",
       lot.map(function (r, k) {
         var pk = H.W.picks.find(function (x) { return x.y === 2027 && x.r === 1 && x.from === r.code; });
-        var to = pk && pk.owner !== r.code ? logo(pk.owner, 16) + " " + esc(team(pk.owner).short) + (pk.prot ? ' <span class="note">(' + esc(pk.note || "protected") + ")</span>" : "") : '<span class="note">Own pick</span>';
-        if (pk && pk.locked && pk.owner === r.code) to = '<span class="note">' + esc(pk.note || "") + "</span>";
+        var bits = [];
+        if ((bans.no1 || []).indexOf(r.code) >= 0) bits.push('<span class="pill warn" title="Won No. 1 last year, so it can\'t win it again">No No. 1</span>');
+        if ((bans.noTop5 || []).indexOf(r.code) >= 0) bits.push('<span class="pill warn" title="Top-five picks two years running, so it can\'t land top five again">No top 5</span>');
+        if (pk && pk.owner !== r.code && pk.owner !== "OUT") bits.push('<span title="' + esc(pk.note || "") + '">to ' + esc(team(pk.owner).short) + (pk.prot ? " (" + esc(short(pk.note || "protected")) + ")" : "") + "</span>");
+        else if (pk && pk.locked && pk.note) bits.push('<span title="' + esc(pk.note) + '">' + esc(short(pk.note)) + "</span>");
+        var bd = boardAt(k + 1); if (bd) bits.push('<span class="nw">Board: ' + bd + "</span>");
         var w = Math.round(r.projW);
-        return '<tr class="go" data-team="' + r.code + '"><td class="tm">' + logo(r.code) + '<span class="nm">' + esc(r.name) + "</span></td><td>" + w + "-" + (82 - w) + "</td><td>" + pct(r.no1, 1) + "</td><td>" + pct(r.top4) + "</td><td><b>" + f1(r.avgPick) + '</b></td><td style="text-align:left">' + boardAt(k + 1) + '</td><td style="text-align:left;white-space:normal">' + to + "</td></tr>";
+        return '<tr class="go" data-team="' + r.code + '"><td class="tm lotm">' + logo(r.code) + '<span class="nm"><span class="nmf">' + esc(r.name) + '</span><span class="nms">' + esc(team(r.code).short) + '</span><small class="lsub">' + bits.join(" · ") + "</small></span></td><td>" + w + "-" + (82 - w) + "</td><td>" + pct(r.no1, 1) + "</td><td>" + pct(r.top4) + "</td><td><b>" + f1(r.avgPick) + "</b></td></tr>";
       }).join(""), "The worst three records get two balls, not three, and can't fall below 12th");
   }
   // Every lottery team's odds at each pick, from the season simulations (which play out the season, the play-in and the

@@ -775,3 +775,11 @@ table.sz{width:100%;font-size:13px}
   .tabs a{padding:9px 5px 8px;font-size:12.5px;letter-spacing:0;text-transform:none}
 }
 @media (max-width:370px){ .tabs a{padding:9px 4px 8px;font-size:11.5px} }
+
+/* lottery table: who gets the pick and the board's prospect sit under the team name */
+td.lotm .nm{display:flex;flex-direction:column;white-space:normal;line-height:1.2}
+td.lotm .lsub{font:500 11.5px/1.35 var(--body);color:var(--muted);margin-top:2px}
+td.lotm .lsub .pill{font-size:10px;padding:1px 5px}
+td.lotm .nms{display:none}
+td.lotm .lsub .nw{white-space:nowrap}
+@media (max-width:760px){ td.lotm .nm{max-width:none} td.lotm .nmf{display:none} td.lotm .nms{display:inline} tr:has(td.lotm)>td:not(.lotm){padding-left:5px;padding-right:5px} td.lotm .nm{min-width:108px;max-width:160px} td.lotm .lsub .nw{white-space:normal} }
