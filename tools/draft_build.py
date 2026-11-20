@@ -222,7 +222,7 @@ def build(league, sources, aliases):
                 "rules": {"year": year, "first": hub.get("first", []), "lottery": {"format": "3-2-1", "no1": [], "top5": []}} if mock_ok else None,
                 "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(base) if mock_ok else None,
                 "future": {"years": [y for y in fut.get("years", []) if y > year], "owed": [r for r in fut.get("owed", []) if r[1] > year]} if mock_ok else None,
-                "needs": None, "markets": None, "results": None}
+                "needs": {c: t.get("needs") or [] for c, t in hub["teams"].items()} if mock_ok else None, "markets": None, "results": None}
     order = load(os.path.join(TOOLS, "draft_data", f"{league}-order.json"), {}) or {}
     rec_all = load(os.path.join(TOOLS, "draft_data", "records.json"), {}) or {}
     records = rec_all.get(league, {})
@@ -246,7 +246,9 @@ def build(league, sources, aliases):
             "rules": rules, "players": players,
             "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(league),
             "future": (load(os.path.join(TOOLS, "draft_future.json"), {}) or {}).get(league),
-            "needs": (load(os.path.join(TOOLS, "draft_needs.json"), {}) or {}).get(league),
+            # NBA: the hub's roster-based needs (tools/nba_proj.mjs); NFL: NFL.com's lists
+            "needs": ({c: t.get("needs") or [] for c, t in (proj.get("teams") or {}).items()} if league == "nba" and proj.get("source") == "NBA Hub"
+                      else (load(os.path.join(TOOLS, "draft_needs.json"), {}) or {}).get(league)),
             "markets": markets(league, players, canon),
             # The real top ten once a draft is done (board ids in pick order), for the Top 10 Challenge's final scores.
             "results": (load(os.path.join(TOOLS, "draft_results.json"), {}) or {}).get(league) or None}

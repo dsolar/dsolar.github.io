@@ -194,7 +194,8 @@
 
   /* How a bot team picks. Each player's value is his consensus average plus noise that grows with the
      randomness setting and with his rank (the boards agree on the top, not on No. 40), plus small nudges.
-     NFL: position value, the team's needs (NFL.com's list), and no doubling up at a position.
+     NFL: position value, the team's needs (NFL.com's list), and no doubling up at a position. NBA: a light pull
+     toward the team's thinnest position group next season (from the NBA Hub's rosters) and no doubling up.
      Needs are kept from taking over three ways: the pull is worth a few spots at most and shrinks at the top
      of the draft (best player available wins there), a need stops counting once it's filled, and a need never
      moves a player who'd be a big reach at this pick. Lowest value goes. */
@@ -226,6 +227,10 @@
       } else {
         const g2 = posGroup(p.pos);
         if (taken.filter((x) => posGroup(x) === g2).length >= 1) v += 2;
+        // NBA needs (the hub's thinnest position groups next season): a lighter pull than the NFL's, since NBA teams
+        // mostly take the best player, and none for a player who'd be a reach at this pick
+        const ni = needs.indexOf(GROUP_NAME[g2]);
+        if (ni >= 0 && !taken.some((x) => posGroup(x) === g2) && p.score <= pickNo * 1.3 + 6) v -= [1.6, 0.9][ni] * Math.min(1, 0.2 + pickNo / 40);
       }
       if (v < bestV) { bestV = v; best = p; }
     }
@@ -235,6 +240,7 @@
     const p = String(pos || "").toUpperCase().split(/[\/]/)[0];
     return p === "DT" || p === "IDL" || p === "NT" ? "DL" : p === "OG" || p === "C" || p === "OL" ? "IOL" : p === "DE" ? "EDGE" : p === "NB" ? "CB" : p;
   }
+  const GROUP_NAME = { g: "Guard", w: "Wing", b: "Big" };
   function posGroup(pos) {
     const f = String(pos || "").toUpperCase().split(/[\/-]/)[0];
     return f === "PG" || f === "SG" || f === "G" ? "g" : f === "C" ? "b" : "w";
@@ -512,7 +518,7 @@
   // A pick's grade against the consensus: positive is value (taken later than his rank), negative a reach.
   function value(pick, player) { return pick - player.rank; }
 
-  const api = { rng, lottery321, oddsAtOne, standing, resolve, buildOrder, botPick, nflPos, value, pickValue, ledger, futureValue,
+  const api = { rng, lottery321, oddsAtOne, standing, resolve, buildOrder, botPick, nflPos, posGroup, GROUP_NAME, value, pickValue, ledger, futureValue,
     assetValue, swapValue, assetLabel, protLabel, stepienOK, firstsGap, botAccepts, offersFor };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
   else root.DraftEngine = api;

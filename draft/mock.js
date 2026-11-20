@@ -153,11 +153,12 @@
       <span>${esc(o.best.n)} (consensus No. ${o.best.rank}) is still on the board.</span>${o.note ? `<small class="qbtag">${esc(o.note)}</small>` : ""}</div>
       <div class="oa"><button type="button" class="btn sm go" data-shop="yes">Move up</button><button type="button" class="link" data-shop="no">Pass</button></div></div></div></div>`;
   }
-  // NFL.com's needs for the team on the clock, most pressing first; struck through once it has taken one there.
+  // The team on the clock's needs, most pressing first (NFL: NFL.com's list; NBA: its thinnest position groups next
+  // season, from the NBA Hub's rosters); struck through once it has taken one there.
   function needsView(team) {
     const needs = (D.needs || {})[team];
     if (!needs || !needs.length) return "";
-    const got = (M.taken[team] || []).slice();
+    const got = (M.taken[team] || []).map((x) => D.league === "nfl" ? x : E.GROUP_NAME[E.posGroup(x)]);
     return `<span class="needs"><span class="lab">Needs</span>${needs.map((n) => {
       const k = got.indexOf(n);
       if (k >= 0) got.splice(k, 1);
