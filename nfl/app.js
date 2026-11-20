@@ -87,7 +87,7 @@
       var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team") || (a.dataset.tab === "cap" && state.route === "league");
       if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
     });
-    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
   }
   window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
 
@@ -285,6 +285,41 @@
     });
     html += '<p class="note">Who owns what: the Big Board\'s draft order (Tankathon, by today\'s records) and its list of future picks already traded. Expected spots: in each simulated season, teams that miss the playoffs pick worst record first, then playoff teams by the round they went out in. Compensatory picks keep their spot. Rookie deals follow the slot: this year\'s class\'s contracts by pick, grown with the cap. <a href="../draft/">Mock the draft on the Big Board</a>.</p>';
     return html;
+  }
+
+  // ---------- contracts: every deal's value against its cost, league-wide ----------
+  // Value: each season left on his deal (the rest of this one, then the full seasons) at what his play is worth
+  // (P.value: his position's starter price, his healthy role and rating). Surplus: value minus cap hits. Trade value:
+  // the Trade value tab's price in draft picks (talent above replacement plus the contract's bonus or drag).
+  function contractRow(p) {
+    var last = Math.min(C.lastYear(p) || W.season, W.season + 4), left = P.seasonLeft(W), v = 0, c = 0;
+    for (var y = W.season; y <= last; y++) {
+      var r = p.c.rows[y]; if (!r || r[C.R.void]) continue;
+      var part = y === W.season ? left : 1;
+      v += P.value(W, p, y) * part; c += C.capHit(p, y) * part;
+    }
+    return { p: p, v: v, c: c, s: v - c, last: last, tv: tvOf(p) };
+  }
+  function contractsPage() {
+    var q = state.q, g = q.g || "", tm = q.t || "", sk = q.sort || "s", asc = /-asc$/.test(sk), base = sk.replace(/-asc$/, "");
+    if (!W._contracts) W._contracts = W.players.filter(function (p) { return p.c && p.c.rows && p.st !== "DEV" && (C.lastYear(p) || 0) >= W.season && C.capHit(p, W.season) > 1.2; }).map(contractRow);
+    var list = W._contracts.filter(function (x) { return (!g || P.group(x.p) === g) && (!tm || x.p.t === tm) && (!q.s0 || x.p.n.toLowerCase().indexOf(q.s0.toLowerCase()) >= 0); });
+    var key = { s: function (x) { return x.s; }, tv: function (x) { return x.tv.pts; }, v: function (x) { return x.v; }, c: function (x) { return x.c; }, r: function (x) { return P.quality(W, x.p).z; }, age: function (x) { return -(x.p.age || 30); } }[base] || function (x) { return x.s; };
+    list = list.slice().sort(function (a, b) { return asc ? key(a) - key(b) : key(b) - key(a); }).slice(0, 150);
+    var th = function (k, l, tip) { var on = base === k, nx = on && !asc ? k + "-asc" : k; return "<th" + (on ? ' class="on" aria-sort="' + (asc ? "ascending" : "descending") + '"' : "") + (tip ? ' title="' + esc(tip) + '"' : "") + '><a href="' + href("contracts", Object.assign({}, q, { sort: nx === "s" ? null : nx })) + '">' + l + "</a></th>"; };
+    var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
+    var html = '<h2 class="sec">Contracts and value</h2><p class="lede">Every deal in the league: what the player is worth over the rest of his contract against what it costs under the cap, and what he\'d bring in a trade. <a href="' + href("method") + '#value">How it works</a>.</p>';
+    html += '<div class="controls"><label>Position<select data-q="g">' + opt("", "All positions", g) + Object.keys(GROUP_NAME).map(function (k) { return opt(k, GROUP_NAME[k], g); }).join("") + "</select></label>" +
+      '<label>Team<select data-q="t">' + opt("", "All teams", tm) + codes().map(function (c) { return opt(c, team(c).name, tm); }).join("") + "</select></label>" +
+      '<label>Sort<select data-q="sort">' + opt("", "Most surplus", q.sort || "") + opt("s-asc", "Worst contracts", q.sort || "") + opt("tv", "Best trade value", q.sort || "") + "</select></label>" +
+      '<label class="grow">Search<input type="search" data-q="s0" value="' + esc(q.s0 || "") + '" placeholder="Player"></label></div>';
+    html += tablePanel("Contracts", '<th>Player</th><th>Team</th><th>Pos</th>' + th("age", "Age") + th("r", "Rating", "50 is an average player at his position") + "<th>Thru</th>" + th("v", "Value", "What his play is worth over the rest of his deal") + th("c", "Cap", "His cap hits over the rest of his deal") + th("s", "Surplus", "Value minus cap hits") + th("tv", "Trade value", "What he'd bring in a trade, in draft picks"),
+      list.map(function (x) {
+        var p = x.p, pr = P.priceText(x.tv.pts);
+        return "<tr><td>" + pname(p, 22) + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + esc(P.group(p)) + "</td><td>" + (p.age ? Math.floor(p.age) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + x.last + "</td><td>" + m(x.v) + "</td><td>" + m(x.c) +
+          '</td><td class="' + (x.s >= 0 ? "pos" : "neg") + '"><b>' + sm(x.s) + '</b></td><td title="' + esc(pr.long) + ' (' + Math.round(x.tv.pts) + ' points)">' + esc(pr.short) + "</td></tr>";
+      }).join(""), list.length >= 150 ? "Top 150 shown" : list.length + " contracts", "tcon");
+    view.innerHTML = html;
   }
 
   // ---------- trade value: pick a player, see what picks it takes to get him ----------
@@ -903,7 +938,7 @@
         P_("<b>Production:</b> the box score over the last three seasons (this one fully, last season at 70%, the one before at 40%, each against its own season's averages, so an injured star or a slow start doesn't erase a track record), per game: EPA per play for quarterbacks; yards, touchdowns and EPA against the average play for backs and receivers; sacks, hits and tackles for loss for pass rushers; tackles, plays on the ball and turnovers for linebackers and defensive backs. It's trusted more as the games add up.") +
         P_("The mix leans on production where the box score sees a player well (65% for quarterbacks, 75% for edge rushers, 70% for interior defensive linemen, whose plus-minus is noisy) and on the on-field number where it doesn't (all of it for offensive linemen). On the scale, 50 is the average player at the position and every 15 points is a standard deviation. Player rankings sort on it; tap any player for the breakdown, his season, game log and contract.")) +
       sec("The rating ahead", P_("This season's rating already reflects how a player plays at his current age, so only future seasons move. Players short of their position's peak (running backs about 26, corners 27, receivers, edge rushers and linebackers 28, tight ends and interior defenders 29, linemen 30, quarterbacks 32) gain a little each year until they reach it. Each year past the peak takes a share off, compounding (12% a year at running back, 9% at corner, 3% at quarterback), and from four years past the peak the fall speeds up to twice that plus 4 points a year. Young first-round quarterbacks also get upside: their rating moves toward what their draft slot usually becomes (about 72 for a top-5 pick, 66 for picks 6-15, 60 for a late first), half the gap in a year, fading as they age out of it by 28. Player cards show the next three seasons.")) +
-      sec("Value", P_("What a player's play is worth in a season: his position's starter price (the average contract of the starting tier league-wide), times how much he plays, times a quality multiplier from the rating (0.3 for well below average up to 2.3), blended 70/30 with the market's own verdict, his contract average grown with the cap. Rookie deals say nothing about quality, so rookies get only the first part. Future seasons use the rating ahead.")) +
+      sec('<span id="value">Value</span>', P_("What a player's play is worth in a season: his position's starter price (the average contract of the starting tier league-wide), times how much he plays, times a quality multiplier from the rating (0.3 for well below average up to 2.3), blended 70/30 with the market's own verdict, his contract average grown with the cap. Rookie deals say nothing about quality, so rookies get only the first part. Future seasons use the rating ahead.") + P_("How much he plays: this season's real snap share for this season, so missed games count, and his healthy role for every season after, so a star who's hurt this year (Micah Parsons, Myles Garrett) isn't priced as a backup for the rest of his contract.") + P_("<b>Contracts:</b> the Contracts tab adds this up over the rest of every deal (this season's share still to play, then each full season, up to five) against his cap hits. Surplus is value minus cap hits; trade value is the price in draft picks from the trade model below.")) +
       sec("Next contracts", P_("Every estimate comes from comparable deals: the six veterans at his position who signed in the last three years (no rookie deals) nearest to him in rating, age at signing and role, with starters compared only with starters. The per-year figure is 70% what they got (grown with the cap) and 30% his own value that season; for a veteran, his last deal takes 15% of it. Years are the comparable deals' middle length, capped by age (one year at 33 or older, two at 31-32, three at 30), and the guarantee is their guaranteed share of the total. Hover an estimate, or open the player's card, to see the deals behind it.")) +
       sec("Free agents and the franchise tag", P_("Everyone whose deal runs out before a season, ranked by value, with his next contract and the teams it fits (his position among their top three needs and cap space for his price). Turn on likely cap casualties to add the players expected to be cut. The tag is the NFL's 2026 non-exclusive franchise tag at his tag position (all offensive linemen share one; edge rushers listed as linebackers get the linebacker tag), grown with the cap, or 120% of his last cap hit if that's more. Only real candidates are flagged: a starter rated 60 or better for next season, 30 or younger, whose market is at least 65% of the tag, at most two per team, marked a fair price (90% or more of the tag) or pricey. Most teams have none.")) +
       sec("Team needs", P_("For next season, each position group's starters under contract that year (healthy role decides who starts, the rating ahead decides how good), with empty starting spots counted at replacement level. Grades are where that lands among the 32 teams: A is the top fifth, F the bottom fifth, so a fifth of the league gets an F at every position by design. Needs are the weakest groups weighted by how much the position matters (quarterback 1.6, tackle and edge 1.2, receiver and corner 1.1, down to running back 0.6), with the reason: starters who can leave in free agency, open spots, a weak starter, an aging one. The Big Board's hand-kept draft needs are shown alongside.")) +

@@ -203,3 +203,12 @@ test('offseason simulator: cuts free room, signings fit the cap, the draft fills
   const r1 = P.simulateOffseason(W, 'NE', { fa: 2 }), first = r1.log.signed[0];
   if (first) assert.ok(!P.simulateOffseason(W, 'NE', { fa: 2, ban: [first.p.id] }).log.signed.some(x => x.p.id === first.p.id));
 });
+
+test('value: a star hurt this season is priced at his healthy role for later seasons', () => {
+  const C2 = require('../nfl/lib/cap.js'), P = require('../nfl/lib/plan.js');
+  const W = P.init(C2.newWorld(read('nfl/data/league.json'), read('nfl/data/teamcap.json'), read('nfl/data/rating.json')));
+  // anyone who's barely played this season but is a starter when healthy: next season is worth far more than this one
+  const hurt = W.players.filter(p => p.c && p.snaps && p.snaps[3] >= 1 && P.share(W, p) < 0.3 && P.role(W, p) >= 0.8 && P.quality(W, p).z > 1 && C2.lastYear(p) > W.season);
+  assert.ok(hurt.length > 0, 'some injured starters to check');
+  for (const p of hurt) assert.ok(P.value(W, p, W.season + 1) > 2 * P.value(W, p, W.season), p.n);
+});

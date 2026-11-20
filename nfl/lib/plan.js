@@ -107,8 +107,10 @@
     const g = P.group(p), age = (p.age || 26) + (y - W.season), start = RETIRE_AT[g] || 33;
     return y <= W.season ? 1 : Math.max(0.1, Math.min(1, 1 - 0.15 * (age - start)));
   };
+  // His share of snaps: this season's real share for this season (missed games are missed), his healthy role (P.role)
+  // for every season after, so a star hurt this year isn't priced as a backup for the rest of his contract
   P.value = (W, p, y, shareOverride) => {
-    const g = P.group(p), sh = shareOverride != null ? shareOverride : P.share(W, p), age = (p.age || 26) + (y - W.season);
+    const g = P.group(p), sh = shareOverride != null ? shareOverride : y > W.season ? Math.max(P.share(W, p), P.role(W, p)) : P.share(W, p), age = (p.age || 26) + (y - W.season);
     const role = W.price[g] * Math.pow(sh, 1.25) * P.multAt(W, p, y) * P.playingOdds(p, y, W);
     if (P.rookieDeal(p) || !p.c || !p.c.apy) return role;
     const grown = p.c.apy * Math.pow(1.07, Math.max(0, W.season - (p.c.signed || W.season)));
