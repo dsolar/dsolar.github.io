@@ -852,6 +852,21 @@
       }
       return out.sort((a, b) => b.r - a.r);
     });
+    // Players expected to opt in whose option season is i, but with a real chance (20-50%) of opting out instead.
+    // They aren't in the free agent class (the model calls them in), so the page lists them on their own.
+    H.maybeOut = (i = 1) => cache("mo" + i + cfg.disc, () => {
+      const out = [];
+      for (const p of H.players()) {
+        const kind = p.c.opt && p.c.opt[i];
+        if (kind !== "PO" && kind !== "MO") continue;
+        const v = L.optionView(W, p, i);
+        if (!v || v.dec || v.set || v.final !== "in" || v.pIn == null) continue;
+        const pOut = 1 - v.pIn;
+        if (pOut < 0.2) continue;
+        out.push({ p, kind, pOut, sal: v.sal, market: v.mkt, team: p.t, age: Mo.ageIn(p, i, W) });
+      }
+      return out.sort((a, b) => b.pOut - a.pOut);
+    });
     // What a team can do right now: cap room, exceptions left, trade exceptions, hard cap, repeater, roster spots
     H.tools = (code, i = 0) => cache("tools" + code + i, () => {
       const t = W.T[code], pay = H.payroll(code, i), status = CBA.status(pay, i);

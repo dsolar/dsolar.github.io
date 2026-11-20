@@ -301,3 +301,11 @@ test('2028 class: the early board names projected 2028 rookies and links them to
   for (const x of r) assert.equal(x.board, 'nba2028');
   assert.ok(H.rookies(1).filter(x => x.prospect).every(x => x.board === 'nba'));
 });
+
+test('could opt out: player options the model calls in, with a 20-50% chance of opting out', () => {
+  for (const y of [1, 2]) for (const x of H.maybeOut(y)) {
+    assert.ok(x.pOut >= 0.2 && x.pOut < 0.5, x.p.n + ' ' + x.pOut);
+    assert.ok(['PO', 'MO'].includes(x.kind));
+    assert.ok(!H.faClass(y).some(f => f.p.id === x.p.id), x.p.n + ' is also in the class');
+  }
+});
