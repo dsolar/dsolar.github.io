@@ -95,18 +95,34 @@
     });
   }
   new MutationObserver(function () { scrollA11y(view); }).observe(view, { childList: true, subtree: true });
+  var subtabs = $("#subtabs");
+  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", lineups: "players", trade: "trades", value: "trades", fa: "fa", draft: "draft", picks: "draft" };
+  var SUBS = {
+    players: [["ratings", "Ratings"], ["lineups", "Lineups"]],
+    trades: [["trade", "Builder"], ["value", "Trade value"]],
+    draft: [["draft", "Lottery odds"], ["picks", "Traded picks"], ["", "Big Board", "../draft/#nba"]]
+  };
   function render() {
     parse();
+    // Six sections; grouped ones get a sub-tab row
+    var group = GROUP[state.route] || "";
     document.querySelectorAll(".tabs a").forEach(function (a) {
-      var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && (state.route === "team" || state.route === "style")) || (a.dataset.tab === "contracts" && state.route === "picks");
-      if (a.dataset.tab === "contracts") a.setAttribute("href", href("contracts/" + (state.route === "team" || state.route === "contracts" ? (state.arg || "BOS").toUpperCase() : load("team", "BOS")), {}));
-      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      // a section tab returns to the page last used in it
+      var last = load("sub." + a.dataset.tab, null);
+      if (last && SUBS[a.dataset.tab]) a.setAttribute("href", href(last, {}));
     });
+    var subs = SUBS[group];
+    subtabs.hidden = !subs;
+    if (subs) {
+      if (subs.some(function (x) { return x[0] === state.route; })) save("sub." + group, state.route);
+      subtabs.innerHTML = subs.map(function (x) { return x[2] ? '<a href="' + x[2] + '">' + x[1] + "</a>" : '<a href="' + href(x[0], {}) + '"' + (x[0] === state.route ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
+    }
     var withYears = state.route === "standings" || state.route === "team" || state.route === "contracts";
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if ((state.route === "team" || state.route === "style") && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
+    var fn = { draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
     fn();
   }
   function drawYears() {
@@ -145,9 +161,14 @@
       html += "</tbody></table></div></div>";
     });
     html += "</div>";
-    if (first) html += lotteryPanel(rows) + lotteryGrid(rows) + lotteryRules();
+    if (first) html += '<p class="note">Lottery odds for every team are under <a href="' + href("draft", {}) + '">Draft</a>.</p>';
     html += '<p class="note">Seeds 1-6 make the playoffs; 7-10 go to the play-in (lines mark the cuts). Net is projected points per 100 possessions better than an average team.</p>';
     view.innerHTML = html;
+  }
+  function draftPage() {
+    var rows = H.standings(0);
+    view.innerHTML = '<h2 class="sec">2027 Draft</h2><p class="lede">Lottery odds from the season simulations, and who\'s ranked at each pick on the <a href="' + boardHref() + '">Big Board</a>.</p>' +
+      lotteryPanel(rows) + lotteryGrid(rows) + lotteryRules();
   }
   function lotteryPanel(rows) {
     var lot = rows.slice().sort(function (a, b) { return a.avgPick - b.avgPick; }).slice(0, 16);
@@ -1734,7 +1755,7 @@
       H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16], board2028: r[17] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
-      $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board.";
+      $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board. " + howLink() + ".";
       render();
     })
     .catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
