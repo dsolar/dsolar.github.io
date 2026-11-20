@@ -2886,3 +2886,15 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .nl-sp .sp-a{display:none}
 @media (max-width:420px){.nl-sports{display:flex;flex-wrap:wrap}.nl-sp .sp-ic,.nl-sp .sp-logo{display:none}.nl-sp span.sp-l{display:none}.nl-sp span.sp-a{display:inline}.nl-sp{padding:7px 9px;font-size:13px;letter-spacing:.02em}}
 .lh-id>b{font-size:17px}
+/* league import (Start a league) */
+.nl-imported{display:block;line-height:1.45}
+.nl-imported ul{margin:4px 0 6px 18px;padding:0}
+.nl-imported .imp-h{margin:8px 0 2px;font-weight:700;font-size:13px}
+.nl-imported .imp-u{margin:0;color:var(--muted);font-size:13px}
+.nl-imported .link{margin-top:6px}
+.imp-f{display:flex;flex-direction:column;gap:6px}
+.imp-f input,.imp-f select,.imp-f textarea{font:inherit;width:100%}
+.imp-f .imp-espn{margin-top:4px}
+.imp-f details{margin-top:6px}
+.imp-f details summary{cursor:pointer;font-weight:700}
+.imp-why{min-height:1.2em;margin:4px 0 0;color:var(--loss, #b42318);font-size:14px}

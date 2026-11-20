@@ -53,7 +53,8 @@
   const SLEEPER_NFL = { pass_yd: "pass_yd", pass_td: "pass_td", pass_int: "pass_int", pass_att: "pass_att", pass_cmp: "pass_cmp", pass_2pt: "pass_2pt", pass_fd: "pass_fd", pass_sack: "pass_sacked",
     rush_yd: "rush_yd", rush_td: "rush_td", rush_att: "rush_att", rush_2pt: "rush_2pt", rush_fd: "rush_fd", rec: "rec", rec_yd: "rec_yd", rec_td: "rec_td", rec_2pt: "rec_2pt", rec_fd: "rec_fd", rec_tgt: "rec_tgt",
     fum_lost: "fum_lost", fum: "fum", xpm: "xpm", xpmiss: "xpmiss", fga: "fga", def_td: "def_td", int: "def_int", sack: "def_sack", ff: "ff", fum_rec: "fum_rec", safe: "safe", def_st_td: "def_st_td",
-    st_td: "def_st_td", idp_tkl_solo: "idp_tkl_solo", idp_tkl_ast: "idp_tkl_ast", idp_sack: "idp_sack", idp_tkl_loss: "idp_tkl_loss", idp_qb_hit: "idp_qb_hit", idp_int: "idp_int", idp_ff: "idp_ff",
+    st_td: "def_st_td", kr_td: "def_st_td", pr_td: "def_st_td", st_fum_rec: "fum_rec", st_ff: "ff", def_st_fum_rec: "fum_rec", def_st_ff: "ff", fum_rec_td: "def_td", int_ret_td: "def_td",
+    idp_tkl_solo: "idp_tkl_solo", idp_tkl_ast: "idp_tkl_ast", idp_sack: "idp_sack", idp_tkl_loss: "idp_tkl_loss", idp_qb_hit: "idp_qb_hit", idp_int: "idp_int", idp_ff: "idp_ff",
     idp_fum_rec: "idp_fum_rec", idp_pass_def: "idp_pass_def", idp_def_td: "idp_def_td", idp_safe: "idp_safe" };
   const SLEEPER_NBA = { pts: "pts", reb: "reb", ast: "ast", stl: "stl", blk: "blk", to: "tov", tov: "tov", tpm: "tpm", fg3m: "tpm", "3pm": "tpm", fgm: "fgm", fga: "fga", ftm: "ftm", fta: "fta",
     tpa: "tpa", fg3a: "tpa", oreb: "oreb", dreb: "dreb", pf: "pf", dd: "dd", td: "td", td3: "td", tf: "td" };

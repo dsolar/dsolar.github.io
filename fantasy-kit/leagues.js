@@ -459,8 +459,76 @@
     const saved = templates.get("all", []).filter((t) => t.rules && t.rules.sport === sp.key);
     return `<section class="nl-sec nl-start"><div class="nl-start-head"><div><h2 class="nl-h">Choose a starting point</h2><p class="nl-sub">Use a template, then change any rule in Full customization.</p></div><button class="btn sm" type="button" data-full-custom>Build your own</button></div>
       <div class="nl-presets" role="group" aria-label="Starting templates">${presets.map(([k, name, sub]) => `<button type="button" data-launch-template="${k}" aria-pressed="${presetChoice === k}"><b>${esc(name)}</b><small>${esc(sub)}</small></button>`).join("")}</div>
-      <div class="nl-template-tools">${saved.length ? `<label>Saved rule sets <select id="saved-rules"><option value="">Choose a saved setup</option>${saved.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn sm ghost" data-save-rules>Save these rules</button><button type="button" class="btn sm ghost" data-share-rules>Copy setup link</button><span class="ps">Names and account details stay out of templates.</span></div></section>`;
+      <div class="nl-template-tools">${saved.length ? `<label>Saved rule sets <select id="saved-rules"><option value="">Choose a saved setup</option>${saved.map((t, i) => `<option value="${i}">${esc(t.name)}</option>`).join("")}</select></label>` : ""}<button type="button" class="btn sm" data-import-league>Import from Sleeper, ESPN or Yahoo</button><button type="button" class="btn sm ghost" data-save-rules>Save these rules</button><button type="button" class="btn sm ghost" data-share-rules>Copy setup link</button><span class="ps">Names and account details stay out of templates.</span></div></section>`;
   }
+  // ---------- import a league's settings (fantasy-kit/import.js) ----------
+  let imported = null;
+  const IM = () => window.FK.importer;
+  function importReport() {
+    if (!imported) return "";
+    const r = imported, n = r.notes, u = r.unmapped;
+    return `<div class="banner nl-imported" role="status"><b>Imported from ${esc(r.source)}${r.name ? `: ${esc(r.name)}` : ""}.</b> <span>Teams, lineup, bench, scoring, draft, waivers and playoffs are set from it. Check them in Full customization, then add your names.</span>
+      ${n.length ? `<p class="imp-h">Check these</p><ul>${n.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+      ${u.length ? `<p class="imp-h">Not carried over</p><p class="imp-u">${u.map(esc).join(", ")}</p>` : ""}
+      <button type="button" class="btn sm ghost" data-import-clear>Dismiss</button></div>`;
+  }
+  function applyImport(r) {
+    grab();
+    const keep = { me: form.me, team: form.team };
+    for (const key of Object.keys(form)) delete form[key];
+    Object.assign(form, JSON.parse(JSON.stringify(FORM_DEFAULTS)), keep, r.form);
+    if (!form.name) form.name = r.name || "";
+    delete form.sx;
+    form.customize = true; presetChoice = "custom"; templateNote = ""; templateError = "";
+    imported = r;
+    derive();
+  }
+  function importDialog() {
+    const sports = [["nfl", "Football"], ["nba", "Basketball"], ["mlb", "Baseball"], ["nhl", "Hockey"]];
+    const D = U.dialog(`<h3>Import a league's settings</h3>
+      <p class="ps">Paste your league's link. Draft Lab copies the teams, lineup, scoring, draft, waivers and playoffs so you can set up the same league here, then shows anything that didn't carry over.</p>
+      <form class="imp-f"><label for="imp-link">Sleeper or ESPN league link (or ID)</label><input id="imp-link" name="link" type="text" autocomplete="off" placeholder="sleeper.com/leagues/… or fantasy.espn.com/…?leagueId=…">
+      <div class="imp-espn"><label for="imp-sport">ESPN sport, for an ID without a link</label><select id="imp-sport" name="sport">${sports.map(([k, l]) => `<option value="${k}"${k === form.sport ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+      <details class="imp-yahoo"><summary>Yahoo league?</summary><p class="ps">Yahoo only shares league data with signed-in members, so copy the settings instead: open your league, go to <b>League</b> &gt; <b>Settings</b>, select the whole page (Ctrl+A or Cmd+A), copy it and paste it here.</p>
+        <label for="imp-text" class="sr-only">Yahoo settings page</label><textarea id="imp-text" name="text" rows="6" placeholder="Paste the whole Settings page"></textarea></details>
+      <p class="imp-why" id="imp-why" role="alert"></p>
+      <div class="row" style="gap:10px;justify-content:flex-end"><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn go" type="submit" id="imp-go">Import</button></div></form>`,
+    (fd, f) => { runImport(String(fd.get("link") || ""), String(fd.get("text") || ""), String(fd.get("sport") || "nfl"), f); return false; });
+    setTimeout(() => { const i = D.querySelector("#imp-link"); if (i) i.focus(); }, 30);
+  }
+  async function runImport(link, text, sportPick, f) {
+    const why = (m) => { const el = f.querySelector("#imp-why"); if (el) el.textContent = m; };
+    const go = f.querySelector("#imp-go");
+    const I = IM();
+    if (!I) return why("The importer didn't load. Refresh the page and try again.");
+    const inp = text.trim() ? { source: "yahoo", text } : I.parseInput(link);
+    if (!inp) return why("Paste a Sleeper or ESPN league link, or a Yahoo settings page.");
+    if (inp.source === "yahoo-link") return why("Yahoo links can't be read from here. Open \"Yahoo league?\" below and paste the Settings page instead.");
+    go.disabled = true; go.textContent = "Importing…"; why("");
+    try {
+      let r;
+      if (inp.source === "sleeper") {
+        const lg = await fetch(`https://api.sleeper.app/v1/league/${inp.id}`).then((x) => (x.ok ? x.json() : null));
+        if (!lg) throw new Error("Sleeper couldn't find that league. Check the link.");
+        const dr = lg.draft_id ? await fetch(`https://api.sleeper.app/v1/draft/${lg.draft_id}`).then((x) => (x.ok ? x.json() : null)).catch(() => null) : null;
+        r = I.fromSleeper(lg, dr, S);
+      } else if (inp.source === "espn") {
+        const sport = inp.sport || sportPick;
+        const j = await C.importEspn(sport, inp.id, inp.season);
+        if (!j || j.error === "private") throw new Error("That ESPN league is private. The commissioner can turn on League Settings > Basic Settings > \"Make league viewable to public\", import, then turn it back off. Or copy the settings by hand.");
+        if (j.error === "not_found") throw new Error(`ESPN has no ${sport === "nfl" ? "football" : sport === "nba" ? "basketball" : sport === "mlb" ? "baseball" : "hockey"} league with that ID. Check the link, or pick the right sport.`);
+        if (j.error) throw new Error("ESPN didn't answer. Try again in a minute.");
+        r = I.fromEspn(j, sport, S);
+      } else r = I.fromYahooText(inp.text, S);
+      applyImport(r);
+      document.getElementById("fk-dlg").close();
+      await render();
+      const b = $(".nl-imported"); if (b) b.scrollIntoView({ block: "center", behavior: "smooth" });
+    } catch (err) {
+      why(err.message || "Couldn't import that league.");
+    } finally { go.disabled = false; go.textContent = "Import"; }
+  }
+
   function usePreset(k) {
     const keep = { sport: form.sport, teams: form.teams, name: form.name, me: form.me, team: form.team, kind: oneWeek() ? "week" : "redraft" };
     if (oneWeek()) for (const field of ["slPeriod", "slWeek", "slKind", "slOne", "slGames", "scoring"]) if (form[field] != null) keep[field] = form[field];
@@ -471,7 +539,7 @@
     if (k === "guillotine") form.season = "guillotine";
     if (k === "bestball") { form.bestball = 1; form.scoring = Object.keys(S[form.sport].scorings).find((x) => S[form.sport].scorings[x].type === "points") || "cp"; }
     if (form.kind === "week") oneWeekDefaults();
-    form.customize = false; presetChoice = k; templateNote = ""; templateError = "";
+    form.customize = false; presetChoice = k; templateNote = ""; templateError = ""; imported = null;
     derive();
   }
   // a field drawn behind the header, one for each sport
@@ -521,6 +589,7 @@
       <form class="nl-body" id="new" novalidate>
         ${templateError ? `<div class="banner loss" role="alert">${esc(templateError)} Use a starting point below to begin a new setup.</div>` : ""}
         ${templateNote ? `<div class="banner" role="status">${esc(templateNote)}</div>` : ""}
+        ${importReport()}
         ${!C.user() ? `<div class="banner nl-out" style="margin:0 0 4px"><b>Set it up now, sign in at the end.</b> <span class="muted">Everything here is kept.</span></div>` : ""}
         ${rematch ? `<div class="banner" style="margin:0 0 4px"><b>Running it back: ${esc(rematch.name)}, the same ${rematch.n} teams and managers.</b> <span class="muted">Pick next week's games and go. Everyone in this week's game is in the new one.</span></div>` : ""}
         ${startingPoints(sp)}
@@ -1269,6 +1338,8 @@
     const preset = e.target.closest("[data-launch-template]");
     if (preset) { grab(); usePreset(preset.dataset.launchTemplate); redraw(); return; }
     if (e.target.closest("[data-full-custom]")) { grab(); form.customize = true; presetChoice = "custom"; render().then(() => { const d = $("#nl-custom"); if (d) { d.open = true; d.scrollIntoView({ block: "start", behavior: "smooth" }); } }); return; }
+    if (e.target.closest("[data-import-league]")) { grab(); importDialog(); return; }
+    if (e.target.closest("[data-import-clear]")) { imported = null; redraw(); return; }
     if (e.target.closest("[data-save-rules]")) {
       grab();
       const rules = E.rulesOf(form);

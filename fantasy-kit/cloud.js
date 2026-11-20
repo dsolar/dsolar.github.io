@@ -164,6 +164,8 @@
     .catch(() => { slatesP[sport] = null; return { weeks: [], error: true }; }));
   };
   // named games' box scores and states, for a one-day league (fk-live ?games=)
+  // a public ESPN league's settings, for importing it (supabase/functions/fk-import)
+  const importEspn = (sport, id, season) => fetch(`${BASE}/functions/v1/fk-import?src=espn&sport=${encodeURIComponent(sport)}&id=${encodeURIComponent(id)}${season ? `&season=${season}` : ""}`).then((r) => r.json()).catch(() => null);
   const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   // baseball's starting lineups and probable pitchers, today's and tomorrow's (fk-live ?sport=mlb&lineups=1)
@@ -258,5 +260,5 @@
     save: (sport, b) => (user() ? rpc("fk_board_save", { p_sport: sport, p_board: b || null }) : Promise.resolve(null)),
   };
 
-  FK.cloud = { token, oauth, providers, slates, games, listen, push, boards, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, lineups, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
+  FK.cloud = { token, oauth, providers, slates, games, importEspn, listen, push, boards, user, signIn, signUp, passwordSignIn, resetPassword, setPassword, signOut, fromLink, rpc, live, lineups, now: () => Date.now() + offset, lastEmail: () => { try { return JSON.parse(localStorage.getItem("fk-auth:email")) || ""; } catch (e) { return ""; } } };
 })(typeof window !== "undefined" ? window : globalThis);
