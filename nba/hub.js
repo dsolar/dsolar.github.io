@@ -1597,6 +1597,22 @@
         const code = Object.keys(votes).sort((a, b) => votes[b] - votes[a])[0];
         if (code) { t.code = code; H.luTeams[code] = t; }
       }
+      // Ratings vs. results: this season's minutes times each player's impact rating, added up the way a lineup's
+      // ratings add to its net rating, against what the team has actually done (every lineup's points per 100)
+      H.teamCheck = code => cache("tc" + code, () => {
+        const t = H.luTeams[code], av = (stats.avg && stats.avg[String(2027)]) || {};
+        if (!t || !t.tot || !t.tot[1]) return null;
+        const teamMin = t.tot[0], rows = [];
+        let implied = 0;
+        for (const p of Object.values(W.P)) {
+          if (p.t !== code) continue;
+          const a = av[p.id]; if (!a || !a[0]) continue;
+          const share = a[0] * a[1] / teamMin, r = H.rating(p, 0);
+          implied += r * share; rows.push({ p, share, r, add: r * share });
+        }
+        const actual = (t.tot[3] / t.tot[1] - t.tot[4] / t.tot[2]) * 100;
+        return { implied, actual, gap: actual - implied, poss: t.tot[1], games: Math.round(teamMin / 48), rows: rows.sort((a, b) => b.share - a.share) };
+      });
       // on/off on each player: his current team's numbers (a traded player keeps his biggest sample)
       for (const t of Object.values(H.luTeams)) for (const [nid, v] of Object.entries(t.onoff)) {
         const p = W.P[H.luIds[nid]];

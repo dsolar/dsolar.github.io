@@ -865,6 +865,18 @@
         var dl = k === "orb" ? "Opponent offensive rebound %" : k === "tov" ? "Turnovers forced per 100" : "Opponent " + SM[k][0].charAt(0).toLowerCase() + SM[k][0].slice(1);
         return '<div class="ffl">' + SM[k][0] + '</div><div class="ffc"><b>' + SM[k][1](st.o[k]) + "</b>" + rankPill(bestRank(st, "o", k)) + '</div><div class="ffc" title="' + esc(dl) + '"><b>' + SM[k][1](st.d[k]) + "</b>" + rankPill(bestRank(st, "d", k)) + "</div>";
       }).join("") + "</div>");
+    // ratings vs. results
+    var tc = H.teamCheck && H.teamCheck(code);
+    if (tc) {
+      var all = H.codes.map(function (c) { return { c: c, x: H.teamCheck(c) }; }).filter(function (o) { return o.x; }).sort(function (a, b) { return b.x.gap - a.x.gap; });
+      var gRk = 1 + all.findIndex(function (o) { return o.c === code; }), sg = function (v) { return (v >= 0 ? "+" : "") + f1(v); };
+      var read = Math.abs(tc.gap) < 2 ? "Right about where its players' ratings say it should be." : tc.gap > 0 ? "Better than its players' ratings add up to: the system, the fit, shooting luck or ratings that are too low." : "Worse than its players' ratings add up to: bad fit, bad luck or ratings that are too high.";
+      html += luSection("Ratings vs. results", "Each player's impact rating times his share of the minutes, against the team's actual net rating. " + tc.games + " games, so expect noise until midseason.",
+        '<div class="kv"><div><b>' + sg(tc.implied) + "</b><span>Ratings add up to</span></div><div><b>" + sg(tc.actual) + "</b><span>Actual net rating</span></div><div><b class=\"" + (tc.gap >= 0 ? "pos" : "neg") + '">' + sg(tc.gap) + "</b><span>Beating the ratings by (" + ORD(gRk) + " of " + all.length + ")</span></div></div>" +
+        '<p class="tldr">' + read + "</p>" +
+        '<div class="two">' + tablePanel("Where it comes from", "<th>Player</th><th>Min share</th><th>Impact</th><th>Adds</th>", tc.rows.slice(0, 9).map(function (x) { return "<tr><td>" + pname(x.p, 20) + "</td><td>" + Math.round(x.share * 100) + "%</td><td>" + rchip(x.r) + "</td><td>" + sg(x.add) + "</td></tr>"; }).join(""), "Share of a full game's minutes", "ttc") +
+        tablePanel("Across the league", "<th>Team</th><th>Ratings</th><th>Actual</th><th>Gap</th>", all.map(function (o) { return "<tr" + (o.c === code ? ' class="me"' : "") + '><td><a href="' + href("style/" + o.c, {}) + '">' + logo(o.c, 16) + " " + esc(team(o.c).short) + "</a></td><td>" + sg(o.x.implied) + "</td><td>" + sg(o.x.actual) + '</td><td class="' + (o.x.gap >= 0 ? "pos" : "neg") + '">' + sg(o.x.gap) + "</td></tr>"; }).join(""), "Best gap first", "ttc") + "</div>");
+    }
     // shot diets
     zoneInv = false; var offChart = shotChart(styleZones("o", st));
     zoneInv = true; var defChart = shotChart(styleZones("d", st)); zoneInv = false;

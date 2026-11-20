@@ -833,3 +833,6 @@ table.tstand .nms{display:none}
 /* could opt out: on a phone, player, team and chance */
 @media (max-width:760px){ table.tmo th:nth-child(3),table.tmo td:nth-child(3),table.tmo th:nth-child(4),table.tmo td:nth-child(4){display:none} }
 @media (max-width:760px){ table.tspend th:nth-child(n+4),table.tspend td:nth-child(n+4){display:none} table.tspend th{white-space:normal} table.tspend td.tm .nm{max-width:120px} }
+/* ratings vs. results */
+table.ttc tr.me td{background:var(--paper-2);font-weight:700}
+table.ttc td:first-child{white-space:nowrap}
