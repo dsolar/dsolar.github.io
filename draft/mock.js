@@ -25,13 +25,17 @@
   const sortedTeams = () => Object.keys(D.teams).sort((a, b) => (D.teams[a].city + D.teams[a].name).localeCompare(D.teams[b].city + D.teams[b].name));
   const clockOf = (p) => BB.team(D, p.owner);
 
+  // A later class (2028) has no standings yet: projected order only
+  const later = () => !!D.key && D.key !== D.league;
   function orderFor() {
+    if (later()) M.basis = "projected";
     const ord = E.buildOrder(D, { order: M.basis, lottery: D.league === "nba" && M.draw ? M.seed : null });
     return ord.filter((p) => p.rnd <= M.rounds);
   }
 
   // ---------- setup ----------
   function setup() {
+    if (later()) M.basis = "projected";
     const ord = E.buildOrder(D, { order: M.basis, lottery: null });
     const count = (t) => ord.filter((p) => p.owner === t && p.rnd <= M.rounds).length;
     const seg = (name, opts, cur) => `<div class="seg" role="group" aria-label="${name}">${opts.map(([k, l]) => `<button type="button" data-set="${name}" data-v="${k}" aria-pressed="${String(cur) === String(k)}">${l}</button>`).join("")}</div>`;
@@ -39,7 +43,7 @@
     $("#mock-view").innerHTML = `<section class="mock-setup">
       <div class="setup-head"><h2 class="disp">Mock draft</h2><p class="sub">Pick your team, or a few. Everyone else drafts off the consensus board, with as much chaos as you want. ${D.league === "nba" ? "Draw the 3-2-1 lottery first, or skip it and draft in record order." : ""}</p></div>
       <div class="opts">
-        <div><span class="lab">Order</span>${seg("basis", [["projected", "Projected"], ["standings", "As it stands"]], M.basis)}</div>
+        ${later() ? "" : `<div><span class="lab">Order</span>${seg("basis", [["projected", "Projected"], ["standings", "As it stands"]], M.basis)}</div>`}
         ${D.league === "nba" ? `<div><span class="lab">3-2-1 lottery</span>${seg("draw", [["yes", "Draw it"], ["no", "Skip the draw"]], M.draw ? "yes" : "no")}</div>` : ""}
         <div><span class="lab">Rounds</span>${seg("rounds", Array.from({ length: maxRounds() }, (_, i) => [i + 1, String(i + 1)]), M.rounds)}</div>
         <div><span class="lab">The other ${D.league === "nba" ? "29" : "31"}</span>${seg("style", [["chalk", "Chalk"], ["balanced", "Balanced"], ["chaos", "Chaos"]], M.style)}</div>
@@ -55,7 +59,7 @@
           ${BB.logo(D, t, 40)}<span class="tn">${esc(tm.name)}</span><span class="tr">${esc((D.records || {})[t] || "")}${n ? ` &middot; ${n} pick${n === 1 ? "" : "s"}` : " &middot; no pick"}</span></button>`;
       }).join("")}</div>
       <div class="go-row"><button type="button" class="btn go" data-act="start">${D.league === "nba" && M.draw ? "Draw the lottery" : "Start the draft"}</button>
-        <span class="note">${M.basis === "projected" ? ((D.proj || {}).source === "NBA Hub" ? `Projected order from the <a href="../nba/#/standings">NBA Hub</a>'s season simulations, ${esc(BB.fmtDay(D.proj.updated))}.` : `Projected order from ESPN's ${D.league === "nba" ? "Basketball" : "Football"} Power Index records, ${esc(BB.fmtDay((D.proj || {}).updated))}.`) : `Order from today's standings, ${esc(BB.fmtDay(D.order.updated))}.`} ${D.league === "nba" ? "Protected picks resolve the way the trades are written." : "Traded picks as they stand."}</span></div>
+        <span class="note">${M.basis === "projected" ? ((D.proj || {}).source === "NBA Hub" ? (later() ? `Order from the <a href="../nba/#/standings?y=1">NBA Hub</a>'s projected ${esc(D.proj.season || "")} records, and the picks as the trades stand. An early look: rosters and trades will change.` : `Projected order from the <a href="../nba/#/standings">NBA Hub</a>'s season simulations, ${esc(BB.fmtDay(D.proj.updated))}.`) : `Projected order from ESPN's ${D.league === "nba" ? "Basketball" : "Football"} Power Index records, ${esc(BB.fmtDay((D.proj || {}).updated))}.`) : `Order from today's standings, ${esc(BB.fmtDay(D.order.updated))}.`} ${D.league === "nba" ? "Protected picks resolve the way the trades are written." : "Traded picks as they stand."}</span></div>
     </section>`;
   }
 

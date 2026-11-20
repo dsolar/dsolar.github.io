@@ -556,7 +556,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 <script src="common.js?v=31"></script>
 <script src="engine.js?v=31"></script>
 <script src="board.js?v=32"></script>
-<script src="mock.js?v=31"></script>
+<script src="mock.js?v=32"></script>
 <script src="challenge.js?v=30"></script>
 <script src="markets.js?v=30"></script>
 <script>
@@ -568,16 +568,17 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
     const [lg, view] = path.split("/");
     const saved = BB.store.get("bigboard") || {};
     const L = ["nba", "nba2028", "nfl"].includes(lg) ? lg : (saved.lg || "nba");
-    // a later class is a board only: no order to mock, no challenge, no markets yet
+    // a later class has the board and a mock; no challenge or markets yet
     const later = L === "nba2028";
-    return { q: Object.fromEntries(new URLSearchParams(qs || "")), lg: L, later, view: later ? "board" : VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board")) };
+    const v = VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board"));
+    return { q: Object.fromEntries(new URLSearchParams(qs || "")), lg: L, later, view: later && !["board", "mock"].includes(v) ? "board" : v };
   };
   async function go() {
     const { lg, view, q, later } = parse();
-    document.querySelectorAll(".tabs [data-view]").forEach((b) => { b.hidden = later && b.dataset.view !== "board"; });
+    document.querySelectorAll(".tabs [data-view]").forEach((b) => { b.hidden = later && !["board", "mock"].includes(b.dataset.view); });
     const sub = document.querySelector(".mast .sub");
     sub.dataset.text = sub.dataset.text || sub.textContent;
-    sub.textContent = later ? "An early look at the 2028 class: who's at the top before anyone's eligible. Rankings only until more outlets publish; the mock draft stays on 2027." : sub.dataset.text;
+    sub.textContent = later ? "An early look at the 2028 class: who's at the top before anyone's eligible. Rankings and a mock off the NBA Hub's projected 2027-28 order. Early: more outlets join as they publish." : sub.dataset.text;
     document.querySelectorAll("button[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
     document.querySelectorAll(".tabs [data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
     VIEWS.forEach((v) => { document.getElementById(v + "-view").hidden = view !== v; });

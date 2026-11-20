@@ -207,9 +207,18 @@ def build(league, sources, aliases):
              "versions": len(snaps[s["id"]]), "w": w_now} if latest else {}))
     teams = (load(os.path.join(TOOLS, "draft_teams.json"), {}) or {}).get(base, {})
     if later:
+        # A later class gets a mock when the NBA Hub has projected that season: its records, order and pick owners
+        hub = (load(os.path.join(ROOT, "nba", "data", "proj.json"), {}) or {}).get(f"y{year}") or {}
+        fut = (load(os.path.join(TOOLS, "draft_future.json"), {}) or {}).get(base) or {}
+        mock_ok = len(hub.get("teams", {})) == 30 and len(hub.get("order", [])) >= 30
         return {"league": base, "key": league, "year": year, "asof": today, "halfLife": HALF_LIFE, "dates": dates,
-                "sources": src_out, "teams": teams, "players": players, "order": None, "proj": None, "rules": None,
-                "values": None, "future": None, "needs": None, "markets": None, "results": None}
+                "sources": src_out, "teams": teams, "players": players,
+                "order": {"updated": today, "source": "NBA Hub", "picks": hub["order"]} if mock_ok else None,
+                "proj": {"updated": today, "source": "NBA Hub", "season": hub.get("season"), "teams": hub["teams"]} if mock_ok else None,
+                "rules": {"year": year, "first": hub.get("first", []), "lottery": {"format": "3-2-1", "no1": [], "top5": []}} if mock_ok else None,
+                "values": (load(os.path.join(TOOLS, "draft_values.json"), {}) or {}).get(base) if mock_ok else None,
+                "future": {"years": [y for y in fut.get("years", []) if y > year], "owed": [r for r in fut.get("owed", []) if r[1] > year]} if mock_ok else None,
+                "needs": None, "markets": None, "results": None}
     order = load(os.path.join(TOOLS, "draft_data", f"{league}-order.json"), {}) or {}
     rec_all = load(os.path.join(TOOLS, "draft_data", "records.json"), {}) or {}
     records = rec_all.get(league, {})
