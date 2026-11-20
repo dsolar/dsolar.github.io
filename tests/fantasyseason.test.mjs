@@ -129,3 +129,34 @@ test('after the draft the undrafted pool is on waivers until it clears, and clai
   assert.ok(L.rosters[1].includes(a.id), 'the higher bid wins');
   assert.ok(!G.onWaivers(L, b.id, L.openWaivers + 1), 'and the rest are free agents');
 });
+
+test('a late draft gives up regular-season weeks instead of running past the real season', () => {
+  const S2 = require('../fantasy-kit/sports.js'), V2 = require('../fantasy-kit/value.js'), F2 = require('../fantasy-kit/draft.js'), G2 = require('../fantasy-kit/league.js'), Z2 = require('../fantasy-kit/season.js');
+  const data = JSON.parse(readFileSync(new URL('../fantasy-kit/data/cbb.json', import.meta.url), 'utf8'));
+  const sport = S2.attach(Object.assign({}, S2.cbb), data);
+  const players = data.players.slice(0, 400).map((p) => ({ ...p }));
+  V2.evaluate(sport, players, { teams: 8, lineup: sport.lineup, scoring: 'cats9' });
+  const league = (draftAt, real) => {
+    const D = F2.create({ sport, teams: 8, seed: 3, now: draftAt, lineup: sport.lineup, bench: 4, scoring: 'cats9', botDelay: 0 });
+    D.season = { format: 'h2h', weeks: 13, playoffTeams: 4, deadline: 12, collegeEnd: 'reg' };
+    const ctx = F2.context(D, players, sport); F2.start(D, draftAt); let t = draftAt;
+    for (let i = 0; i < 20000 && D.phase === 'live'; i++) { t += 2000; F2.tick(D, ctx, t); }
+    return Z2.begin(D, sport, { now: t, real });
+  };
+  const end = S2.collegeEnd('reg', Date.UTC(2026, 10, 20), 'cbb');
+  // drafted before the Monday the league was sized for: all 13 weeks
+  const onTime = league(Date.UTC(2026, 10, 20, 23), true);
+  assert.equal(onTime.settings.weeks, 13);
+  // a week late: one regular week fewer, the playoffs whole, and the final still ends before the conference tournaments
+  const late = league(Date.UTC(2026, 10, 24, 1), true);
+  assert.equal(late.settings.weeks, 12);
+  assert.equal(late.settings.playoffWeeks, 2);
+  assert.ok(late.settings.deadline <= late.settings.weeks);
+  assert.ok(G2.weekStart(late, G2.totalWeeks(late) + 1) <= end + 2 * 864e5);
+  assert.equal(late.schedule.length >= 12, true);
+  // three weeks late
+  assert.equal(league(Date.UTC(2026, 11, 8, 1), true).settings.weeks, 10);
+  // a simulated league isn't tied to the calendar
+  assert.equal(league(Date.UTC(2026, 10, 24, 1), false).settings.weeks, 13);
+  assert.equal(Z2.weeksCap('cbb', Date.UTC(2027, 6, 1), 'reg'), null);
+});

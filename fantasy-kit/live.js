@@ -184,7 +184,10 @@
   let preL = null, preKey = "";
   function preLeague() {
     const key = JSON.stringify([info.name, D.teams.map((t) => [t.name, t.abbr, t.owner, t.color]), D.season, D.scoring, D.lineup, D.bench, (D.board || []).filter((x) => x && x.keeper).map((x) => x.pid)]);
-    if (preL && key === preKey) return preL;
+    // the stand-in is never scored, but the Rules page should say what the real league will be scored on (the weeks
+    // file can arrive after the first paint, so this is set on every call)
+    const mark = (x) => { if (x) x.willReal = !!(weeks && Z.realCovers(weeks, x.start)); return x; };
+    if (preL && key === preKey) return mark(preL);
     try {
       const D2 = JSON.parse(JSON.stringify(D));
       D2.round1 = D2.round1 || D2.teams.map((t, i) => i); D2.phase = "done"; D2.done = null;
@@ -192,7 +195,7 @@
       preL.tx = [];
     } catch (e) { console.warn("pre-draft hub", e); preL = null; }
     preKey = key;
-    return preL;
+    return mark(preL);
   }
   const preWhen = () => {
     if (!D.startAt) return "Pre-draft. No draft time set yet";

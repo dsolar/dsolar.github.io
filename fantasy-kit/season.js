@@ -127,7 +127,19 @@
     if (D.rules) for (const [k, v] of Object.entries(D.rules)) if (!CARRY_SKIP.has(k)) settings[k] = JSON.parse(JSON.stringify(v));
     // Hard Cap: this season's terms (the year moves on each season; held rights belong to one season)
     if (D.hardCap) settings.hardCap = JSON.parse(JSON.stringify(D.hardCap));
-    const L = G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
+    const make = () => G.create({ sport, draft: D, name: o.name || D.name, season: o.season || "", now: at, start, scoring: D.scoring, settings });
+    let L = make();
+    // The season's length was sized when the league was made, for a draft done by then. A league on real games whose
+    // draft finishes later starts later, so its regular season gives up weeks instead of running past the real season's
+    // end (or past where a college league says it stops). Playoffs keep their weeks; at least one regular week is played.
+    const cap = settings.real && !day && !s.oneWeek && !s.slate && !s.showdown && s.format !== "guillotine" ? weeksCap(sport.key, start, settings.collegeEnd) : null;
+    if (cap != null && G.totalWeeks(L) > cap) {
+      while (G.totalWeeks(L) > cap && settings.weeks > 1) {
+        settings.weeks--;
+        if (settings.deadline > settings.weeks) settings.deadline = settings.weeks;
+        L = make();
+      }
+    }
     // each keeper's cost history: what he was first worth, and the years he's been kept (this one counted)
     if (D.keepInfo) L.keepInfo = JSON.parse(JSON.stringify(D.keepInfo));
     // a league's own extra players (a prospect pool) stay with it
@@ -178,6 +190,14 @@
 
   // Do a weeks file's box scores reach a season starting at `start`? They do while the real season is on (its
   // latest week ends within a week of the start); out of season they don't, and the league is simulated.
+  // How many fantasy weeks fit between a league's first week and the end of the real season (the same count the
+  // start-a-league form makes: a last week that's a day short still counts). null out of season: no cap.
+  function weeksCap(sportKey, start, collegeEnd) {
+    let end = S.seasonEnd ? S.seasonEnd(sportKey, start) : null;
+    if (!end) return null;
+    if (collegeEnd && S.collegeEnd && (sportKey === "cbb" || sportKey === "cfb")) end = Math.min(end, S.collegeEnd(collegeEnd, start, sportKey));
+    return Math.max(1, Math.floor((end - start + DAY) / (7 * DAY)));
+  }
   function realCovers(weeks, start) {
     const ends = Object.values((weeks && weeks.weeks) || {}).map((w) => Date.parse(w.end + "T23:59:59Z")).filter(Boolean);
     return ends.length > 0 && Math.max(...ends) >= start - 8 * DAY;
@@ -707,5 +727,5 @@
   const summary = (L) => G.summary(L);
   const standings = (L) => G.standings(L);
 
-  return { keeperPlan, keepersOf, keepInfoOf, sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, mergeLive, slateGames, mergeGames, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
+  return { keeperPlan, keepersOf, keepInfoOf, sealedKind, sealedDue, draftRoster, startAfter, weekOf, realCovers, weeksCap, mergeLive, slateGames, mergeGames, begin, catchUp, driveDraft, events, keeperCost, keeperOptions, autoKeepers, nextDraft, summary };
 });
