@@ -8,5 +8,12 @@ jobs:
     timeout-minutes: 5
     steps:
       - run: |
-          sleep 60
-          curl -s -m 25 "https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-import?src=yahoo&sport=nba&id=282497" | head -c 2500; echo
+          curl -s -m 25 "https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-import?src=yahoo&sport=nba&id=282497" -o out.json
+          python3 - <<'PY'
+          import json, base64
+          t = json.load(open('out.json'))['text']
+          print('LEN', len(t))
+          print('B64START')
+          print(base64.b64encode(t.encode()).decode())
+          print('B64END')
+          PY
