@@ -96,12 +96,13 @@ test('trades: matching rules apply and value moves both ways', () => {
   assert.equal(Object.keys(three.teams).length, 3);
 });
 
-test('production is priced at the open market: role players the max does not hold down produce about what they would get', () => {
+test('market pricing (the option): role players the max does not hold down produce about what they would get', () => {
+  const Hm = Hub.build(inputs, { sims: 50, futureSims: 20, anchor: 'market' });
   let v = 0, m = 0;
-  for (const p of H.players()) {
-    const mk = H.marketAt(p, 0);
-    if (!(mk > 0) || mk > 0.25 * 165e6 || H.mpgAt(p, 0) < 15) continue;
-    v += H.prodAt(p, 0); m += mk;
+  for (const p of Hm.players()) {
+    const mk = Hm.marketAt(p, 0);
+    if (!(mk > 0) || mk > 0.25 * 165e6 || Hm.mpgAt(p, 0) < 15) continue;
+    v += Hm.prodAt(p, 0); m += mk;
   }
   assert.ok(Math.abs(v / m - 1) < 0.1, 'production/market ' + (v / m).toFixed(3));
 });
@@ -155,7 +156,7 @@ test('valuation: stars outrank cheap role players, and the star premium setting 
   const before = H.surplus(star.p, 'prod').pv;
   H.set('convex', 1.0);
   assert.ok(H.surplus(star.p, 'prod').pv < before);
-  H.set('convex', 2);
+  H.set('convex', 1.5);
 });
 
 test('dead money counts in payroll; cap holds lower next summer\'s room', () => {
@@ -316,4 +317,12 @@ test('option odds: a player out for the season takes his option; a max-level sta
   const pz = by('Kristaps Porzingis'), gi = by('Giannis Antetokounmpo');
   if (pz && pz.c.opt[1] === 'PO') assert.ok(1 - L.optionView(H.W, pz, 1).pIn < 0.2);
   if (gi && gi.c.opt[1] === 'PO') assert.ok(1 - L.optionView(H.W, gi, 1).pIn > 0.8);
+});
+
+test('default pricing: max stars mostly come out ahead, and nobody is worth more than the whole cap', () => {
+  const ps = H.players().filter(p => !p.two && H.salary(p, 0) > 0);
+  const top = ps.slice().sort((a, b) => H.rating(b, 0) - H.rating(a, 0)).slice(0, 25);
+  const ahead = top.filter(p => H.surplus(p).rows.reduce((a, r) => a + r.value - r.sal, 0) > 0).length;
+  assert.ok(ahead >= 17, 'stars ahead ' + ahead);
+  assert.ok(Math.max(...ps.map(p => H.prodAt(p, 0))) < 1.1 * 165e6 * 1.05, 'top value under ~a cap');
 });

@@ -33,7 +33,7 @@
     futureSims: 400,     // quick simulated seasons for later years
     disc: 0,             // yearly discount on surplus. Off by default so values and contracts read in real dollars (set it on
                          // the page, 7% is about the cap's growth, to see today's cap dollars)
-    anchor: "market",    // price of production: "market" (what teams pay players the max doesn't hold down) or "payroll"
+    anchor: "payroll",   // price of production: "payroll" (the league's production adds up to its payroll) or "market" (what teams pay players the max doesn't hold down)
     mode: "prod",        // "prod": what he should produce; "market": what teams would pay him
     fill: true,          // teams fill open roster spots with free agents they can afford
     blend: 2500,         // minutes of this season's BPM it takes to move a rating halfway
@@ -42,7 +42,7 @@
     salW: 0.5,           // what a dollar of salary costs a team in value. Teams must spend to the salary floor and unused
                          // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
                          // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
-    convex: 2,           // production = minutes x (impact above replacement) ^ convex (2: stars the max holds down come out ahead of it, as they should)
+    convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
     blendRookie: 1000,   // a first- or second-year player's rating is mostly a draft-slot guess, so his play moves it faster
   };
 
