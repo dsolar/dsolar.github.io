@@ -500,6 +500,7 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
     </div>
     <div class="seg big" role="group" aria-label="League">
       <button type="button" data-lg="nba" aria-pressed="true">NBA</button>
+      <button type="button" data-lg="nba2028" aria-pressed="false" title="The 2028 NBA class: rankings only, early">NBA 2028</button>
       <button type="button" data-lg="nfl" aria-pressed="false">NFL</button>
     </div>
   </header>
@@ -552,9 +553,9 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
 </main>
 
 <script src="../assets/faces.js?v=20261109c"></script>
-<script src="common.js?v=30"></script>
+<script src="common.js?v=31"></script>
 <script src="engine.js?v=31"></script>
-<script src="board.js?v=31"></script>
+<script src="board.js?v=32"></script>
 <script src="mock.js?v=31"></script>
 <script src="challenge.js?v=30"></script>
 <script src="markets.js?v=30"></script>
@@ -566,16 +567,23 @@ body[data-screen] .trade-pick select{background:var(--panel);color:var(--chalk)}
     const [path, qs] = location.hash.slice(1).split("?");
     const [lg, view] = path.split("/");
     const saved = BB.store.get("bigboard") || {};
-    return { q: Object.fromEntries(new URLSearchParams(qs || "")), lg: lg === "nfl" || lg === "nba" ? lg : (saved.lg || "nba"), view: VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board")) };
+    const L = ["nba", "nba2028", "nfl"].includes(lg) ? lg : (saved.lg || "nba");
+    // a later class is a board only: no order to mock, no challenge, no markets yet
+    const later = L === "nba2028";
+    return { q: Object.fromEntries(new URLSearchParams(qs || "")), lg: L, later, view: later ? "board" : VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board")) };
   };
   async function go() {
-    const { lg, view, q } = parse();
+    const { lg, view, q, later } = parse();
+    document.querySelectorAll(".tabs [data-view]").forEach((b) => { b.hidden = later && b.dataset.view !== "board"; });
+    const sub = document.querySelector(".mast .sub");
+    sub.dataset.text = sub.dataset.text || sub.textContent;
+    sub.textContent = later ? "An early look at the 2028 class: who's at the top before anyone's eligible. Rankings only until more outlets publish; the mock draft stays on 2027." : sub.dataset.text;
     document.querySelectorAll("button[data-lg]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.lg === lg)));
     document.querySelectorAll(".tabs [data-view]").forEach((b) => b.setAttribute("aria-current", b.dataset.view === view ? "page" : "false"));
     VIEWS.forEach((v) => { document.getElementById(v + "-view").hidden = view !== v; });
     document.body.dataset.screen = view;
     BB.store.set("bigboard", { lg, view });
-    try { const D = await BB.data(lg); document.getElementById("kicker").textContent = `${D.year} ${lg.toUpperCase()} Draft`; } catch (e) { /* the view says so */ }
+    try { const D = await BB.data(lg); document.getElementById("kicker").textContent = `${D.year} ${D.league.toUpperCase()} Draft${later ? ", early look" : ""}`; } catch (e) { /* the view says so */ }
     if (view !== "mock") Mock.stop();
     if (view === "board") Board.render(lg, q);
     else if (view === "mock") Mock.render(lg);

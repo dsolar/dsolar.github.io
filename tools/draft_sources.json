@@ -196,5 +196,40 @@
   "walterfootball": "David's call: not good enough.",
   "pff": "Subscription site; paste in only from his own account if he subscribes.",
   "the-athletic": "Subscription site; paste in only from his own account if he subscribes."
- }
+ },
+ "nba2028": [
+  {
+   "id": "nbadraftroom",
+   "name": "NBA Draft Room",
+   "abbr": "NDR",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "url": "https://nbadraftroom.com/2028-nba-mock-draft/",
+   "note": "A 2028 mock with no teams attached, read as a ranking (picks 1-60)."
+  },
+  {
+   "id": "espn",
+   "name": "ESPN",
+   "analyst": "Jonathan Givony and Jeremy Woo",
+   "abbr": "ESPN",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.espn.com/nba/draft/",
+   "note": "Joins when ESPN ranks the 2028 class."
+  },
+  {
+   "id": "tankathon",
+   "name": "Tankathon",
+   "abbr": "TANK",
+   "kind": "board",
+   "weight": 1,
+   "how": "paste",
+   "status": "pending",
+   "url": "https://www.tankathon.com/big_board",
+   "note": "Joins when Tankathon posts a 2028 board."
+  }
+ ]
 }

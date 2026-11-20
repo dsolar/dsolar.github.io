@@ -61,7 +61,7 @@
     // a G under PG and SG, an OT/IOL under OT and IOL.
     groups(lg, pos) {
       const parts = String(pos || "").toUpperCase().split(/[\/-]/).filter(Boolean);
-      const map = lg === "nba"
+      const map = String(lg).startsWith("nba")
         ? { G: ["PG", "SG"], F: ["SF", "PF"], W: ["SG", "SF"] }
         : { OL: ["OT", "IOL"], OG: ["IOL"], G: ["IOL"], C: ["IOL"], IDL: ["DL"], DT: ["DL"], DE: ["EDGE"], NB: ["CB"], DB: ["CB", "S"], FS: ["S"], SS: ["S"], ILB: ["LB"], OLB: ["LB"] };
       return new Set(parts.flatMap((x) => map[x] || [x]));
@@ -69,6 +69,7 @@
     inGroup(lg, pos, key) { return key === "all" || BB.groups(lg, pos).has(key); },
     POS: {
       nba: [["all", "All"], ["PG", "PG"], ["SG", "SG"], ["SF", "SF"], ["PF", "PF"], ["C", "C"]],
+      nba2028: [["all", "All"], ["PG", "PG"], ["SG", "SG"], ["SF", "SF"], ["PF", "PF"], ["C", "C"]],
       nfl: [["all", "All"], ["QB", "QB"], ["RB", "RB"], ["WR", "WR"], ["TE", "TE"], ["OT", "OT"], ["IOL", "IOL"], ["DL", "DL"], ["EDGE", "EDGE"], ["LB", "LB"], ["CB", "CB"], ["S", "S"]]
     },
     store: {

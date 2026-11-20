@@ -67,7 +67,7 @@ jobs:
 
       - name: Commit the board
         run: |
-          git add draft/nba.json draft/nfl.json nba/data/proj.json tools/draft_data tools/draft_boards tools/draft_schools.json
+          git add draft/nba.json draft/nba2028.json draft/nfl.json nba/data/proj.json tools/draft_data tools/draft_boards tools/draft_schools.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

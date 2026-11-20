@@ -572,6 +572,9 @@
     }
     const prospects = (board.players || []).slice().sort((a, b) => a.rank - b.rank);
     H.prospects = prospects;
+    // the 2028 class, from the Big Board's early 2028 rankings (draft/nba2028.json), when it's there
+    const prospects28 = ((inp.board2028 || {}).players || []).slice().sort((a, b) => a.rank - b.rank);
+    H.prospectsBy = { 2027: prospects, 2028: prospects28 };
     // Where each team's pick lands in a draft: 2027 from the simulations, later drafts from the season before
     H.draftSlots = year => cache("slots" + year, () => {
       const i = year - 2027;                                  // the season that decides this draft
@@ -595,11 +598,11 @@
         const g = pk && H.groupOf(pk);
         if (g) owner = assignGroup(g, Object.fromEntries(g.picks.map(id => [id, slots[id.split("-")[2]]])))[pk.id];
         if (!owner || owner === "OUT" || !W.T[owner]) continue;
-        const x = year === 2027 ? prospects[slot - 1] : null;
+        const x = (H.prospectsBy[year] || [])[slot - 1] || null;
         const deal = CBA.rookieDeal(slot, i);
         const pos = x ? (/C|PF/.test(x.pos) ? (x.pos === "C" ? "B" : "W") : /G/.test(x.pos) ? "G" : "W") : ["G", "W", "B"][slot % 3];
         out.push({ id: "rook-" + year + "-" + slot, n: x ? x.n : year + " No. " + slot + " pick" + (owner !== c ? " (" + c + ")" : ""), rook: true, t: owner, from: c, slot, year, arrive: i,
-          age: x && x.age ? Math.round(x.age) : 20, r0: L.rookieNow(slot), pot: L.rookiePot(slot), pos, prospect: x ? x.id : null, school: x ? x.school : "",
+          age: x && x.age ? Math.round(x.age) : 20, r0: L.rookieNow(slot), pot: L.rookiePot(slot), pos, prospect: x ? x.id : null, board: x ? (year === 2027 ? "nba" : "nba" + year) : null, school: x ? x.school : "",
           c: { sal: deal.sal, opt: {} }, h: 0.88, yos: 0, o: L.rookieNow(slot) * 0.6, d: L.rookieNow(slot) * 0.4 });
       }
       return out;

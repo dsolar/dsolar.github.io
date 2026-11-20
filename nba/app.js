@@ -58,8 +58,8 @@
   function load(k, d) { try { var v = localStorage.getItem("nbahub." + k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
   function stat(v, k) { return '<div class="stat"><b>' + v + "</b><span>" + k + "</span></div>"; }
   // Links into the Big Board (draft/): ?p= opens a prospect, ?at= jumps to that spot on the board
-  function boardHref(q) { return "../draft/#nba" + (q ? "?" + q : ""); }
-  function boardAt(slot) { var x = H.prospects && H.prospects[Math.round(slot) - 1]; return x ? '<a href="' + boardHref("at=" + Math.round(slot)) + '" title="No. ' + Math.round(slot) + ' on the Big Board">' + esc(shortName(x.n)) + "</a>" : ""; }
+  function boardHref(q, key) { return "../draft/#" + (key || "nba") + (q ? "?" + q : ""); }
+  function boardAt(slot, year) { var y = year || 2027, x = ((H.prospectsBy || {})[y] || [])[Math.round(slot) - 1]; return x ? '<a href="' + boardHref("at=" + Math.round(slot), y === 2027 ? "nba" : "nba" + y) + '" title="No. ' + Math.round(slot) + " on the " + y + ' Big Board">' + esc(shortName(x.n)) + "</a>" : ""; }
   function kv(v, k) { return "<div><b>" + v + "</b><span>" + k + "</span></div>"; }
   function tablePanel(title, head, body, right) {
     return '<div class="panel"><h3>' + esc(title) + " <small>" + (right || "") + '</small></h3><div class="scroll"><table class="t"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody.</td></tr>') + "</tbody></table></div></div>";
@@ -417,7 +417,7 @@
     var q = state.q, yr = q.y2 || "", tm = q.t || "";
     var all = H.allPicks().filter(function (pk) { return (!yr || String(pk.y) === yr) && (!tm || pk.from === tm || pk.owner === tm); });
     var years = []; H.allPicks().forEach(function (pk) { if (years.indexOf(pk.y) < 0) years.push(pk.y); });
-    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every first- and second-round pick that has changed hands, with its protection and where it projects to land. Pick terms come from the <a href="' + boardHref() + '">Big Board</a>\'s ledger (Tankathon and RealGM), refreshed daily. Projected 2027 slots link to who\'s ranked there.</p>';
+    var html = '<h2 class="sec">Traded picks</h2><p class="lede">Every first- and second-round pick that has changed hands, with its protection and where it projects to land. Pick terms come from the <a href="' + boardHref() + '">Big Board</a>\'s ledger (Tankathon and RealGM), refreshed daily. Projected 2027 and 2028 firsts link to who\'s ranked there.</p>';
     html += controls('<label>Year<select data-q="y2"><option value="">All</option>' + years.map(function (y) { return '<option value="' + y + '"' + (String(y) === yr ? " selected" : "") + ">" + y + "</option>"; }).join("") + "</select></label>" + teamSelect(tm));
     var protText = function (pk) {
       var bits = [];
@@ -428,7 +428,7 @@
     html += tablePanel(all.length + " picks", "<th>Pick</th><th>Original team</th><th>Owned by</th><th>Protection</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Notes</th>", all.map(function (pk) {
       var info = H.pickInfo(pk);
       return "<tr><td>" + pk.y + " " + (pk.r === 1 ? "1st" : "2nd") + "</td><td>" + tcell(pk.from) + "</td><td>" + (pk.owner === "OUT" ? "Forfeited" : tcell(pk.owner)) + "</td><td>" +
-        (pk.prot || pk.group ? "<b>" + esc(protText(pk)) + "</b>" : '<span class="note">Unprotected</span>') + "</td><td>" + (pk.y === 2027 && pk.r === 1 && info.avg ? '<a href="' + boardHref("at=" + Math.round(info.avg)) + '" title="Who\'s ranked there on the Big Board">' + f1(info.avg) + "</a>" : f1(info.avg)) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") + "</td><td>" + money(H.pickValue(pk, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
+        (pk.prot || pk.group ? "<b>" + esc(protText(pk)) + "</b>" : '<span class="note">Unprotected</span>') + "</td><td>" + ((pk.y === 2027 || pk.y === 2028) && pk.r === 1 && info.avg ? '<a href="' + boardHref("at=" + Math.round(info.avg), pk.y === 2027 ? "nba" : "nba2028") + '" title="Who\'s ranked there on the Big Board">' + f1(info.avg) + "</a>" : f1(info.avg)) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") + "</td><td>" + money(H.pickValue(pk, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
     }).join(""), "Conveys: share of simulations where the protection doesn't hold");
     var sw = (H.W.swaps || []).filter(function (s) { return (!yr || String(s.y) === yr) && (!tm || s.from === tm || s.owner === tm); });
     if (sw.length) html += tablePanel("Swap rights", "<th>Pick</th><th>Holder</th><th>Swaps with</th><th>Value</th><th>Notes</th>", sw.map(function (s) {
@@ -453,7 +453,7 @@
     var two = Object.values(H.W.P).filter(function (p) { return p.t === code && p.two; });
     var body = list.map(function (p) { return "<tr><td>" + pname(p, 20) + '</td><td class="note">' + esc(posOf(p)) + "</td>" + cols.map(function (j) { return cell(p, j); }).join("") + "</tr>"; }).join("") +
       rooks.map(function (p) {
-        var nm = p.year + " No. " + p.slot + " pick" + (p.from !== p.t ? " (via " + p.from + ")" : "") + (p.prospect ? ' <span class="note">proj. <a href="' + boardHref("p=" + encodeURIComponent(p.prospect)) + '">' + esc(p.n) + "</a></span>" : "");
+        var nm = p.year + " No. " + p.slot + " pick" + (p.from !== p.t ? " (via " + p.from + ")" : "") + (p.prospect ? ' <span class="note">proj. <a href="' + boardHref("p=" + encodeURIComponent(p.prospect), p.board) + '">' + esc(p.n) + "</a></span>" : "");
         return '<tr><td><span class="pl static">' + logo(p.from, 18) + '<span class="nm">' + nm + '</span></span></td><td class="note">Draft</td>' + cols.map(function (j) { return cell(p, j); }).join("") + "</tr>";
       }).join("");
     H.W.T[code].dead.forEach(function (d) {
@@ -551,7 +551,7 @@
     var e = H.lastYear(p);
     if (e >= 0 && e < Hub.YEARS - 1) ct += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
     html += '<div class="cpane" data-pane="ct"' + (cardTab === "ct" ? "" : " hidden") + ">" + ct + "</div>";
-    html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a>" + (p.prospect ? ' <a class="btn" href="' + boardHref("p=" + encodeURIComponent(p.prospect)) + '">On the Big Board</a>' : "") + "</p></div>";
+    html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a>" + (p.prospect ? ' <a class="btn" href="' + boardHref("p=" + encodeURIComponent(p.prospect), p.board) + '">On the Big Board</a>' : "") + "</p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
   }
@@ -1712,9 +1712,9 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
-  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true), get("data/trades.json", true)])
+  Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true), get("data/trades.json", true), get("../draft/nba2028.json", true)])
     .then(function (r) {
-      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
+      H = Hub.build({ data: r[0], stats: r[1] || {}, fixes: r[2], live: r[3], board: r[4] || {}, picks: r[5], teams: r[6], tpes: r[7], exceptions: r[8], dead: r[9], darko: r[10], taxhist: r[11], ratings: r[12], lineups: r[13], frozen: r[14], moves: r[15], trades: r[16], board2028: r[17] }, { mode: load("mode", "prod"), disc: load("disc", 0.07), fill: load("fill", true), convex: load("convex", 1.5), growth: load("growth", 0.5), salW: load("salW", 0.5) });
       H.keep = load("keep", {}) || {};
       fillBox.checked = H.cfg.fill;
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board.";

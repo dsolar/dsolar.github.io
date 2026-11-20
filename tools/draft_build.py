@@ -84,12 +84,18 @@ def days(a, b):
     return (date.fromisoformat(b) - date.fromisoformat(a)).days
 
 
+# A later NBA class rides along as its own board ("nba2028"): rankings only, no order, odds or mock
+LATER = {"nba2028": ("nba", 2028)}
+
+
 def build(league, sources, aliases):
-    alias = aliases.get(league, {})
+    base, year = LATER.get(league, (league, YEAR))
+    alias = aliases.get(base, {}) | aliases.get(league, {})
     canon = lambda n: alias.get(key(n), key(n))
     snaps = {}
     for s in sources:
         snaps[s["id"]] = tankathon() if (s["id"] == "tankathon" and league == "nba") else snapshots(league, s["id"])
+    later = league in LATER
     boards = [s for s in sources if s["kind"] == "board"]
     mocks = [s for s in sources if s["kind"] == "mock"]
 
@@ -161,9 +167,9 @@ def build(league, sources, aliases):
         for row in snap["ranks"]:
             mock_now.setdefault(canon(row[1]), {})[s["id"]] = [row[0], row[4] if len(row) > 4 else ""]
 
-    info = (load(os.path.join(TOOLS, "draft_data", f"{league}-info.json"), {}) or {}).get("players", {})
+    info = (load(os.path.join(TOOLS, "draft_data", f"{base}-info.json"), {}) or {}).get("players", {})
     info = {canon(k): v for k, v in info.items()} | {}
-    schools = (load(os.path.join(TOOLS, "draft_schools.json"), {}) or {}).get(league, {})
+    schools = (load(os.path.join(TOOLS, "draft_schools.json"), {}) or {}).get(base, {})
     players = []
     for p, c in sorted(now.items(), key=lambda x: x[1]["rank"]):
         per = {}
@@ -199,7 +205,11 @@ def build(league, sources, aliases):
         src_out.append({k: s[k] for k in ("id", "name", "analyst", "abbr", "kind", "weight", "url", "status", "note") if k in s} | (
             {"date": latest["date"], "link": latest.get("url"), "title": latest.get("title"), "count": len(latest["ranks"]),
              "versions": len(snaps[s["id"]]), "w": w_now} if latest else {}))
-    teams = (load(os.path.join(TOOLS, "draft_teams.json"), {}) or {}).get(league, {})
+    teams = (load(os.path.join(TOOLS, "draft_teams.json"), {}) or {}).get(base, {})
+    if later:
+        return {"league": base, "key": league, "year": year, "asof": today, "halfLife": HALF_LIFE, "dates": dates,
+                "sources": src_out, "teams": teams, "players": players, "order": None, "proj": None, "rules": None,
+                "values": None, "future": None, "needs": None, "markets": None, "results": None}
     order = load(os.path.join(TOOLS, "draft_data", f"{league}-order.json"), {}) or {}
     rec_all = load(os.path.join(TOOLS, "draft_data", "records.json"), {}) or {}
     records = rec_all.get(league, {})
@@ -284,7 +294,7 @@ def main():
     reg = load(os.path.join(TOOLS, "draft_sources.json"))
     aliases = load(os.path.join(TOOLS, "draft_aliases.json"), {})
     os.makedirs(OUT, exist_ok=True)
-    for league in ("nba", "nfl"):
+    for league in ("nba", "nfl", *[k for k in LATER if k in reg]):
         res = build(league, reg[league], aliases)
         if not res:
             print(f"{league}: no boards yet")

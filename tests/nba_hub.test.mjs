@@ -15,7 +15,7 @@ const Mo = require('../nba/lib/model.js');
 
 const inputs = { data: read('celtics/data.json'), stats: opt('hardcap/stats.json') || {}, fixes: opt('hardcap/contracts.json'), live: opt('celtics/live.json'),
   board: opt('draft/nba.json') || {}, picks: read('nba/data/picks.json'), teams: opt('tools/draft_teams.json'),
-  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json'), trades: opt('nba/data/trades.json') };
+  tpes: read('nba/data/tpes.json'), exceptions: read('nba/data/exceptions.json'), dead: read('nba/data/dead.json'), darko: opt('nba/data/darko.json'), taxhist: opt('nba/data/taxhist.json'), ratings: opt('nba/data/ratings.json'), lineups: opt('nba/data/lineups.json'), frozen: opt('nba/data/frozen.json'), moves: opt('nba/data/moves.json'), trades: opt('nba/data/trades.json'), board2028: opt('draft/nba2028.json') };
 const H = Hub.build(inputs, { sims: 300, futureSims: 100 });
 
 test('shared library: name matching runs initials together', () => {
@@ -292,4 +292,12 @@ test('every NBA Hub script parses (a stray quote in copy once broke the live pag
   for (const f of ['nba/app.js', 'nba/hub.js', 'nba/lib/cba.js', 'nba/lib/league.js', 'nba/lib/season.js', 'nba/lib/offseason.js', 'nba/lib/model.js', 'nba/lib/contracts.js']) {
     assert.doesNotThrow(() => new Function(readFileSync(new URL('../' + f, import.meta.url), 'utf8')), f);
   }
+});
+
+test('2028 class: the early board names projected 2028 rookies and links them to its own board', () => {
+  if (!inputs.board2028) return;
+  const r = H.rookies(2).filter(x => x.year === 2028 && x.prospect);
+  assert.ok(r.length >= 20, 'named 2028 rookies: ' + r.length);
+  for (const x of r) assert.equal(x.board, 'nba2028');
+  assert.ok(H.rookies(1).filter(x => x.prospect).every(x => x.board === 'nba'));
 });
