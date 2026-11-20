@@ -411,9 +411,9 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7318,
+   "registry": 7274,
    "shown": 1191,
-   "found": 1106,
+   "found": 1062,
    "missing": [
     "Al'zillion \"AZ\" Hamilton",
     "Arizona Cardinals",
@@ -463,44 +463,88 @@
    ],
    "noPhoto": [
     "Aaron Glenn",
+    "Allen Rossum",
+    "Ashley Ambrose",
+    "Brad Johnson",
+    "Brentson Buckner",
+    "Brian Griese",
+    "Bryce Paup",
+    "Charlie Garner",
+    "Chester McGlockton",
     "Chidi Ahanotu",
+    "Chris Calloway",
+    "Christian Fauria",
     "Connor Hulstein",
+    "Corey Harris",
+    "Curtis Conway",
     "Dale Carter",
     "Dan Wilkinson",
+    "Darrin Smith",
+    "Daunte Culpepper",
+    "Desmond Howard",
     "Dewayne Washington",
     "Doug Evans",
+    "Dre' Bly",
     "Eddie Kennison",
     "Eric Davis",
+    "Fred McAfee",
     "Gaines Adams",
+    "Garrison Hearst",
+    "Glyn Milburn",
     "Grady Jackson",
+    "Gus Frerotte",
+    "Hollis Thomas",
     "Jack Strand",
+    "Jamie Martin",
+    "Jason Fisk",
+    "Jeff Blake",
     "Jeff Garcia",
     "Jeff George",
+    "Jeff Robinson",
     "Jeff Zgonina",
     "Jimmy Spencer",
     "Keith Traylor",
     "Kevin Carter",
+    "Keyshawn Johnson",
+    "L.J. Shelton",
+    "La'Roi Glover",
+    "Larry Centers",
+    "Marcellus Wiley",
     "Marco Coleman",
+    "Marcus Pollard",
     "Marques Douglas",
+    "Marty Carter",
     "Matt Lauter",
+    "Matt Willig",
+    "Michael Bates",
+    "Micheal Barrow",
     "Mike Caldwell",
+    "Mitch Van Vooren",
+    "Neil O'Donnell",
     "Pete Kendall",
     "R.W. McQuarters",
     "Randall Godfrey",
     "Renaldo Wynn",
+    "Ricky Proehl",
     "Robert Jones",
     "Ryan McNeil",
+    "Sam Adams",
     "Sammy Knight",
     "Sean Gilbert",
     "Shane Matthews",
     "Steve Beuerlein",
     "Ted Washington",
+    "Terrell Buckley",
     "Terry Allen",
     "Terry Cousin",
     "Todd Bouman",
+    "Todd Steussie",
     "Trent Dilfer",
+    "Trent Green",
     "Troy Vincent",
+    "Ty Law",
     "Tyrone Poole",
+    "Wayne Gandy",
     "Zion Washington"
    ],
    "shared": [
@@ -518,23 +562,6 @@
      [
       "12622",
       "3895831"
-     ]
-    ],
-    [
-     "Chris Jones",
-     "14723",
-     [
-      "14723",
-      "3044859",
-      "3116104"
-     ]
-    ],
-    [
-     "Frank Gore",
-     "4429805",
-     [
-      "4429805",
-      "8479"
      ]
     ],
     [
@@ -570,12 +597,12 @@
      ]
     ]
    ],
-   "fixed": 0
+   "fixed": 2
   },
   "ncaab": {
-   "registry": 161,
+   "registry": 158,
    "shown": 196,
-   "found": 159,
+   "found": 156,
    "missing": [
     "Adam Atamna",
     "Adan Diggs",
@@ -615,19 +642,30 @@
     "Stefan Joksimović",
     "Trey McKenney Jr."
    ],
-   "noPhoto": [],
+   "noPhoto": [
+    "A.J. Williams",
+    "Arafan Diane",
+    "Tony Bryant"
+   ],
    "shared": [],
    "fixed": 0
   },
   "ncaaf": {
-   "registry": 226,
+   "registry": 220,
    "shown": 228,
-   "found": 226,
+   "found": 220,
    "missing": [
     "Mi'Qui. Humphrey-Grace",
     "Tae Johnson"
    ],
-   "noPhoto": [],
+   "noPhoto": [
+    "Anthony Smith",
+    "James Smith",
+    "Jayden Jackson",
+    "Justin Evans",
+    "Luke Montgomery",
+    "Rod Moore"
+   ],
    "shared": [],
    "fixed": 0
   }
