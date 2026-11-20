@@ -22,7 +22,9 @@
   M.rAhead = (p, k) => {
     let r = M.r(p), a = p.age;
     for (let j = 0; j < k; j++) {
-      if (a <= 25 && p.pot != null && p.pot > r) r += (p.pot - r) * (a <= 21 ? 0.3 : a <= 23 ? 0.25 : 0.2);
+      // toward his potential, but never slower than the typical age curve: a potential set when his rating was lower
+      // (a 19-year-old who's already outplayed it) shouldn't stop him growing
+      if (a <= 25 && p.pot != null && p.pot > r) r += Math.max((p.pot - r) * (a <= 21 ? 0.3 : a <= 23 ? 0.25 : 0.2), M.ageStep(a + 1));
       else r += M.ageStep(a + 1);
       a++;
     }
@@ -32,7 +34,7 @@
   M.develop = (p, rng) => {
     const a = p.age, r = M.r(p);
     let step;
-    if (a <= 25 && p.pot != null && p.pot > r) step = (p.pot - r) * (a <= 21 ? 0.3 : a <= 23 ? 0.25 : 0.2);
+    if (a <= 25 && p.pot != null && p.pot > r) step = Math.max((p.pot - r) * (a <= 21 ? 0.3 : a <= 23 ? 0.25 : 0.2), M.ageStep(a + 1));
     else step = M.ageStep(a + 1);
     // young players mostly get better: their bad summers are smaller than their good ones
     const sig = a <= 22 ? 0.6 : a <= 29 ? 0.5 : 0.45;

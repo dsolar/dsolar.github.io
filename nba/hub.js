@@ -43,6 +43,7 @@
                          // cap room disappears, so salary isn't a dollar-for-dollar cost; treating recent trades (2025-26
                          // deadline, 2026 summer) as fair puts it at about a quarter to a half. 1.0 is face value.
     convex: 1.5,         // production = minutes x (impact above replacement) ^ convex
+    posAdj: 0.5,         // share of each position's average impact gap to the league taken out of value (bigs rate high)
     vblend: "bal",       // what a player's value rating counts (VBLEND): impact only, or impact blended with his box score
                          // and the Ringer's Top 100. Only prices players; win projections stay on impact
     blendRookie: 1000,   // a first- or second-year player's rating is mostly a draft-slot guess, so his play moves it faster
@@ -309,17 +310,30 @@
     // a part a player doesn't have (no Top 100 rank) hands its weight to the others. The gap to his impact today carries
     // into later seasons, so aging still runs off the impact projection.
     H.gs100 = gs100;
-    H.valRanks = () => cache("vr" + cfg.vblend, () => {
+    H.valRanks = () => cache("vr" + cfg.vblend + cfg.posAdj, () => {
       const [wi, wb, wc] = VBLEND[cfg.vblend] || VBLEND.bal, out = {};
       const pool = Object.values(W.P).filter(p => !p.rook && p.adv && p.adv.mp >= 400 && gs100(p.adv.s) != null);
-      const imp = pool.map(p => H.rating(p, 0)).sort((a, b) => b - a), gsv = pool.map(p => gs100(p.adv.s)).sort((a, b) => b - a);
-      const at = k => imp[clamp(Math.round(k), 0, imp.length - 1)];
       const rankIn = (arr, v) => { let k = 0; while (k < arr.length && arr[k] > v) k++; return k; };
+      // Position: impact metrics rate bigs well above guards and wings (rebounds and rim protection show up loudly in
+      // plus-minus), but teams pay bigs far less for the same rating because they're easier to replace. Take out a
+      // share (cfg.posAdj) of each position's gap to the league in value only. Game Score leans big too, so box
+      // scores rank within position.
+      const grp = p => (p.pos === "B" ? "B" : p.pos === "G" ? "G" : "W"), mean = a => a.reduce((x, y) => x + y, 0) / Math.max(1, a.length);
+      const all = mean(pool.map(p => H.rating(p, 0))), posOff = {};
+      for (const g of ["G", "W", "B"]) posOff[g] = (cfg.posAdj ?? 0.5) * (mean(pool.filter(p => grp(p) === g).map(p => H.rating(p, 0))) - all);
+      const adjR = p => H.rating(p, 0) - (posOff[grp(p)] || 0);
+      const imp = pool.map(adjR).sort((a, b) => b - a), raw = pool.map(p => H.rating(p, 0)).sort((a, b) => b - a);
+      const gsBy = {}; for (const g of ["G", "W", "B"]) gsBy[g] = pool.filter(p => grp(p) === g).map(p => gs100(p.adv.s)).sort((a, b) => b - a);
+      const gsv = pool.map(p => gs100(p.adv.s)).sort((a, b) => b - a);
+      const at = k => imp[clamp(Math.round(k), 0, imp.length - 1)];
       for (const p of Object.values(W.P)) {
         if (p.rook) continue;
-        const r0 = H.rating(p, 0), g = p.adv ? gs100(p.adv.s) : null, o = { imp: r0, iR: rankIn(imp, r0) + 1 };
-        let sum = wi * r0, w = wi;
-        if (g != null) { o.gs = g; o.bR = rankIn(gsv, g) + 1; o.box = at(o.bR - 1); const wt = wb * Math.min(1, (p.adv.mp || 0) / 1500); sum += wt * o.box; w += wt; }
+        const r0 = H.rating(p, 0), ra = adjR(p), g = p.adv ? gs100(p.adv.s) : null, o = { imp: r0, iR: rankIn(raw, r0) + 1, pos: posOff[grp(p)] || 0 };
+        let sum = wi * ra, w = wi;
+        if (g != null) {
+          const arr = gsBy[grp(p)], q = rankIn(arr, g) / Math.max(1, arr.length);   // share of his position ahead of him
+          o.gs = g; o.bR = rankIn(gsv, g) + 1; o.box = at(q * imp.length); const wt = wb * Math.min(1, (p.adv.mp || 0) / 1500); sum += wt * o.box; w += wt;
+        }
         if (p.ringer) { o.cR = p.ringer; o.con = at(p.ringer - 1); sum += wc * o.con; w += wc; }
         o.val = sum / w; o.shift = o.val - r0; out[p.id] = o;
       }
@@ -348,7 +362,13 @@
     };
     const marketAt = (p, i) => Mo.market(p, i, W);
     // Minutes: what he's actually playing this season (3+ games), fading toward what his rating earns in later years
-    const mpgNow = p => (p.line && p.line.gp >= 3 ? p.line.min : null);
+    // Early in the season a few games say little, so last season's minutes count as 10 games of evidence
+    const LASTAVG = (stats.avg && stats.avg[String(2026)]) || {};
+    const mpgNow = p => {
+      const now = p.line && p.line.gp >= 1 ? p.line : null, last = LASTAVG[p.id], k = last && last[0] >= 20 ? 10 : 0;
+      if (!k) return now && now.gp >= 3 ? now.min : null;
+      return ((now ? now.gp * now.min : 0) + k * last[1]) / ((now ? now.gp : 0) + k);
+    };
     // The minutes a rating earns (Banner 19's role minutes, smoothed so a rating crossing a line doesn't jump)
     const ROLE = [[-3, 10], [-2, 17], [-0.9, 25], [1, 30], [2, 32], [4, 34]];
     const roleMin = r => { if (r <= ROLE[0][0]) return ROLE[0][1]; for (let k = 1; k < ROLE.length; k++) if (r <= ROLE[k][0]) { const [a, x] = ROLE[k - 1], [b, y] = ROLE[k]; return x + (y - x) * (r - a) / (b - a); } return 34; };
@@ -378,7 +398,7 @@
     // production is worth about what role players get, and a star's runs past his max. "payroll": scaled so the whole
     // league's production adds up to the whole league's payroll (which also spreads sunk money from bad contracts
     // onto everyone who produces, so it runs rich).
-    const Kfor = () => cache("K" + cfg.vblend + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
+    const Kfor = () => cache("K" + cfg.vblend + cfg.posAdj + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
       let sv = 0, ss = 0;
       for (const p of Object.values(W.P)) {
         if (p.two) continue;
@@ -751,23 +771,38 @@
           rows.push({ j, season: CBA.seasonName(j), r: H.rating(p, j), value: v * part, sal: sal * part, cost: cost * part, surplus: (v - cost) * part, pv: (v - cost) * part * discAt(j), opt, part });
         }
         let pv = sum(rows.map(r => r.pv));
+        // Restricted free agency after a first-round rookie deal: his team can match any offer, and a rookie-scale
+        // extension tops out at 25% of the cap, so a player who outgrows his deal keeps returning surplus after it
+        // ends. Count the seasons through his eighth at what he'd be paid (his market price, capped at 25% of the cap),
+        // only where he's worth more (a team can let him walk), at 75% for the risk of an offer sheet or a holdout.
+        const rk = p.c && p.c.rk;
+        let rights = 0;
+        if (rk && rk[1] >= 1 && rk[1] <= 30 && e >= 0 && H.faKind(p) === "RFA") {
+          for (let j = e + 1; j <= Math.min(5, 7 - (p.yos || 0)); j++) {
+            const v = mode === "market" ? marketAt(p, j) : prodAt(p, j);
+            const pay = Math.min(0.25 * CBA.cap(j), Math.max(CBA.minSal((p.yos ?? 3) + j, j), marketAt(p, j)));
+            const cost = pay * Math.min(1, (cfg.salW ?? 1) + 0.1 * Math.max(0, j - 1));
+            rights += 0.75 * Math.max(0, v - cost) * discAt(j);
+          }
+          pv += rights;
+        }
         // A player still on his rookie deal is mostly his draft slot: the No. 1 pick doesn't lose most of its value the
         // night it's made because a 19-year-old's first box scores are rough. Start from what his slot has produced
         // (or, in the market view, what teams pay for it) over the part of a draftee's first eight seasons still ahead,
         // which also counts the restricted free agency and Bird rights after the rookie deal, and let his own projection
-        // take over as he plays: about half by the end of his second season, most of it by his fourth.
+        // take over as he plays: about half after one full season, most of it by his fourth (his value rating already
+        // leans on the box score and the Ringer, and his own value now counts his restricted free agency too).
         let prior = null;
-        const rk = p.c && p.c.rk;
         if (rk && rk[1] >= 1 && (p.yos ?? 9) <= 3) {
           const a = stats.avg && stats.avg[String(2027)] && stats.avg[String(2027)][p.id];
           const xp = (p.yos || 0) + (a ? a[0] * a[1] : 0) / 2000;           // seasons of evidence (about 2,000 minutes a season)
-          const w = clamp(xp / (xp + 2), 0, 0.9);
+          const w = clamp(xp / (xp + 1), 0, 0.9);
           const left = clamp((8 - (p.yos || 0) - (1 - frac0)) / 8, 0, 1);
           const slotV = (mode === "market" ? MARKET_PICK(rk[1], 1) : pickCurve(rk[1])) * left;
           prior = { slot: rk[1], year: rk[0], value: slotV, w, model: pv };
           pv = w * pv + (1 - w) * slotV;
         }
-        return { rows, pv, prior, total: sum(rows.map(r => r.surplus)), years: rows.length, salLeft: sum(rows.map(r => r.sal)), costLeft: sum(rows.map(r => r.cost)) };
+        return { rows, pv, prior, rights, total: sum(rows.map(r => r.surplus)), years: rows.length, salLeft: sum(rows.map(r => r.sal)), costLeft: sum(rows.map(r => r.cost)) };
       });
     };
 

@@ -334,7 +334,18 @@ test('value rating: impact mixed with box score and the Ringer, on the impact sc
   assert.ok(V[brown.id].val > H.rating(brown, 0), 'a high-usage scorer the Ringer likes gains on impact');
   assert.equal(V[wemb.id].vR, 1);
   for (const p of [brown, jokic]) assert.ok(Math.abs(H.valRating(p, 2) - H.rating(p, 2) - V[p.id].shift) < 1e-9, 'the gap carries into later seasons');
-  const Hi = Hub.build(inputs, { sims: 20, futureSims: 10, vblend: 'imp' });
+  const Hi = Hub.build(inputs, { sims: 20, futureSims: 10, vblend: 'imp', posAdj: 0 });
   const b2 = Hi.players().find(p => p.n === 'Jaylen Brown');
   assert.ok(Math.abs(Hi.valRating(b2, 0) - Hi.rating(b2, 0)) < 1e-9);
+});
+
+test('value: bigs are position-adjusted, young stars count their restricted free agency, early minutes lean on last season', () => {
+  const by = n => H.players().find(p => p.n === n), pv = n => H.surplus(by(n)).pv, V = H.valRanks();
+  assert.ok(V[by('Jalen Duren').id].pos > 0.3, 'bigs carry a positive positional offset');
+  assert.ok(pv('Cooper Flagg') > pv('Payton Pritchard'));
+  assert.ok(pv('Dylan Harper') > pv('Brandin Podziemski'));
+  assert.ok(H.surplus(by('Cooper Flagg')).rights > 0);
+  const rank = H.valueBoard().findIndex(x => x.p.n === 'Jalen Duren');
+  assert.ok(rank > 15, 'Duren rank ' + (rank + 1));
+  const f = by('Cooper Flagg'); assert.ok(H.rating(f, 3) - H.rating(f, 0) >= 0.6, 'a 19-year-old grows at least on the age curve');
 });
