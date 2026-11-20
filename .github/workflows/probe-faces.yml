@@ -1,0 +1,9 @@
+name: probe faces (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in "https://a.espncdn.com/i/headshots/nba/players/full/366.png" "https://a.espncdn.com/combiner/i?img=/i/headshots/nba/players/full/366.png&w=120&h=88" "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/333492/headshot/67/current" "https://a.espncdn.com/i/headshots/nba/players/full/302.png"; do
+            echo "== $u GET $(curl -s -o /dev/null -w '%{http_code}' -A x "$u") HEAD $(curl -s -o /dev/null -I -w '%{http_code}' -A x "$u")"; done
