@@ -1,0 +1,12 @@
+name: Import probe (temporary)
+on: workflow_dispatch
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - run: |
+          curl -s -m 20 "https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-import?src=espn&sport=nfl&id=270405" | head -c 200; echo
+          curl -s -m 20 -H "Authorization: Bearer a.b.c" "https://baxrczyufqbzrogftmyn.supabase.co/functions/v1/fk-import?src=espn&sport=nfl&id=270405" | head -c 200; echo

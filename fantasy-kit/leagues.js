@@ -515,7 +515,7 @@
       } else if (inp.source === "espn") {
         const sport = inp.sport || sportPick;
         const j = await C.importEspn(sport, inp.id, inp.season);
-        if (!j || j.error === "private") throw new Error("That ESPN league is private. The commissioner can turn on League Settings > Basic Settings > \"Make league viewable to public\", import, then turn it back off. Or copy the settings by hand.");
+        if (!j || j.error === "private") throw new Error("That ESPN league is private. The commissioner can turn on League Settings > Basic Settings > \"Make league viewable to public\", import, then turn it back off. Or copy the settings by hand." + (C.user() ? "" : " (Linked it through the site's ESPN connector? Sign in first.)"));
         if (j.error === "not_found") throw new Error(`ESPN has no ${sport === "nfl" ? "football" : sport === "nba" ? "basketball" : sport === "mlb" ? "baseball" : "hockey"} league with that ID. Check the link, or pick the right sport.`);
         if (j.error) throw new Error("ESPN didn't answer. Try again in a minute.");
         r = I.fromEspn(j, sport, S);

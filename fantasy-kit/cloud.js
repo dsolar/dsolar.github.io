@@ -166,7 +166,11 @@
   // named games' box scores and states, for a one-day league (fk-live ?games=)
   // a public ESPN league's settings, for importing it (supabase/functions/fk-import)
   const importYahoo = (sport, id) => fetch(`${BASE}/functions/v1/fk-import?src=yahoo&sport=${encodeURIComponent(sport)}&id=${encodeURIComponent(id)}`).then((r) => r.json()).catch(() => null);
-  const importEspn = (sport, id, season) => fetch(`${BASE}/functions/v1/fk-import?src=espn&sport=${encodeURIComponent(sport)}&id=${encodeURIComponent(id)}${season ? `&season=${season}` : ""}`).then((r) => r.json()).catch(() => null);
+  // signed in, the session rides along: a private league linked through the site owner's ESPN connector comes from its sync
+  const importEspn = async (sport, id, season) => {
+    const tok = await token().catch(() => null);
+    return fetch(`${BASE}/functions/v1/fk-import?src=espn&sport=${encodeURIComponent(sport)}&id=${encodeURIComponent(id)}${season ? `&season=${season}` : ""}`, tok ? { headers: { Authorization: "Bearer " + tok } } : {}).then((r) => r.json()).catch(() => null);
+  };
   const games = (sport, ids) => (ids && ids.length ? fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}&games=${ids.map(encodeURIComponent).join(",")}`).then((r) => (r.ok ? r.json() : null)).catch(() => null) : Promise.resolve(null));
   const live = (sport) => fetch(`${BASE}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`).then((r) => (r.ok ? r.json() : null)).catch(() => null);
   // baseball's starting lineups and probable pitchers, today's and tomorrow's (fk-live ?sport=mlb&lineups=1)

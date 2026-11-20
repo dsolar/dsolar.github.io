@@ -4,12 +4,13 @@
 // come through here: Sleeper's API answers the page directly and Yahoo is pasted text.
 // Private ESPN leagues: ESPN only shows them to signed-in members, so a league someone has linked with the site's ESPN
 // connector (the trade analyzer's extension, table espn_sync_leagues) is read from its last sync instead, settings only
-// (no teams, rosters or owners) and marked { via: "connector", synced }. Otherwise { error: "private" }.
+// (no teams, rosters or owners) and marked { via: "connector", synced }, but only for the connector's owner signed in to
+// Draft Lab (his session sent as Authorization: Bearer). Anyone else gets { error: "private" }.
 const CORS = { "access-control-allow-origin": "*", "access-control-allow-headers": "*", "access-control-allow-methods": "GET, OPTIONS" };
 const GAME: Record<string, string> = { nfl: "ffl", nba: "fba", mlb: "flb", nhl: "fhl" };
 const BROWSER_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36";
 const URL_ = Deno.env.get("SUPABASE_URL") || "", SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
-const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS, "content-type": "application/json", "cache-control": "public, max-age=60" } });
+const reply = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { ...CORS, "content-type": "application/json", "cache-control": "private, max-age=60" } });
 
 function seasonFor(sport: string): number {
   const d = new Date(), y = d.getUTCFullYear(), m = d.getUTCMonth() + 1;
@@ -27,6 +28,17 @@ async function espn(sport: string, id: string, season: number) {
   const j = await r.json().catch(() => null);
   if (!j || !j.settings) return { error: "private" };
   return { settings: j.settings, season, teams: (j.teams || []).map((t: any) => ({ name: t.name || [t.location, t.nickname].filter(Boolean).join(" ") })) };
+}
+
+// who may read connected leagues: the ESPN connector is the site owner's, so his Draft Lab account
+const CONNECTOR_OWNERS = new Set(["3f2c48cc-5ca1-4b47-8965-ebb74d957ed5"]);
+async function isOwner(req: Request) {
+  const tok = (req.headers.get("authorization") || "").replace(/^Bearer /i, "");
+  if (!tok || !URL_ || !SERVICE || tok.split(".").length !== 3) return false;
+  const r = await fetch(`${URL_}/auth/v1/user`, { headers: { apikey: SERVICE, Authorization: `Bearer ${tok}` } }).catch(() => null);
+  if (!r || !r.ok) return false;
+  const u = await r.json().catch(() => null);
+  return !!(u && CONNECTOR_OWNERS.has(u.id));
 }
 
 // the connector's last sync of a private league: its rules, shaped like ESPN's settings
@@ -73,7 +85,7 @@ Deno.serve(async (req) => {
     let out: any = await espn(sport, id, season);
     // a league that hasn't renewed for the new season yet still has last season's settings
     if (out.error === "not_found" && !asked) out = await espn(sport, id, season - 1);
-    if (out.error === "private" && sport === "nfl") out = (await fromConnector(id, season)) || out;
+    if (out.error === "private" && sport === "nfl" && await isOwner(req)) out = (await fromConnector(id, season)) || out;
     return reply(out, out.error === "espn" ? 502 : 200);
   } catch (_e) {
     return reply({ error: "espn" }, 502);
