@@ -14,7 +14,7 @@
     ["Skill ratings", "nba/data/ratings.json", j => j.updated, 2, "nba-ratings"],
     ["Lineups and on/off", "nba/data/lineups.json", j => j.updated, 2, "nba-lineups"],
     ["Draft Big Board", "draft/nba.json", j => j.updated, 3, "draft-board"],
-    ["Ringer Top 100", "nba/data/ringer100.json", j => j.updated, 45, "by hand"],
+    ["Ringer Top 100", "nba/data/ringer100.json", j => j.updated, 60, "nba-ringer"],   // the Ringer reshuffles every few weeks: warns only
   ];
   const day = s => { const t = Date.parse(/^\d{4}-\d\d-\d\d$/.test(s) ? s + "T12:00:00Z" : s); return isNaN(t) ? null : t; };
   // files: { "hardcap/stats.json": parsed JSON, ... }; now: ms. Returns every feed with its age, stale ones flagged.
@@ -35,7 +35,7 @@
       const age = t == null ? null : (now - t) / 864e5;
       const off = GAME.has(label) && !season;
       // a feed updated by hand only warns; the automatic ones fail the daily check
-      return { label, file, when: s || null, age, max, how, manual: how === "by hand", stale: !off && (age == null || age > max), missing: !j };
+      return { label, file, when: s || null, age, max, how, manual: how === "by hand" || how === "nba-ringer", stale: !off && (age == null || age > max), missing: !j };
     });
   }
   const api = { FEEDS, check, files: [...new Set(FEEDS.map(f => f[1]))] };

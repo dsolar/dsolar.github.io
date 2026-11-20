@@ -1,0 +1,43 @@
+# Pulls the Ringer's NBA Top 100 (theringer.com/nba-ranked/top-100) into nba/data/ringer100.json for the NBA Hub's value
+# rating and Rankings tab. Checks every day (the Ringer reshuffles every few weeks) and commits only when the list changed.
+# Fails, which emails the repo owner, if the page stops parsing to exactly 100 players.
+name: NBA Ringer Top 100
+
+on:
+  schedule:
+    - cron: "41 15 * * *"   # 10:41am ET in winter
+  push:
+    branches: [main]
+    paths:
+      - tools/ringer_pull.mjs
+      - .github/workflows/nba-ringer.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-ringer
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Pull the Top 100
+        run: node tools/ringer_pull.mjs
+      - name: Commit if it changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- nba/data/ringer100.json; then echo "No change."; exit 0; fi
+          git add nba/data/ringer100.json
+          git commit -m "Ringer Top 100: $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase origin main && git push && break; sleep 5; done
