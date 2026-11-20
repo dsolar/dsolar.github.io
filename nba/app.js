@@ -62,8 +62,8 @@
   function boardHref(q, key) { return "../draft/#" + (key || "nba") + (q ? "?" + q : ""); }
   function boardAt(slot, year) { var y = year || 2027, x = ((H.prospectsBy || {})[y] || [])[Math.round(slot) - 1]; return x ? '<a href="' + boardHref("at=" + Math.round(slot), y === 2027 ? "nba" : "nba" + y) + '" title="No. ' + Math.round(slot) + " on the " + y + ' Big Board">' + esc(shortName(x.n)) + "</a>" : ""; }
   function kv(v, k) { return "<div><b>" + v + "</b><span>" + k + "</span></div>"; }
-  function tablePanel(title, head, body, right) {
-    return '<div class="panel"><h3>' + esc(title) + " <small>" + (right || "") + '</small></h3><div class="scroll"><table class="t"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody.</td></tr>') + "</tbody></table></div></div>";
+  function tablePanel(title, head, body, right, cls) {
+    return '<div class="panel"><h3>' + esc(title) + " <small>" + (right || "") + '</small></h3><div class="scroll"><table class="t' + (cls ? " " + cls : "") + '"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody.</td></tr>') + "</tbody></table></div></div>";
   }
   function listPanel(title, items, fn, sub) {
     return '<div class="panel"><h3>' + esc(title) + " <small>" + esc(sub || "") + '</small></h3><ul class="rlist">' +
@@ -149,10 +149,10 @@
     html += '<div class="leagues stack">';
     ["E", "W"].forEach(function (conf) {
       var d = rows.filter(function (r) { return r.conf === conf; });
-      html += '<div class="div"><h3>' + (conf === "E" ? "Eastern" : "Western") + ' Conference</h3><div class="scroll"><table class="t"><thead><tr><th>Team</th>' + (first ? "<th>Now</th>" : "") + "<th>Proj</th><th>Net</th><th>Playoffs</th><th>Play-in</th><th>Conf</th><th>Title</th>" + (first ? "<th>Avg pick</th>" : "") + "</tr></thead><tbody>";
+      html += '<div class="div"><h3>' + (conf === "E" ? "Eastern" : "Western") + ' Conference</h3><div class="scroll"><table class="t tstand' + (first ? " now" : "") + '"><thead><tr><th>Team</th>' + (first ? "<th>Now</th>" : "") + "<th>Proj</th><th>Net</th><th>Playoffs</th><th>Play-in</th><th>Conf</th><th>Title</th>" + (first ? "<th>Avg pick</th>" : "") + "</tr></thead><tbody>";
       d.forEach(function (r, k) {
         var w = Math.round(r.projW);
-        html += '<tr class="go' + (k === 6 || k === 10 ? " cut" : "") + '" data-team="' + r.code + '"><td class="tm">' + (k + 1) + ". " + logo(r.code) + '<span class="nm">' + esc(r.name) + "</span></td>" +
+        html += '<tr class="go' + (k === 6 || k === 10 ? " cut" : "") + '" data-team="' + r.code + '"><td class="tm"><span class="srk">' + (k + 1) + ".</span>" + logo(r.code) + '<span class="nm"><span class="nmf">' + esc(r.name) + '</span><span class="nms">' + esc(team(r.code).short) + "</span></span></td>" +
           (first ? "<td>" + r.w + "-" + r.l + "</td>" : "") + "<td><b>" + w + "-" + (82 - w) + '</b></td><td class="' + (r.net >= 0 ? "pos" : "neg") + '">' + rt(r.net) + "</td>" +
           '<td><span class="bar">' + pct(r.playoffs) + '<i><b style="width:' + (r.playoffs * 100).toFixed(0) + '%"></b></i></span></td>' +
           "<td>" + pct(r.playin) + "</td><td>" + pct(r.confW) + "</td><td><b>" + pct(r.title) + "</b></td>" +
@@ -466,11 +466,11 @@
       if (pk.group) bits.push("Better-of group");
       return bits.length ? bits.join(" · ") : "Unprotected";
     };
-    html += tablePanel(all.length + " picks", "<th>Pick</th><th>Original team</th><th>Owned by</th><th>Protection</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Notes</th>", all.map(function (pk) {
+    html += tablePanel(all.length + " picks", "<th>Pick</th><th>From</th><th>Owner</th><th>Protection</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Notes</th>", all.map(function (pk) {
       var info = H.pickInfo(pk);
       return "<tr><td>" + pk.y + " " + (pk.r === 1 ? "1st" : "2nd") + "</td><td>" + tcell(pk.from) + "</td><td>" + (pk.owner === "OUT" ? "Forfeited" : tcell(pk.owner)) + "</td><td>" +
         (pk.prot || pk.group ? "<b>" + esc(protText(pk)) + "</b>" : '<span class="note">Unprotected</span>') + "</td><td>" + ((pk.y === 2027 || pk.y === 2028) && pk.r === 1 && info.avg ? '<a href="' + boardHref("at=" + Math.round(info.avg), pk.y === 2027 ? "nba" : "nba2028") + '" title="Who\'s ranked there on the Big Board">' + f1(info.avg) + "</a>" : f1(info.avg)) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") + "</td><td>" + money(H.pickValue(pk, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
-    }).join(""), "Conveys: share of simulations where the protection doesn't hold");
+    }).join(""), "Conveys: share of simulations where the protection doesn't hold", "tpicks");
     var sw = (H.W.swaps || []).filter(function (s) { return (!yr || String(s.y) === yr) && (!tm || s.from === tm || s.owner === tm); });
     if (sw.length) html += tablePanel("Swap rights", "<th>Pick</th><th>Holder</th><th>Swaps with</th><th>Value</th><th>Notes</th>", sw.map(function (s) {
       return "<tr><td>" + s.y + " " + (s.r === 1 ? "1st" : "2nd") + "</td><td>" + tcell(s.owner) + "</td><td>" + tcell(s.from) + "</td><td>" + money(H.swapValue(s, H.cfg.mode)) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(s.note || "Takes the better of the two picks") + "</td></tr>";
@@ -1045,7 +1045,7 @@
     });
     if (worst) list = list.slice().reverse();
     list = list.slice(0, 150);
-    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Impact</th><th>Thru</th><th>Value</th><th>Salary</th><th title="Value minus salary">Surplus</th><th title="Value minus salary at the trade-market weight; what this list ranks">Trade value</th></tr></thead><tbody>';
+    html += '<div class="panel"><div class="scroll"><table class="t tval"><thead><tr><th>Player</th><th>Team</th><th>Pos</th><th>Age</th><th>Impact</th><th>Thru</th><th>Value</th><th>Salary</th><th title="Value minus salary">Surplus</th><th title="Value minus salary at the trade-market weight; what this list ranks">Trade value</th></tr></thead><tbody>';
     list.forEach(function (x, k) {
       var p = x.p, s = x.s, v = s.rows.reduce(function (a, r) { return a + r.value * Math.pow(1 + H.cfg.disc, -r.j); }, 0), c = s.rows.reduce(function (a, r) { return a + r.sal * Math.pow(1 + H.cfg.disc, -r.j); }, 0);
       var last = s.rows.length ? s.rows[s.rows.length - 1].season : "—";
@@ -1710,7 +1710,7 @@
     html += tablePanel("The " + (2026 + yr) + " class", "<th>Player</th><th>Team</th><th>Age</th><th>Type</th><th>Impact</th><th>Years</th><th>Fair value</th><th>Market</th><th>Gap</th>", list.map(function (x, k) {
       var gap = x.fair - x.market;
       return "<tr><td>" + (k + 1) + ". " + pname(x.p, 22, x.opt ? ' <span class="pill" title="Projected to decline his ' + esc(CBA.OPT_NAME[x.opt].toLowerCase()) + '">' + esc(x.opt) + " out</span>" : "") + "</td><td>" + logo(x.team, 18) + "</td><td>" + x.age + "</td><td>" + (x.kind === "RFA" ? '<span class="pill up">RFA</span>' : '<span class="pill">UFA</span>') + "</td><td>" + rchip(x.r) + "</td><td>" + x.yrs + "</td><td>" + money(x.fair) + "</td><td><b>" + money(x.market) + '</b></td><td class="' + (gap >= 0 ? "pos" : "neg") + '">' + signed(gap) + "</td></tr>";
-    }).join(""), "Gap: positive means a bargain at the market price");
+    }).join(""), "Gap: positive means a bargain at the market price", "tfa");
     html += tablePanel("Who can spend in " + sname(yr), "<th>Team</th><th>Committed</th><th>Room (renounce all)</th><th>Cap holds</th><th>Room with holds</th><th>Players</th><th>Best tool</th>", cap.map(function (c) {
       var hl = c.holdList.slice().sort(function (a, b) { return b.amt - a.amt; }).slice(0, 4).map(function (h) { return esc(h.n) + " " + money(h.amt); }).join(", ");
       return '<tr class="go" data-team="' + c.code + '"><td class="tm">' + logo(c.code) + '<span class="nm">' + esc(team(c.code).name) + "</span></td><td>" + money(c.committed) + '</td><td class="' + (c.room > 0 ? "pos" : "neg") + '">' + (c.room > 0 ? money(c.room) : "—") + '</td><td title="' + hl + '">' + (c.holds ? money(c.holds) : "—") + '</td><td class="' + (c.roomHolds > 0 ? "pos" : "neg") + '">' + (c.roomHolds > 0 ? money(c.roomHolds) : "—") + "</td><td>" + c.n + "</td><td>" + esc(c.tool) + "</td></tr>";

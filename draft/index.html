@@ -510,7 +510,8 @@ body[data-screen] .rc-title b,body[data-screen] .rc-grade b{font-family:var(--di
 
 /* ---------- The hub frame and hub building blocks (NBA pages sit inside the NBA Hub) ---------- */
 body[data-screen] .wrap{max-width:1180px}
-body.in-hub .mast{display:block;padding-bottom:8px}
+body.in-hub .mast{display:block;padding:28px 0 8px}
+@media (max-width:640px){ body.in-hub .mast{padding:14px 0 0} body.in-hub .kicker{margin-bottom:6px;font-size:11px} body.in-hub .mast h1{font-size:34px} body.in-hub .mast .sub{display:none} body.in-hub .hubtabs{margin-top:10px} }
 .hubswitch{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
 .hubswitch a{font:700 12px/1 var(--body);letter-spacing:.08em;padding:6px 11px;border-radius:999px;text-decoration:none;color:var(--dim)!important;border:1px solid var(--line-strong)}
 .hubswitch a:hover{color:var(--chalk)!important;border-color:var(--chalk)}

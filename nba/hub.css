@@ -787,3 +787,44 @@ td.lotm .lsub .nw{white-space:nowrap}
 /* sub-tab labels shorten on a phone so the row fits */
 .subtabs .sl{display:none}
 @media (max-width:760px){ .subtabs .fl{display:none} .subtabs .sl{display:inline} .subtabs a{padding-left:10px;padding-right:10px} }
+
+/* wide tables on a phone: keep the columns that matter, so the key number shows without scrolling sideways */
+@media (max-width:760px){
+  /* Trade value: player, team, impact, trade value */
+  table.tval th:nth-child(3),table.tval td:nth-child(3),table.tval th:nth-child(4),table.tval td:nth-child(4),
+  table.tval th:nth-child(6),table.tval td:nth-child(6),table.tval th:nth-child(7),table.tval td:nth-child(7),
+  table.tval th:nth-child(8),table.tval td:nth-child(8),table.tval th:nth-child(9),table.tval td:nth-child(9){display:none}
+  /* Free agents: player, team, market, gap */
+  table.tfa th:nth-child(3),table.tfa td:nth-child(3),table.tfa th:nth-child(4),table.tfa td:nth-child(4),
+  table.tfa th:nth-child(5),table.tfa td:nth-child(5),table.tfa th:nth-child(6),table.tfa td:nth-child(6),
+  table.tfa th:nth-child(7),table.tfa td:nth-child(7){display:none}
+  /* Traded picks: pick, from, to, protection, projected slot, value (conveys and notes hidden) */
+  table.tpicks th:nth-child(6),table.tpicks td:nth-child(6),table.tpicks th:nth-child(8),table.tpicks td:nth-child(8){display:none}
+  table.tpicks td{white-space:normal}
+  /* names wrap instead of pushing the numbers off screen; the value board drops impact too */
+  table.tval td:first-child,table.tfa td:first-child{white-space:normal;min-width:0;max-width:160px;display:flex;align-items:center;gap:3px}
+  table.tval th:nth-child(5),table.tval td:nth-child(5){display:none}
+  /* picks: logos stand in for team names */
+  table.tpicks .tcell>span{display:none}
+  table.tpicks th,table.tpicks td{padding-left:6px;padding-right:6px}
+  table.tpicks th{white-space:normal}
+  table.tpicks{font-size:12.5px}
+}
+
+/* standings: ranks line up; on a phone, team, record, projection, playoff and title odds */
+table.tstand .srk{display:inline-block;min-width:22px;color:var(--faint);font-variant-numeric:tabular-nums}
+table.tstand .nms{display:none}
+@media (max-width:760px){
+  /* with Now: Team Now Proj Net Playoffs Play-in Conf Title Avg -> hide Net, Play-in, Conf, Avg */
+  table.tstand.now th:nth-child(4),table.tstand.now td:nth-child(4),table.tstand.now th:nth-child(6),table.tstand.now td:nth-child(6),
+  table.tstand.now th:nth-child(7),table.tstand.now td:nth-child(7),table.tstand.now th:nth-child(9),table.tstand.now td:nth-child(9){display:none}
+  /* future seasons: Team Proj Net Playoffs Play-in Conf Title -> hide Net, Play-in, Conf */
+  table.tstand:not(.now) th:nth-child(3),table.tstand:not(.now) td:nth-child(3),table.tstand:not(.now) th:nth-child(5),table.tstand:not(.now) td:nth-child(5),
+  table.tstand:not(.now) th:nth-child(6),table.tstand:not(.now) td:nth-child(6){display:none}
+  table.tstand td.tm .nm{max-width:82px}
+  table.tstand td.tm{gap:5px}
+  table.tstand .srk{min-width:17px}
+  table.tstand th{letter-spacing:0;font-size:10.5px} table.tstand .nmf{display:none} table.tstand .nms{display:inline}
+  table.tstand .bar i{display:none}
+  table.tstand th,table.tstand td{padding-left:6px;padding-right:6px}
+}
