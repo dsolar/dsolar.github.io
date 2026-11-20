@@ -7388,7 +7388,7 @@
       "nfl": "BAL",
       "claimed_by": "Holofernes",
       "bid": 11,
-      "next_proj": 13.35
+      "next_proj": 13.28
      },
      {
       "n": "Tetairoa McMillan",
@@ -7556,7 +7556,7 @@
       "pos": "RB",
       "nfl": "PIT",
       "slot": "RB",
-      "proj": 13.44,
+      "proj": 13.46,
       "pts": null
      },
      {
@@ -7564,7 +7564,7 @@
       "pos": "WR",
       "nfl": "NO",
       "slot": "WR",
-      "proj": 12.6,
+      "proj": 12.59,
       "pts": null
      },
      {
@@ -7580,7 +7580,7 @@
       "pos": "WR",
       "nfl": "CHI",
       "slot": "WR",
-      "proj": 12.76,
+      "proj": 12.75,
       "pts": null
      },
      {
@@ -7694,7 +7694,7 @@
       "pos": "WR",
       "nfl": "BAL",
       "slot": "WR",
-      "proj": 12.38,
+      "proj": 12.35,
       "pts": null
      },
      {
@@ -7702,7 +7702,7 @@
       "pos": "WR",
       "nfl": "CAR",
       "slot": "WR",
-      "proj": 12.18,
+      "proj": 12.16,
       "pts": null
      },
      {
@@ -7727,7 +7727,7 @@
       "nfl": "HOU",
       "slot": "Q/W/R/T",
       "proj": 20.53,
-      "pts": null
+      "pts": 21.46
      },
      {
       "n": "Brock Bowers",
@@ -7750,7 +7750,7 @@
       "pos": "WR",
       "nfl": "PIT",
       "slot": "BN",
-      "proj": 8.33,
+      "proj": 8.24,
       "pts": null
      },
      {
@@ -7774,7 +7774,7 @@
       "pos": "RB",
       "nfl": "KC",
       "slot": "IR",
-      "proj": 16.83,
+      "proj": 16.84,
       "pts": null
      }
     ],
@@ -7792,7 +7792,7 @@
       "pos": "RB",
       "nfl": "BAL",
       "slot": "RB",
-      "proj": 14.72,
+      "proj": 14.73,
       "pts": null
      },
      {
@@ -7848,7 +7848,7 @@
       "pos": "QB",
       "nfl": "KC",
       "slot": "Q/W/R/T",
-      "proj": 22.59,
+      "proj": 22.55,
       "pts": null
      },
      {
@@ -7857,14 +7857,14 @@
       "nfl": "IND",
       "slot": "BN",
       "proj": 13.36,
-      "pts": null
+      "pts": 4.7
      },
      {
       "n": "Bryce Young",
       "pos": "QB",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 18.32,
+      "proj": 18.3,
       "pts": null
      },
      {
@@ -7872,7 +7872,7 @@
       "pos": "WR",
       "nfl": "KC",
       "slot": "BN",
-      "proj": 12.78,
+      "proj": 12.77,
       "pts": null
      },
      {
@@ -7931,7 +7931,7 @@
       "nfl": "HOU",
       "slot": "WR",
       "proj": 13.84,
-      "pts": null
+      "pts": 13.3
      },
      {
       "n": "George Pickens",
@@ -7954,7 +7954,7 @@
       "pos": "TE",
       "nfl": "ARI",
       "slot": "TE",
-      "proj": 10.3,
+      "proj": 10.29,
       "pts": null
      },
      {
@@ -7994,7 +7994,7 @@
       "pos": "RB",
       "nfl": "PHI",
       "slot": "BN",
-      "proj": 11.83,
+      "proj": 11.86,
       "pts": null
      },
      {
@@ -8020,7 +8020,7 @@
       "pos": "QB",
       "nfl": "CHI",
       "slot": "QB",
-      "proj": 20.41,
+      "proj": 20.35,
       "pts": null
      },
      {
@@ -8028,7 +8028,7 @@
       "pos": "TE",
       "nfl": "CHI",
       "slot": "BN",
-      "proj": 8.85,
+      "proj": 8.84,
       "pts": null
      },
      {
@@ -8036,7 +8036,7 @@
       "pos": "QB",
       "nfl": "WAS",
       "slot": "BN",
-      "proj": 21.52,
+      "proj": 21.51,
       "pts": null
      },
      {
@@ -8060,7 +8060,7 @@
       "pos": "WR",
       "nfl": "BUF",
       "slot": "BN",
-      "proj": 10.51,
+      "proj": 10.5,
       "pts": null
      },
      {
@@ -8124,7 +8124,7 @@
       "pos": "WR",
       "nfl": "CHI",
       "slot": "BN",
-      "proj": 9.59,
+      "proj": 9.58,
       "pts": null
      }
     ]
