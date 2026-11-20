@@ -358,8 +358,8 @@
     var flags = [];
     if (T.hard) flags.push('<span class="pill fill">Hard-capped at the ' + esc(CBA.LEVEL_NAME[T.hard]) + "</span> " + esc(T.hardWhy));
     flags.push(T.rep ? '<span class="pill warn">Repeater</span> Paid tax in at least three of the last four seasons, so any bill this season is at repeater rates.' : '<span class="pill">Not a repeater</span> Tax this season would be at standard rates.');
-    html += '<div class="panel"><h3>What ' + esc(team(code).short) + " can do now <small>" + sname(0) + '</small></h3><p class="flags">' + flags.join("<br>") + '</p><div class="scroll"><table class="t"><thead><tr><th>Tool</th><th>Amount</th><th>Usable</th><th>Notes</th></tr></thead><tbody>' +
-      T.tools.map(function (x) { return "<tr><td>" + esc(x.name) + "</td><td>" + (x.amt ? money(x.amt) : "—") + "</td><td>" + (x.ok ? '<span class="pill up">Yes</span>' : '<span class="pill">No</span>') + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(x.why) + "</td></tr>"; }).join("") +
+    html += '<div class="panel"><h3>What ' + esc(team(code).short) + " can do now <small>" + sname(0) + '</small></h3><p class="flags">' + flags.join("<br>") + '</p><div class="scroll"><table class="t ttools"><thead><tr><th>Tool</th><th>Amount</th><th>Usable</th><th class="tnc">Notes</th></tr></thead><tbody>' +
+      T.tools.map(function (x) { return '<tr><td class="tname">' + esc(x.name) + '<small class="tnote">' + esc(x.why) + "</small></td><td>" + (x.amt ? money(x.amt) : "—") + "</td><td>" + (x.ok ? '<span class="pill up">Yes</span>' : '<span class="pill">No</span>') + '</td><td class="note tnc" style="text-align:left;white-space:normal">' + esc(x.why) + "</td></tr>"; }).join("") +
       '</tbody></table></div><p class="note">Trade exceptions as of Nov 2026; mid-level use as of mid-July (Hoops Rumors). A signing since then may have used more.</p></div>';
     html += repeaterPanel(code);
     html += capSheet(code, i);
@@ -685,6 +685,9 @@
     var html = '<h2 class="sec">Lineups</h2><p class="lede">Which units work, which pairs click and who swings his team most, from pbpstats\' play-by-play this season (' + esc(H.lu.season) + "). Ratings are points per 100 possessions; small samples swing hard, so set the possession floor to taste.</p>";
     html += '<div class="luctl"><label>Team<select data-q="t"><option value="">The whole league</option>' + H.codes.slice().sort(function (a, b) { return team(a).name.localeCompare(team(b).name); }).map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label>" +
       '<div class="chips" role="group" aria-label="Possession floor"><span>At least</span>' + [100, 150, 250, 400].map(function (v) { return '<a href="' + link({ min: v === 150 ? null : v }) + '"' + (v === minP ? ' aria-current="true"' : "") + ">" + v + "</a>"; }).join("") + "<span>possessions</span></div></div>";
+    // One short tab row on every lineups view, so it fits a phone on one line
+    var tabs = [["", "Overview"], ["5", "Five-man"], ["3", "Trios"], ["2", "Duos"], ["oo", "On/off"]];
+    html += '<div class="seg luseg">' + tabs.map(function (x) { return '<a href="' + link({ list: x[0] || null, sort: null }) + '"' + ((list || "") === x[0] ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
     if (list) { html += fullList(list, tm, minP, q, link); view.innerHTML = html; return; }
     if (tm) { html += teamLab(tm, minP, link); view.innerHTML = html; return; }
     var units = luRows("5", "").filter(function (x) { return x.poss >= minP; });
@@ -700,7 +703,7 @@
   }
   function fullList(kind, tm, minP, q, link) {
     var names = { "5": "Five-man units", "3": "Trios", "2": "Duos", oo: "On/off" };
-    var html = '<div class="seg">' + ["5", "3", "2", "oo"].map(function (k) { return '<a href="' + link({ list: k }) + '"' + (k === kind ? ' aria-current="page"' : "") + ">" + names[k] + "</a>"; }).join("") + '<a href="' + link({ list: null }) + '">Back to overview</a></div>';
+    var html = "";
     var worst = q.sort === "worst", floor = kind === "5" ? minP : kind === "oo" ? minP * 2 : kind === "3" ? minP * 2 : minP * 3;
     var rows, pages, pg, start, body;
     if (kind === "oo") {
@@ -721,7 +724,7 @@
     var units = luRows("5", code), used = units.slice().sort(function (a, b) { return b.min - a.min; }), top = used[0];
     var good = units.filter(function (x) { return x.poss >= minP; }).sort(function (a, b) { return b.net - a.net; })[0];
     var oo = ooRows(code).filter(function (x) { return x.min >= 40 && x.diff != null; }).sort(function (a, b) { return b.diff - a.diff; });
-    var html = '<div class="lab" style="--tc:' + esc(tt.color) + '"><div class="lab-h">' + '<span class="tlogo">' + logo(code, 36) + '</span><div><small>Lineup lab</small><b>' + esc(tt.name) + '</b></div><div class="lab-k"><span><b class="' + netCls(net) + '">' + signedNet(net) + "</b>Team net</span>" +
+    var html = '<div class="lab" style="--tc:' + esc(tt.color) + '"><div class="lab-h">' + '<span class="tlogo">' + logo(code, 43) + '</span><div><small>Lineup lab</small><b>' + esc(tt.name) + '</b></div><div class="lab-k"><span><b class="' + netCls(net) + '">' + signedNet(net) + "</b>Team net</span>" +
       (top ? "<span><b class=\"" + netCls(top.net) + '">' + signedNet(top.net) + "</b>Most-used five (" + f0(top.min) + " min)</span>" : "") + (good ? "<span><b class=\"" + netCls(good.net) + '">' + signedNet(good.net) + "</b>Best five, " + minP + "+ poss</span>" : "") + "</div></div></div>";
     html += luSection("Most-used lineups", "Five-man units by minutes", '<ol class="lrows">' + used.slice(0, 10).map(function (x) { return lineRow(x, 0, false); }).join("") + "</ol>", '<a class="more" href="' + link({ list: "5" }) + '">All ' + units.length + "</a>");
     html += luSection("Two-man chemistry", "", duoGrid(code, Math.round(minP / 2)));
@@ -888,7 +891,7 @@
     var pages = Math.max(1, Math.ceil(list.length / PER)), pg = Math.min(pages, Math.max(1, +q.pg || 1)), start = (pg - 1) * PER;
     html += '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class="pn">Player</th><th class="hm">Pos</th><th class="hm">Age</th><th class="hm" title="Minutes this season">Min</th><th class="hm">Type</th>' + th("overall", "Impact", "imp") + cols.map(function (c) { return th(c); }).join("") + "</tr></thead><tbody>";
     list.slice(start, start + PER).forEach(function (r, k) {
-      html += '<tr><td class="pn"><span class="rk">' + (start + k + 1) + "</span>" + (r.t ? logo(r.t, 16) : "") + advName(r, 22) + '</td><td class="hm ps">' + esc(advPos(r)) + '</td><td class="hm">' + (r.age != null ? Math.floor(r.age) : "—") + '</td><td class="hm mn">' + r.mc + '</td><td class="hm">' + archBadge(r.arch) + '</td><td class="imp">' + (r.s.imp != null ? rchip(r.s.imp) : "—") + "</td>" +
+      html += '<tr><td class="pn"><span class="rk">' + (start + k + 1) + "</span>" + (r.t ? '<span class="rtlogo">' + logo(r.t, 16) + "</span>" : "") + advName(r, 22) + '</td><td class="hm ps">' + esc(advPos(r)) + '</td><td class="hm">' + (r.age != null ? Math.floor(r.age) : "—") + '</td><td class="hm mn">' + r.mc + '</td><td class="hm">' + archBadge(r.arch) + '</td><td class="imp">' + (r.s.imp != null ? rchip(r.s.imp) : "—") + "</td>" +
         cols.map(function (c) { return hcell(r[vs][c], A.cats[c] + ": " + ord(r.r[c]) + " in the league, " + ord(r.rp[c]) + " among " + GROUP1[r.g]); }).join("") + "</tr>";
     });
     if (!list.length) html += '<tr><td class="note" colspan="16">Nobody matches.</td></tr>';
@@ -1401,7 +1404,7 @@
       var inc = tr.assets.filter(function (a) { return destOf(tr, a) === k && a.from !== k; });
       var r = chk && code ? chk.teams[code] : null;
       var picking = !code || tradePicking === k;
-      var head = code ? '<div class="tc-h filled" style="--tc:' + esc(team(code).color) + '"><span class="tlogo sm">' + logo(code, 28) + '</span><b class="tc-name">' + esc(team(code).name) + '</b><button type="button" class="tc-chg" data-chteam="' + k + '">' + (tradePicking === k ? "Cancel" : "Change") + "</button>" + (n > 2 ? '<button class="xbtn light" data-dropteam="' + k + '" aria-label="Remove team">×</button>' : "") + "</div>"
+      var head = code ? '<div class="tc-h filled" style="--tc:' + esc(team(code).color) + '"><span class="tlogo sm">' + logo(code, 35) + '</span><b class="tc-name">' + esc(team(code).name) + '</b><button type="button" class="tc-chg" data-chteam="' + k + '">' + (tradePicking === k ? "Cancel" : "Change") + "</button>" + (n > 2 ? '<button class="xbtn light" data-dropteam="' + k + '" aria-label="Remove team">×</button>' : "") + "</div>"
         : '<div class="tc-h"><b class="tc-name">' + (k === 0 ? "Pick the first team" : "Pick team " + (k + 1)) + "</b>" + (n > 2 ? '<button class="xbtn" data-dropteam="' + k + '" aria-label="Remove team">×</button>' : "") + "</div>";
       if (picking) head += teamGrid(k, tr.sides);
       var money0 = "";

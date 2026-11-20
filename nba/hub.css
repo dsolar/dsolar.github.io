@@ -543,7 +543,7 @@ table.sz{width:100%;font-size:13px}
 .sty-nums b{font:800 24px/1 var(--display)}
 .sty-nums span{font-size:12.5px;color:var(--muted)}
 .sty-nums small{font:700 12px var(--cond);color:var(--faint)}
-@media (max-width:760px){ .sty-two{grid-template-columns:1fr} .sty-k{grid-template-columns:1fr 1fr} .sty-k b{font-size:27px} .ffgrid>div{padding:9px 10px} .ffl{font-size:13px} }
+@media (max-width:760px){ .sty-two{grid-template-columns:minmax(0,1fr)} .sty-two>div{min-width:0} .sty-k{grid-template-columns:1fr 1fr} .sty-k b{font-size:27px} .ffgrid>div{padding:9px 10px} .ffl{font-size:13px} }
 .vsplit{display:block;font:500 11px/1.3 var(--body);color:var(--faint)}
 
 /* builder: team headers, logo grid, destination chips, drag and drop */
@@ -662,3 +662,37 @@ table.sz{width:100%;font-size:13px}
   .dbwho .full{display:none} .dbwho .short{display:inline}
 }
 @media (max-width:760px){ .dbaxis,.dbrow{grid-template-columns:150px 1fr 46px;gap:6px} .dbell{padding:6px 10px 4px} .dbwho .lg,.dbwho img.tlogo{display:none} }
+
+/* faces sit on their team's color (headshots are cut out), so a separate logo isn't needed to tell teams apart */
+.ds-face.has-face{background:var(--face-bg)}
+/* team tools: on a phone the note goes under the tool's name instead of a squeezed column */
+.ttools .tnote{display:none}
+.luseg{flex-wrap:nowrap;overflow-x:auto}
+.luseg a{white-space:nowrap}
+@media (max-width:760px){
+  .ttools .tnc{display:none}
+  .ttools .tname{white-space:normal;min-width:0}
+  .ttools .tnote{display:block;font:400 12px/1.4 var(--body);color:var(--muted);margin-top:3px;max-width:34ch;text-transform:none;letter-spacing:0}
+  .luseg a{padding-left:10px;padding-right:10px}
+  .ttools td,.ttools th{padding-left:8px;padding-right:8px}
+  /* ratings: the face (on its team color) is enough */
+  .rt .rtlogo{display:none}
+  /* four factors: the rank sits under the number so all three columns fit */
+  .ffgrid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr) minmax(0,1fr)}
+  .ffc{flex-direction:column;align-items:flex-start!important;gap:4px!important}
+  .ffc b{min-width:0;font-size:18px}
+  .ffl{line-height:1.25}
+}
+/* player card on a phone: stats and contract years as quiet ruled lists instead of boxes */
+@media (max-width:760px){
+  .kv{grid-template-columns:1fr 1fr;gap:0 18px;margin:2px 0 12px}
+  .kv div{background:none;border-radius:0;padding:9px 0 8px;border-top:1px solid var(--rule)}
+  .kv b{font-size:19px}
+  .kv span{display:block;margin-top:3px;text-transform:none;letter-spacing:0;font-size:12.5px;line-height:1.3;color:var(--muted)}
+  .cstrip{grid-template-columns:1fr;gap:0;margin-top:2px}
+  .cstrip>.cy{display:grid;grid-template-columns:6.2em 1fr auto;align-items:baseline;gap:8px;position:relative;background:none;box-shadow:none;border-radius:0;border-top:1px solid var(--rule)!important;padding:9px 0 8px 14px}
+  .cstrip>.cy::before{content:"";position:absolute;left:0;top:calc(50% - 3px);width:7px;height:7px;border-radius:50%;background:var(--t-strong-i)}
+  .cstrip>.cy.o-PO::before{background:var(--t-weak-i)} .cstrip>.cy.o-TO::before{background:var(--t-elite-i)} .cstrip>.cy.o-NG::before{background:var(--t-fringe-i)} .cstrip>.cy.end::before{background:var(--faint)}
+  .cstrip>.cy span{font-size:12.5px;letter-spacing:0}
+  .cstrip>.cy small{font-size:12.5px;text-align:right;color:var(--muted)}
+}
