@@ -1,0 +1,10 @@
+name: probe faces (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -s "https://statsapi.mlb.com/api/v1/people?personIds=150289,685329,432934,455759,516811,691587,607111,805779,542432,608070,472610,671277,677651,571970,691777,519293,669257" | python3 -c "
+          import json,sys
+          for p in json.load(sys.stdin)['people']: print(p['id'], p['fullName'], p.get('primaryPosition',{}).get('abbreviation'), p.get('mlbDebutDate'), p.get('lastPlayedDate'), p.get('active'))"
