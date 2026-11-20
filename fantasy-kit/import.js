@@ -229,10 +229,19 @@
 
   function fromYahooText(text, sports) {
     const r = result("Yahoo"), f = r.form;
-    const lines = String(text || "").split(/\r?\n/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
-    if (lines.length < 3) throw new Error("Paste the whole Settings page from your Yahoo league.");
-    // a label and its value: "Label: value" on one line, or a label line followed by its value line
-    const get = (re) => { for (let i = 0; i < lines.length; i++) { const m = lines[i].match(new RegExp("^(?:" + re.source + ")\\s*:?\\s*(.*)$", "i")); if (m) return (m[m.length - 1] || lines[i + 1] || "").trim(); } return ""; };
+    const raw = String(text || "").split(/\r?\n/).map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+    if (raw.length < 3) throw new Error("Paste the whole Settings page from your Yahoo league.");
+    // A copied page has "Label: value" on one line; Yahoo's page read straight from the server puts the value on the
+    // next line, and a stat's value under its name. Join those back up.
+    const lines = [];
+    for (let i = 0; i < raw.length; i++) {
+      const l = raw[i], nx = raw[i + 1];
+      if (nx != null && /:$/.test(l) && !/:$/.test(nx)) { lines.push(l + " " + nx); i++; continue; }
+      if (nx != null && /\([^)]{1,8}\)$/.test(l) && /^-?\d+(\.\d+)?$/.test(nx)) { lines.push(l + " " + nx); i++; continue; }
+      lines.push(l);
+    }
+    // a setting's value: the line that starts with its label and a colon (Yahoo's menus repeat words like "Playoffs")
+    const get = (re) => { for (const l of lines) { const m = l.match(new RegExp("^(?:" + re.source + ")\\s*:\\s*(.*)$", "i")); if (m) return (m[m.length - 1] || "").trim(); } return ""; };
     const name = get(/League Name/);
     r.name = name; if (name) f.name = name;
     const roster = get(/Roster Positions/);

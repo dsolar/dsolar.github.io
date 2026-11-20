@@ -159,3 +159,11 @@ Turnovers (TO) -1
   assert.equal(f.clock, 60); assert.equal(f.maxAdds, 4); assert.equal(f.review, 'vote'); assert.equal(f.reseed, 1);
   assert.equal(f.playoffs, 6); assert.equal(f.weeks, 16); assert.equal(f.waivers, 'rolling'); assert.equal(f.waiverDays, 1);
 });
+
+test("Yahoo: the same page read from the server, values on their own lines and the site menus around it", () => {
+  const base = require('node:fs').readFileSync(new URL('./fixtures/yahoo-nba-282497.txt', import.meta.url), 'utf8');
+  const split = 'Playoffs\nOdds\nDraft\n' + base.split('\n').map((l) => l.replace(/^([^:]+:) (.+)$/, '$1\n$2').replace(/^(.+\([A-Z%]+\)) (-?[\d.]+)$/, '$1\n$2')).join('\n');
+  const f = I.fromYahooText(split, S).form;
+  assert.equal(f.playoffs, 6); assert.equal(f.teams, 10); assert.equal(f.lineup, 'PG SG G SF PF F C C UTIL UTIL');
+  assert.deepEqual(f.weights, { pts: 1, reb: 1.2, ast: 1.5, blk: 3, stl: 3, tov: -1 });
+});
