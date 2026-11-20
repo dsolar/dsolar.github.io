@@ -311,7 +311,10 @@
     // a part a player doesn't have (no Top 100 rank) hands its weight to the others. The gap to his impact today carries
     // into later seasons, so aging still runs off the impact projection.
     H.gs100 = gs100;
-    H.valRanks = () => cache("vr" + cfg.vblend + cfg.posAdj, () => {
+    H.adj = {};
+    H.setAdj = (id, v) => { if (v) H.adj[id] = v; else delete H.adj[id]; memo.clear(); };
+    const adjKey = () => Object.keys(H.adj).sort().map(k => k + H.adj[k]).join(",");
+    H.valRanks = () => cache("vr" + cfg.vblend + cfg.posAdj + adjKey(), () => {
       const [wi, wb, wc] = VBLEND[cfg.vblend] || VBLEND.bal, out = {};
       const pool = Object.values(W.P).filter(p => !p.rook && p.adv && p.adv.mp >= 400 && gs100(p.adv.s) != null);
       const rankIn = (arr, v) => { let k = 0; while (k < arr.length && arr[k] > v) k++; return k; };
@@ -339,7 +342,10 @@
         }
         if (p.ringer) { o.cR = p.ringer; o.con = at(p.ringer - 1); sum += wc * o.con; w += wc; }
         else if (H.ringer && p.adv && p.adv.mp >= 400) { o.con = Math.min(ra, OUT100); sum += wc * o.con; w += wc; }
-        o.val = sum / w; o.shift = o.val - r0; out[p.id] = o;
+        o.val = sum / w;
+        // your own read (H.adj, set on the player card): added on top, in value only
+        const mine = H.adj && H.adj[p.id]; if (mine) { o.adj = mine; o.val += mine; }
+        o.shift = o.val - r0; out[p.id] = o;
       }
       const vs = Object.values(out).filter(o => o.gs != null || o.cR).map(o => o.val).sort((a, b) => b - a);
       for (const o of Object.values(out)) o.vR = rankIn(vs, o.val) + 1;
@@ -405,7 +411,7 @@
     // production is worth about what role players get, and a star's runs past his max. "payroll": scaled so the whole
     // league's production adds up to the whole league's payroll (which also spreads sunk money from bad contracts
     // onto everyone who produces, so it runs rich).
-    const Kfor = () => cache("K" + cfg.vblend + cfg.posAdj + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
+    const Kfor = () => cache("K" + cfg.vblend + cfg.posAdj + adjKey() + cfg.convex + cfg.growth + (cfg.repl ?? -2.5) + cfg.anchor + (cfg.minCtx ?? 1), () => {
       let sv = 0, ss = 0;
       for (const p of Object.values(W.P)) {
         if (p.two) continue;
@@ -941,7 +947,7 @@
     // Trade value: the production and market views averaged, the same as the trade finder and grades use. Production is
     // what he should produce (impact, box score, the Ringer); market is what teams pay for his minutes and scoring
     // (fit to 317 veteran contracts). Teams trade on both, and on last season's deals the average fits real trades best.
-    H.tradeValue = p => cache("tv" + p.id + cfg.disc + cfg.growth + cfg.salW + cfg.vblend + cfg.posAdj, () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
+    H.tradeValue = p => cache("tv" + p.id + cfg.disc + cfg.growth + cfg.salW + cfg.vblend + cfg.posAdj + adjKey(), () => (H.surplus(p, "prod").pv + H.surplus(p, "market").pv) / 2);
     H.valueBoard = mode => cache("vb" + (mode || cfg.mode) + cfg.disc + cfg.growth + cfg.salW, () =>
       H.players().map(p => ({ p, s: H.surplus(p, mode), tv: H.tradeValue(p) })).sort((a, b) => b.tv - a.tv));
     // This summer's class: everyone whose deal ends after this season (options as the model expects them to go)

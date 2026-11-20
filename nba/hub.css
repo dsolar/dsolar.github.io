@@ -842,3 +842,10 @@ table.ttc td:first-child{white-space:nowrap}
 table.tfeed{margin:4px 0 6px}
 table.tfeed th,table.tfeed td{text-align:left}
 table.tfeed tr.stale td{color:var(--red)}
+/* your reads */
+.myadj{margin:10px 0 4px;font-size:13.5px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
+.myadj label{display:flex;align-items:center;gap:8px;font-weight:700}
+.myadj select{font:inherit;padding:4px 6px}
+.myadj .note{font-size:12.5px}
+.adjs{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule-2);font-size:13.5px}
+.adjs .btn.sm{padding:3px 9px;font-size:12px;margin-left:6px}
