@@ -214,6 +214,7 @@
   // ---------- a pool ----------
   async function load() {
     try { st.board = await C.rpc("mm_board", { p_pool: st.code }); } catch (e) { st.board = { error: e.message }; }
+    if (st.board && st.board.ok && st.remind == null) { try { st.remind = !!(await C.rpc("mm_remind_get", { p_pool: st.code })).remind; } catch (e) { st.remind = false; } }
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
@@ -248,6 +249,7 @@
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
     app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
+      <label class="pl-remind"><input type="checkbox" data-remind${st.remind ? " checked" : ""}><span><b>Email me before a pick is due</b> About 3 hours ahead, only if I haven't made it.</span></label>
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}</div>`;
   }
 
@@ -622,6 +624,11 @@
   app.addEventListener("change", (e) => {
     const t = e.target;
     if (t.hasAttribute("data-ffhide")) { st.ffhide = t.checked; render(); return; }
+    if (t.hasAttribute("data-remind")) {
+      const on = t.checked;
+      C.rpc("mm_remind_set", { p_pool: st.code, p_on: on }).then(ok).then(() => { st.remind = on; st.msg = on ? "Reminders on. You'll get an email about 3 hours before a pick is due, if it isn't in." : "Reminders off."; render(); }).catch((e) => { t.checked = !on; fail(e); });
+      return;
+    }
     if (t.dataset.bpts != null) {
       // a number already on another open game trades places with this one
       const gid = t.dataset.bpts, v = t.value ? +t.value : null, k = st.bd[gid] = st.bd[gid] || {}, old = k.pts || null;

@@ -414,3 +414,6 @@ button.pl-chip{cursor:pointer}
   .pl-list .pl-li-t small{white-space:normal;line-height:1.35}
   .pl-due{font-size:11px;padding:3px 7px}
 }
+.pl-remind{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:13.5px;color:var(--muted);cursor:pointer}
+.pl-remind input{margin:2px 0 0;width:18px;height:18px;accent-color:var(--ink);flex:none}
+.pl-remind b{color:var(--ink);margin-right:4px}

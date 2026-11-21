@@ -957,3 +957,65 @@ end $$;
 
 select cron.unschedule('mm-sync') where exists (select 1 from cron.job where jobname = 'mm-sync');
 select cron.schedule('mm-sync', '*/10 * * * *', $job$ select public.mm_sync(); $job$);
+
+-- Pick reminders: a member who turns them on gets one email when a pick is still missing about three hours before it's
+-- due. The server clock (fk-clock, every five minutes) asks for each opted-in member's board as that member sees it
+-- (mm_remind_boards), works out what's due with the pages' own rules (fantasy-kit/pools-core.js status), claims each
+-- reminder once (mm_remind_claim), and sends it with Resend.
+alter table public.mm_members add column if not exists remind boolean not null default false;
+create table if not exists public.mm_reminded (
+  pool text not null, user_id uuid not null, due timestamptz not null, sent_at timestamptz not null default now(),
+  primary key (pool, user_id, due),
+  foreign key (pool, user_id) references public.mm_members (pool, user_id) on delete cascade);
+alter table public.mm_reminded enable row level security;
+revoke all on public.mm_reminded from anon, authenticated;
+
+create or replace function public.mm_remind_get(p_pool text) returns jsonb
+language sql stable security definer set search_path to 'public' as $$
+  select jsonb_build_object('remind', coalesce((select remind from mm_members where pool = upper(trim(p_pool)) and user_id = auth.uid()), false));
+$$;
+create or replace function public.mm_remind_set(p_pool text, p_on boolean) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+begin
+  if auth.uid() is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  update mm_members set remind = coalesce(p_on, false) where pool = upper(trim(p_pool)) and user_id = auth.uid();
+  if not found then return jsonb_build_object('error', 'Join this pool first.'); end if;
+  return jsonb_build_object('ok', true, 'remind', coalesce(p_on, false));
+end $$;
+revoke all on function public.mm_remind_get(text), public.mm_remind_set(text, boolean) from public, anon;
+grant execute on function public.mm_remind_get(text), public.mm_remind_set(text, boolean) to authenticated;
+
+-- every opted-in member's board, as mm_board gives it to them (their own picks, others' only once locked)
+create or replace function public.mm_remind_boards(p_token text) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare m record; out jsonb := '[]'::jsonb; b jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  for m in select mb.pool, mb.user_id, u.email, mm_name(mb.pool, mb.user_id) as nm, p.name as pool_name, p.kind
+      from mm_members mb join mm_pools p on p.id = mb.pool join auth.users u on u.id = mb.user_id
+      where mb.remind and u.email is not null loop
+    perform set_config('request.jwt.claims', jsonb_build_object('sub', m.user_id, 'role', 'authenticated')::text, true);
+    b := mm_board(m.pool);
+    if b ? 'ok' then
+      out := out || jsonb_build_array(jsonb_build_object('pool', m.pool, 'user', m.user_id, 'email', m.email, 'name', m.nm, 'pool_name', m.pool_name, 'kind', m.kind, 'board', b));
+    end if;
+  end loop;
+  perform set_config('request.jwt.claims', '', true);
+  return jsonb_build_object('boards', out);
+end $$;
+-- claim reminders before sending: only the ones not already sent come back, so a deadline gets one email
+create or replace function public.mm_remind_claim(p_token text, p_rows jsonb) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare out jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  with ins as (
+    insert into mm_reminded (pool, user_id, due)
+      select r ->> 'pool', (r ->> 'user')::uuid, to_timestamp((r ->> 'due')::numeric / 1000) from jsonb_array_elements(coalesce(p_rows, '[]'::jsonb)) r
+    on conflict do nothing returning pool, user_id, due)
+  select coalesce(jsonb_agg(jsonb_build_object('pool', pool, 'user', user_id, 'due', round(extract(epoch from due) * 1000))), '[]'::jsonb) into out from ins;
+  delete from mm_reminded where sent_at < now() - interval '120 days';
+  return jsonb_build_object('claimed', out);
+end $$;
+revoke all on function public.mm_remind_boards(text), public.mm_remind_claim(text, jsonb) from public, authenticated;
+grant execute on function public.mm_remind_boards(text), public.mm_remind_claim(text, jsonb) to anon;
