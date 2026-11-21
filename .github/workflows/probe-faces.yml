@@ -1,9 +1,0 @@
-name: probe faces (temporary)
-on: workflow_dispatch
-jobs:
-  p:
-    runs-on: ubuntu-latest
-    steps:
-      - run: |
-          for u in "https://cdn.nba.com/headshots/nba/latest/260x190/947.png" "https://cdn.nba.com/headshots/nba/latest/260x190/999999.png"; do
-            echo "== $u GET $(curl -s -m 20 -o /tmp/b -w '%{http_code} %{content_type} %{size_download}' -A 'Mozilla/5.0' "$u") HEAD $(curl -s -m 20 -o /dev/null -I -w '%{http_code}' -A 'davidsolar-faces/1.0' "$u") HEADua $(curl -s -m 20 -o /dev/null -I -w '%{http_code}' -A 'Mozilla/5.0' "$u")"; done
