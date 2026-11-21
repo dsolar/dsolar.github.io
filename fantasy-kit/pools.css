@@ -576,3 +576,4 @@ button.pl-chip{cursor:pointer}
 .pl-lunb:hover{text-decoration:underline}
 .pl-lur{display:flex;justify-content:space-between;margin:8px 0 3px;font-size:12px;font-weight:850;color:var(--muted)}
 .pl-owns{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px}
+@media (max-width:640px){.pl-ffs .pl-tn small,.pl-ffp .pl-tn small{white-space:normal;line-height:1.35}}
