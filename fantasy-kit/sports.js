@@ -927,9 +927,10 @@
   // Team logos from ESPN's image server, as on the Big Board: its code for each team where it differs from ours.
   const ESPN_CODES = { nba: { BRK: "bkn", CHO: "cha", PHO: "phx", GSW: "gs", NOP: "no", SAS: "sa", UTA: "utah", WAS: "wsh", NYK: "ny" },
     nfl: { WAS: "wsh" }, mlb: { CWS: "chw", ATH: "ath" }, nhl: { TBL: "tb", NJD: "nj", LAK: "la", SJS: "sj", UTA: "utah" } };
-  // league logos from the same server (it has none for the NCAA, so college keeps its drawn icon), and conference
-  // logos by ESPN's file name for each conference, as the pool files name them
-  const leagueLogo = (sportKey, px = 64) => (["nba", "nfl", "mlb", "nhl"].includes(sportKey) ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/${sportKey}.png&w=${px}&h=${px}` : null);
+  // league logos from the same server (college uses the NCAA's, from ESPN's other logo folder; the drawn icon or
+  // the sport's name shows if one won't load), and conference logos by ESPN's file name for each conference
+  const leagueLogo = (sportKey, px = 64) => (["nba", "nfl", "mlb", "nhl"].includes(sportKey) ? `https://a.espncdn.com/combiner/i?img=/i/teamlogos/leagues/500/${sportKey}.png&w=${px}&h=${px}`
+    : ["cbb", "cfb"].includes(sportKey) ? `https://a.espncdn.com/combiner/i?img=/i/espn/misc_logos/500/ncaa.png&w=${px}&h=${px}` : null);
   const CONF_FILES = { SEC: "sec", ACC: "acc", "Big Ten": "big_ten", "Big 12": "big_12", "Big East": "big_east", "A-10": "atlantic_10", American: "american",
     "Sun Belt": "sun_belt", "Sun Belt - East": "sun_belt", "Sun Belt - West": "sun_belt", CAA: "caa", "Mountain West": "mountain_west", "Big West": "big_west",
     Southland: "southland", Horizon: "horizon", MAC: "mac", SWAC: "swac", MVC: "missouri_valley", "Big Sky": "big_sky", SoCon: "southern", WCC: "west_coast",

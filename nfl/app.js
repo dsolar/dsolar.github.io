@@ -26,7 +26,10 @@
     if (!p.hs) return window.DSFaces.html({ sport: "nfl", id: p.espn || null, name: p.n, color: team(p.t).color, size: size });
     var base = window.DSFaces.html({ sport: "nfl", id: null, name: "", title: p.n, color: team(p.t).color, size: size, hide: true });
     var px = size * 3 <= 120 ? 120 : 240;
-    var alt = p.espn ? "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/" + p.espn + ".png&w=" + px + "&h=" + Math.round(px * 0.73) : "";
+    // NFL.com's photo, then ESPN's (by id, or by name from the faces registry when the player has no ESPN id)
+    var byName = !p.espn && window.DSFaces.find ? window.DSFaces.find("nfl", p.n) : null;
+    var alt = p.espn ? "https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/" + p.espn + ".png&w=" + px + "&h=" + Math.round(px * 0.73)
+      : byName ? window.DSFaces.url("nfl", byName, { size: size }) : "";
     var img = '<img class="ds-face-img" src="https://static.www.nfl.com/image/upload/c_thumb,g_face,w_' + px + ",h_" + px + ",f_auto,q_auto/league/" + esc(p.hs) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="' +
       (alt ? "if(!this.dataset.alt){this.dataset.alt=1;this.parentNode.classList.add('espn');this.src='" + alt + "';return;}" : "") + "this.parentNode&&this.parentNode.classList.remove('has-face');this.remove()\">";
     var ini = esc(String(p.n).split(" ").filter(function (w) { return !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w); }).map(function (w, i, a) { return i === 0 || i === a.length - 1 ? w[0] : ""; }).join("").toUpperCase());
