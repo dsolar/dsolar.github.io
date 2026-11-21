@@ -2,9 +2,9 @@
  "built": "2026-11-21",
  "sports": {
   "mlb": {
-   "registry": 12211,
-   "shown": 850,
-   "found": 823,
+   "registry": 12324,
+   "shown": 851,
+   "found": 824,
    "missing": [
     "Michael Jackson"
    ],
@@ -36,71 +36,13 @@
     "Todd Walker",
     "Todd Zeile"
    ],
-   "shared": [
-    [
-     "Chris Young",
-     "455759",
-     [
-      "432934",
-      "455759"
-     ]
-    ],
-    [
-     "Eury Pérez",
-     "691587",
-     [
-      "516811",
-      "691587"
-     ]
-    ],
-    [
-     "Jacob Wilson",
-     "805779",
-     [
-      "607111",
-      "805779"
-     ]
-    ],
-    [
-     "José Ramírez",
-     "608070",
-     [
-      "542432",
-      "608070"
-     ]
-    ],
-    [
-     "Luis García Jr.",
-     "671277",
-     [
-      "472610",
-      "671277",
-      "677651"
-     ]
-    ],
-    [
-     "Max Muncy",
-     "571970",
-     [
-      "571970",
-      "691777"
-     ]
-    ],
-    [
-     "Will Smith",
-     "669257",
-     [
-      "519293",
-      "669257"
-     ]
-    ]
-   ],
+   "shared": [],
    "fixed": 1
   },
   "nba": {
-   "registry": 1161,
-   "shown": 1232,
-   "found": 1146,
+   "registry": 1207,
+   "shown": 1240,
+   "found": 1154,
    "missing": [
     "Nikola Milutinov"
    ],
@@ -195,9 +137,9 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7283,
-   "shown": 1159,
-   "found": 1071,
+   "registry": 7368,
+   "shown": 1162,
+   "found": 1074,
    "missing": [
     "Derek M. Smith",
     "Maceo Beard"
@@ -290,62 +232,13 @@
     "Wayne Gandy",
     "Zion Washington"
    ],
-   "shared": [
-    [
-     "A.J. Green",
-     "13983",
-     [
-      "13983",
-      "4038437"
-     ]
-    ],
-    [
-     "Andre Smith",
-     "12622",
-     [
-      "12622",
-      "3895831"
-     ]
-    ],
-    [
-     "Jonah Williams",
-     "4040726",
-     [
-      "4032481",
-      "4040726"
-     ]
-    ],
-    [
-     "Kevin White",
-     "2514500",
-     [
-      "2514500",
-      "3042435"
-     ]
-    ],
-    [
-     "Kyle Fuller",
-     "16715",
-     [
-      "16715",
-      "2978933"
-     ]
-    ],
-    [
-     "Lamar Jackson",
-     "3916387",
-     [
-      "3916387",
-      "4034849"
-     ]
-    ]
-   ],
+   "shared": [],
    "fixed": 3
   },
   "ncaab": {
-   "registry": 163,
-   "shown": 196,
-   "found": 161,
+   "registry": 177,
+   "shown": 198,
+   "found": 163,
    "missing": [
     "Adam Atamna",
     "Adan Diggs",
@@ -389,7 +282,7 @@
    "fixed": 0
   },
   "ncaaf": {
-   "registry": 221,
+   "registry": 238,
    "shown": 228,
    "found": 221,
    "missing": [
