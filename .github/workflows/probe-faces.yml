@@ -1,0 +1,22 @@
+name: probe sleeper (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          cat > p.py <<'PY'
+          import json, urllib.request
+          def get(u):
+              return json.load(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=30))
+          for w in (1, 2, 3, 4, 5):
+              rows = get(f"https://api.sleeper.com/stats/nfl/2025/{w}?season_type=post&position%5B%5D=QB&position%5B%5D=DEF&position%5B%5D=K")
+              rows = rows if isinstance(rows, list) else list(rows.values())
+              got = [(r.get("player", {}).get("last_name") or r.get("player_id"), r.get("team"), (r.get("stats") or {}).get("pts_half_ppr")) for r in rows if (r.get("stats") or {}).get("gp")]
+              print("POST", w, len(rows), "played", len(got), got[:6])
+          st = get("https://api.sleeper.app/v1/state/nfl"); print("STATE", {k: st.get(k) for k in ("season", "season_type", "week", "display_week", "leg")})
+          pr = get("https://api.sleeper.com/projections/nfl/2025/1?season_type=post&position%5B%5D=QB")
+          pr = pr if isinstance(pr, list) else list(pr.values())
+          print("PROJ", len(pr), [(x.get("player", {}).get("last_name"), (x.get("stats") or {}).get("pts_half_ppr")) for x in pr if (x.get("stats") or {}).get("pts_half_ppr")][:5])
+          PY
+          python3 p.py
