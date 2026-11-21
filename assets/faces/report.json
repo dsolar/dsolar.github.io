@@ -186,15 +186,16 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7368,
+   "registry": 7366,
    "shown": 1162,
-   "found": 1074,
+   "found": 1072,
    "missing": [
     "Derek M. Smith",
     "Maceo Beard"
    ],
    "noPhoto": [
     "Aaron Glenn",
+    "Aaron Jones",
     "Allen Rossum",
     "Ashley Ambrose",
     "Brad Johnson",
@@ -245,6 +246,7 @@
     "Marcellus Wiley",
     "Marco Coleman",
     "Marcus Pollard",
+    "Mario Edwards",
     "Marques Douglas",
     "Marty Carter",
     "Matt Lauter",
