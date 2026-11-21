@@ -98,9 +98,9 @@
    "fixed": 1
   },
   "nba": {
-   "registry": 1160,
+   "registry": 1161,
    "shown": 1232,
-   "found": 1145,
+   "found": 1146,
    "missing": [
     "Nikola Milutinov"
    ],
@@ -168,7 +168,6 @@
     "Michael Finley",
     "Morris Almond",
     "Muggsy Bogues",
-    "Nate Robinson",
     "Nemanja Nedović",
     "Olden Polynice",
     "Peter Suder",
@@ -196,19 +195,12 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7278,
+   "registry": 7283,
    "shown": 1159,
-   "found": 1066,
+   "found": 1071,
    "missing": [
-    "Al'zillion \"AZ\" Hamilton",
-    "Daxton Hill",
     "Derek M. Smith",
-    "Evander Hood",
-    "George Karlaftis III",
-    "Gregory Rousseau",
-    "Kimo von Oelhoffen",
-    "Maceo Beard",
-    "Patrick Surtain II"
+    "Maceo Beard"
    ],
    "noPhoto": [
     "Aaron Glenn",
@@ -255,6 +247,7 @@
     "Keith Traylor",
     "Kevin Carter",
     "Keyshawn Johnson",
+    "Kimo von Oelhoffen",
     "L.J. Shelton",
     "La'Roi Glover",
     "Larry Centers",
@@ -270,6 +263,7 @@
     "Mike Caldwell",
     "Mitch Van Vooren",
     "Neil O'Donnell",
+    "Patrick Surtain II",
     "Pete Kendall",
     "R.W. McQuarters",
     "Randall Godfrey",
@@ -346,16 +340,15 @@
      ]
     ]
    ],
-   "fixed": 2
+   "fixed": 3
   },
   "ncaab": {
-   "registry": 159,
+   "registry": 163,
    "shown": 196,
-   "found": 157,
+   "found": 161,
    "missing": [
     "Adam Atamna",
     "Adan Diggs",
-    "Amael L'Etang",
     "Asa Montgomery",
     "Beckham Black",
     "CJ Rosser",
@@ -375,20 +368,17 @@
     "Lucas Morillo",
     "Luke Paul",
     "Marc-Owen Fodzo Dada",
-    "Marcus Ponder",
     "Mathias Vazquez",
     "Matija Lukic",
     "Messi Yangala",
     "Mouhamed Faye",
-    "Najai Hines",
     "Nasir (Rudy) Anderson",
     "Nathan Soliman",
     "Paul Osaruyi",
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
-    "Stefan Joksimovic",
-    "Trey McKenney Jr."
+    "Stefan Joksimovic"
    ],
    "noPhoto": [
     "A.J. Williams",
@@ -399,11 +389,10 @@
    "fixed": 0
   },
   "ncaaf": {
-   "registry": 220,
+   "registry": 221,
    "shown": 228,
-   "found": 220,
+   "found": 221,
    "missing": [
-    "Mi'Qui. Humphrey-Grace",
     "Tae Johnson"
    ],
    "noPhoto": [
