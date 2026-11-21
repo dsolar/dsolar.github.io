@@ -210,3 +210,95 @@ button.pl-chip{cursor:pointer}
 .pl-float{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:12px;
   padding:8px 8px 8px 16px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;font-weight:750;white-space:nowrap}
 .pl-bowls{padding-bottom:64px}
+
+/* ---------- the hub, redone: sport-colored game cards, a compact pools list ---------- */
+.pl-cat{display:grid;gap:18px}
+.pl-cat>.pl-sec-h{margin:6px 0 -6px;font-size:24px}
+.pl-sport{display:flex;align-items:center;gap:8px;margin:0;font-size:13px;font-weight:850;letter-spacing:.04em;color:var(--muted)}
+.pl-sport::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--sc)}
+.pl-games{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.pl-gc{position:relative;display:flex;flex-direction:column;gap:8px;padding:16px 16px 14px;border:1px solid var(--line);border-radius:var(--rl,14px);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--sc) 9%,var(--surface)) 0,var(--surface) 84px);overflow:hidden}
+.pl-gc::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--sc)}
+.pl-gc-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pl-gc-ic{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:var(--sc);color:#fff}
+.pl-gc-ic svg{width:22px;height:22px}
+.pl-gc-st{font-size:12px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--surface-3);color:var(--muted)}
+.pl-gc-st.live{background:var(--win-soft);color:var(--win)}
+.pl-gc-st.live::before{content:"";display:inline-block;width:7px;height:7px;margin-right:6px;border-radius:50%;background:var(--win);vertical-align:1px;animation:pl-pulse 1.8s ease-in-out infinite}
+@keyframes pl-pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.pl-gc-st.live::before{animation:none}}
+.pl-gc h3{margin:2px 0 0;font-size:20px;line-height:1.15}
+.pl-gc .pl-tag{margin:0;font-size:14px;line-height:1.45}
+.pl-gc-facts{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:6px}
+.pl-gc-facts li{font-size:12px;font-weight:750;padding:4px 8px;border-radius:7px;border:1px solid var(--line);background:var(--surface)}
+.pl-gc .pl-act{margin-top:auto;padding-top:10px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.pl-gc .pl-how{flex-basis:100%}
+.pl-gc .pl-how summary{list-style:none}
+.pl-gc .pl-how summary::-webkit-details-marker{display:none}
+.pl-gc .pl-how summary::after{content:" +";font-weight:800}
+.pl-gc .pl-how[open] summary::after{content:" \2212"}
+
+.pl-yours{overflow:hidden}
+.pl-yours-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 16px;border-bottom:1px solid var(--line)}
+.pl-yours-h h2{margin:0;font-size:18px;flex:1}
+.pl-yours-act{display:flex;gap:8px}
+.pl-yours-act .btn.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.pl-panel{padding:14px 16px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.pl-panel .pl-form{max-width:640px}
+.pl-yours .pl-msg{padding:10px 16px 0}
+.pl-empty{padding:18px 16px;color:var(--muted);font-size:14px}
+.pl-empty b{color:var(--ink)}
+.pl-list li{padding:0}
+.pl-list li a{display:flex;align-items:center;gap:12px;padding:12px 16px;color:var(--ink);text-decoration:none}
+.pl-list li a:hover{background:var(--surface-2)}
+.pl-list li a:hover b{text-decoration:none}
+.pl-badge{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:color-mix(in srgb,var(--sc) 14%,var(--surface));color:var(--sc)}
+.pl-badge svg{width:21px;height:21px}
+.pl-li-t{flex:1;min-width:0;display:grid;gap:2px}
+.pl-li-t b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-li-t small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-list .pl-code{font-size:11px;padding:5px 7px;color:var(--muted)}
+.pl-chev{font-size:22px;line-height:1;color:var(--line-2)}
+.pl-kinds{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
+.pl-kinds span{grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center}
+.pl-kic{grid-row:1/3;display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:color-mix(in srgb,var(--sc) 14%,var(--surface));color:var(--sc)}
+.pl-kic svg{width:18px;height:18px}
+.pl-kinds input:checked+span{border-color:var(--sc);box-shadow:inset 0 0 0 1px var(--sc);background:color-mix(in srgb,var(--sc) 7%,var(--surface))}
+.pl-form label small.ps{font-weight:600}
+.pl-signin h2{font-size:19px}
+
+@media (max-width:640px){
+  .pl{gap:14px}
+  .pl-band{padding:20px 18px 18px}
+  .pl-band h1{font-size:40px}
+  .pl-sub{font-size:14px}
+  /* games swipe sideways a sport at a time instead of stacking into a long page */
+  .pl-games{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;scroll-snap-type:x mandatory;
+    margin:0 calc(-1 * var(--gut,16px));padding:2px var(--gut,16px) 8px;scroll-padding:0 var(--gut,16px);scrollbar-width:none}
+  .pl-games::-webkit-scrollbar{display:none}
+  .pl-gc{scroll-snap-align:start}
+  .pl-games:has(> :only-child){grid-auto-columns:100%}
+  .pl-yours-h{padding:12px 14px}
+  .pl-yours-act{width:100%}
+  .pl-yours-act .btn{flex:1}
+  .pl-list li a{padding:11px 14px}
+  .pl-list .pl-code{display:none}
+  .pl-kinds{grid-template-columns:1fr 1fr}
+  .pl-li-k{display:none}
+  /* survivor teams: two to a row, compact */
+  .pl-choices{grid-template-columns:1fr 1fr;gap:6px;padding:8px}
+  .pl-choices .pl-team{flex-wrap:wrap;gap:6px;padding:9px}
+  .pl-choices .pl-team .pl-tn{flex-basis:calc(100% - 40px)}
+  .pl-choices .pl-team .pl-wp{flex-basis:100%;grid-template-columns:1fr auto;align-items:center}
+  .pl-choices .pl-team .pl-wp i{width:100%}
+}
+/* wider screens: one grid of every game, each card naming its sport, instead of short rows with gaps */
+.pl-gc-sp{display:none}
+@media (min-width:641px){
+  .pl-cat{grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+  .pl-cat>.pl-sec-h{grid-column:1/-1;margin:6px 0 0}
+  .pl-cat .pl-sec,.pl-cat .pl-games{display:contents}
+  .pl-sport{display:none}
+  .pl-gc-sp{display:block;flex:1;font-size:12px;font-weight:850;letter-spacing:.04em;color:var(--sc)}
+}

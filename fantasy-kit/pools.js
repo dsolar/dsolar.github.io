@@ -21,7 +21,7 @@
 
   // ---------- theme (the masthead's Dark/Light button) ----------
   const dark = () => document.documentElement.dataset.theme === "dark";
-  function themeBtn() { const b = document.querySelector("[data-theme]"); if (b) b.textContent = dark() ? "Light" : "Dark"; }
+  function themeBtn() { const b = document.querySelector("button[data-theme]"); if (b) b.textContent = dark() ? "Light" : "Dark"; }
   document.addEventListener("click", (e) => {
     if (!e.target.closest("button[data-theme]")) return;
     const on = !dark();
@@ -85,7 +85,7 @@
 
   // ---------- sign in ----------
   function signinCard(lead) {
-    return `<div class="card pl-signin"><div class="bd"><h2>${esc(lead || "Sign in to play")}</h2><p class="ps">Same account as your Draft Lab leagues.</p>
+    return `<div class="card pl-signin" id="pl-signin"><div class="bd"><h2>${esc(lead || "Sign in to play")}</h2><p class="ps">Same account as your Draft Lab leagues.</p>
       <form id="pl-link" class="pl-row"><label class="sr" for="pl-email">Email</label><input id="pl-email" type="email" required autocomplete="email" placeholder="you@example.com" value="${esc(C.lastEmail())}"><button class="btn go">Email me a sign-in link</button></form>
       <details class="pl-pw"><summary>Use a password instead</summary><form id="pl-pass" class="pl-row"><label class="sr" for="pl-login">Email or username</label><input id="pl-login" autocomplete="username" placeholder="Email or username" required><label class="sr" for="pl-password">Password</label><input id="pl-password" type="password" autocomplete="current-password" placeholder="Password" required><button class="btn">Sign in</button></form></details>
       <p class="pl-msg" role="status">${esc(st.msg)}</p></div></div>`;
@@ -94,18 +94,31 @@
   // ---------- home: every game, your pools and groups, make one, join one ----------
   // in season first: NFL from September through January, March Madness the rest of the year
   const nflSeason = () => { const m = new Date().getMonth(); return m >= 8 || m === 0; };
+  // each sport's color, and a small drawn icon for each game
+  const SPORT_C = { NFL: "#C8102E", "College football": "#1F7A4D", "March Madness": "#E0702A" };
+  const ico = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const ICON = {
+    pickem: ico('<path d="M4 6h10M4 12h10M4 18h7"/><path d="m15 17 2.5 2.5L22 15"/>'),
+    nfl: ico('<path d="M12 3 4 6v6c0 4.4 3.4 7.8 8 9 4.6-1.2 8-4.6 8-9V6z"/><path d="M12 8v5M12 16h.01"/>'),
+    nflpo: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h4v10H8M12 12h4"/><path d="M16 9h5v6h-5z"/>'),
+    bowls: ico('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3M12 13v4M8 20h8M9 17h6"/>'),
+    survivor: ico('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-2.5 2.4-3.6 5.2-3.6 8.5s1.1 6.1 3.6 8.5M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5"/>'),
+    five: ico('<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>'),
+  };
   const GAMES = [
-    { sport: "NFL", key: "pickem", name: "Pick'em", tag: "Every game against the spread, one point a win. One board for everyone, plus private groups.", when: "Weekly, all season", href: "/pickem/", cta: "Make this week's picks" },
-    { sport: "NFL", key: "nfl", name: "Survivor", tag: "One team a week to win. Lose and you're out. Use each team once all season.", when: "Season long. A new pool starts with this week's games" },
-    { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way. Points double each round.", when: "Locks at the first Wild Card kickoff in January. Practice on today's standings now" },
-    { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number. Your surest pick counts the most.", when: "Mid-December through the title game. Pick each game until its kickoff" },
-    { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", when: "Field set Selection Sunday, March 14. Practice bracket now" },
-    { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", when: "Locks at the first tip-off. Practice bracket now" },
+    { sport: "NFL", key: "pickem", name: "Pick'em", tag: "Every game against the spread. One board for everyone, plus private groups.", facts: ["Every game", "Against the spread", "Groups"], live: "Live now", href: "/pickem/", cta: "Make this week's picks" },
+    { sport: "NFL", key: "nfl", name: "Survivor", tag: "One team a week to win. Lose and you're out.", facts: ["1 team a week", "Each team once", "Through week 18"], live: "Live now" },
+    { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now" },
+    { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6" },
+    { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now" },
+    { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now" },
   ];
+  const sportC = (k) => SPORT_C[SPORT[k]] || SPORT_C.NFL;
   function gameCard(gm) {
-    const act = gm.href ? `<a class="btn sm go" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn sm" data-make="${gm.key}">Make a pool</button>`;
-    return `<div class="card pl-game"><div class="bd"><h3>${esc(gm.name)}</h3><p class="pl-tag">${esc(gm.tag)}</p><p class="pl-when">${esc(gm.when)}</p>
-      ${gm.href ? "" : `<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details>`}<div class="pl-act">${act}</div></div></div>`;
+    const act = gm.href ? `<a class="btn go" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go" data-make="${gm.key}">Make a pool</button>`;
+    return `<article class="pl-gc" style="--sc:${SPORT_C[gm.sport]}"><div class="pl-gc-top"><span class="pl-gc-ic">${ICON[gm.key]}</span><span class="pl-gc-sp">${esc(gm.sport)}</span><span class="pl-gc-st${gm.live ? " live" : ""}">${esc(gm.live || gm.soon)}</span></div>
+      <h3>${esc(gm.name)}</h3><p class="pl-tag">${esc(gm.tag)}</p><ul class="pl-gc-facts">${gm.facts.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+      <div class="pl-act">${act}${gm.href ? "" : `<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details>`}</div></article>`;
   }
   async function home() {
     let mine = [], groups = [];
@@ -113,26 +126,29 @@
       [mine, groups] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => [])]);
     }
     const order = nflSeason() ? ["NFL", "College football", "March Madness"] : ["March Madness", "NFL", "College football"];
-    const catalog = order.map((sp) => `<section class="pl-sec"><h2 class="pl-sec-h">${esc(sp)}</h2><div class="pl-games">${GAMES.filter((x) => x.sport === sp).map(gameCard).join("")}</div></section>`).join("");
-    const items = mine.map((p) => `<li><span class="pl-li-k">${esc(SPORT[p.kind])}</span><a href="/fantasy/pools/?p=${esc(p.id)}"><b>${esc(p.name)}</b><small>${esc(KIND[p.kind])}${p.kind === "nfl" && p.startWeek ? ` from week ${p.startWeek}` : ""}, ${p.members} ${p.members === 1 ? "entry" : "entries"}${p.owner ? ", yours" : ""}</small></a><span class="pl-code">${esc(p.id)}</span></li>`)
-      .concat((groups || []).map((g) => `<li><span class="pl-li-k">NFL</span><a href="/pickem/?tab=groups"><b>${esc(g.name)}</b><small>Pick'em group, ${g.members} ${g.members === 1 ? "member" : "members"}${g.owner ? ", yours" : ""}</small></a><span class="pl-code">${esc(g.id)}</span></li>`));
-    const yours = st.user ? `<div class="card"><div class="mod-h"><h2>Your pools</h2><span class="grow"></span><span class="ps">${esc(st.user.email || "")}</span></div>
-      ${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="bd ps">You're not in any pools yet. Make one below, or join with a code from a friend.</div>`}</div>` : signinCard();
+    const catalog = `<section class="pl-cat"><h2 class="pl-sec-h">Games</h2>${order.map((sp) => `<div class="pl-sec"><h3 class="pl-sport" style="--sc:${SPORT_C[sp]}">${esc(sp)}</h3><div class="pl-games">${GAMES.filter((x) => x.sport === sp).map(gameCard).join("")}</div></div>`).join("")}</section>`;
+    const row = (href, key, sc, name, sub, code) => `<li><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span><span class="pl-code">${esc(code)}</span><span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
+    const items = mine.map((p) => row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))}${p.kind === "nfl" && p.startWeek ? ` from week ${p.startWeek}` : ""} &middot; ${p.members} ${p.members === 1 ? "entry" : "entries"}${p.owner ? " &middot; yours" : ""}`, p.id))
+      .concat((groups || []).map((g) => row("/pickem/?tab=groups", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${g.members} ${g.members === 1 ? "member" : "members"}${g.owner ? " &middot; yours" : ""}`, g.id)));
     const kinds = (nflSeason() ? ["nfl", "nflpo", "bowls", "survivor", "five"] : ["survivor", "five", "nfl", "nflpo", "bowls"]);
     const pick = st.make && kinds.includes(st.make) ? st.make : kinds[0];
-    const forms = st.user ? `<div class="pl-two" id="pl-forms">
-        <form class="card" id="pl-new"><div class="mod-h"><h2>Make a pool</h2></div><div class="bd pl-form">
-          <fieldset class="pl-kinds"><legend>Game</legend>${kinds.map((k) => `<label><input type="radio" name="kind" value="${k}"${k === pick ? " checked" : ""}><span><b>${esc(KIND[k])}</b><small>${esc(SPORT[k])}</small></span></label>`).join("")}</fieldset>
-          <label>Pool name<input name="name" maxlength="40" required placeholder="The office pool"></label>
-          <label>Your entry's name <small class="ps">(optional)</small><input name="entry" maxlength="28" placeholder="${esc((st.user.email || "").split("@")[0])}"></label>
-          <button class="btn go">Make the pool</button></div></form>
-        <form class="card" id="pl-join"><div class="mod-h"><h2>Join with a code</h2></div><div class="bd pl-form">
-          <label>Code<input name="code" maxlength="6" required placeholder="ABC123" style="text-transform:uppercase" value="${esc(st.code)}"></label>
-          <label>Your entry's name <small class="ps">(optional)</small><input name="entry" maxlength="28"></label>
-          <button class="btn">Join</button><p class="ps" style="margin:0">Works for pools and pick'em groups.</p></div></form></div>
-      <p class="pl-msg" role="status">${esc(st.msg)}</p>` : "";
-    app.innerHTML = `<div class="wrap page pl">${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.")}
-      ${yours}${forms}${catalog}</div>`;
+    const panel = st.panel || (st.make ? "make" : st.code ? "join" : null);
+    const makeForm = `<form class="pl-panel" id="pl-new"><div class="pl-form">
+        <fieldset class="pl-kinds"><legend>Game</legend>${kinds.map((k) => `<label style="--sc:${sportC(k)}"><input type="radio" name="kind" value="${k}"${k === pick ? " checked" : ""}><span><i class="pl-kic">${ICON[k]}</i><b>${esc(KIND[k])}</b><small>${esc(SPORT[k])}</small></span></label>`).join("")}</fieldset>
+        <label>Pool name<input name="name" maxlength="40" required placeholder="The office pool"></label>
+        <label>Your entry's name <small class="ps">optional</small><input name="entry" maxlength="28" placeholder="${esc((st.user && st.user.email || "").split("@")[0])}"></label>
+        <button class="btn go">Make the pool</button></div></form>`;
+    const joinForm = `<form class="pl-panel" id="pl-join"><div class="pl-form">
+        <label>Code <small class="ps">from a pool or a pick'em group</small><input name="code" maxlength="6" required placeholder="ABC123" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:.12em" value="${esc(st.code)}"></label>
+        <label>Your entry's name <small class="ps">optional</small><input name="entry" maxlength="28"></label>
+        <button class="btn go">Join</button></div></form>`;
+    const yours = st.user ? `<section class="card pl-yours"><div class="pl-yours-h"><h2>Your pools</h2><div class="pl-yours-act">
+        <button type="button" class="btn sm${panel === "make" ? " on" : ""}" data-panel="make" aria-expanded="${panel === "make"}">+ Make a pool</button><button type="button" class="btn sm${panel === "join" ? " on" : ""}" data-panel="join" aria-expanded="${panel === "join"}">Join with a code</button></div></div>
+      ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
+      ${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="pl-empty"><b>No pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : "";
+    const signin = st.user ? "" : signinCard("Sign in to make or join a pool");
+    app.innerHTML = `<div class="wrap page pl">${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
+      ${yours}${catalog}${signin}</div>`;
   }
 
   // ---------- a pool ----------
@@ -380,17 +396,19 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
     if (t.dataset.day) { const n = +t.dataset.day; st.open[n] = t.getAttribute("aria-expanded") !== "true"; return render(); }
     if (t.dataset.week) { st.open["w" + t.dataset.week] = t.getAttribute("aria-expanded") !== "true"; return render(); }
+    if (t.dataset.panel) { st.panel = st.panel === t.dataset.panel ? "" : t.dataset.panel; return render(); }
     if (t.dataset.make) {
       st.make = t.dataset.make;
       if (!st.user) { const f = document.querySelector(".pl-signin"); if (f) f.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
-      const r = document.querySelector(`#pl-new input[name=kind][value="${t.dataset.make}"]`);
-      if (r) { r.checked = true; document.getElementById("pl-new").scrollIntoView({ behavior: "smooth", block: "center" }); const n = document.querySelector("#pl-new input[name=name]"); if (n) n.focus({ preventScroll: true }); }
+      st.panel = "make"; await render();
+      const f = document.getElementById("pl-new");
+      if (f) { f.scrollIntoView({ behavior: "smooth", block: "start" }); const n = f.querySelector("input[name=name]"); if (n) n.focus({ preventScroll: true }); }
       return;
     }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
