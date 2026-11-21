@@ -1,0 +1,8 @@
+name: probe images (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for w in 64 80 128; do u="https://a.espncdn.com/combiner/i?img=/i/espn/misc_logos/500/ncaa.png&w=$w&h=$w"; echo "== $w $(curl -s -o /tmp/b -m 20 -A 'Mozilla/5.0' -w '%{http_code} %{content_type} %{size_download}' "$u")"; done
