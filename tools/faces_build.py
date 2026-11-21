@@ -307,13 +307,16 @@ def espn_search(name, sport):
     search can miss on a suffix or a nickname, so it asks again with the plain name, then the last name alone."""
     plain = " ".join(w for w in re.sub(r"\([^)]*\)|\"[^\"]*\"", " ", name).split() if not re.match(r"^(jr|sr|ii|iii|iv|v)\.?$", w, re.I))
     tries = list(dict.fromkeys([name, plain, plain.split()[-1] if plain.split() else name]))
+    top = (0, None)
     for i, q in enumerate(tries):
-        pid = espn_search_once(name, q, sport, limit=25 if i == len(tries) - 1 and len(tries) > 1 else 10)
-        if pid:
-            return pid
+        score, pid = espn_search_once(name, q, sport, limit=25 if i == len(tries) - 1 and len(tries) > 1 else 10)
+        if pid and score > top[0]:
+            top = (score, pid)
+        if top[0] >= 3:  # the name and its suffix agree: no need to ask again
+            break
         if i < len(tries) - 1:
             time.sleep(0.3)
-    return None
+    return top[1]
 
 
 def espn_search_once(name, query, sport, limit=10):
@@ -346,13 +349,13 @@ def espn_search_once(name, query, sport, limit=10):
         lg = c.get("defaultLeagueSlug") or ""
         pid = m.group(1)
         if lg == ESPN_LEAGUE[sport]:
-            return f"espnmlb:{pid}" if sport == "mlb" else int(pid)
+            return score, (f"espnmlb:{pid}" if sport == "mlb" else int(pid))
         # a pro page showing a college player (or the reverse): keep his photo from the other league (exact names only)
         if best is None and score in (2, 4) and lg in ESPN_LEAGUE.values():
             other = [k for k, v in ESPN_LEAGUE.items() if v == lg][0]
             if (sport, other) in (("nba", "ncaab"), ("ncaab", "nba"), ("nfl", "ncaaf"), ("ncaaf", "nfl")):
-                best = f"{other}:{pid}"
-    return best
+                best = (score, f"{other}:{pid}")
+    return best or (0, None)
 
 
 def search_missing(want):
