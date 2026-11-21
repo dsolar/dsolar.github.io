@@ -626,3 +626,6 @@ button.pl-chip{cursor:pointer}
 .pl-set .pl-remind{display:flex;grid-template-columns:none}
 .pl-own .pl-setb>*:not(:first-child){padding-top:14px;border-top:1px solid var(--line)}
 .pl-own .pl-setb>.pl-del{padding-top:14px}
+.pl-asbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:#13233A;color:#fff;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.pl-asbar span{flex:1}
+.pl-asbar .btn{background:#F6C445;border-color:#F6C445;color:#13233A}

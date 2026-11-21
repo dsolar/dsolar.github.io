@@ -1474,3 +1474,71 @@ begin
   on conflict (pool, user_id) do update set name = coalesce(excluded.name, mm_members.name);
   return jsonb_build_object('ok', true, 'id', p.id, 'name', p.name, 'kind', p.kind);
 end $$;
+
+-- The owner makes a pick for a member (a friend who texted his pick): the member's own board and save functions, run
+-- as that member, so every lock and rule still applies. Each time is written to mm_log, which the whole pool sees.
+create table if not exists public.mm_log (
+  id bigserial primary key, pool text not null references public.mm_pools (id) on delete cascade,
+  at timestamptz not null default now(), actor uuid, target uuid, what text not null);
+create index if not exists mm_log_pool on public.mm_log (pool, at desc);
+alter table public.mm_log enable row level security;
+revoke all on public.mm_log from anon, authenticated;
+
+create or replace function public.mm_board_as(p_pool text, p_user uuid) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; old text := current_setting('request.jwt.claims', true); b jsonb;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.owner is distinct from uid then return jsonb_build_object('error', 'Only the pool''s owner can make picks for someone.'); end if;
+  if p_user = uid or not exists (select 1 from mm_members where pool = p.id and user_id = p_user) then return jsonb_build_object('error', 'They aren''t in this pool.'); end if;
+  insert into mm_log (pool, actor, target, what) values (p.id, uid, p_user, 'opened the picks of');
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', p_user, 'role', 'authenticated')::text, true);
+  begin b := mm_board(p.id); exception when others then perform set_config('request.jwt.claims', coalesce(old, ''), true); raise; end;
+  perform set_config('request.jwt.claims', coalesce(old, ''), true);
+  return b || jsonb_build_object('as', jsonb_build_object('id', p_user, 'name', mm_name(p.id, p_user)));
+end $$;
+
+create or replace function public.mm_as(p_pool text, p_user uuid, p_fn text, p_args jsonb) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; old text := current_setting('request.jwt.claims', true); r jsonb; a jsonb := coalesce(p_args, '{}'::jsonb);
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.owner is distinct from uid then return jsonb_build_object('error', 'Only the pool''s owner can make picks for someone.'); end if;
+  if p_user = uid or not exists (select 1 from mm_members where pool = p.id and user_id = p_user) then return jsonb_build_object('error', 'They aren''t in this pool.'); end if;
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', p_user, 'role', 'authenticated')::text, true);
+  begin
+    r := case p_fn
+      when 'mm_pick' then mm_pick(p.id, (a ->> 'p_day')::int, a ->> 'p_team')
+      when 'mm_pick_nfl' then mm_pick_nfl(p.id, (a ->> 'p_week')::int, a ->> 'p_team')
+      when 'mm_pick_five' then mm_pick_five(p.id, array(select jsonb_array_elements_text(a -> 'p_teams')))
+      when 'mm_save_bowls' then mm_save_bowls(p.id, a -> 'p_picks', (a ->> 'p_tb')::int)
+      when 'mm_save_nflpo' then mm_save_nflpo(p.id, a -> 'p_picks', (a ->> 'p_tb')::int)
+      when 'mm_save_nflff' then mm_save_nflff(p.id, (a ->> 'p_round')::int, a -> 'p_lineup')
+      else jsonb_build_object('error', 'That isn''t a pick the owner can make.') end;
+  exception when others then perform set_config('request.jwt.claims', coalesce(old, ''), true); raise;
+  end;
+  perform set_config('request.jwt.claims', coalesce(old, ''), true);
+  if r is not null and not (r ? 'error') then
+    insert into mm_log (pool, actor, target, what) values (p.id, uid, p_user, case p_fn when 'mm_save_nflff' then 'set a lineup for' when 'mm_save_nflpo' then 'filled out the bracket of'
+      when 'mm_save_bowls' then 'saved bowl picks for' when 'mm_pick_five' then 'picked five teams for' else 'made a pick for' end);
+  end if;
+  return r;
+end $$;
+revoke all on function public.mm_board_as(text, uuid), public.mm_as(text, uuid, text, jsonb) from public, anon;
+grant execute on function public.mm_board_as(text, uuid), public.mm_as(text, uuid, text, jsonb) to authenticated;
+
+-- the board carries the pool's log (newest first), so everyone sees what the owner did
+create or replace function public.mm_board(p_pool text) returns jsonb
+language plpgsql stable security definer set search_path to 'public' as $$
+declare b jsonb; p mm_pools;
+begin
+  b := mm_board_core(p_pool);
+  if not (b ? 'ok') then return b; end if;
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  b := jsonb_set(b, '{pool,extra}', coalesce(p.extra, '{}'::jsonb));
+  b := jsonb_set(b, '{members}', coalesce((select jsonb_agg(m.v || jsonb_build_object('paid', coalesce(mb.paid, false), 'owner', mb.user_id = p.owner) order by m.o)
+    from jsonb_array_elements(b -> 'members') with ordinality m(v, o) left join mm_members mb on mb.pool = p.id and mb.user_id = (m.v ->> 'id')::uuid), '[]'::jsonb));
+  b := b || jsonb_build_object('log', coalesce((select jsonb_agg(jsonb_build_object('at', l.at, 'who', mm_name(p.id, l.actor), 'what', l.what, 'whom', mm_name(p.id, l.target)) order by l.at desc)
+    from (select * from mm_log where pool = p.id order by at desc limit 12) l), '[]'::jsonb));
+  return b;
+end $$;

@@ -92,6 +92,9 @@
       <li>A pick locks when its game tips off, and shows to everyone then. No pick by the day's last tip-off is out.</li>
       <li>The last one standing wins. If everyone left loses on the same day, or more than one survives the title game, the <b>higher combined seeds of their winning picks</b> wins. Still tied, they split it.</li></ul>`;
   const fail = (e) => { st.msg = e && e.message ? e.message : String(e || "Something went wrong."); st.busy = false; render(); };
+  // picks the owner makes for a member go through mm_as, which runs the member's own save as them (and logs it)
+  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_nflff"]);
+  const srpc = (fn, args) => (st.as && SAVES.has(fn) ? C.rpc("mm_as", { p_pool: st.code, p_user: st.as, p_fn: fn, p_args: args }) : C.rpc(fn, args));
   const ok = (r) => { if (r && r.error) throw new Error(r.error); return r; };
 
   // ---------- sign in ----------
@@ -221,7 +224,8 @@
 
   // ---------- a pool ----------
   async function load() {
-    try { st.board = await C.rpc("mm_board", { p_pool: st.code }); } catch (e) { st.board = { error: e.message }; }
+    try { st.board = await (st.as ? C.rpc("mm_board_as", { p_pool: st.code, p_user: st.as }) : C.rpc("mm_board", { p_pool: st.code })); } catch (e) { st.board = { error: e.message }; }
+    if (st.as && st.board && st.board.error) { st.msg = st.board.error; st.as = null; st.board = await C.rpc("mm_board", { p_pool: st.code }).catch((e) => ({ error: e.message })); }
     if (st.board && st.board.ok && st.remind == null) { try { st.remind = !!(await C.rpc("mm_remind_get", { p_pool: st.code })).remind; } catch (e) { st.remind = false; } }
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
@@ -283,8 +287,11 @@
     const members = `<section class="card pl-set"><div class="mod-h"><h2>Members</h2><span class="grow"></span><span class="ps">${b.members.length}</span></div>
       <ul class="pl-mem">${b.members.map((m) => `<li><b>${esc(m.name)}</b>${m.me ? ` <span class="ps">you</span>` : ""}${m.owner ? ` <span class="tag">Owner</span>` : ""}
         ${ex.buyin ? (owner ? `<label class="pl-paid"><input type="checkbox" data-paid="${esc(m.id)}"${m.paid ? " checked" : ""}> Paid</label>` : `<span class="tag${m.paid ? " win" : ""}">${m.paid ? "Paid" : "Owes"}</span>`) : ""}
+        ${owner && !m.me && p.kind !== "squares" ? `<button type="button" class="btn sm" data-as="${esc(m.id)}" title="Make or fix ${esc(m.name)}'s picks">Picks</button>` : ""}
         ${owner && !m.me ? `<button type="button" class="btn sm ghost${st.rm === m.id ? " danger" : ""}" data-rm="${esc(m.id)}">${st.rm === m.id ? "Tap again to remove" : "Remove"}</button>` : ""}</li>`).join("")}</ul></section>`;
-    if (!owner) return how + you + members;
+    const log = (b.log || []).length ? `<section class="card pl-set"><div class="mod-h"><h2>Owner activity</h2><span class="grow"></span><span class="ps">Everyone sees this</span></div>
+      <ul class="pl-mem">${b.log.map((l) => `<li><span><b>${esc(l.who)}</b> ${esc(l.what)} <b>${esc(l.whom)}</b></span><span class="ps" style="margin-left:auto">${esc(tipTime(l.at))}</span></li>`).join("")}</ul></section>` : "";
+    if (!owner) return how + you + members + log;
     const ffLocked = p.kind === "nflff" && (b.games || []).some((g) => g.round === 1 && Date.parse(g.kickoff) <= Date.now());
     const game = p.kind === "nflff" ? `<label>Scoring<select name="scoring"${ffLocked ? " disabled" : ""}>${[["half", "Half PPR"], ["ppr", "PPR"], ["std", "Standard"]].map(([v, l]) => `<option value="${v}"${(ex.scoring || "half") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>${ffLocked ? `<p class="ps">Set for the season: the playoffs have started.</p>` : ""}` : "";
     const sq = p.kind === "squares" && !(ex.nums) ? sqSettings(P.squares(b)) : p.kind === "squares" ? `<p class="ps">The numbers are drawn, so the squares settings are locked.</p>` : "";
@@ -301,7 +308,7 @@
       ${b.members.length > 1 ? `<div class="pl-row"><label>Hand the pool to<select data-xfer><option value="">Pick a member</option>${b.members.filter((m) => !m.me).map((m) => `<option value="${esc(m.id)}"${st.xfer === m.id ? " selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label><button type="button" class="btn sm${st.xferArm ? " danger" : ""}" data-xferb${st.xfer ? "" : " disabled"}>${st.xferArm ? "Tap again: they become the owner" : "Hand it over"}</button></div>` : ""}
       <form id="pl-del" class="pl-row pl-del"><label>Delete this pool <small class="ps">Type its code, ${esc(p.id)}, to confirm. Every pick goes with it.</small><input name="code" maxlength="6" autocomplete="off" placeholder="Pool code"></label><button class="btn sm danger">Delete</button></form>
       </div></section>`;
-    return how + you + members + commish;
+    return how + you + members + commish + log;
   }
   // a reminder only helps while there's a pick still ahead of you: not once you're out, the pool is over, or a
   // lock-once game (5 teams, the NFL bracket) has locked
@@ -326,6 +333,7 @@
     const tabs = b.pool.kind === "squares" ? [["picks", "Board"], ["standings", "Winners"], ["settings", "Settings"]]
       : [["picks", "Picks"], ["games", b.pool.kind === "nflff" ? "Lineups" : "Scores"], ["standings", "Standings"], ["settings", "Settings"]];
     if (st.tab === "rules") st.tab = "settings";
+    if (st.as) { const i = tabs.findIndex((t) => t[0] === "settings"); if (i >= 0) tabs.splice(i, 1); if (st.tab === "settings") st.tab = "picks"; }
     const body = st.tab === "settings" ? settingsTab(b)
       : st.tab === "games" && b.pool.kind !== "squares" ? scoreboard(b)
       : b.pool.kind === "nfl" ? (st.tab === "picks" ? nflPicks(b) : nflTable(b))
@@ -336,7 +344,8 @@
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
     const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
     const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
-    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
+    const asBar = st.as && b.as ? `<div class="pl-asbar" role="status"><span><b>You're making picks for ${esc(b.as.name)}.</b> Every lock still applies, and each pick is logged where the whole pool can see it.</span><button type="button" class="btn sm" data-asdone>Done</button></div>` : "";
+    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${st.tab === "standings" ? potAndChamps(b) : ""}</div>`;
   }
@@ -916,7 +925,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -932,6 +941,8 @@
       return;
     }
     if (t.dataset.ffcard) { ffCard(t.dataset.ffcard, st.board); return; }
+    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
+    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); return render(); }
     if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }
     if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
     if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
@@ -953,22 +964,22 @@
       return render();
     }
     try {
-      if (t.dataset.pick) { const [d, tm] = t.dataset.pick.split("|"); ok(await C.rpc("mm_pick", { p_pool: st.code, p_day: +d, p_team: tm })); st.msg = `Day ${d}: ${team(tm).n}.`; }
-      else if (t.dataset.npick) { const [w, tm] = t.dataset.npick.split("|"); ok(await C.rpc("mm_pick_nfl", { p_pool: st.code, p_week: +w, p_team: tm })); st.msg = `Week ${w}: ${(NFL[tm] || [tm, tm])[1]}.`; }
-      else if (t.dataset.nunpick) { ok(await C.rpc("mm_pick_nfl", { p_pool: st.code, p_week: +t.dataset.nunpick, p_team: null })); st.msg = "Pick taken back."; }
-      else if (t.dataset.unpick) { ok(await C.rpc("mm_pick", { p_pool: st.code, p_day: +t.dataset.unpick, p_team: null })); st.msg = "Pick taken back."; }
+      if (t.dataset.pick) { const [d, tm] = t.dataset.pick.split("|"); ok(await srpc("mm_pick", { p_pool: st.code, p_day: +d, p_team: tm })); st.msg = `Day ${d}: ${team(tm).n}.`; }
+      else if (t.dataset.npick) { const [w, tm] = t.dataset.npick.split("|"); ok(await srpc("mm_pick_nfl", { p_pool: st.code, p_week: +w, p_team: tm })); st.msg = `Week ${w}: ${(NFL[tm] || [tm, tm])[1]}.`; }
+      else if (t.dataset.nunpick) { ok(await srpc("mm_pick_nfl", { p_pool: st.code, p_week: +t.dataset.nunpick, p_team: null })); st.msg = "Pick taken back."; }
+      else if (t.dataset.unpick) { ok(await srpc("mm_pick", { p_pool: st.code, p_day: +t.dataset.unpick, p_team: null })); st.msg = "Pick taken back."; }
       else if (t.hasAttribute("data-bsave")) {
         const picks = Object.entries(st.bd).filter(([, k]) => k.team || k.pts).map(([game, k]) => ({ game, team: k.team || "", pts: k.pts || null }));
-        const r = ok(await C.rpc("mm_save_bowls", { p_pool: st.code, p_picks: picks, p_tb: st.btb === "" || st.btb == null ? null : +st.btb }));
+        const r = ok(await srpc("mm_save_bowls", { p_pool: st.code, p_picks: picks, p_tb: st.btb === "" || st.btb == null ? null : +st.btb }));
         st.msg = `Saved ${r.saved} ${r.saved === 1 ? "game" : "games"}.`; st.bd = null; await load();
       }
       else if (t.hasAttribute("data-ffsave")) {
         const lu = {}; P.FF_SLOTS.forEach((x) => { if (st.ffl[x]) lu[x] = `${st.ffl[x]}@${((st.ffp || {})[st.ffl[x]] || {}).t || ""}`; });
-        ok(await C.rpc("mm_save_nflff", { p_pool: st.code, p_round: st.ffr, p_lineup: lu }));
+        ok(await srpc("mm_save_nflff", { p_pool: st.code, p_round: st.ffr, p_lineup: lu }));
         st.msg = `${RNAME[st.ffr]} lineup saved.`; st.ffl = null; await load();
       }
       else if (t.hasAttribute("data-ksave")) {
-        ok(await C.rpc("mm_save_nflpo", { p_pool: st.code, p_picks: P.bracketPicks(st.board.field, st.kb), p_tb: st.ktb === "" || st.ktb == null ? null : +st.ktb }));
+        ok(await srpc("mm_save_nflpo", { p_pool: st.code, p_picks: P.bracketPicks(st.board.field, st.kb), p_tb: st.ktb === "" || st.ktb == null ? null : +st.ktb }));
         st.msg = "Bracket saved."; st.kb = null; await load();
       }
       else if (t.dataset.sq != null) {
@@ -983,7 +994,7 @@
       else if (t.hasAttribute("data-leave")) { ok(await C.rpc("mm_pool_leave", { p_code: st.code })); location.href = "/fantasy/pools/"; return; }
       else if (t.dataset.rm) { ok(await C.rpc("mm_member_remove", { p_pool: st.code, p_user: t.dataset.rm })); st.rm = null; st.msg = "Removed."; await load(); }
       else if (t.hasAttribute("data-sqdraw")) { st.sqDraw = false; ok(await C.rpc("mm_squares_draw", { p_pool: st.code })); st.msg = "Numbers drawn. Good luck."; await load(); }
-      else if (t.hasAttribute("data-save5")) { const r = ok(await C.rpc("mm_pick_five", { p_pool: st.code, p_teams: st.sel })); st.msg = `Saved: seeds add up to ${r.seeds}.`; st.sel = null; }
+      else if (t.hasAttribute("data-save5")) { const r = ok(await srpc("mm_pick_five", { p_pool: st.code, p_teams: st.sel })); st.msg = `Saved: seeds add up to ${r.seeds}.`; st.sel = null; }
       render();
     } catch (x) { fail(x); }
   });
