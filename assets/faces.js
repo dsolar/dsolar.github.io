@@ -47,7 +47,7 @@
   // and initials joined ("A. J. Pierzynski" and "AJ Pierzynski" -> "aj-pierzynski"), the same as tools/faces_build.py
   function slug(name) {
     var s = String(name || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
-      .replace(/\([^)]*\)/g, " ").replace(/[.'’`]/g, "").replace(/[^a-z0-9]+/g, " ").trim()
+      .replace(/\([^)]*\)|"[^"]*"|“[^”]*”/g, " ").replace(/[.'’`]/g, "").replace(/[^a-z0-9]+/g, " ").trim()
       .replace(/\s+(jr|sr|ii|iii|iv|v)$/, "");
     var out = [], single = false;
     s.split(/\s+/).forEach(function (w) {

@@ -44,6 +44,7 @@ CACHE = os.path.join(HERE, "faces_cache.json")
 CHECKED = os.path.join(HERE, "faces_checked.json")
 FIX = os.path.join(HERE, "faces_fix.json")
 CHECK_DAYS = 14
+SEARCH_SINCE = "2026-11-21"  # misses from before the search tried plain and last-name queries get one more try
 CHECK_PER_RUN = 2500
 UA = "davidsolar-faces/1.0 (+https://davidsolar.dev/)"
 SPORTS = ["mlb", "nba", "nfl", "ncaab", "ncaaf"]
@@ -58,7 +59,7 @@ def slug(name):
     Russell" -> "dangelo-russell")"""
     s = unicodedata.normalize("NFD", str(name or ""))
     s = "".join(c for c in s if unicodedata.category(c) != "Mn").lower()
-    s = re.sub(r"\([^)]*\)", " ", s)
+    s = re.sub(r"\([^)]*\)|\"[^\"]*\"|“[^”]*”", " ", s)
     s = re.sub(r"[.'’`]", "", s)
     s = re.sub(r"[^a-z0-9]+", " ", s).strip()
     s = re.sub(r"\s+(jr|sr|ii|iii|iv|v)$", "", s)
@@ -272,9 +273,22 @@ def wanted():
 
 
 def espn_search(name, sport):
-    """ESPN's search: the athlete whose name matches, in this sport's league (or college, for prospects)"""
-    q = urllib.parse.quote(name)
-    d = get(f"https://site.web.api.espn.com/apis/search/v2?query={q}&limit=10&type=player")
+    """ESPN's search: the athlete whose name matches, in this sport's league (or college, for prospects). ESPN's
+    search can miss on a suffix or a nickname, so it asks again with the plain name, then the last name alone."""
+    plain = " ".join(w for w in re.sub(r"\([^)]*\)|\"[^\"]*\"", " ", name).split() if not re.match(r"^(jr|sr|ii|iii|iv|v)\.?$", w, re.I))
+    tries = list(dict.fromkeys([name, plain, plain.split()[-1] if plain.split() else name]))
+    for i, q in enumerate(tries):
+        pid = espn_search_once(name, q, sport, limit=25 if i == len(tries) - 1 and len(tries) > 1 else 10)
+        if pid:
+            return pid
+        if i < len(tries) - 1:
+            time.sleep(0.3)
+    return None
+
+
+def espn_search_once(name, query, sport, limit=10):
+    q = urllib.parse.quote(query)
+    d = get(f"https://site.web.api.espn.com/apis/search/v2?query={q}&limit={limit}&type=player")
     want = slug(name)
     best = None
     # Close spellings count too (JoJo/Jojo, Na'jai/Najai, O.J./OJ, a dropped middle name): same last name and the
@@ -322,7 +336,7 @@ def search_missing(want):
             if key in reg[sport]:
                 continue
             c = cache.get(f"{sport}|{key}")
-            if c and (c[0] or c[1] > stale):
+            if c and (c[0] or (c[1] > stale and c[1] >= SEARCH_SINCE)):
                 continue
             todo.append((sport, n, key))
     print(f"  ESPN search: {len(todo)} names to look up, {min(len(todo), SEARCH_PER_RUN)} this run")
