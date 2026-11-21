@@ -614,7 +614,7 @@ def main():
         no_photo = sorted(n for n, k in at.items() if k in gone)
         # [name, the id in use, every id seen for that name] (a name with its own suffixed entry isn't shared)
         shared = sorted([n, str(ids.get(at[n], "")), sorted(map(str, seen[sport][slug(n)]))] for k, n in shown.items()
-                        if len(seen[sport].get(slug(n), ())) > 1 and k not in fixed and at[n] != skey(n))
+                        if len(seen[sport].get(slug(n), ())) > 1 and k not in fixed and not (suffix(n) and at[n] == skey(n)))
         report["sports"][sport] = {"registry": len(ids), "shown": len(shown), "found": len(shown) - len(missing) - len(no_photo),
                                    "missing": missing[:400], "noPhoto": no_photo[:400], "shared": shared[:200], "fixed": len(fixed)}
         print(f"wrote assets/faces/{sport}.json: {len(ids)} names, {report['sports'][sport]['found']}/{len(shown)} of the names pages show"
