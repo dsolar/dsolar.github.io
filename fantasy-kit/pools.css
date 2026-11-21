@@ -577,3 +577,27 @@ button.pl-chip{cursor:pointer}
 .pl-lur{display:flex;justify-content:space-between;margin:8px 0 3px;font-size:12px;font-weight:850;color:var(--muted)}
 .pl-owns{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px}
 @media (max-width:640px){.pl-ffs .pl-tn small,.pl-ffp .pl-tn small{white-space:normal;line-height:1.35}}
+/* lineups: team, game status, compare */
+.pl-lu li{grid-template-columns:40px 28px minmax(0,1fr) auto;gap:8px;padding:3px 0}
+.pl-lun{display:grid;gap:1px;min-width:0}
+.pl-lun .pl-lunb,.pl-lun>b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700;font-size:14px}
+.pl-lut{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-lut img{flex:none}
+.pl-lut b{color:var(--ink);font-weight:800}
+.pl-lu li.live .st{color:#C8102E;font-weight:800}
+.pl-lu li.fin .st{color:var(--ink);font-weight:700}
+.pl-lup{font-weight:850;font-size:15px;min-width:34px;text-align:right}
+.pl-lu li.todo .pl-lup{color:var(--muted)}
+.pl-lu li.emp{grid-template-columns:40px 1fr;font-size:13px}
+.pl-luy{margin:0 0 4px;font-size:12px}
+.pl-lubar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+.pl-lubar .pl-gsum{flex:1;min-width:240px}
+.pl-luvs{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:750;color:var(--muted)}
+.pl-luvs select{font:inherit;font-weight:650;padding:6px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink)}
+.pl-luc{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pl-luc li.both{opacity:.45}
+.pl-luc li.only .pl-lun .pl-lunb,.pl-luc li.only .pl-lun>b{color:var(--ink)}
+.pl-luc li.only{background:color-mix(in srgb,var(--accent) 8%,transparent);border-radius:8px}
+@media (max-width:640px){.pl-luc{grid-template-columns:1fr}.pl-lu li{grid-template-columns:36px 26px minmax(0,1fr) auto}}
+.pl-lut{white-space:normal;flex-wrap:wrap;row-gap:0}
+.pl-luvs{white-space:nowrap}

@@ -521,7 +521,13 @@
   }
   // league-wide ownership: the share of entries that started each player in a round (others' players show at their
   // kickoff, so it fills in as games start)
-  const ffOwn = (F, r, n) => { const c = {}; F.rows.forEach((x) => Object.values(((x.rounds[r] || {}).lineup) || {}).forEach((id) => { c[id] = (c[id] || 0) + 1; })); Object.keys(c).forEach((k) => { c[k] = Math.round((100 * c[k]) / Math.max(1, n)); }); return c; };
+  // (only players whose game has kicked off count: before that, only your own picks are visible to you)
+  const ffOwn = (F, r, n, b) => {
+    const c = {}, now = Date.now(), kicked = (id) => { const t = ((st.ffp || {})[id] || {}).t, k = b ? ffKick(b, r, t) : null; return k != null && now >= k; };
+    F.rows.forEach((x) => Object.values(((x.rounds[r] || {}).lineup) || {}).forEach((id) => { if (kicked(id)) c[id] = (c[id] || 0) + 1; }));
+    Object.keys(c).forEach((k) => { c[k] = Math.round((100 * c[k]) / Math.max(1, n)); });
+    return c;
+  };
   const ffSiOf = (b) => (b && b.pool ? ffSi(b) : 1);
   const FF_SI = { std: 0, half: 1, ppr: 2 }, FF_SL = ["Standard", "Half PPR", "PPR"];
   const ffSi = (b) => (FF_SI[((b.pool && b.pool.extra) || {}).scoring] != null ? FF_SI[b.pool.extra.scoring] : 1);
@@ -576,7 +582,7 @@
     if (!st.ffr) st.ffr = ffRound(b);
     const r = st.ffr, now = Date.now(), teams = ffTeams(b, r), lk = ffLock(b, r), last = ffLast(b, r), locked = last && now >= last, set = Object.keys(teams).length > 0;
     const started = (t) => { const k = ffKick(b, r, t); return k != null && now >= k; };
-    const proj = r === 1 && ffProj(b), ownR = ffOwn(F, r, b.members.length);
+    const proj = r === 1 && ffProj(b), ownR = ffOwn(F, r, b.members.length, b);
     const saved = (row.rounds[r] && row.rounds[r].lineup) || {};
     if (!st.ffl || st.fflr !== r) { st.ffl = Object.assign({}, saved); st.fflr = r; st.ffslot = null; }
     const usedElsewhere = new Set(row.used.filter((id) => !Object.values(saved).includes(id)));
@@ -766,30 +772,58 @@
   }
   // everyone's playoff fantasy lineup for a round, with each player's points; others' players show at their kickoff
   function ffLineups(b) {
-    const F = P.nflff(b, st.ffs), pl = (id) => (st.ffp && st.ffp[id]) || { n: id, t: "", pos: "" };
-    const mode = st.lumode || "round";
-    const modeSeg = `<div class="seg pl-gsel" role="tablist"><button type="button" role="tab" data-lumode="round" aria-selected="${mode === "round"}"><b>One round</b></button><button type="button" role="tab" data-lumode="all" aria-selected="${mode === "all"}"><b>To date</b></button></div>`;
-    const nameBtn = (id, p) => st.ffraw && st.ffraw[id] ? `<button type="button" class="pl-lunb" data-ffcard="${esc(id)}">${esc(p.n)}</button>` : esc(p.n);
-    if (mode === "all") {
-      // every round so far for each entry: each player's points, the round's total, and the running total
+    const F = P.nflff(b, st.ffs), pl = (id) => (st.ffp && st.ffp[id]) || { id, n: id, t: "", pos: "" }, now = Date.now(), n = b.members.length;
+    const view = st.luview || String(ffRound(b));
+    // one bar: each round, then everything to date
+    const bar = `<div class="seg pl-gsel" role="tablist">${[1, 2, 3, 4].map((r) => { const set = Object.keys(ffTeams(b, r)).length; return `<button type="button" role="tab" data-luview="${r}" aria-selected="${view === String(r)}"><b>${RNAME[r]}</b><small>${!set ? "Not set" : (b.games || []).filter((g) => g.round === r && g.a).every((g) => g.final) && (b.games || []).some((g) => g.round === r && g.a) ? "Final" : ffLock(b, r) && now >= ffLock(b, r) ? "In progress" : "Open"}</small></button>`; }).join("")}<button type="button" role="tab" data-luview="all" aria-selected="${view === "all"}"><b>To date</b><small>All rounds</small></button></div>`;
+    // a player's game in a round: his team's logo, the opponent, and whether it's to play, live or final
+    const gameOf = (r, t) => (b.games || []).find((g) => g.round === r && (g.a === t || g.b === t));
+    const ply = (r, sl, id, R, own) => {
+      const p = pl(id), g = gameOf(r, p.t), opp = g ? (g.a === p.t ? g.b : g.a) : ffTeams(b, r)[p.t];
+      const on = g && Date.parse(g.kickoff) <= now, fin = g && g.final, pts = R.each && R.each[sl];
+      const stt = fin ? "Final" : on ? "Live" : g && !(r === 1 && ffProj(b)) ? tipTime(g.kickoff) : "";
+      return `<li class="${fin ? "fin" : on ? "live" : "todo"}"><span class="pl-ffpos">${SLOT_NAME[sl]}</span>${ffPhoto(p, 28)}
+        <span class="pl-lun">${st.ffraw && st.ffraw[id] ? `<button type="button" class="pl-lunb" data-ffcard="${esc(id)}">${esc(p.n)}</button>` : esc(p.n)}
+          <small class="pl-lut">${p.t ? nflLogo(p.t, 14) : ""}<b>${esc(p.t)}</b>${opp ? ` ${g && g.b === p.t ? "vs" : "at"} ${esc(opp)}` : ""}${stt ? ` &middot; <span class="st">${esc(stt)}</span>` : ""}${own != null ? ` &middot; ${own}% started` : ""}</small></span>
+        <span class="num pl-lup">${pts != null ? pts : ""}</span></li>`;
+    };
+    const left = (r, R) => Object.values(R.lineup || {}).filter((id) => { const g = gameOf(r, pl(id).t); return !g || Date.parse(g.kickoff) > now; }).length;
+    if (view === "all") {
       const cards = F.rows.map((r) => {
         const rs = [1, 2, 3, 4].filter((x) => Object.keys((r.rounds[x] || {}).lineup || {}).length);
         return `<article class="pl-lu${r.me ? " me" : ""}"><div class="pl-luh"><b>${esc(r.name)}</b><span class="num">${r.total} pts</span></div>
-          ${rs.length ? rs.map((x) => { const R = r.rounds[x]; return `<div class="pl-lur"><span>${RNAME[x]}</span><span class="num">${R.pts != null ? R.pts : ""}</span></div><ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => { const p = pl(R.lineup[sl]); return `<li><span class="pl-ffpos">${SLOT_NAME[sl]}</span><span class="pl-lun">${nameBtn(R.lineup[sl], p)} <small class="ps">${esc(p.t)}</small></span><span class="num">${R.each[sl] != null ? R.each[sl] : ""}</span></li>`; }).join("")}</ul>`; }).join("") : `<p class="ps" style="margin:0">${r.me ? "No lineups yet." : "Lineups show at kickoff."}</p>`}</article>`;
+          ${rs.length ? rs.map((x) => { const R = r.rounds[x]; return `<div class="pl-lur"><span>${RNAME[x]}</span><span class="num">${R.pts != null ? R.pts : ""}</span></div><ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => ply(x, sl, R.lineup[sl], R)).join("")}</ul>`; }).join("") : `<p class="ps" style="margin:0">${r.me ? "No lineups yet." : "Lineups show at kickoff."}</p>`}</article>`;
       });
-      return modeSeg + `<p class="pl-gsum">Every round so far, ${FF_SL[ffSi(b)]}. Others' players show once their games kick off.</p><div class="pl-lus">${cards.join("")}</div>`;
+      return bar + `<p class="pl-gsum">Every round so far, ${FF_SL[ffSi(b)]}. Others' players show once their games kick off.</p><div class="pl-lus">${cards.join("")}</div>`;
     }
-    const cur = st.gsel && st.gsel.k === "f" ? +st.gsel.v : ffRound(b);
-    const own = ffOwn(F, cur, b.members.length), top = Object.entries(own).sort((x, y) => y[1] - x[1]).slice(0, 6);
-    const ownStrip = top.length ? `<div class="pl-owns"><b>Most started</b>${top.map(([id, v]) => `<span class="pl-gchip">${st.ffraw && st.ffraw[id] ? `<button type="button" class="pl-lunb" data-ffcard="${esc(id)}">${esc(pl(id).n)}</button>` : esc(pl(id).n)} <small>${v}%</small></span>`).join("")}</div>` : "";
+    const cur = +view, own = ffOwn(F, cur, n, b);
     const rows = F.rows.slice().sort((x, y) => ((y.rounds[cur] || {}).pts || 0) - ((x.rounds[cur] || {}).pts || 0) || (y.me - x.me));
-    const cards = rows.map((r) => {
-      const R = r.rounds[cur] || { lineup: {}, each: {} }, n = Object.keys(R.lineup).length;
-      return `<article class="pl-lu${r.me ? " me" : ""}"><div class="pl-luh"><b>${esc(r.name)}</b><span class="num">${R.pts != null ? `${R.pts} pts` : n ? `${n} of 9 set` : r.me ? "Not set" : "Shows at kickoff"}</span></div>
-        ${n ? `<ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => { const p = pl(R.lineup[sl]); return `<li><span class="pl-ffpos">${SLOT_NAME[sl]}</span><span class="pl-lun">${nameBtn(R.lineup[sl], p)} <small class="ps">${esc(p.t)}${own[R.lineup[sl]] != null ? `, ${own[R.lineup[sl]]}% started` : ""}</small></span><span class="num">${R.each[sl] != null ? R.each[sl] : ""}</span></li>`; }).join("")}</ul>` : ""}</article>`;
-    });
-    return modeSeg + segPick("f", [1, 2, 3, 4].map((r) => [r, RNAME[r]]), cur) + `<p class="pl-gsum">Each player shows once his game kicks off, with the share of entries that started him. Points are ${FF_SL[ffSi(b)]} and update through the games.</p>${ownStrip}<div class="pl-lus">${cards.join("")}</div>`;
+    const meRow = F.rows.find((r) => r.me);
+    // compare your lineup with someone else's, slot by slot: who you share, and who's only on one side
+    const vs = st.luvs && F.rows.find((r) => r.id === st.luvs && !r.me);
+    const compare = meRow && n > 1 ? `<label class="pl-luvs">Compare with<select data-luvs><option value="">Nobody</option>${F.rows.filter((r) => !r.me).map((r) => `<option value="${esc(r.id)}"${vs && vs.id === r.id ? " selected" : ""}>${esc(r.name)}</option>`).join("")}</select></label>` : "";
+    let body;
+    if (vs) {
+      const A = meRow.rounds[cur] || { lineup: {}, each: {} }, B = vs.rounds[cur] || { lineup: {}, each: {} };
+      const Bids = new Set(Object.values(B.lineup)), Aids = new Set(Object.values(A.lineup));
+      const side = (R, other) => P.FF_SLOTS.map((sl) => R.lineup[sl] ? ply(cur, sl, R.lineup[sl], R, own[R.lineup[sl]]).replace("<li class=\"", `<li class="${other.has(R.lineup[sl]) ? "both " : "only "}`) : `<li class="emp"><span class="pl-ffpos">${SLOT_NAME[sl]}</span><span class="ps">${R === A || !(b.games || []).some((g) => g.round === cur && g.a && Date.parse(g.kickoff) > now) ? "Empty" : "Hidden until kickoff"}</span></li>`).join("");
+      const shared = [...Aids].filter((x) => Bids.has(x)).length, diff = Math.round(((A.pts || 0) - (B.pts || 0)) * 100) / 100;
+      body = `<p class="pl-gsum">${shared} ${shared === 1 ? "player" : "players"} in common.${A.pts != null || B.pts != null ? ` You're ${diff >= 0 ? "up" : "down"} ${Math.abs(diff)}.` : ""} Shared players are faded, so the difference stands out.</p>
+        <div class="pl-luc"><article class="pl-lu me"><div class="pl-luh"><b>${esc(meRow.name)}</b><span class="num">${A.pts != null ? A.pts + " pts" : ""}</span></div><ul>${side(A, Bids)}</ul></article>
+        <article class="pl-lu"><div class="pl-luh"><b>${esc(vs.name)}</b><span class="num">${B.pts != null ? B.pts + " pts" : ""}</span></div><ul>${side(B, Aids)}</ul></article></div>`;
+    } else {
+      const cards = rows.map((r) => {
+        const R = r.rounds[cur] || { lineup: {}, each: {} }, cnt = Object.keys(R.lineup).length, yet = left(cur, R);
+        return `<article class="pl-lu${r.me ? " me" : ""}"><div class="pl-luh"><b>${esc(r.name)}</b><span class="num">${!cnt ? (r.me ? "Not set" : "Shows at kickoff") : R.pts != null ? `${R.pts} pts` : `${cnt} of 9 set`}</span></div>
+          ${cnt ? `${yet && R.pts != null ? `<p class="pl-luy ps">${yet} still to play</p>` : ""}<ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => ply(cur, sl, R.lineup[sl], R, own[R.lineup[sl]])).join("")}</ul>` : ""}</article>`;
+      });
+      body = `<div class="pl-lus">${cards.join("")}</div>`;
+    }
+    const top = Object.entries(own).sort((x, y) => y[1] - x[1]).slice(0, 6);
+    const ownStrip = top.length && !vs ? `<div class="pl-owns"><b>Most started</b>${top.map(([id, v]) => `<span class="pl-gchip">${st.ffraw && st.ffraw[id] ? `<button type="button" class="pl-lunb" data-ffcard="${esc(id)}">${esc(pl(id).n)}</button>` : esc(pl(id).n)} <small>${v}%</small></span>`).join("")}</div>` : "";
+    return bar + `<div class="pl-lubar"><p class="pl-gsum">Each player shows once his game kicks off, with the share of entries that started him. ${FF_SL[ffSi(b)]}.</p>${compare}</div>` + ownStrip + body;
   }
+
 
   // ---------- Super Bowl squares ----------
   const initials = (nm) => { const w = String(nm || "").trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 3)).toUpperCase(); };
@@ -855,7 +889,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-lumode]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -871,7 +905,7 @@
       return;
     }
     if (t.dataset.ffcard) { ffCard(t.dataset.ffcard, st.board); return; }
-    if (t.dataset.lumode) { st.lumode = t.dataset.lumode; return render(); }
+    if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
     if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
     if (t.dataset.rm && st.rm !== t.dataset.rm) { st.rm = t.dataset.rm; return render(); }
     if (t.dataset.gsel) { const [k2, v2] = t.dataset.gsel.split("|"); st.gsel = { k: k2, v: v2 }; return render(); }
@@ -927,6 +961,7 @@
     const t = e.target;
     if (t.hasAttribute("data-ffhide")) { st.ffhide = t.checked; render(); return; }
     if (t.hasAttribute("data-ffsort")) { st.ffsort = t.value; render(); return; }
+    if (t.hasAttribute("data-luvs")) { st.luvs = t.value || null; render(); return; }
     if (t.hasAttribute("data-sqname")) { st.sqName = t.value.trim(); st.sqOwn = true; render(); return; }
     if (t.hasAttribute("data-remind")) {
       const on = t.checked;
