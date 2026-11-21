@@ -441,6 +441,65 @@
     return res;
   }
 
+  /* Super Bowl squares. A 10 by 10 board: the AFC champion across the top (columns), the NFC champion down the side
+     (rows). A pick { slot: "s37", team: "x" } is a member's square (37 = row 3, column 7); team "n:Name" is a name the
+     owner put on it. Once drawn, pool.extra.nums = { r: [10 digits], c: [10 digits] } says which score digit each row
+     and column is. After the 1st quarter, the half, the 3rd quarter and the final, the square at the last digit of
+     each team's score wins that period's share (pool.extra.pay, percents). game.lines = { a: [...], b: [...] } holds
+     each quarter's points for the away (a) and home (b) team. */
+  var SQ_PERIODS = ["1st quarter", "Halftime", "3rd quarter", "Final"];
+  function squares(board, now) {
+    now = now == null ? Date.now() : ms(now);
+    var ex = (board.pool && board.pool.extra) || {}, games = board.games || [], field = board.field || [];
+    var names = {}, me = null;
+    (board.members || []).forEach(function (m) { names[m.id] = m.name; if (m.me) me = m.id; });
+    var cells = [], counts = {};
+    for (var i = 0; i < 100; i++) cells.push(null);
+    (board.picks || []).forEach(function (p) {
+      var m = /^s(\d+)$/.exec(p.slot || ""); if (!m || !p.team) return;
+      var guest = String(p.team).indexOf("n:") === 0, name = guest ? String(p.team).slice(2) : names[p.user] || "Someone";
+      cells[+m[1]] = { user: p.user, name: name, guest: guest, mine: !guest && p.user === me };
+      counts[name] = (counts[name] || 0) + 1;
+    });
+    var confOf = function (t) { var f = field.filter(function (x) { return x.team === t; })[0]; return f ? f.conf : null; };
+    var sb = games.filter(function (g) { return g.round === 4; })[0] || null;
+    var champ = function (cf) { var g = games.filter(function (x) { return x.round === 3 && (x.conf === cf || String(x.label || "").indexOf(cf) === 0); })[0]; return g && g.final ? g.w : null; };
+    var top = null, side = null;
+    if (sb && sb.a && sb.b) { if (confOf(sb.a) === "NFC" || confOf(sb.b) === "AFC") { top = sb.b; side = sb.a; } else { top = sb.a; side = sb.b; } }
+    else { top = champ("AFC"); side = champ("NFC"); }
+    var nums = ex.nums || null, pay = ex.pay || [20, 20, 20, 40], price = ex.price != null ? Number(ex.price) : null;
+    var claimed = cells.filter(Boolean).length, pot = price ? price * claimed : null;
+    var sqAt = function (topScore, sideScore) {
+      if (!nums) return null;
+      var c = nums.c.indexOf(topScore % 10), r = nums.r.indexOf(sideScore % 10);
+      return r * 10 + c;
+    };
+    var periods = [], live = null;
+    if (sb && top && side) {
+      var L = sb.lines || {}, tl = (top === sb.a ? L.a : L.b) || [], sl = (top === sb.a ? L.b : L.a) || [];
+      var started = ms(sb.kickoff) <= now;
+      for (var k = 0; k < 4; k++) {
+        var done = k < 3 ? (tl.length >= k + 2 || !!sb.final) : !!sb.final;
+        if (!done) continue;
+        var ts = k < 3 ? tl.slice(0, k + 1).reduce(function (a, v) { return a + v; }, 0) : (top === sb.a ? sb.ap : sb.bp);
+        var ss = k < 3 ? sl.slice(0, k + 1).reduce(function (a, v) { return a + v; }, 0) : (top === sb.a ? sb.bp : sb.ap);
+        var n = sqAt(ts, ss);
+        periods.push({ k: k, label: SQ_PERIODS[k], top: ts, side: ss, sq: n, cell: n == null ? null : cells[n], pay: pay[k], amount: pot != null ? Math.round(pot * pay[k]) / 100 : null });
+      }
+      if (started && !sb.final) {
+        var tNow = top === sb.a ? sb.ap : sb.bp, sNow = top === sb.a ? sb.bp : sb.ap;
+        if (tNow != null && sNow != null) live = { top: tNow, side: sNow, sq: sqAt(tNow, sNow) };
+      }
+    }
+    var people = Object.keys(counts).map(function (nm) {
+      var won = periods.filter(function (x) { return x.cell && x.cell.name === nm; });
+      return { name: nm, squares: counts[nm], wins: won.map(function (x) { return x.label; }), amount: won.reduce(function (a, x) { return a + (x.amount || 0); }, 0),
+        mine: cells.some(function (c) { return c && c.mine && c.name === nm; }) };
+    }).sort(function (a, b) { return (b.amount - a.amount) || (b.wins.length - a.wins.length) || (b.squares - a.squares) || a.name.localeCompare(b.name); });
+    return { cells: cells, nums: nums, top: top, side: side, game: sb, periods: periods, live: live, claimed: claimed, cap: ex.cap || 10, price: price, pot: pot, pay: pay,
+      mine: cells.filter(function (c) { return c && c.mine; }).length, people: people, locked: !!nums };
+  }
+
   /* Where you stand in a pool, in one line, for the pools list: { text, tone, due }. tone is "todo" (a pick is missing
      and its deadline is still ahead; due is that deadline, in ms), "ok" (in it, nothing to do), "out", "won", "wait"
      (nothing to pick yet) or "done". The text has no times in it; the page words due itself. */
@@ -515,14 +574,27 @@
         if (setN < FF_SLOTS.length) return { text: (setN ? FF_SLOTS.length - setN + " spots open" : "Set your lineup") + (r > 1 ? ". " + standing(X.rows) : ""), tone: "todo", due: Math.min.apply(null, fut) };
         return { text: r > 1 ? standing(X.rows) : "Lineup set", tone: "ok" };
       }
-      if (!games.some(function (g) { return g.a && g.b; })) return { text: "Opens after week 18", tone: "wait" };
+      if (!games.some(function (g) { return g.a && g.b; })) {
+        var proj = (board.field || []).filter(function (f) { return f.seed >= 2 && f.seed <= 7; }).length === 12;
+        if (!proj) return { text: "Opens after week 18", tone: "wait" };
+        var s1 = (meX.rounds[1] || {}).set || 0;
+        return { text: s1 >= FF_SLOTS.length ? "Projected lineup set" : "Projected Wild Card lineup open", tone: "wait" };
+      }
       return { text: standing(X.rows), tone: "ok" };
+    }
+    if (kind === "squares") {
+      var S = squares(board, now), mineN = S.mine;
+      var won = S.periods.filter(function (x) { return x.cell && x.cell.mine; });
+      if (S.game && S.game.final) return won.length ? { text: "Won " + won.map(function (x) { return x.label; }).join(", "), tone: "won" } : { text: "Over", tone: "done" };
+      if (won.length) return { text: "Won " + won.map(function (x) { return x.label; }).join(", ") + " so far", tone: "ok" };
+      if (!S.locked) return mineN ? { text: mineN + (mineN === 1 ? " square" : " squares") + ". Numbers not drawn yet", tone: "ok" } : { text: "Claim your squares", tone: "todo", due: S.game ? ms(S.game.kickoff) - 30 * 60e3 : null };
+      return { text: mineN + (mineN === 1 ? " square" : " squares") + ", numbers drawn", tone: "ok" };
     }
     return { text: "", tone: "ok" };
   }
 
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord };
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

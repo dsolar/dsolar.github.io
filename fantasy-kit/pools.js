@@ -11,9 +11,9 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams" };
-  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness" };
-  const kindName = (k) => `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
+  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares" };
+  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness" };
+  const kindName = (k) => k === "squares" ? "Super Bowl squares" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   const tipTime = (t) => new Date(t).toLocaleString("en-US", Object.assign({ weekday: "short", hour: "numeric", minute: "2-digit" }, ET)).replace(":00 ", " ");
@@ -51,8 +51,14 @@
     <path d="M210 14h-36v20h36M210 54h-36v-20M174 24h-34v40h34M210 94h-36v20h36M210 134h-36v-20M174 104h-34v-40M140 44h-26v40h26" opacity=".55"/></g></svg>`;
   const GOAL_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
     <path d="M110 150V96M60 96h100M60 96V14M160 96V14"/><path d="M14 150h192M30 132h160M46 114h128" opacity=".55"/></g></svg>`;
-  const artOf = (k) => (k === "nfl" || k === "bowls" ? GOAL_ART : BRACKET_ART);
-  const rulesHtml = (kind) => kind === "nflff" ? `<ul class="pl-rules">
+  const artOf = (k) => (k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
+      <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
+      <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>
+      <li>The <b>numbers are drawn at random</b> once the owner says so, or half an hour before kickoff, and the board locks.</li>
+      <li>After the <b>1st quarter, halftime, the 3rd quarter and the final</b>, the square at the last digit of each team's score wins that share. Overtime counts toward the final.</li>
+      <li>The site shows the pot and shares but doesn't take or pay any money.</li></ul>`
+    : kind === "nflff" ? `<ul class="pl-rules">
       <li>Set a <b>fantasy lineup every playoff round</b>: QB, 2 RB, 2 WR, TE, FLEX (RB, WR or TE), K and DEF, from the teams playing that round.</li>
       <li>Each player can play for you <b>only once</b> all postseason. Spend your stars early, or save the ones you think go deep.</li>
       <li>Each player <b>locks at his own game's kickoff</b> and shows to everyone then. Until then you can swap him out.</li>
@@ -109,6 +115,7 @@
     nflff: ico('<path d="M8 3h8l1 3 4 2-2 5h-2v8H7v-8H5L3 8l4-2z"/><path d="M10 11h4"/>'),
     bowls: ico('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3M12 13v4M8 20h8M9 17h6"/>'),
     survivor: ico('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-2.5 2.4-3.6 5.2-3.6 8.5s1.1 6.1 3.6 8.5M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5"/>'),
+    squares: ico('<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/>'),
     five: ico('<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>'),
   };
   /* The season's dates, Eastern. Each game is "live" from open to end, and the list puts live games first, then the
@@ -132,6 +139,7 @@
     { sport: "NFL", key: "nfl", name: "Survivor", tag: "One team a week to win. Lose and you're out.", facts: ["1 team a week", "Each team once", "Through week 18"], live: "Live now", open: CAL.nflWeek1, end: CAL.nflField },
     { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January", open: CAL.nflField, end: CAL.superBowl },
+    { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflWeek1, end: CAL.superBowl },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
     { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
@@ -224,7 +232,7 @@
   const canShare = () => !!navigator.share && matchMedia("(pointer:coarse)").matches;
   function poolHead(b) {
     const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
-    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : `${p.season} tournament`;
+    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : `${p.season} tournament`;
     return band(esc(p.name), `${KIND[p.kind]} &middot; ${when} &middot; ${b.members.length} ${b.members.length === 1 ? "entry" : "entries"}`,
       `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm" data-copy="${esc(url)}" data-share-title="${esc(`Join ${p.name}`)}" data-share-text="${esc(`Join my ${kindName(p.kind)} pool, ${p.name}, on Draft Lab. Code ${p.id}.`)}">${canShare() ? "Share invite" : "Copy invite link"}</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
@@ -239,6 +247,7 @@
     if (x.tone === "out" || x.tone === "won" || x.tone === "done") return false;
     if (b.pool.kind === "five") { const F = P.five(b, Date.now()); return !F.locked; }
     if (b.pool.kind === "nflpo") return !b.lock || Date.now() < Date.parse(b.lock);
+    if (b.pool.kind === "squares") return !P.squares(b).locked;
     return true;
   }
   async function pool() {
@@ -251,12 +260,13 @@
       return;
     }
     if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Pools", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="/fantasy/pools/">Back to your pools</a></p></div></div></div>`; return; }
-    const tabs = [["picks", "Picks"], ["standings", "Standings"], ["rules", "Rules"]];
+    const tabs = [["picks", b.pool.kind === "squares" ? "Board" : "Picks"], ["standings", b.pool.kind === "squares" ? "Winners" : "Standings"], ["rules", "Rules"]];
     const body = st.tab === "rules" ? `<div class="card"><div class="bd">${rulesHtml(b.pool.kind)}</div></div>`
       : b.pool.kind === "nfl" ? (st.tab === "picks" ? nflPicks(b) : nflTable(b))
       : b.pool.kind === "bowls" ? (st.tab === "picks" ? bowlPicks(b) : bowlTable(b))
       : b.pool.kind === "nflpo" ? (st.tab === "picks" ? brPicks(b) : brTable(b))
       : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
+      : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
     app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
@@ -461,7 +471,18 @@
   // when a team kicks off in a round (a player locks then)
   const ffKick = (b, r, t) => { const g = (b.games || []).find((x) => x.round === r && (x.a === t || x.b === t)); return g ? Date.parse(g.kickoff) : null; };
   const ffLast = (b, r) => { const ks = (b.games || []).filter((g) => g.round === r).map((g) => Date.parse(g.kickoff)); return ks.length ? Math.max(...ks) : null; };
-  const ffTeams = (b, r) => { const out = {}; (b.games || []).forEach((g) => { if (g.round === r && g.a && g.b) { out[g.a] = g.b; out[g.b] = g.a; } }); return out; };
+  // before week 18 ends the Wild Card round plays from projected matchups: 2 v 7, 3 v 6, 4 v 5 in each conference, if
+  // the season ended today (the server takes those teams too). A player whose team misses the cut scores nothing.
+  const ffProj = (b) => !(b.games || []).some((g) => g.round === 1 && g.a && g.b) && (b.field || []).filter((f) => f.seed >= 2 && f.seed <= 7).length === 12;
+  const ffTeams = (b, r) => {
+    const out = {};
+    if (r === 1 && ffProj(b)) {
+      ["AFC", "NFC"].forEach((cf) => { const by = {}; b.field.forEach((f) => { if (f.conf === cf) by[f.seed] = f.team; }); [[2, 7], [3, 6], [4, 5]].forEach(([x, y]) => { out[by[x]] = by[y]; out[by[y]] = by[x]; }); });
+      return out;
+    }
+    (b.games || []).forEach((g) => { if (g.round === r && g.a && g.b) { out[g.a] = g.b; out[g.b] = g.a; } });
+    return out;
+  };
   function ffRound(b) {
     const now = Date.now(), open = [1, 2, 3, 4].find((r) => Object.keys(ffTeams(b, r)).length && now < ffLast(b, r));
     const played = [1, 2, 3, 4].filter((r) => ffLock(b, r) && now >= ffLock(b, r)).pop();
@@ -472,6 +493,7 @@
     if (!st.ffr) st.ffr = ffRound(b);
     const r = st.ffr, now = Date.now(), teams = ffTeams(b, r), lk = ffLock(b, r), last = ffLast(b, r), locked = last && now >= last, set = Object.keys(teams).length > 0;
     const started = (t) => { const k = ffKick(b, r, t); return k != null && now >= k; };
+    const proj = r === 1 && ffProj(b);
     const saved = (row.rounds[r] && row.rounds[r].lineup) || {};
     if (!st.ffl || st.fflr !== r) { st.ffl = Object.assign({}, saved); st.fflr = r; st.ffslot = null; }
     const usedElsewhere = new Set(row.used.filter((id) => !Object.values(saved).includes(id)));
@@ -503,11 +525,12 @@
         <div class="pl-fflist">${st.ffl[st.ffslot] ? `<button type="button" class="pl-ffp" data-ffpick=""><span class="pl-tn"><b>Clear this spot</b></span></button>` : ""}${list.map((p) => { const used = usedElsewhere.has(p.id); return `<button type="button" class="pl-ffp${used ? " used" : ""}" data-ffpick="${esc(p.id)}"${used ? " disabled" : ""}>${nflLogo(p.t, 22)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.pos)} &middot; ${esc(p.t)} vs ${esc(teams[p.t])}${used ? ` &middot; used in the ${esc(usedIn[p.id] || "playoffs")}` : ""}</small></span><span class="pl-ffpg">${p.ppg ? p.ppg.toFixed(1) : "&ndash;"}<small>a game</small></span></button>`; }).join("") || `<p class="ps" style="padding:0 14px">No players left for this spot.</p>`}</div></div>`;
     }
     const total = row.rounds[r] && row.rounds[r].pts;
-    const lineup = `<div class="card pl-fflu"><div class="mod-h"><h2>${RNAME[r]} lineup</h2><span class="grow"></span><span class="ps">${total != null ? `<b>${total}</b> points${locked ? "" : " so far"}` : locked ? "Locked" : `Each player locks at his kickoff, from ${tipTime(lk)}`}</span></div>
+    const lineup = `<div class="card pl-fflu"><div class="mod-h"><h2>${RNAME[r]} lineup</h2><span class="grow"></span><span class="ps">${total != null ? `<b>${total}</b> points${locked ? "" : " so far"}` : locked ? "Locked" : proj ? "Projected matchups" : `Each player locks at his kickoff, from ${tipTime(lk)}`}</span></div>
       <div class="pl-ffslots">${P.FF_SLOTS.map(slotRow).join("")}</div>
       ${locked ? "" : `<div class="pl-save bd"><span class="ps">${Object.values(st.ffl).filter(Boolean).length} of 9 set. ${dirty ? "Not saved yet." : "Saved."}</span><button type="button" class="btn go" data-ffsave${dirty ? "" : " disabled"}>Save lineup</button></div>`}</div>`;
     const usedList = Object.keys(usedIn).length ? `<div class="card pl-ffused"><div class="mod-h"><h2>Already used</h2><span class="grow"></span><span class="ps">${Object.keys(usedIn).length} players, out for the rest of the playoffs</span></div><div class="bd">${[1, 2, 3, 4].filter((x) => x !== r && row.rounds[x] && row.rounds[x].set).map((x) => `<p class="pl-ffur"><b>${RNAME[x]}</b>${Object.values(row.rounds[x].lineup).map((id) => `<span class="pl-ffchip">${esc(pl(id).n)}</span>`).join("")}</p>`).join("")}</div></div>` : "";
-    return tabs + `<div class="pl-ffwrap">${lineup}${picker || usedList || (locked ? "" : `<div class="pl-note"><b>Tap a spot to pick a player.</b> Anyone you start is gone for the rest of the playoffs, so check Plan ahead before spending a star from a team that should go deep.</div>`)}</div>` + ffPlan(b, r, row, pl) + (picker ? usedList : "") + `<p class="ps">Points are half PPR, from Sleeper. "A game" is each player's regular-season average.</p>`;
+    const projNote = proj ? `<div class="pl-note"><b>Projected Wild Card matchups.</b> These are the games if the season ended today: ${["AFC", "NFC"].map((cf) => { const by = {}; b.field.forEach((f) => { if (f.conf === cf) by[f.seed] = f.team; }); return `${cf} ${[[2, 7], [3, 6], [4, 5]].map(([x, y]) => `${by[y]} at ${by[x]}`).join(", ")}`; }).join("; ")}. Your lineup saves now. If a player's team falls out of the field by week 18, swap him out or he scores nothing.</div>` : "";
+    return tabs + projNote + `<div class="pl-ffwrap">${lineup}${picker || usedList || (locked ? "" : `<div class="pl-note"><b>Tap a spot to pick a player.</b> Anyone you start is gone for the rest of the playoffs, so check Plan ahead before spending a star from a team that should go deep.</div>`)}</div>` + ffPlan(b, r, row, pl) + (picker ? usedList : "") + `<p class="ps">Points are half PPR, from Sleeper. "A game" is each player's regular-season average.</p>`;
   }
   /* Plan ahead: how far each team should go (the bracket simulated from point differential) next to the players you
      still have from it, so you can see whose stars to spend now and whose to save. */
@@ -576,13 +599,70 @@
       </tbody></table></div></div><p class="ps">${F.locked ? "Wins score 1, 2, 4, 8, 16, 32 by round. Max is what an entry could still reach if its teams keep winning. Ties go to higher seeds, then the deepest run." : `Everyone's teams show when the first round tips off (${tipTime(F.lock || Date.now())}).`}</p>`;
   }
 
+  // ---------- Super Bowl squares ----------
+  const initials = (nm) => { const w = String(nm || "").trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 3)).toUpperCase(); };
+  const PSHORT = ["Q1", "Half", "Q3", "Final"];
+  const money = (v) => v == null ? "" : `$${Number(v).toLocaleString("en-US", { minimumFractionDigits: v % 1 ? 2 : 0, maximumFractionDigits: 2 })}`;
+  function sqScore(b, S) {
+    const g = S.game;
+    if (!g || !g.a || !g.b) return `<div class="pl-sqsb wait"><b>Super Bowl LXI</b><span class="ps">${shortDate(CAL.superBowl)}. The teams fill in after the conference championships.</span></div>`;
+    const started = Date.parse(g.kickoff) <= Date.now(), L = g.lines || {};
+    const line = (t) => { const ls = (t === g.a ? L.a : L.b) || []; const tot = t === g.a ? g.ap : g.bp; return `<tr><td class="nm">${nflLogo(t, 22)}<b>${nflName(t)}</b></td>${[0, 1, 2, 3].map((i) => `<td class="r num">${ls[i] != null ? ls[i] : ""}</td>`).join("")}${ls.length > 4 ? `<td class="r num">${ls.slice(4).reduce((a, v) => a + v, 0)}</td>` : ""}<td class="r num tot">${started && tot != null ? tot : ""}</td></tr>`; };
+    return `<div class="card pl-sqsb"><div class="table-wrap"><table class="t"><thead><tr><th>${g.final ? "Final" : started ? "Live" : esc(tipTime(g.kickoff))}</th>${["1", "2", "3", "4"].map((q) => `<th class="r">${q}</th>`).join("")}${(L.a || []).length > 4 ? `<th class="r">OT</th>` : ""}<th class="r">T</th></tr></thead>
+      <tbody>${line(S.top || g.a)}${line(S.side || g.b)}</tbody></table></div>${started && !g.final ? `<p class="ps bd">Scores update about every 10 minutes.</p>` : ""}</div>`;
+  }
+  function sqPicks(b) {
+    const S = P.squares(b, Date.now()), owner = b.pool.owner, open = !S.locked;
+    const won = {}; S.periods.forEach((x) => { if (x.sq != null) (won[x.sq] = won[x.sq] || []).push(PSHORT[x.k]); });
+    const topName = S.top ? nflName(S.top) : "AFC", sideName = S.side ? nflName(S.side) : "NFC";
+    const dig = (arr, i) => (arr ? arr[i] : "?");
+    let grid = `<div class="pl-sqg" style="--top:${S.top ? "var(--ink)" : "var(--muted)"}">
+      <div class="pl-sqtop">${S.top ? nflLogo(S.top, 20) : ""}<b>${topName}</b></div><div class="pl-sqside"><b>${sideName}</b>${S.side ? nflLogo(S.side, 20) : ""}</div>
+      <div class="pl-sqcells"><span class="pl-sqc corner"></span>${[...Array(10)].map((_, c) => `<span class="pl-sqc hd">${dig(S.nums && S.nums.c, c)}</span>`).join("")}`;
+    for (let r = 0; r < 10; r++) {
+      grid += `<span class="pl-sqc hd">${dig(S.nums && S.nums.r, r)}</span>`;
+      for (let c = 0; c < 10; c++) {
+        const n = r * 10 + c, x = S.cells[n], w = won[n], lv = S.live && S.live.sq === n;
+        const can = open && (!x || x.mine || owner);
+        const cls = ["pl-sq", x ? (x.mine ? "mine" : x.guest ? "guest" : "taken") : "empty", w ? "won" : "", lv ? "live" : ""].filter(Boolean).join(" ");
+        const title = x ? `${x.name}${w ? `, won ${w.join(" and ")}` : ""}` : open ? "Open: tap to claim" : "Nobody";
+        grid += `<button type="button" class="${cls}" data-sq="${n}"${can ? "" : " disabled"} title="${esc(title)}" aria-label="Square ${dig(S.nums && S.nums.r, r)}-${dig(S.nums && S.nums.c, c)}: ${esc(title)}">${x ? `<span class="i">${esc(initials(x.name))}</span><span class="f">${esc(x.name)}</span>` : open ? `<span class="plus">+</span>` : ""}${w ? `<em>${w.join(" ")}</em>` : ""}</button>`;
+      }
+    }
+    grid += `</div></div>`;
+    const left = S.cap - S.mine;
+    const status = open
+      ? `<p class="pl-sqst"><b>${S.mine ? `You have ${S.mine} of ${S.cap} squares.` : `Tap open squares to claim them, up to ${S.cap}.`}</b> ${S.claimed} of 100 taken. ${owner ? "Draw the numbers when the board is full, or they're drawn half an hour before kickoff." : "The numbers are drawn once the board fills, or half an hour before kickoff."}</p>`
+      : `<p class="pl-sqst"><b>The numbers are drawn${b.pool.extra && b.pool.extra.auto ? " (automatically)" : ""}.</b> ${S.mine ? `You have ${S.mine} ${S.mine === 1 ? "square" : "squares"}.` : ""} ${S.top ? `${nflName(S.top)} digits run across the top, ${nflName(S.side)} down the side.` : "AFC digits run across the top, NFC down the side."}</p>`;
+    const pays = `<ul class="pl-sqpay">${S.pay.map((v, k) => { const x = S.periods.find((y) => y.k === k); return `<li class="${x ? "done" : ""}"><span>${SQ(k)}</span><b>${v}%${S.pot != null ? ` <small>${money(Math.round(S.pot * v) / 100)}</small>` : ""}</b><span class="who">${x ? (x.cell ? `${esc(x.cell.name)} <small class="ps">${x.top}-${x.side}</small>` : `<span class="ps">Empty square (${x.top}-${x.side})</span>`) : S.live && k === S.periods.length ? `<span class="ps">Now: ${S.cells[S.live.sq] ? esc(S.cells[S.live.sq].name) : "empty square"}</span>` : ""}</span></li>`; }).join("")}</ul>`;
+    const potLine = S.price ? `<p class="ps">${money(S.price)} a square, ${money(S.pot)} in the pot so far. The site doesn't handle money.</p>` : "";
+    const ownerBox = owner && open ? `<details class="pl-sqown"${st.sqOwn ? " open" : ""}><summary>Owner tools</summary>
+        <label class="pl-sqname">Put a name on squares <input data-sqname maxlength="24" placeholder="Uncle Joe" value="${esc(st.sqName || "")}"></label>
+        <p class="ps">${st.sqName ? `Tapping open squares now puts <b>${esc(st.sqName)}</b> on them. Clear the name to claim for yourself.` : "Type a name, then tap open squares to give them to someone without an account."}</p>
+        <form id="pl-sqset" class="pl-sqset"><label>Most squares per person<input name="cap" type="number" min="1" max="100" value="${S.cap}"></label>
+          <label>Price per square <small class="ps">optional</small><input name="price" type="number" min="0" step="0.5" value="${S.price != null ? S.price : ""}" placeholder="$"></label>
+          <fieldset><legend>Shares (%)</legend>${S.pay.map((v, k) => `<label>${PSHORT[k]}<input name="pay${k}" type="number" min="0" max="100" value="${v}"></label>`).join("")}</fieldset>
+          <button class="btn sm">Save settings</button></form>
+        <button type="button" class="btn sm${st.sqDraw ? " go" : ""}" data-sqdraw>${st.sqDraw ? "Tap again to draw. The board locks" : "Draw the numbers now"}</button></details>` : "";
+    return `${sqScore(b, S)}<div class="pl-sqwrap"><div class="card pl-sqcard"><div class="bd">${grid}</div></div>
+      <div class="pl-sqside-col"><div class="card"><div class="bd">${status}${pays}${potLine}</div></div>${ownerBox}</div></div>`;
+  }
+  const SQ = (k) => P.SQ_PERIODS[k];
+  function sqTable(b) {
+    const S = P.squares(b, Date.now());
+    if (!S.people.length) return `<div class="pl-note"><b>No squares claimed yet.</b> Share the invite link and the board fills up.</div>`;
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th>Name</th><th class="r">Squares</th><th>Won</th>${S.pot != null ? `<th class="r">Share</th>` : ""}</tr></thead><tbody>
+      ${S.people.map((x) => `<tr class="${x.mine ? "me" : ""}"><td class="nm"><b>${esc(x.name)}</b></td><td class="r num">${x.squares}</td><td>${x.wins.length ? x.wins.map((w) => `<span class="tag win">${esc(w)}</span>`).join(" ") : `<span class="ps">${S.periods.length ? "Not yet" : ""}</span>`}</td>${S.pot != null ? `<td class="r num">${x.amount ? money(x.amount) : ""}</td>` : ""}</tr>`).join("")}
+      </tbody></table></div></div><p class="ps">${S.claimed} of 100 squares taken.${S.pot != null ? ` ${money(S.pot)} in the pot: ${S.pay.map((v, k) => `${PSHORT[k]} ${v}%`).join(", ")}.` : ""}</p>`;
+  }
+
   // ---------- render and events ----------
   async function render() {
     themeBtn();
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -605,6 +685,7 @@
     if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return render(); }
     if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]); st.ffslot = t.dataset.ffpick && nx ? nx : null; st.ffq = ""; return render(); }
     if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = P.bracketPicks(st.board.field, st.kb); return render(); }
+    if (t.hasAttribute("data-sqdraw") && !st.sqDraw) { st.sqDraw = true; st.sqOwn = true; return render(); }
     if (t.dataset.five) {
       const id = t.dataset.five, i = st.sel.indexOf(id);
       if (i >= 0) st.sel.splice(i, 1); else if (st.sel.length < 5) st.sel.push(id);
@@ -629,6 +710,14 @@
         ok(await C.rpc("mm_save_nflpo", { p_pool: st.code, p_picks: P.bracketPicks(st.board.field, st.kb), p_tb: st.ktb === "" || st.ktb == null ? null : +st.ktb }));
         st.msg = "Bracket saved."; st.kb = null; await load();
       }
+      else if (t.dataset.sq != null) {
+        const n = +t.dataset.sq, x = P.squares(st.board).cells[n], nm = (st.sqName || "").trim();
+        if (x && (x.mine || (st.board.pool.owner && (x.guest || !nm)))) ok(await C.rpc("mm_squares_claim", { p_pool: st.code, p_sq: n, p_on: false }));
+        else if (!x) ok(await C.rpc("mm_squares_claim", { p_pool: st.code, p_sq: n, p_on: true, p_name: nm || null }));
+        else { st.msg = `${x.name} has that square.`; return render(); }
+        await load();
+      }
+      else if (t.hasAttribute("data-sqdraw")) { st.sqDraw = false; ok(await C.rpc("mm_squares_draw", { p_pool: st.code })); st.msg = "Numbers drawn. Good luck."; await load(); }
       else if (t.hasAttribute("data-save5")) { const r = ok(await C.rpc("mm_pick_five", { p_pool: st.code, p_teams: st.sel })); st.msg = `Saved: seeds add up to ${r.seeds}.`; st.sel = null; }
       render();
     } catch (x) { fail(x); }
@@ -636,6 +725,7 @@
   app.addEventListener("change", (e) => {
     const t = e.target;
     if (t.hasAttribute("data-ffhide")) { st.ffhide = t.checked; render(); return; }
+    if (t.hasAttribute("data-sqname")) { st.sqName = t.value.trim(); st.sqOwn = true; render(); return; }
     if (t.hasAttribute("data-remind")) {
       const on = t.checked;
       C.rpc("mm_remind_set", { p_pool: st.code, p_on: on }).then(ok).then(() => { st.remind = on; st.msg = on ? "Reminders on. You'll get an email about 3 hours before a pick is due, if it isn't in." : "Reminders off."; render(); }).catch((e) => { t.checked = !on; fail(e); });
@@ -665,6 +755,10 @@
     try {
       if (f.id === "pl-link") { await C.signIn(v("pl-email") || f.querySelector("input").value, location.href.split("#")[0]); st.msg = "Check your email for a sign-in link."; return render(); }
       if (f.id === "pl-pass") { await C.passwordSignIn(f.querySelector("#pl-login").value, f.querySelector("#pl-password").value); st.user = C.user(); return render(); }
+      if (f.id === "pl-sqset") {
+        ok(await C.rpc("mm_squares_set", { p_pool: st.code, p_cap: +v("cap"), p_price: v("price") === "" ? null : +v("price"), p_pay: [0, 1, 2, 3].map((k) => +v("pay" + k)) }));
+        st.msg = "Settings saved."; st.sqOwn = true; await load(); return render();
+      }
       if (f.id === "pl-new") {
         const r = ok(await C.rpc("mm_pool_create", { p_name: v("name"), p_kind: (f.querySelector("input[name=kind]:checked") || {}).value, p_entry: v("entry") || null }));
         history.replaceState(null, "", `/fantasy/pools/?p=${r.id}`); st.code = r.id; st.tab = "picks"; return render();

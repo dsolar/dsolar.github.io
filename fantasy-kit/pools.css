@@ -424,3 +424,60 @@ button.pl-chip{cursor:pointer}
   .pl-choices .pl-tw{display:block;overflow:hidden;text-overflow:ellipsis}
   .pl-remind .ps{display:block}
 }
+/* Super Bowl squares */
+.pl-sqsb .t td,.pl-sqsb .t th{padding:8px 12px}
+.pl-sqsb .nm{display:flex;align-items:center;gap:8px}
+.pl-sqsb .tot{font-weight:850;font-size:16px}
+.pl-sqsb.wait{display:grid;gap:2px;padding:14px 16px;border:1px dashed var(--line-2);border-radius:var(--rl,14px);background:var(--surface)}
+.pl-sqwrap{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.pl-sqg{display:grid;grid-template-columns:22px minmax(0,1fr);grid-template-rows:auto auto;gap:6px}
+.pl-sqtop{grid-column:2;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;color:var(--top)}
+.pl-sqside{grid-column:1;grid-row:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:13px;writing-mode:vertical-rl;transform:rotate(180deg)}
+.pl-sqside img{transform:rotate(90deg)}
+.pl-sqcells{grid-column:2;grid-row:2;display:grid;grid-template-columns:28px repeat(10,minmax(0,1fr));gap:3px}
+.pl-sqc{display:grid;place-items:center;font-weight:850;font-size:14px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.pl-sqc.hd{background:var(--surface-3);border-radius:6px;min-height:28px}
+.pl-sq{position:relative;aspect-ratio:1;min-width:0;display:grid;place-items:center;padding:2px;border:1px solid var(--line);border-radius:7px;background:var(--surface);font:inherit;font-size:11.5px;font-weight:750;color:var(--ink);cursor:pointer;overflow:hidden}
+.pl-sq .f{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.15}
+.pl-sq .i{display:none}
+.pl-sq.empty .plus{color:var(--line-2);font-size:18px;font-weight:400}
+.pl-sq.empty:hover:not(:disabled){border-color:var(--ink);background:var(--surface-2)}
+.pl-sq.empty:hover:not(:disabled) .plus{color:var(--ink)}
+.pl-sq.taken{background:var(--surface-2)}
+.pl-sq.guest{background:var(--surface-2);font-style:italic}
+.pl-sq.mine{background:var(--brand-soft);border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pl-sq:disabled{cursor:default}
+.pl-sq.won{background:var(--win-soft);border-color:var(--win);color:var(--win)}
+.pl-sq em{position:absolute;left:0;right:0;bottom:1px;font-style:normal;font-size:9px;font-weight:850;letter-spacing:.02em;text-align:center}
+.pl-sq.live{outline:3px solid #C8102E;outline-offset:-1px;animation:pl-pulse 1.8s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.pl-sq.live{animation:none}}
+.pl-sqst{margin:0 0 12px;font-size:14px;line-height:1.45}
+.pl-sqpay{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:0}
+.pl-sqpay li{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.pl-sqpay li:first-child{border-top:0}
+.pl-sqpay li .who{grid-column:1/-1;font-size:13px}
+.pl-sqpay li.done span:first-child{font-weight:800}
+.pl-sqpay small{font-weight:650;color:var(--muted)}
+.pl-sqside-col{display:grid;gap:14px}
+.pl-sqown{border:1px solid var(--line);border-radius:var(--rl,14px);background:var(--surface);padding:0 14px}
+.pl-sqown summary{cursor:pointer;padding:12px 0;font-weight:800}
+.pl-sqown[open]{padding-bottom:14px}
+.pl-sqown label{display:grid;gap:4px;font-size:13px;font-weight:750}
+.pl-sqown input{font:inherit;padding:8px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);min-width:0}
+.pl-sqset{display:grid;gap:10px;margin:10px 0 12px}
+.pl-sqset fieldset{border:0;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.pl-sqset legend{font-size:13px;font-weight:750;margin-bottom:4px}
+.pl-sqset .btn{justify-self:start}
+@media (max-width:900px){.pl-sqwrap{grid-template-columns:1fr}}
+@media (max-width:640px){
+  .pl-sqcard .bd{padding:10px 8px}
+  .pl-sqg{grid-template-columns:16px minmax(0,1fr);gap:4px}
+  .pl-sqcells{grid-template-columns:20px repeat(10,minmax(0,1fr));gap:2px}
+  .pl-sqc{font-size:12px}
+  .pl-sqc.hd{min-height:22px;border-radius:4px}
+  .pl-sq{border-radius:4px;font-size:9.5px;padding:0}
+  .pl-sq .f{display:none}
+  .pl-sq .i{display:block}
+  .pl-sq em{font-size:7.5px}
+  .pl-sq.empty .plus{font-size:13px}
+}

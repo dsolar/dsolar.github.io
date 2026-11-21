@@ -271,3 +271,28 @@ test('pool status: picks still to make come with a deadline; standings, outs and
   assert.equal(P.status({ pool: { kind: 'five' }, projected: true, games: [], members: me('a'), picks: [] }).tone, 'wait');
   assert.equal(P.ord(1) + P.ord(2) + P.ord(3) + P.ord(11) + P.ord(22), '1st2nd3rd11th22nd');
 });
+
+test('squares: claims, the drawn numbers, and each quarter\'s winning square from the score\'s last digits', () => {
+  const members = [{ id: 'a', name: 'Ann', me: true }, { id: 'b', name: 'Bo' }];
+  const fieldSq = [{ team: 'KC', conf: 'AFC', seed: 1 }, { team: 'SF', conf: 'NFC', seed: 1 }];
+  // SF is listed away (a), KC home (b): KC still goes across the top as the AFC team
+  const sb = { id: 'sb', round: 4, kickoff: '2027-02-14T23:30:00Z', a: 'SF', b: 'KC', ap: 20, bp: 17, final: false, lines: { a: [7, 3, 0], b: [0, 14, 3] } };
+  const nums = { c: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], r: [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] };
+  const picks = [{ user: 'a', slot: 's97', team: 'x' }, { user: 'b', slot: 's84', team: 'x' }, { user: 'a', slot: 's50', team: 'n:Uncle Joe' }];
+  const board = { pool: { kind: 'squares', extra: { nums, price: 5, pay: [20, 20, 20, 40] } }, games: [sb], field: fieldSq, members, picks };
+  const S = P.squares(board, '2027-02-15T01:00:00Z');
+  assert.equal(S.top, 'KC'); assert.equal(S.side, 'SF');
+  // after Q1 KC 0, SF 7: column 0, row of 7 = index 2 -> square 20 (empty). Half: KC 14, SF 10 -> col 4, row of 0 = 9 -> 94
+  assert.equal(S.periods.length, 2);                                // Q3 is still being played (no 4th quarter yet)
+  assert.deepEqual(S.periods.map((x) => x.sq), [20, 94]);
+  assert.equal(S.periods[0].cell, null);                            // nobody had it
+  assert.equal(S.cells[50].name, 'Uncle Joe'); assert.ok(S.cells[50].guest); assert.ok(!S.cells[50].mine);
+  assert.equal(S.mine, 1); assert.equal(S.claimed, 3); assert.equal(S.pot, 15);
+  assert.equal(S.live.sq, 97);                                      // right now KC 17, SF 20: column 7, row of 0 (9)
+  const final = P.squares(Object.assign({}, board, { games: [Object.assign({}, sb, { final: true, ap: 20, bp: 27, lines: { a: [7, 3, 0, 10], b: [0, 14, 3, 10] } })] }), '2027-02-15T03:00:00Z');
+  assert.equal(final.periods.length, 4);
+  assert.equal(final.periods[3].sq, 97);                            // KC 27 -> col 7; SF 20 -> 0 -> row 9: Ann's square
+  assert.equal(final.periods[3].cell.name, 'Ann'); assert.equal(final.periods[3].amount, 6);
+  assert.equal(final.people[0].name, 'Ann');
+  assert.equal(P.status(Object.assign({}, board, { games: final.game ? [final.game] : [] }), '2027-02-15T03:00:00Z').tone, 'won');
+});
