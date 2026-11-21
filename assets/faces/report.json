@@ -89,9 +89,9 @@
    "fixed": 1
   },
   "nba": {
-   "registry": 1207,
+   "registry": 1192,
    "shown": 1240,
-   "found": 1154,
+   "found": 1151,
    "missing": [
     "Nikola Milutinov"
    ],
@@ -125,6 +125,7 @@
     "Dominique Jones",
     "Donyell Marshall",
     "Earl Clark",
+    "Gary Payton",
     "Glen Rice",
     "Glenn Robinson",
     "Grant Long",
@@ -166,12 +167,14 @@
     "Ricky Davis",
     "Rienk Mast",
     "Robert Horry",
+    "Ron Harper",
     "Sam Perkins",
     "Sean Williams",
     "Stacey Augmon",
     "Steve Smith",
     "Terry Cummings",
     "Terry Porter",
+    "Tim Hardaway",
     "Toby Okani",
     "Tom Gugliotta",
     "Tony Massenburg",
@@ -186,9 +189,9 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7366,
+   "registry": 7362,
    "shown": 1162,
-   "found": 1072,
+   "found": 1073,
    "missing": [
     "Derek M. Smith",
     "Maceo Beard"
@@ -256,7 +259,6 @@
     "Mike Caldwell",
     "Mitch Van Vooren",
     "Neil O'Donnell",
-    "Patrick Surtain II",
     "Pete Kendall",
     "R.W. McQuarters",
     "Randall Godfrey",
@@ -336,9 +338,9 @@
    "fixed": 3
   },
   "ncaab": {
-   "registry": 177,
+   "registry": 164,
    "shown": 198,
-   "found": 163,
+   "found": 162,
    "missing": [
     "Adam Atamna",
     "Adan Diggs",
@@ -371,18 +373,19 @@
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
-    "Stefan Joksimovic"
+    "Stefan Joksimović"
    ],
    "noPhoto": [
     "A.J. Williams",
     "Arafan Diane",
+    "Brandon McCoy",
     "Tony Bryant"
    ],
    "shared": [],
    "fixed": 0
   },
   "ncaaf": {
-   "registry": 238,
+   "registry": 221,
    "shown": 228,
    "found": 221,
    "missing": [
