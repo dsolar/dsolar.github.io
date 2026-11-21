@@ -1,0 +1,41 @@
+name: probe espn (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          cat > p.py <<'PY'
+          import json, urllib.request
+          def get(u):
+              return json.load(urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent": "Mozilla/5.0"}), timeout=30))
+          for yr in (2025, 2026):
+              d = get(f"https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?seasontype=3&groups=80&limit=300&dates={yr}")
+              ev = d.get("events", [])
+              print("CFB", yr, "events", len(ev), "leagues.calendar?", bool(d.get("leagues")))
+              for e in ev[:3] + ev[-3:]:
+                  c = e["competitions"][0]
+                  print("  ", e["date"], e.get("name"), "|", [n.get("headline") for n in c.get("notes", [])], "|", [(x["homeAway"], x["team"].get("abbreviation"), x["team"].get("id"), (x.get("curatedRank") or {}).get("current"), x.get("score")) for x in c["competitors"]], "| odds", (c.get("odds") or [{}])[0].get("spread"), (c.get("odds") or [{}])[0].get("details"), "| status", e["status"]["type"]["name"], "| week", e.get("week"), e.get("season"))
+              print("  type ids", sorted({(e.get("season") or {}).get("type") for e in ev}), "weeks", sorted({(e.get("week") or {}).get("number") for e in ev}))
+          d = get("https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=2025")
+          for ch in d.get("children", []):
+              rows = []
+              for en in ch["standings"]["entries"]:
+                  st = {s["name"]: s.get("value") for s in en["stats"]}
+                  rows.append((st.get("playoffSeed"), en["team"]["abbreviation"]))
+              print("NFL", ch.get("abbreviation"), sorted([r for r in rows if r[0] and r[0] <= 7]))
+          d = get("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=3&week=1&dates=2025")
+          for e in d.get("events", [])[:2]:
+              c = e["competitions"][0]
+              print("NFLPO", e["date"], e.get("name"), [n.get("headline") for n in c.get("notes", [])], [(x["homeAway"], x["team"]["abbreviation"], x.get("seed"), (x.get("curatedRank") or {}).get("current")) for x in c["competitors"]], e.get("week"), e.get("season"))
+          d = get("https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=3&week=5&dates=2025")
+          print("SB", [(e.get("name"), e["date"]) for e in d.get("events", [])])
+          d = get("https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=2026")
+          for ch in d.get("children", []):
+              rows = []
+              for en in ch["standings"]["entries"]:
+                  st = {s["name"]: s.get("value") for s in en["stats"]}
+                  rows.append((st.get("playoffSeed"), en["team"]["abbreviation"]))
+              print("NFL2026", ch.get("abbreviation"), sorted([r for r in rows if r[0] and r[0] <= 7]))
+          PY
+          python3 p.py
