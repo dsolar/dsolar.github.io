@@ -347,6 +347,8 @@ def photo_url(sport, pid):
     m = re.match(r"^([a-z]+):(\d+)$", s)
     if m:
         sport, s = m.group(1), m.group(2)
+    if sport == "nbacom":
+        return f"https://cdn.nba.com/headshots/nba/latest/260x190/{s}.png"
     if sport == "mlb":
         return f"https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/{s}/headshot/67/current"
     return f"https://a.espncdn.com/i/headshots/{ESPN_LEAGUE[sport]}/players/full/{s}.png"
@@ -392,6 +394,38 @@ def check_photos(want):
     return done
 
 
+NBA_API = "https://raw.githubusercontent.com/swar/nba_api/master/src/nba_api/stats/library/data.py"
+
+
+def nba_fallback(want, checked, fix):
+    """NBA names with no ESPN photo (none found, or ESPN's server has none) get NBA.com's photo where there is one.
+    The NBA.com person ids come from the nba_api project's player list, read as text (never run)."""
+    try:
+        txt = get(NBA_API).decode("utf-8")
+    except Exception as e:
+        print(f"  nba_api player list failed: {e}")
+        return 0
+    m = re.search(r"^players = \[(.*?)^\]", txt, re.S | re.M)  # the NBA list only (the file also lists WNBA players)
+    txt = m.group(1) if m else ""
+    ids = {}
+    q = r"""(?:"[^"]*"|'[^']*')"""
+    for pid, full in re.findall(r"\[(\d+),\s*" + q + r",\s*" + q + r",\s*(" + q + r"),\s*(?:True|False)\]", txt):
+        k = slug(full[1:-1])
+        ids.setdefault(k, set()).add(int(pid))
+    fixed = {slug(n) for n in (fix.get("nba") or {})}
+    n = 0
+    for name in want["nba"]:
+        k = slug(name)
+        if k in fixed or len(ids.get(k, ())) != 1:
+            continue
+        cur = reg["nba"].get(k)
+        if cur is None or (checked.get(f"nba|{cur}") or [0])[0] == 404:
+            reg["nba"][k] = f"nbacom:{next(iter(ids[k]))}"
+            n += 1
+    print(f"  NBA.com photos tried for {n} names")
+    return n
+
+
 def main():
     local_sources()
     want = wanted()
@@ -406,6 +440,8 @@ def main():
     fix = apply_fixes()
     if not LOCAL:
         checked = check_photos(want)
+        if nba_fallback(want, checked, fix):
+            checked = check_photos(want)
     elif os.path.exists(CHECKED):
         checked = json.load(open(CHECKED, encoding="utf-8"))
     os.makedirs(OUT, exist_ok=True)

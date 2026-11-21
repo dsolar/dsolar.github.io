@@ -26,7 +26,7 @@
   function px(size) { var p = (size || 40) * 3; return p <= 72 ? 72 : p <= 120 ? 120 : p <= 180 ? 180 : 240; }
 
   // The photo address. id is a number (MLBAM for mlb, ESPN for everything else) or "league:id" for a player
-  // registered under another league (a college player on an NBA page, say).
+  // registered under another league (a college player on an NBA page, say), or "nbacom:id" for an NBA.com photo.
   function url(sport, id, opts) {
     opts = opts || {};
     if (id == null || id === "" || id === 0) return "";
@@ -35,6 +35,8 @@
     var p = px(opts.size);
     if (sport === "mlb") // MLB's photos sit on Cloudinary: crop square around the face
       return "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_" + p + ",h_" + p + ",q_auto:best/v1/people/" + s + "/headshot/" + (opts.milb ? "milb" : "67") + "/current";
+    if (sport === "nbacom") // NBA.com's photos, for retired players ESPN has none of (same shape as ESPN's)
+      return "https://cdn.nba.com/headshots/nba/latest/" + (p > 130 ? "1040x760" : "260x190") + "/" + s + ".png";
     var lg = sport === "espn" ? opts.league : sport;
     if (!ESPN_PATH[lg]) return "";
     return "https://a.espncdn.com/combiner/i?img=/i/headshots/" + ESPN_PATH[lg] + "/players/full/" + s + ".png&w=" + p + "&h=" + Math.round(p * 0.73);
