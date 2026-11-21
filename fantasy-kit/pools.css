@@ -629,3 +629,9 @@ button.pl-chip{cursor:pointer}
 .pl-asbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:#13233A;color:#fff;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
 .pl-asbar span{flex:1}
 .pl-asbar .btn{background:#F6C445;border-color:#F6C445;color:#13233A}
+/* survivor planner */
+.pl-splan .pl-sum p{margin:0 0 6px;font-size:14px;line-height:1.5}
+.pl-splan .pl-pc{min-width:36px;text-align:center}
+.pl-splan .pl-pc.bye{color:var(--muted);font-size:11px;font-weight:600;background:none}
+.pl-splan .pl-pc.path{outline:2px solid var(--ink);outline-offset:-2px;border-radius:4px}
+.pl-splan .pl-pc.mine{box-shadow:inset 0 -3px 0 var(--accent)}

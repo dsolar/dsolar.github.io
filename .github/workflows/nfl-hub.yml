@@ -51,9 +51,13 @@ jobs:
             echo "Not Monday; keeping the current rating."
           fi
 
+      # the schedule and results on their own (a few KB), for pages that only need the games: the survivor planner
+      - name: Pull out the games
+        run: node -e "const fs=require('fs');const L=JSON.parse(fs.readFileSync('nfl/data/league.json'));fs.writeFileSync('nfl/data/games.json',JSON.stringify({season:L.season,week:L.week,updated:L.updated,games:L.games}))"
+
       - name: Commit it
         run: |
-          git add nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json
+          git add nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

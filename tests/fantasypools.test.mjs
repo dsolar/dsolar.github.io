@@ -296,3 +296,19 @@ test('squares: claims, the drawn numbers, and each quarter\'s winning square fro
   assert.equal(final.people[0].name, 'Ann');
   assert.equal(P.status(Object.assign({}, board, { games: final.game ? [final.game] : [] }), '2027-02-15T03:00:00Z').tone, 'won');
 });
+
+test('survivor planner: each team once, the best overall path, byes and used teams left out', () => {
+  // three weeks; AAA is great every week, BBB only in week 2: the planner saves AAA for a week BBB can't cover
+  const G = (wk, a, h, sp) => ['REG', wk, '2026-12-0' + wk, a, h, null, null, sp, 0, 0];
+  const games = [G(1, 'XXX', 'AAA', 10), G(1, 'YYY', 'CCC', 3), G(2, 'ZZZ', 'BBB', 12), G(2, 'WWW', 'AAA', 11), G(3, 'VVV', 'AAA', 9), G(3, 'UUU', 'CCC', 2)];
+  const out = P.survPlan({ games, ratings: {}, from: 1, to: 3 });
+  const by = Object.fromEntries(out.path.map((x) => [x.week, x.team]));
+  assert.equal(by[2], 'BBB');                                       // take BBB in week 2 so AAA covers week 1 or 3
+  assert.equal(new Set(out.path.map((x) => x.team)).size, 3);       // never the same team twice
+  assert.ok(out.odds > 0 && out.odds < 1);
+  const noA = P.survPlan({ games, ratings: {}, from: 1, to: 3, used: ['AAA'] });
+  assert.ok(!noA.path.some((x) => x.team === 'AAA'));
+  // no posted spread: the rating gap plus home field decides
+  const r = P.survPlan({ games: [['REG', 4, 'd', 'BAD', 'GOOD', null, null, null, 0, 0]], ratings: { GOOD: 5, BAD: -5 }, from: 4, to: 4 });
+  assert.equal(r.path[0].team, 'GOOD'); assert.ok(r.grid.GOOD[4] > 0.75);
+});

@@ -415,7 +415,44 @@
     const left = Object.keys(NFL).filter((t) => !mineAll.includes(t));
     const usedLine = mineAll.length ? `<p class="ps">Used: ${mineAll.map(nflName).join(", ")}. ${left.length} teams left.</p>` : "";
     const later = `<p class="ps">Later weeks show up as their games are scheduled on the board, a few days ahead.</p>`;
-    return status + cards + usedLine + later;
+    return status + cards + usedLine + (row && row.alive && !S.winners ? survPlanCard(b, uid, nextOpen) : "") + later;
+  }
+  // ---------- survivor planner: the rest of the season, from the NFL hub's schedule and team ratings ----------
+  const toHub = (t) => (t === "WSH" ? "WAS" : t), fromHub = (t) => (t === "WAS" ? "WSH" : t);
+  let planLoad = null;
+  const loadPlan = () => planLoad || (planLoad = Promise.all([
+    new Promise((res) => { if (window.NFLSeason) return res(); const sc = document.createElement("script"); sc.src = "/nfl/lib/season.js"; sc.onload = res; sc.onerror = res; document.body.appendChild(sc); }),
+    fetch("/nfl/data/games.json", { cache: "no-cache" }).then((r) => r.json()).catch(() => null),
+  ]).then(([, d]) => {
+    const S = window.NFLSeason;
+    if (!S || !d || !d.games) return null;
+    return { games: d.games, ratings: S.ratings(d.games, Object.keys(S.divOf)) };
+  }));
+  function survPlanCard(b, uid, nextOpen) {
+    if (!st.planData) { loadPlan().then((x) => { st.planData = x || { none: true }; if (x) render(); }); return ""; }
+    if (st.planData.none) return "";
+    const from = nextOpen ? nextOpen.week : Math.max(...P.nflWeeks(b.games).map((w) => w.week)) + 1;
+    if (from > 18) return "";
+    // teams you've used in weeks already locked are out; this week's pick is still yours to change
+    const usedT = (b.picks || []).filter((k) => k.user === uid && k.team && +k.slot.slice(1) < from).map((k) => toHub(k.team));
+    const thisWeek = ((b.picks || []).find((k) => k.user === uid && k.slot === "w" + from) || {}).team;
+    const key = `${from}|${usedT.join()}`;
+    if (!st.plan || st.plan.key !== key) st.plan = { key, out: P.survPlan({ games: st.planData.games, ratings: st.planData.ratings, from, to: 18, used: usedT }) };
+    const out = st.plan.out, wks = out.weeks, onPath = {}; out.path.forEach((x) => { onPath[x.team + "|" + x.week] = true; });
+    if (!out.path.length) return "";
+    // teams ordered by how much they're worth from here: their best few weeks
+    const val = (t) => wks.map((w) => Math.max(0, out.grid[t][w] || 0)).sort((x, y) => y - x).slice(0, 3).reduce((a, v) => a + v, 0);
+    const rows = out.teams.slice().sort((x, y) => val(y) - val(x));
+    const shown = st.planAll ? rows : rows.slice(0, 14);
+    const sug = out.path[0], mineNow = thisWeek ? toHub(thisWeek) : null;
+    const cell = (t, w) => { const q = out.grid[t][w]; return q == null ? `<td class="pl-pc bye" title="Bye">bye</td>` : q < 0 ? `<td class="pl-pc bye" title="Already played">played</td>` : `<td class="r pl-pc${onPath[t + "|" + w] ? " path" : ""}${mineNow === t && w === from ? " mine" : ""}" style="--p:${Math.max(0, (q - 0.45) / 0.55).toFixed(3)}">${Math.round(q * 100)}</td>`; };
+    return `<section class="card pl-plan pl-splan"><div class="mod-h"><h2>Plan ahead</h2><span class="grow"></span><span class="ps">Win chance each week, to week 18</span></div>
+      <div class="bd pl-sum"><p><b>Best path from here:</b> ${out.path.slice(0, 4).map((x) => `<span class="pl-gchip">Wk ${x.week} ${nflName(fromHub(x.team))} <small>${Math.round(x.p * 100)}%</small></span>`).join(" ")}${out.path.length > 4 ? ` <span class="ps">and ${out.path.length - 4} more</span>` : ""}</p>
+        <p class="ps">Chance to survive every week left on that path: <b>${(out.odds * 100).toFixed(out.odds < 0.1 ? 1 : 0)}%</b>.${mineNow && mineNow !== sug.team ? ` Your week ${from} pick is ${nflName(fromHub(mineNow))}; the path would take ${nflName(fromHub(sug.team))} and save ${nflName(fromHub(mineNow))} for week ${(out.path.find((x) => x.team === mineNow) || {}).week || "later"}.` : mineNow ? ` Your week ${from} pick matches it.` : ""}</p></div>
+      <div class="table-wrap"><table class="t pl-pt"><thead><tr><th>Team</th>${wks.map((w) => `<th class="r${w === from ? " cur" : ""}">${w}</th>`).join("")}</tr></thead><tbody>
+      ${shown.map((t) => `<tr><td class="nm"><span class="pl-ptn">${nflLogo(fromHub(t), 18)}<b>${esc(fromHub(t))}</b></span></td>${wks.map((w) => cell(t, w)).join("")}</tr>`).join("")}
+      </tbody></table></div>
+      <div class="bd"><p class="ps">${rows.length > 14 ? `<button type="button" class="btn sm ghost" data-planall>${st.planAll ? "Show fewer teams" : `Show all ${rows.length} teams`}</button> ` : ""}Outlined: the best path, one team a week and each team once. Posted point spreads where there are any, the NFL hub's team ratings after that. Used teams aren't listed.</p></div></section>`;
   }
   function nflTable(b) {
     const S = P.nfl(b, Date.now());
@@ -925,7 +962,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -941,6 +978,7 @@
       return;
     }
     if (t.dataset.ffcard) { ffCard(t.dataset.ffcard, st.board); return; }
+    if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return render(); }
     if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
     if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); return render(); }
     if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }

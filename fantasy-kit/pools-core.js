@@ -444,6 +444,55 @@
     return res;
   }
 
+  /* NFL survivor planner. games: the NFL hub's schedule ([type, week, date, away, home, awayScore, homeScore, spread
+     with the home side favored positive, neutral, ...]); ratings: each team's points better than average (the hub's
+     model). Each game not yet played: the posted spread if there is one, else the rating gap plus 1.6 at home, on a
+     13.5-point spread. Then the best path: one team a week, each team once, chosen to give the best chance of getting
+     through every week left (an assignment that maximizes the product of the win chances, the Hungarian method).
+     Returns { weeks, grid: { TEAM: { week: p } }, path: [{ week, team, p }], odds }. */
+  function assign(cost) {
+    // rows (weeks) to distinct columns (teams), least total cost; cost is rows x cols with rows <= cols
+    var n = cost.length, m = cost[0] ? cost[0].length : 0, INF = 1e18;
+    var u = new Array(n + 1).fill(0), v = new Array(m + 1).fill(0), p = new Array(m + 1).fill(0), way = new Array(m + 1).fill(0);
+    for (var i = 1; i <= n; i++) {
+      p[0] = i; var j0 = 0, minv = new Array(m + 1).fill(INF), used = new Array(m + 1).fill(false);
+      do {
+        used[j0] = true; var i0 = p[j0], delta = INF, j1 = 0;
+        for (var j = 1; j <= m; j++) if (!used[j]) {
+          var cur = cost[i0 - 1][j - 1] - u[i0] - v[j];
+          if (cur < minv[j]) { minv[j] = cur; way[j] = j0; }
+          if (minv[j] < delta) { delta = minv[j]; j1 = j; }
+        }
+        for (j = 0; j <= m; j++) { if (used[j]) { u[p[j]] += delta; v[j] -= delta; } else minv[j] -= delta; }
+        j0 = j1;
+      } while (p[j0] !== 0);
+      do { var jn = way[j0]; p[j0] = p[jn]; j0 = jn; } while (j0);
+    }
+    var out = new Array(n); for (var c = 1; c <= m; c++) if (p[c]) out[p[c] - 1] = c - 1;
+    return out;
+  }
+  function survPlan(opt) {
+    var games = opt.games || [], R = opt.ratings || {}, used = {}, from = opt.from, to = opt.to || 18, hfa = opt.hfa == null ? 1.6 : opt.hfa;
+    (opt.used || []).forEach(function (t) { used[t] = true; });
+    var grid = {}, weeks = [];
+    for (var w = from; w <= to; w++) weeks.push(w);
+    games.forEach(function (g) {
+      if (g[0] !== "REG" || g[1] < from || g[1] > to) return;
+      // a game already played this week can't be picked: -1 marks it (a team with no game that week has its bye)
+      if (g[5] != null) { (grid[g[4]] = grid[g[4]] || {})[g[1]] = -1; (grid[g[3]] = grid[g[3]] || {})[g[1]] = -1; return; }
+      var a = g[3], h = g[4], sp = g[7] != null ? g[7] : (R[h] || 0) - (R[a] || 0) + (g[8] ? 0 : hfa), ph = normCdf(sp / 13.5);
+      (grid[h] = grid[h] || {})[g[1]] = ph; (grid[a] = grid[a] || {})[g[1]] = 1 - ph;
+    });
+    var teams = Object.keys(grid).filter(function (t) { return !used[t]; }).sort();
+    var path = [], odds = 1;
+    if (teams.length >= weeks.length && weeks.length) {
+      var cost = weeks.map(function (wk) { return teams.map(function (t) { var q = grid[t][wk]; return q > 0 ? -Math.log(q) : 1e6; }); });
+      var pick = assign(cost);
+      weeks.forEach(function (wk, i) { var t = teams[pick[i]], q = grid[t] && grid[t][wk]; path.push({ week: wk, team: t, p: q || 0 }); odds *= q || 0; });
+    }
+    return { weeks: weeks, grid: grid, path: path, odds: odds, teams: teams };
+  }
+
   /* Super Bowl squares. A 10 by 10 board: the AFC champion across the top (columns), the NFC champion down the side
      (rows). A pick { slot: "s37", team: "x" } is a member's square (37 = row 3, column 7); team "n:Name" is a name the
      owner put on it. Once drawn, pool.extra.nums = { r: [10 digits], c: [10 digits] } says which score digit each row
@@ -597,7 +646,7 @@
   }
 
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS };
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);
