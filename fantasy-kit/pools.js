@@ -697,7 +697,7 @@
   const gStatus = (g, t) => g.final ? `<span class="pl-gst fin">Final</span>` : Date.parse(t) <= Date.now() ? `<span class="pl-gst live">Live</span>` : `<span class="pl-gst">${esc(tipTime(t))}</span>`;
   function gameBlock(g, side) {
     // side(t) -> { logo, name, seed, score, win, who: [{ name, me, note }] }
-    const row = (x) => `<div class="pl-gr${x.win ? " w" : x.lose ? " l" : ""}"><span class="pl-gt">${x.logo}<b>${x.seed != null ? seedTag(x.seed) : ""}${x.name}</b></span><span class="pl-gs num">${x.score != null ? x.score : ""}</span>
+    const row = (x) => `<div class="pl-gr${x.win ? " w" : x.lose ? " l" : ""}"><span class="pl-gt">${x.logo}<b>${x.seed != null ? seedTag(x.seed) : ""}${x.name}</b>${x.pct ? `<small class="pl-gpct" title="Share of the pool">${x.pct}%</small>` : ""}</span><span class="pl-gs num">${x.score != null ? x.score : ""}</span>
       <span class="pl-gw">${x.who.length ? x.who.map((w) => `<span class="pl-gchip${w.me ? " me" : ""}">${esc(w.name)}${w.note != null ? ` <small>${esc(w.note)}</small>` : ""}</span>`).join("") : ""}</span></div>`;
     return `<article class="pl-gm"><div class="pl-gh">${g.label ? `<span class="pl-gl">${esc(g.label)}</span>` : ""}${gStatus(g, g.when)}</div>${row(side(g.x))}${row(side(g.y))}${g.hidden ? `<p class="pl-ghid ps">${esc(g.hidden)}</p>` : ""}</article>`;
   }
@@ -707,6 +707,8 @@
   function scoreboard(b) {
     const k = b.pool.kind, now = Date.now(), uid = meId(b);
     const who = (ids) => ids.map((x) => (typeof x === "string" ? { name: nameOf(b, x), me: x === uid } : { name: nameOf(b, x.id), me: x.id === uid, note: x.note }));
+    // a side's share of the pool, once everyone's picks show (only your own before that, so no share yet)
+    const pct = (ids, shown) => (shown && ids && ids.length ? Math.round((100 * ids.length) / Math.max(1, b.members.length)) : 0);
     if (k === "nfl") {
       const ws = P.nflWeeks(b.games);
       if (!ws.length) return `<div class="pl-note">No games yet.</div>`;
@@ -717,7 +719,7 @@
       const head = counts.length ? `<p class="pl-gsum">Most picked in week ${wk.week}: ${counts.slice(0, 3).map(([t, u]) => `<b>${nflName(t)}</b> ${Math.round((100 * u.length) / b.members.length)}%`).join(", ")}${hidden ? `. ${hidden} more ${hidden === 1 ? "pick shows" : "picks show"} at kickoff.` : "."}</p>` : hidden ? `<p class="pl-gsum">${hidden} ${hidden === 1 ? "pick is" : "picks are"} in. They show at kickoff.</p>` : "";
       const blocks = wk.games.map((g) => gameBlock({ x: "away", y: "home", when: g.kickoff, final: g.final }, (sd) => {
         const t = g[sd], sc = sd === "away" ? g.ap : g.hp, op = sd === "away" ? g.hp : g.ap, on = Date.parse(g.kickoff) <= now;
-        return { logo: nflLogo(t, 22), name: nflName(t), score: on ? sc : null, win: g.final && sc > op, lose: g.final && sc < op, who: who(by[t] || []) };
+        return { logo: nflLogo(t, 22), name: nflName(t), score: on ? sc : null, win: g.final && sc > op, lose: g.final && sc < op, who: who(by[t] || []), pct: pct(by[t], on) };
       }));
       // games with picks first, then the rest in kickoff order
       const order = wk.games.map((g, i) => [i, (by[g.away] || []).length + (by[g.home] || []).length]).sort((x, y) => (y[1] > 0) - (x[1] > 0) || x[0] - y[0]).map(([i]) => blocks[i]);
@@ -735,7 +737,8 @@
       });
       const blocks = d.games.map((g) => gameBlock({ x: "a", y: "b", when: g.tip, final: g.final, label: g.region }, (sd) => {
         const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.tip) <= now;
-        return { logo: logo(t, 22), name: name(t), seed: sd === "a" ? g.as : g.bs, score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []) };
+        return { logo: logo(t, 22), name: name(t), seed: sd === "a" ? g.as : g.bs, score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []),
+          pct: pct(by[t], k === "survivor" ? on : b.games.some((x) => x.round === 1 && Date.parse(x.tip) <= now)) };
       }));
       if (k === "survivor" && hidden) blocks.unshift(`<p class="pl-gsum">${hidden} ${hidden === 1 ? "pick shows" : "picks show"} once its game tips off.</p>`);
       return segPick("d", ds.map((x) => [x.n, `Day ${x.n}`, dayName(x.day)]), d.n) + (k === "five" && !b.games.some((g) => g.round === 1 && Date.parse(g.tip) <= now) ? `<p class="pl-gsum">Everyone's five teams show once the first round tips off.</p>` : "") + gameList(blocks, "No games this day.");
@@ -750,7 +753,7 @@
         (b.picks || []).forEach((pk) => { if (pk.slot !== "g" + g.id || !pk.team) return; (by[pk.team] = by[pk.team] || []).push({ id: pk.user, note: pk.pts }); });
         return gameBlock({ x: "a", y: "b", when: g.kickoff, final: g.final, label: g.label, hidden: Date.parse(g.kickoff) > now && b.members.length > 1 ? "Everyone else's picks show at kickoff" : "" }, (sd) => {
           const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.kickoff) <= now;
-          return { logo: cfbLogo(t, 22), name: cfbName(t, sd === "a" ? g.an : g.bn), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []) };
+          return { logo: cfbLogo(t, 22), name: cfbName(t, sd === "a" ? g.an : g.bn), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []), pct: pct(by[t], on) };
         });
       });
       return segPick("b", days.map((d) => [d, d.replace(/^\w+, /, ""), d.split(",")[0]]), cur) + `<p class="pl-gsum">Each name shows its confidence number. Picks show at each game's kickoff.</p>` + gameList(blocks, "No games that day.");
@@ -763,7 +766,7 @@
       const gs = (b.games || []).filter((g) => g.round === cur && g.a && g.b);
       const blocks = gs.map((g) => gameBlock({ x: "a", y: "b", when: g.kickoff, final: g.final, label: g.label }, (sd) => {
         const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.kickoff) <= now;
-        return { logo: nflLogo(t, 22), name: nflName(t), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(lk ? by[t] || [] : (by[t] || []).filter((u) => u === uid)) };
+        return { logo: nflLogo(t, 22), name: nflName(t), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(lk ? by[t] || [] : (by[t] || []).filter((u) => u === uid)), pct: pct(by[t], lk) };
       }));
       return segPick("r", rounds.map((r) => [r, RNAME[r]]), cur) + `<p class="pl-gsum">${lk ? "Under each team: who has it winning this round." : "Everyone's brackets show once the Wild Card round kicks off. For now you see your own."}</p>` + gameList(blocks, "This round's games aren't set yet.");
     }
@@ -789,10 +792,11 @@
     };
     const left = (r, R) => Object.values(R.lineup || {}).filter((id) => { const g = gameOf(r, pl(id).t); return !g || Date.parse(g.kickoff) > now; }).length;
     if (view === "all") {
+      const owns = { 1: ffOwn(F, 1, n, b), 2: ffOwn(F, 2, n, b), 3: ffOwn(F, 3, n, b), 4: ffOwn(F, 4, n, b) };
       const cards = F.rows.map((r) => {
         const rs = [1, 2, 3, 4].filter((x) => Object.keys((r.rounds[x] || {}).lineup || {}).length);
         return `<article class="pl-lu${r.me ? " me" : ""}"><div class="pl-luh"><b>${esc(r.name)}</b><span class="num">${r.total} pts</span></div>
-          ${rs.length ? rs.map((x) => { const R = r.rounds[x]; return `<div class="pl-lur"><span>${RNAME[x]}</span><span class="num">${R.pts != null ? R.pts : ""}</span></div><ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => ply(x, sl, R.lineup[sl], R)).join("")}</ul>`; }).join("") : `<p class="ps" style="margin:0">${r.me ? "No lineups yet." : "Lineups show at kickoff."}</p>`}</article>`;
+          ${rs.length ? rs.map((x) => { const R = r.rounds[x]; return `<div class="pl-lur"><span>${RNAME[x]}</span><span class="num">${R.pts != null ? R.pts : ""}</span></div><ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => ply(x, sl, R.lineup[sl], R, owns[x][R.lineup[sl]])).join("")}</ul>`; }).join("") : `<p class="ps" style="margin:0">${r.me ? "No lineups yet." : "Lineups show at kickoff."}</p>`}</article>`;
       });
       return bar + `<p class="pl-gsum">Every round so far, ${FF_SL[ffSi(b)]}. Others' players show once their games kick off.</p><div class="pl-lus">${cards.join("")}</div>`;
     }
