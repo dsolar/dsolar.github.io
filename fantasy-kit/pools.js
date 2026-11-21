@@ -260,6 +260,17 @@
     if (!b.projected) return "";
     return `<div class="pl-note"><b>Practice bracket.</b> These are the college hub's projected first-round games on this season's real dates. The real field comes out Selection Sunday, March 14, and replaces them; practice picks are cleared then.</div>`;
   }
+  // the pot (from the buy-in and the members), each payout, who's paid, and past champions, under the standings
+  function potAndChamps(b) {
+    const ex = b.pool.extra || {}, n = b.members.length, paid = b.members.filter((m) => m.paid).length;
+    const pays = (ex.payouts || [100]).filter((v) => v > 0);
+    const pot = ex.buyin && b.pool.kind !== "squares" ? `<section class="card pl-pot"><div class="mod-h"><h2>The pot</h2><span class="grow"></span><span class="ps">${paid} of ${n} paid</span></div><div class="bd">
+      <p class="pl-potn"><b class="num">${money(ex.buyin * n)}</b> <span class="ps">${money(ex.buyin)} buy-in, ${n} ${n === 1 ? "entry" : "entries"}</span></p>
+      <ul class="pl-pays">${pays.map((v, i) => `<li><span>${P.ord(i + 1)}</span><b class="num">${money(Math.round(ex.buyin * n * v) / 100)}</b><small class="ps">${v}%</small></li>`).join("")}</ul>
+      <p class="ps" style="margin:8px 0 0">Tracked here only. The site doesn't collect or pay money.</p></div></section>` : "";
+    const ch = (ex.champs || []).length ? `<section class="card pl-champs"><div class="mod-h"><h2>Past champions</h2></div><ul>${ex.champs.map((c) => `<li><span class="ps num">${esc(c.year)}</span><b>${esc(c.name)}</b></li>`).join("")}</ul></section>` : "";
+    return pot + ch;
+  }
   // ---------- settings: how it works, you, the members, and the owner's controls ----------
   function settingsTab(b) {
     const p = b.pool, owner = p.owner, uid = meId(b), ex = p.extra || {};
@@ -270,7 +281,9 @@
       ${remindable(b) ? `<label class="pl-remind"><input type="checkbox" data-remind${st.remind ? " checked" : ""}><span><b>Email me before a pick is due</b> <span class="ps">About 3 hours ahead, only if I haven't made it</span></span></label>` : ""}
       <div class="pl-row"><button type="button" class="btn sm go" data-invite>Invite people</button>${owner ? "" : `<button type="button" class="btn sm ghost${st.leave ? " danger" : ""}" data-leave>${st.leave ? "Tap again to leave. Your picks go too" : "Leave this pool"}</button>`}</div></div></section>`;
     const members = `<section class="card pl-set"><div class="mod-h"><h2>Members</h2><span class="grow"></span><span class="ps">${b.members.length}</span></div>
-      <ul class="pl-mem">${b.members.map((m) => `<li><b>${esc(m.name)}</b>${m.me ? ` <span class="ps">you</span>` : ""}${owner && !m.me ? `<button type="button" class="btn sm ghost${st.rm === m.id ? " danger" : ""}" data-rm="${esc(m.id)}">${st.rm === m.id ? "Tap again to remove" : "Remove"}</button>` : ""}</li>`).join("")}</ul></section>`;
+      <ul class="pl-mem">${b.members.map((m) => `<li><b>${esc(m.name)}</b>${m.me ? ` <span class="ps">you</span>` : ""}${m.owner ? ` <span class="tag">Owner</span>` : ""}
+        ${ex.buyin ? (owner ? `<label class="pl-paid"><input type="checkbox" data-paid="${esc(m.id)}"${m.paid ? " checked" : ""}> Paid</label>` : `<span class="tag${m.paid ? " win" : ""}">${m.paid ? "Paid" : "Owes"}</span>`) : ""}
+        ${owner && !m.me ? `<button type="button" class="btn sm ghost${st.rm === m.id ? " danger" : ""}" data-rm="${esc(m.id)}">${st.rm === m.id ? "Tap again to remove" : "Remove"}</button>` : ""}</li>`).join("")}</ul></section>`;
     if (!owner) return how + you + members;
     const ffLocked = p.kind === "nflff" && (b.games || []).some((g) => g.round === 1 && Date.parse(g.kickoff) <= Date.now());
     const game = p.kind === "nflff" ? `<label>Scoring<select name="scoring"${ffLocked ? " disabled" : ""}>${[["half", "Half PPR"], ["ppr", "PPR"], ["std", "Standard"]].map(([v, l]) => `<option value="${v}"${(ex.scoring || "half") === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>${ffLocked ? `<p class="ps">Set for the season: the playoffs have started.</p>` : ""}` : "";
@@ -278,6 +291,14 @@
     const commish = `<section class="card pl-set pl-own"><div class="mod-h"><h2>Owner</h2><span class="grow"></span><span class="ps">Only you see this</span></div><div class="bd pl-setb">
       <form id="pl-pool" class="pl-setf"><label>Pool name<input name="name" maxlength="40" required value="${esc(p.name)}"></label>${game}<button class="btn sm">Save</button></form>
       ${sq}
+      <form id="pl-notef" class="pl-setf"><label>Message to the pool <small class="ps">pinned at the top for everyone</small><textarea name="note" maxlength="500" rows="3" placeholder="Buy-in is due by kickoff. Venmo me.">${esc(ex.note || "")}</textarea></label><button class="btn sm">${ex.note ? "Update message" : "Pin message"}</button></form>
+      ${p.kind === "squares" ? "" : `<form id="pl-money" class="pl-setf"><h3>Buy-in and payouts</h3><label>Buy-in per entry <small class="ps">optional, tracked only</small><input name="buyin" type="number" min="0" step="1" value="${ex.buyin || ""}" placeholder="$"></label>
+        <fieldset class="pl-payf"><legend>Payout shares (%)</legend>${[0, 1, 2].map((i) => `<label>${P.ord(i + 1)}<input name="pay${i}" type="number" min="0" max="100" value="${(ex.payouts || [70, 30, 0])[i] || 0}"></label>`).join("")}</fieldset>
+        <button class="btn sm">Save buy-in</button></form>`}
+      <label class="pl-remind"><input type="checkbox" data-closed${ex.closed ? " checked" : ""}><span><b>Close to new entries</b> <span class="ps">People already in stay in. The invite link stops working for anyone new.</span></span></label>
+      <div class="pl-champf"><h3>Past champions</h3>${(ex.champs || []).length ? `<ul class="pl-mem">${ex.champs.map((c, i) => `<li><span class="ps num">${esc(c.year)}</span><b>${esc(c.name)}</b><button type="button" class="btn sm ghost" data-champrm="${i}">Remove</button></li>`).join("")}</ul>` : ""}
+        <form id="pl-champ" class="pl-row"><label style="flex:0 0 90px;min-width:0">Year<input name="year" maxlength="9" placeholder="${new Date().getFullYear() - 1}"></label><label>Champion<input name="name" maxlength="40" placeholder="Name"></label><button class="btn sm">Add</button></form></div>
+      ${b.members.length > 1 ? `<div class="pl-row"><label>Hand the pool to<select data-xfer><option value="">Pick a member</option>${b.members.filter((m) => !m.me).map((m) => `<option value="${esc(m.id)}"${st.xfer === m.id ? " selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label><button type="button" class="btn sm${st.xferArm ? " danger" : ""}" data-xferb${st.xfer ? "" : " disabled"}>${st.xferArm ? "Tap again: they become the owner" : "Hand it over"}</button></div>` : ""}
       <form id="pl-del" class="pl-row pl-del"><label>Delete this pool <small class="ps">Type its code, ${esc(p.id)}, to confirm. Every pick goes with it.</small><input name="code" maxlength="6" autocomplete="off" placeholder="Pool code"></label><button class="btn sm danger">Delete</button></form>
       </div></section>`;
     return how + you + members + commish;
@@ -313,9 +334,11 @@
       : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
       : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
-    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${st.invite ? invitePanel(b) : ""}${projectedNote(b)}
+    const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
+    const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
+    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
-      <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}</div>`;
+      <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${st.tab === "standings" ? potAndChamps(b) : ""}</div>`;
   }
 
   // ---------- survivor ----------
@@ -656,9 +679,9 @@
   }
   function ffTable(b) {
     const F = P.nflff(b, st.ffs);
-    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th>${[1, 2, 3, 4].map((r) => `<th class="r" title="${RNAME[r]}">${RNAME[r].slice(0, r === 4 ? 2 : 4)}</th>`).join("")}<th class="r">Total</th></tr></thead><tbody>
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th>${[1, 2, 3, 4].map((r) => `<th class="r" title="${RNAME[r]}">${["", "WC", "Div", "Conf", "SB"][r]}</th>`).join("")}<th class="r">Total</th></tr></thead><tbody>
       ${F.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b></td>${[1, 2, 3, 4].map((x) => `<td class="r num ps">${r.rounds[x].pts != null ? r.rounds[x].pts : ""}</td>`).join("")}<td class="r num"><b>${r.total}</b></td></tr>`).join("")}
-      </tbody></table></div></div><p class="ps">Everyone's lineup shows when its round locks. Points are half PPR.</p>`;
+      </tbody></table></div></div><p class="ps">Each player shows to everyone at his kickoff. Points are ${FF_SL[ffSi(b)]}.</p>`;
   }
 
   // ---------- 5 teams ----------
@@ -893,7 +916,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -909,6 +932,7 @@
       return;
     }
     if (t.dataset.ffcard) { ffCard(t.dataset.ffcard, st.board); return; }
+    if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }
     if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
     if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
     if (t.dataset.rm && st.rm !== t.dataset.rm) { st.rm = t.dataset.rm; return render(); }
@@ -954,6 +978,8 @@
         else { st.msg = `${x.name} has that square.`; return render(); }
         await load();
       }
+      else if (t.dataset.champrm != null) { const c = ((st.board.pool.extra || {}).champs || []).filter((_, i) => i !== +t.dataset.champrm); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); }
+      else if (t.hasAttribute("data-xferb")) { ok(await C.rpc("mm_pool_transfer", { p_pool: st.code, p_user: st.xfer })); st.xferArm = false; st.xfer = null; st.msg = "Done. They own the pool now."; await load(); }
       else if (t.hasAttribute("data-leave")) { ok(await C.rpc("mm_pool_leave", { p_code: st.code })); location.href = "/fantasy/pools/"; return; }
       else if (t.dataset.rm) { ok(await C.rpc("mm_member_remove", { p_pool: st.code, p_user: t.dataset.rm })); st.rm = null; st.msg = "Removed."; await load(); }
       else if (t.hasAttribute("data-sqdraw")) { st.sqDraw = false; ok(await C.rpc("mm_squares_draw", { p_pool: st.code })); st.msg = "Numbers drawn. Good luck."; await load(); }
@@ -966,6 +992,9 @@
     if (t.hasAttribute("data-ffhide")) { st.ffhide = t.checked; render(); return; }
     if (t.hasAttribute("data-ffsort")) { st.ffsort = t.value; render(); return; }
     if (t.hasAttribute("data-luvs")) { st.luvs = t.value || null; render(); return; }
+    if (t.hasAttribute("data-xfer")) { st.xfer = t.value || null; st.xferArm = false; render(); return; }
+    if (t.hasAttribute("data-paid")) { const on = t.checked; C.rpc("mm_member_paid", { p_pool: st.code, p_user: t.dataset.paid, p_paid: on }).then(ok).then(load).then(render).catch((e) => { t.checked = !on; fail(e); }); return; }
+    if (t.hasAttribute("data-closed")) { const on = t.checked; C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { closed: on } }).then(ok).then(() => { st.msg = on ? "Closed to new entries." : "Open to new entries."; return load(); }).then(render).catch((e) => { t.checked = !on; fail(e); }); return; }
     if (t.hasAttribute("data-sqname")) { st.sqName = t.value.trim(); st.sqOwn = true; render(); return; }
     if (t.hasAttribute("data-remind")) {
       const on = t.checked;
@@ -1002,6 +1031,9 @@
         ok(await C.rpc("mm_pool_update", { p_pool: st.code, p_name: v("name"), p_settings: sel && !sel.disabled ? { scoring: sel.value } : null }));
         st.msg = "Saved."; await load(); return render();
       }
+      if (f.id === "pl-notef") { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { note: f.elements.note.value } })); st.msg = f.elements.note.value.trim() ? "Message pinned." : "Message cleared."; await load(); return render(); }
+      if (f.id === "pl-money") { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { buyin: v("buyin") === "" ? null : +v("buyin"), payouts: [0, 1, 2].map((i) => +v("pay" + i) || 0) } })); st.msg = "Saved."; await load(); return render(); }
+      if (f.id === "pl-champ") { if (!v("name")) return; const c = ((st.board.pool.extra || {}).champs || []).concat([{ year: v("year"), name: v("name") }]); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); return render(); }
       if (f.id === "pl-del") { ok(await C.rpc("mm_pool_delete", { p_pool: st.code, p_confirm: v("code") })); location.href = "/fantasy/pools/"; return; }
       if (f.id === "pl-sqset") {
         ok(await C.rpc("mm_squares_set", { p_pool: st.code, p_cap: +v("cap"), p_price: v("price") === "" ? null : +v("price"), p_pay: [0, 1, 2, 3].map((k) => +v("pay" + k)) }));

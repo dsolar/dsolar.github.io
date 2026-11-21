@@ -1368,3 +1368,109 @@ begin
 end $$;
 revoke all on function public.mm_pool_update(text, text, jsonb), public.mm_entry_rename(text, text), public.mm_member_remove(text, uuid), public.mm_pool_delete(text, text) from public, anon;
 grant execute on function public.mm_pool_update(text, text, jsonb), public.mm_entry_rename(text, text), public.mm_member_remove(text, uuid), public.mm_pool_delete(text, text) to authenticated;
+
+-- Commissioner tools: a buy-in and who's paid (tracked only; no money moves here), payout shares, a pinned message,
+-- closing the pool to new entries, past champions, and handing the pool to someone else.
+alter table public.mm_members add column if not exists paid boolean not null default false;
+
+-- mm_board, as before, plus the pool's settings for every game and each member's paid mark
+alter function public.mm_board(text) rename to mm_board_core;
+create or replace function public.mm_board(p_pool text) returns jsonb
+language plpgsql stable security definer set search_path to 'public' as $$
+declare b jsonb; p mm_pools;
+begin
+  b := mm_board_core(p_pool);
+  if not (b ? 'ok') then return b; end if;
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  b := jsonb_set(b, '{pool,extra}', coalesce(p.extra, '{}'::jsonb));
+  b := jsonb_set(b, '{members}', coalesce((select jsonb_agg(m.v || jsonb_build_object('paid', coalesce(mb.paid, false), 'owner', mb.user_id = p.owner) order by m.o)
+    from jsonb_array_elements(b -> 'members') with ordinality m(v, o) left join mm_members mb on mb.pool = p.id and mb.user_id = (m.v ->> 'id')::uuid), '[]'::jsonb));
+  return b;
+end $$;
+revoke all on function public.mm_board_core(text) from public, anon, authenticated;
+grant execute on function public.mm_board(text) to anon, authenticated;
+
+create or replace function public.mm_pool_extra(p_pool text, p_set jsonb) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare p mm_pools; e jsonb := '{}'::jsonb; v jsonb;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, ''))) for update;
+  if not found or p.owner is distinct from auth.uid() then return jsonb_build_object('error', 'Only the pool''s owner can change that.'); end if;
+  if p_set ? 'note' then e := e || jsonb_build_object('note', nullif(left(trim(coalesce(p_set ->> 'note', '')), 500), '')); end if;
+  if p_set ? 'buyin' then
+    v := p_set -> 'buyin';
+    if jsonb_typeof(v) = 'number' and ((v)::text::numeric < 0 or (v)::text::numeric > 10000) then return jsonb_build_object('error', 'That buy-in doesn''t look right.'); end if;
+    e := e || jsonb_build_object('buyin', case when jsonb_typeof(v) = 'number' and (v)::text::numeric > 0 then v end);
+  end if;
+  if p_set ? 'payouts' then
+    v := p_set -> 'payouts';
+    if jsonb_typeof(v) <> 'array' or jsonb_array_length(v) not between 1 and 5
+       or (select sum((x)::text::numeric) from jsonb_array_elements(v) x) <> 100
+       or exists (select 1 from jsonb_array_elements(v) x where jsonb_typeof(x) <> 'number' or (x)::text::numeric < 0) then
+      return jsonb_build_object('error', 'The payout shares have to add up to 100%.');
+    end if;
+    e := e || jsonb_build_object('payouts', v);
+  end if;
+  if p_set ? 'closed' then e := e || jsonb_build_object('closed', coalesce((p_set ->> 'closed')::boolean, false)); end if;
+  if p_set ? 'champs' then
+    v := p_set -> 'champs';
+    if jsonb_typeof(v) <> 'array' or jsonb_array_length(v) > 30 then return jsonb_build_object('error', 'That list of champions doesn''t look right.'); end if;
+    e := e || jsonb_build_object('champs', coalesce((select jsonb_agg(jsonb_build_object('year', left(trim(coalesce(x ->> 'year', '')), 9), 'name', left(trim(coalesce(x ->> 'name', '')), 40)))
+      from jsonb_array_elements(v) x where trim(coalesce(x ->> 'name', '')) <> ''), '[]'::jsonb));
+  end if;
+  -- a cleared note or buy-in comes off
+  update mm_pools set extra = (extra || e) - (case when e ? 'note' and e ->> 'note' is null then 'note' else '' end) - (case when e ? 'buyin' and e ->> 'buyin' is null then 'buyin' else '' end) where id = p.id;
+  return jsonb_build_object('ok', true);
+end $$;
+
+create or replace function public.mm_member_paid(p_pool text, p_user uuid, p_paid boolean) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare p mm_pools;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.owner is distinct from auth.uid() then return jsonb_build_object('error', 'Only the pool''s owner can mark who''s paid.'); end if;
+  update mm_members set paid = coalesce(p_paid, false) where pool = p.id and user_id = p_user;
+  if not found then return jsonb_build_object('error', 'They aren''t in this pool.'); end if;
+  return jsonb_build_object('ok', true);
+end $$;
+
+create or replace function public.mm_pool_transfer(p_pool text, p_user uuid) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare p mm_pools;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, ''))) for update;
+  if not found or p.owner is distinct from auth.uid() then return jsonb_build_object('error', 'Only the pool''s owner can hand it over.'); end if;
+  if not exists (select 1 from mm_members where pool = p.id and user_id = p_user) then return jsonb_build_object('error', 'They aren''t in this pool.'); end if;
+  if (select count(*) from mm_pools where owner = p_user) >= 20 then return jsonb_build_object('error', 'They already own 20 pools.'); end if;
+  update mm_pools set owner = p_user where id = p.id;
+  return jsonb_build_object('ok', true);
+end $$;
+revoke all on function public.mm_pool_extra(text, jsonb), public.mm_member_paid(text, uuid, boolean), public.mm_pool_transfer(text, uuid) from public, anon;
+grant execute on function public.mm_pool_extra(text, jsonb), public.mm_member_paid(text, uuid, boolean), public.mm_pool_transfer(text, uuid) to authenticated;
+
+-- a closed pool takes no new entries
+create or replace function public.mm_pool_join(p_code text, p_entry text default null) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to join a pool.'); end if;
+  select * into p from mm_pools where id = upper(trim(coalesce(p_code, '')));
+  if not found then
+    if exists (select 1 from pk_groups where id = upper(trim(coalesce(p_code, '')))) then return jsonb_build_object('error', 'pickem', 'id', upper(trim(p_code))); end if;
+    return jsonb_build_object('error', 'No pool has that code. Check it and try again.');
+  end if;
+  if coalesce((p.extra ->> 'closed')::boolean, false) and not exists (select 1 from mm_members where pool = p.id and user_id = uid) then
+    return jsonb_build_object('error', 'The owner closed this pool to new entries.');
+  end if;
+  if (select count(*) from mm_members where pool = p.id) >= 200 then return jsonb_build_object('error', 'That pool is full.'); end if;
+  if p.kind = 'nfl' and not exists (select 1 from mm_members where pool = p.id and user_id = uid)
+     and (select max(kickoff) from pk_games where season = p.season and stype = 2 and week = p.start_week) <= now() then
+    return jsonb_build_object('error', format('This pool started in week %s, and that week''s games have all kicked off. Make a new pool to play from this week.', p.start_week));
+  end if;
+  if p.kind = 'nflpo' and not exists (select 1 from mm_members where pool = p.id and user_id = uid) and po_nfl_lock(p.season) <= now() then
+    return jsonb_build_object('error', 'The playoffs have started, so this bracket pool is closed to new entries.');
+  end if;
+  insert into mm_members (pool, user_id, name) values (p.id, uid, nullif(left(trim(coalesce(p_entry, '')), 28), ''))
+  on conflict (pool, user_id) do update set name = coalesce(excluded.name, mm_members.name);
+  return jsonb_build_object('ok', true, 'id', p.id, 'name', p.name, 'kind', p.kind);
+end $$;
