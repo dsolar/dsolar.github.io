@@ -28,6 +28,7 @@ import glob
 import json
 import os
 import re
+import subprocess
 import sys
 import time
 import unicodedata
@@ -368,6 +369,28 @@ def head(url):
     return None
 
 
+NBACOM_BLANK = None
+
+
+def head_nbacom(url):
+    """NBA.com answers 200 with a gray silhouette for a player it has no photo of, so a photo the same size as the
+    silhouette counts as none (404). Its CDN turns away Python's own client, so this asks with curl."""
+    global NBACOM_BLANK
+
+    def size(u):
+        try:
+            out = subprocess.run(["curl", "-sI", "-m", "20", "-A", "Mozilla/5.0 (davidsolar.dev faces)", u], capture_output=True, text=True, timeout=30).stdout
+        except Exception:
+            return None, None
+        codes = re.findall(r"^HTTP/\S+ (\d+)", out, re.M)
+        ln = re.findall(r"^content-length:\s*(\d+)", out, re.M | re.I)
+        return (int(codes[-1]) if codes else None), (int(ln[-1]) if ln else None)
+    if NBACOM_BLANK is None:
+        NBACOM_BLANK = size("https://cdn.nba.com/headshots/nba/latest/260x190/0.png")[1] or 0
+    st, ln = size(url)
+    return 404 if st == 200 and ln and ln == NBACOM_BLANK else st
+
+
 def check_photos(want):
     """Ask once every CHECK_DAYS days whether each shown name's photo is on the server; a 404 is left out"""
     from concurrent.futures import ThreadPoolExecutor
@@ -387,9 +410,11 @@ def check_photos(want):
     todo = list(dict.fromkeys(todo))[:CHECK_PER_RUN]
     print(f"  photo check: {len(todo)} to ask for")
     with ThreadPoolExecutor(16) as ex:
-        for (key, _), st in zip(todo, ex.map(lambda t: head(t[1]), todo)):
+        for (key, _), st in zip(todo, ex.map(lambda t: head_nbacom(t[1]) if "cdn.nba.com" in t[1] else head(t[1]), todo)):
             if st is not None:
                 done[key] = [st, today.isoformat()]
+    if NBACOM_BLANK is not None:
+        print(f"  NBA.com silhouette is {NBACOM_BLANK} bytes")
     with open(CHECKED, "w", encoding="utf-8") as f:
         json.dump(done, f, separators=(",", ":"), sort_keys=True)
     return done
