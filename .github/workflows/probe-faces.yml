@@ -1,0 +1,9 @@
+name: probe images (temporary)
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in /i/teamlogos/leagues/500/ncaa.png /i/espn/misc_logos/500/ncaa.png /i/espn/misc_logos/500/ncaa_football.png /i/espn/misc_logos/500/ncaa_basketball.png /i/teamlogos/leagues/500/ncaab.png /i/teamlogos/leagues/500/ncaaf.png /i/teamlogos/leagues/500/mens-college-basketball.png /i/teamlogos/leagues/500/college-football.png /redesign/assets/img/icons/ESPN-icon-basketball.png /redesign/assets/img/icons/ESPN-icon-football-college.png /i/teamlogos/leagues/500/nba.png /i/teamlogos/leagues/500/fake123.png; do
+            echo "== $u $(curl -s -o /tmp/b -m 20 -A 'Mozilla/5.0' -w '%{http_code} %{content_type} %{size_download}' "https://a.espncdn.com$u") $(sha1sum </tmp/b | cut -c1-10)"; done
