@@ -230,11 +230,31 @@
   }
   // phones get the share sheet (Messages, WhatsApp...); desktops copy the link
   const canShare = () => !!navigator.share && matchMedia("(pointer:coarse)").matches;
+  // everything for getting people in: the link, the phone's share sheet, a text, an email, and a QR code to scan
+  // across the room (fantasy-kit/vendor/qrcode.min.js, loaded the first time the panel opens)
+  let qrLoad = null;
+  const loadQr = () => qrLoad || (qrLoad = new Promise((res) => { const s = document.createElement("script"); s.src = "/fantasy-kit/vendor/qrcode.min.js"; s.onload = () => res(window.qrcode); s.onerror = () => res(null); document.head.appendChild(s); }));
+  function invitePanel(b) {
+    const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
+    const text = `Join my ${kindName(p.kind)} pool, ${p.name}, on Draft Lab: ${url}`;
+    let qr = "";
+    if (window.qrcode) { try { const q = window.qrcode(0, "M"); q.addData(url); q.make(); qr = q.createSvgTag({ cellSize: 5, margin: 2, scalable: true }); } catch (e) { qr = ""; } }
+    else loadQr().then((ok) => { if (ok && st.invite) render(); });
+    return `<section class="card pl-inv" aria-label="Invite people"><div class="mod-h"><h2>Invite people</h2><span class="grow"></span><button type="button" class="btn sm ghost" data-invite>Done</button></div>
+      <div class="bd pl-inv-b"><div class="pl-inv-qr">${qr || `<span class="ps">Loading the code</span>`}<small>Scan with a phone camera to join</small></div>
+      <div class="pl-inv-o">
+        <label class="pl-inv-l">Invite link<span><input readonly value="${esc(url)}" onfocus="this.select()"><button type="button" class="btn sm" data-copy="${esc(url)}" data-nosheet>Copy</button></span></label>
+        <div class="pl-inv-btns">${navigator.share ? `<button type="button" class="btn sm go" data-copy="${esc(url)}" data-share-title="${esc(`Join ${p.name}`)}" data-share-text="${esc(`Join my ${kindName(p.kind)} pool, ${p.name}, on Draft Lab.`)}" data-sheet>Share</button>` : ""}
+          <a class="btn sm" href="sms:?&body=${encodeURIComponent(text)}">Text it</a>
+          <a class="btn sm" href="mailto:?subject=${encodeURIComponent(`Join ${p.name}`)}&body=${encodeURIComponent(`${text}\n\nYou'll sign in with your email, then you're in.`)}">Email it</a></div>
+        <p class="ps">Or tell them the code <b class="pl-code">${esc(p.id)}</b>: Pools, then Join with a code. Anyone with the link can join, and they sign in with just an email.</p>
+      </div></div></section>`;
+  }
   function poolHead(b) {
     const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
     const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : `${p.season} tournament`;
     return band(esc(p.name), `${KIND[p.kind]} &middot; ${when} &middot; ${b.members.length} ${b.members.length === 1 ? "entry" : "entries"}`,
-      `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm" data-copy="${esc(url)}" data-share-title="${esc(`Join ${p.name}`)}" data-share-text="${esc(`Join my ${kindName(p.kind)} pool, ${p.name}, on Draft Lab. Code ${p.id}.`)}">${canShare() ? "Share invite" : "Copy invite link"}</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
+      `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
   function projectedNote(b) {
     if (!b.projected) return "";
@@ -260,15 +280,17 @@
       return;
     }
     if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Pools", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="/fantasy/pools/">Back to your pools</a></p></div></div></div>`; return; }
-    const tabs = [["picks", b.pool.kind === "squares" ? "Board" : "Picks"], ["standings", b.pool.kind === "squares" ? "Winners" : "Standings"], ["rules", "Rules"]];
+    const tabs = b.pool.kind === "squares" ? [["picks", "Board"], ["standings", "Winners"], ["rules", "Rules"]]
+      : [["picks", "Picks"], ["games", b.pool.kind === "nflff" ? "Lineups" : "Scoreboard"], ["standings", "Standings"], ["rules", "Rules"]];
     const body = st.tab === "rules" ? `<div class="card"><div class="bd">${rulesHtml(b.pool.kind)}</div></div>`
+      : st.tab === "games" && b.pool.kind !== "squares" ? scoreboard(b)
       : b.pool.kind === "nfl" ? (st.tab === "picks" ? nflPicks(b) : nflTable(b))
       : b.pool.kind === "bowls" ? (st.tab === "picks" ? bowlPicks(b) : bowlTable(b))
       : b.pool.kind === "nflpo" ? (st.tab === "picks" ? brPicks(b) : brTable(b))
       : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
       : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
-    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${projectedNote(b)}
+    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${st.invite ? invitePanel(b) : ""}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
       ${st.tab === "picks" && remindable(b) ? `<label class="pl-remind"><input type="checkbox" data-remind${st.remind ? " checked" : ""}><span><b>Email me before a pick is due</b> <span class="ps">About 3 hours ahead, only if I haven't made it</span></span></label>` : ""}
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}</div>`;
@@ -599,6 +621,98 @@
       </tbody></table></div></div><p class="ps">${F.locked ? "Wins score 1, 2, 4, 8, 16, 32 by round. Max is what an entry could still reach if its teams keep winning. Ties go to higher seeds, then the deepest run." : `Everyone's teams show when the first round tips off (${tipTime(F.lock || Date.now())}).`}</p>`;
   }
 
+  // ---------- scoreboards: the games that matter now, with who picked what ----------
+  // a period picker (week, day, round or date) above a list of games; under each team, the entries who have it
+  const segPick = (key, items, cur) => `<div class="seg pl-gsel" role="tablist">${items.map(([v, label, sub]) => `<button type="button" role="tab" data-gsel="${esc(key)}|${esc(v)}" aria-selected="${String(v) === String(cur)}"><b>${esc(label)}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</button>`).join("")}</div>`;
+  const gStatus = (g, t) => g.final ? `<span class="pl-gst fin">Final</span>` : Date.parse(t) <= Date.now() ? `<span class="pl-gst live">Live</span>` : `<span class="pl-gst">${esc(tipTime(t))}</span>`;
+  function gameBlock(g, side) {
+    // side(t) -> { logo, name, seed, score, win, who: [{ name, me, note }] }
+    const row = (x) => `<div class="pl-gr${x.win ? " w" : x.lose ? " l" : ""}"><span class="pl-gt">${x.logo}<b>${x.seed != null ? seedTag(x.seed) : ""}${x.name}</b></span><span class="pl-gs num">${x.score != null ? x.score : ""}</span>
+      <span class="pl-gw">${x.who.length ? x.who.map((w) => `<span class="pl-gchip${w.me ? " me" : ""}">${esc(w.name)}${w.note != null ? ` <small>${esc(w.note)}</small>` : ""}</span>`).join("") : ""}</span></div>`;
+    return `<article class="pl-gm"><div class="pl-gh">${g.label ? `<span class="pl-gl">${esc(g.label)}</span>` : ""}${gStatus(g, g.when)}</div>${row(side(g.x))}${row(side(g.y))}${g.hidden ? `<p class="pl-ghid ps">${esc(g.hidden)}</p>` : ""}</article>`;
+  }
+  const gameList = (blocks, empty) => blocks.length ? `<div class="pl-gms">${blocks.join("")}</div>` : `<div class="pl-note">${empty}</div>`;
+  const nameOf = (b, id) => { const m = b.members.find((x) => x.id === id); return m ? m.name : "Someone"; };
+  const meId = (b) => (b.members.find((x) => x.me) || {}).id;
+  function scoreboard(b) {
+    const k = b.pool.kind, now = Date.now(), uid = meId(b);
+    const who = (ids) => ids.map((x) => (typeof x === "string" ? { name: nameOf(b, x), me: x === uid } : { name: nameOf(b, x.id), me: x.id === uid, note: x.note }));
+    if (k === "nfl") {
+      const ws = P.nflWeeks(b.games);
+      if (!ws.length) return `<div class="pl-note">No games yet.</div>`;
+      const cur = st.gsel && st.gsel.k === "w" ? +st.gsel.v : (ws.find((w) => !w.done) || ws[ws.length - 1]).week;
+      const wk = ws.find((w) => w.week === cur) || ws[0], by = {}; let hidden = 0;
+      (b.picks || []).forEach((pk) => { if (pk.slot !== "w" + wk.week) return; if (pk.team == null) hidden++; else (by[pk.team] = by[pk.team] || []).push(pk.user); });
+      const counts = Object.entries(by).sort((x, y) => y[1].length - x[1].length);
+      const head = counts.length ? `<p class="pl-gsum">Most picked in week ${wk.week}: ${counts.slice(0, 3).map(([t, u]) => `<b>${nflName(t)}</b> ${u.length}`).join(", ")}${hidden ? `. ${hidden} more ${hidden === 1 ? "pick shows" : "picks show"} at kickoff.` : "."}</p>` : hidden ? `<p class="pl-gsum">${hidden} ${hidden === 1 ? "pick is" : "picks are"} in. They show at kickoff.</p>` : "";
+      const blocks = wk.games.map((g) => gameBlock({ x: "away", y: "home", when: g.kickoff, final: g.final }, (sd) => {
+        const t = g[sd], sc = sd === "away" ? g.ap : g.hp, op = sd === "away" ? g.hp : g.ap, on = Date.parse(g.kickoff) <= now;
+        return { logo: nflLogo(t, 22), name: nflName(t), score: on ? sc : null, win: g.final && sc > op, lose: g.final && sc < op, who: who(by[t] || []) };
+      }));
+      // games with picks first, then the rest in kickoff order
+      const order = wk.games.map((g, i) => [i, (by[g.away] || []).length + (by[g.home] || []).length]).sort((x, y) => (y[1] > 0) - (x[1] > 0) || x[0] - y[0]).map(([i]) => blocks[i]);
+      return segPick("w", ws.map((w) => [w.week, `Week ${w.week}`, w.done ? "Done" : ""]), wk.week) + head + gameList(order, "No games this week.");
+    }
+    if (k === "survivor" || k === "five") {
+      const ds = P.days(b.games || []);
+      if (!ds.length) return `<div class="pl-note">The games show up once the field is set on Selection Sunday.</div>`;
+      const cur = st.gsel && st.gsel.k === "d" ? +st.gsel.v : (ds.find((d) => !d.done) || ds[ds.length - 1]).n;
+      const d = ds.find((x) => x.n === cur) || ds[0], by = {}; let hidden = 0;
+      (b.picks || []).forEach((pk) => {
+        if (k === "survivor" ? pk.slot !== "d" + d.n : pk.slot[0] !== "f") return;
+        if (pk.team == null) { if (k === "survivor") hidden++; return; }
+        (by[pk.team] = by[pk.team] || []).push(pk.user);
+      });
+      const blocks = d.games.map((g) => gameBlock({ x: "a", y: "b", when: g.tip, final: g.final, label: g.region }, (sd) => {
+        const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.tip) <= now;
+        return { logo: logo(t, 22), name: name(t), seed: sd === "a" ? g.as : g.bs, score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []) };
+      }));
+      if (k === "survivor" && hidden) blocks.unshift(`<p class="pl-gsum">${hidden} ${hidden === 1 ? "pick shows" : "picks show"} once its game tips off.</p>`);
+      return segPick("d", ds.map((x) => [x.n, `Day ${x.n}`, dayName(x.day)]), d.n) + (k === "five" && !b.games.some((g) => g.round === 1 && Date.parse(g.tip) <= now) ? `<p class="pl-gsum">Everyone's five teams show once the first round tips off.</p>` : "") + gameList(blocks, "No games this day.");
+    }
+    if (k === "bowls") {
+      const games = (b.games || []).filter((g) => g.a || g.b);
+      if (!games.length) return `<div class="pl-note">The matchups are set on Sunday, Dec 6.</div>`;
+      const days = [...new Set(games.map((g) => dayOf(g.kickoff)))];
+      const next = games.find((g) => !g.final), cur = st.gsel && st.gsel.k === "b" ? st.gsel.v : next ? dayOf(next.kickoff) : days[days.length - 1];
+      const blocks = games.filter((g) => dayOf(g.kickoff) === cur).map((g) => {
+        const by = {};
+        (b.picks || []).forEach((pk) => { if (pk.slot !== "g" + g.id || !pk.team) return; (by[pk.team] = by[pk.team] || []).push({ id: pk.user, note: pk.pts }); });
+        return gameBlock({ x: "a", y: "b", when: g.kickoff, final: g.final, label: g.label, hidden: Date.parse(g.kickoff) > now && b.members.length > 1 ? "Everyone else's picks show at kickoff" : "" }, (sd) => {
+          const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.kickoff) <= now;
+          return { logo: cfbLogo(t, 22), name: cfbName(t, sd === "a" ? g.an : g.bn), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []) };
+        });
+      });
+      return segPick("b", days.map((d) => [d, d.replace(/^\w+, /, ""), d.split(",")[0]]), cur) + `<p class="pl-gsum">Each name shows its confidence number. Picks show at each game's kickoff.</p>` + gameList(blocks, "No games that day.");
+    }
+    if (k === "nflpo") {
+      const rounds = [1, 2, 3, 4], lk = b.lock && now >= Date.parse(b.lock);
+      const cur = st.gsel && st.gsel.k === "r" ? +st.gsel.v : rounds.find((r) => (b.games || []).some((g) => g.round === r && g.a && g.b && !g.final)) || 1;
+      const roundOf = (slot) => (slot === "sb" ? 4 : /cf$/.test(slot) ? 3 : /dv/.test(slot) ? 2 : 1);
+      const by = {}; (b.picks || []).forEach((pk) => { if (pk.slot === "tb" || !pk.team || roundOf(pk.slot) !== cur) return; (by[pk.team] = by[pk.team] || []).push(pk.user); });
+      const gs = (b.games || []).filter((g) => g.round === cur && g.a && g.b);
+      const blocks = gs.map((g) => gameBlock({ x: "a", y: "b", when: g.kickoff, final: g.final, label: g.label }, (sd) => {
+        const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.kickoff) <= now;
+        return { logo: nflLogo(t, 22), name: nflName(t), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(lk ? by[t] || [] : (by[t] || []).filter((u) => u === uid)) };
+      }));
+      return segPick("r", rounds.map((r) => [r, RNAME[r]]), cur) + `<p class="pl-gsum">${lk ? "Under each team: who has it winning this round." : "Everyone's brackets show once the Wild Card round kicks off. For now you see your own."}</p>` + gameList(blocks, "This round's games aren't set yet.");
+    }
+    if (k === "nflff") return ffLineups(b);
+    return "";
+  }
+  // everyone's playoff fantasy lineup for a round, with each player's points; others' players show at their kickoff
+  function ffLineups(b) {
+    const F = P.nflff(b, st.ffs), pl = (id) => (st.ffp && st.ffp[id]) || { n: id, t: "", pos: "" };
+    const cur = st.gsel && st.gsel.k === "f" ? +st.gsel.v : ffRound(b);
+    const rows = F.rows.slice().sort((x, y) => ((y.rounds[cur] || {}).pts || 0) - ((x.rounds[cur] || {}).pts || 0));
+    const cards = rows.map((r) => {
+      const R = r.rounds[cur] || { lineup: {}, each: {} }, n = Object.keys(R.lineup).length;
+      return `<article class="pl-lu${r.me ? " me" : ""}"><div class="pl-luh"><b>${esc(r.name)}</b><span class="num">${R.pts != null ? `${R.pts} pts` : n ? `${n} of 9 set` : r.me ? "Not set" : "Shows at kickoff"}</span></div>
+        ${n ? `<ul>${P.FF_SLOTS.filter((sl) => R.lineup[sl]).map((sl) => { const p = pl(R.lineup[sl]); return `<li><span class="pl-ffpos">${SLOT_NAME[sl]}</span><span class="pl-lun">${esc(p.n)} <small class="ps">${esc(p.t)}</small></span><span class="num">${R.each[sl] != null ? R.each[sl] : ""}</span></li>`; }).join("")}</ul>` : ""}</article>`;
+    });
+    return segPick("f", [1, 2, 3, 4].map((r) => [r, RNAME[r]]), cur) + `<p class="pl-gsum">Each player shows once his game kicks off. Points are half PPR and update through the games.</p><div class="pl-lus">${cards.join("")}</div>`;
+  }
+
   // ---------- Super Bowl squares ----------
   const initials = (nm) => { const w = String(nm || "").trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 3)).toUpperCase(); };
   const PSHORT = ["Q1", "Half", "Q3", "Final"];
@@ -662,7 +776,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -677,7 +791,9 @@
       if (f) { f.scrollIntoView({ behavior: "smooth", block: "start" }); const n = f.querySelector("input[name=name]"); if (n) n.focus({ preventScroll: true }); }
       return;
     }
-    if (t.dataset.copy && canShare()) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
+    if (t.dataset.gsel) { const [k2, v2] = t.dataset.gsel.split("|"); st.gsel = { k: k2, v: v2 }; return render(); }
+    if (t.hasAttribute("data-invite")) { st.invite = !st.invite; return render(); }
+    if (t.dataset.copy && (t.hasAttribute("data-sheet") || (canShare() && !t.hasAttribute("data-nosheet")))) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
     if (t.dataset.bteam) { const [gid, tm] = t.dataset.bteam.split("|"); const k = st.bd[gid] = st.bd[gid] || {}; k.team = k.team === tm ? "" : tm; return render(); }
     if (t.hasAttribute("data-bauto")) { st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return render(); }
@@ -761,7 +877,7 @@
       }
       if (f.id === "pl-new") {
         const r = ok(await C.rpc("mm_pool_create", { p_name: v("name"), p_kind: (f.querySelector("input[name=kind]:checked") || {}).value, p_entry: v("entry") || null }));
-        history.replaceState(null, "", `/fantasy/pools/?p=${r.id}`); st.code = r.id; st.tab = "picks"; return render();
+        history.replaceState(null, "", `/fantasy/pools/?p=${r.id}`); st.code = r.id; st.tab = "picks"; st.invite = true; st.msg = "Your pool is ready. Invite people below."; return render();
       }
       if (f.id === "pl-join") {
         const raw = await C.rpc("mm_pool_join", { p_code: v("code"), p_entry: v("entry") || null });

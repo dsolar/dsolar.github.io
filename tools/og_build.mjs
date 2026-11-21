@@ -72,12 +72,23 @@ jobs.push(
   { file: "simulations", title: "Simulations & Tools", line: "Seasons played out thousands of times, front offices to run, drafts to mock.", path: "/simulations/", cards: fan(of("nfl/", "draft/", "31st-franchise/")) },
   { file: "kids", title: "Kids", line: "Games my daughters designed and we built together.", path: "/kids/", cards: fan(of("jellycat-battle/", "wild-bloom-isles/")) },
   { file: "fantasy-kit", title: "Draft Lab", line: "Mock drafts against bots, and private leagues with formats you won't find anywhere else.", path: "/fantasy/mock/", cards: fan(of("yoenis/", "guillotine/", "fantasy/")) },
+  { file: "pools", title: "Pools", line: "Pick'em, survivor, brackets and Super Bowl squares with your friends. Send the link, the site keeps score.", path: "/fantasy/pools/", cards: poolsCard() },
 );
+// the pools page has no cover: a squares board, drawn
+function poolsCard() {
+  const fill = [3, 8, 14, 15, 22, 27, 31, 36, 40, 44, 49, 53, 58, 61, 66, 70, 75, 79, 82, 88, 91, 97, 5, 12, 33, 47, 64, 86];
+  const cells = [...Array(100)].map((_, n) => `<i style="background:${n === 47 ? "#F6C445" : n === 64 ? "#2E8B57" : fill.includes(n) ? "#2A3E5C" : "#1B2C46"}"></i>`).join("");
+  const dig = [3, 7, 0, 4, 1, 9, 6, 2, 8, 5].map((d) => `<u>${d}</u>`).join("");
+  return `<div class="card" style="left:540px;top:86px;--bg:#13233A;--band:#F6C445;padding:30px 34px">
+    <div style="display:grid;grid-template-columns:30px repeat(10,1fr);gap:6px;height:100%"><u></u>${dig}${[5, 0, 8, 2, 6, 1, 9, 3, 7, 4].map((d, r) => `<u>${d}</u>${cells.split("</i>").slice(r * 10, r * 10 + 10).join("</i>")}</i>`).join("")}</div>
+    <style>.card u{display:grid;place-items:center;text-decoration:none;color:#9FB3CF;font:700 20px "Libre Franklin",sans-serif}.card i{display:block;border-radius:6px}</style></div>`;
+}
+const ONLY = process.env.ONLY ? process.env.ONLY.split(",") : null;
 mkdirSync(ROOT + "assets/og", { recursive: true });
 const TMP = tmpdir() + "/og-build.html";
 const b = await chromium.launch();
 const pg = await b.newPage({ viewport: { width: 1200, height: 630 } });
-for (const j of jobs) {
+for (const j of jobs.filter((x) => !ONLY || ONLY.includes(x.file))) {
   // a file page, so it may load the covers from disk
   writeFileSync(TMP, page(j));
   await pg.goto("file://" + TMP, { waitUntil: "load" });
