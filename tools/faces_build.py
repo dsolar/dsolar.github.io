@@ -324,12 +324,18 @@ def espn_search_once(name, query, sport, limit=10):
     # Close spellings count too (JoJo/Jojo, Na'jai/Najai, O.J./OJ, a dropped middle name): same last name and the
     # first names agree on their first three letters. The exact name still wins when ESPN has it.
     w_parts = want.split("-")
+    # A matching suffix (or none on either) outranks an exact name with a different one: "Patrick Surtain II" is
+    # ESPN's "Pat Surtain II", not his father Patrick Surtain, and "Marvin Harrison" isn't Marvin Harrison Jr.
+    sx = suffix(name)
     def close(n):
         k = slug(n)
-        if k == want:
-            return 3 if suffix(n) == suffix(name) else 2
         p = k.split("-")
-        return 1 if len(p) >= 2 and p[-1] == w_parts[-1] and p[0][:3] == w_parts[0][:3] else 0
+        near = k == want or (len(p) >= 2 and p[-1] == w_parts[-1] and p[0][:3] == w_parts[0][:3])
+        if not near:
+            return 0
+        if suffix(n) == sx:
+            return 4 if k == want else 3
+        return 2 if k == want else (0 if sx else 1)
     cands = sorted(((close(c.get("displayName")), c) for grp in d.get("results") or [] for c in grp.get("contents") or []), key=lambda x: -x[0])
     for score, c in cands:
         if not score:
@@ -342,7 +348,7 @@ def espn_search_once(name, query, sport, limit=10):
         if lg == ESPN_LEAGUE[sport]:
             return f"espnmlb:{pid}" if sport == "mlb" else int(pid)
         # a pro page showing a college player (or the reverse): keep his photo from the other league (exact names only)
-        if best is None and score >= 2 and lg in ESPN_LEAGUE.values():
+        if best is None and score in (2, 4) and lg in ESPN_LEAGUE.values():
             other = [k for k, v in ESPN_LEAGUE.items() if v == lg][0]
             if (sport, other) in (("nba", "ncaab"), ("ncaab", "nba"), ("nfl", "ncaaf"), ("ncaaf", "nfl")):
                 best = f"{other}:{pid}"
@@ -357,13 +363,15 @@ def search_missing(want):
     stale = (today - timedelta(days=30)).isoformat()
     for k, (pid, when) in cache.items():  # what earlier runs found
         sport, key = k.split("|", 1)
-        if pid and sport in reg and key not in reg[sport]:
+        if pid and sport in reg and (key not in reg[sport] or key in by_suffix[sport]):
             reg[sport][key] = pid
+            by_suffix[sport].discard(key)
     todo = []
     for sport in ("ncaab", "ncaaf", "nba", "nfl", "mlb"):  # the Big Board's prospects first: they change most
         for n in sorted(want[sport]):
             key = skey(n)  # a name with a suffix needs its own entry: the plain one may be his father
-            if key in reg[sport]:
+            # a name without one whose entry came from a "Jr." (Marvin Harrison, held by Marvin Harrison Jr.) is looked up too
+            if key in reg[sport] and not (key in by_suffix[sport] and not suffix(n)):
                 continue
             c = cache.get(f"{sport}|{key}")
             if c and (c[0] or (c[1] > stale and c[1] >= SEARCH_SINCE)):
@@ -380,6 +388,7 @@ def search_missing(want):
         cache[f"{sport}|{key}"] = [pid, today.isoformat()]
         if pid:
             reg[sport][key] = pid
+            by_suffix[sport].discard(key)
             found += 1
         time.sleep(0.35)
     print(f"  ESPN search: found {found}")
