@@ -79,12 +79,13 @@ def jsdata(path, var):
     return json.loads(m.group(1)) if m else None
 
 
-def get(url, timeout=40):
+def get(url, timeout=40, raw=False):
     for attempt in range(3):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*" if raw else "application/json"})
             with urllib.request.urlopen(req, timeout=timeout) as r:
-                return json.loads(r.read().decode("utf-8"))
+                body = r.read().decode("utf-8")
+                return body if raw else json.loads(body)
         except Exception as e:
             if attempt == 2:
                 raise
@@ -401,7 +402,7 @@ def nba_fallback(want, checked, fix):
     """NBA names with no ESPN photo (none found, or ESPN's server has none) get NBA.com's photo where there is one.
     The NBA.com person ids come from the nba_api project's player list, read as text (never run)."""
     try:
-        txt = get(NBA_API).decode("utf-8")
+        txt = get(NBA_API, raw=True)
     except Exception as e:
         print(f"  nba_api player list failed: {e}")
         return 0
