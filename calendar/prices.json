@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T02:29:01Z",
+ "updated": "2026-11-21T11:23:36Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -122,16 +122,6 @@
    "venue": "The Capitol Theatre",
    "low": null,
    "src": null
-  },
-  "tm-vv1A8v0PYGAu7v5f": {
-   "history": [],
-   "sg": 18206450,
-   "title": "Hannibal Buress",
-   "date": "2026-11-20",
-   "venue": "The Wilbur",
-   "url": "https://www.ticketmaster.com/hannibal-buress-boston-massachusetts-11-20-2026/event/010064970D1012D4",
-   "src": null,
-   "low": null
   },
   "tm-G5vVZ_6n-zPJb": {
    "history": [],
@@ -306,6 +296,10 @@
     [
      "2026-11-20",
      56
+    ],
+    [
+     "2026-11-21",
+     56
     ]
    ],
    "sg": null,
@@ -469,6 +463,10 @@
     ],
     [
      "2026-11-20",
+     22
+    ],
+    [
+     "2026-11-21",
      22
     ]
    ],
@@ -696,6 +694,10 @@
     [
      "2026-11-20",
      28
+    ],
+    [
+     "2026-11-21",
+     28
     ]
    ],
    "sg": null,
@@ -764,16 +766,6 @@
    "date": "2026-12-11",
    "venue": "Bearsville Theater",
    "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
-   "src": null,
-   "low": null
-  },
-  "sg-18634477": {
-   "history": [],
-   "sg": 18634477,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-20",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-20-8-pm/concert/18634477",
    "src": null,
    "low": null
   },
@@ -936,6 +928,10 @@
     [
      "2026-11-20",
      44
+    ],
+    [
+     "2026-11-21",
+     44
     ]
    ],
    "sg": null,
@@ -975,6 +971,10 @@
     ],
     [
      "2026-11-20",
+     44
+    ],
+    [
+     "2026-11-21",
      44
     ]
    ],
@@ -1132,6 +1132,10 @@
     [
      "2026-11-20",
      34
+    ],
+    [
+     "2026-11-21",
+     34
     ]
    ],
    "sg": null,
@@ -1142,14 +1146,42 @@
    "src": "Ticketmaster",
    "low": 34,
    "first": 34
+  },
+  "espn-401892859": {
+   "history": [],
+   "sg": 18378525,
+   "title": "Bruins vs Red Wings",
+   "date": "2026-12-05",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892859/red-wings-bruins",
+   "src": null,
+   "low": null
+  },
+  "tm-vv1AvZkfyGkdOmyJZ": {
+   "history": [],
+   "sg": 18683920,
+   "title": "Dropkick Murphys",
+   "date": "2027-03-17",
+   "venue": "Citizens House of Blues Boston",
+   "url": "https://www.ticketmaster.com/dropkick-murphys-boston-massachusetts-03-17-2027/event/01006539E0BB9980",
+   "src": null,
+   "low": null
+  },
+  "tm-vv177Z_fGkXXIYx2": {
+   "history": [],
+   "sg": 18703009,
+   "title": "Eric Andre: Subtle",
+   "date": "2027-04-16",
+   "venue": "Chevalier Theatre",
+   "url": "https://www.ticketmaster.com/eric-andre-subtle-medford-massachusetts-04-16-2027/event/0100654FBEA3088F",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-vv177Z_oGkXBnY-F": "2026-11-20",
   "tm-vv177Z_oGkXBi8-I": "2026-11-20",
   "tm-rZ7HnEZ1AfuNZ7": "2026-11-20",
   "tm-rZ7HnEZ1AfuYF0": "2026-11-20",
-  "tm-Z7r9jZ1AAvx-E": "2026-11-20",
   "tm-rZ7HnEZ1Afugk7": "2026-11-20",
   "tm-Z7r9jZ1AA77-E": "2026-11-20",
   "tm-rZ7HnEZ1Af83Q7": "2026-11-20",
