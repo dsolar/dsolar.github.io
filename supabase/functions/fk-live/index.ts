@@ -12,6 +12,8 @@
 //
 // Starting lineups (baseball): ?sport=mlb&lineups=1 (today and tomorrow) or &date=YYYY-MM-DD, see mlbLineups.
 //
+// The NFL playoffs, round by round (the playoff fantasy pool): ?sport=nfl&post=1..4&season=YYYY, see nflPost.
+//
 // Two more reads for one-day games:
 //   ?sport=nba&slates=1          today's and tomorrow's NBA games (New York days), each { id, at, away, home, state }
 //   ?sport=cbb&slates=1          tonight's and tomorrow's featured college games (cbb.mjs)
@@ -310,6 +312,32 @@ async function nflProj(season: number, week: number, q: string) {
   return lines;
 }
 
+// NFL playoff rounds for the playoff fantasy pool: Sleeper's postseason weeks 1 to 4 (Wild Card to Super Bowl).
+// ?sport=nfl&post=1..4&season=YYYY gives { season, round, final, players: { id: [std, half, ppr] } }, kept a minute while
+// the round is on and for good once ESPN has every game in it final.
+async function nflPost(season: number, round: number) {
+  const key = `nfl-post-${season}-${round}`;
+  const r = await db(`fk_live?sport=eq.${key}&select=data,updated_at`);
+  const row = r.ok ? (await r.json())[0] : null;
+  if (row && (row.data.final || Date.now() - Date.parse(row.updated_at) < FRESH_MS)) return row.data;
+  const q = NFL_POS.map((p) => `&position%5B%5D=${p}`).join("");
+  const [rows, board]: any[] = await Promise.all([
+    getJSON(`https://api.sleeper.com/stats/nfl/${season}/${round}?season_type=post${q}`).catch(() => null),
+    getJSON(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=3&week=${round === 4 ? 5 : round}&dates=${season}`).catch(() => ({ events: [] })),
+  ]);
+  if (!rows) { if (row) return Object.assign({}, row.data, { stale: true }); throw new Error("Sleeper's playoff stats didn't load"); }
+  const players: Record<string, number[]> = {};
+  for (const x of Array.isArray(rows) ? rows : Object.values(rows || {})) {
+    const st = (x as any).stats || {};
+    if (!st.gp && !st.pts_std && !st.pts_half_ppr) continue;
+    players[String((x as any).player_id)] = [st.pts_std || 0, st.pts_half_ppr || 0, st.pts_ppr || 0].map((v: number) => Math.round(v * 100) / 100);
+  }
+  const ev = board.events || [];
+  const data = { season, round, final: ev.length > 0 && ev.every((e: any) => e.status?.type?.completed), players, updated: new Date().toISOString() };
+  await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport: key, data, updated_at: data.updated }) });
+  return data;
+}
+
 /* ---------- baseball ---------- */
 const MLB_TEAMS: Record<string, string> = {
   "Arizona Diamondbacks": "ARI", "Athletics": "ATH", "Oakland Athletics": "ATH", "Atlanta Braves": "ATL", "Baltimore Orioles": "BAL", "Boston Red Sox": "BOS",
@@ -584,6 +612,13 @@ const json = (data: unknown, extra: Record<string, string> = {}, status = 200) =
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   const q = new URL(req.url).searchParams, sport = q.get("sport") || "";
+  if (sport === "nfl" && q.get("post")) {
+    const round = Number(q.get("post")), now = new Date();
+    const season = /^\d{4}$/.test(q.get("season") || "") ? Number(q.get("season")) : now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+    if (!(round >= 1 && round <= 4)) return json({ error: "post must be 1 to 4" }, {}, 400);
+    errors.length = 0;
+    return json(await nflPost(season, round).catch((e) => ({ season, round, players: {}, error: String(e) })), { "cache-control": "max-age=30" });
+  }
   if (sport === "nfl" && q.get("slates")) return json(await nflSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "nba" && q.get("slates")) return json(await nbaSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
   // college hoops: its featured slates for one-day games; the weekly feed below serves season leagues

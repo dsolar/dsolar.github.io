@@ -11,8 +11,8 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams" };
-  const SPORT = { nfl: "NFL", nflpo: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness" };
+  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams" };
+  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness" };
   const kindName = (k) => `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
@@ -52,7 +52,12 @@
   const GOAL_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
     <path d="M110 150V96M60 96h100M60 96V14M160 96V14"/><path d="M14 150h192M30 132h160M46 114h128" opacity=".55"/></g></svg>`;
   const artOf = (k) => (k === "nfl" || k === "bowls" ? GOAL_ART : BRACKET_ART);
-  const rulesHtml = (kind) => kind === "bowls" ? `<ul class="pl-rules">
+  const rulesHtml = (kind) => kind === "nflff" ? `<ul class="pl-rules">
+      <li>Set a <b>fantasy lineup every playoff round</b>: QB, 2 RB, 2 WR, TE, FLEX (RB, WR or TE), K and DEF, from the teams playing that round.</li>
+      <li>Each player can play for you <b>only once</b> all postseason. Spend your stars early, or save the ones you think go deep.</li>
+      <li>Each player <b>locks at his own game's kickoff</b> and shows to everyone then. Until then you can swap him out.</li>
+      <li>Scoring is <b>half PPR</b>, from Sleeper's stats. Most points over the four rounds wins.</li></ul>`
+    : kind === "bowls" ? `<ul class="pl-rules">
       <li>Pick the winner of <b>every bowl and College Football Playoff game</b>.</li>
       <li>Give each game a <b>confidence number</b>, from 1 up to the number of games, each number once. Your surest pick gets the biggest.</li>
       <li>A right pick scores its number. Each game's pick and number lock at its kickoff and show to everyone then.</li>
@@ -101,6 +106,7 @@
     pickem: ico('<path d="M4 6h10M4 12h10M4 18h7"/><path d="m15 17 2.5 2.5L22 15"/>'),
     nfl: ico('<path d="M12 3 4 6v6c0 4.4 3.4 7.8 8 9 4.6-1.2 8-4.6 8-9V6z"/><path d="M12 8v5M12 16h.01"/>'),
     nflpo: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h4v10H8M12 12h4"/><path d="M16 9h5v6h-5z"/>'),
+    nflff: ico('<path d="M8 3h8l1 3 4 2-2 5h-2v8H7v-8H5L3 8l4-2z"/><path d="M10 11h4"/>'),
     bowls: ico('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3M12 13v4M8 20h8M9 17h6"/>'),
     survivor: ico('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-2.5 2.4-3.6 5.2-3.6 8.5s1.1 6.1 3.6 8.5M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5"/>'),
     five: ico('<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>'),
@@ -109,6 +115,7 @@
     { sport: "NFL", key: "pickem", name: "Pick'em", tag: "Every game against the spread. One board for everyone, plus private groups.", facts: ["Every game", "Against the spread", "Groups"], live: "Live now", href: "/pickem/", cta: "Make this week's picks" },
     { sport: "NFL", key: "nfl", name: "Survivor", tag: "One team a week to win. Lose and you're out.", facts: ["1 team a week", "Each team once", "Through week 18"], live: "Live now" },
     { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now" },
+    { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January" },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6" },
     { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now" },
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now" },
@@ -130,7 +137,7 @@
     const row = (href, key, sc, name, sub, code) => `<li><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span><span class="pl-code">${esc(code)}</span><span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
     const items = mine.map((p) => row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))}${p.kind === "nfl" && p.startWeek ? ` from week ${p.startWeek}` : ""} &middot; ${p.members} ${p.members === 1 ? "entry" : "entries"}${p.owner ? " &middot; yours" : ""}`, p.id))
       .concat((groups || []).map((g) => row("/pickem/?tab=groups", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${g.members} ${g.members === 1 ? "member" : "members"}${g.owner ? " &middot; yours" : ""}`, g.id)));
-    const kinds = (nflSeason() ? ["nfl", "nflpo", "bowls", "survivor", "five"] : ["survivor", "five", "nfl", "nflpo", "bowls"]);
+    const kinds = (nflSeason() ? ["nfl", "nflpo", "nflff", "bowls", "survivor", "five"] : ["survivor", "five", "nfl", "nflpo", "nflff", "bowls"]);
     const pick = st.make && kinds.includes(st.make) ? st.make : kinds[0];
     const panel = st.panel || (st.make ? "make" : st.code ? "join" : null);
     const makeForm = `<form class="pl-panel" id="pl-new"><div class="pl-form">
@@ -154,13 +161,14 @@
   // ---------- a pool ----------
   async function load() {
     try { st.board = await C.rpc("mm_board", { p_pool: st.code }); } catch (e) { st.board = { error: e.message }; }
+    if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
     }
   }
   function poolHead(b) {
     const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
-    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" ? `${p.season} season playoffs` : `${p.season} tournament`;
+    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : `${p.season} tournament`;
     return band(esc(p.name), `${KIND[p.kind]} &middot; ${when} &middot; ${b.members.length} ${b.members.length === 1 ? "entry" : "entries"}`,
       `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm" data-copy="${esc(url)}">Copy invite link</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
@@ -183,6 +191,7 @@
       : b.pool.kind === "nfl" ? (st.tab === "picks" ? nflPicks(b) : nflTable(b))
       : b.pool.kind === "bowls" ? (st.tab === "picks" ? bowlPicks(b) : bowlTable(b))
       : b.pool.kind === "nflpo" ? (st.tab === "picks" ? brPicks(b) : brTable(b))
+      : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
     app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
@@ -360,6 +369,117 @@
       </tbody></table></div></div><p class="ps">${locked ? "Each round a team wins that you picked scores 1, 2, 4 or 8. Max is what an entry could still reach." : "Everyone's bracket shows at the first Wild Card kickoff."}</p>`;
   }
 
+  // ---------- NFL playoff fantasy ----------
+  const RNAME = { 1: "Wild Card", 2: "Divisional", 3: "Conference", 4: "Super Bowl" };
+  const SLOT_NAME = { QB: "QB", RB1: "RB", RB2: "RB", WR1: "WR", WR2: "WR", TE: "TE", FLEX: "FLEX", K: "K", DEF: "DEF" };
+  // the Draft Lab player list (names, teams, positions, season points) and each scored round's points from fk-live
+  async function ffLoad(b) {
+    if (!st.ffp) {
+      try {
+        const d = await fetch("/fantasy-kit/data/nfl.json", { cache: "no-cache" }).then((r) => r.json());
+        const cols = (d.lines && d.lines.tot && d.lines.tot.cols) || [], gi = cols.indexOf("g"), hi = cols.indexOf("pts_half_ppr");
+        st.ffp = {};
+        (d.players || []).forEach((p) => { const t = p.l && p.l.tot, g = t ? t[gi] : 0; st.ffp[p.id] = { id: p.id, n: p.n, t: p.t === "WAS" ? "WSH" : p.t, pos: p.pos[0], ppg: t && g ? t[hi] / g : 0 }; });
+      } catch (e) { st.ffp = {}; }
+    }
+    st.ffs = st.ffs || {};
+    const now = Date.now();
+    await Promise.all([1, 2, 3, 4].map(async (r) => {
+      const lk = ffLock(b, r);
+      if (!lk || now < lk || (st.ffs[r] && st.ffs[r].final)) return;
+      const x = await C.nflPost(b.pool.season, r);
+      if (x && x.players) st.ffs[r] = x;
+    }));
+  }
+  const ffLock = (b, r) => { const ks = (b.games || []).filter((g) => g.round === r).map((g) => Date.parse(g.kickoff)); return ks.length ? Math.min(...ks) : null; };
+  // when a team kicks off in a round (a player locks then)
+  const ffKick = (b, r, t) => { const g = (b.games || []).find((x) => x.round === r && (x.a === t || x.b === t)); return g ? Date.parse(g.kickoff) : null; };
+  const ffLast = (b, r) => { const ks = (b.games || []).filter((g) => g.round === r).map((g) => Date.parse(g.kickoff)); return ks.length ? Math.max(...ks) : null; };
+  const ffTeams = (b, r) => { const out = {}; (b.games || []).forEach((g) => { if (g.round === r && g.a && g.b) { out[g.a] = g.b; out[g.b] = g.a; } }); return out; };
+  function ffRound(b) {
+    const now = Date.now(), open = [1, 2, 3, 4].find((r) => Object.keys(ffTeams(b, r)).length && now < ffLast(b, r));
+    const played = [1, 2, 3, 4].filter((r) => ffLock(b, r) && now >= ffLock(b, r)).pop();
+    return open || played || 1;
+  }
+  function ffPicks(b) {
+    const uid = me(b), F = P.nflff(b, st.ffs), row = F.rows.find((r) => r.id === uid) || { rounds: {}, used: [] };
+    if (!st.ffr) st.ffr = ffRound(b);
+    const r = st.ffr, now = Date.now(), teams = ffTeams(b, r), lk = ffLock(b, r), last = ffLast(b, r), locked = last && now >= last, set = Object.keys(teams).length > 0;
+    const started = (t) => { const k = ffKick(b, r, t); return k != null && now >= k; };
+    const saved = (row.rounds[r] && row.rounds[r].lineup) || {};
+    if (!st.ffl || st.fflr !== r) { st.ffl = Object.assign({}, saved); st.fflr = r; st.ffslot = null; }
+    const usedElsewhere = new Set(row.used.filter((id) => !Object.values(saved).includes(id)));
+    // which round each used player went in, so the list can say so
+    const usedIn = {}; [1, 2, 3, 4].forEach((x) => { if (x !== r) Object.values((row.rounds[x] && row.rounds[x].lineup) || {}).forEach((id) => { usedIn[id] = RNAME[x]; }); });
+    const dirty = JSON.stringify(Object.entries(st.ffl).filter(([, v]) => v).sort()) !== JSON.stringify(Object.entries(saved).sort());
+    const tabs = `<div class="seg pl-rtabs" role="tablist">${[1, 2, 3, 4].map((x) => { const l = ffLock(b, x), on = Object.keys(ffTeams(b, x)).length; return `<button type="button" role="tab" data-ffr="${x}" aria-selected="${x === r}"><b>${RNAME[x]}</b><small>${l && now >= l ? (row.rounds[x] && row.rounds[x].pts != null ? `${row.rounds[x].pts} pts` : "Locked") : on ? "Open" : "Not set"}</small></button>`; }).join("")}</div>`;
+    if (!set) {
+      const fieldTeams = (b.field || []).map((f) => f.team);
+      return tabs + `<div class="pl-note"><b>${RNAME[r]} lineups open once its matchups are set.</b> ${r === 1 ? `The Wild Card games are set after week 18. You'll pick from the 12 teams playing that weekend (the two 1 seeds rest). ${fieldTeams.length ? `In the field if the season ended today: ${fieldTeams.map(nflName).join(", ")}.` : ""}` : "This round's teams fill in as the last round's games end."}</div>`;
+    }
+    const pl = (id) => (st.ffp && st.ffp[id]) || { id, n: id, t: "", pos: "" };
+    const slotRow = (sl) => {
+      const id = st.ffl[sl], p = id ? pl(id) : null, pts = row.rounds[r] && row.rounds[r].each ? row.rounds[r].each[sl] : null;
+      const lockedHere = locked || (p && saved[sl] === id && started(p.t));
+      return `<button type="button" class="pl-ffs${st.ffslot === sl ? " on" : ""}${p ? "" : " empty"}${lockedHere ? " lk" : ""}" data-ffslot="${sl}"${lockedHere ? ` disabled title="Locked: his game has started"` : ""}><span class="pl-ffpos">${SLOT_NAME[sl]}</span>
+        ${p ? `${nflLogo(p.t, 24)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.t)}${teams[p.t] ? ` ${p.t && teams[p.t] ? "vs " + esc(teams[p.t]) : ""}` : ""}${!lockedHere && p.ppg ? ` &middot; ${p.ppg.toFixed(1)} a game` : ""}${lockedHere ? " &middot; locked" : !lockedHere && teams[p.t] && ffKick(b, r, p.t) ? ` &middot; ${tipTime(ffKick(b, r, p.t))}` : ""}</small></span>` : `<span class="pl-tn"><b class="ps">${locked ? "Empty" : "Pick a player"}</b></span>`}
+        ${pts != null ? `<span class="pl-ffpts">${pts}</span>` : ""}</button>`;
+    };
+    let picker = "";
+    if (st.ffslot && !locked) {
+      const want = P.ffSlots(st.ffslot), q = (st.ffq || "").toLowerCase(), inLu = new Set(Object.entries(st.ffl).filter(([k, v]) => v && k !== st.ffslot).map(([, v]) => v));
+      const fits = Object.values(st.ffp || {}).filter((p) => want.includes(p.pos) && teams[p.t] && !started(p.t) && !inLu.has(p.id)).sort((x, y) => y.ppg - x.ppg);
+      // players you've already used stay in the list, grayed out with the round you used them, unless you hide them
+      const list = fits.filter((p) => !usedElsewhere.has(p.id)).slice(0, 60).concat(st.ffhide ? [] : fits.filter((p) => usedElsewhere.has(p.id)));
+      picker = `<div class="card pl-ffpick"><div class="mod-h"><h2>${SLOT_NAME[st.ffslot]}${st.ffslot === "FLEX" ? " (RB, WR or TE)" : ""}</h2><span class="grow"></span><button type="button" class="btn sm ghost" data-ffslot="">Close</button></div>
+        <div class="bd pl-ffbar"><input class="pl-ffq" type="search" data-ffq placeholder="Search players or a team" value="${esc(st.ffq || "")}" aria-label="Search players">
+          ${usedElsewhere.size ? `<label class="pl-ffhide"><input type="checkbox" data-ffhide${st.ffhide ? " checked" : ""}> Hide players I've used</label>` : ""}</div>
+        <div class="pl-fflist">${st.ffl[st.ffslot] ? `<button type="button" class="pl-ffp" data-ffpick=""><span class="pl-tn"><b>Clear this spot</b></span></button>` : ""}${list.map((p) => { const used = usedElsewhere.has(p.id); return `<button type="button" class="pl-ffp${used ? " used" : ""}" data-ffpick="${esc(p.id)}"${used ? " disabled" : ""}>${nflLogo(p.t, 22)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.pos)} &middot; ${esc(p.t)} vs ${esc(teams[p.t])}${used ? ` &middot; used in the ${esc(usedIn[p.id] || "playoffs")}` : ""}</small></span><span class="pl-ffpg">${p.ppg ? p.ppg.toFixed(1) : "&ndash;"}<small>a game</small></span></button>`; }).join("") || `<p class="ps" style="padding:0 14px">No players left for this spot.</p>`}</div></div>`;
+    }
+    const total = row.rounds[r] && row.rounds[r].pts;
+    const lineup = `<div class="card pl-fflu"><div class="mod-h"><h2>${RNAME[r]} lineup</h2><span class="grow"></span><span class="ps">${total != null ? `<b>${total}</b> points${locked ? "" : " so far"}` : locked ? "Locked" : `Each player locks at his kickoff, from ${tipTime(lk)}`}</span></div>
+      <div class="pl-ffslots">${P.FF_SLOTS.map(slotRow).join("")}</div>
+      ${locked ? "" : `<div class="pl-save bd"><span class="ps">${Object.values(st.ffl).filter(Boolean).length} of 9 set. ${dirty ? "Not saved yet." : "Saved."}</span><button type="button" class="btn go" data-ffsave${dirty ? "" : " disabled"}>Save lineup</button></div>`}</div>`;
+    const usedList = Object.keys(usedIn).length ? `<div class="card pl-ffused"><div class="mod-h"><h2>Already used</h2><span class="grow"></span><span class="ps">${Object.keys(usedIn).length} players, out for the rest of the playoffs</span></div><div class="bd">${[1, 2, 3, 4].filter((x) => x !== r && row.rounds[x] && row.rounds[x].set).map((x) => `<p class="pl-ffur"><b>${RNAME[x]}</b>${Object.values(row.rounds[x].lineup).map((id) => `<span class="pl-ffchip">${esc(pl(id).n)}</span>`).join("")}</p>`).join("")}</div></div>` : "";
+    return tabs + `<div class="pl-ffwrap">${lineup}${picker || usedList || (locked ? "" : `<div class="pl-note"><b>Tap a spot to pick a player.</b> Anyone you start is gone for the rest of the playoffs, so check Plan ahead before spending a star from a team that should go deep.</div>`)}</div>` + ffPlan(b, r, row, pl) + (picker ? usedList : "") + `<p class="ps">Points are half PPR, from Sleeper. "A game" is each player's regular-season average.</p>`;
+  }
+  /* Plan ahead: how far each team should go (the bracket simulated from point differential) next to the players you
+     still have from it, so you can see whose stars to spend now and whose to save. */
+  function ffPlan(b, r, row, pl) {
+    const field = b.field || [];
+    if (field.length < 14) return "";
+    const key = (b.games || []).filter((g) => g.final).map((g) => g.w).join(",");
+    if (!st.ffreach || st.ffreachKey !== key) { st.ffreach = P.reach(field, b.games, 4000); st.ffreachKey = key; }
+    const R = st.ffreach, used = new Set(row.used);
+    const cur = new Set(Object.values(st.ffl || {}).filter(Boolean));
+    const byTeam = {}; Object.values(st.ffp || {}).forEach((p) => { if (p.ppg >= 4 || p.pos === "DEF") (byTeam[p.t] = byTeam[p.t] || []).push(p); });
+    const rows = field.map((f) => {
+      const x = R[f.team] || { p: [0, 0, 0, 0, 0] }, now = x.p[r - 1], later = x.p.slice(r, 4).reduce((a, v) => a + v, 0);
+      return { f, x, now, later };
+    }).filter((t) => t.now > 0 || t.later > 0).sort((a, c) => (c.now + c.later) - (a.now + a.later));
+    // only this round on: the rounds played are settled. The last column is winning the Super Bowl.
+    const cols = [1, 2, 3, 4, 5].filter((x) => x >= r), SHORT = { 1: "WC", 2: "Div", 3: "Conf", 4: "SB", 5: "Title" };
+    const cell = (v) => { const pct = Math.round(v * 100); return `<td class="r pl-pc" style="--p:${v.toFixed(3)}">${pct >= 100 ? "&#10003;" : pct < 1 ? "" : pct + "%"}</td>`; };
+    const going = (t) => { const k = ffKick(b, r, t); return k != null && Date.now() >= k; };
+    const hint = (t) => t.now <= 0 ? `<span class="pl-hint later">Plays later</span>` : going(t.f.team) ? `<span class="pl-hint later">Kicked off</span>` : t.later < 0.45 ? `<span class="pl-hint now">Use now</span>` : t.later > 1.4 ? `<span class="pl-hint save">Worth saving</span>` : "";
+    const chips = (t) => (byTeam[t] || []).sort((a, c) => c.ppg - a.ppg).slice(0, 4).map((p) => {
+      const u = used.has(p.id) && !cur.has(p.id), on = cur.has(p.id);
+      return `<span class="pl-pchip${u ? " used" : ""}${on ? " on" : ""}" title="${u ? "Already used" : on ? `In your ${RNAME[r]} lineup` : `${p.ppg.toFixed(1)} a game`}">${esc(p.pos)} ${esc(p.pos === "DEF" ? p.t : p.n.replace(/ (Jr\.?|Sr\.?|II|III|IV|V)$/, "").split(" ").slice(-1)[0])}</span>`;
+    }).join("");
+    return `<div class="card pl-plan"><div class="mod-h"><h2>Plan ahead</h2><span class="grow"></span><span class="ps">Chance each team plays in each round, and wins it all</span></div>
+      <div class="table-wrap"><table class="t pl-pt"><thead><tr><th>Team</th>${cols.map((x) => `<th class="r${x === r ? " cur" : ""}">${SHORT[x]}</th>`).join("")}<th class="pl-pch">Your best players left</th></tr></thead><tbody>
+      ${rows.map((t) => `<tr><td class="nm"><span class="pl-ptn">${nflLogo(t.f.team, 20)}<b>${esc(t.f.team)}</b><small class="ps">${t.f.seed}</small></span>${hint(t)}</td>${cols.map((x) => cell(t.x.p[x - 1])).join("")}<td class="pl-pcs">${chips(t.f.team)}</td></tr>
+        <tr class="pl-pcr"><td colspan="${cols.length + 1}"><div class="pl-pcs">${chips(t.f.team)}</div></td></tr>`).join("")}
+      </tbody></table></div>
+      <p class="ps bd">Each game is simulated 4,000 times from the teams' regular-season point differential, with the better seed at home and the bracket reseeded. Struck players are used. "Use now": the team is unlikely to play past this round. "Worth saving": it should play more than one more game.</p></div>`;
+  }
+  function ffTable(b) {
+    const F = P.nflff(b, st.ffs);
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th>${[1, 2, 3, 4].map((r) => `<th class="r" title="${RNAME[r]}">${RNAME[r].slice(0, r === 4 ? 2 : 4)}</th>`).join("")}<th class="r">Total</th></tr></thead><tbody>
+      ${F.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b></td>${[1, 2, 3, 4].map((x) => `<td class="r num ps">${r.rounds[x].pts != null ? r.rounds[x].pts : ""}</td>`).join("")}<td class="r num"><b>${r.total}</b></td></tr>`).join("")}
+      </tbody></table></div></div><p class="ps">Everyone's lineup shows when its round locks. Points are half PPR.</p>`;
+  }
+
   // ---------- 5 teams ----------
   function fivePicks(b) {
     const F = P.five(b, Date.now()), uid = me(b), row = F.rows.find((r) => r.id === uid), field = P.field(b.games);
@@ -396,7 +516,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -414,6 +534,9 @@
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
     if (t.dataset.bteam) { const [gid, tm] = t.dataset.bteam.split("|"); const k = st.bd[gid] = st.bd[gid] || {}; k.team = k.team === tm ? "" : tm; return render(); }
     if (t.hasAttribute("data-bauto")) { st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return render(); }
+    if (t.dataset.ffr) { st.ffr = +t.dataset.ffr; st.ffl = null; return render(); }
+    if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return render(); }
+    if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]); st.ffslot = t.dataset.ffpick && nx ? nx : null; st.ffq = ""; return render(); }
     if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = P.bracketPicks(st.board.field, st.kb); return render(); }
     if (t.dataset.five) {
       const id = t.dataset.five, i = st.sel.indexOf(id);
@@ -430,6 +553,11 @@
         const r = ok(await C.rpc("mm_save_bowls", { p_pool: st.code, p_picks: picks, p_tb: st.btb === "" || st.btb == null ? null : +st.btb }));
         st.msg = `Saved ${r.saved} ${r.saved === 1 ? "game" : "games"}.`; st.bd = null; await load();
       }
+      else if (t.hasAttribute("data-ffsave")) {
+        const lu = {}; P.FF_SLOTS.forEach((x) => { if (st.ffl[x]) lu[x] = `${st.ffl[x]}@${((st.ffp || {})[st.ffl[x]] || {}).t || ""}`; });
+        ok(await C.rpc("mm_save_nflff", { p_pool: st.code, p_round: st.ffr, p_lineup: lu }));
+        st.msg = `${RNAME[st.ffr]} lineup saved.`; st.ffl = null; await load();
+      }
       else if (t.hasAttribute("data-ksave")) {
         ok(await C.rpc("mm_save_nflpo", { p_pool: st.code, p_picks: P.bracketPicks(st.board.field, st.kb), p_tb: st.ktb === "" || st.ktb == null ? null : +st.ktb }));
         st.msg = "Bracket saved."; st.kb = null; await load();
@@ -440,6 +568,7 @@
   });
   app.addEventListener("change", (e) => {
     const t = e.target;
+    if (t.hasAttribute("data-ffhide")) { st.ffhide = t.checked; render(); return; }
     if (t.dataset.bpts != null) {
       // a number already on another open game trades places with this one
       const gid = t.dataset.bpts, v = t.value ? +t.value : null, k = st.bd[gid] = st.bd[gid] || {}, old = k.pts || null;
@@ -450,6 +579,11 @@
   app.addEventListener("input", (e) => {
     const t = e.target;
     if (t.hasAttribute("data-btb")) { st.btb = t.value; const b = document.querySelector("[data-bsave]"); if (b) b.disabled = !P.bowlsCheck(st.bd, (st.board.games || []).length).ok; }
+    if (t.hasAttribute("data-ffq")) {
+      // filter the player list in place, so typing keeps the keyboard up
+      st.ffq = t.value; const q = t.value.toLowerCase();
+      document.querySelectorAll(".pl-ffp[data-ffpick]").forEach((el) => { if (!el.dataset.ffpick) return; el.hidden = !!q && !el.textContent.toLowerCase().includes(q); });
+    }
     if (t.hasAttribute("data-ktb")) { st.ktb = t.value; const b = document.querySelector("[data-ksave]"); if (b) b.disabled = false; }
   });
   app.addEventListener("submit", async (e) => {

@@ -219,3 +219,31 @@ test('NFL bracket scoring: 1, 2, 4, 8 a round; points still possible drop when a
   assert.equal(R.max, 1 + 4 + 8);                                   // KC can still win the AFC and the Super Bowl
   assert.equal(R.champ, 'KC');
 });
+
+// ---------- NFL playoff fantasy ----------
+test('playoff fantasy: half-PPR points by round, totals, and every player an entry has used', () => {
+  const picks = [{ user: 'a', slot: 'r1:QB', team: '4984@BUF' }, { user: 'a', slot: 'r1:FLEX', team: '9509@KC' }, { user: 'a', slot: 'r2:QB', team: '6904@PHI' },
+    { user: 'b', slot: 'r1:QB', team: '6904@PHI' }];
+  const stats = { 1: { players: { 4984: [20, 24.5, 29], 9509: [10, 12.25, 14.5], 6904: [18, 18, 18] } }, 2: { players: { 6904: [9, 9.5, 10] } } };
+  const F = P.nflff({ members: nmem.slice(0, 2), picks }, stats);
+  const a = F.rows.find((r) => r.id === 'a');
+  assert.equal(a.rounds[1].pts, 36.75);
+  assert.equal(a.rounds[2].pts, 9.5);
+  assert.equal(a.rounds[3].pts, null);                              // no stats yet: not scored
+  assert.equal(a.total, 46.25);
+  assert.deepEqual(a.used.sort(), ['4984', '6904', '9509']);
+  assert.equal(F.rows[0].id, 'a');
+  assert.deepEqual(P.ffSlots('FLEX'), ['RB', 'WR', 'TE']); assert.deepEqual(P.ffSlots('RB2'), ['RB']);
+});
+
+test('playoff reach: byes skip the Wild Card round, finals count, stronger teams go further', () => {
+  const f = field.map((x) => Object.assign({}, x, { gp: 17, pd: x.team === 'BUF' ? 170 : x.team === 'CLE' ? -40 : 0 }));
+  let s = 1; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const R = P.reach(f, [], 3000, rnd);
+  assert.equal(R.BUF.p[0], 0); assert.equal(R.BUF.p[1], 1);         // the 1 seed rests, then plays the divisional round
+  assert.equal(R.KC.p[0], 1);
+  assert.ok(R.BUF.p[3] > R.JAX.p[3]);                              // +10 a game reaches the Super Bowl more often
+  const done = P.reach(f, [{ round: 1, a: 'CLE', b: 'KC', w: 'CLE', final: true }], 2000, rnd);
+  assert.equal(done.KC.p[1], 0); assert.equal(done.CLE.p[1], 1);    // CLE won: it's in the divisional round for sure
+  assert.ok(Math.abs(R.KC.games - (R.KC.p[0] + R.KC.p[1] + R.KC.p[2] + R.KC.p[3])) < 1e-9);
+});

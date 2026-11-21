@@ -22,7 +22,9 @@
    FK.pools.bowlsCheck(picks, n)     { ok, why }: each confidence number used once, from 1 to n
    FK.pools.autoRank(games, picks, prob)  the numbers reassigned so the surest picks carry the most
    FK.pools.bracket(field, picks)    the NFL bracket your picks make: each conference's games by round, reseeded
-   FK.pools.nflpo(board, now)        { rows, done }: each entry's points, points still possible, champion */
+   FK.pools.nflpo(board, now)        { rows, done }: each entry's points, points still possible, champion
+   FK.pools.nflff(board, stats)      playoff fantasy: each entry's lineup and points by round, and its total
+   FK.pools.ffSlots(slot)            the positions a lineup spot takes (FLEX: RB, WR or TE) */
 (function (root) {
   "use strict";
   // every win scores by its round: 1, 2, 4, 8, 16, 32 (First Four wins don't count)
@@ -372,8 +374,75 @@
     return { rows: rows, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
   }
 
+  /* NFL playoff fantasy: a nine-man lineup each round, each player once all postseason, half-PPR points. Each player
+     locks at his own game's kickoff.
+     stats: { round: { players: { id: [std, half, ppr] } } } from fk-live ?sport=nfl&post=N. */
+  var FF_SLOTS = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLEX", "K", "DEF"];
+  var ffSlots = function (slot) { return slot === "FLEX" ? ["RB", "WR", "TE"] : [slot.replace(/\d$/, "")]; };
+  function nflff(board, stats) {
+    stats = stats || {};
+    var by = {};
+    // a pick is "playerId@TEAM": the team says when he locks
+    (board.picks || []).forEach(function (p) { var m = /^r([1-4]):(\w+)$/.exec(p.slot); if (!m || !p.team) return; ((by[p.user] = by[p.user] || {})[m[1]] = by[p.user][m[1]] || {})[m[2]] = String(p.team).split("@")[0]; });
+    var rows = (board.members || []).map(function (mb) {
+      var mine = by[mb.id] || {}, rounds = {}, total = 0, used = [];
+      for (var r = 1; r <= 4; r++) {
+        var lu = mine[r] || {}, pts = 0, scored = !!(stats[r] && stats[r].players), each = {};
+        FF_SLOTS.forEach(function (sl) {
+          var id = lu[sl]; if (!id) return;
+          used.push(id);
+          var line = scored ? stats[r].players[id] : null, v = line ? line[1] : 0;
+          each[sl] = scored ? v : null; pts += v;
+        });
+        pts = Math.round(pts * 100) / 100;
+        rounds[r] = { lineup: lu, pts: scored ? pts : null, each: each, set: Object.keys(lu).length };
+        if (scored) total += pts;
+      }
+      return { id: mb.id, name: mb.name, me: !!mb.me, rounds: rounds, total: Math.round(total * 100) / 100, used: used };
+    });
+    rows.sort(function (a, b) { return (b.total - a.total) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || rows[i - 1].total !== r.total) place = i + 1; r.place = place; });
+    return { rows: rows };
+  }
+
+  /* How far each playoff team should go: the bracket played out many times, reseeded the NFL's way, each game from the
+     teams' regular-season point differential a game (pd / gp) plus 1.5 for the home side (the better seed; the Super
+     Bowl is neutral), on a 13.5-point spread. Games already final count as played. Returns { TEAM: [wc, div, conf, sb,
+     champ] }: the chance it plays in each round, then wins it all, and games, its expected number of games. */
+  function reach(field, games, n, rnd) {
+    n = n || 4000; rnd = rnd || Math.random;
+    var seed = {}, conf = {}, str = {}, done = {};
+    (field || []).forEach(function (f) { seed[f.team] = f.seed; conf[f.team] = f.conf; str[f.team] = f.gp ? (f.pd || 0) / f.gp : 0; });
+    (games || []).forEach(function (g) { if (g.final && g.w && g.a && g.b) done[g.round + ":" + [g.a, g.b].sort().join("-")] = g.w; });
+    var out = {}; Object.keys(seed).forEach(function (t) { out[t] = [0, 0, 0, 0, 0]; });
+    var play = function (r, a, b, neutral) {
+      var k = done[r + ":" + [a, b].sort().join("-")]; if (k) return k;
+      var home = neutral ? 0 : seed[a] < seed[b] ? 1.5 : -1.5;
+      return rnd() < normCdf((str[a] - str[b] + home) / 13.5) ? a : b;
+    };
+    for (var i = 0; i < n; i++) {
+      var champs = [];
+      ["AFC", "NFC"].forEach(function (cf) {
+        var bySeed = {}; Object.keys(seed).forEach(function (t) { if (conf[t] === cf) bySeed[seed[t]] = t; });
+        if (!bySeed[1]) return;
+        var adv = [[2, 7], [3, 6], [4, 5]].map(function (x) { var a = bySeed[x[0]], b = bySeed[x[1]]; out[a][0]++; out[b][0]++; return play(1, a, b); });
+        adv.sort(function (x, y) { return seed[x] - seed[y]; });
+        var d1 = [bySeed[1], adv[2]], d2 = [adv[0], adv[1]];
+        d1.concat(d2).forEach(function (t) { out[t][1]++; });
+        var w1 = play(2, d1[0], d1[1]), w2 = play(2, d2[0], d2[1]);
+        out[w1][2]++; out[w2][2]++;
+        var c = play(3, w1, w2); out[c][3]++; champs.push(c);
+      });
+      if (champs.length === 2) out[play(4, champs[0], champs[1], true)][4]++;
+    }
+    var res = {};
+    Object.keys(out).forEach(function (t) { var x = out[t].map(function (v) { return v / n; }); res[t] = { p: x, games: x[0] + x[1] + x[2] + x[3] }; });
+    return res;
+  }
+
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo };
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);
