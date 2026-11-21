@@ -441,8 +441,88 @@
     return res;
   }
 
+  /* Where you stand in a pool, in one line, for the pools list: { text, tone, due }. tone is "todo" (a pick is missing
+     and its deadline is still ahead; due is that deadline, in ms), "ok" (in it, nothing to do), "out", "won", "wait"
+     (nothing to pick yet) or "done". The text has no times in it; the page words due itself. */
+  var ord = function (n) { var s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+  var nextAfter = function (times, now) { var f = times.filter(function (t) { return t > now; }); return f.length ? Math.min.apply(null, f) : null; };
+  var standing = function (rows, unit) {
+    var me = rows.filter(function (r) { return r.me; })[0];
+    if (!me) return "";
+    return rows.length > 1 ? ord(me.place) + " of " + rows.length + (unit != null ? ", " + unit(me) : "") : (unit ? unit(me) : "");
+  };
+  function status(board, now, stats) {
+    now = now == null ? Date.now() : ms(now);
+    var kind = board.pool && board.pool.kind, games = board.games || [], uid = ((board.members || []).filter(function (m) { return m.me; })[0] || {}).id;
+    var mine = picksBy(board)[uid] || {}, n = (board.members || []).length;
+    var surv = function (res, units, startedAt) {
+      var me = res.rows.filter(function (r) { return r.me; })[0] || {};
+      var left = res.rows.filter(function (r) { return r.alive; }).length;
+      if (me.winner) return { text: res.winners.length > 1 ? "You won (shared)" : "You won", tone: "won" };
+      if (res.status === "done") return { text: "Over", tone: "done" };
+      if (!me.alive) return { text: "Out in " + units + " " + me.out, tone: "out" };
+      var open = (res.days || res.weeks).filter(function (d) { return !d.done; })[0];
+      if (!open) return { text: "Alive", tone: "ok" };
+      var key = open.n || open.week, cell = me.cells && me.cells[key];
+      var alive = left + " of " + n + " left";
+      if (cell && cell.none) return { text: (n > 1 ? "Alive, " + alive : "Alive") + ". Pick needed", tone: "todo", due: nextAfter(open.games.map(startedAt), now) || open.lock };
+      return { text: (n > 1 ? "Alive, " + alive : "Alive"), tone: "ok" };
+    };
+    if (kind === "nfl") {
+      if (!games.length) return { text: "Waiting for the schedule", tone: "wait" };
+      return surv(nfl(board, now), "week", function (g) { return ms(g.kickoff); });
+    }
+    if (kind === "survivor") {
+      if (board.projected || !games.some(function (g) { return g.round >= 1; })) return { text: "Field set on Selection Sunday", tone: "wait" };
+      return surv(survivor(board, now), "day", function (g) { return ms(g.tip); });
+    }
+    if (kind === "five") {
+      var F = five(board, now), me5 = F.rows.filter(function (r) { return r.me; })[0] || {};
+      if (board.projected || F.lock == null) return { text: "Field set on Selection Sunday", tone: "wait" };
+      if (!F.locked) return me5.picked ? { text: "Teams in", tone: "ok" } : { text: "Pick 5 teams", tone: "todo", due: F.lock };
+      if (F.done) return me5.place === 1 && me5.picked ? { text: "You won", tone: "won" } : { text: "Finished " + standing(F.rows), tone: "done" };
+      return { text: standing(F.rows, function (r) { return r.points + " pts"; }), tone: "ok" };
+    }
+    if (kind === "bowls") {
+      var set = games.filter(function (g) { return g.a && g.b; });
+      if (!set.length) return { text: "Waiting for matchups", tone: "wait" };
+      var B = bowls(board, now), meB = B.rows.filter(function (r) { return r.me; })[0] || {};
+      if (B.done) return meB.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(B.rows), tone: "done" };
+      var open = set.filter(function (g) { return ms(g.kickoff) > now && !mine["g" + g.id]; });
+      var started = games.some(function (g) { return ms(g.kickoff) <= now; });
+      var where = started ? standing(B.rows, function (r) { return r.points + " pts"; }) : "";
+      if (open.length) return { text: open.length + (open.length === 1 ? " pick" : " picks") + " to make" + (where ? ". " + where : ""), tone: "todo", due: nextAfter(open.map(function (g) { return ms(g.kickoff); }), now) };
+      return { text: where || "All picks in", tone: "ok" };
+    }
+    if (kind === "nflpo") {
+      var lk = board.lock ? ms(board.lock) : null, P = nflpo(board, now), meP = P.rows.filter(function (r) { return r.me; })[0] || {};
+      if (P.done) return meP.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(P.rows), tone: "done" };
+      if (!lk || now < lk) {
+        if ((board.field || []).length < 14) return { text: "Field set after week 18", tone: "wait" };
+        return meP.picked >= 13 ? { text: "Bracket in", tone: "ok" } : { text: "Finish your bracket", tone: "todo", due: lk };
+      }
+      return { text: standing(P.rows, function (r) { return r.points + " pts"; }), tone: "ok" };
+    }
+    if (kind === "nflff") {
+      var X = nflff(board, stats), meX = X.rows.filter(function (r) { return r.me; })[0] || { rounds: {} };
+      var sb = games.filter(function (g) { return g.round === 4; })[0];
+      if (sb && sb.final) return meX.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(X.rows), tone: "done" };
+      for (var r = 1; r <= 4; r++) {
+        var rg = games.filter(function (g) { return g.round === r && g.a && g.b; });
+        var fut = rg.map(function (g) { return ms(g.kickoff); }).filter(function (t) { return t > now; });
+        if (!rg.length || !fut.length) continue;
+        var setN = (meX.rounds[r] || {}).set || 0;
+        if (setN < FF_SLOTS.length) return { text: (setN ? FF_SLOTS.length - setN + " spots open" : "Set your lineup") + (r > 1 ? ". " + standing(X.rows) : ""), tone: "todo", due: Math.min.apply(null, fut) };
+        return { text: r > 1 ? standing(X.rows) : "Lineup set", tone: "ok" };
+      }
+      if (!games.some(function (g) { return g.a && g.b; })) return { text: "Opens after week 18", tone: "wait" };
+      return { text: standing(X.rows), tone: "ok" };
+    }
+    return { text: "", tone: "ok" };
+  }
+
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach };
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

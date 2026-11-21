@@ -247,3 +247,27 @@ test('playoff reach: byes skip the Wild Card round, finals count, stronger teams
   assert.equal(done.KC.p[1], 0); assert.equal(done.CLE.p[1], 1);    // CLE won: it's in the divisional round for sure
   assert.ok(Math.abs(R.KC.games - (R.KC.p[0] + R.KC.p[1] + R.KC.p[2] + R.KC.p[3])) < 1e-9);
 });
+
+test('pool status: picks still to make come with a deadline; standings, outs and waits say so', () => {
+  const me = (id) => nmem.map((m) => Object.assign({}, m, { me: m.id === id }));
+  // NFL survivor: week 12 open, Ann has no pick yet: due at the next kickoff still ahead
+  const games = [ng('g1', 11, 22, 'NYJ', 'BUF', 10, 30), ng('g3', 12, 29, 'KC', 'DEN'), ng('g4', 12, 30, 'MIA', 'NE')];
+  let s = P.status({ pool: { kind: 'nfl' }, games, members: me('a'), picks: [np('a', 11, 'BUF'), np('b', 11, 'NYJ'), np('c', 11, 'BUF')] }, '2026-11-29T20:00:00Z');
+  assert.equal(s.tone, 'todo'); assert.equal(s.due, Date.parse('2026-11-30T18:00:00Z')); assert.match(s.text, /2 of 3 left/);
+  s = P.status({ pool: { kind: 'nfl' }, games, members: me('b'), picks: [np('a', 11, 'BUF'), np('b', 11, 'NYJ'), np('c', 11, 'BUF')] }, '2026-11-29T20:00:00Z');
+  assert.equal(s.tone, 'out'); assert.equal(s.text, 'Out in week 11');
+  s = P.status({ pool: { kind: 'nfl' }, games, members: me('c'), picks: [np('a', 11, 'BUF'), np('b', 11, 'NYJ'), np('c', 11, 'BUF'), np('c', 12, 'NE')] }, '2026-11-29T20:00:00Z');
+  assert.equal(s.tone, 'ok');
+  // bowls: two unpicked games ahead, the earliest one is the deadline; before anything kicks off there's no place yet
+  const bgs = [bg('1', 0, 13, '61', '87'), bg('2', 0, 14, '99', '84'), bg('3', 4, 30, '2390', '61')];
+  s = P.status({ pool: { kind: 'bowls' }, games: bgs, members: me('a'), picks: [bp('a', '1', '61', 3)] }, '2026-12-10T00:00:00Z');
+  assert.equal(s.text, '2 picks to make'); assert.equal(s.due, Date.parse('2026-12-14T20:00:00Z'));
+  s = P.status({ pool: { kind: 'bowls' }, games: bgs.map((g, i) => i ? g : Object.assign({}, g, { ap: 30, bp: 20, w: '61', final: true })), members: me('a'),
+    picks: [bp('a', '1', '61', 3), bp('a', '2', '99', 2), bp('a', '3', '61', 1), bp('b', '1', '87', 3)] }, '2026-12-13T23:00:00Z');
+  assert.equal(s.text, '1st of 3, 3 pts'); assert.equal(s.tone, 'ok');
+  s = P.status({ pool: { kind: 'bowls' }, games: [bg('9', 2, 31, null, '333')], members: me('a'), picks: [] }, '2026-11-21T00:00:00Z');
+  assert.equal(s.tone, 'wait');
+  // March Madness before the field is set
+  assert.equal(P.status({ pool: { kind: 'five' }, projected: true, games: [], members: me('a'), picks: [] }).tone, 'wait');
+  assert.equal(P.ord(1) + P.ord(2) + P.ord(3) + P.ord(11) + P.ord(22), '1st2nd3rd11th22nd');
+});
