@@ -75,6 +75,26 @@ def slug(name):
     return "-".join(out)
 
 
+def suffix(name):
+    m = re.search(r"\s(jr|sr|ii|iii|iv|v)\.?$", unicodedata.normalize("NFD", str(name or "")).lower().strip())
+    return m.group(1) if m else ""
+
+
+def skey(name):
+    """The key with the suffix kept ("marvin-harrison~jr"), so a father and son can have their own photos. Pages
+    look this up first, then the plain key, the same as find() in assets/faces.js."""
+    x = suffix(name)
+    return slug(name) + ("~" + x if x else "")
+
+
+def resolve(d, name):
+    """the key a name finds in d: its suffixed key, then its plain one"""
+    for k in (skey(name), slug(name)):
+        if k in d:
+            return k
+    return None
+
+
 def jload(path, default=None):
     p = os.path.join(ROOT, path)
     if not os.path.exists(p):
@@ -110,6 +130,7 @@ reg = {s: {} for s in SPORTS}
 # every id seen for a name key, with whether it came from a current list (a shared name between two current players
 # is the one that can show the wrong face)
 seen = {s: {} for s in SPORTS}
+by_suffix = {s: set() for s in SPORTS}  # plain keys a suffixed name holds for now
 
 
 def add(sport, name, pid, why="", current=True):
@@ -119,8 +140,17 @@ def add(sport, name, pid, why="", current=True):
     v = int(pid) if str(pid).isdigit() else pid
     if current:
         seen[sport].setdefault(k, set()).add(v)
-    if k not in reg[sport]:
+    k2 = skey(name)
+    # the plain key belongs to the player without a suffix when there is one (Ken Griffey, not Ken Griffey Jr.,
+    # who has his own "ken-griffey~jr")
+    if k not in reg[sport] or (k in by_suffix[sport] and k2 == k):
         reg[sport][k] = v
+        if k2 != k:
+            by_suffix[sport].add(k)
+        else:
+            by_suffix[sport].discard(k)
+    if k2 != k and k2 not in reg[sport]:
+        reg[sport][k2] = v
 
 
 # ---------------------------------------------------------------- what's already in the repo
@@ -297,7 +327,7 @@ def espn_search_once(name, query, sport, limit=10):
     def close(n):
         k = slug(n)
         if k == want:
-            return 2
+            return 3 if suffix(n) == suffix(name) else 2
         p = k.split("-")
         return 1 if len(p) >= 2 and p[-1] == w_parts[-1] and p[0][:3] == w_parts[0][:3] else 0
     cands = sorted(((close(c.get("displayName")), c) for grp in d.get("results") or [] for c in grp.get("contents") or []), key=lambda x: -x[0])
@@ -312,7 +342,7 @@ def espn_search_once(name, query, sport, limit=10):
         if lg == ESPN_LEAGUE[sport]:
             return f"espnmlb:{pid}" if sport == "mlb" else int(pid)
         # a pro page showing a college player (or the reverse): keep his photo from the other league (exact names only)
-        if best is None and score == 2 and lg in ESPN_LEAGUE.values():
+        if best is None and score >= 2 and lg in ESPN_LEAGUE.values():
             other = [k for k, v in ESPN_LEAGUE.items() if v == lg][0]
             if (sport, other) in (("nba", "ncaab"), ("ncaab", "nba"), ("nfl", "ncaaf"), ("ncaaf", "nfl")):
                 best = f"{other}:{pid}"
@@ -332,7 +362,7 @@ def search_missing(want):
     todo = []
     for sport in ("ncaab", "ncaaf", "nba", "nfl", "mlb"):  # the Big Board's prospects first: they change most
         for n in sorted(want[sport]):
-            key = slug(n)
+            key = skey(n)  # a name with a suffix needs its own entry: the plain one may be his father
             if key in reg[sport]:
                 continue
             c = cache.get(f"{sport}|{key}")
@@ -366,12 +396,12 @@ def apply_fixes():
         if sport not in reg or not isinstance(names, dict):
             continue
         for name, v in names.items():
-            k = slug(name)
+            k = skey(name)
             if v is None:
                 reg[sport].pop(k, None)
             elif isinstance(v, str) and not re.match(r"^([a-z]+:)?\d+$", v):
-                if slug(v) in reg[sport]:
-                    reg[sport][k] = reg[sport][slug(v)]
+                if resolve(reg[sport], v):
+                    reg[sport][k] = reg[sport][resolve(reg[sport], v)]
             else:
                 reg[sport][k] = int(v) if str(v).isdigit() else v
     return fix
@@ -436,7 +466,7 @@ def check_photos(want):
     todo = []
     for sport in SPORTS:
         for n in want[sport]:
-            pid = reg[sport].get(slug(n))
+            pid = reg[sport].get(resolve(reg[sport], n) or "")
             if pid is None:
                 continue
             key = f"{sport}|{pid}"
@@ -474,15 +504,15 @@ def nba_fallback(want, checked, fix):
     for pid, full in re.findall(r"\[(\d+),\s*" + q + r",\s*" + q + r",\s*(" + q + r"),\s*(?:True|False)\]", txt):
         k = slug(full[1:-1])
         ids.setdefault(k, set()).add(int(pid))
-    fixed = {slug(n) for n in (fix.get("nba") or {})}
+    fixed = {skey(n) for n in (fix.get("nba") or {})}
     n = 0
     for name in want["nba"]:
-        k = slug(name)
-        if k in fixed or len(ids.get(k, ())) != 1:
+        k = resolve(reg["nba"], name) or skey(name)
+        if k in fixed or len(ids.get(slug(name), ())) != 1:
             continue
         cur = reg["nba"].get(k)
         if cur is None or (checked.get(f"nba|{cur}") or [0])[0] == 404:
-            reg["nba"][k] = f"nbacom:{next(iter(ids[k]))}"
+            reg["nba"][k] = f"nbacom:{next(iter(ids[slug(name)]))}"
             n += 1
     print(f"  NBA.com photos tried for {n} names")
     return n
@@ -498,11 +528,11 @@ def close_matches(want, fix):
             p = k.split("-")
             if len(p) >= 2:
                 by_last.setdefault(p[-1], []).append(k)
-        fixed = {slug(x) for x in (fix.get(sport) or {})}
+        fixed = {slug(x) for x in (fix.get(sport) or {})} | {skey(x) for x in (fix.get(sport) or {})}
         for name in want[sport]:
             k = slug(name)
             p = k.split("-")
-            if k in reg[sport] or k in fixed or len(p) < 2 or len(p[0]) < 3:
+            if resolve(reg[sport], name) or k in fixed or len(p) < 2 or len(p[0]) < 3:
                 continue
             hits = {reg[sport][c] for c in by_last.get(p[-1], []) if c.split("-")[0][:3] == p[0][:3] and len(c.split("-")) == len(p)}
             if len(hits) == 1:
@@ -516,10 +546,10 @@ def mlb_fallback(want, checked, fix):
     """MLB names whose MLB photo is missing get ESPN's photo of the same player, where ESPN has one"""
     cache = json.load(open(CACHE, encoding="utf-8")) if os.path.exists(CACHE) else {}
     stale = (date.today() - timedelta(days=30)).isoformat()
-    fixed = {slug(x) for x in (fix.get("mlb") or {})}
+    fixed = {skey(x) for x in (fix.get("mlb") or {})}
     n = tried = 0
     for name in sorted(want["mlb"]):
-        k = slug(name)
+        k = resolve(reg["mlb"], name) or skey(name)
         cur = reg["mlb"].get(k)
         if k in fixed or cur is None or str(cur).startswith("espnmlb:") or (checked.get(f"mlb|{cur}") or [0])[0] != 404:
             continue
@@ -572,17 +602,19 @@ def main():
             del ids[k]
         # keep the file to what pages can use: every name a page shows, plus current players for the league pages
         if sport == "mlb" and len(ids) > 25000:
-            keep = {slug(n) for n in want["mlb"]} | {k for k, v in ids.items() if isinstance(v, int) and v >= 500000}
+            keep = {slug(n) for n in want["mlb"]} | {skey(n) for n in want["mlb"]} | {k for k, v in ids.items() if isinstance(v, int) and v >= 500000}
             ids = {k: v for k, v in ids.items() if k in keep}
         path = os.path.join(OUT, f"{sport}.json")
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"built": date.today().isoformat(), "ids": dict(sorted(ids.items()))}, f, separators=(",", ":"), ensure_ascii=False)
-        shown = {slug(n): n for n in want[sport]}
-        fixed = {slug(n) for n in (fix.get(sport) or {})}
-        missing = sorted(n for k, n in shown.items() if k not in ids and k not in gone)
-        no_photo = sorted(n for k, n in shown.items() if k in gone)
-        # [name, the id in use, every id seen for that name]
-        shared = sorted([n, str(ids.get(k, "")), sorted(map(str, seen[sport][k]))] for k, n in shown.items() if len(seen[sport].get(k, ())) > 1 and k not in fixed)
+        shown = {skey(n): n for n in want[sport]}
+        fixed = {skey(n) for n in (fix.get(sport) or {})}
+        at = {n: resolve(reg[sport], n) for n in shown.values()}
+        missing = sorted(n for n, k in at.items() if k is None)
+        no_photo = sorted(n for n, k in at.items() if k in gone)
+        # [name, the id in use, every id seen for that name] (a name with its own suffixed entry isn't shared)
+        shared = sorted([n, str(ids.get(at[n], "")), sorted(map(str, seen[sport][slug(n)]))] for k, n in shown.items()
+                        if len(seen[sport].get(slug(n), ())) > 1 and k not in fixed and at[n] != skey(n))
         report["sports"][sport] = {"registry": len(ids), "shown": len(shown), "found": len(shown) - len(missing) - len(no_photo),
                                    "missing": missing[:400], "noPhoto": no_photo[:400], "shared": shared[:200], "fixed": len(fixed)}
         print(f"wrote assets/faces/{sport}.json: {len(ids)} names, {report['sports'][sport]['found']}/{len(shown)} of the names pages show"

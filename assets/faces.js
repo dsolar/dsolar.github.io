@@ -116,10 +116,15 @@
     return loading[sport];
   }
   // The photo id for a name, once that sport's registry has loaded (undefined until then, null when unknown)
+  // A name with a suffix looks for its own entry first ("marvin-harrison~jr"), so a father and son can differ
+  function suffix(name) {
+    var m = /\s(jr|sr|ii|iii|iv|v)\.?$/.exec(String(name || "").toLowerCase().trim());
+    return m ? m[1] : "";
+  }
   function find(sport, name) {
     var r = reg[sport];
     if (!r) return undefined;
-    var v = r[slug(name)];
+    var x = suffix(name), k = slug(name), v = x && r[k + "~" + x] != null ? r[k + "~" + x] : r[k];
     return v == null ? null : v;
   }
 
