@@ -1,4 +1,4 @@
--- Draft Lab's March Madness pools (fantasy/pools/): survivor and the 5-team game. Built like the NFL pick'em
+-- Draft Lab's pools (fantasy/pools/): March Madness survivor and the 5-team game, and season-long NFL survivor (below). Built like the NFL pick'em
 -- (tools/pickem_supabase.sql): the games live here, picks lock here at tip-off, and mm_sync on pg_cron every 10 minutes
 -- reads the outside world through pg_net (each run saves what the last run asked for, then asks again).
 --
@@ -308,6 +308,159 @@ revoke all on function public.mm_board(text), public.mm_pick(text, int, text), p
 grant execute on function public.mm_board(text) to anon, authenticated;
 grant execute on function public.mm_pick(text, int, text), public.mm_pick_five(text, text[]), public.mm_pool_create(text, text, text),
   public.mm_pool_join(text, text), public.mm_pool_leave(text), public.mm_pools_mine() to authenticated;
+
+-- NFL survivor, season long (kind 'nfl'), on the pick'em's games (pk_games, kept current by pk_sync).
+--   One team a week to win outright, from the pool's first week (the week it was made in, if games were still to play)
+--   through week 18. Never the same team twice. A loss or a tie, or no pick by the week's last kickoff, is out. Each
+--   pick locks at its own game's kickoff and shows to everyone then. The last one standing wins; if everyone left goes
+--   out the same week, or more than one makes it through week 18, they split it.
+alter table public.mm_pools add column if not exists start_week int;
+alter table public.mm_pools drop constraint if exists mm_pools_kind_check;
+alter table public.mm_pools add constraint mm_pools_kind_check check (kind in ('survivor', 'five', 'nfl'));
+
+-- the NFL season pk_games is on, and the first regular-season week with a game still to kick off
+create or replace function public.mm_nfl_season() returns int
+language sql stable security definer set search_path to 'public' as $$
+  select season from pk_games order by kickoff desc limit 1;
+$$;
+create or replace function public.mm_nfl_start(p_season int) returns int
+language sql stable security definer set search_path to 'public' as $$
+  select week from pk_games where season = p_season and stype = 2 and kickoff > now() order by kickoff limit 1;
+$$;
+-- still alive going into week p_week: every earlier week from the start has a winning pick (a missed week counts once
+-- its last game has kicked off; a pick still playing doesn't count against you yet)
+create or replace function public.mm_nfl_alive(p_pool text, u uuid, p_week int) returns boolean
+language sql stable security definer set search_path to 'public' as $$
+  select not exists (
+    select 1 from mm_pools p, generate_series(p.start_week, p_week - 1) w
+    where p.id = p_pool and (
+      exists (select 1 from mm_picks k join pk_games g on g.season = p.season and g.stype = 2 and g.week = w and k.team in (g.away, g.home)
+              where k.pool = p.id and k.user_id = u and k.slot = 'w' || w and g.final
+                and (case when k.team = g.home then g.home_score <= g.away_score else g.away_score <= g.home_score end))
+      or (not exists (select 1 from mm_picks k where k.pool = p.id and k.user_id = u and k.slot = 'w' || w)
+          and (select max(kickoff) from pk_games where season = p.season and stype = 2 and week = w) <= now())));
+$$;
+
+-- pick (or change, or with a null team take back) a week's team until its game kicks off
+create or replace function public.mm_pick_nfl(p_pool text, p_week int, p_team text) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; g pk_games; cur text;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to make picks.'); end if;
+  select * into p from mm_pools where id = p_pool;
+  if not found or p.kind <> 'nfl' then return jsonb_build_object('error', 'That isn''t an NFL survivor pool.'); end if;
+  if not exists (select 1 from mm_members where pool = p.id and user_id = uid) then return jsonb_build_object('error', 'Join this pool to pick.'); end if;
+  if p_week < p.start_week or p_week > 18 then return jsonb_build_object('error', 'That week isn''t part of this pool.'); end if;
+  select team into cur from mm_picks where pool = p.id and user_id = uid and slot = 'w' || p_week;
+  if cur is not null and exists (select 1 from pk_games where season = p.season and stype = 2 and week = p_week and cur in (away, home) and kickoff <= now()) then
+    return jsonb_build_object('error', 'Your pick for that week has kicked off. It''s locked.');
+  end if;
+  if not mm_nfl_alive(p.id, uid, p_week) then return jsonb_build_object('error', 'You''re out of this pool.'); end if;
+  if p_team is null then delete from mm_picks where pool = p.id and user_id = uid and slot = 'w' || p_week; return jsonb_build_object('ok', true, 'team', null); end if;
+  if not exists (select 1 from pk_games where season = p.season and stype = 2 and week = p_week) then return jsonb_build_object('error', 'That week''s games aren''t on the board yet.'); end if;
+  select * into g from pk_games where season = p.season and stype = 2 and week = p_week and p_team in (away, home) order by kickoff limit 1;
+  if not found then return jsonb_build_object('error', 'That team doesn''t play that week.'); end if;
+  if g.kickoff <= now() then return jsonb_build_object('error', 'That game has kicked off.'); end if;
+  if exists (select 1 from mm_picks where pool = p.id and user_id = uid and team = p_team and slot <> 'w' || p_week) then
+    return jsonb_build_object('error', 'You''ve already used that team.');
+  end if;
+  insert into mm_picks (pool, user_id, slot, team) values (p.id, uid, 'w' || p_week, p_team)
+  on conflict (pool, user_id, slot) do update set team = excluded.team, picked_at = now();
+  return jsonb_build_object('ok', true, 'team', p_team);
+end $$;
+
+-- a pool's board, NFL survivor included: its weeks' games from pk_games, and picks shown at their game's kickoff
+create or replace function public.mm_board(p_pool text) returns jsonb
+language plpgsql stable security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; lk timestamptz;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found then return jsonb_build_object('error', 'No pool has that code.'); end if;
+  if uid is null or not exists (select 1 from mm_members where pool = p.id and user_id = uid) then
+    return jsonb_build_object('error', 'join', 'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'startWeek', p.start_week,
+      'members', (select count(*) from mm_members where pool = p.id)), 'signedIn', uid is not null);
+  end if;
+  if p.kind = 'nfl' then
+    return jsonb_build_object('ok', true, 'now', now(),
+      'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'startWeek', p.start_week, 'owner', p.owner = uid),
+      'games', coalesce((select jsonb_agg(jsonb_build_object('id', g.game_id, 'week', g.week, 'kickoff', g.kickoff, 'away', g.away, 'home', g.home,
+          'ap', g.away_score, 'hp', g.home_score, 'final', g.final, 'status', g.status, 'line', coalesce(g.spread, g.live_spread))
+        order by g.kickoff, g.game_id) from pk_games g where g.season = p.season and g.stype = 2 and g.week >= p.start_week), '[]'::jsonb),
+      'members', (select jsonb_agg(jsonb_build_object('id', m.user_id, 'name', mm_name(p.id, m.user_id), 'me', m.user_id = uid) order by m.joined_at) from mm_members m where m.pool = p.id),
+      'picks', coalesce((select jsonb_agg(jsonb_build_object('user', k.user_id, 'slot', k.slot,
+          'team', case when k.user_id = uid or exists (select 1 from pk_games g where g.season = p.season and g.stype = 2 and g.week = substring(k.slot from 2)::int
+            and k.team in (g.away, g.home) and g.kickoff <= now()) then k.team end))
+        from mm_picks k where k.pool = p.id), '[]'::jsonb));
+  end if;
+  lk := mm_five_lock(p.season);
+  return jsonb_build_object('ok', true, 'now', now(), 'fiveLock', lk,
+    'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'owner', p.owner = uid),
+    'projected', exists (select 1 from mm_games where season = p.season and projected) and not exists (select 1 from mm_games where season = p.season and not projected),
+    'games', coalesce((select jsonb_agg(jsonb_build_object('id', g.game_id, 'round', g.round, 'region', g.region, 'day', g.day, 'tip', g.tip,
+        'a', g.a, 'b', g.b, 'as', g.a_seed, 'bs', g.b_seed, 'ap', g.a_score, 'bp', g.b_score, 'w', g.winner, 'status', g.status, 'final', g.final)
+      order by g.tip, g.game_id) from mm_games g where g.season = p.season), '[]'::jsonb),
+    'members', (select jsonb_agg(jsonb_build_object('id', m.user_id, 'name', mm_name(p.id, m.user_id), 'me', m.user_id = uid) order by m.joined_at) from mm_members m where m.pool = p.id),
+    'picks', coalesce((select jsonb_agg(jsonb_build_object('user', k.user_id, 'slot', k.slot,
+        'team', case when k.user_id = uid then k.team
+          when p.kind = 'five' and lk is not null and now() >= lk then k.team
+          when p.kind = 'survivor' and exists (select 1 from mm_games g where g.season = p.season and g.round >= 1 and k.team in (g.a, g.b)
+            and g.day = mm_day_date(p.season, substring(k.slot from 2)::int) and g.tip <= now()) then k.team end))
+      from mm_picks k where k.pool = p.id), '[]'::jsonb));
+end $$;
+
+-- pools: NFL survivor pools start with the week they're made in (or the next one, once its games have all kicked off)
+create or replace function public.mm_pool_create(p_name text, p_kind text, p_entry text default null) returns jsonb
+language plpgsql security definer set search_path to 'public', 'extensions' as $$
+declare uid uuid := auth.uid(); code text; nm text := left(trim(coalesce(p_name, '')), 40); yr int; sw int;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to make a pool.'); end if;
+  if nm = '' then return jsonb_build_object('error', 'Name the pool.'); end if;
+  if p_kind not in ('survivor', 'five', 'nfl') then return jsonb_build_object('error', 'Pick a game.'); end if;
+  if (select count(*) from mm_pools where owner = uid) >= 20 then return jsonb_build_object('error', 'That''s a lot of pools. Leave one first.'); end if;
+  if p_kind = 'nfl' then
+    yr := mm_nfl_season(); sw := mm_nfl_start(yr);
+    if sw is null then return jsonb_build_object('error', 'The next week''s games aren''t set yet. Try again in a day or two.'); end if;
+    if sw > 18 then return jsonb_build_object('error', 'The regular season is over. NFL survivor comes back in September.'); end if;
+  else
+    yr := mm_season();
+  end if;
+  loop
+    code := upper(substr(translate(encode(gen_random_bytes(9), 'base64'), '+/=0Oo1IiLl', ''), 1, 6));
+    exit when length(code) = 6 and not exists (select 1 from mm_pools where id = code) and not exists (select 1 from pk_groups where id = code);
+  end loop;
+  insert into mm_pools (id, name, kind, season, owner, start_week) values (code, nm, p_kind, yr, uid, sw);
+  insert into mm_members (pool, user_id, name) values (code, uid, nullif(left(trim(coalesce(p_entry, '')), 28), ''));
+  return jsonb_build_object('ok', true, 'id', code, 'name', nm, 'kind', p_kind);
+end $$;
+create or replace function public.mm_pool_join(p_code text, p_entry text default null) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to join a pool.'); end if;
+  select * into p from mm_pools where id = upper(trim(coalesce(p_code, '')));
+  if not found then
+    if exists (select 1 from pk_groups where id = upper(trim(coalesce(p_code, '')))) then return jsonb_build_object('error', 'pickem', 'id', upper(trim(p_code))); end if;
+    return jsonb_build_object('error', 'No pool has that code. Check it and try again.');
+  end if;
+  if (select count(*) from mm_members where pool = p.id) >= 200 then return jsonb_build_object('error', 'That pool is full.'); end if;
+  if p.kind = 'nfl' and not exists (select 1 from mm_members where pool = p.id and user_id = uid)
+     and (select max(kickoff) from pk_games where season = p.season and stype = 2 and week = p.start_week) <= now() then
+    return jsonb_build_object('error', format('This pool started in week %s, and that week''s games have all kicked off. Make a new pool to play from this week.', p.start_week));
+  end if;
+  insert into mm_members (pool, user_id, name) values (p.id, uid, nullif(left(trim(coalesce(p_entry, '')), 28), ''))
+  on conflict (pool, user_id) do update set name = coalesce(excluded.name, mm_members.name);
+  return jsonb_build_object('ok', true, 'id', p.id, 'name', p.name, 'kind', p.kind);
+end $$;
+create or replace function public.mm_pools_mine() returns jsonb
+language sql stable security definer set search_path to 'public' as $$
+  select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'startWeek', p.start_week, 'owner', p.owner = auth.uid(),
+    'members', (select count(*) from mm_members where pool = p.id)) order by m.joined_at desc), '[]'::jsonb)
+  from mm_members m join mm_pools p on p.id = m.pool where m.user_id = auth.uid();
+$$;
+
+revoke all on function public.mm_nfl_season(), public.mm_nfl_start(int), public.mm_nfl_alive(text, uuid, int) from public, anon, authenticated;
+revoke all on function public.mm_pick_nfl(text, int, text) from public;
+grant execute on function public.mm_pick_nfl(text, int, text) to authenticated;
 
 select cron.unschedule('mm-sync') where exists (select 1 from cron.job where jobname = 'mm-sync');
 select cron.schedule('mm-sync', '*/10 * * * *', $job$ select public.mm_sync(); $job$);

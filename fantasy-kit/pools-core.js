@@ -9,7 +9,13 @@
    FK.pools.five(board, now)         { rows, lock, locked }: each entry's five teams, points and points still possible
    FK.pools.fiveCheck(board, teams)  { ok, seeds, why }: five different teams in the field whose seeds reach 25
    FK.pools.xPts(team)               expected points in the 5-team game, from the hub's tournament sim (teams.json r)
-   FK.pools.winProb(a, b)            a's chance to beat b on a neutral floor, from the hub's ratings */
+   FK.pools.winProb(a, b)            a's chance to beat b on a neutral floor, from the hub's ratings
+
+   NFL survivor, season long (board.games from pk_games: { id, week, kickoff, away, home, ap, hp, final, line }):
+   FK.pools.nflWeeks(games)          the pool's weeks, each with its games, first and last kickoff
+   FK.pools.nfl(board, now)          { weeks, rows, winners, status }: who's alive, each entry's picks and results
+   FK.pools.nflChoices(board, week, uid, now)  that week's teams, why the others are out, and each one's chance to win
+   FK.pools.lineProb(line)           the home team's chance to win from its spread (a 3-point favorite wins about 59%) */
 (function (root) {
   "use strict";
   // every win scores by its round: 1, 2, 4, 8, 16, 32 (First Four wins don't count)
@@ -170,7 +176,74 @@
   }
   function winProb(a, b) { return a && b && a.bpi != null && b.bpi != null ? normCdf((a.bpi - b.bpi) / SD) : null; }
 
-  var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb };
+  /* NFL survivor. One team a week to win outright, from the pool's first week through week 18, never the same team
+     twice. A loss or a tie, or no pick by the week's last kickoff, is out. The last one standing wins; when everyone
+     still alive goes out the same week, or more than one makes it through week 18, they split it. */
+  var NFL_LAST = 18;
+  function nflWeeks(games) {
+    var by = {};
+    (games || []).forEach(function (g) { (by[g.week] = by[g.week] || []).push(g); });
+    return Object.keys(by).map(Number).sort(function (a, b) { return a - b; }).map(function (w) {
+      var gs = by[w].slice().sort(function (x, y) { return ms(x.kickoff) - ms(y.kickoff); });
+      return { week: w, games: gs, first: ms(gs[0].kickoff), lock: Math.max.apply(null, gs.map(function (g) { return ms(g.kickoff); })), done: gs.every(function (g) { return g.final; }) };
+    });
+  }
+  var nflGame = function (wk, team) { return wk.games.filter(function (g) { return g.away === team || g.home === team; })[0] || null; };
+  var nflWon = function (g, team) { var mine = team === g.home ? g.hp : g.ap, them = team === g.home ? g.ap : g.hp; return mine > them; };
+  function nfl(board, now) {
+    now = now == null ? Date.now() : ms(now);
+    var ws = nflWeeks(board.games), by = picksBy(board), winners = null, status = "open";
+    var rows = (board.members || []).map(function (m) { return { id: m.id, name: m.name, me: !!m.me, alive: true, out: null, wins: 0, margin: 0, cells: {} }; });
+    for (var k = 0; k < ws.length && !winners; k++) {
+      var wk = ws[k], alive = rows.filter(function (r) { return r.alive; }), lost = [], open = false;
+      if (!alive.length) break;
+      alive.forEach(function (r) {
+        var mine = by[r.id] || {}, slot = "w" + wk.week, has = Object.prototype.hasOwnProperty.call(mine, slot), team = mine[slot];
+        if (!has) {
+          if (now >= wk.lock) { r.cells[wk.week] = { miss: true }; lost.push(r); } else { r.cells[wk.week] = { none: true }; open = true; }
+          return;
+        }
+        if (team == null) { r.cells[wk.week] = { hidden: true }; open = true; return; }
+        var g = nflGame(wk, team);
+        if (!g) { r.cells[wk.week] = { team: team, bad: true }; return; }
+        if (g.final) {
+          var opp = team === g.home ? g.away : g.home;
+          if (nflWon(g, team)) { r.wins++; r.margin += Math.abs(g.hp - g.ap); r.cells[wk.week] = { team: team, opp: opp, win: true, game: g.id }; }
+          else { r.cells[wk.week] = { team: team, opp: opp, loss: true, tie: g.hp === g.ap, game: g.id }; lost.push(r); }
+        } else { r.cells[wk.week] = { team: team, live: ms(g.kickoff) <= now, game: g.id }; open = true; }
+      });
+      if (lost.length && lost.length === alive.length && !open) { winners = alive.map(function (r) { return r.id; }); status = "done"; break; }
+      lost.forEach(function (r) { r.alive = false; r.out = wk.week; });
+      var left = rows.filter(function (r) { return r.alive; });
+      if (rows.length > 1 && left.length === 1) { winners = [left[0].id]; status = "done"; }
+      if (open) break; // later weeks wait on this one
+    }
+    var last = ws[ws.length - 1];
+    if (!winners && last && last.week === NFL_LAST && last.done) { winners = rows.filter(function (r) { return r.alive; }).map(function (r) { return r.id; }); status = "done"; }
+    rows.forEach(function (r) { r.winner = !!winners && winners.indexOf(r.id) >= 0; });
+    rows.sort(function (a, b) { return (b.winner - a.winner) || (b.alive - a.alive) || ((b.out || 99) - (a.out || 99)) || (b.wins - a.wins) || String(a.name).localeCompare(String(b.name)); });
+    return { weeks: ws, rows: rows, winners: winners, status: status };
+  }
+  // the home team's chance to win from its spread (negative is favored), a normal curve with a 13.5-point spread
+  var lineProb = function (line) { return line == null ? null : normCdf(-Number(line) / 13.5); };
+  function nflChoices(board, week, uid, now) {
+    now = now == null ? Date.now() : ms(now);
+    var wk = nflWeeks(board.games).filter(function (w) { return w.week === week; })[0];
+    if (!wk) return [];
+    var mine = picksBy(board)[uid] || {}, used = {};
+    Object.keys(mine).forEach(function (s) { if (s !== "w" + week && mine[s]) used[mine[s]] = +s.slice(1); });
+    var out = [];
+    wk.games.forEach(function (g) {
+      var ph = lineProb(g.line);
+      [[g.home, g.away, ph, true], [g.away, g.home, ph == null ? null : 1 - ph, false]].forEach(function (x) {
+        var why = ms(g.kickoff) <= now || g.final ? "Kicked off" : used[x[0]] ? "Used in week " + used[x[0]] : null;
+        out.push({ team: x[0], opp: x[1], home: x[3], p: x[2], kickoff: ms(g.kickoff), game: g, why: why, picked: mine["w" + week] === x[0] });
+      });
+    });
+    return out;
+  }
+
+  var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

@@ -131,3 +131,41 @@ test('5 teams tiebreak: points, then seeds, then the deepest run', () => {
   F = run(['A', 'B', 'C', 'E', 'H'], ['A', 'B', 'C', 'E', 'H']);
   assert.deepEqual(F.rows.map((r) => r.place), [1, 1]);
 });
+
+// ---------- NFL survivor ----------
+const ng = (id, week, day, away, home, ap, hp, line) => ({ id, week, kickoff: `2026-11-${String(day).padStart(2, '0')}T18:00:00Z`, away, home, ap: ap ?? null, hp: hp ?? null, final: ap != null, line: line ?? null });
+const nmem = [{ id: 'a', name: 'Ann' }, { id: 'b', name: 'Bo' }, { id: 'c', name: 'Cy' }];
+const np = (user, w, team) => ({ user, slot: 'w' + w, team });
+
+test('NFL survivor: a loss, a tie and a missed week are out; the last one standing wins', () => {
+  const games = [ng('g1', 11, 22, 'NYJ', 'BUF', 10, 30, -9.5), ng('g2', 11, 22, 'DAL', 'PHI', 21, 21, -3), ng('g3', 12, 29, 'KC', 'DEN', 27, 20, 2.5), ng('g4', 12, 29, 'MIA', 'NE', 13, 24)];
+  const b = { games, members: nmem, picks: [np('a', 11, 'BUF'), np('b', 11, 'PHI'), np('a', 12, 'KC'), np('c', 11, 'BUF')] };
+  const s = P.nfl(b, '2026-12-05T00:00:00Z');
+  const by = Object.fromEntries(s.rows.map((r) => [r.id, r]));
+  assert.equal(by.b.out, 11); assert.ok(by.b.cells[11].tie);       // a tie is a loss
+  assert.equal(by.c.out, 12); assert.ok(by.c.cells[12].miss);      // no week 12 pick once its games kicked off
+  assert.deepEqual(s.winners, ['a']);
+  assert.equal(s.rows[0].id, 'a');
+});
+
+test('NFL survivor: everyone left losing the same week split it; an unplayed pick holds the next week', () => {
+  const games = [ng('g1', 11, 22, 'NYJ', 'BUF', 30, 10), ng('g2', 11, 22, 'DAL', 'PHI', 31, 21)];
+  let s = P.nfl({ games, members: nmem.slice(0, 2), picks: [np('a', 11, 'BUF'), np('b', 11, 'PHI')] }, '2026-11-24T00:00:00Z');
+  assert.deepEqual(s.winners.sort(), ['a', 'b']);
+  const live = [ng('g1', 11, 22, 'NYJ', 'BUF'), ng('g2', 11, 23, 'DAL', 'PHI')];
+  s = P.nfl({ games: live, members: nmem.slice(0, 2), picks: [np('a', 11, 'BUF'), np('b', 11, null)] }, '2026-11-22T19:00:00Z');
+  assert.equal(s.winners, null);
+  assert.ok(s.rows.every((r) => r.alive));
+  assert.ok(s.rows.find((r) => r.id === 'a').cells[11].live);
+  assert.ok(s.rows.find((r) => r.id === 'b').cells[11].hidden);
+});
+
+test('NFL survivor choices: used teams and kicked-off games are out, chances come from the line', () => {
+  const games = [ng('g1', 11, 22, 'NYJ', 'BUF', 10, 30, -9.5), ng('g3', 12, 29, 'KC', 'DEN', null, null, 3), ng('g4', 12, 30, 'BUF', 'NE', null, null, 7)];
+  const ch = P.nflChoices({ games, members: nmem, picks: [np('a', 11, 'BUF')] }, 12, 'a', '2026-11-28T00:00:00Z');
+  const by = Object.fromEntries(ch.map((c) => [c.team, c]));
+  assert.equal(by.BUF.why, 'Used in week 11');
+  assert.equal(by.KC.why, null);
+  assert.ok(by.KC.p > 0.5 && by.DEN.p < 0.5);                      // DEN +3 at home: KC is favored
+  assert.ok(Math.abs(P.lineProb(-3) - 0.588) < 0.01);
+});
