@@ -155,3 +155,58 @@ button.pl-chip{cursor:pointer}
   .pl-kinds{grid-template-columns:1fr}
   .pl-li-k{display:none}
 }
+
+/* bowl pick'em */
+.pl-bbar .bd{display:grid;gap:10px}
+.pl-bstat{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.pl-bstat b{color:var(--ink);font-size:16px}
+.pl-tb{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:750}
+.pl-tb input{width:90px;font:inherit;font-size:15px;padding:7px 9px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink)}
+.pl-bowls{display:grid;gap:8px}
+.pl-bday{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.pl-bowl{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:10px 12px;display:grid;gap:8px}
+.pl-bowl.cfp{border-left:4px solid var(--brand)}
+.pl-bowl.locked{background:var(--surface-2)}
+.pl-bowl-h{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pl-bowl-h b{font-size:14px}
+.pl-bowl-h>span{color:var(--muted);font-size:13px;margin-left:auto}
+.pl-bowl-b{display:flex;align-items:center;gap:12px}
+.pl-bts{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0}
+.pl-bt{display:flex;align-items:center;gap:8px;min-width:0;padding:8px 10px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.pl-bt .pl-tn{display:flex;flex-direction:column;min-width:0}
+.pl-bt b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-bt small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pl-bt.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--brand-soft)}
+.pl-bt.won{border-color:var(--win)}.pl-bt.on.lost{border-color:var(--loss);background:var(--loss-soft)}
+.pl-bt:disabled{cursor:default}
+.pl-bt:not(.on):disabled{opacity:.7}
+.pl-conf{display:grid;justify-items:center;gap:3px;font-size:11px;font-weight:800;color:var(--muted)}
+.pl-bsel{font:inherit;font-size:15px;font-weight:800;padding:7px 6px;min-width:64px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink)}
+.pl-bpts{font-size:16px;min-width:40px;text-align:center}
+@media (max-width:640px){
+  .pl-bowl-b{align-items:stretch}
+  .pl-bts{grid-template-columns:1fr}
+  .pl-conf{align-self:center}
+}
+
+/* NFL playoff bracket */
+.pl-kwrap{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.pl-kcols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:12px}
+.pl-kr{display:flex;flex-direction:column;justify-content:space-around;gap:10px}
+.pl-kr h4{margin:0;font-size:12px;font-weight:800;color:var(--muted)}
+.pl-kg{display:grid;gap:4px}
+.pl-kt{display:flex;align-items:center;gap:6px;min-width:0;padding:7px 8px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;text-align:left;cursor:pointer}
+.pl-kt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-kt .pl-seed{min-width:auto;margin:0}
+.pl-kt.on{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink);background:var(--brand-soft)}
+.pl-kt.won{border-color:var(--win);background:var(--win-soft)}.pl-kt.lost{border-color:var(--loss);background:var(--loss-soft)}
+.pl-kt.tbd{color:var(--muted);border-style:dashed;cursor:default;justify-content:center}
+.pl-kt:disabled{cursor:default}
+.pl-ksb .bd{display:grid;gap:12px}
+.pl-ksb .pl-kg{grid-template-columns:1fr 1fr;max-width:520px}
+@media (max-width:900px){.pl-kwrap{grid-template-columns:1fr}}
+@media (max-width:520px){.pl-kcols{grid-template-columns:1fr}.pl-kr{gap:8px}}
+.pl-bbar{position:static}
+.pl-float{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:20;display:flex;align-items:center;gap:12px;
+  padding:8px 8px 8px 16px;border-radius:999px;background:var(--ink);color:var(--surface);box-shadow:0 8px 24px rgba(0,0,0,.25);font-size:13px;font-weight:750;white-space:nowrap}
+.pl-bowls{padding-bottom:64px}

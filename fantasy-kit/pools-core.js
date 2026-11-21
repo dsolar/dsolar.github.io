@@ -15,7 +15,14 @@
    FK.pools.nflWeeks(games)          the pool's weeks, each with its games, first and last kickoff
    FK.pools.nfl(board, now)          { weeks, rows, winners, status }: who's alive, each entry's picks and results
    FK.pools.nflChoices(board, week, uid, now)  that week's teams, why the others are out, and each one's chance to win
-   FK.pools.lineProb(line)           the home team's chance to win from its spread (a 3-point favorite wins about 59%) */
+   FK.pools.lineProb(line)           the home team's chance to win from its spread (a 3-point favorite wins about 59%)
+
+   Postseason (board.games from po_games: { id, round, label, conf, kickoff, a, b, an, bn, ap, bp, w, final, line }):
+   FK.pools.bowls(board, now)        { rows, n, done }: each entry's points, right and wrong picks, points still possible
+   FK.pools.bowlsCheck(picks, n)     { ok, why }: each confidence number used once, from 1 to n
+   FK.pools.autoRank(games, picks, prob)  the numbers reassigned so the surest picks carry the most
+   FK.pools.bracket(field, picks)    the NFL bracket your picks make: each conference's games by round, reseeded
+   FK.pools.nflpo(board, now)        { rows, done }: each entry's points, points still possible, champion */
 (function (root) {
   "use strict";
   // every win scores by its round: 1, 2, 4, 8, 16, 32 (First Four wins don't count)
@@ -243,7 +250,130 @@
     return out;
   }
 
-  var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb };
+  /* Bowl pick'em: a right pick scores its confidence number. Ties go to more right picks, then the closest guess at
+     the title game's total points (once it's final), then they share the place. */
+  var tbOff = function (tb, total) { return tb == null || total == null ? Infinity : Math.abs(tb - total); };
+  function bowls(board, now) {
+    now = now == null ? Date.now() : ms(now);
+    var games = board.games || [], by = {}, n = games.length;
+    (board.picks || []).forEach(function (p) { (by[p.user] = by[p.user] || {})[p.slot] = p; });
+    var title = games.filter(function (g) { return g.round === 4; })[0], total = title && title.final ? (title.ap || 0) + (title.bp || 0) : null;
+    var rows = (board.members || []).map(function (m) {
+      var mine = by[m.id] || {}, pts = 0, right = 0, wrong = 0, left = 0, picked = 0;
+      games.forEach(function (g) {
+        var k = mine["g" + g.id];
+        if (!k || !k.team) return;
+        picked++;
+        var v = k.pts || 0;
+        if (g.final && g.w) { if (g.w === k.team) { pts += v; right++; } else wrong++; } else left += v;
+      });
+      var tb = mine.tb && mine.tb.team != null && mine.tb.team !== "" ? Number(mine.tb.team) : null;
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, right: right, wrong: wrong, picked: picked, max: pts + left, tb: tb, off: tbOff(tb, total) };
+    });
+    var cmp = function (a, b) { return (b.points - a.points) || (b.right - a.right) || (a.off - b.off); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
+    var done = !!games.length && games.every(function (g) { return g.final; });
+    return { rows: rows, n: n, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
+  }
+  function bowlsCheck(picks, n) {
+    var seen = {};
+    for (var id in picks) {
+      var v = picks[id] && picks[id].pts;
+      if (v == null || v === "") continue;
+      if (v < 1 || v > n) return { ok: false, why: "Numbers run from 1 to " + n + "." };
+      if (seen[v]) return { ok: false, why: "You used " + v + " twice. Each number goes on one game." };
+      seen[v] = 1;
+    }
+    return { ok: true, why: "" };
+  }
+  // give the open games' numbers out again, the surest pick getting the biggest: locked games keep theirs
+  function autoRank(games, picks, prob, now) {
+    now = now == null ? Date.now() : ms(now);
+    var locked = {}, open = [];
+    games.forEach(function (g) {
+      var k = picks[g.id];
+      if (ms(g.kickoff) <= now) { if (k && k.pts) locked[k.pts] = 1; return; }
+      var p = k && k.team ? prob(g, k.team) : null;
+      open.push({ id: g.id, sure: p == null ? 0.5 : p, picked: !!(k && k.team), kick: ms(g.kickoff) });
+    });
+    var free = [];
+    for (var v = games.length; v >= 1; v--) if (!locked[v]) free.push(v);
+    // picked games first by how sure, then games still to pick (the title game and other later rounds)
+    open.sort(function (a, b) { return (b.picked - a.picked) || (b.sure - a.sure) || (a.kick - b.kick); });
+    var out = {};
+    Object.keys(picks).forEach(function (id) { out[id] = Object.assign({}, picks[id]); });
+    open.forEach(function (o, i) { out[o.id] = Object.assign({}, out[o.id] || {}, { pts: free[i] }); });
+    return out;
+  }
+
+  /* NFL bracket: seven seeds a conference. The 1 seed sits out the Wild Card round (2-7, 3-6, 4-5); the divisional round
+     reseeds, the 1 seed playing the lowest seed left. Slots: A or N, then wc1..wc3, dv1 (the top seed's game), dv2, cf;
+     and sb. A team scores for each round it wins that you had it winning: 1, 2, 4, 8. */
+  var NFL_PTS = [0, 1, 2, 4, 8];
+  function bracket(field, picks) {
+    picks = picks || {};
+    var out = { confs: {}, sb: null, champ: null };
+    ["AFC", "NFC"].forEach(function (cf) {
+      var c = cf[0], seed = {}, team = {};
+      (field || []).forEach(function (f) { if (f.conf === cf) { seed[f.team] = f.seed; team[f.seed] = f.team; } });
+      var pickOf = function (slot, a, b) { var t = picks[c + slot]; return t && (t === a || t === b) ? t : null; };
+      var wc = [[2, 7], [3, 6], [4, 5]].map(function (x, i) { var a = team[x[0]], b = team[x[1]]; return { slot: c + "wc" + (i + 1), a: a, b: b, pick: pickOf("wc" + (i + 1), a, b) }; });
+      var dv = [{ slot: c + "dv1", a: team[1], b: null, pick: null }, { slot: c + "dv2", a: null, b: null, pick: null }];
+      var adv = wc.map(function (g) { return g.pick; });
+      if (adv.every(Boolean)) {
+        var bySeed = adv.slice().sort(function (x, y) { return seed[x] - seed[y]; });
+        dv[0].b = bySeed[2]; dv[1].a = bySeed[0]; dv[1].b = bySeed[1];
+      }
+      dv.forEach(function (g, i) { g.pick = g.a && g.b ? pickOf("dv" + (i + 1), g.a, g.b) : null; });
+      var cg = { slot: c + "cf", a: dv[0].pick, b: dv[1].pick, pick: null };
+      if (cg.a && cg.b) { if (seed[cg.b] < seed[cg.a]) { var t = cg.a; cg.a = cg.b; cg.b = t; } cg.pick = pickOf("cf", cg.a, cg.b); }
+      out.confs[cf] = { bye: team[1], wc: wc, dv: dv, cf: cg, seed: seed };
+    });
+    var sa = out.confs.AFC.cf.pick, sn = out.confs.NFC.cf.pick;
+    out.sb = { slot: "sb", a: sa, b: sn, pick: sa && sn && (picks.sb === sa || picks.sb === sn) ? picks.sb : null };
+    out.champ = out.sb.pick;
+    return out;
+  }
+  // the picks a bracket keeps: only slots whose team still fits after an earlier change
+  function bracketPicks(field, picks) {
+    var b = bracket(field, picks), out = {};
+    ["AFC", "NFC"].forEach(function (cf) { var c = b.confs[cf]; c.wc.concat(c.dv, [c.cf]).forEach(function (g) { if (g.pick) out[g.slot] = g.pick; }); });
+    if (b.sb.pick) out.sb = b.sb.pick;
+    return out;
+  }
+  function nflpo(board, now) {
+    var games = board.games || [], won = { 1: {}, 2: {}, 3: {}, 4: {} }, out = {}, by = {};
+    games.forEach(function (g) {
+      if (!g.final || !g.w) return;
+      won[g.round][g.w] = true;
+      var loser = g.w === g.a ? g.b : g.a; if (loser) out[loser] = true;
+    });
+    (board.picks || []).forEach(function (p) { (by[p.user] = by[p.user] || {})[p.slot] = p.team; });
+    var sb = games.filter(function (g) { return g.round === 4; })[0], total = sb && sb.final ? (sb.ap || 0) + (sb.bp || 0) : null;
+    var roundOf = function (slot) { return slot === "sb" ? 4 : /cf$/.test(slot) ? 3 : /dv/.test(slot) ? 2 : 1; };
+    var rows = (board.members || []).map(function (m) {
+      var mine = by[m.id] || {}, pts = 0, left = 0, picked = 0;
+      Object.keys(mine).forEach(function (slot) {
+        if (slot === "tb" || !mine[slot]) return;
+        picked++;
+        var r = roundOf(slot), t = mine[slot];
+        if (won[r][t]) pts += NFL_PTS[r]; else if (!out[t]) left += NFL_PTS[r];
+      });
+      var tb = mine.tb != null && mine.tb !== "" ? Number(mine.tb) : null;
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, max: pts + left, picked: picked, champ: mine.sb || null, tb: tb, off: tbOff(tb, total) };
+    });
+    var cmp = function (a, b) { return (b.points - a.points) || (a.off - b.off); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
+    var done = !!(sb && sb.final);
+    return { rows: rows, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
+  }
+
+  var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

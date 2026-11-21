@@ -169,3 +169,53 @@ test('NFL survivor choices: used teams and kicked-off games are out, chances com
   assert.ok(by.KC.p > 0.5 && by.DEN.p < 0.5);                      // DEN +3 at home: KC is favored
   assert.ok(Math.abs(P.lineProb(-3) - 0.588) < 0.01);
 });
+
+// ---------- bowl pick'em ----------
+const bg = (id, round, day, a, b, ap, bp) => ({ id, round, label: 'Bowl ' + id, kickoff: `2026-12-${String(day).padStart(2, '0')}T20:00:00Z`, a, b, ap: ap ?? null, bp: bp ?? null, w: ap == null ? null : ap > bp ? a : b, final: ap != null });
+const bp = (user, game, team, pts) => ({ user, slot: 'g' + game, team, pts });
+
+test('bowls: right picks score their numbers; ties go to right picks, then the title game total', () => {
+  const games = [bg('1', 0, 13, '61', '87', 30, 20), bg('2', 0, 14, '99', '84', 10, 24), bg('3', 4, 30, '2390', '61', 21, 17)];
+  const picks = [bp('a', '1', '61', 3), bp('a', '2', '99', 1), bp('a', '3', '61', 2), bp('b', '1', '87', 1), bp('b', '2', '84', 3), bp('b', '3', '61', 2),
+    { user: 'a', slot: 'tb', team: '40' }, { user: 'b', slot: 'tb', team: '50' }];
+  const B = P.bowls({ games, members: nmem.slice(0, 2), picks }, '2027-01-01T00:00:00Z');
+  assert.deepEqual(B.rows.map((r) => [r.id, r.points, r.right]), [['a', 3, 1], ['b', 3, 1]]);
+  assert.equal(B.total, 38);                                        // a guessed 40, closer than b's 50
+  assert.equal(B.rows[0].place, 1); assert.equal(B.rows[1].place, 2);
+  assert.ok(B.done); assert.deepEqual(B.winners, ['a']);
+});
+
+test('bowls: numbers once each; auto-rank gives the surest pick the biggest number and leaves locked games alone', () => {
+  assert.equal(P.bowlsCheck({ 1: { pts: 2 }, 2: { pts: 2 } }, 3).ok, false);
+  assert.equal(P.bowlsCheck({ 1: { pts: 4 } }, 3).ok, false);
+  const games = [bg('1', 0, 13, 'x', 'y'), bg('2', 0, 20, 'p', 'q'), bg('3', 0, 21, 'm', 'n'), bg('4', 4, 30, null, null)];
+  const prob = (g, t) => ({ x: 0.55, q: 0.9, m: 0.7 })[t];
+  const out = P.autoRank(games, { 1: { team: 'x', pts: 4 }, 2: { team: 'q' }, 3: { team: 'm' } }, prob, '2026-12-15T00:00:00Z');
+  assert.equal(out[1].pts, 4);                                      // game 1 has kicked off: it keeps 4
+  assert.deepEqual([out[2].pts, out[3].pts, out[4].pts], [3, 2, 1]); // 90% gets 3, 70% gets 2, the unpicked title game 1
+});
+
+// ---------- NFL bracket ----------
+const field = ['BUF', 'KC', 'JAX', 'CIN', 'DEN', 'PIT', 'CLE'].map((t, i) => ({ team: t, conf: 'AFC', seed: i + 1 }))
+  .concat(['SF', 'DET', 'NYG', 'CAR', 'MIN', 'CHI', 'GB'].map((t, i) => ({ team: t, conf: 'NFC', seed: i + 1 })));
+
+test('NFL bracket: the divisional round reseeds, and a changed pick drops what it fed', () => {
+  const picks = { Awc1: 'CLE', Awc2: 'JAX', Awc3: 'DEN' };         // 7, 3 and 5 seeds win
+  let b = P.bracket(field, picks);
+  assert.deepEqual([b.confs.AFC.dv[0].a, b.confs.AFC.dv[0].b], ['BUF', 'CLE']);   // the 1 seed gets the lowest seed left
+  assert.deepEqual([b.confs.AFC.dv[1].a, b.confs.AFC.dv[1].b], ['JAX', 'DEN']);
+  b = P.bracket(field, Object.assign({}, picks, { Adv1: 'CLE', Adv2: 'JAX', Acf: 'CLE' }));
+  assert.equal(b.confs.AFC.cf.pick, 'CLE');
+  // KC beats CLE in the Wild Card round instead: CLE's later picks no longer fit
+  const kept = P.bracketPicks(field, Object.assign({}, picks, { Awc1: 'KC', Adv1: 'CLE', Acf: 'CLE' }));
+  assert.equal(kept.Adv1, undefined); assert.equal(kept.Acf, undefined); assert.equal(kept.Awc1, 'KC');
+});
+
+test('NFL bracket scoring: 1, 2, 4, 8 a round; points still possible drop when a team is out', () => {
+  const games = [{ id: 'w1', round: 1, a: 'CLE', b: 'KC', ap: 10, bp: 20, w: 'KC', final: true }, { id: 'w2', round: 1, a: 'PIT', b: 'JAX', ap: 24, bp: 17, w: 'PIT', final: true }];
+  const picks = [{ user: 'a', slot: 'Awc1', team: 'KC' }, { user: 'a', slot: 'Awc2', team: 'JAX' }, { user: 'a', slot: 'Acf', team: 'KC' }, { user: 'a', slot: 'sb', team: 'KC' }];
+  const R = P.nflpo({ games, members: nmem.slice(0, 1), picks }).rows[0];
+  assert.equal(R.points, 1);                                        // KC won its Wild Card game; JAX lost
+  assert.equal(R.max, 1 + 4 + 8);                                   // KC can still win the AFC and the Super Bowl
+  assert.equal(R.champ, 'KC');
+});
