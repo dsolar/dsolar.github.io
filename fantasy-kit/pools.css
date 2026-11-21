@@ -18,7 +18,7 @@
 .pl-note.win{border-left-color:var(--win)}.pl-note.loss{border-left-color:var(--loss)}
 .pl-msg{margin:0;min-height:1em;font-size:13px;font-weight:700;color:var(--accent)}
 .pl-msg:empty{display:none}
-.pl-tabs{align-self:start}
+.pl-tabs{align-self:start;justify-self:start;width:fit-content;max-width:100%}
 .pl-tabs button{border:0;background:none;padding:8px 16px;font-weight:800;font-size:14px;color:var(--muted);cursor:pointer}
 .pl-tabs button+button{border-left:1px solid var(--line-2)}
 .pl-tabs button[aria-selected="true"]{background:var(--ink);color:var(--surface)}
@@ -534,3 +534,45 @@ button.pl-chip{cursor:pointer}
 @media (max-width:640px){.pl-gms{grid-template-columns:1fr}}
 .pl .seg button[aria-selected="true"]{background:var(--ink);color:var(--surface)}
 @media (max-width:640px){.pl-gm{padding:8px 10px;gap:2px}.pl-gr{padding:3px 0}.pl-gt b{font-size:14px}}
+@media (max-width:640px){.pl-tabs{width:100%;display:grid;grid-auto-flow:column;grid-auto-columns:1fr}.pl-tabs button{padding:9px 6px;font-size:13.5px}}
+.pl-gsel,.pl-rtabs{justify-self:start;width:fit-content;max-width:100%}
+.pl-rtabs{width:100%}
+/* settings */
+.pl-set summary{list-style:none;cursor:pointer}
+.pl-set summary::-webkit-details-marker{display:none}
+.pl-set summary h2::after{content:" +";color:var(--muted)}
+.pl-set[open] summary h2::after{content:" \2212"}
+.pl-set .pl-rules{margin-top:0}
+.pl-setb{display:grid;gap:14px}
+.pl-row{display:flex;flex-wrap:wrap;align-items:flex-end;gap:8px}
+.pl-set label{display:grid;gap:4px;font-size:13px;font-weight:750}
+.pl-set input,.pl-set select{font:inherit;font-weight:500;padding:8px 10px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink);min-width:0}
+.pl-row label{flex:1;min-width:200px}
+.pl-setf{display:grid;gap:10px;max-width:420px}
+.pl-setf .btn,.pl-sqset .btn{justify-self:start}
+.pl-sqset h3{margin:0;font-size:15px}
+.pl-mem{list-style:none;margin:0;padding:0}
+.pl-mem li{display:flex;align-items:center;gap:8px;padding:9px 16px;border-top:1px solid var(--line);font-size:14px}
+.pl-mem li:first-child{border-top:0}
+.pl-mem li .btn{margin-left:auto}
+.btn.danger{background:#C8102E;border-color:#C8102E;color:#fff}
+.pl-del{padding-top:12px;border-top:1px solid var(--line)}
+.pl-own .mod-h{background:color-mix(in srgb,var(--accent) 8%,var(--surface))}
+/* playoff fantasy: photos, card buttons, sort, lineups to date */
+.pl-ffi{display:flex;align-items:stretch;min-width:0}
+.pl-ffi>.pl-ffs,.pl-ffi>.pl-ffp{flex:1;min-width:0}
+.pl-ffinfo{flex:none;width:34px;border:0;border-left:1px solid var(--line);background:none;color:var(--muted);font:italic 800 15px Georgia,serif;cursor:pointer}
+.pl-ffinfo:hover{color:var(--ink);background:var(--surface-2)}
+.pl-fflist .pl-ffi{border-bottom:1px solid var(--line)}
+.pl-fflist .pl-ffi .pl-ffp{border-bottom:0}
+.pl-ffslots .pl-ffi{border-top:1px solid var(--line)}
+.pl-ffslots .pl-ffi .pl-ffs{border-top:0}
+.pl-pph{flex:none;display:inline-grid;place-items:center;border-radius:50%;overflow:hidden;background:var(--surface-3)}
+.pl-pph img{width:100%;height:100%;object-fit:contain}
+.pl-pph.face img{object-fit:cover;object-position:center 18%;transform:scale(1.35);transform-origin:center 30%}
+.pl-ffsort{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:750;color:var(--muted)}
+.pl-ffsort select{font:inherit;font-weight:650;padding:6px 8px;border:1px solid var(--line-2);border-radius:8px;background:var(--surface);color:var(--ink)}
+.pl-lunb{border:0;background:none;padding:0;font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.pl-lunb:hover{text-decoration:underline}
+.pl-lur{display:flex;justify-content:space-between;margin:8px 0 3px;font-size:12px;font-weight:850;color:var(--muted)}
+.pl-owns{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:13px}

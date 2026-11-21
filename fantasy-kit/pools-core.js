@@ -379,8 +379,11 @@
      stats: { round: { players: { id: [std, half, ppr] } } } from fk-live ?sport=nfl&post=N. */
   var FF_SLOTS = ["QB", "RB1", "RB2", "WR1", "WR2", "TE", "FLEX", "K", "DEF"];
   var ffSlots = function (slot) { return slot === "FLEX" ? ["RB", "WR", "TE"] : [slot.replace(/\d$/, "")]; };
+  var FF_SCORING = { std: 0, half: 1, ppr: 2 };
   function nflff(board, stats) {
     stats = stats || {};
+    // the pool's scoring: each stat line is [standard, half PPR, PPR]
+    var si = FF_SCORING[((board.pool && board.pool.extra) || {}).scoring] != null ? FF_SCORING[board.pool.extra.scoring] : 1;
     var by = {};
     // a pick is "playerId@TEAM": the team says when he locks
     (board.picks || []).forEach(function (p) { var m = /^r([1-4]):(\w+)$/.exec(p.slot); if (!m || !p.team) return; ((by[p.user] = by[p.user] || {})[m[1]] = by[p.user][m[1]] || {})[m[2]] = String(p.team).split("@")[0]; });
@@ -391,7 +394,7 @@
         FF_SLOTS.forEach(function (sl) {
           var id = lu[sl]; if (!id) return;
           used.push(id);
-          var line = scored ? stats[r].players[id] : null, v = line ? line[1] : 0;
+          var line = scored ? stats[r].players[id] : null, v = line ? line[si] : 0;
           each[sl] = scored ? v : null; pts += v;
         });
         pts = Math.round(pts * 100) / 100;

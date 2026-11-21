@@ -1312,3 +1312,59 @@ revoke all on function public.mm_squares_claim(text, int, boolean, text), public
 grant execute on function public.mm_squares_claim(text, int, boolean, text), public.mm_squares_set(text, int, numeric, int[]), public.mm_squares_draw(text) to authenticated;
 select cron.unschedule('squares-draw') where exists (select 1 from cron.job where jobname = 'squares-draw');
 select cron.schedule('squares-draw', '*/10 * * * *', $job$ select public.mm_squares_autodraw(); $job$);
+
+-- Pool settings: an owner renames the pool, sets the game's options, removes a member or deletes the pool; anyone
+-- renames their own entry (leaving is mm_pool_leave).
+create or replace function public.mm_pool_update(p_pool text, p_name text, p_settings jsonb default null) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; nm text := left(trim(coalesce(p_name, '')), 40); sc text;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, ''))) for update;
+  if not found then return jsonb_build_object('error', 'No pool has that code.'); end if;
+  if p.owner is distinct from uid then return jsonb_build_object('error', 'Only the pool''s owner can change that.'); end if;
+  if nm = '' then return jsonb_build_object('error', 'Name the pool.'); end if;
+  -- playoff fantasy's scoring, until the first lineup locks
+  sc := p_settings ->> 'scoring';
+  if sc is not null then
+    if p.kind <> 'nflff' or sc not in ('half', 'ppr', 'std') then return jsonb_build_object('error', 'That isn''t a scoring this game has.'); end if;
+    if po_round_lock(p.season, 1) <= now() then return jsonb_build_object('error', 'The playoffs have started, so the scoring is set.'); end if;
+  end if;
+  update mm_pools set name = nm, extra = case when sc is null then extra else extra || jsonb_build_object('scoring', sc) end where id = p.id;
+  return jsonb_build_object('ok', true);
+end $$;
+
+create or replace function public.mm_entry_rename(p_pool text, p_name text) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+begin
+  if auth.uid() is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  update mm_members set name = nullif(left(trim(coalesce(p_name, '')), 28), '') where pool = upper(trim(coalesce(p_pool, ''))) and user_id = auth.uid();
+  if not found then return jsonb_build_object('error', 'Join this pool first.'); end if;
+  return jsonb_build_object('ok', true);
+end $$;
+
+-- an owner takes someone out of the pool (their picks go with them)
+create or replace function public.mm_member_remove(p_pool text, p_user uuid) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare p mm_pools;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.owner is distinct from auth.uid() then return jsonb_build_object('error', 'Only the pool''s owner can remove someone.'); end if;
+  if p_user = p.owner then return jsonb_build_object('error', 'You own the pool, so you can''t remove yourself.'); end if;
+  delete from mm_members where pool = p.id and user_id = p_user;
+  if not found then return jsonb_build_object('error', 'They aren''t in this pool.'); end if;
+  return jsonb_build_object('ok', true);
+end $$;
+
+-- an owner deletes the pool and everything in it
+create or replace function public.mm_pool_delete(p_pool text, p_confirm text) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare p mm_pools;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.owner is distinct from auth.uid() then return jsonb_build_object('error', 'Only the pool''s owner can delete it.'); end if;
+  if upper(trim(coalesce(p_confirm, ''))) <> p.id then return jsonb_build_object('error', 'Type the pool''s code to delete it.'); end if;
+  delete from mm_pools where id = p.id;
+  return jsonb_build_object('ok', true);
+end $$;
+revoke all on function public.mm_pool_update(text, text, jsonb), public.mm_entry_rename(text, text), public.mm_member_remove(text, uuid), public.mm_pool_delete(text, text) from public, anon;
+grant execute on function public.mm_pool_update(text, text, jsonb), public.mm_entry_rename(text, text), public.mm_member_remove(text, uuid), public.mm_pool_delete(text, text) to authenticated;
