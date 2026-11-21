@@ -417,3 +417,10 @@ button.pl-chip{cursor:pointer}
 .pl-remind{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:13.5px;color:var(--muted);cursor:pointer}
 .pl-remind input{margin:2px 0 0;width:18px;height:18px;accent-color:var(--ink);flex:none}
 .pl-remind b{color:var(--ink);margin-right:4px}
+.pl-remind{padding:8px 12px;font-size:13px;align-items:center}
+.pl-remind input{margin:0}
+@media (max-width:640px){
+  .pl-choices .pl-sep{display:none}
+  .pl-choices .pl-tw{display:block;overflow:hidden;text-overflow:ellipsis}
+  .pl-remind .ps{display:block}
+}
