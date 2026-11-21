@@ -37,17 +37,26 @@
       return "https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_" + p + ",h_" + p + ",q_auto:best/v1/people/" + s + "/headshot/" + (opts.milb ? "milb" : "67") + "/current";
     if (sport === "nbacom") // NBA.com's photos, for retired players ESPN has none of (same shape as ESPN's)
       return "https://cdn.nba.com/headshots/nba/latest/" + (p > 130 ? "1040x760" : "260x190") + "/" + s + ".png";
-    var lg = sport === "espn" ? opts.league : sport;
+    var lg = sport === "espn" ? opts.league : sport === "espnmlb" ? "mlb" : sport; // espnmlb: ESPN's photo of an MLB player
     if (!ESPN_PATH[lg]) return "";
     return "https://a.espncdn.com/combiner/i?img=/i/headshots/" + ESPN_PATH[lg] + "/players/full/" + s + ".png&w=" + p + "&h=" + Math.round(p * 0.73);
   }
   function isEspn(sport, id) { return /^[a-z]+:/.test(String(id)) ? !/^mlb:/.test(String(id)) : sport !== "mlb"; }
 
-  // Names to registry keys: no accents, punctuation or suffixes ("Ronald Acuña Jr." -> "ronald-acuna")
+  // Names to registry keys: no accents, punctuation, suffixes or parentheses ("Ronald Acuña Jr." -> "ronald-acuna"),
+  // and initials joined ("A. J. Pierzynski" and "AJ Pierzynski" -> "aj-pierzynski"), the same as tools/faces_build.py
   function slug(name) {
-    return String(name || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
-      .replace(/[.'’`]/g, "").replace(/[^a-z0-9]+/g, " ").trim()
-      .replace(/\s+(jr|sr|ii|iii|iv|v)$/, "").replace(/\s+/g, "-");
+    var s = String(name || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+      .replace(/\([^)]*\)/g, " ").replace(/[.'’`]/g, "").replace(/[^a-z0-9]+/g, " ").trim()
+      .replace(/\s+(jr|sr|ii|iii|iv|v)$/, "");
+    var out = [], single = false;
+    s.split(/\s+/).forEach(function (w) {
+      if (!w) return;
+      if (w.length === 1 && single) out[out.length - 1] += w; else out.push(w);
+      single = w.length === 1 && (single || out[out.length - 1].length === 1);
+    });
+    if (out.length >= 3 && out[0].length === 1) out[0] += out.splice(1, 1)[0];
+    return out.join("-");
   }
 
   function initials(name) {

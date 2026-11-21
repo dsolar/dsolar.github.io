@@ -53,13 +53,25 @@ LOCAL = "--local" in sys.argv
 
 
 def slug(name):
+    """Names to registry keys, the same as slug() in assets/faces.js: no accents, punctuation, suffixes or
+    parentheses, and initials joined ("A. J. Pierzynski" and "AJ Pierzynski" -> "aj-pierzynski", "D Angelo
+    Russell" -> "dangelo-russell")"""
     s = unicodedata.normalize("NFD", str(name or ""))
     s = "".join(c for c in s if unicodedata.category(c) != "Mn").lower()
+    s = re.sub(r"\([^)]*\)", " ", s)
     s = re.sub(r"[.'’`]", "", s)
     s = re.sub(r"[^a-z0-9]+", " ", s).strip()
     s = re.sub(r"\s+(jr|sr|ii|iii|iv|v)$", "", s)
-    s = re.sub(r"\s+\((batter|pitcher)\)$", "", s)
-    return re.sub(r"\s+", "-", s)
+    out, single = [], False
+    for w in s.split():
+        if len(w) == 1 and single:
+            out[-1] += w
+        else:
+            out.append(w)
+        single = len(w) == 1 and (single or len(out[-1]) == 1)
+    if len(out) >= 3 and len(out[0]) == 1:
+        out[0] += out.pop(1)
+    return "-".join(out)
 
 
 def jload(path, default=None):
@@ -248,7 +260,15 @@ def wanted():
     if os.path.exists(ptc):
         for n in re.findall(r"name:\s*'([^']+)'", open(ptc, encoding="utf-8").read()):
             w["mlb"].add(n)
-    return {s: {n for n in v if n} for s, v in w.items()}
+    # people only: a team's defense shows its logo, and Paint the Corners' pitch names aren't players
+    teams = {"cardinals", "falcons", "ravens", "bills", "panthers", "bears", "bengals", "browns", "cowboys", "broncos",
+             "lions", "packers", "texans", "colts", "jaguars", "chiefs", "raiders", "chargers", "rams", "dolphins",
+             "vikings", "patriots", "saints", "giants", "jets", "eagles", "steelers", "49ers", "seahawks", "buccaneers",
+             "titans", "commanders"}
+    def person(n):
+        p = slug(n).split("-")
+        return len(p) >= 2 and p[-1] not in teams
+    return {s: {n for n in v if n and person(n)} for s, v in w.items()}
 
 
 def espn_search(name, sport):
@@ -276,7 +296,7 @@ def espn_search(name, sport):
         lg = c.get("defaultLeagueSlug") or ""
         pid = m.group(1)
         if lg == ESPN_LEAGUE[sport]:
-            return int(pid)
+            return f"espnmlb:{pid}" if sport == "mlb" else int(pid)
         # a pro page showing a college player (or the reverse): keep his photo from the other league (exact names only)
         if best is None and score == 2 and lg in ESPN_LEAGUE.values():
             other = [k for k, v in ESPN_LEAGUE.items() if v == lg][0]
@@ -351,6 +371,8 @@ def photo_url(sport, pid):
         sport, s = m.group(1), m.group(2)
     if sport == "nbacom":
         return f"https://cdn.nba.com/headshots/nba/latest/260x190/{s}.png"
+    if sport == "espnmlb":
+        return f"https://a.espncdn.com/i/headshots/mlb/players/full/{s}.png"
     if sport == "mlb":
         return f"https://img.mlbstatic.com/mlb-photos/image/upload/c_thumb,g_face,z_1.0,w_120,h_120,q_auto:best/v1/people/{s}/headshot/67/current"
     return f"https://a.espncdn.com/i/headshots/{ESPN_LEAGUE[sport]}/players/full/{s}.png"
@@ -452,6 +474,61 @@ def nba_fallback(want, checked, fix):
     return n
 
 
+def close_matches(want, fix):
+    """A name no list has exactly, matched to a registry name with the same last name and first names that agree on
+    their first three letters (Daxton/Dax Hill, Gregory/Greg Rousseau), only when exactly one player fits"""
+    n = 0
+    for sport in SPORTS:
+        by_last = {}
+        for k in reg[sport]:
+            p = k.split("-")
+            if len(p) >= 2:
+                by_last.setdefault(p[-1], []).append(k)
+        fixed = {slug(x) for x in (fix.get(sport) or {})}
+        for name in want[sport]:
+            k = slug(name)
+            p = k.split("-")
+            if k in reg[sport] or k in fixed or len(p) < 2 or len(p[0]) < 3:
+                continue
+            hits = {reg[sport][c] for c in by_last.get(p[-1], []) if c.split("-")[0][:3] == p[0][:3] and len(c.split("-")) == len(p)}
+            if len(hits) == 1:
+                reg[sport][k] = hits.pop()
+                n += 1
+                print(f"    close match {sport}: {name} -> {reg[sport][k]}")
+    print(f"  close matches: {n}")
+
+
+def mlb_fallback(want, checked, fix):
+    """MLB names whose MLB photo is missing get ESPN's photo of the same player, where ESPN has one"""
+    cache = json.load(open(CACHE, encoding="utf-8")) if os.path.exists(CACHE) else {}
+    stale = (date.today() - timedelta(days=30)).isoformat()
+    fixed = {slug(x) for x in (fix.get("mlb") or {})}
+    n = tried = 0
+    for name in sorted(want["mlb"]):
+        k = slug(name)
+        cur = reg["mlb"].get(k)
+        if k in fixed or cur is None or str(cur).startswith("espnmlb:") or (checked.get(f"mlb|{cur}") or [0])[0] != 404:
+            continue
+        c = cache.get(f"mlbespn|{k}")
+        if not c or (not c[0] and c[1] < stale):
+            if tried >= 150:
+                continue
+            tried += 1
+            try:
+                pid = espn_search(name, "mlb")
+            except Exception:
+                continue
+            c = cache[f"mlbespn|{k}"] = [pid if isinstance(pid, str) and pid.startswith("espnmlb:") else None, date.today().isoformat()]
+            time.sleep(0.35)
+        if c[0]:
+            reg["mlb"][k] = c[0]
+            n += 1
+    with open(CACHE, "w", encoding="utf-8") as f:
+        json.dump(cache, f, separators=(",", ":"), ensure_ascii=False, sort_keys=True)
+    print(f"  ESPN photos tried for {n} MLB names ({tried} searched)")
+    return n
+
+
 def main():
     local_sources()
     want = wanted()
@@ -463,10 +540,11 @@ def main():
             except Exception as e:
                 print(f"  {fn.__name__} failed: {e}")
         search_missing(want)
+    close_matches(want, json.load(open(FIX, encoding="utf-8")) if os.path.exists(FIX) else {})
     fix = apply_fixes()
     if not LOCAL:
         checked = check_photos(want)
-        if nba_fallback(want, checked, fix):
+        if nba_fallback(want, checked, fix) + mlb_fallback(want, checked, fix):
             checked = check_photos(want)
     elif os.path.exists(CHECKED):
         checked = json.load(open(CHECKED, encoding="utf-8"))
