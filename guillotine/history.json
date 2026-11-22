@@ -7372,7 +7372,7 @@
       "nfl": "TB",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 32,
-      "next_proj": 18.71
+      "next_proj": 18.81
      },
      {
       "n": "Brock Purdy",
@@ -7396,7 +7396,7 @@
       "nfl": "CAR",
       "claimed_by": "Holofernes",
       "bid": 8,
-      "next_proj": 11.6
+      "next_proj": 11.54
      },
      {
       "n": "Chase Brown",
@@ -7404,7 +7404,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 2,
-      "next_proj": 14.92
+      "next_proj": 14.8
      },
      {
       "n": "Sam LaPorta",
@@ -7435,7 +7435,7 @@
       "nfl": "GB",
       "claimed_by": "Holofernes",
       "bid": 0,
-      "next_proj": 17.64
+      "next_proj": 18.6
      },
      {
       "n": "Corey Kiner",
@@ -7447,7 +7447,7 @@
       "n": "Jalen Coker",
       "pos": "WR",
       "nfl": "CAR",
-      "next_proj": 10.52
+      "next_proj": 10.47
      },
      {
       "n": "Zach Charbonnet",
@@ -7542,7 +7542,7 @@
       "pos": "QB",
       "nfl": "DEN",
       "slot": "QB",
-      "proj": 18.05,
+      "proj": 18.2,
       "pts": null
      },
      {
@@ -7566,7 +7566,7 @@
       "pos": "WR",
       "nfl": "NO",
       "slot": "WR",
-      "proj": 12.69,
+      "proj": 12.36,
       "pts": null
      },
      {
@@ -7590,7 +7590,7 @@
       "pos": "TE",
       "nfl": "NYG",
       "slot": "TE",
-      "proj": 11.87,
+      "proj": 12.05,
       "pts": null
      },
      {
@@ -7598,7 +7598,7 @@
       "pos": "RB",
       "nfl": "DEN",
       "slot": "W/R/T",
-      "proj": 16,
+      "proj": 16.2,
       "pts": null
      },
      {
@@ -7614,7 +7614,7 @@
       "pos": "QB",
       "nfl": "NO",
       "slot": "BN",
-      "proj": 16.5,
+      "proj": 15.99,
       "pts": null
      },
      {
@@ -7638,7 +7638,7 @@
       "pos": "WR",
       "nfl": "WAS",
       "slot": "BN",
-      "proj": 11.22,
+      "proj": 11.21,
       "pts": null
      },
      {
@@ -7646,7 +7646,7 @@
       "pos": "WR",
       "nfl": "TEN",
       "slot": "BN",
-      "proj": 10.58,
+      "proj": 10.52,
       "pts": null
      }
     ],
@@ -7656,7 +7656,7 @@
       "pos": "QB",
       "nfl": "BUF",
       "slot": "QB",
-      "proj": 24.87,
+      "proj": 24.67,
       "pts": null
      },
      {
@@ -7664,7 +7664,7 @@
       "pos": "RB",
       "nfl": "BUF",
       "slot": "RB",
-      "proj": 18.68,
+      "proj": 18.86,
       "pts": null
      },
      {
@@ -7672,7 +7672,7 @@
       "pos": "RB",
       "nfl": "TEN",
       "slot": "RB",
-      "proj": 16.12,
+      "proj": 16.02,
       "pts": null
      },
      {
@@ -7680,7 +7680,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 18.72,
+      "proj": 18.71,
       "pts": null
      },
      {
@@ -7688,7 +7688,7 @@
       "pos": "WR",
       "nfl": "BAL",
       "slot": "WR",
-      "proj": 12.59,
+      "proj": 12.53,
       "pts": null
      },
      {
@@ -7712,7 +7712,7 @@
       "pos": "RB",
       "nfl": "SF",
       "slot": "W/R/T",
-      "proj": 18.06,
+      "proj": 18.12,
       "pts": null
      },
      {
@@ -7778,7 +7778,7 @@
       "pos": "QB",
       "nfl": "SF",
       "slot": "QB",
-      "proj": 17.64,
+      "proj": 17.67,
       "pts": null
      },
      {
@@ -7810,7 +7810,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.22,
+      "proj": 16.21,
       "pts": null
      },
      {
@@ -7818,7 +7818,7 @@
       "pos": "WR",
       "nfl": "NYJ",
       "slot": "WR",
-      "proj": 13.23,
+      "proj": 12.94,
       "pts": null
      },
      {
@@ -7826,7 +7826,7 @@
       "pos": "TE",
       "nfl": "SF",
       "slot": "TE",
-      "proj": 10.22,
+      "proj": 10.27,
       "pts": null
      },
      {
@@ -7834,7 +7834,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "W/R/T",
-      "proj": 13.01,
+      "proj": 13.02,
       "pts": null
      },
      {
@@ -7924,7 +7924,7 @@
       "pos": "WR",
       "nfl": "MIN",
       "slot": "WR",
-      "proj": 15.04,
+      "proj": 14.95,
       "pts": null
      },
      {
@@ -7932,7 +7932,7 @@
       "pos": "WR",
       "nfl": "BUF",
       "slot": "WR",
-      "proj": 10.9,
+      "proj": 11.01,
       "pts": null
      },
      {
@@ -7940,7 +7940,7 @@
       "pos": "WR",
       "nfl": "JAX",
       "slot": "WR",
-      "proj": 12.15,
+      "proj": 12.23,
       "pts": null
      },
      {
@@ -7956,7 +7956,7 @@
       "pos": "RB",
       "nfl": "JAX",
       "slot": "W/R/T",
-      "proj": 14.32,
+      "proj": 14.37,
       "pts": null
      },
      {
@@ -7964,7 +7964,7 @@
       "pos": "QB",
       "nfl": "WAS",
       "slot": "Q/W/R/T",
-      "proj": 21.79,
+      "proj": 21.74,
       "pts": null
      },
      {
@@ -7972,7 +7972,7 @@
       "pos": "QB",
       "nfl": "JAX",
       "slot": "BN",
-      "proj": 20.22,
+      "proj": 20.34,
       "pts": null
      },
      {
@@ -8030,7 +8030,7 @@
       "pos": "RB",
       "nfl": "NYG",
       "slot": "RB",
-      "proj": 14.95,
+      "proj": 15.08,
       "pts": null
      },
      {
@@ -8054,7 +8054,7 @@
       "pos": "WR",
       "nfl": "NYG",
       "slot": "WR",
-      "proj": 12.97,
+      "proj": 13.11,
       "pts": null
      },
      {
@@ -8070,7 +8070,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "W/R/T",
-      "proj": 12.23,
+      "proj": 12.22,
       "pts": null
      },
      {
@@ -8078,7 +8078,7 @@
       "pos": "QB",
       "nfl": "TEN",
       "slot": "Q/W/R/T",
-      "proj": 16.95,
+      "proj": 16.97,
       "pts": null
      },
      {
@@ -8102,7 +8102,7 @@
       "pos": "WR",
       "nfl": "SF",
       "slot": "BN",
-      "proj": 11.88,
+      "proj": 11.93,
       "pts": null
      },
      {
