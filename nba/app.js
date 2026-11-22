@@ -538,7 +538,7 @@
     if (!p) return;
     var s = H.surplus(p), sm = H.surplus(p, H.cfg.mode === "market" ? "prod" : "market"), t = team(p.t), r = H.adv ? p.adv : null;
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + ", " + esc(posOf(p)) +
-      ", age " + (p.age != null ? p.age : "—") + (p.yos != null ? ", " + p.yos + " yrs in the league" : "") + "</div>" + (r || p.injury ? '<div class="meta2">' + (r ? '<span class="pill new">' + esc(r.arch) + "</span>" : "") + injTag(p) + "</div>" : "") + (p.injury ? '<p class="note injnote">' + esc(p.injury.note) + (p.injury.date ? " (" + esc(p.injury.date) + ")" : "") + "</p>" : "") + "</div></div>";
+      ", age " + (r && r.age != null ? Math.floor(r.age) : p.age != null ? p.age : "—") + (p.yos != null && !p.two ? ", " + p.yos + (p.yos === 1 ? " yr" : " yrs") + " in the league" : "") + "</div>" + (r || p.injury ? '<div class="meta2">' + (r ? '<span class="pill new archpill ab-' + ((ARCH[r.arch] || [])[1] || "role") + '">' + archIcon(r.arch, 14) + esc(r.arch) + "</span>" : "") + injTag(p) + "</div>" : "") + (p.injury ? '<p class="note injnote">' + esc(p.injury.note) + (p.injury.date ? " (" + esc(p.injury.date) + ")" : "") + "</p>" : "") + "</div></div>";
     var tabs = [["ov", "Overview"]].concat(r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], p.rook || p.fill ? [] : [["tr", "Tracking"]], [["ct", "Contract"]]);
     if (!tabs.some(function (x) { return x[0] === cardTab; })) cardTab = "ov";
     html += '<div class="ctabs" role="tablist">' + tabs.map(function (x) { return '<button type="button" role="tab" data-ctab="' + x[0] + '" aria-selected="' + (x[0] === cardTab) + '">' + x[1] + "</button>"; }).join("") + "</div>";
@@ -555,7 +555,7 @@
     var vo = !p.rook && H.valRanks()[p.id];
     if (vo && (vo.gs != null || vo.cR)) ov += kv(rt(vo.val), '<a href="' + href("rank", {}) + '">Value rating</a> (No. ' + vo.vR + ")");
     if (p.ringer) ov += kv("No. " + p.ringer, "Ringer Top 100");
-    ov += kv(signed(H.tradeValue(p)), "Trade value") + "</div>";
+    ov += (p.two ? kv("Two-way", "Contract") : kv(signed(H.tradeValue(p)), "Trade value")) + "</div>";
     if (r) {
       var top = Object.keys(H.adv.cats).filter(function (c) { return CAT_IMP.indexOf(c) < 0 && r.r[c] != null; }).sort(function (a, b) { return r.r[b] - r.r[a]; });
       ov += '<p class="tldr"><b>Best at:</b> ' + top.slice(0, 3).map(function (c) { return esc(H.adv.cats[c].toLowerCase()) + " (" + r.r[c] + ")"; }).join(", ") + '. <b>Weakest:</b> ' + top.slice(-2).reverse().map(function (c) { return esc(H.adv.cats[c].toLowerCase()) + " (" + r.r[c] + ")"; }).join(", ") + ".</p>";
@@ -584,29 +584,38 @@
     }
     // contract
     var ct = "";
-    if (contractYears(p, 0).length) ct += contractStrip(p, 0);
+    if (p.two) ct += twoWayNote(p);
+    else if (contractYears(p, 0).length) ct += contractStrip(p, 0);
     var dsc = function (x) { return Math.pow(1 + H.cfg.disc, -x.j); };
+    if (!p.two) {
     var vt = s.rows.reduce(function (a, x) { return a + x.value * dsc(x); }, 0), cf = s.rows.reduce(function (a, x) { return a + x.sal * dsc(x); }, 0), net = vt - cf;
     // Surplus is the plain difference, value minus every dollar of salary. Trade value is what the market makes of it:
     // real deals take on salary at about the salary weight (see the method page), so an overpaid player can still
     // bring something back
     ct += '<div class="vcs"><div><span>Value</span><b>' + money(vt) + "</b><small>" + (H.cfg.mode === "market" ? "what teams would pay him" : "what he should produce") + '</small></div><i>−</i><div><span>Salary</span><b>' + money(cf) +
       "</b><small>what he'll be paid</small></div><i>=</i><div class=\"" + (net >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(net) + "</b><small>" + (net >= 0 ? "underpaid" : "overpaid") + ", " + s.rows.length + " season" + (s.rows.length === 1 ? "" : "s") + (H.cfg.disc > 0 ? ", discounted" : "") + "</small></div></div>";
-    var spv = H.surplus(p, "prod").pv, mpv = H.surplus(p, "market").pv;
-    ct += '<p class="tldr"><b>Trade value ' + signed(H.tradeValue(p)) + "</b> (production view " + signed(spv) + ", market view " + signed(mpv) + ", averaged). " + ((H.cfg.salW ?? 1) < 1 ? "In real trades teams take on salary at about " + Math.round(H.cfg.salW * 100) + "% of face value this season and next, more for years further out, so " + (net < 0 && H.tradeValue(p) > 0 ? "he's overpaid but still brings something back." : net < 0 ? "even at that discount his deal costs a team." : "the market likes him even more than his surplus says.") : "") + (p.form && Math.abs(p.form) >= 0.05 ? " This season's play has moved his rating " + rt(p.form) + "." : "") + " " + esc(p.note || "") + "</p>";
+    var spv = H.surplus(p, "prod").pv, mpv = H.surplus(p, "market").pv, tv = H.tradeValue(p), salW = H.cfg.salW ?? 1;
+    // 1. the number and where it comes from; 2. why it differs from his surplus; 3. his own story, apart
+    ct += '<p class="tldr"><b>Trade value: ' + signed(tv) + ".</b> What his contract is worth to a team trading for him: the average of what he should produce (" + signed(spv) + ") and what teams pay players like him (" + signed(mpv) + ").</p>";
+    if (salW < 1) ct += '<p class="note">Teams trading for a player count only about ' + Math.round(salW * 100) + "% of his salary this season and next (more for later years), so " +
+      (net < 0 && tv > 0 ? "he's overpaid, but he still brings something back." : net < 0 ? "his deal hurts less than its face value, but it still costs a team." : "he's worth even more in a trade than his surplus says.") + "</p>";
+    var story = [p.note ? esc(p.note) : "", p.form && Math.abs(p.form) >= 0.05 ? "This season's play has moved his rating " + (p.form > 0 ? "up " : "down ") + f1(Math.abs(p.form)) + "." : ""].filter(Boolean).join(" ");
+    if (story) ct += '<p class="note">' + story + "</p>";
     var bv = s.prior ? 0 : H.birdValue(p);
-    if (bv >= 1e6) ct += '<p class="note">Plus Bird rights: when his deal ends after ' + sname(H.lastYear(p)) + ", " + esc(team(p.t).short) + " can re-sign him over the cap. Worth about " + money(bv) + " to them (more to a team over the cap, which couldn't replace him in free agency). Trade grades and the finder count it.</p>";
+    if (bv >= 1e6) ct += '<p class="note"><b>Bird rights:</b> The ' + esc(team(p.t).short) + " can go over the cap to re-sign him when his deal ends after " + sname(H.lastYear(p)) + ". Worth about " + money(bv) + " to them, more if they're over the cap and couldn't replace him in free agency. Trade grades and the deal finder include it.</p>";
     if (s.prior) ct += '<p class="note">Still on his rookie deal, so ' + Math.round((1 - s.prior.w) * 100) + "% of his trade value comes from what No. " + s.prior.slot + " picks are worth (" + signed(s.prior.value) + " over the rest of a draftee's first eight seasons) and " + Math.round(s.prior.w * 100) + "% from his own projection (" + signed(s.prior.model) + "). His own play takes over as the minutes pile up.</p>";
     ct += '<div class="scroll"><table class="t"><thead><tr><th>Season</th><th>Age</th><th>Impact</th><th>Value</th><th>Salary</th><th title="Value minus salary">Surplus</th><th title="Value minus salary at the trade-market weight">Trade value</th></tr></thead><tbody>';
     s.rows.forEach(function (x) {
       var sp = x.value - x.sal;
       ct += "<tr><td>" + x.season + (x.opt ? ' <span class="pill">' + esc(x.opt) + "</span>" : "") + (x.part < 1 ? ' <span class="note">(rest of season)</span>' : "") + "</td><td>" + (p.age + x.j) + "</td><td>" + rchip(x.r) + "</td><td>" + money(x.value) + "</td><td>" + money(x.sal) + '</td><td class="' + (sp >= 0 ? "pos" : "neg") + '">' + signed(sp) + '</td><td class="' + (x.surplus >= 0 ? "pos" : "neg") + '">' + signed(x.surplus) + "</td></tr>";
     });
-    ct += '<tr class="tot"><td colspan="5">Discounted at ' + pct(H.cfg.disc) + ' a year' + (s.prior ? ", trade value with the draft-slot blend" : "") + (H.cfg.mode === "market" ? ", market view" : ", production view") + '</td><td class="' + (net >= 0 ? "pos" : "neg") + '"><b>' + signed(net) + '</b></td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr></tbody></table></div>";
+    ct += '<tr class="tot"><td colspan="5">Total, ' + (H.cfg.mode === "market" ? "what teams pay players like him" : "what he should produce") + ", discounted " + pct(H.cfg.disc) + " a year" + (s.prior ? ", with the draft-slot blend" : "") + '</td><td class="' + (net >= 0 ? "pos" : "neg") + '"><b>' + signed(net) + '</b></td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr></tbody></table></div>";
+    if (Math.abs(s.pv - tv) >= 0.05) ct += '<p class="note">The table shows one of the two reads; the trade value at the top averages both.</p>';
+    }
     var ee = CBA.extEligible(p, 0);
     if (ee.ok) { var el = CBA.extLimit(p, 0); ct += '<p class="note">Extension eligible now (' + esc(ee.kind) + "): up to " + money(el.first) + " in " + sname(el.start) + (el.maxYears ? ", " + el.maxYears + " years" : "") + ".</p>"; }
     var e = H.lastYear(p);
-    if (e >= 0 && e < Hub.YEARS - 1) ct += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
+    if (!p.two && e >= 0 && e < Hub.YEARS - 1) ct += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + (p.age != null ? ", at " + (p.age + e + 1) : "") + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
     html += '<div class="cpane" data-pane="ct"' + (cardTab === "ct" ? "" : " hidden") + ">" + ct + "</div>";
     if (!p.rook && !p.fill) {
       var mine = H.adj[p.id] || 0, steps = [-2, -1.5, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.5, 2];
@@ -615,6 +624,15 @@
     html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a>" + (p.prospect ? ' <a class="btn" href="' + boardHref("p=" + encodeURIComponent(p.prospect), p.board) + '">On the Big Board</a>' : "") + "</p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
+  }
+  // Two-way and 10-day deals don't count against the cap, so the hub carries them at no salary; the card says what they are
+  function twoWayNote(p) {
+    var fx = (H.fixes && H.fixes.nonCap && H.fixes.nonCap[p.id]) || {}, ten = fx.kind === "10-day";
+    var minS = (H.minScale && H.minScale[0]) || 1357762;
+    return '<div class="kv">' + kv(ten ? "10-day" : "Two-way", "Contract") + kv(money(ten ? minS * 10 / 174 : minS / 2), ten ? "For the 10 days" : "Salary this season") + kv("No", "Counts against the cap") + "</div>" +
+      '<p class="tldr">' + (ten ? "A 10-day contract: ten days at his minimum, then the team keeps him on another or lets him go." :
+        "A two-way contract: he can play up to 50 regular-season games for the " + esc(team(p.t).short) + " and spends the rest with its G League team. It pays half the rookie minimum and doesn't count against the cap or the tax, so it has no trade value until he's converted to a standard deal, which needs an open roster spot.") +
+      (fx.note ? " " + esc(fx.note) + "." : "") + "</p>";
   }
   function closeCard() { if (card.open) card.close(); }
   function saveAdj() { save("adj", H.adj); }
@@ -925,7 +943,49 @@
     "Shooter": ["SH", "sht"], "3-and-D wing": ["3&D", "sht"], "3-and-D guard": ["3&D", "sht"], "Defensive stopper": ["DEF", "def"], "Slasher": ["SL", "sht"], "Connector": ["CON", "role"], "Role player": ["ROL", "role"],
     "Playmaking big": ["PB", "big"], "Scoring big": ["SB", "big"], "Stretch rim protector": ["SRP", "big"], "Rim protector": ["RP", "big"], "Stretch big": ["STR", "big"], "Rim runner": ["RR", "big"], "Rotation big": ["BIG", "big"]
   };
-  function archBadge(a) { var x = ARCH[a] || ["?", "role"]; return '<span class="ab ab-' + x[1] + '" title="' + esc(a) + '">' + esc(x[0]) + "</span>"; }
+  // an icon for each archetype, drawn on a 16-unit grid in the badge's color: what the player does, at a glance
+  var ARCH_ICON = (function () {
+    var st = function (d, w) { return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="' + (w || 1.6) + '" stroke-linecap="round" stroke-linejoin="round"/>'; };
+    var fl = function (d) { return '<path d="' + d + '" fill="currentColor"/>'; };
+    var shield = "M8 1.6 13.4 3.6V8c0 3.4-5.4 6.4-5.4 6.4S2.6 11.4 2.6 8V3.6Z";
+    return {
+      "Two-way superstar": fl("M8 1.4l1.95 4.3 4.6.45-3.5 3.05 1.05 4.55L8 11.4l-4.1 2.35 1.05-4.55-3.5-3.05 4.6-.45Z"),
+      "Primary creator": fl("M9.2 1.4 3.4 9h4.1l-1 5.6 6.1-8H8.4Z"),
+      "Shot creator": st("M8 3a5 5 0 1 0 0 10A5 5 0 1 0 8 3M8 1v3.4M8 11.6V15M1 8h3.4M11.6 8H15") + fl("M8 6.6a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 1 0 0-2.8"),
+      "Three-level scorer": fl("M1.8 10h3.4v4.4H1.8ZM6.3 6.4h3.4v8H6.3ZM10.8 2.6h3.4v11.8h-3.4Z"),
+      "Floor general": st("M1.4 8C3.6 4.2 12.4 4.2 14.6 8 12.4 11.8 3.6 11.8 1.4 8Z") + fl("M8 5.9a2.1 2.1 0 1 0 0 4.2 2.1 2.1 0 1 0 0-4.2"),
+      "Shooter": st("M3 13.2C3.6 6.8 8 3.4 12.6 5.6M11 7.4h3.6") + fl("M3 11.4a1.8 1.8 0 1 0 0 3.6 1.8 1.8 0 1 0 0-3.6"),
+      "3-and-D wing": st(shield) + st("M5.2 9.6C6 6.4 10 6.4 10.8 9.6", 1.4),
+      "3-and-D guard": st(shield) + st("M5.2 9.6C6 6.4 10 6.4 10.8 9.6", 1.4),
+      "Defensive stopper": fl(shield),
+      "Slasher": st("M1.8 12.6 6 8.2l3 2.2 5.2-6.4M10.6 4h3.6v3.6"),
+      "Connector": st("M6.8 5.2H4.4a2.8 2.8 0 0 0 0 5.6h2.4M9.2 5.2h2.4a2.8 2.8 0 0 1 0 5.6H9.2M5.6 8h4.8"),
+      "Role player": st("M2.6 2.8h3.6a1.8 1.8 0 1 1 3.6 0h3.6v3.6a1.8 1.8 0 1 1 0 3.6v3.6H2.6Z", 1.4),
+      "Playmaking big": st("M3.4 11.8 8 3.8l4.6 8M3.4 11.8h9.2", 1.3) + fl("M8 1.8a2 2 0 1 0 0 4 2 2 0 1 0 0-4M3.4 9.8a2 2 0 1 0 0 4 2 2 0 1 0 0-4M12.6 9.8a2 2 0 1 0 0 4 2 2 0 1 0 0-4"),
+      "Scoring big": fl("M8 1.2c1.6 3.2 5.2 4.6 5.2 8.8a5.2 5.2 0 0 1-10.4 0c0-2.6 1.5-3.6 2.6-5.2.3 2 1.3 3 2.6 3-1-2.6-.6-4.6 0-6.6Z"),
+      "Stretch rim protector": st(shield) + st("M5 8.4h6M6.6 6.8 5 8.4l1.6 1.6M9.4 6.8 11 8.4 9.4 10", 1.3),
+      "Rim protector": st("M2.4 2.4h11.2", 2.4) + st("M3.4 6.6h9.2M4.4 6.6 5.8 13h4.4l1.4-6.4M6.4 6.6l.7 6.4M9.6 6.6l-.7 6.4", 1.3),
+      "Stretch big": st("M1.8 8h12.4M4.8 5 1.8 8l3 3M11.2 5l3 3-3 3"),
+      "Rim runner": st("M3.6 2.4h8.8", 2.2) + st("M8 14.4V5.4M4.8 8.4 8 5.2l3.2 3.2"),
+      "Rotation big": st("M2 3.6h12v4.4H2ZM2 8h12v4.4H2ZM8 3.6V8M5 8v4.4M11 8v4.4", 1.3)
+    };
+  })();
+  function archIcon(a, px) {
+    var ic = ARCH_ICON[a];
+    return ic ? '<svg viewBox="0 0 16 16" width="' + (px || 16) + '" height="' + (px || 16) + '" aria-hidden="true" focusable="false">' + ic + "</svg>" : "";
+  }
+  function archBadge(a) {
+    var x = ARCH[a] || ["?", "role"], ic = archIcon(a);
+    return '<span class="ab ab-' + x[1] + (ic ? " ab-ico" : "") + '" title="' + esc(a) + '" role="img" aria-label="' + esc(a) + '">' + (ic || esc(x[0])) + "</span>";
+  }
+  // the key under the ratings table: every archetype by family
+  function archKey() {
+    var fam = [["star", "Stars"], ["cre", "Creators"], ["sht", "Shooters and wings"], ["def", "Defenders"], ["big", "Bigs"], ["role", "Role players"]];
+    return '<div class="archkey">' + fam.map(function (f) {
+      var names = Object.keys(ARCH).filter(function (a) { return ARCH[a][1] === f[0] && a !== "3-and-D guard"; });
+      return names.length ? "<div><b>" + f[1] + "</b>" + names.map(function (a) { return '<span class="ak">' + archBadge(a) + esc(a === "3-and-D wing" ? "3-and-D" : a) + "</span>"; }).join("") + "</div>" : "";
+    }).join("") + "</div>";
+  }
   // Excel's three-color scale: red at 0, yellow at 50, green at 99
   function mix(c1, c2, t) { return "rgb(" + [0, 1, 2].map(function (i) { return Math.round(c1[i] + (c2[i] - c1[i]) * t); }).join(",") + ")"; }
   var XR = [248, 105, 107], XY = [255, 235, 132], XG = [99, 190, 123];
@@ -1070,7 +1130,8 @@
         "<span>" + (start + 1) + "-" + Math.min(list.length, start + PER) + " of " + list.length + "</span>" +
         (pg < pages ? '<a class="btn" href="' + link({ pg: pg + 1 }) + '">Next</a>' : '<span class="btn off">Next</span>') + "</nav>";
     }
-    html += '<p class="note">Impact is points per 100 possessions better than average (DARKO, or box plus-minus where DARKO has no number). Hover a cell for league and position-group ranks, or a badge for the player type. Updated ' + esc(A.updated.replace("T", " ").replace("Z", " UTC")) + ". How it works explains every category.</p>";
+    html += '<p class="note">Impact is points per 100 possessions better than average (DARKO, or box plus-minus where DARKO has no number). Hover a cell for league and position-group ranks, or an icon for the player type. Updated ' + esc(A.updated.replace("T", " ").replace("Z", " UTC")) + ". How it works explains every category.</p>";
+    html += '<h3 class="keyh">Player types</h3>' + archKey();
     view.innerHTML = html;
   }
   // shot chart and skill bars for the player card
@@ -1946,6 +2007,7 @@
           fb.innerHTML = "<b>Some data is behind.</b> " + desc + '. Numbers that lean on it may be off. <a href="' + href("method", {}) + '">See the data feeds</a>';
         }
       }
+      H.fixes = r[2] || {}; H.minScale = r[0] && r[0].cba && r[0].cba.min_scale;
       H.keep = load("keep", {}) || {};
       var adj0 = load("adj", {}) || {}; Object.keys(adj0).forEach(function (id) { if (H.W.P[id]) H.adj[id] = +adj0[id]; }); if (Object.keys(H.adj).length) H.reset();
       fillBox.checked = H.cfg.fill;

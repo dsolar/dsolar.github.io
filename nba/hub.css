@@ -855,3 +855,13 @@ table.tfeed tr.stale td{color:var(--red)}
 .myadj .note{font-size:12.5px}
 .adjs{margin-top:10px;padding-top:10px;border-top:1px solid var(--rule-2);font-size:13.5px}
 .adjs .btn.sm{padding:3px 9px;font-size:12px;margin-left:6px}
+/* player type icons (app.js ARCH_ICON) */
+.ab.ab-ico{min-width:26px;padding:3px 5px;line-height:0}
+.ab.ab-ico svg{display:inline-block;vertical-align:middle}
+.archpill{display:inline-flex;align-items:center;gap:5px;text-transform:none;letter-spacing:0}
+.archpill svg{flex:none}
+.keyh{font:700 13px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin:18px 0 8px}
+.archkey{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px 20px;margin-bottom:12px}
+.archkey>div{display:flex;flex-wrap:wrap;align-items:center;align-content:flex-start;gap:6px 12px;font-size:13px}
+.archkey b{flex-basis:100%;font-size:12px;color:var(--muted)}
+.archkey .ak{display:inline-flex;align-items:center;gap:6px}
