@@ -1,0 +1,37 @@
+name: NBA tracking probe (temporary)
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe NBA tracking
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.request, gzip
+          H = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36",
+               "Referer": "https://www.nba.com/", "Origin": "https://www.nba.com", "Accept": "application/json, text/plain, */*",
+               "Accept-Language": "en-US,en;q=0.9", "Accept-Encoding": "gzip", "x-nba-stats-origin": "stats", "x-nba-stats-token": "true"}
+          def get(u):
+              t = time.time()
+              try:
+                  r = urllib.request.urlopen(urllib.request.Request(u, headers=H), timeout=25); b = r.read()
+                  if r.headers.get("Content-Encoding") == "gzip": b = gzip.decompress(b)
+                  return r.status, b, round(time.time() - t, 1)
+              except Exception as e:
+                  return str(e)[:120], b"", round(time.time() - t, 1)
+          S = "https://stats.nba.com/stats/"
+          base = "Season=2026-27&SeasonType=Regular%20Season&PerMode=PerGame&PlayerOrTeam=Player&LeagueID=00"
+          urls = [S + "leaguedashptstats?" + base + "&PtMeasureType=SpeedDistance",
+                  S + "leaguedashptstats?" + base + "&PtMeasureType=Drives",
+                  S + "leaguehustlestatsplayer?Season=2026-27&SeasonType=Regular%20Season&PerMode=PerGame&LeagueID=00",
+                  S + "leaguedashptdefend?Season=2026-27&SeasonType=Regular%20Season&PerMode=PerGame&LeagueID=00&DefenseCategory=Overall",
+                  S + "leaguedashplayerptshot?Season=2026-27&SeasonType=Regular%20Season&PerMode=PerGame&LeagueID=00",
+                  "https://cdn.nba.com/static/json/liveData/scoreboard/todaysScoreboard_00.json"]
+          for u in urls:
+              s, b, dt = get(u)
+              print("==", u.split("?")[0].split("/")[-1], u.split("PtMeasureType=")[-1][:15] if "PtMeasureType" in u else "", s, len(b), dt)
+              try:
+                  j = json.loads(b); rs = j.get("resultSets") or [j.get("resultSet")]
+                  if rs and rs[0]: print("  headers:", rs[0]["headers"]); print("  rows:", len(rs[0]["rowSet"]), rs[0]["rowSet"][:1])
+              except Exception as e: print("  ", b[:200])
+          PY
