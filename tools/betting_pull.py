@@ -208,7 +208,12 @@ def an_pull(league, queries):
             o_sp = next((r.get("value") for r in m30.get("spread") or [] if r.get("side") == "home" or r.get("team_id") == hid), None)
             o_tot = next((r.get("value") for r in m30.get("total") or [] if r.get("side") == "over"), None)
             if o_sp is not None or o_tot is not None: data["op"] = [o_sp, o_tot]
-            if g.get("status") != "scheduled": data["_live"] = True
+            # a game is under way once its kickoff time has passed (the feed's status can lag during games)
+            try:
+                started_at = datetime.fromisoformat(g["start_time"].replace("Z", "+00:00")) <= now
+            except Exception:
+                started_at = False
+            if g.get("status") != "scheduled" or started_at: data["_live"] = True
             if sh: data["sp"] = [sh.get("value"), sp_pct]
             if th: data["tot"] = [th.get("value"), tot_pct]
             if mh and ma: data["ml"] = [mh.get("odds"), ma.get("odds"), ml_pct]
@@ -241,6 +246,7 @@ def kalshi_pull(series):
             code = (m.get("ticker") or "").rsplit("-", 1)[-1]
             e = events.setdefault(ev, {"day": day, "pair": mt.group(4), "sides": []})
             num = lambda k: float(m.get(k)) if m.get(k) not in (None, "") else None
+            e.setdefault("exp", m.get("expected_expiration_time"))
             e["sides"].append({"code": code, "name": m.get("yes_sub_title") or "", "last": num("last_price_dollars"),
                                "bid": num("yes_bid_dollars"), "ask": num("yes_ask_dollars"), "vol": num("volume_fp") or 0})
         cursor = d.get("cursor") or ""
@@ -261,9 +267,15 @@ def kalshi_pull(series):
             return s["last"] if s["last"] else None
 
         vol = round(a["vol"] + h["vol"])
+        # Kalshi sets a game market to expire about three hours after kickoff; past kickoff its price is a live one
+        live = False
+        try:
+            live = now >= datetime.fromisoformat(str(e.get("exp")).replace("Z", "+00:00")) - timedelta(hours=3, minutes=30)
+        except Exception:
+            pass
         out.append({"day": e["day"], "home_names": [norm(h["name"]), norm(h["code"])], "away_names": [norm(a["name"]), norm(a["code"])],
                     "home_abbr": h["code"], "away_abbr": a["code"],
-                    "data": {"t": ev, "h": price(h), "a": price(a), "v": vol, "at": now.strftime("%Y-%m-%dT%H:%MZ")}})
+                    "data": dict({"t": ev, "h": price(h), "a": price(a), "v": vol, "at": now.strftime("%Y-%m-%dT%H:%MZ")}, **({"_live": True} if live else {}))})
     return out
 
 
@@ -284,7 +296,7 @@ def write(hub, fresh, src_note):
     merged = dict(old)
     for gid, v in fresh.items():
         cur = dict(merged.get(gid, {}))
-        live = gid in started or bool(v.get("an", {}).get("_live"))
+        live = gid in started or bool(v.get("an", {}).get("_live")) or bool(v.get("k", {}).get("_live"))
         for k, val in v.items():
             # freeze a game's numbers once it's under way, so finals keep the closing split; a Kalshi price first seen
             # mid-game is a live price, not a pregame one, so it's skipped

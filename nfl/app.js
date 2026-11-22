@@ -94,8 +94,9 @@
     state.route = parts[0] || "standings"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
   }
   // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
-  var GROUP = { standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", contracts: "players", fa: "moves", trade: "moves" };
+  var GROUP = { week: "games", game: "games", standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", contracts: "players", fa: "moves", trade: "moves" };
   var SUBS = {
+    games: [["week", "This week"]],
     standings: [["standings", "Standings"], ["power", "Power rankings"]],
     teams: [["teams", "Teams"], ["offseason", "Offseason"], ["cap", "League cap"]],
     players: [["players", "Players"], ["ngs", "Next Gen Stats"], ["contracts", "Contracts"]],
@@ -103,7 +104,7 @@
   };
   function render() {
     parse();
-    var cur = state.route === "team" ? "teams" : state.route === "league" ? "cap" : state.route, group = GROUP[state.route] || "standings", subs = SUBS[group];
+    var cur = state.route === "team" ? "teams" : state.route === "league" ? "cap" : state.route === "game" ? "week" : state.route, group = GROUP[state.route] || "standings", subs = SUBS[group];
     if (subs.some(function (x) { return x[0] === cur; })) save("sub." + group, cur);
     document.querySelectorAll(".tabs a").forEach(function (a) {
       if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
@@ -113,9 +114,131 @@
     var st = $("#subtabs");
     st.hidden = false;
     st.innerHTML = subs.map(function (x) { return '<a href="' + href(x[0], {}) + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
-    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    ({ week: weekPage, game: gamePage, standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
   }
   window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
+
+  // ---------- this week: game cards and previews ----------
+  // Team offense and defense from play-by-play (data/teamstats.json, tools/nfl_teamstats.py), public betting
+  // (data/betting.json: Action Network share of bets, Kalshi prices; tools/betting_pull.py) and Next Gen Stats.
+  var TS = null, BETN = null, wkWait = null;
+  function loadWeek() {
+    var get = function (u) { return fetch(u, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); };
+    if (!wkWait) wkWait = Promise.all([get("data/teamstats.json"), get("data/betting.json"), loadNgs()]).then(function (r) { TS = r[0] || { teams: {} }; BETN = r[1] || { games: {} }; });
+    return wkWait;
+  }
+  function regGames() { return W.games.filter(function (g) { return g[0] === "REG"; }); }
+  function upcomingWeek() { var open = regGames().filter(function (g) { return g[5] == null; }).map(function (g) { return g[1]; }); return open.length ? Math.min.apply(null, open) : Math.max.apply(null, regGames().map(function (g) { return g[1]; })); }
+  function gkey(g) { return g[2] + "|" + g[3] + "|" + g[4]; }
+  function recordOf(code) {
+    var w = 0, l = 0, t = 0;
+    regGames().forEach(function (g) { if (g[5] == null) return; var home = g[4] === code; if (!home && g[3] !== code) return; var us = home ? g[6] : g[5], them = home ? g[5] : g[6]; if (us > them) w++; else if (us < them) l++; else t++; });
+    return w + "-" + l + (t ? "-" + t : "");
+  }
+  function kickTxt(g) {
+    var d = new Date(g[2] + "T12:00:00"), day = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+    if (!g[10]) return day;
+    var hm = g[10].split(":"), h = +hm[0], ap = h >= 12 ? "PM" : "AM";
+    return day + " · " + ((h % 12) || 12) + ":" + hm[1] + " " + ap + " ET";
+  }
+  function lineOf(g) { var v = g[7]; if (v == null) return "—"; if (Math.abs(v) < 0.25) return "Pick'em"; return esc(v > 0 ? g[4] : g[3]) + " −" + String(Math.abs(v)).replace(/\.0$/, ""); }
+  function injuredOf(code, wk) {
+    var rank = { O: 0, D: 1, Q: 2, P: 3 };
+    return W.players.filter(function (p) { return p.t === code && p.inj && INJ_CODE[p.inj[0]] && p.inj[3] >= wk && p.inj[0] !== "Probable"; })
+      .sort(function (a, b) { return rank[INJ_CODE[a.inj[0]]] - rank[INJ_CODE[b.inj[0]]] || score(b) - score(a); });
+  }
+  function injSummary(code, wk) {
+    var c = { O: 0, D: 0, Q: 0 }; injuredOf(code, wk).forEach(function (p) { c[INJ_CODE[p.inj[0]]]++; });
+    var bits = []; if (c.O) bits.push(c.O + " out"); if (c.D) bits.push(c.D + " doubtful"); if (c.Q) bits.push(c.Q + " questionable");
+    return bits.join(", ");
+  }
+  var betOk = function (p) { return p != null && p > 0 && p < 100; };
+  var kfmt = function (v) { return v >= 10000 ? Math.round(v / 1000) + "K" : v >= 1000 ? (v / 1000).toFixed(1) + "K" : String(Math.round(v)); };
+  var sgn = function (v) { return Math.abs(v) < 0.25 ? "PK" : (v > 0 ? "+" : "−") + String(Math.abs(v)).replace(/\.0$/, ""); };
+  function betLine(g, big) {
+    var b = BETN && BETN.games && BETN.games[gkey(g)]; if (!b) return "";
+    var x = b.an, k = b.k, bits = [];
+    if (x && x.sp && x.sp[0] != null && betOk(x.sp[1])) { var hs = x.sp[1] >= 50; bits.push("<b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(hs ? g[4] : g[3]) + " " + sgn(hs ? x.sp[0] : -x.sp[0])); }
+    else if (x && x.ml && betOk(x.ml[2])) { var hm = x.ml[2] >= 50; bits.push("<b>" + Math.round(hm ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(hm ? g[4] : g[3]) + " to win"); }
+    if (x && x.tot && x.tot[0] != null && betOk(x.tot[1])) bits.push("<b>" + Math.round(Math.max(x.tot[1], 100 - x.tot[1])) + "%</b> " + (x.tot[1] >= 50 ? "over" : "under") + " " + x.tot[0]);
+    var out = bits.length ? '<span title="Share of bets across the books Action Network tracks' + (x.n ? ", " + x.n.toLocaleString() + " bets" : "") + '">Bets ' + bits.join(" · ") + (x.n ? " <small>" + kfmt(x.n) + " bets</small>" : "") + "</span>" : "";
+    if (k && k.h != null && k.a != null && (k.v || 0) >= 500) { var hf = k.h >= k.a; out += '<span title="Kalshi price on each team\'s wins market, ' + Math.round(k.v).toLocaleString() + ' contracts traded">Kalshi <b>' + esc(hf ? g[4] : g[3]) + " " + Math.round(100 * (hf ? k.h : k.a)) + "¢</b> <small>" + kfmt(k.v) + " traded</small></span>"; }
+    return out ? '<div class="' + (big ? "bets big" : "bets") + '">' + out + "</div>" : "";
+  }
+  function weekPage() {
+    if (!TS) { view.innerHTML = '<p class="loading">Loading this week…</p>'; loadWeek().then(function () { if (state.route === "week") render(); }); return; }
+    var up = upcomingWeek(), wk = +state.q.w || up, maxW = Math.max.apply(null, regGames().map(function (g) { return g[1]; }));
+    var gs = regGames().filter(function (g) { return g[1] === wk; }).sort(function (a, b) { return (a[2] + (a[10] || "")).localeCompare(b[2] + (b[10] || "")); });
+    var nav = '<div class="wknav">' + (wk > 1 ? '<a href="' + href("week", { w: wk - 1 }) + '">← Week ' + (wk - 1) + "</a>" : "<span></span>") + "<b>Week " + wk + (wk === up ? " · this week" : "") + "</b>" + (wk < maxW ? '<a href="' + href("week", { w: wk + 1 }) + '">Week ' + (wk + 1) + " →</a>" : "<span></span>") + "</div>";
+    var cards = gs.map(function (g) {
+      var done = g[5] != null, a = g[3], h = g[4];
+      var side = function (c, sc, won) { return '<div class="wgt' + (won ? " won" : "") + '">' + logo(c, 24) + '<a class="nm" href="' + href("team/" + c, {}) + '">' + esc(team(c).short) + "</a><small>" + recordOf(c) + "</small>" + (done ? '<b class="sc">' + sc + "</b>" : "") + "</div>"; };
+      var inj = done ? "" : [a, h].map(function (c) { var s = injSummary(c, wk); return s ? '<span title="This week\'s injury report">' + esc(c) + ": " + s + "</span>" : ""; }).filter(Boolean).join("");
+      return '<article class="wg"><header><span>' + (done ? "<b>Final</b>" : kickTxt(g)) + (g[8] ? " · Neutral" : "") + (g[9] ? ' · <span class="pill">Division</span>' : "") + "</span></header>" +
+        side(a, g[5], done && g[5] > g[6]) + side(h, g[6], done && g[6] > g[5]) +
+        "<footer><span>Line <b>" + lineOf(g) + '</b></span><a href="' + href("game/" + a + "-" + h, { w: wk }) + '">Preview →</a></footer>' +
+        (inj ? '<div class="injline">' + inj + "</div>" : "") + betLine(g) + "</article>";
+    }).join("");
+    view.innerHTML = '<h2 class="sec">This week</h2><p class="lede">Every game with the line, the public betting split, the injury report and a preview: each side\'s offense against the other\'s defense, ranked against all 32 teams.</p>' + nav +
+      (cards ? '<div class="wkgames">' + cards + "</div>" : '<p class="note">No games this week.</p>') +
+      '<p class="note">Lines from nflverse (the consensus closing number for finished games). Bets: share of bets across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks. Kalshi: price on each team\'s wins market at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, shown once 500+ contracts have traded.</p>';
+  }
+  // offense rows: label, key, direction for the offense (1 = higher is better), format
+  var MU_ROWS = [["EPA per play", "epa", 1, "e"], ["Success rate", "sr", 1, "p"], ["Passing", "pass", 1, "e"], ["Running", "rush", 1, "e"], ["Explosive plays", "xpl", 1, "p"], ["Sacks", "sack", -1, "p"], ["Red zone TDs", "rz", 1, "p"], ["Third downs", "3d", 1, "p"], ["Turnovers a game", "to", -1, "g"]];
+  function tsFmt(v, f) { if (v == null) return "—"; return f === "e" ? (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2) : f === "p" ? (100 * v).toFixed(1) + "%" : v.toFixed(1); }
+  function tsPct(side, key, v, dir) {
+    if (v == null) return null;
+    var vals = Object.keys(TS.teams).map(function (c) { return TS.teams[c][side][key]; }).filter(function (x) { return x != null; });
+    var lo = vals.filter(function (x) { return x < v; }).length, eq = vals.filter(function (x) { return x === v; }).length;
+    var p = Math.round(100 * (lo + Math.max(0, eq - 1) / 2) / Math.max(1, vals.length - 1));
+    return dir > 0 ? p : 100 - p;
+  }
+  function muSide(off, def) {
+    var o = TS.teams[off], d = TS.teams[def]; if (!o || !d) return "";
+    var bar = function (pc, s) { var c = ngColor(pc), w = Math.max(4, pc); return '<i class="' + s + '"><em style="width:' + w + "%;background:" + c + '"></em><b style="' + (s === "l" ? "right" : "left") + ":calc(" + w + "% - 13px);background:" + c + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i>"; };
+    var wins = 0, loses = 0;
+    var rows = MU_ROWS.map(function (r) {
+      var op = tsPct("off", r[1], o.off[r[1]], r[2]), dp = tsPct("def", r[1], d.def[r[1]], -r[2]);
+      if (op == null || dp == null) return "";
+      if (op > dp) wins++; else if (dp > op) loses++;
+      return '<div class="mu-r">' + bar(op, "l") + '<span class="mid">' + r[0] + "<small>" + tsFmt(o.off[r[1]], r[3]) + " · " + tsFmt(d.def[r[1]], r[3]) + "</small></span>" + bar(dp, "r") + "</div>";
+    }).join("");
+    var n = wins + loses + 0, verdict = wins > loses ? esc(off) + " offense has the edge in " + wins + " of " + MU_ROWS.length : loses > wins ? esc(def) + " defense has the edge in " + loses + " of " + MU_ROWS.length : "Even";
+    return '<div class="panel"><h3>When ' + esc(team(off).short) + " have the ball <small>" + verdict + '</small></h3><div class="body"><div class="mups"><div class="mu-r mu-h"><span>' + logo(off, 18) + esc(off) + ' offense</span><span></span><span>' + esc(def) + " defense " + logo(def, 18) + "</span></div>" + rows + "</div></div></div>";
+  }
+  function keyPlayers(code) {
+    if (!NG || NG.none) return "";
+    var pick = function (pool, sortKey, nTop) {
+      var idx = {}; (NG.cols[pool] || []).forEach(function (k, i) { idx[k] = i; });
+      return Object.keys(NG[pool] || {}).filter(function (id) { var p = W.byId[id]; return (p ? p.t : NG[pool][id].t) === code; })
+        .map(function (id) { return { id: id, d: NG[pool][id], idx: idx }; }).sort(function (a, b) { return (b.d.x[b.idx[sortKey]] || 0) - (a.d.x[a.idx[sortKey]] || 0); }).slice(0, nTop);
+    };
+    var chip = function (r, key, lab, dec) { var v = r.d.x[r.idx[key]], pc = r.d.pct ? r.d.pct[key] : null; if (v == null) return ""; return '<span class="ngchip" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '"' + (pc != null ? ' title="' + ngOrd(pc) + ' percentile"' : "") + ">" + lab + " " + (dec ? (v > 0 && key !== "sep" ? "+" : "") + v.toFixed(dec) : Math.round(v)) + "</span>"; };
+    var row = function (r, chips) { var p = W.byId[r.id]; return "<li>" + (p ? pname(p, 22) : esc(r.d.n)) + '<span class="grow"></span>' + chips + "</li>"; };
+    var html = pick("qb", "att", 1).map(function (r) { return row(r, chip(r, "cpoe", "CPOE", 1) + chip(r, "ttt", "TTT", 2)); }).join("") +
+      pick("rb", "att", 1).map(function (r) { return row(r, chip(r, "ryoe_att", "RYOE/att", 2) + chip(r, "ypc", "YPC", 1)); }).join("") +
+      pick("rec", "yds", 3).map(function (r) { return row(r, chip(r, "sep", "Sep", 2) + chip(r, "yacoe", "YACOE", 1)); }).join("");
+    return html ? '<div class="panel"><h3>' + logo(code, 18) + " " + esc(team(code).short) + ' key players <small>Next Gen Stats, shaded by percentile at the position</small></h3><ul class="rlist">' + html + "</ul></div>" : "";
+  }
+  function injPanel(code, wk) {
+    var list = injuredOf(code, wk).slice(0, 12);
+    return '<div class="panel"><h3>' + logo(code, 18) + " " + esc(team(code).short) + " injuries <small>" + (list.length ? "this week's report" : "none listed") + "</small></h3>" +
+      (list.length ? '<ul class="rlist">' + list.map(function (p) { return "<li>" + pname(p, 22) + '<span class="grow sub">' + esc(posOf(p)) + (p.inj[1] ? " · " + esc(p.inj[1]) : "") + '</span><span class="num">' + esc(p.inj[0]) + "</span></li>"; }).join("") + "</ul>" : "") + "</div>";
+  }
+  function gamePage() {
+    if (!TS) { view.innerHTML = '<p class="loading">Loading the preview…</p>'; loadWeek().then(function () { if (state.route === "game") render(); }); return; }
+    var pr = String(state.arg || "").split("-"), a = pr[0], h = pr[1], wk = +state.q.w || upcomingWeek();
+    var g = regGames().filter(function (x) { return x[3] === a && x[4] === h && (!state.q.w || x[1] === wk); })[0];
+    if (!g) { view.innerHTML = '<p class="note">That game isn\'t on the schedule. <a href="' + href("week", {}) + '">This week\'s games</a></p>'; return; }
+    wk = g[1];
+    var done = g[5] != null;
+    var head = '<div class="gphead">' + [a, h].map(function (c, i) { var sc = i ? g[6] : g[5]; return '<a class="gpt" href="' + href("team/" + c, {}) + '">' + logo(c, 48) + "<b>" + esc(team(c).name) + "</b><small>" + recordOf(c) + (done ? " · " + sc : "") + "</small></a>"; }).join('<span class="gpat">' + (g[8] ? "vs" : "at") + "</span>") + "</div>";
+    var meta = '<p class="gpmeta">' + (done ? "Final" : kickTxt(g)) + " · Week " + wk + (g[9] ? " · Division game" : "") + " · Line <b>" + lineOf(g) + "</b></p>";
+    var ts = TS.teams[a] && TS.teams[h];
+    view.innerHTML = '<p class="back"><a href="' + href("week", { w: wk }) + '">← Week ' + wk + "</a></p>" + head + meta + betLine(g, true) +
+      (ts ? '<div class="two">' + muSide(a, h) + muSide(h, a) + '</div><p class="note">Percentiles against all 32 teams this season, each side\'s offense next to the other\'s defense: red is good, blue is bad, and the bigger number wins the row. EPA per play, success rate, passing, running and explosive plays leave out garbage time. From nflverse play-by-play through week ' + TS.week + ".</p>" : '<p class="note">Team numbers are still loading from the play-by-play.</p>') +
+      '<div class="two"><div>' + keyPlayers(a) + injPanel(a, wk) + "</div><div>" + keyPlayers(h) + injPanel(h, wk) + "</div></div>";
+  }
 
   // ---------- league ----------
   function leaguePage() {

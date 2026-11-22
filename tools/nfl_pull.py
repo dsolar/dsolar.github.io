@@ -241,7 +241,8 @@ def main():
             def n(x):
                 return None if x in ("", "NA", None) else float(x)
             games.append([g["game_type"], int(g["week"]), g["gameday"], team(g["away_team"]), team(g["home_team"]),
-                          n(g["away_score"]), n(g["home_score"]), n(g["spread_line"]), 1 if g["location"] == "Neutral" else 0, 1 if g["div_game"] == "1" else 0])
+                          n(g["away_score"]), n(g["home_score"]), n(g["spread_line"]), 1 if g["location"] == "Neutral" else 0, 1 if g["div_game"] == "1" else 0,
+                          g.get("gametime") or ""])
     except Exception as e:
         print("schedule unavailable:", e)
 
