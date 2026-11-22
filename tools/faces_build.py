@@ -358,6 +358,26 @@ def espn_search_once(name, query, sport, limit=10):
     return best or (0, None)
 
 
+def not_in_college(names):
+    """Of these names, the Big Board prospects not on a Division I roster now: a listed school that isn't one of the
+    CBB Hub's teams (a pro club, a high school, a country), or a place on the 2028 board"""
+    teams = set()
+    for t in (jload("cbb/data/hub.json", {}) or {}).get("teams", []):
+        for k in ("short", "name"):
+            if t.get(k):
+                teams.add(t[k])
+    if not teams:
+        return []
+    now = {p["n"]: p for p in (jload("draft/nba.json", {}) or {}).get("players", [])}
+    later = {p["n"] for p in (jload("draft/nba2028.json", {}) or {}).get("players", [])}
+    out = []
+    for n in names:
+        p = now.get(n)
+        if (p and (p.get("yr") == "International" or (p.get("school") or "") not in teams)) or (not p and n in later):
+            out.append(n)
+    return sorted(out)
+
+
 def search_missing(want):
     cache = {}
     if os.path.exists(CACHE):
@@ -629,6 +649,11 @@ def main():
                         if len(seen[sport].get(slug(n), ())) > 1 and k not in fixed and not (suffix(n) and at[n] == skey(n)))
         report["sports"][sport] = {"registry": len(ids), "shown": len(shown), "found": len(shown) - len(missing) - len(no_photo),
                                    "missing": missing[:400], "noPhoto": no_photo[:400], "shared": shared[:200], "fixed": len(fixed)}
+        if sport == "ncaab":
+            # Big Board prospects who aren't on a college roster this season (international pros, high schoolers, and
+            # the 2028 class, mostly still in high school) have no college photo to find: the coverage check leaves
+            # them out, so it only warns about players who should have one
+            report["sports"][sport]["notCollege"] = not_in_college([n for n in missing + no_photo])
         print(f"wrote assets/faces/{sport}.json: {len(ids)} names, {report['sports'][sport]['found']}/{len(shown)} of the names pages show"
               f" ({len(no_photo)} with no photo on the server, {len(shared)} shared names)")
     with open(os.path.join(OUT, "report.json"), "w", encoding="utf-8") as f:

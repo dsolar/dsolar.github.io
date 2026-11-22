@@ -24,9 +24,10 @@ for (const [f, label, ok] of [['mlb/data/savant.json', 'Statcast', 0], ['nfl/dat
 // player faces: a league whose share of names with a photo falls under 85% warns (a source list changed shape, say)
 const faces = files['assets/faces/report.json'];
 for (const [k, s] of Object.entries((faces && faces.sports) || {})) {
-  const pct = s.shown ? s.found / s.shown : 1;
-  console.log(`faces ${k.padEnd(6)} ${s.found}/${s.shown} with a photo (${Math.round(100 * pct)}%), ${(s.shared || []).length} shared names`);
-  if (s.shown >= 50 && pct < 0.85) console.log(`::warning title=Player faces coverage dropped::${k}: ${s.found} of ${s.shown} names have a photo (${Math.round(100 * pct)}%). See davidsolar.dev/faces/`);
+  // college prospects not on a college roster yet (international pros, high schoolers) can't have a college photo: left out
+  const out = (s.notCollege || []).length, base = s.shown - out, pct = base > 0 ? s.found / base : 1;
+  console.log(`faces ${k.padEnd(6)} ${s.found}/${base} with a photo (${Math.round(100 * pct)}%)${out ? `, ${out} prospects not in college left out` : ''}, ${(s.shared || []).length} shared names`);
+  if (base >= 50 && pct < 0.85) console.log(`::warning title=Player faces coverage dropped::${k}: ${s.found} of ${s.shown} names have a photo (${Math.round(100 * pct)}%). See davidsolar.dev/faces/`);
 }
 for (const r of rows) console.log((r.stale ? 'STALE ' : 'ok    ') + r.label.padEnd(44) + (r.when || 'missing').padEnd(28) + (r.age == null ? '' : r.age.toFixed(1) + 'd (max ' + r.max + ')') + '  ' + r.how);
 for (const r of rows.filter(r => r.stale && r.manual)) console.log(`::warning title=Data feed behind (warning only)::${r.label} last updated ${r.when || 'never'} (${r.file})`);
