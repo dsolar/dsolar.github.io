@@ -49,7 +49,7 @@
   function injTag(p) {
     var j = p && p.inj;
     if (!j || !INJ_CODE[j[0]] || (W && W.week && j[3] < W.week)) return "";
-    var c = INJ_CODE[j[0]], tip = j[0] + (j[1] ? " (" + j[1].toLowerCase() + ")" : "") + (j[2] ? ". Practice: " + j[2].toLowerCase() : "") + ". Week " + j[3] + " injury report.";
+    var c = INJ_CODE[j[0]], tip = j[0] + (j[1] ? " (" + j[1].toLowerCase() + ")" : "") + (j[2] ? ". " + ({ "did not participate in practice": "Didn't practice", "limited participation in practice": "Limited in practice", "full participation in practice": "Full practice" }[j[2].toLowerCase()] || j[2]) : "") + ". Week " + j[3] + " injury report.";
     return ' <span class="injd inj-' + c.toLowerCase() + '" data-tip="' + esc(tip) + '" tabindex="0" role="img" aria-label="' + esc(j[0]) + '">' + c + "</span>";
   }
   function href(route, q) {
@@ -869,7 +869,7 @@
     if (!p) return;
     var t = team(p.t), c = p.c || {}, ys = Object.keys(c.rows || {}).map(Number).sort();
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) + " · age " + (p.age ? Math.floor(p.age) : "—") + " · " + p.exp + " yrs exp" + (p.draft ? " · " + p.draft[0] + " pick " + p.draft[1] : "") + "</div></div></div>";
-    html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
+    html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(nowHit(p, c)) + "</b><span>" + W.season + " cap hit" + (c.apy && Math.abs(nowHit(p, c) - c.apy) > Math.max(1, c.apy * 0.25) ? " (escalators and bonuses move it off the average)" : "") + "</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
       "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value this season</span></div><div><b>" + m(P.value(W, p, W.season + 1)) + "</b><span>Value next season</span></div></div>" + ratingBlock(p) + nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
     html += statBlock(p) + '<div id="ngsc"></div><div id="glog"></div>';
     if (ys.length) {
@@ -975,6 +975,8 @@
     };
     if (NG) draw(); else loadNgs().then(draw);
   }
+  // this season's cap hit as the year-by-year table shows it
+  function nowHit(p, c) { var r = c && c.rows && c.rows[W.season]; return r ? r[5] : C.capHit(p, W.season); }
   // The rating and its two parts
   // His next deal, for players whose contracts end within two seasons: the estimate and the deals behind it
   function nextDeal(p) {
