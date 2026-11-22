@@ -38,6 +38,11 @@ jobs:
         continue-on-error: true
         run: python3 tools/mlb_hub_pull.py
 
+      - name: Pull from Baseball Savant
+        # Statcast leaderboards for the Players section and player cards; a failed part keeps its last good piece
+        continue-on-error: true
+        run: python3 tools/mlb_savant.py
+
       - name: Catch up with main
         run: |
           git stash -q -u || true
