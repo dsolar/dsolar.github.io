@@ -641,7 +641,32 @@
   const loadCardLibs = () => cardLibs || (cardLibs = ["sports.js?v=20261121lg", "value.js?v=202611201102", "experience.js?v=202611201102", "../assets/faces.js?v=20261121b", "ui.js?v=20261120of"].reduce((pr, f) => pr.then(() => new Promise((res) => {
     const sc = document.createElement("script"); sc.src = "/fantasy-kit/" + f; sc.onload = res; sc.onerror = res; document.body.appendChild(sc);
   })), Promise.resolve()));
+  // Next Gen Stats (the NFL Hub's nfl/data/ngs.json, matched on ESPN id): a few tracking numbers on the card, with
+  // each one's percentile at his position
+  let ngsWait = null;
+  const loadNgs = () => ngsWait || (ngsWait = fetch("/nfl/data/ngs.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((g) => {
+    const by = {};
+    if (g) ["qb", "rb", "rec"].forEach((k) => Object.keys(g[k] || {}).forEach((gid) => { const d = g[k][gid]; if (d.e) by[d.e] = { k, d, cols: (g.cols || {})[k] || [] }; }));
+    return { by, week: g && g.week };
+  }));
+  const NGS_KEY = {
+    qb: [["cpoe", "CPOE", 1, true, "Completion % over expected"], ["rate", "Rating", 1], ["iay", "Air yds/att", 1], ["ttt", "Time to throw", 2]],
+    rb: [["ryoe_att", "Yds over exp./carry", 2, true, "Rush yards over expected per carry"], ["beat", "Beat expected", 1, false, "Share of carries that gained more than expected", "%"], ["box8", "8+ in box", 1, false, "Share of carries against a stacked box", "%"]],
+    rec: [["sep", "Separation", 2, false, "Yards from the nearest defender when the ball arrives"], ["yacoe", "YAC over exp.", 2, true], ["share", "Air yds share", 1, false, "His share of his team's intended air yards", "%"], ["catch", "Catch rate", 1, false, "", "%"]],
+  };
+  const ngsLine = (N, espn) => {
+    const h = N && espn && N.by[espn];
+    if (!h) return "";
+    const cell = ([k, label, dg, sgn, tip, unit]) => {
+      const i = h.cols.indexOf(k), v = i >= 0 ? h.d.x[i] : null, pc = (h.d.pct || {})[k];
+      if (v == null || !label) return "";
+      const txt = (sgn && v > 0 ? "+" : "") + v.toFixed(dg) + (unit || "");
+      return `<span class="pl-ngs"${tip ? ` title="${esc(tip)}"` : ""}><small>${label}</small><b>${txt}</b>${pc != null ? `<i class="${pc >= 70 ? "hi" : pc <= 30 ? "lo" : ""}">${pc}th</i>` : ""}</span>`;
+    };
+    return `<div class="pc-line pc-line-s pl-ngsrow"><span class="ps"><b>Next Gen Stats</b></span><span class="pl-ngss">${NGS_KEY[h.k].map(cell).join("")}</span></div>`;
+  };
   async function ffCard(id, b) {
+    const ngsP = loadNgs();
     await loadCardLibs();
     const FK = window.FK || {}, S = FK.sports, U = FK.ui, raw = st.ffraw && st.ffraw[id];
     if (!S || !U || !S.nfl || !raw) { st.msg = "Couldn't open that player's card."; return render(); }
@@ -649,7 +674,8 @@
     const F = P.nflff(b, st.ffs), row = F.rows.find((r) => r.me) || { rounds: {} };
     const used = [1, 2, 3, 4].find((r) => Object.values((row.rounds[r] || {}).lineup || {}).includes(id));
     const pts = [1, 2, 3, 4].map((r) => st.ffs[r] && st.ffs[r].players && st.ffs[r].players[id] ? [r, st.ffs[r].players[id][ffSi(b)]] : null).filter(Boolean);
-    const extra = `<div class="pc-line pc-line-s"><span class="ps"><b>In this pool</b></span><span>${used ? `You used him in the ${RNAME[used]}.` : "You haven't used him."}${pts.length ? " " + pts.map(([r, v]) => `${RNAME[r]}: <b class="num">${v}</b>`).join(", ") : ""}</span></div>`;
+    const N = await ngsP;
+    const extra = ngsLine(N, raw.espn) + `<div class="pc-line pc-line-s"><span class="ps"><b>In this pool</b></span><span>${used ? `You used him in the ${RNAME[used]}.` : "You haven't used him."}${pts.length ? " " + pts.map(([r, v]) => `${RNAME[r]}: <b class="num">${v}</b>`).join(", ") : ""}</span></div>`;
     const pp = st.ffp[id] || {}, i = ffSi(b), f1 = (v) => (v == null ? "-" : (Math.round(v * 10) / 10).toFixed(1));
     const stats = [["Season pts", f1(pp.tot && pp.tot[i])], ["Per game", f1(pp.g ? pp.tot[i] / pp.g : null)], [st.ffWeek ? `Proj, wk ${st.ffWeek}` : "Projection", f1(pp.pj && pp.pj[i])], ["Playoff pts", pts.length ? f1(pts.reduce((a, [, v]) => a + v, 0)) : "-"]];
     U.dialog(U.playerCard(st.ffsport, raw, { scoring: ["std", "half", "ppr"][i], extra, stats, fold: true, logo: true }), null, { wide: true, sheet: true });

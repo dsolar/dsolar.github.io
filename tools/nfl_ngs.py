@@ -6,7 +6,7 @@ totals, which only list qualified players), keyed by the same GSIS id the hub us
 
   {season, week, pulled, qb: {id: {...}}, rb: {...}, rec: {...}}
 
-Each player carries n (name), pos, t (team), x (the numbers, by the COLS order below) and pct (percentile ranks
+Each player carries n (name), pos, t (team), e (ESPN id, for pages keyed that way: the fantasy pools), x (the numbers, by the COLS order below) and pct (percentile ranks
 within his position, 0-100, flipped where lower is better, left out where neither direction is "good").
 If a download fails, the last good file's part is kept.
 """
@@ -75,6 +75,7 @@ def pct_ranks(players, idx, direction):
 def main():
     league = json.load(open(os.path.join(ROOT, "nfl", "data", "league.json")))
     season = int(league["season"])
+    espn = {p["id"]: p.get("espn") for p in league.get("players", []) if p.get("espn")}
     try:
         prev = json.load(open(OUT))
     except Exception:
@@ -98,7 +99,7 @@ def main():
             if r.get("week") != "0" or not r.get("player_gsis_id"):
                 continue
             players.append({"id": r["player_gsis_id"], "n": r.get("player_display_name"), "pos": r.get("player_position"), "t": r.get("team_abbr"),
-                            "x": [pctify(c[0], num(r.get(c[0]))) for c in cols]})
+                            "e": espn.get(r["player_gsis_id"]), "x": [pctify(c[0], num(r.get(c[0]))) for c in cols]})
         # percentiles within position (receivers: wide receivers and tight ends ranked apart)
         pools = {}
         for p in players:
