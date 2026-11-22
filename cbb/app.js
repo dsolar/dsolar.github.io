@@ -72,6 +72,26 @@ function watchIndex(g, l) {
 function upsetAlert(l, g) { if (!l || g.state !== "pre") return false; const dog = Math.min(l.homeProb, 1 - l.homeProb), fav = l.spread > 0 ? byId[g.home] : byId[g.away]; return dog >= 0.3 && fin(fav.haslamRank) && fav.haslamRank <= 50; }
 
 /* ---------- game card ---------- */
+/* ---------- public betting (data/betting.json, from tools/betting_pull.py) ---------- */
+// Action Network's share of bets (tickets) and bet count, and Kalshi's price on each team's "wins" market.
+// Money percentages are an Action Network PRO feature and never reach this file.
+let BET = null;
+fetch("data/betting.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((b) => { BET = b; if (D && ["today"].includes(route().page)) render(); }).catch(() => {});
+const kfmt = (v) => (v >= 10000 ? Math.round(v / 1000) + "K" : v >= 1000 ? (v / 1000).toFixed(1) + "K" : String(Math.round(v)));
+const lineTxt = (v) => (Math.abs(v) < 0.25 ? "PK" : (v > 0 ? "+" : "−") + half(v).replace(/\.0$/, ""));
+function betRow(g, h, a) {
+  const b = BET && BET.games && BET.games[g.id]; if (!b) return "";
+  const x = b.an, k = b.k, bits = [];
+  const ok = (p) => fin(p) && p > 0 && p < 100; // a 0/100 split means one side has no data yet
+  if (x && x.sp && fin(x.sp[0]) && ok(x.sp[1])) { const hs = x.sp[1] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(t.abbr || t.short) + " " + lineTxt(hs ? x.sp[0] : -x.sp[0])); }
+  else if (x && x.ml && ok(x.ml[2])) { const hs = x.ml[2] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(t.abbr || t.short) + " to win"); }
+  if (x && x.tot && fin(x.tot[0]) && ok(x.tot[1])) bits.push("<b>" + Math.round(Math.max(x.tot[1], 100 - x.tot[1])) + "%</b> " + (x.tot[1] >= 50 ? "over" : "under") + " " + x.tot[0]);
+  const bets = bits.length ? '<span title="Share of bets (tickets) across the books Action Network tracks' + (x.n ? ", " + x.n.toLocaleString() + " bets" : "") + '">Bets ' + bits.join(" · ") + (x.n ? ' <small>' + kfmt(x.n) + " bets</small>" : "") + "</span>" : "";
+  let mk = "";
+  if (k && fin(k.h) && fin(k.a) && (k.v || 0) >= 500) { const hf = k.h >= k.a, t = hf ? h : a; mk = '<span title="Kalshi price on each team\'s wins market (cents on the dollar), ' + Math.round(k.v).toLocaleString() + ' contracts traded">Kalshi <b>' + esc(t.abbr || t.short) + " " + Math.round(100 * (hf ? k.h : k.a)) + "¢</b> <small>" + kfmt(k.v) + " traded</small></span>"; }
+  return bets || mk ? '<div class="bets">' + bets + mk + "</div>" : "";
+}
+
 function gameCard(g) {
   const h = byId[g.home], a = byId[g.away], l = lineFor(g), logged = loggedLine(g), w = watchIndex(g, l);
   const shown = g.state === "pre" ? l : (logged || l), live = g.state === "in", fin_ = g.state === "post";
@@ -89,7 +109,7 @@ function gameCard(g) {
   const foot = shown ? "<span><b>" + favLine(shown, h, a) + "</b></span><span>O/U <b>" + half(shown.total) + "</b></span>" : "<span class=\"note\">No line: a team lacks ratings</span>";
   return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + "</header>" +
     side(a, false, g.awayScore) + side(h, true, g.homeScore) +
-    '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, pace and stars on the floor">' + w + '</span><a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a></footer></article>';
+    '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, pace and stars on the floor">' + w + '</span><a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a></footer>' + betRow(g, h, a) + "</article>";
 }
 
 /* ---------- pages ---------- */
@@ -120,6 +140,7 @@ function today(q) {
     '<label class="switch"><input type="checkbox" data-param="follow" value="1"' + (followOnly ? " checked" : "") + "> <span>Teams I follow</span></label>" +
     '<button class="btn" type="button" data-refresh>Refresh scores ↻</button><span class="note" id="stamp">' + (liveStamp ? "Scores checked " + dLabel(liveStamp, { hour: "numeric", minute: "2-digit" }) : "Snapshot " + dLabel(D.sources.games && D.sources.games.updated, { hour: "numeric", minute: "2-digit" })) + "</span></div>" +
     (games.length ? '<div class="games">' + games.map(gameCard).join("") + "</div>" : '<p class="callout">' + (followOnly ? 'None of the teams you follow play this day. Follow teams with ☆ on the <a href="#/teams">Teams</a> tab.' : "No Division I games in this snapshot for that day.") + "</p>") +
+    (BET && BET.games ? '<p class="note">Bets: share of bets (tickets) across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks, with the bet count. Kalshi: the price on each team\'s wins market at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, in cents on the dollar, shown once 500+ contracts have traded. Both freeze at tipoff.</p>' : "") +
     '<div class="two" style="margin-top:16px">' +
     '<div class="panel"><h3>Prospects in action <small><a href="../draft/">NBA Big Board ↗</a></small></h3>' + (pros.length ? '<ul class="rlist">' + pros.slice(0, 10).map(p => "<li>" + '<span class="pill bb">#' + p.draftRank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.team) + " " + vs(p.teamId) + '</span><span class="num">' + f1(stat(p, "pts")) + " ppg</span></li>").join("") + "</ul>" : '<p class="body note">No Big Board prospects play this day.</p>') + "</div>" +
     '<div class="panel"><h3>Naismith candidates playing <small><a href="#/naismith">Full ladder →</a></small></h3>' + (nais.length ? '<ul class="rlist">' + nais.map(r => { const p = byPlayer[r.id]; return "<li>" + '<span class="pill nai">#' + r.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.team) + " " + vs(p.teamId) + '</span><span class="num">' + f1(stat(p, "pts")) + " ppg</span></li>"; }).join("") + "</ul>" : '<p class="body note">No watch-list players play this day.</p>') + "</div>" +

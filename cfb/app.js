@@ -89,6 +89,26 @@ function shownLine(g) { return g.state === "pre" ? lineFor(g) : (logged(g) || li
 function upset(l, g) { if (!l || g.state !== "pre") return false; const dog = Math.min(l.prob, 1 - l.prob), fav = byId[l.spread > 0 ? g.home : g.away]; return dog >= 0.28 && dog < 0.42 && !!(fav && pollRank(fav)); }
 const tossup = (l, g) => l && g.state === "pre" && Math.abs(l.prob - 0.5) < 0.08;
 
+/* ---------- public betting (data/betting.json, from tools/betting_pull.py) ---------- */
+// Action Network's share of bets (tickets) and bet count, and Kalshi's price on each team's "wins" market.
+// Money percentages are an Action Network PRO feature and never reach this file.
+let BET = null;
+fetch("data/betting.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((b) => { BET = b; if (D && ["week"].includes(route().page)) render(); }).catch(() => {});
+const kfmt = (v) => (v >= 10000 ? Math.round(v / 1000) + "K" : v >= 1000 ? (v / 1000).toFixed(1) + "K" : String(Math.round(v)));
+const lineTxt = (v) => (Math.abs(v) < 0.25 ? "PK" : (v > 0 ? "+" : "−") + half(v).replace(/\.0$/, ""));
+function betRow(g, h, a) {
+  const b = BET && BET.games && BET.games[g.id]; if (!b) return "";
+  const x = b.an, k = b.k, bits = [];
+  const ok = (p) => fin(p) && p > 0 && p < 100; // a 0/100 split means one side has no data yet
+  if (x && x.sp && fin(x.sp[0]) && ok(x.sp[1])) { const hs = x.sp[1] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(t.abbr || t.short) + " " + lineTxt(hs ? x.sp[0] : -x.sp[0])); }
+  else if (x && x.ml && ok(x.ml[2])) { const hs = x.ml[2] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(t.abbr || t.short) + " to win"); }
+  if (x && x.tot && fin(x.tot[0]) && ok(x.tot[1])) bits.push("<b>" + Math.round(Math.max(x.tot[1], 100 - x.tot[1])) + "%</b> " + (x.tot[1] >= 50 ? "over" : "under") + " " + x.tot[0]);
+  const bets = bits.length ? '<span title="Share of bets (tickets) across the books Action Network tracks' + (x.n ? ", " + x.n.toLocaleString() + " bets" : "") + '">Bets ' + bits.join(" · ") + (x.n ? ' <small>' + kfmt(x.n) + " bets</small>" : "") + "</span>" : "";
+  let mk = "";
+  if (k && fin(k.h) && fin(k.a) && (k.v || 0) >= 500) { const hf = k.h >= k.a, t = hf ? h : a; mk = '<span title="Kalshi price on each team\'s wins market (cents on the dollar), ' + Math.round(k.v).toLocaleString() + ' contracts traded">Kalshi <b>' + esc(t.abbr || t.short) + " " + Math.round(100 * (hf ? k.h : k.a)) + "¢</b> <small>" + kfmt(k.v) + " traded</small></span>"; }
+  return bets || mk ? '<div class="bets">' + bets + mk + "</div>" : "";
+}
+
 function gameCard(g) {
   const h = team(g.home), a = team(g.away), l = shownLine(g), lg = logged(g), w = M.watch(g, l, ctx);
   const live = g.state === "in", done = g.state === "post", mk = g.market || (lg && lg.market);
@@ -110,7 +130,7 @@ function gameCard(g) {
   return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + "</header>" +
     (g.note ? '<div class="note2">' + esc(g.note) + "</div>" : "") +
     side(a, false, g.as) + side(h, true, g.hs) +
-    '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, playoff stakes and polls">' + w + "</span>" + (h.fcs || a.fcs ? "" : '<a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a>') + "</footer></article>";
+    '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, playoff stakes and polls">' + w + "</span>" + (h.fcs || a.fcs ? "" : '<a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a>') + "</footer>" + betRow(g, h, a) + "</article>";
 }
 
 /* ---------- weeks ---------- */
@@ -148,6 +168,7 @@ function week(q) {
     seg("show", [["all", "All"], ["ranked", "Ranked"], ["conf", "Conference"], ["follow", "Following"]], show) +
     '<button class="btn" type="button" data-refresh>Refresh scores ↻</button><span class="note" id="stamp">' + (liveStamp ? "Scores checked " + dLabel(liveStamp, { hour: "numeric", minute: "2-digit" }) : "Snapshot " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" })) + "</span></div>" +
     (games.length ? '<div class="games">' + games.map(gameCard).join("") + "</div>" : '<p class="callout">' + (show === "follow" ? 'None of the teams you follow play this week. Follow teams with ☆ on the <a href="#/teams">Teams</a> tab.' : "No games here yet.") + "</p>") +
+    (BET && BET.games ? '<p class="note">Bets: share of bets (tickets) across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks, with the bet count. Kalshi: the price on each team\'s wins market at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, in cents on the dollar, shown once 500+ contracts have traded. Both freeze at kickoff.</p>' : "") +
     '<div class="two" style="margin-top:16px">' +
     '<div class="panel"><h3>Where the hub disagrees with the book <small>' + esc((edges[0] && edges[0].g.market && edges[0].g.market.book) || "Sportsbook") + " via ESPN</small></h3>" + (edges.length ? '<div class="scroll"><table class="t"><thead><tr><th class=l>Game</th>' + (C && C.lines ? "<th>Open</th>" : "") + '<th>Book</th><th>Hub</th><th>Edge</th></tr></thead><tbody>' + edges.slice(0, 8).map(({ g, l, e }) => { const h = team(g.home), a = team(g.away), side = e > 0 ? h : a; return '<tr><td class="tm">' + esc(a.short) + " at " + esc(h.short) + "</td>" + (C && C.lines ? "<td class=note>" + (BOOK(g.id) ? favText(BOOK(g.id).open, h, a) : "—") + "</td>" : "") + "<td>" + favText(g.market.spread, h, a) + "</td><td>" + favText(l.spread, h, a) + '</td><td class="edge' + (Math.abs(e) >= 4 ? " big" : "") + '">' + esc(side.abbr || side.short) + " " + half(e) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="body note">No sportsbook lines posted for the games left this week.</p>') + "</div>" +
     '<div class="panel"><h3>Heisman contenders playing <small><a href="#/heisman">Full ladder →</a></small></h3>' + (hz.length ? '<ul class="rlist">' + hz.map(x => { const p = byPlayer[x.id]; return "<li>" + '<span class="pill hz">#' + x.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p ? p.team : "") + " " + vs(x.teamId) + "</span></li>"; }).join("") + "</ul>" : '<p class="body note">No ladder players this week.</p>') + "</div>" +

@@ -76,7 +76,7 @@ def college_games(hub):
 
 def match_college(hub, an_games, k_events):
     teams, games, keys = college_games(hub)
-    lo, hi = (now - timedelta(days=2)).strftime("%Y-%m-%d"), (now + timedelta(days=4)).strftime("%Y-%m-%d")
+    lo, hi = (now - timedelta(days=2)).strftime("%Y-%m-%d"), (now + timedelta(days=8)).strftime("%Y-%m-%d")
     window = [g for g in games if lo <= g.get("day", "") <= hi and g.get("at")]
     by_team_day = {}
     for g in window:
@@ -263,8 +263,9 @@ def write(hub, fresh, src_note):
         cur = dict(merged.get(gid, {}))
         live = gid in started or bool(v.get("an", {}).get("_live"))
         for k, val in v.items():
-            # freeze a game's numbers once it's under way, so finals keep the closing split
-            if k in cur and live:
+            # freeze a game's numbers once it's under way, so finals keep the closing split; a Kalshi price first seen
+            # mid-game is a live price, not a pregame one, so it's skipped
+            if live and (k in cur or k == "k"):
                 continue
             cur[k] = {x: y for x, y in val.items() if x != "_live"}
         merged[gid] = cur
