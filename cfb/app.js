@@ -332,12 +332,37 @@ function leaders(tid) {
     ["Ball hawks", best("dint", 1).slice(0, 2), p => int(st(p, "dint")) + " INT · " + int(st(p, "pd")) + " PD"]];
   return '<div class="panel"><h3>Leaders</h3><ul class="rlist">' + rows.filter(r => r[1].length).map(([lab, ps2, f]) => ps2.map(p => '<li><span class="sub" style="min-width:76px">' + lab + "</span>" + playerLink(p) + badges(p) + '<span class="grow"></span><span class="num sub">' + f(p) + "</span></li>").join("")).join("") + "</ul></div>";
 }
+function tbarsHtml(groups, sortedOf, color, pctFn) {
+  const one = (label, v, pc, dir, fmt) => {
+    const c = dir === 0 ? "rgb(128,138,150)" : color(pc), w = Math.max(4, pc);
+    return '<div class="svb"><span>' + label + ' <small style="font-weight:600;color:var(--faint)">' + fmt(v) + '</small></span><i><em style="width:' + w + "%;background:" + c + '"></em><b style="left:calc(' + w + "% - 13px);background:" + c + ";color:" + (dir === 0 || pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i></div>";
+  };
+  return '<div class="tbars">' + groups.map(([title, rows], gi) => {
+    const html = rows.map(([label, fn, dir, fmt], ri) => { const v = fn(); let pc = pctFn(sortedOf(gi, ri), v); if (pc == null) return ""; if (dir < 0) pc = 100 - pc; return one(label, v, pc, dir, fmt); }).join("");
+    return html ? '<div><p class="card-sec">' + title + '</p><div class="svbars one">' + html + "</div></div>" : "";
+  }).join("") + "</div>";
+}
+
+const e2 = (x) => (fin(x) ? (x >= 0 ? "+" : "−") + Math.abs(x).toFixed(2) : "—"), n2 = (x) => (fin(x) ? x.toFixed(2) : "—"), yd = (x) => (fin(x) ? "own " + Math.round(x) : "—");
+const A_GROUPS = [
+  ["Offense", [["EPA per play", (a) => a.off.epa, 1, e2], ["Success rate", (a) => a.off.sr, 1, p1], ["Explosiveness", (a) => a.off.xpl, 1, n2], ["Points per trip", (a) => a.off.ppo, 1, n2],
+    ["Pass EPA", (a) => a.off.passEpa, 1, e2], ["Rush EPA", (a) => a.off.rushEpa, 1, e2], ["Line yards", (a) => a.off.lineYds, 1, n2], ["Runs stuffed", (a) => a.off.stuff, -1, p1], ["Havoc allowed", (a) => a.off.havoc, -1, p1], ["Field position", (a) => ownLine(a.off.start), 1, yd]]],
+  ["Defense", [["EPA per play", (a) => a.def.epa, -1, e2], ["Success rate", (a) => a.def.sr, -1, p1], ["Explosiveness", (a) => a.def.xpl, -1, n2], ["Points per trip", (a) => a.def.ppo, -1, n2],
+    ["Pass EPA", (a) => a.def.passEpa, -1, e2], ["Rush EPA", (a) => a.def.rushEpa, -1, e2], ["Line yards", (a) => a.def.lineYds, -1, n2], ["Stuff rate", (a) => a.def.stuff, 1, p1], ["Havoc", (a) => a.def.havoc, 1, p1], ["Opp. field position", (a) => ownLine(a.def.start), -1, yd]]],
+];
+let A_SORTED = null;
+function advBars(t) {
+  const a = ADV(t.id); if (!a || !a.off || !a.def) return "";
+  if (!A_SORTED) { const pool = D.teams.filter((x) => !x.fcs).map((x) => ADV(x.id)).filter((x) => x && x.off && x.def); A_SORTED = A_GROUPS.map(([, rows]) => rows.map(([, fn]) => pool.map(fn).filter(fin).sort((p, q) => p - q))); A_SORTED.n = pool.length; }
+  const groups = A_GROUPS.map(([title, rows]) => [title, rows.map(([l, fn, d, f]) => [l, () => fn(a), d, f])]);
+  return tbarsHtml(groups, (g, r) => A_SORTED[g][r], cfbColor, cfbPct) + '<p class="note">Percentile among ' + A_SORTED.n + ' FBS teams: red is good, blue is bad. Points per trip counts drives that reach the opponent\'s 40. Havoc is tackles for loss, sacks, interceptions, breakups and forced fumbles per play.</p>';
+}
+
 function efficiency(t) {
   const a = ADV(t.id), sp = SPR(t.id), rr = advRank[t.id] || {}, n = D.teams.length, rc = C && C.recruiting && C.recruiting.teams && C.recruiting.teams[t.id], rp = C && C.returning && C.returning.teams && C.returning.teams[t.id];
   if (!a && !sp) return "";
   const cell = (v, lab, k) => "<div><b>" + v + (k && rr[k] ? ' <small>#' + rr[k] + "</small>" : "") + "</b><span>" + lab + "</span></div>";
-  return '<div class="panel"><h3>Efficiency <small>CollegeFootballData · garbage time excluded</small></h3><div class="body"><div class="kv">' +
-    (a ? cell(e3(a.off.epa), "Off EPA/play", "oEpa") + cell(e3(a.def.epa), "Def EPA/play", "dEpa") + cell(p1(a.off.sr), "Off success", "oSr") + cell(p1(a.def.sr), "Def success", "dSr") + cell(e3(a.off.passEpa), "Pass EPA", "oPass") + cell(e3(a.off.rushEpa), "Rush EPA", "oRush") + cell(p1(a.def.havoc), "Havoc", "dHav") + cell(f1(ownLine(a.off.start)), "Avg start (own yd line)") : "") +
+  return '<div class="panel"><h3>Efficiency against FBS <small>CollegeFootballData · garbage time excluded</small></h3><div class="body">' + advBars(t) + '<div class="kv">' +
     (sp ? cell(f1(sp.rating), "SP+" + (fin(sp.rank) ? " #" + sp.rank : "")) + cell(f1(sp.off), "SP+ off" + (fin(sp.offRank) ? " #" + sp.offRank : "")) + cell(f1(sp.def), "SP+ def" + (fin(sp.defRank) ? " #" + sp.defRank : "")) + (fin(sp.sow) ? cell(f1(sp.sow), "2nd-order wins") : "") : "") +
     (rc ? cell("#" + rc.rank, (C.recruiting.year) + " recruiting") : "") + (rp && fin(rp.pct) ? cell(p1(rp.pct), "Returning production") : "") +
     "</div></div></div>";

@@ -219,7 +219,7 @@ function teamPage(q) {
   return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)</div></div>" +
     '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
     tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [odds(t.id) && fin(odds(t.id).w) ? Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) : proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) + (odds(t.id).mode ? ' <small>' + odds(t.id).mode + " seed</small>" : "") : "—", "Make NCAA"]]) +
-    '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" +
+    '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" + teamBars(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
     '<div class="two"><div class="panel"><h3>Schedule <small>' + (odds(t.id) && fin(odds(t.id).w) ? "projected " + Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) + " · " : "") + 'hub line and win %</small></h3><div class="scroll sched"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="5" class="note">Schedule loading…</td></tr>') + "</tbody></table></div></div>" +
     '<div><div class="panel"><h3>Résumé so far</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
@@ -227,6 +227,41 @@ function teamPage(q) {
     '<p class="note">Quadrants are Haslametrics\' own hNET quadrants, not the NCAA\'s official NET.</p></div></div>' + outlook(t) + '</div></div>' +
     '<h2 class="sec">Roster</h2><div class="panel"><div class="scroll"><table class="t"><thead><tr><th class=l>Player</th><th>Pos</th><th>Yr</th><th>Ht</th><th>GP</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TS%</th><th>GmSc</th></tr></thead><tbody>' +
     roster.map(p => "<tr><td class=\"l\">" + playerLink(p) + badges(p) + "</td><td>" + esc(p.pos || "") + "</td><td>" + esc((p.year || "").slice(0, 2)) + "</td><td>" + esc(p.height || "") + "</td><td>" + f1(stat(p, "gp"), 0) + "</td><td>" + f1(stat(p, "min")) + "</td><td><b>" + f1(stat(p, "pts")) + "</b></td><td>" + f1(stat(p, "reb")) + "</td><td>" + f1(stat(p, "ast")) + "</td><td>" + f1(stat(p, "stl")) + "</td><td>" + f1(stat(p, "blk")) + "</td><td>" + f1(stat(p, "ts")) + "</td><td><b>" + f1(M.gameScore(p)) + "</b></td></tr>").join("") + "</tbody></table></div></div>";
+}
+
+function tbarsHtml(groups, sortedOf, color, pctFn) {
+  const one = (label, v, pc, dir, fmt) => {
+    const c = dir === 0 ? "rgb(128,138,150)" : color(pc), w = Math.max(4, pc);
+    return '<div class="svb"><span>' + label + ' <small style="font-weight:600;color:var(--faint)">' + fmt(v) + '</small></span><i><em style="width:' + w + "%;background:" + c + '"></em><b style="left:calc(' + w + "% - 13px);background:" + c + ";color:" + (dir === 0 || pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i></div>";
+  };
+  return '<div class="tbars">' + groups.map(([title, rows], gi) => {
+    const html = rows.map(([label, fn, dir, fmt], ri) => { const v = fn(); let pc = pctFn(sortedOf(gi, ri), v); if (pc == null) return ""; if (dir < 0) pc = 100 - pc; return one(label, v, pc, dir, fmt); }).join("");
+    return html ? '<div><p class="card-sec">' + title + '</p><div class="svbars one">' + html + "</div></div>" : "";
+  }).join("") + "</div>";
+}
+
+// Team totals from the roster's per-game lines (each player's average times his games), turned into rates so pace
+// and games played don't skew them. Possessions = Haslametrics' adjusted tempo times games played.
+function teamBox(t) {
+  const ps = rosters[t.id] || [], tot = (k) => ps.reduce((s, p) => s + (fin(stat(p, k)) && fin(stat(p, "gp")) ? stat(p, k) * stat(p, "gp") : 0), 0);
+  const g = t.record ? (t.record.w || 0) + (t.record.l || 0) : 0, fga = tot("fga"), fta = tot("fta"), tov = tot("tov"), fgm = tot("fgm"), poss = fin(t.metrics.tempo) && g ? t.metrics.tempo * g : 0;
+  if (!g || fga < 50) return {};
+  return { ts: 100 * tot("pts") / (2 * (fga + 0.44 * fta)), tov: 100 * tov / (fga + 0.44 * fta + tov), ast: fgm ? 100 * tot("ast") / fgm : null, ftr: 100 * fta / fga, stl: poss ? 100 * tot("stl") / poss : null, blk: poss ? 100 * tot("blk") / poss : null };
+}
+const pc1 = (x) => (fin(x) ? f1(x) + "%" : "—");
+const T_GROUPS = [
+  ["Offense", [["Adj. offense", (t) => t.metrics.adjO, 1, f1], ["True shooting", (t, b) => b.ts, 1, pc1], ["3P%", (t) => t.metrics.threePct, 1, pc1], ["Rim FG%", (t) => t.metrics.rimPct, 1, pc1],
+    ["Assist rate", (t, b) => b.ast, 1, pc1], ["Turnover rate", (t, b) => b.tov, -1, pc1], ["Free throw rate", (t, b) => b.ftr, 1, pc1]]],
+  ["Defense", [["Adj. defense", (t) => t.metrics.adjD, -1, f1], ["Opp. 3P%", (t) => t.metrics.oppThreePct, -1, pc1], ["Steals per 100", (t, b) => b.stl, 1, f1], ["Blocks per 100", (t, b) => b.blk, 1, f1]]],
+  ["Style and schedule", [["Schedule faced", (t) => (fin(t.metrics.sosRank) ? -t.metrics.sosRank : null), 1, (v) => "#" + Math.round(-v)], ["Pace", (t) => t.metrics.tempo, 0, f1], ["3PA share", (t) => t.metrics.threeShare, 0, pc1], ["Rim share", (t) => t.metrics.rimShare, 0, pc1]]],
+];
+let T_SORTED = null;
+function teamBars(t) {
+  if (!T_SORTED) { const boxes = D.teams.map((x) => [x, teamBox(x)]); T_SORTED = T_GROUPS.map(([, rows]) => rows.map(([, fn]) => boxes.map(([x, b]) => fn(x, b)).filter(fin).sort((a, b) => a - b))); }
+  const b = teamBox(t), groups = T_GROUPS.map(([title, rows]) => [title, rows.map(([l, fn, d, f]) => [l, () => fn(t, b), d, f])]);
+  const html = tbarsHtml(groups, (g, r) => T_SORTED[g][r], pctColorC, (s, v) => { const p = pctOf(s, v); return p == null ? null : Math.round(p); });
+  return '<div class="panel"><h3>Against Division I <small>percentile among all ' + D.teams.length + ' teams</small></h3><div class="body">' + html +
+    '<p class="note">Red is good, blue is bad; gray bars describe style, not quality. Adjusted offense and defense, pace, 3P%, rim FG% and shot mix are Haslametrics\'. True shooting, assist, turnover and free throw rates, steals and blocks come from ESPN box scores. Schedule faced is ESPN\'s strength of schedule.</p></div></div>';
 }
 
 function outlook(t) {
