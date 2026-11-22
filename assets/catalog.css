@@ -9,6 +9,6 @@
 .collection-heading{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:22px}.collection-heading h2{font:700 1.7rem/1.2 var(--f-display);margin:0}.collection-heading p{color:var(--muted);font-size:.9rem;max-width:43ch;margin:0}
 .collection-group .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
 @media(max-width:800px){.collection-group .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.collection-heading{display:block}.collection-heading p{margin-top:10px}}
-@media(max-width:540px){.collection-intro{padding-block:30px}.collection-intro h1{font-size:2.6rem}.collection-group .tiles{grid-template-columns:1fr}.collection-group{padding-block:28px 0}}
+@media(max-width:540px){.collection-intro{padding-block:30px}.collection-intro h1{font-size:2.6rem}.collection-group .tiles{grid-template-columns:minmax(0,1fr)}.collection-group{padding-block:28px 0}}
 
 .skip:focus{z-index:100}
