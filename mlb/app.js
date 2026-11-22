@@ -717,12 +717,15 @@
     return "rgb(" + c.join(",") + ")";
   }
   function pctInk(v) { return v != null && (v >= 80 || v <= 20) ? "#fff" : "var(--ink)"; }
-  function pctCell(v, show) { return '<td class="pc" style="background:' + pctColor(v) + ";color:" + pctInk(v) + '"' + (v != null ? ' title="' + v + 'th percentile"' : "") + ">" + (show != null ? show : v != null ? v : "—") + "</td>"; }
+  function pctCell(v, show) { return '<td class="pc" style="background:' + pctColor(v) + ";color:" + pctInk(v) + '"' + (v != null ? ' title="' + ord(v) + ' percentile"' : "") + ">" + (show != null ? show : v != null ? v : "—") + "</td>"; }
   function f3(x) { return x == null || isNaN(x) ? "—" : x.toFixed(3).replace(/^0/, ""); }
   // a Savant player as the hub knows him (team, photo, card), or by name alone if he isn't on a hub roster
   function svWho(id, d) {
     var p = H.byId[id] || H.byId[+id];
-    return p ? '<td class="tm">' + pname(p, 22) + '</td><td class="tmc">' + logo(p.t, 16) + "</td>" : '<td class="tm"><span class="nm">' + esc(d.n || id) + "</span></td><td></td>";
+    if (p) return '<td class="tm">' + pname(p, 22) + '</td><td class="tmc">' + logo(p.t, 16) + "</td>";
+    // not on a hub roster (an unsigned free agent, say): his MLB photo and name, and his Savant team when it has one
+    var ph = window.DSFaces ? window.DSFaces.html({ sport: "mlb", id: +id, name: d.n, size: 22 }) : "";
+    return '<td class="tm"><span class="pl nolink">' + ph + '<span class="nm">' + esc(d.n || id) + '</span></span></td><td class="tmc">' + (d.t && H.byAbbr[d.t] ? logo(d.t, 16) : "") + "</td>";
   }
   // Statcast's luck read on one player: actual against expected (wOBA vs. xwOBA for hitters, ERA vs. xERA for pitchers).
   // "Due" hit better than his results, "Lucky" got more than he hit. About the top and bottom tenth of qualified players

@@ -49,6 +49,7 @@
       if (keep !== false) D.close();
     });
     if (!D.open) D.showModal();
+    fillTrack(D);
     return D;
   }
   /* ---------- manager profiles: one name and photo for every league ---------- */
@@ -672,6 +673,77 @@
   // his height and weight (p.ht in inches, p.wt in pounds), for the card's header
   const bodyOf = (p) => { const h = +p.ht, w = +p.wt, out = []; if (h > 48 && h < 96) out.push(`${Math.floor(h / 12)}'${Math.round(h % 12)}"`); if (w > 80 && w < 450) out.push(`${Math.round(w)} lbs`); return out.length ? `, ${out.join(", ")}` : ""; };
   const commas = (txt, v) => (Math.abs(v) >= 1000 && /^-?\d+$/.test(txt) ? Number(txt).toLocaleString("en-US") : txt);
+  /* ---------- tracking data on the player card: Statcast (MLB), Next Gen Stats (NFL), NHL Edge ---------- */
+  // Each hub pulls its sport's tracking file daily (mlb/data/savant.json, nfl/data/ngs.json, nhl/data/edge.json). The
+  // card leaves a slot naming the player; once the card is open, the slot fills from the file (fetched once).
+  // MLB and NHL ids are the leagues' own ids, as the hubs use; NFL players match on ESPN id.
+  const TRACK = { mlb: "/mlb/data/savant.json", nfl: "/nfl/data/ngs.json", nhl: "/nhl/data/edge.json" }, trackFiles = {};
+  const trackFile = (k) => trackFiles[k] || (trackFiles[k] = fetch(TRACK[k], { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((j) => {
+    if (j && k === "nfl") { j.byEspn = {}; ["qb", "rb", "rec"].forEach((g) => Object.values(j[g] || {}).forEach((d) => { if (d.e) j.byEspn[d.e] = { g, d }; })); }
+    return j;
+  }));
+  function trackSlot(sport, p) {
+    const k = sport && sport.key;
+    if (!TRACK[k] || !p) return "";
+    const id = k === "nfl" ? p.espn : p.id;
+    if (!id) return "";
+    const ps = S.positions(p);
+    const pit = k === "mlb" && ps.some((x) => /^(SP|RP|P)$/.test(x)) && !ps.some((x) => /^(C|1B|2B|3B|SS|OF|LF|CF|RF|DH|UT|IF)$/.test(x));
+    return `<div class="pc-track" data-tk="${k}" data-tid="${esc(id)}"${pit ? ' data-pit="1"' : ""}${k === "nhl" && ps.includes("G") ? ' data-g="1"' : ""} hidden></div>`;
+  }
+  // a chip: [label, value text ("" for a percentile alone), percentile or null, tooltip]
+  const trkChip = ([label, txt, pc, tip]) => (txt == null || (txt === "" && pc == null) ? "" : `<span class="pc-trk"${tip ? ` title="${esc(tip)}"` : ""}><small>${esc(label)}</small>${txt ? `<b>${txt}</b>` : ""}${pc != null ? `<i class="${pc >= 70 ? "hi" : pc <= 30 ? "lo" : ""}">${ord(pc)}</i>` : ""}</span>`);
+  const r3 = (v) => (v == null ? null : v.toFixed(3).replace(/^0/, "")), fx = (v, d) => (v == null ? null : v.toFixed(d));
+  const sgn = (n, d) => (n == null ? null : (n > 0 ? "+" : "") + n.toFixed(d));
+  function trackHtml(k, j, el) {
+    const id = el.dataset.tid;
+    if (k === "mlb") {
+      const pit = !!el.dataset.pit, d = (pit ? j.pit : j.bat)[id] || (pit ? j.bat : j.pit)[id];
+      if (!d) return "";
+      const P = d.pct || {}, x = d.x || [], isP = d === j.pit[id];
+      let chips, luck = "";
+      if (isP) {
+        chips = [["xERA", fx(x[8], 2), P.xera, "Expected ERA, from the quality of contact he allowed, strikeouts and walks"], ["ERA", fx(x[7], 2), null], ["K%", "", P.k_percent, "Strikeout rate, as a percentile"], ["Whiff%", "", P.whiff_percent, "Swings and misses, as a percentile"], ["Barrels allowed", "", P.brl_percent, "How rarely he allows barrels, as a percentile"], ["Fastball velo", "", P.fb_velocity, "As a percentile"]];
+        if (x[7] != null && x[8] != null && Math.abs(x[7] - x[8]) >= 0.75) luck = x[7] > x[8] ? "His ERA ran well above his xERA, so he's due for better." : "His ERA ran well below his xERA, so he's due for worse.";
+      } else {
+        chips = [["xwOBA", r3(x[6]), P.xwoba, "Expected weighted on-base average, from quality of contact, strikeouts and walks"], ["xBA", r3(x[2]), P.xba], ["Barrel%", d.ev ? fx(d.ev[3], 1) : null, P.brl_percent], ["Avg EV", d.ev ? fx(d.ev[0], 1) : null, P.exit_velocity, "Average exit velocity, mph"], ["Bat speed", d.bt ? fx(d.bt[0], 1) : null, P.bat_speed, "mph"], ["Sprint", d.spd ? fx(d.spd[0], 1) : null, P.sprint_speed, "Feet per second"]];
+        if (x[5] != null && x[6] != null && Math.abs(x[5] - x[6]) >= 0.025) luck = x[5] < x[6] ? `His wOBA (${r3(x[5])}) trailed his xwOBA, so he's due for better.` : `His wOBA (${r3(x[5])}) beat his xwOBA, so he's due for worse.`;
+      }
+      return trackBlock("Statcast", j.season, chips, luck, "/mlb/#/statcast" + (isP ? "?k=p" : ""));
+    }
+    if (k === "nfl") {
+      const h = j.byEspn && j.byEspn[id];
+      if (!h) return "";
+      const cols = (j.cols || {})[h.g] || [], v = (c) => { const i = cols.indexOf(c); return i >= 0 ? h.d.x[i] : null; }, pc = (c) => (h.d.pct || {})[c];
+      const pcts = (c) => (v(c) == null ? null : fx(v(c), 1) + "%");
+      const chips = h.g === "qb" ? [["CPOE", sgn(v("cpoe"), 1), pc("cpoe"), "Completion % over expected"], ["Rating", fx(v("rate"), 1), pc("rate")], ["Air yds/att", fx(v("iay"), 1), null], ["Time to throw", fx(v("ttt"), 2), null, "Seconds from snap to release"]]
+        : h.g === "rb" ? [["Yds over exp./carry", sgn(v("ryoe_att"), 2), pc("ryoe_att"), "Rush yards over expected per carry"], ["Beat expected", pcts("beat"), pc("beat"), "Share of carries that gained more than expected"], ["8+ in box", pcts("box8"), null, "Share of carries against a stacked box"]]
+        : [["Separation", fx(v("sep"), 2), pc("sep"), "Yards from the nearest defender when the ball arrives"], ["YAC over exp.", sgn(v("yacoe"), 2), pc("yacoe")], ["Air yds share", pcts("share"), pc("share"), "His share of his team's intended air yards"], ["Catch rate", pcts("catch"), pc("catch")]];
+      return trackBlock("Next Gen Stats", j.season, chips, "", "/nfl/#/ngs?g=" + (h.g === "qb" ? "QB" : h.g === "rb" ? "RB" : h.d.pos));
+    }
+    if (k === "nhl") {
+      const g = !!el.dataset.g, e = (g ? j.g : j.sk)[id];
+      if (!e) return "";
+      const c = (key, label, f, tip) => { const x = e[key]; return [label, x ? f(x[0]) : null, x ? x[1] : null, tip]; };
+      const pct = (v) => (v * 100).toFixed(1) + "%", int = (v) => String(Math.round(v)), d1 = (v) => v.toFixed(1);
+      const chips = g ? [c("all.savePctg", "Sv%", r3), c("high.savePctg", "High-danger Sv%", r3, "Save % on shots from the slot and crease"), c("goalsAgainstAvg", "GAA", (v) => v.toFixed(2)), c("gamesAbove900", ".900+ games", pct)]
+        : [c("speedMax", "Top speed", d1, "mph"), c("burstsOver20", "20+ mph bursts", int), c("topShotSpeed", "Hardest shot", d1, "mph"), c("offensiveZonePctg", "O-zone time", pct), c("sog.high.shots", "High-danger shots", int)];
+      const yr = j.season ? j.season.slice(0, 4) + "-" + j.season.slice(6) : "";
+      return trackBlock("NHL Edge", yr, chips, "", "/nhl/#/edge?g=" + (g ? "G" : "F"));
+    }
+    return "";
+  }
+  const trackBlock = (title, season, chips, note, link) => `<div class="pc-line pc-trackrow"><div class="pc-trkh"><span class="ps"><b>${esc(title)}</b>${season ? `, ${esc(String(season))}` : ""}</span><a class="ps" href="${link}">Leaderboard</a></div><div class="pc-trks">${chips.map(trkChip).join("")}</div>${note ? `<div class="ps pc-trknote">${esc(note)}</div>` : ""}</div>`;
+  function fillTrack(root) {
+    $$(".pc-track[data-tk]", root).forEach((el) => {
+      const k = el.dataset.tk;
+      trackFile(k).then((j) => {
+        if (!j || !el.isConnected) return;
+        const h = trackHtml(k, j, el);
+        if (h) { el.innerHTML = h; el.hidden = false; }
+      });
+    });
+  }
   function playerCard(sport, p, opts = {}) {
     const sc = sport.scorings[opts.scoring] || Object.values(sport.scorings)[0];
     const kd = S.positions(p).some((x) => x === "K" || x === "DEF");
@@ -736,7 +808,7 @@
       ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
       ${(() => { const s = sampleOf(sport, p); return s ? `<p class="small pc-ss" style="margin:0 0 12px"><span class="tag ss">Small sample</span> ${s.g} of ${s.of} games so far, so his rates can still move a lot.</p>` : ""; })()}
       ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${opts.extra || ""}${contract}${opts.after || ""}${linesHtml}${opts.fold && opts.lines !== false ? "" : zsFold}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
+      <div class="stack">${trackSlot(sport, p)}${opts.extra || ""}${contract}${opts.after || ""}${linesHtml}${opts.fold && opts.lines !== false ? "" : zsFold}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
   }
 
   const capMoney = (n) => n == null || !Number.isFinite(+n) ? "—" : +n >= 1e6 ? `$${(+n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${Math.round(+n).toLocaleString("en-US")}`;

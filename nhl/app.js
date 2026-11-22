@@ -611,7 +611,7 @@
       list.slice(0, 150).map(function (p, i) {
         var e = src[p.id];
         return "<tr><td>" + (i + 1) + "</td><td>" + pname(p) + '</td><td class="hide-m">' + logo(TEAMS[p.team], 18) + " " + p.team + "</td>" +
-          cols.map(function (c) { var x = e[c[0]]; return x ? '<td class="ec" style="background:' + edgeColor(x[1]) + ";color:" + (x[1] >= 80 || x[1] <= 20 ? "#fff" : "inherit") + '" title="' + x[1] + 'th percentile">' + edgeFmt(x[0], c[2]) + "</td>" : "<td>—</td>"; }).join("") + "</tr>";
+          cols.map(function (c) { var x = e[c[0]]; return x ? '<td class="ec" style="background:' + edgeColor(x[1]) + ";color:" + (x[1] >= 80 || x[1] <= 20 ? "#fff" : "inherit") + '" title="' + ord(x[1]) + ' percentile">' + edgeFmt(x[0], c[2]) + "</td>" : "<td>—</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody></table></div></div>";
     h += '<p class="note">' + list.length + (G ? " goalies" : " skaters") + (find ? "" : " with " + minGp + "+ games") + ", top 150 shown. From <a href=\"https://edge.nhl.com/\" rel=\"noopener\">NHL Edge</a>, pulled " + esc((EDGE.pulled || "").slice(0, 10)) + ". Speeds in mph, distance in miles.</p>";
     return h;

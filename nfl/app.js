@@ -887,6 +887,7 @@
     return "rgb(" + c.join(",") + ")";
   }
   function ngInk(v) { return v != null && (v >= 80 || v <= 20) ? "#fff" : "inherit"; }
+  function ngOrd(n) { var v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); }
   function ngFmt(v, d) { return v == null ? "—" : d ? v.toFixed(d) : String(Math.round(v)); }
   function ngPool(g) { return g === "QB" ? "qb" : g === "RB" ? "rb" : "rec"; }
   function ngsPage() {
@@ -909,7 +910,7 @@
         var p = W.byId[r.id], P2 = r.d.pct || {};
         return "<tr><td>" + (p ? pname(p, 24) : esc(r.d.n)) + '</td><td class="tm">' + logo(r.d.t, 18) + '<span class="nm">' + esc(r.d.t) + "</span></td>" + cols.map(function (c) {
           var v = r.d.x[idx[c[1]]], pc = P2[c[1]];
-          return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + pc + 'th percentile">' + ngFmt(v, c[2]) + "</td>";
+          return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + ngOrd(pc) + ' percentile">' + ngFmt(v, c[2]) + "</td>";
         }).join("") + "</tr>";
       }).join(""), "qualified players, " + (NG.season || "") + " through week " + (NG.week || "—"));
     html += '<p class="note">From the NFL\'s <a href="https://nextgenstats.nfl.com/" rel="noopener">Next Gen Stats</a> via nflverse, pulled ' + esc((NG.pulled || "").slice(0, 10)) + ". Only qualified players are listed (NGS's own cutoffs: about 14 attempts a game for quarterbacks, 6.25 carries for backs, 1.875 catches for receivers).</p>";
