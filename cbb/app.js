@@ -475,12 +475,67 @@ function method() {
 }
 
 /* ---------- player card ---------- */
+// Percentiles against Division I regulars (3+ games, 15+ minutes a game) at his position (guards, forwards, centers),
+// so a guard's rebounding is judged against guards. Rates need volume behind them: TS% 5+ shots a game, 3P% two
+// threes a game, assist-to-turnover a turnover a game. Per game, the way the season line reads.
+const PCT_STATS = [
+  ["pts", "Scoring", (p) => stat(p, "pts")],
+  ["ts", "Efficiency (TS%)", (p) => ((stat(p, "fga") || 0) >= 5 ? stat(p, "ts") : null)],
+  ["tp", "Three-point %", (p) => ((stat(p, "threeAtt") || 0) >= 2 ? stat(p, "threePct") : null)],
+  ["tpa", "Threes a game", (p) => stat(p, "threeAtt")],
+  ["reb", "Rebounding", (p) => stat(p, "reb")],
+  ["ast", "Playmaking", (p) => stat(p, "ast")],
+  ["ato", "Ball security (A/TO)", (p) => ((stat(p, "tov") || 0) >= 1 ? (stat(p, "ast") || 0) / stat(p, "tov") : null)],
+  ["stl", "Steals", (p) => stat(p, "stl")],
+  ["blk", "Blocks", (p) => stat(p, "blk")],
+  ["gs", "Game Score", (p) => M.gameScore(p)],
+];
+let PCT_POOL = null;
+const posGroup = (p) => { const s = String(p.pos || "").toUpperCase(); return /C/.test(s) && !/G/.test(s) ? "C" : /F/.test(s) && !/G/.test(s) ? "F" : "G"; };
+const POS_NAME = { G: "guards", F: "forwards", C: "centers" };
+function pctPool() {
+  if (PCT_POOL) return PCT_POOL;
+  PCT_POOL = {};
+  const regs = D.players.filter((p) => (stat(p, "gp") || 0) >= 3 && (stat(p, "min") || 0) >= 15);
+  for (const g of ["G", "F", "C"]) {
+    const grp = regs.filter((p) => posGroup(p) === g);
+    PCT_POOL[g] = { n: grp.length, sorted: Object.fromEntries(PCT_STATS.map(([k, , fn]) => [k, grp.map(fn).filter(fin).sort((a, b) => a - b)])) };
+  }
+  return PCT_POOL;
+}
+function pctOf(sorted, v) {
+  if (!sorted || sorted.length < 10 || !fin(v)) return null;
+  let lo = 0, eq = 0;
+  for (const w of sorted) { if (w < v) lo++; else if (w === v) eq++; }
+  return Math.round(100 * (lo + Math.max(0, eq - 1) / 2) / (sorted.length - 1));
+}
+function pctColorC(v) { const t = Math.max(0, Math.min(100, v)) / 100, mx = (a, b, k) => Math.round(a + (b - a) * k); const c = t < 0.5 ? [mx(54, 222, t * 2), mx(97, 222, t * 2), mx(173, 222, t * 2)] : [mx(222, 210, (t - 0.5) * 2), mx(222, 45, (t - 0.5) * 2), mx(222, 73, (t - 0.5) * 2)]; return "rgb(" + c.join(",") + ")"; }
+function pctBars(p) {
+  if ((stat(p, "gp") || 0) < 1) return "";
+  const g = posGroup(p), pool = pctPool()[g];
+  const bars = PCT_STATS.map(([k, label, fn]) => {
+    const v = fn(p), pc = pctOf(pool.sorted[k], v);
+    if (pc == null) return "";
+    return '<div class="svb"><span>' + label + ' <small style="font-weight:600;color:var(--faint)">' + f1(v, k === "ato" ? 2 : 1) + '</small></span><i><em style="width:' + Math.max(4, pc) + "%;background:" + pctColorC(pc) + '"></em><b style="left:calc(' + Math.max(4, pc) + "% - 13px);background:" + pctColorC(pc) + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i></div>";
+  }).join("");
+  if (!bars) return "";
+  const reg = (stat(p, "gp") || 0) >= 3 && (stat(p, "min") || 0) >= 15;
+  return '<p class="card-sec">Against D-I ' + POS_NAME[g] + '</p><div class="svbars">' + bars + '</div><p class="note">Percentile among ' + pool.n + " Division I " + POS_NAME[g] + " with 15+ minutes a game: red is good, blue is bad." + (reg ? "" : " He's short of that playing time, so read these as a small sample.") + "</p>";
+}
+// his share of what his team scores (the roster's points a game, summed)
+function ordinalC(n) { const v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); }
+function teamShare(p) {
+  const ros = rosters[p.teamId] || [], tot = ros.reduce((a, q) => a + (stat(q, "pts") || 0), 0), mine = stat(p, "pts") || 0;
+  if (!(tot > 20) || !(mine > 0)) return "";
+  const rank = 1 + ros.filter((q) => (stat(q, "pts") || 0) > mine).length;
+  return '<p class="tldr">Scores <b>' + Math.round(100 * mine / tot) + "%</b> of " + esc(byId[p.teamId].short) + "'s points, " + (rank === 1 ? "the most on the team" : ordinalC(rank) + " on the team") + ".</p>";
+}
 function openPlayer(id) {
   const p = byPlayer[id]; if (!p) return; ensureBoard();
   const t = byId[p.teamId], b = BOARD ? (BOARD.players || []).find(x => M.key(x.n) === M.key(p.name)) : null, n = X && X.naismith.ladder.find(r => r.id === id), g = nextGame(p.teamId);
   let ng = ""; if (g) { const home = g.home === p.teamId, o = byId[home ? g.away : g.home], l = g.state === "pre" ? lineFor(g) : null; ng = '<p class="tldr"><b>Next:</b> ' + dLabel(g.day, { weekday: "short" }) + " " + (home ? "vs " : "at ") + '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>" + (l ? " · " + favLine(l, byId[g.home], byId[g.away]) + ", " + esc(t.short) + " " + pct(home ? l.homeProb : 1 - l.homeProb) : "") + "</p>"; }
   $("#cardBody").innerHTML = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t) + " " + esc(t.short) + " · " + esc([p.pos, p.year, p.height, p.weight].filter(Boolean).join(" · ")) + (p.jersey ? " · #" + esc(p.jersey) : "") + "</div><div>" + badges(p) + "</div></div></div>" +
-    '<div class="card-b"><div class="kv">' + [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null).map(([k, l, d]) => "<div><b>" + f1(pval(p, k), d === 0 ? 0 : 1) + "</b><span>" + l + "</span></div>").join("") + "</div>" + ng +
+    '<div class="card-b"><div class="kv">' + [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null).map(([k, l, d]) => "<div><b>" + f1(pval(p, k), d === 0 ? 0 : 1) + "</b><span>" + l + "</span></div>").join("") + "</div>" + teamShare(p) + ng + pctBars(p) +
     (n ? '<p class="card-sec">Naismith Watch</p><p class="tldr">On the watch list. Hub ladder <b>#' + n.rank + "</b> of 50" + (n.prev ? " (" + (n.prev > n.rank ? "up " + (n.prev - n.rank) : n.prev < n.rank ? "down " + (n.rank - n.prev) : "no change") + " since " + dLabel(X.naismith.since) + ")" : "") + '. <a href="#/naismith">Ladder →</a></p>' : "") +
     (b ? '<p class="card-sec">NBA Big Board</p><div class="kv"><div><b>#' + b.rank + "</b><span>Consensus</span></div><div><b>" + b.hi + "–" + b.lo + "</b><span>Range</span></div><div><b>" + b.on + "</b><span>Boards</span></div>" + (fin(b.age) ? "<div><b>" + f1(b.age) + "</b><span>Age</span></div>" : "") + "</div>" + (b.stats && b.stats.length ? '<p class="tldr">' + b.stats.map(s => esc(s[0]) + " " + esc(s[1])).join(" · ") + '</p>' : "") + '<p class="tldr">' + spark(b.hist) + ' <a href="../draft/">See him on the Big Board →</a></p>' : fin(p.draftRank) ? '<p class="card-sec">NBA Big Board</p><p class="tldr">Consensus #' + p.draftRank + ' · <a href="../draft/">Big Board →</a></p>' : "") +
     '<p class="note"><a href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN player page ↗</a> · Season line: ' + esc(p.source || "ESPN") + "</p></div>";

@@ -456,6 +456,54 @@ function method() {
 }
 
 /* ---------- player card ---------- */
+// Percentiles against FBS players at his position with real volume (quarterbacks 80+ attempts, backs 40+ carries,
+// receivers and tight ends 12+ catches, defenders 10+ tackles). Counting stats per game, since teams have played
+// different numbers of games. Interception rate ranks lower-is-better.
+const per = (p, k) => { const g = st(p, "gp"), v = st(p, k); return g > 0 && fin(v) ? v / g : null; };
+const CFB_POOLS = {
+  QB: { name: "quarterbacks", pos: ["QB"], ok: (p) => (st(p, "att") || 0) >= 80, stats: [
+    ["Yards per attempt", (p) => pv(p, "ypa"), 1], ["Completion %", (p) => pv(p, "cpct"), 1], ["TD rate", (p) => (st(p, "att") ? 100 * (st(p, "ptd") || 0) / st(p, "att") : null), 1, "%"],
+    ["INT rate", (p) => (st(p, "att") ? 100 * (st(p, "int") || 0) / st(p, "att") : null), -1, "%"], ["QBR", (p) => st(p, "aqbr"), 1], ["Pass yards a game", (p) => per(p, "pyd"), 1],
+    ["Rush yards a game", (p) => per(p, "ryd"), 1], ["EPA per play", (p) => pv(p, "epaPlay"), 1]] },
+  RB: { name: "running backs", pos: ["RB", "FB"], ok: (p) => (st(p, "car") || 0) >= 40, stats: [
+    ["Yards per carry", (p) => pv(p, "ypc"), 1], ["Rush yards a game", (p) => per(p, "ryd"), 1], ["Rush TDs a game", (p) => per(p, "rtd"), 1],
+    ["Receiving yards a game", (p) => per(p, "wyd"), 1], ["EPA per play", (p) => pv(p, "epaPlay"), 1]] },
+  WR: { name: "wide receivers", pos: ["WR"], ok: (p) => (st(p, "rec") || 0) >= 12, stats: null },
+  TE: { name: "tight ends", pos: ["TE"], ok: (p) => (st(p, "rec") || 0) >= 12, stats: null },
+  DL: { name: "defensive linemen", pos: ["DL", "DE", "DT", "EDGE", "NT"], ok: (p) => (st(p, "tkl") || 0) >= 10, stats: [
+    ["Tackles a game", (p) => per(p, "tkl"), 1], ["TFL a game", (p) => per(p, "tfl"), 1], ["Sacks a game", (p) => per(p, "dsk"), 1], ["Forced fumbles", (p) => st(p, "ff"), 1], ["Passes defended", (p) => st(p, "pd"), 1]] },
+  LB: { name: "linebackers", pos: ["LB"], ok: (p) => (st(p, "tkl") || 0) >= 10, stats: [
+    ["Tackles a game", (p) => per(p, "tkl"), 1], ["TFL a game", (p) => per(p, "tfl"), 1], ["Sacks a game", (p) => per(p, "dsk"), 1], ["Interceptions", (p) => st(p, "dint"), 1], ["Passes defended", (p) => st(p, "pd"), 1]] },
+  DB: { name: "defensive backs", pos: ["DB", "S", "CB"], ok: (p) => (st(p, "tkl") || 0) >= 10, stats: [
+    ["Tackles a game", (p) => per(p, "tkl"), 1], ["Interceptions", (p) => st(p, "dint"), 1], ["Passes defended", (p) => st(p, "pd"), 1], ["TFL a game", (p) => per(p, "tfl"), 1]] },
+};
+const REC_STATS = [["Receiving yards a game", (p) => per(p, "wyd"), 1], ["Yards per catch", (p) => pv(p, "ypr"), 1], ["Catches a game", (p) => per(p, "rec"), 1], ["Receiving TDs a game", (p) => per(p, "wtd"), 1],
+  ["YAC per catch", (p) => ((st(p, "yac") || 0) > 0 && st(p, "rec") ? st(p, "yac") / st(p, "rec") : null), 1]];
+CFB_POOLS.WR.stats = REC_STATS; CFB_POOLS.TE.stats = REC_STATS;
+let CFB_SORTED = null;
+function cfbPoolOf(p) { const pos = String(p.pos || "").toUpperCase(); return Object.keys(CFB_POOLS).find((k) => CFB_POOLS[k].pos.includes(pos)) || null; }
+function cfbSorted() {
+  if (CFB_SORTED) return CFB_SORTED;
+  CFB_SORTED = {};
+  const all = Object.values(byPlayer);
+  for (const [k, P] of Object.entries(CFB_POOLS)) {
+    const grp = all.filter((p) => P.pos.includes(String(p.pos || "").toUpperCase()) && P.ok(p));
+    CFB_SORTED[k] = { n: grp.length, s: P.stats.map(([, fn]) => grp.map(fn).filter(fin).sort((a, b) => a - b)) };
+  }
+  return CFB_SORTED;
+}
+function cfbPct(sorted, v) { if (!sorted || sorted.length < 10 || !fin(v)) return null; let lo = 0, eq = 0; for (const w of sorted) { if (w < v) lo++; else if (w === v) eq++; } return Math.round(100 * (lo + Math.max(0, eq - 1) / 2) / (sorted.length - 1)); }
+function cfbColor(v) { const t = Math.max(0, Math.min(100, v)) / 100, mx = (a, b, k) => Math.round(a + (b - a) * k); const c = t < 0.5 ? [mx(54, 222, t * 2), mx(97, 222, t * 2), mx(173, 222, t * 2)] : [mx(222, 210, (t - 0.5) * 2), mx(222, 45, (t - 0.5) * 2), mx(222, 73, (t - 0.5) * 2)]; return "rgb(" + c.join(",") + ")"; }
+function cfbBars(p) {
+  const k = cfbPoolOf(p); if (!k) return "";
+  const P = CFB_POOLS[k], S = cfbSorted()[k];
+  const bars = P.stats.map(([label, fn, dir, unit], i) => {
+    const v = fn(p); let pc = cfbPct(S.s[i], v); if (pc == null) return ""; if (dir < 0) pc = 100 - pc;
+    return '<div class="svb"><span>' + label + ' <small style="font-weight:600;color:var(--faint)">' + (Math.abs(v) < 1 && v !== 0 ? v.toFixed(2) : f1(v)) + (unit || "") + '</small></span><i><em style="width:' + Math.max(4, pc) + "%;background:" + cfbColor(pc) + '"></em><b style="left:calc(' + Math.max(4, pc) + "% - 13px);background:" + cfbColor(pc) + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i></div>";
+  }).join("");
+  if (!bars) return "";
+  return '<p class="card-sec">Against FBS ' + P.name + '</p><div class="svbars">' + bars + '</div><p class="note">Percentile among ' + S.n + " FBS " + P.name + " with real playing time: red is good, blue is bad." + (P.ok(p) ? "" : " He's short of that volume, so read these as a small sample.") + "</p>";
+}
 function openPlayer(id) {
   const p = byPlayer[id]; if (!p) return;
   const t = byId[p.teamId], hz = X && X.heisman.ladder.find(x => x.id === id);
@@ -468,7 +516,7 @@ function openPlayer(id) {
   const dec = k => ["cpct", "ypa", "ypc", "ypr", "aqbr", "tfl", "dsk"].includes(k);
   $("#cardBody").innerHTML = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t) + " " + esc(t.short) + " · " + esc([p.pos, p.year, p.ht, p.wt].filter(Boolean).join(" · ")) + (p.jersey ? " · #" + esc(p.jersey) : "") + "</div><div>" + badges(p) + "</div></div></div>" +
     '<div class="card-b"><p class="tldr">' + int(st(p, "gp")) + " games" + (p.home ? " · From " + esc(p.home) : "") + "</p>" +
-    groups.filter(x => x[2]).map(([lab, ks]) => '<p class="card-sec">' + lab + '</p><div class="kv">' + ks.filter(([k]) => pv(p, k) !== null).map(([k, l]) => "<div><b>" + (dec(k) ? f1(pv(p, k)) : num0(pv(p, k))) + "</b><span>" + l + "</span></div>").join("") + "</div>").join("") + ng +
+    groups.filter(x => x[2]).map(([lab, ks]) => '<p class="card-sec">' + lab + '</p><div class="kv">' + ks.filter(([k]) => pv(p, k) !== null).map(([k, l]) => "<div><b>" + (dec(k) ? f1(pv(p, k)) : num0(pv(p, k))) + "</b><span>" + l + "</span></div>").join("") + "</div>").join("") + ng + cfbBars(p) +
     (PEPA(p.id) ? '<p class="card-sec">Efficiency <small class="note">CollegeFootballData</small></p><div class="kv"><div><b>' + f1(PEPA(p.id).epa) + "</b><span>EPA added</span></div><div><b>" + e3(PEPA(p.id).perPlay) + "</b><span>EPA per play</span></div>" + (fin(PEPA(p.id).pass) ? "<div><b>" + f1(PEPA(p.id).pass) + "</b><span>Passing EPA</span></div>" : "") + (fin(PEPA(p.id).rush) ? "<div><b>" + f1(PEPA(p.id).rush) + "</b><span>Rushing EPA</span></div>" : "") + "</div>" : "") +
     (hz ? '<p class="card-sec">Heisman ladder</p><p class="tldr">No. <b>' + hz.rank + "</b> · ladder score " + f1(hz.score) + " · " + f1(hz.prod) + ' production per game. <a href="#/heisman">Ladder →</a></p>' : "") +
     (p.nfl ? '<p class="card-sec">NFL Big Board</p><div class="kv"><div><b>#' + p.nfl.rank + "</b><span>Consensus</span></div><div><b>" + p.nfl.hi + "–" + p.nfl.lo + "</b><span>Range</span></div><div><b>" + esc(p.nfl.on) + "</b><span>Boards</span></div><div><b>" + esc(p.nfl.pos) + '</b><span>Pos</span></div></div><p class="tldr">' + spark(p.nfl.hist) + ' <a href="../draft/">See him on the Big Board →</a></p>' : "") +
