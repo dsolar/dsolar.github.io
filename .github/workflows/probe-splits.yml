@@ -1,0 +1,36 @@
+name: probe-splits
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
+          for u in "https://api.actionnetwork.com/web/v2/scoreboard/nfl?bookIds=15,30,68,69,75,123&week=12&seasonType=reg" \
+                   "https://api.actionnetwork.com/web/v2/scoreboard/ncaab?bookIds=15&date=20261123" \
+                   "https://api.actionnetwork.com/web/v2/scoreboard/ncaaf?bookIds=15&week=14&seasonType=reg&division=FBS"; do
+            echo "=== $u"; curl -s -A "$UA" -o /tmp/a.json -w "HTTP %{http_code} %{size_download}B\n" "$u"
+            python3 - <<'PY'
+          import json,re
+          try: d=json.load(open('/tmp/a.json'))
+          except Exception as e: print('not json', open('/tmp/a.json').read()[:300]); raise SystemExit
+          gs=d.get('games') or []
+          print('games', len(gs))
+          if gs:
+            g=gs[0]; print('keys', sorted(g)[:40])
+            for o in (g.get('markets') or {}, ): pass
+            odds=g.get('odds') or []
+            print('odds rows', len(odds))
+            for o in odds[:3]:
+              print({k:v for k,v in o.items() if re.search('public|money|bets|tickets|book_id|ml_|spread_home$|total$',k)})
+            txt=json.dumps(g)
+            print('has _public:', '_public' in txt, ' has _money:', '_money' in txt, ' num_bets:', 'num_bets' in txt)
+            m=g.get('markets'); print('markets sample', json.dumps(m)[:1200] if m else None)
+          PY
+          done
+          echo "=== VSiN"
+          for u in "https://vsin.com/betting-splits/" "https://data.vsin.com/betting-splits/?source=DK&sport=NFL" "https://data.vsin.com/nfl/betting-splits/"; do
+            curl -s -A "$UA" -L -o /tmp/v.html -w "$u HTTP %{http_code} %{size_download}B\n" "$u"
+            python3 -c "import re;h=open('/tmp/v.html',errors='ignore').read();print('iframes',re.findall(r'<iframe[^>]+src=\"([^\"]+)\"',h)[:5]);print('pct cells',len(re.findall(r'>\s*\d{1,3}%\s*<',h)));print('pro wall', bool(re.search('(?i)pro members|subscribe to|sign in to view',h)))"
+          done
