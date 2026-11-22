@@ -93,13 +93,25 @@ const tossup = (l, g) => l && g.state === "pre" && Math.abs(l.prob - 0.5) < 0.08
 // Action Network's share of bets (tickets) and bet count, and Kalshi's price on each team's "wins" market.
 // Money percentages are an Action Network PRO feature and never reach this file.
 let BET = null;
-fetch("data/betting.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((b) => { BET = b; if (D && ["week"].includes(route().page)) render(); }).catch(() => {});
+fetch("data/betting.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((b) => { BET = b; if (D && ["week", "team", "matchup"].includes(route().page)) render(); }).catch(() => {});
 const kfmt = (v) => (v >= 10000 ? Math.round(v / 1000) + "K" : v >= 1000 ? (v / 1000).toFixed(1) + "K" : String(Math.round(v)));
 const lineTxt = (v) => (Math.abs(v) < 0.25 ? "PK" : (v > 0 ? "+" : "−") + half(v).replace(/\.0$/, ""));
+const betOk = (p) => fin(p) && p > 0 && p < 100; // a 0/100 split means one side has no data yet
+function betBrief(gid, h, a) { // schedule cell: the side most bets are on
+  const b = BET && BET.games && BET.games[gid], x = b && b.an; if (!x || !h || !a) return "";
+  const tip = ' title="Share of bets across the books Action Network tracks' + (x.n ? ", " + x.n.toLocaleString() + " bets" : "") + '"';
+  if (x.sp && fin(x.sp[0]) && betOk(x.sp[1])) { const hs = x.sp[1] >= 50, t = hs ? h : a; return "<span" + tip + "><b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(t.abbr || t.short) + " " + lineTxt(hs ? x.sp[0] : -x.sp[0]) + "</span>"; }
+  if (x.ml && betOk(x.ml[2])) { const hs = x.ml[2] >= 50, t = hs ? h : a; return "<span" + tip + "><b>" + Math.round(hs ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(t.abbr || t.short) + " ML</span>"; }
+  return "";
+}
+function betPanel(g, h, a) { // matchup page: the full row for the game these two actually play
+  const row = g ? betRow(g, h, a) : ""; if (!row) return "";
+  return '<div class="panel betbox"><h3>Public betting <small>' + (g.state === "pre" ? "updates until " + (g.at ? "tip" : "start") : "closing numbers") + "</small></h3>" + row + "</div>";
+}
 function betRow(g, h, a) {
   const b = BET && BET.games && BET.games[g.id]; if (!b) return "";
   const x = b.an, k = b.k, bits = [];
-  const ok = (p) => fin(p) && p > 0 && p < 100; // a 0/100 split means one side has no data yet
+  const ok = betOk;
   if (x && x.sp && fin(x.sp[0]) && ok(x.sp[1])) { const hs = x.sp[1] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(t.abbr || t.short) + " " + lineTxt(hs ? x.sp[0] : -x.sp[0])); }
   else if (x && x.ml && ok(x.ml[2])) { const hs = x.ml[2] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(t.abbr || t.short) + " to win"); }
   if (x && x.tot && fin(x.tot[0]) && ok(x.tot[1])) bits.push("<b>" + Math.round(Math.max(x.tot[1], 100 - x.tot[1])) + "%</b> " + (x.tot[1] >= 50 ? "over" : "under") + " " + x.tot[0]);
@@ -295,6 +307,7 @@ function matchup(q) {
     '<div class="controls">' + teamSelect("a", a.id, "Team A") + teamSelect("b", b.id, "Team B") + seg("site", [["b", esc(b.short) + " home"], ["a", esc(a.short) + " home"], ["n", "Neutral"]], site) + '<button class="btn" type="button" data-swap>Swap ⇄</button></div>' +
     (l ? '<div class="verdict">' + logo(fav) + " <b>" + esc(fav.short) + " by " + half(l.spread) + "</b> · total " + half(l.total) + "<br><small>Projected " + esc(away.short) + " " + int(l.ap) + ", " + esc(home.short) + " " + int(l.hp) + (neutral ? " at a neutral site" : " in " + esc(home.short) + "'s stadium") + "</small></div>" +
       '<div class="wp"><span class="wp-l">' + logo(a) + esc(a.short) + " <b>" + pct(pa) + '</b></span><div class="wp-bar"><b style="width:' + (pa * 100).toFixed(1) + "%;background:" + esc(a.color) + '"></b><i style="background:' + esc(b.color) + '"></i></div><span class="wp-r"><b>' + pct(1 - pa) + "</b> " + esc(b.short) + logo(b) + "</span></div>" : '<p class="callout">No line for these teams.</p>') +
+    (() => { const m = real.find((g) => BET && BET.games && BET.games[g.id]); return m ? betPanel(m, team(m.home), team(m.away)) : ""; })() +
     (real.length ? '<p class="callout">' + real.map(g => { const h = team(g.home), aw = team(g.away); return (g.state === "post" ? "They played " : "They play ") + dLabel(g.day, { weekday: "short" }) + ": " + esc(aw.short) + (g.neutral ? " vs " : " at ") + esc(h.short) + (g.state === "post" ? " — final " + int(g.as) + "-" + int(g.hs) : g.market && fin(g.market.spread) ? " · book " + favText(g.market.spread, h, aw) : ""); }).join("<br>") + "</p>" : "") +
     (ADV(a.id) && ADV(b.id) ? '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against FBS teams from CollegeFootballData, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' : "") +
     '<div class="panel"><table class="t tape"><thead><tr><th>' + logo(a) + " " + esc(a.short) + '</th><th class="mid">Tale of the tape</th><th>' + esc(b.short) + " " + logo(b) + "</th></tr></thead><tbody>" +
@@ -414,7 +427,7 @@ function teamPage(q) {
     if (g.state === "post" && fin(g.hs)) { const us = home ? g.hs : g.as, them = home ? g.as : g.hs, rv = M.resumeValue(op.id, g.neutral ? 0 : home ? 1 : -1, us > them, X); res = '<b class="' + (us > them ? "pos" : "neg") + '">' + (us > them ? "W " : "L ") + int(us) + "-" + int(them) + '</b> <small class="note" title="Résumé value: wins above an average top-25 team">' + sg(rv, 2) + "</small>"; }
     else if (g.state === "in") res = '<span class="live">● ' + int(home ? g.hs : g.as) + "-" + int(home ? g.as : g.hs) + "</span>";
     const sp = x => x === null ? "—" : Math.abs(x) < 0.5 ? "PK" : (x > 0 ? "−" : "+") + half(x);
-    return "<tr><td>" + (g.post ? "Bowl" : "Wk " + (g.week || "")) + ' <small class="note">' + dLabel(g.day) + '</small></td><td class="tm"><span class="at">' + (g.neutral ? "vs" : home ? "" : "@") + "</span>" + teamLink(op, { rank: true }) + (g.conf ? ' <span class="pill cf2">Conf</span>' : "") + (g.note ? ' <small class="cf">' + esc(g.note) + "</small>" : "") + "</td><td>" + sp(mine) + '</td><td class="note">' + sp(mm) + "</td><td>" + pct(p) + "</td><td>" + (res || (g.state === "pre" ? kick(g) : g.state === "off" ? "Canceled" : "")) + "</td></tr>";
+    return "<tr><td>" + (g.post ? "Bowl" : "Wk " + (g.week || "")) + ' <small class="note">' + dLabel(g.day) + '</small></td><td class="tm"><span class="at">' + (g.neutral ? "vs" : home ? "" : "@") + "</span>" + teamLink(op, { rank: true }) + (g.conf ? ' <span class="pill cf2">Conf</span>' : "") + (g.note ? ' <small class="cf">' + esc(g.note) + "</small>" : "") + "</td><td>" + sp(mine) + '</td><td class="note">' + sp(mm) + "</td><td>" + pct(p) + '</td><td class="bt">' + betBrief(g.id, home ? t : op, home ? op : t) + "</td><td>" + (res || (g.state === "pre" ? kick(g) : g.state === "off" ? "Canceled" : "")) + "</td></tr>";
   }).join("");
   const pros = (rosters[t.id] || []).filter(p => p.nfl).sort((a, b) => a.nfl.rank - b.nfl.rank);
   const vsOpts = D.teams.filter(x => x.id !== t.id).sort((a, b) => a.short.localeCompare(b.short));
@@ -424,7 +437,7 @@ function teamPage(q) {
     tiles([["#" + r.rank, "Hub power " + sg(r.power)], [f1(X.base + r.o) + ' <small>#' + r.oRank + "</small>", "Adj. points scored"], [f1(X.base + r.d) + ' <small>#' + r.dRank + "</small>", "Adj. points allowed"], ["#" + int(t.fpi.rank), "ESPN FPI " + f1(t.fpi.fpi)], ["#" + r.resRank, "Hub résumé"], ["#" + r.sosRank, "Schedule played"], [o ? Math.round(o.w) + "-" + Math.round(o.l) : "—", "Proj record"], [o ? pct(o.cfp) : "—", "Make playoff"]]) +
     '<p class="callout">' + esc(story(t)) + "</p>" + efficiency(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(x => '<option value="' + esc(x.id) + '">' + esc(x.short) + "</option>").join("") + "</select></label></div>" +
-    '<div class="panel"><h3>Schedule <small>hub line, book line and win % · result and its résumé value</small></h3><div class="scroll"><table class="t"><thead><tr><th>Week</th><th class=l>Opponent</th><th>Hub</th><th>Book</th><th>Win</th><th>Result</th></tr></thead><tbody>' + schedRows + "</tbody></table></div></div>" +
+    '<div class="panel"><h3>Schedule <small>hub line, book line and win % · result and its résumé value</small></h3><div class="scroll"><table class="t"><thead><tr><th>Week</th><th class=l>Opponent</th><th>Hub</th><th>Book</th><th>Win</th><th>Bets</th><th>Result</th></tr></thead><tbody>' + schedRows + "</tbody></table></div></div>" +
     '<div class="two"><div>' + (o ? '<div class="panel"><h3>Season outlook <small><a href="#/playoff">All playoff odds →</a></small></h3><div class="body"><div class="kv"><div><b>' + Math.round(o.cw) + "-" + Math.round(o.cl) + "</b><span>Proj conf</span></div><div><b>" + pct(o.six) + "</b><span>Bowl eligible</span></div><div><b>" + (o.seed ? f1(o.seed) : "—") + "</b><span>Avg CFP seed</span></div><div><b>" + (fin(t.fpi.playoff) ? Math.round(t.fpi.playoff) + "%" : "—") + "</b><span>FPI playoff</span></div></div>" +
       '<div class="ladder">' + steps.map(([lab, x]) => '<div class="lr"><span>' + lab + '</span><i><b style="width:' + (x * 100).toFixed(1) + '%"></b></i><em>' + pct(x) + "</em></div>").join("") + "</div></div></div>" : "") +
     "</div><div>" + leaders(t.id) +

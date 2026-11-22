@@ -102,7 +102,7 @@ def match_college(hub, an_games, k_events):
             straight = (hh + aa) if (hh and aa) or max(hh, aa) == 2 else 0       # one side alone must match exactly
             flipped = (fh + fa) if (fh and fa) or max(fh, fa) == 2 else 0
             score = max(straight, flipped)
-            if score and (best is None or score > best[0]):
+            if score and (best is None or score > best[0] or (score == best[0] and g["id"].isdigit() and not best[1]["id"].isdigit())):
                 best = (score, g, flipped > straight)
         return best
 
@@ -116,6 +116,23 @@ def match_college(hub, an_games, k_events):
         b = find(ke["day"], ke["home_names"], ke["away_names"])
         if b and b[0] >= 1:
             out.setdefault(b[1]["id"], {})["k"] = flipk(ke["data"]) if b[2] else ke["data"]
+    # the CBB feed can list one game twice (a schedule placeholder and ESPN's own id); file the numbers under both
+    twins = {}
+    for g in window:
+        twins.setdefault((et_day(g["at"])[0], frozenset((g["home"], g["away"]))), []).append(g)
+    for grp in twins.values():
+        if len(grp) < 2:
+            continue
+        have = [g for g in grp if g["id"] in out]
+        if not have:
+            continue
+        src = have[0]
+        for g in grp:
+            if g["id"] in out:
+                continue
+            v = out[src["id"]]
+            out[g["id"]] = v if g["home"] == src["home"] else {"an": flip(v["an"]) if "an" in v else None, "k": flipk(v["k"]) if "k" in v else None}
+            out[g["id"]] = {k: x for k, x in out[g["id"]].items() if x}
     return out, len(window)
 
 

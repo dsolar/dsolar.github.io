@@ -76,13 +76,25 @@ function upsetAlert(l, g) { if (!l || g.state !== "pre") return false; const dog
 // Action Network's share of bets (tickets) and bet count, and Kalshi's price on each team's "wins" market.
 // Money percentages are an Action Network PRO feature and never reach this file.
 let BET = null;
-fetch("data/betting.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((b) => { BET = b; if (D && ["today"].includes(route().page)) render(); }).catch(() => {});
+fetch("data/betting.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((b) => { BET = b; if (D && ["today", "team", "matchup"].includes(route().page)) render(); }).catch(() => {});
 const kfmt = (v) => (v >= 10000 ? Math.round(v / 1000) + "K" : v >= 1000 ? (v / 1000).toFixed(1) + "K" : String(Math.round(v)));
 const lineTxt = (v) => (Math.abs(v) < 0.25 ? "PK" : (v > 0 ? "+" : "−") + half(v).replace(/\.0$/, ""));
+const betOk = (p) => fin(p) && p > 0 && p < 100; // a 0/100 split means one side has no data yet
+function betBrief(gid, h, a) { // schedule cell: the side most bets are on
+  const b = BET && BET.games && BET.games[gid], x = b && b.an; if (!x || !h || !a) return "";
+  const tip = ' title="Share of bets across the books Action Network tracks' + (x.n ? ", " + x.n.toLocaleString() + " bets" : "") + '"';
+  if (x.sp && fin(x.sp[0]) && betOk(x.sp[1])) { const hs = x.sp[1] >= 50, t = hs ? h : a; return "<span" + tip + "><b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(t.abbr || t.short) + " " + lineTxt(hs ? x.sp[0] : -x.sp[0]) + "</span>"; }
+  if (x.ml && betOk(x.ml[2])) { const hs = x.ml[2] >= 50, t = hs ? h : a; return "<span" + tip + "><b>" + Math.round(hs ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(t.abbr || t.short) + " ML</span>"; }
+  return "";
+}
+function betPanel(g, h, a) { // matchup page: the full row for the game these two actually play
+  const row = g ? betRow(g, h, a) : ""; if (!row) return "";
+  return '<div class="panel betbox"><h3>Public betting <small>' + (g.state === "pre" ? "updates until " + (g.at ? "tip" : "start") : "closing numbers") + "</small></h3>" + row + "</div>";
+}
 function betRow(g, h, a) {
   const b = BET && BET.games && BET.games[g.id]; if (!b) return "";
   const x = b.an, k = b.k, bits = [];
-  const ok = (p) => fin(p) && p > 0 && p < 100; // a 0/100 split means one side has no data yet
+  const ok = betOk;
   if (x && x.sp && fin(x.sp[0]) && ok(x.sp[1])) { const hs = x.sp[1] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.sp[1] : 100 - x.sp[1]) + "%</b> " + esc(t.abbr || t.short) + " " + lineTxt(hs ? x.sp[0] : -x.sp[0])); }
   else if (x && x.ml && ok(x.ml[2])) { const hs = x.ml[2] >= 50, t = hs ? h : a; bits.push("<b>" + Math.round(hs ? x.ml[2] : 100 - x.ml[2]) + "%</b> " + esc(t.abbr || t.short) + " to win"); }
   if (x && x.tot && fin(x.tot[0]) && ok(x.tot[1])) bits.push("<b>" + Math.round(Math.max(x.tot[1], 100 - x.tot[1])) + "%</b> " + (x.tot[1] >= 50 ? "over" : "under") + " " + x.tot[0]);
@@ -235,14 +247,14 @@ function teamPage(q) {
     let res = "";
     if (g.state === "post" && fin(g.homeScore)) { const us = home ? g.homeScore : g.awayScore, them = home ? g.awayScore : g.homeScore; res = '<b class="' + (us > them ? "pos" : "neg") + '">' + (us > them ? "W " : "L ") + int(us) + "-" + int(them) + "</b>"; }
     else if (g.state === "in") res = '<span class="live">● ' + int(home ? g.homeScore : g.awayScore) + "-" + int(home ? g.awayScore : g.homeScore) + "</span>";
-    return '<tr><td>' + dLabel(g.day, { weekday: "short" }) + '</td><td class="tm">' + '<span class="at">' + (g.neutral ? "vs" : home ? "" : "@") + "</span>" + (o ? teamLink(o, { rank: true }) : '<span class="nd1">' + esc(SCHED && SCHED.other && SCHED.other[oid] || "Non-D1") + "</span>") + (g.conf ? ' <span class="pill cf2">Conf</span>' : "") + "</td><td>" + (mine === null ? "—" : Math.abs(mine) < 0.5 ? "PK" : (mine > 0 ? "−" : "+") + half(mine)) + "</td><td>" + pct(p) + "</td><td>" + (res || (g.state === "pre" ? (g.at ? tip(g) : "TBA") : g.state === "off" ? "Postponed" : "")) + "</td></tr>";
+    return '<tr><td>' + dLabel(g.day, { weekday: "short" }) + '</td><td class="tm">' + '<span class="at">' + (g.neutral ? "vs" : home ? "" : "@") + "</span>" + (o ? teamLink(o, { rank: true }) : '<span class="nd1">' + esc(SCHED && SCHED.other && SCHED.other[oid] || "Non-D1") + "</span>") + (g.conf ? ' <span class="pill cf2">Conf</span>' : "") + "</td><td>" + (mine === null ? "—" : Math.abs(mine) < 0.5 ? "PK" : (mine > 0 ? "−" : "+") + half(mine)) + "</td><td>" + pct(p) + '</td><td class="bt">' + (o ? betBrief(g.id, home ? t : o, home ? o : t) : "") + "</td><td>" + (res || (g.state === "pre" ? (g.at ? tip(g) : "TBA") : g.state === "off" ? "Postponed" : "")) + "</td></tr>";
   }).join("");
   return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)</div></div>" +
     '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
     tiles([["#" + int(t.haslamRank), "Haslametrics"], ["#" + int(t.bpiRank), "BPI"], ["#" + int(t.sorRank), "SOR (résumé)"], [sg(M.em(t)), "Net rating"], [f1(m.adjO) + ' <small>#' + (rankO[t.id] || "—") + "</small>", "Offense"], [f1(m.adjD) + ' <small>#' + (rankD[t.id] || "—") + "</small>", "Defense"], [f1(m.tempo), "Pace"], [odds(t.id) && fin(odds(t.id).w) ? Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) : proj(t), "Proj record"], [odds(t.id) ? pct(odds(t.id).in) + (odds(t.id).mode ? ' <small>' + odds(t.id).mode + " seed</small>" : "") : "—", "Make NCAA"]]) +
     '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" + teamBars(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
-    '<div class="two"><div class="panel"><h3>Schedule <small>' + (odds(t.id) && fin(odds(t.id).w) ? "projected " + Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) + " · " : "") + 'hub line and win %</small></h3><div class="scroll sched"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="5" class="note">Schedule loading…</td></tr>') + "</tbody></table></div></div>" +
+    '<div class="two"><div class="panel"><h3>Schedule <small>' + (odds(t.id) && fin(odds(t.id).w) ? "projected " + Math.round(odds(t.id).w) + "-" + Math.round(odds(t.id).l) + " · " : "") + 'hub line and win %</small></h3><div class="scroll sched"><table class="t"><thead><tr><th>Date</th><th class=l>Opponent</th><th>Line</th><th>Win</th><th>Bets</th><th></th></tr></thead><tbody>' + (schedRows || '<tr><td colspan="6" class="note">Schedule loading…</td></tr>') + "</tbody></table></div></div>" +
     '<div><div class="panel"><h3>Résumé so far</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
     ["best", "worst", "latest"].filter(k => hl[k]).map(k => { const h = hl[k]; return '<p class="tldr"><b>' + { best: "Best game", worst: "Worst game", latest: "Latest" }[k] + ":</b> " + (h.us > h.them ? "W " : "L ") + int(h.us) + "-" + int(h.them) + " " + (h.venue === "H" ? "vs" : h.venue === "A" ? "at" : "vs") + " " + esc(h.opponent) + " (" + esc(h.date) + ")</p>"; }).join("") +
     '<p class="note">Quadrants are Haslametrics\' own hNET quadrants, not the NCAA\'s official NET.</p></div></div>' + outlook(t) + '</div></div>' +
@@ -417,11 +429,15 @@ function matchup(q) {
   ].map(([lab, v, edge]) => { const ea = edge ? edge(a) : null, eb = edge ? edge(b) : null, w = edge && fin(ea) && fin(eb) && ea !== eb ? (ea > eb ? "a" : "b") : ""; return "<tr><td" + (w === "a" ? ' class="edge"' : "") + ">" + v(a) + '</td><td class="mid">' + lab + "</td><td" + (w === "b" ? ' class="edge"' : "") + ">" + v(b) + "</td></tr>"; }).join("");
   const keyMen = t => (rosters[t.id] || []).filter(hasGames).sort((x, y) => (stat(y, "pts") || 0) - (stat(x, "pts") || 0)).slice(0, 5).map(p => "<li>" + playerLink(p) + badges(p) + '<span class="grow"></span><span class="num">' + f1(stat(p, "pts")) + "/" + f1(stat(p, "reb")) + "/" + f1(stat(p, "ast")) + "</span></li>").join("") || '<li class="note">No stats yet</li>';
   const g = D.games.find(x => (x.home === a.id && x.away === b.id) || (x.home === b.id && x.away === a.id));
+  const pair = (x) => (x.home === a.id && x.away === b.id) || (x.home === b.id && x.away === a.id);
+  // prefer ESPN's own game (numeric id) over a schedule placeholder for the same game
+  const meet = [...D.games.filter(pair), ...((SCHED && SCHED.games) || []).filter(pair)].filter((x) => BET && BET.games && BET.games[x.id]).sort((x, y) => /^\d+$/.test(y.id) - /^\d+$/.test(x.id))[0];
   return '<h2 class="sec">Spread machine</h2><p class="lede">Pick any two teams and a court. The hub projects each team\'s points from its adjusted offense against the other\'s adjusted defense at their average pace, adds ' + M.HOME_EDGE + ' points for home court, and turns the margin into a win probability.</p>' + controls +
     '<div class="verdict"><b>' + (sp < 0.5 ? "Pick'em" : esc(fav.short) + " by " + half(sp)) + "</b> " + (neutral ? "on a neutral court" : "at " + esc(home.short)) + '<small>Projected ' + esc(a.short) + " " + Math.round(aPts) + ", " + esc(b.short) + " " + Math.round(bPts) + " · Total " + half(l.total) + " · " + f1(l.pace, 0) + " possessions" + (g ? ' · <a href="#/today?day=' + g.day + '">They meet ' + dLabel(g.day) + "</a>" : "") + "</small></div>" +
     '<div class="wp"><div class="wp-l">' + logo(a) + "<b>" + esc(a.short) + "</b> " + pct(aProb) + '</div><div class="wp-bar"><b style="width:' + (aProb * 100).toFixed(1) + '%;background:' + esc(a.color || "var(--ink)") + '"></b><i style="background:' + esc(b.color || "var(--red)") + '"></i></div><div class="wp-r">' + pct(1 - aProb) + " <b>" + esc(b.short) + "</b>" + logo(b) + "</div></div>" +
     (sp >= 0.5 && Math.min(aProb, 1 - aProb) >= 0.25 && (dog.haslamRank || 999) - (fav.haslamRank || 999) >= 25 ? '<p class="callout">Upset watch: ' + esc(dog.short) + " wins this about " + pct(Math.min(aProb, 1 - aProb)) + " of the time.</p>" : "") +
     '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against all Division I teams, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' +
+    (meet ? betPanel(meet, byId[meet.home], byId[meet.away]) : "") +
     '<div class="two"><div class="panel"><h3>Tale of the tape</h3><div class="scroll"><table class="t tape"><thead><tr><th>' + esc(a.short) + '</th><th class="mid"></th><th>' + esc(b.short) + "</th></tr></thead><tbody>" + tape + "</tbody></table></div></div>" +
     '<div><div class="panel"><h3>At every court</h3><table class="t"><thead><tr><th class=l>Court</th><th>Line</th><th>' + esc(a.short) + "</th><th>" + esc(b.short) + "</th></tr></thead><tbody>" + venues + "</tbody></table></div>" +
     '<div class="panel"><h3>' + esc(a.short) + ' go-to players</h3><ul class="rlist">' + keyMen(a) + '</ul></div><div class="panel"><h3>' + esc(b.short) + ' go-to players</h3><ul class="rlist">' + keyMen(b) + "</ul></div></div></div>";
