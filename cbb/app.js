@@ -489,10 +489,27 @@ function openPlayer(id) {
 
 /* ---------- render + data ---------- */
 const PAGES = { today, ratings, matchup, conferences, teams, team: teamPage, players, naismith, prospects, bracket, bubble, method };
+// Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
+const GROUP = { today: "today", ratings: "teams", teams: "teams", team: "teams", conferences: "teams", matchup: "teams", players: "players", naismith: "players", prospects: "players", bracket: "march", bubble: "march" };
+const SUBS = {
+  teams: [["ratings", "Ratings"], ["teams", "Teams"], ["conferences", "Conferences"], ["matchup", "Matchup"]],
+  players: [["players", "Players"], ["naismith", "Naismith"], ["prospects", "Prospects"]],
+  march: [["bracket", "Projected bracket"], ["bubble", "Bubble"]],
+};
+const lastSub = (g, v) => { try { if (v) localStorage.setItem("cbb.sub." + g, v); return localStorage.getItem("cbb.sub." + g); } catch (e) { return null; } };
 function render() {
   if (!D) return;
-  const r = route(), fn = PAGES[r.page] || today, tab = r.page === "team" ? "teams" : PAGES[r.page] ? r.page : "today";
-  document.querySelectorAll(".tabs a[data-tab]").forEach(a => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  const r = route(), fn = PAGES[r.page] || today, page = PAGES[r.page] ? r.page : "today", group = GROUP[page] || "";
+  const subs = SUBS[group], cur = page === "team" ? "teams" : page;
+  if (subs && subs.some(x => x[0] === cur)) lastSub(group, cur);
+  document.querySelectorAll(".tabs a[data-tab]").forEach(a => {
+    if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    const last = SUBS[a.dataset.tab] && lastSub(a.dataset.tab);
+    if (last) a.setAttribute("href", "#/" + last);
+  });
+  const st = $("#subtabs");
+  st.hidden = !subs;
+  if (subs) st.innerHTML = subs.map(x => '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>").join("");
   view.innerHTML = fn(r.q);
 }
 function index() {
@@ -512,7 +529,7 @@ async function load() {
     D = await h.json(); X = x && x.ok ? await x.json() : null;
     index();
     $("#kicker").textContent = "College basketball · " + (D.seasonLabel || "");
-    $("#foot").innerHTML = "Ratings from <a href=\"https://haslametrics.com/\">Haslametrics</a> (" + dLabel(D.sources.haslam && D.sources.haslam.updated) + ") and <a href=\"https://www.espn.com/mens-college-basketball/bpi\">ESPN BPI</a>. Rosters, stats and scores from ESPN. Prospects from the site's <a href=\"../draft/\">NBA Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ".";
+    $("#foot").innerHTML = "Ratings from <a href=\"https://haslametrics.com/\">Haslametrics</a> (" + dLabel(D.sources.haslam && D.sources.haslam.updated) + ") and <a href=\"https://www.espn.com/mens-college-basketball/bpi\">ESPN BPI</a>. Rosters, stats and scores from ESPN. Prospects from the site's <a href=\"../draft/\">NBA Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ". <a href=\"#/method\">How it works</a>.";
     render();
     document.dispatchEvent(new CustomEvent("cbb:ready"));
     if (route().page === "today") refreshLive(false);

@@ -478,10 +478,27 @@ function openPlayer(id) {
 
 /* ---------- render + data ---------- */
 const PAGES = { week, playoff, ratings, matchup, conferences, teams, team: teamPage, players, heisman, prospects, method };
+// Four sections, as in the NBA and CBB hubs; grouped pages get a sub-tab row, and a section tab returns to the page last
+// used in it
+const GROUP = { week: "week", playoff: "playoff", ratings: "teams", teams: "teams", team: "teams", conferences: "teams", matchup: "teams", players: "players", heisman: "players", prospects: "players" };
+const SUBS = {
+  teams: [["ratings", "Ratings"], ["teams", "Teams"], ["conferences", "Conferences"], ["matchup", "Matchup"]],
+  players: [["players", "Players"], ["heisman", "Heisman"], ["prospects", "Prospects"]],
+};
+const lastSub = (g, v) => { try { if (v) localStorage.setItem("cfb.sub." + g, v); return localStorage.getItem("cfb.sub." + g); } catch (e) { return null; } };
 function render() {
   if (!D) return;
-  const r = route(), fn = PAGES[r.page] || week, tab = r.page === "team" ? "teams" : PAGES[r.page] ? r.page : "week";
-  document.querySelectorAll(".tabs a[data-tab]").forEach(a => { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  const r = route(), fn = PAGES[r.page] || week, page = PAGES[r.page] ? r.page : "week", group = GROUP[page] || "";
+  const subs = SUBS[group], cur = page === "team" ? "teams" : page;
+  if (subs && subs.some(x => x[0] === cur)) lastSub(group, cur);
+  document.querySelectorAll(".tabs a[data-tab]").forEach(a => {
+    if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+    const last = SUBS[a.dataset.tab] && lastSub(a.dataset.tab);
+    if (last) a.setAttribute("href", "#/" + last);
+  });
+  const st = $("#subtabs");
+  st.hidden = !subs;
+  if (subs) st.innerHTML = subs.map(x => '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>").join("");
   view.innerHTML = fn(r.q);
 }
 function index() {
@@ -501,7 +518,7 @@ async function load() {
     if (!X) throw Error("Ratings unavailable");
     index();
     $("#kicker").textContent = "College football · " + (D.seasonLabel || "") + (D.current && D.current.week ? " · Week " + D.current.week : "");
-    $("#foot").innerHTML = "Ratings blend <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a> with the hub's own points model. Polls, schedules, scores, sportsbook lines (as shown by ESPN), rosters and stats from ESPN. " + (C ? "EPA, SP+ and opening lines from <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a>. " : "") + "Prospects from the site's <a href=\"../draft/\">NFL Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ".";
+    $("#foot").innerHTML = "Ratings blend <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a> with the hub's own points model. Polls, schedules, scores, sportsbook lines (as shown by ESPN), rosters and stats from ESPN. " + (C ? "EPA, SP+ and opening lines from <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a>. " : "") + "Prospects from the site's <a href=\"../draft/\">NFL Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ". <a href=\"#/method\">How it works</a>.";
     render();
     document.dispatchEvent(new CustomEvent("cfb:ready"));
     if (route().page === "week") refreshLive(false);

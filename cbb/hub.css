@@ -211,3 +211,11 @@ details.more-sw summary{cursor:pointer;font-weight:700;font-size:13px;color:var(
   .controls .seg button{white-space:nowrap;flex:none}
 }
 .panel h3 a.pill{text-decoration:none;vertical-align:2px;margin-left:4px}
+/* sub-tabs under a grouped section (as in the NBA Hub) */
+.subtabs{display:flex;width:max-content;max-width:100%;overflow-x:auto;flex-wrap:nowrap;margin:10px 0 2px}
+.subtabs a{white-space:nowrap}
+.subtabs[hidden]{display:none}
+@media (max-width:760px){
+  .tabs{gap:0;justify-content:space-between}
+  .tabs a{padding:9px 6px 8px;font-size:13px;letter-spacing:0;text-transform:none}
+}
