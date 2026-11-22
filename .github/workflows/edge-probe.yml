@@ -1,0 +1,25 @@
+name: Edge probe (temporary)
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe NHL Edge
+        run: |
+          python3 - <<'PY'
+          import json, time, urllib.request
+          def get(u):
+              t=time.time()
+              try:
+                  r=urllib.request.urlopen(urllib.request.Request(u, headers={"User-Agent":"Mozilla/5.0"}), timeout=30); b=r.read(); return r.status, b, time.time()-t
+              except Exception as e:
+                  return str(e), b"", time.time()-t
+          B="https://api-web.nhle.com/v1/edge/"
+          for u in ["skater-detail/8478402/20262027/2","skater-landing/20262027/2","goalie-detail/8476945/20262027/2","skater-skating-speed-detail/8478402/20262027/2","skater-shot-speed-detail/8478402/20262027/2","skater-zone-time/8478402/20262027/2","skater-skating-distance-detail/8478402/20262027/2","goalie-landing/20262027/2"]:
+              s,b,dt=get(B+u); print("==",u,s,len(b),round(dt,2)); print(b[:1800].decode("utf-8","replace"))
+          ids=[8478402,8477934,8479318,8480069,8481557,8477492,8476453,8478483,8480027,8482116]
+          t=time.time(); ok=0
+          for i in ids:
+              s,b,dt=get(B+f"skater-detail/{i}/20262027/2"); ok+= s==200
+          print("timing 10 calls", round(time.time()-t,2), "ok", ok)
+          PY
