@@ -38,9 +38,13 @@ jobs:
       - name: Pull the splits and market prices
         run: python3 tools/betting_pull.py
 
+      - name: Grade the value-watch signals
+        continue-on-error: true
+        run: python3 tools/value_grade.py
+
       - name: Commit it
         run: |
-          for f in cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json cbb/data/lines_hist.json cfb/data/lines_hist.json nfl/data/lines_hist.json; do [ -f "$f" ] && git add "$f"; done
+          for f in cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json cbb/data/lines_hist.json cfb/data/lines_hist.json nfl/data/lines_hist.json cbb/data/value.json cfb/data/value.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

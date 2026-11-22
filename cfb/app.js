@@ -121,6 +121,40 @@ function betRow(g, h, a) {
   return bets || mk ? '<div class="bets">' + bets + mk + "</div>" : "";
 }
 
+// Value watch: where the hub's own line and the market disagree, especially with the public on the other side.
+// Same definitions as tools/value_grade.py, which grades each signal against the closing line all season.
+let VAL = null;
+const SHOW_T1 = false; // the hub's CFB totals run far from the market (14-27 against the close so far), so no totals tag here
+fetch("data/value.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((v) => { VAL = v; if (D && ["week"].includes(route().page)) render(); }).catch(() => {});
+function recTxt(k) { const r = VAL && VAL.records && VAL.records[k]; if (!r || r[0] + r[1] === 0) return "no graded games yet"; return r[0] + "-" + r[1] + (r[2] ? "-" + r[2] : "") + " (" + Math.round((100 * r[0]) / (r[0] + r[1])) + "%)"; }
+function betSignals(g, l) {
+  const b = BET && BET.games && BET.games[g.id], x = b && b.an;
+  if (!x || !l || !x.sp || !fin(x.sp[0]) || !fin(l.spread)) return null;
+  const R = (VAL && VAL.rules) || { hubEdge: 3, publicMax: 40, totalEdge: 4 };
+  const close = x.sp[0], edge = l.spread + close, side = edge > 0 ? 1 : -1;
+  const pct = betOk(x.sp[1]) ? (side === 1 ? x.sp[1] : 100 - x.sp[1]) : null, o = x.op && fin(x.op[0]) ? x.op[0] : null;
+  const s1 = Math.abs(edge) >= R.hubEdge, s2 = s1 && pct !== null && pct < R.publicMax, s3 = s2 && o !== null && o !== close && Math.abs(l.spread + close) < Math.abs(l.spread + o);
+  const bt = x.tot && fin(x.tot[0]) ? x.tot[0] : null, tot = bt !== null && fin(l.total) ? l.total - bt : null;
+  return { edge, side, pct, s1, s2, s3, t1: tot !== null && Math.abs(tot) >= R.totalEdge, tot, close, open: o, bt };
+}
+function valuePills(g, l, h, a) {
+  if (g.state !== "pre") return "";
+  const s = betSignals(g, l); if (!s) return "";
+  const t = s.side === 1 ? h : a, line = lineTxt(s.side === 1 ? s.close : -s.close), hubLine = lineTxt(s.side === 1 ? -l.spread : l.spread);
+  let out = "";
+  if (s.s2) out += '<span class="pill val" title="Hub has ' + esc(t.short) + " at " + hubLine + " against the book's " + line + ", and only " + Math.round(s.pct) + "% of bets are on " + esc(t.short) + (s.s3 ? ". The line has moved toward the hub's number since it opened" : "") + ". This signal against the closing line this season: " + recTxt(s.s3 ? "s3" : "s2") + '.">Value' + (s.s3 ? "+" : "") + ": " + esc(t.abbr || t.short) + " " + line + "</span>";
+  else if (s.s1 && false) out += '<span class="pill" title="Hub has ' + esc(t.short) + " at " + hubLine + " against the book's " + line + ". Hub disagreements of this size against the closing line this season: " + recTxt("s1") + '.">Hub vs book</span>';
+  if (s.t1 && SHOW_T1) out += '<span class="pill" title="Hub total ' + half(l.total) + " against the book's " + s.bt + ". Totals disagreements of this size this season: " + recTxt("t1") + '.">Hub ' + (s.tot > 0 ? "over" : "under") + " " + s.bt + "</span>";
+  return out;
+}
+function valueBoard() {
+  if (!VAL || !VAL.records) return "";
+  const rows = [["s1", "Hub disagrees with the book by " + VAL.rules.hubEdge + "+ points"], ["s2", "...and under " + VAL.rules.publicMax + "% of bets are on the hub's side"], ["s3", "...and the line has moved toward the hub"], ["t1", "Hub total off the book's by " + VAL.rules.totalEdge + "+ points"], ["pub", "The heavy public side (70%+ of bets)"]];
+  const cell = (k) => { const r = VAL.records[k], n = r[0] + r[1], p = n ? (100 * r[0]) / n : null; return '<td class="num">' + r[0] + "-" + r[1] + (r[2] ? "-" + r[2] : "") + '</td><td class="num"><b class="' + (p === null ? "" : p >= 52.4 ? "pos" : "neg") + '">' + (p === null ? "—" : p.toFixed(1) + "%") + "</b></td>"; };
+  return '<div class="panel"><h3>Value watch scorecard <small>against the closing line since ' + esc(dLabel(VAL.since)) + '</small></h3><div class="scroll"><table class="t"><thead><tr><th class="l">Signal</th><th>Record</th><th>Win %</th></tr></thead><tbody>' +
+    rows.map(([k, lab]) => '<tr><td class="l">' + lab + "</td>" + cell(k) + "</tr>").join("") + '</tbody></table></div><p class="note" style="padding:0 14px 12px">Break-even at standard −110 juice is 52.4%. Green beats it, red doesn\'t. "Value" tags on game cards mark the second signal and "Value+" the third, so read them with these records in mind: a tag is a disagreement worth a look, not a proven edge. The closing line is the market\'s sharpest number, so these records are a tough test.</p></div>';
+}
+
 function gameCard(g) {
   const h = team(g.home), a = team(g.away), l = shownLine(g), lg = logged(g), w = M.watch(g, l, ctx);
   const live = g.state === "in", done = g.state === "post", mk = g.market || (lg && lg.market);
@@ -139,7 +173,7 @@ function gameCard(g) {
   else if (w >= 72 && !done) tag = '<span class="pill new">Must watch</span>';
   if (done && lg && lg.final) tag = lg.ats === "win" ? '<span class="pill up">Hub ✓ ATS</span>' : lg.ats === "loss" ? '<span class="pill">Hub ✗ ATS</span>' : lg.correct ? '<span class="pill up">Hub ✓</span>' : lg.upset ? '<span class="pill fill">Upset</span>' : "";
   const foot = l ? "<span>Hub <b>" + favText(l.spread, h, a) + "</b></span><span>O/U <b>" + half(l.total) + "</b></span>" + (mk && fin(mk.spread) ? '<span class="mkt" title="' + esc(mk.book || "Sportsbook") + ' line shown by ESPN">Book ' + favText(mk.spread, h, a) + (BOOK(g.id) && fin(BOOK(g.id).open) && BOOK(g.id).open !== mk.spread ? " · opened " + favText(BOOK(g.id).open, h, a) : "") + "</span>" : "") : '<span class="note">No line: FCS opponent without a rating</span>';
-  return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + "</header>" +
+  return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + valuePills(g, l, h, a) + "</header>" +
     (g.note ? '<div class="note2">' + esc(g.note) + "</div>" : "") +
     side(a, false, g.as) + side(h, true, g.hs) +
     '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, playoff stakes and polls">' + w + "</span>" + (h.fcs || a.fcs ? "" : '<a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a>') + "</footer>" + betRow(g, h, a) + "</article>";
@@ -180,6 +214,7 @@ function week(q) {
     seg("show", [["all", "All"], ["ranked", "Ranked"], ["conf", "Conference"], ["follow", "Following"]], show) +
     '<button class="btn" type="button" data-refresh>Refresh scores ↻</button><span class="note" id="stamp">' + (liveStamp ? "Scores checked " + dLabel(liveStamp, { hour: "numeric", minute: "2-digit" }) : "Snapshot " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" })) + "</span></div>" +
     (games.length ? '<div class="games">' + games.map(gameCard).join("") + "</div>" : '<p class="callout">' + (show === "follow" ? 'None of the teams you follow play this week. Follow teams with ☆ on the <a href="#/teams">Teams</a> tab.' : "No games here yet.") + "</p>") +
+    valueBoard() +
     (BET && BET.games ? '<p class="note">Bets: share of bets (tickets) across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks, with the bet count. Kalshi: the price on each team\'s wins market at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, in cents on the dollar, shown once 500+ contracts have traded. Both freeze at kickoff.</p>' : "") +
     '<div class="two" style="margin-top:16px">' +
     '<div class="panel"><h3>Where the hub disagrees with the book <small>' + esc((edges[0] && edges[0].g.market && edges[0].g.market.book) || "Sportsbook") + " via ESPN</small></h3>" + (edges.length ? '<div class="scroll"><table class="t"><thead><tr><th class=l>Game</th>' + (C && C.lines ? "<th>Open</th>" : "") + '<th>Book</th><th>Hub</th><th>Edge</th></tr></thead><tbody>' + edges.slice(0, 8).map(({ g, l, e }) => { const h = team(g.home), a = team(g.away), side = e > 0 ? h : a; return '<tr><td class="tm">' + esc(a.short) + " at " + esc(h.short) + "</td>" + (C && C.lines ? "<td class=note>" + (BOOK(g.id) ? favText(BOOK(g.id).open, h, a) : "—") + "</td>" : "") + "<td>" + favText(g.market.spread, h, a) + "</td><td>" + favText(l.spread, h, a) + '</td><td class="edge' + (Math.abs(e) >= 4 ? " big" : "") + '">' + esc(side.abbr || side.short) + " " + half(e) + "</td></tr>"; }).join("") + "</tbody></table></div>" : '<p class="body note">No sportsbook lines posted for the games left this week.</p>') + "</div>" +
