@@ -355,3 +355,13 @@ td.tmc{padding-left:0;padding-right:4px}
   table.t.trkt th.stk,table.t.trkt td.stk{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:1px 0 0 var(--rule)}
   table.t.trkt td.stk .nm{display:inline-block;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
 }
+/* injury tags, shared by every hub: one letter (P probable, Q questionable, D doubtful, O out; IL and RES in baseball),
+   the details on hover or focus */
+.injd{position:relative;display:inline-grid;place-items:center;min-width:17px;height:17px;padding:0 3px;margin-left:5px;border-radius:4px;font:800 11px/1 var(--cond,var(--body));vertical-align:1px;cursor:help;flex:none;box-sizing:border-box}
+.injd.inj-p{background:#DDF0E2;color:#1C6B3A}
+.injd.inj-q{background:#FBE9C6;color:#8A5300}
+.injd.inj-d{background:#FAD7BE;color:#9A3F06}
+.injd.inj-o,.injd.inj-il,.injd.inj-res{background:#F9D4D4;color:#A32020}
+.injd.inj-o.sea{background:#B42525;color:#fff}
+.injd[data-tip]:hover::after,.injd[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:max-content;max-width:280px;white-space:normal;text-align:left;background:var(--ink,#14213d);color:#fff;font:500 12px/1.35 var(--body);letter-spacing:0;text-transform:none;padding:7px 9px;border-radius:7px;box-shadow:0 3px 12px rgba(0,0,0,.2);z-index:40;pointer-events:none}
+.injd[data-tip]:hover::before,.injd[data-tip]:focus-visible::before{content:"";position:absolute;left:50%;bottom:calc(100% + 2px);transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink,#14213d);z-index:40}

@@ -92,7 +92,13 @@
     return h ? '<span class="hand' + (h === "S" ? " s" : "") + '" title="' + (p.p ? "Throws " : "Bats ") + h + '">' + esc(h) + "</span>" : "";
   }
   function pname(p, size, extra) {
-    return '<span class="pl" data-p="' + esc(p.id) + '">' + face(p, size || 22) + (extra || "") + '<span class="nm">' + esc(p.n) + "</span></span>";
+    return '<span class="pl" data-p="' + esc(p.id) + '">' + face(p, size || 22) + (extra || "") + '<span class="nm">' + esc(p.n) + "</span>" + injTag(p) + "</span>";
+  }
+  // On the injured list (or the restricted list): a tag with RosterResource's note on hover, the way every hub shows injuries
+  function injTag(p) {
+    if (!p || !p.inj || p.g === "min") return "";
+    var res = /restricted/i.test(p.inj), code = res ? "RES" : "IL";
+    return ' <span class="injd inj-' + code.toLowerCase() + '" data-tip="' + esc((res ? "" : "Injured list: ") + p.inj) + '" tabindex="0" role="img" aria-label="' + esc(p.inj) + '">' + code + "</span>";
   }
   function last(n) { var a = String(n || "").replace(/ (Jr\.|Sr\.|II|III|IV)$/, "").split(" "); return a.length > 1 ? a.slice(1).join(" ") : n; }
   function yearsList() { var a = []; for (var i = 0; i < H.cfg.years; i++) a.push(H.season + i); return a; }

@@ -213,6 +213,23 @@ def main():
                       "rows": rws, "otc": c.get("otc_id")}
         players.append(p)
 
+    # ---------- this week's injury report (nflverse injuries: Questionable, Doubtful, Out) ----------
+    # The latest week's report only: each player's game status, injury and practice participation, keyed like the
+    # roster (GSIS id). A missing file (the offseason, or nflverse running late) leaves everyone without a tag.
+    try:
+        inj = list(csv.DictReader(io.StringIO(fetch(f"injuries/injuries_{SEASON}.csv"))))
+        reg = [r for r in inj if r.get("season_type") == "REG" and (r.get("week") or "").isdigit()]
+        if reg:
+            wk = max(int(r["week"]) for r in reg)
+            by = {r["gsis_id"]: r for r in reg if int(r["week"]) == wk and r.get("report_status")}
+            for p in players:
+                r = by.get(p["id"])
+                if r:
+                    p["inj"] = [r["report_status"], r.get("report_primary_injury") or "", r.get("practice_status") or "", wk]
+            print(f"injury report: week {wk}, {sum(1 for p in players if p.get('inj'))} players with a status")
+    except Exception as e:  # noqa: BLE001
+        print("injury report:", e, file=sys.stderr)
+
     # ---------- this season's games: results, and the betting line where there is one ----------
     games = []
     try:

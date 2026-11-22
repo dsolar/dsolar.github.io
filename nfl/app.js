@@ -42,7 +42,16 @@
   function chipCls(s) { return s >= 75 ? "e" : s >= 60 ? "g" : s >= 40 ? "a" : "w"; }
   function scoreChip(p, y) { var s = score(p, y), mine = W.adj && W.adj[p.id]; return '<span class="rscore ' + chipCls(s) + (mine ? " mine" : "") + '" title="Player rating' + (mine ? " with your read (" + (mine > 0 ? "+" : "") + mine + ")" : "") + (y && y > W.season ? " projected for " + y + ", aging included" : "") + ': 50 is an average player at his position">' + s + "</span>"; }
   function posOf(p) { return p.dpos && p.dpos !== "NA" ? p.dpos : p.pos; }
-  function pname(p, size, extra) { return '<span class="pl" data-p="' + esc(p.id) + '">' + face(p, size || 22) + '<span class="nm">' + esc(p.n) + "</span>" + (extra || "") + "</span>"; }
+  function pname(p, size, extra) { return '<span class="pl" data-p="' + esc(p.id) + '">' + face(p, size || 22) + '<span class="nm">' + esc(p.n) + "</span>" + injTag(p) + (extra || "") + "</span>"; }
+  // This week's injury report (nflverse): Q questionable, D doubtful, O out (P probable), with the injury and practice
+  // participation on hover. Only the current week's report shows: once the week's games are played it's history
+  var INJ_CODE = { Probable: "P", Questionable: "Q", Doubtful: "D", Out: "O" };
+  function injTag(p) {
+    var j = p && p.inj;
+    if (!j || !INJ_CODE[j[0]] || (W && W.week && j[3] < W.week)) return "";
+    var c = INJ_CODE[j[0]], tip = j[0] + (j[1] ? " (" + j[1].toLowerCase() + ")" : "") + (j[2] ? ". Practice: " + j[2].toLowerCase() : "") + ". Week " + j[3] + " injury report.";
+    return ' <span class="injd inj-' + c.toLowerCase() + '" data-tip="' + esc(tip) + '" tabindex="0" role="img" aria-label="' + esc(j[0]) + '">' + c + "</span>";
+  }
   function href(route, q) {
     var qs = Object.keys(q || {}).filter(function (k) { return q[k] != null && q[k] !== ""; }).map(function (k) { return k + "=" + encodeURIComponent(q[k]); }).join("&");
     return "#/" + route + (qs ? "?" + qs : "");
