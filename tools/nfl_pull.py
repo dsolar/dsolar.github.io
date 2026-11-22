@@ -140,7 +140,9 @@ def main():
             contracts[c["gsis_id"]].append(c)
 
     def contract_for(gid, tm):
-        cs = sorted(contracts.get(gid, []), key=lambda c: (bool(c["is_active"]), c["year_signed"] or 0))
+        # the active deal, else the latest signed; two signed the same year (a franchise or transition tag, then the
+        # long-term deal that replaced it) go to the longer, bigger one, not to whichever the file happens to list last
+        cs = sorted(contracts.get(gid, []), key=lambda c: (bool(c["is_active"]), c["year_signed"] or 0, c.get("years") or 0, c.get("value") or 0))
         return cs[-1] if cs else None
 
     def rows_of(c, tm):
