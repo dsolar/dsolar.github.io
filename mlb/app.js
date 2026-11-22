@@ -259,7 +259,6 @@
     e.stopPropagation();
     H.toggleResign(isNaN(+b.dataset.resign) ? b.dataset.resign : +b.dataset.resign);
     render();
-    loadSavant();
   }, true);
 
   // The bench player most likely to cover each spot: his listed position first, spread so one utility man
@@ -565,6 +564,8 @@
     html += gradeLine(fx && fx.grade ? fx : null);
     if (fx && fx.trust < 1) html += '<p class="note">' + esc(faithNote(fx.r, fx.trust, fx.proj)) + " His value below counts it the same way.</p>";
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
+    var lk = svLuck(p.id, !!p.p);
+    if (lk && lk.tag) html += '<p class="tldr"><b>Statcast:</b> ' + lk.line + ". " + (lk.tag === "due" ? "His contact was better than his results, so expect a bounce back. A buy-low." : "His results beat his contact, so expect a step back. A sell-high.") + "</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
     var stats = statTables(p);
@@ -703,7 +704,7 @@
     if (svWait) return svWait;
     svWait = fetch("data/savant.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) {
       SV = j || { bat: {}, pit: {}, none: true };
-      if (GROUP[state.route] === "players") render();
+      if (GROUP[state.route] === "players" || /^(fa|value|trade)$/.test(state.route)) render();
       return SV;
     });
     return svWait;
@@ -723,6 +724,29 @@
     var p = H.byId[id] || H.byId[+id];
     return p ? '<td class="tm">' + pname(p, 22) + '</td><td class="tmc">' + logo(p.t, 16) + "</td>" : '<td class="tm"><span class="nm">' + esc(d.n || id) + "</span></td><td></td>";
   }
+  // Statcast's luck read on one player: actual against expected (wOBA vs. xwOBA for hitters, ERA vs. xERA for pitchers).
+  // "Due" hit better than his results, "Lucky" got more than he hit. About the top and bottom tenth of qualified players
+  function svLuck(id, pit) {
+    if (!SV || SV.none || id == null) return null;
+    var b = SV.bat[id], q = SV.pit[id], d = pit === true ? q : pit === false ? b : b || q;
+    if (!d || !d.x) return null;
+    var isP = d === q;
+    if (isP) {
+      if (d.x[7] == null || d.x[8] == null) return null;
+      var g = d.x[7] - d.x[8];
+      return { p: true, gap: g, era: d.x[7], xera: d.x[8], tag: g >= 0.75 ? "due" : g <= -0.75 ? "lucky" : null, line: "ERA " + d.x[7].toFixed(2) + " vs. xERA " + d.x[8].toFixed(2) };
+    }
+    if (d.x[5] == null || d.x[6] == null) return null;
+    var h = d.x[5] - d.x[6];
+    return { p: false, gap: h, xw: d.x[6], tag: h <= -0.025 ? "due" : h >= 0.025 ? "lucky" : null, line: "wOBA " + f3(d.x[5]) + " vs. xwOBA " + f3(d.x[6]) };
+  }
+  function svBadge(id, pit) {
+    var L = svLuck(id, pit);
+    if (!L || !L.tag) return "";
+    var tip = L.line + (L.tag === "due" ? ": his contact was better than his results (buy low)" : ": his results beat his contact (sell high)");
+    return ' <span class="pill sv-' + L.tag + '" title="' + esc(tip) + '">' + (L.tag === "due" ? "Due" : "Lucky") + "</span>";
+  }
+  function svExp(id, pit) { var L = svLuck(id, pit); return !L ? "—" : L.p ? L.xera.toFixed(2) : f3(L.xw); }
   function svRv(v) { return v == null ? "—" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v); }
   function svWaitNote() { return '<p class="loading">Loading Statcast…</p>'; }
   function svHead(title, lede) { return '<h2 class="sec">' + title + '</h2><p class="lede">' + lede + "</p>"; }
@@ -733,7 +757,7 @@
     if (!SV) { loadSavant(); view.innerHTML = svWaitNote(); return; }
     var kind = state.q.k === "p" ? "p" : "b", q = (state.q.q || "").toLowerCase();
     var html = svHead("Statcast", "Every qualified player's " + (SV.season || "") + " Statcast numbers from Baseball Savant, shaded by percentile the way Savant does it: red is good, blue is bad. Click a column to sort, a player for his card.");
-    html += '<div class="controls">' + svSeg("k", kind, [["b", "Hitters"], ["p", "Pitchers"]]) + "</div>";
+    html += '<div class="controls">' + svSeg("k", kind, [["b", "Hitters"], ["p", "Pitchers"]]) + '<label>Search<input type="search" data-q="q" value="' + esc(state.q.q || "") + '" placeholder="Player"></label></div>';
     if (kind === "b") {
       var sort = state.q.s || "xwoba";
       var rows = Object.keys(SV.bat).map(function (id) { return { id: id, d: SV.bat[id] }; }).filter(function (r) { return r.d.x && r.d.x[0] && (!q || String(r.d.n).toLowerCase().indexOf(q) >= 0); });
@@ -756,6 +780,7 @@
           return "<tr>" + svWho(r.id, d) + "<td>" + f0(d.x[0]) + "</td><td>" + (d.x[7] != null ? d.x[7].toFixed(2) : "—") + "</td>" + pctCell(P.xera, d.x[8] != null ? d.x[8].toFixed(2) : "—") + pctCell(P.xwoba, f3(d.x[6])) + cols.map(function (c) { return pctCell(P[c[0]]); }).join("") + "</tr>";
         }).join(""), prow.length + " qualified pitchers. The last eight columns are percentiles");
     }
+    if (q && !(kind === "b" ? rows : prow).length) html += '<p class="note">No qualified ' + (kind === "b" ? "hitter" : "pitcher") + ' matches "' + esc(state.q.q) + '". Savant only ranks players who met its playing-time cutoffs, so anyone who missed much of the season drops off. His card still shows what Savant has.</p>';
     html += svFoot();
     view.innerHTML = html;
   }
@@ -786,12 +811,12 @@
   // the best pitches in baseball, by run value, filtered by type
   function arsenalPage() {
     if (!SV) { loadSavant(); view.innerHTML = svWaitNote(); return; }
-    var type = state.q.t || "all", sort = state.q.s || "rv100";
+    var type = state.q.t || "all", sort = state.q.s || "rv100", aq = (state.q.q || "").toLowerCase();
     var html = svHead("Pitch arsenals", "Every pitch thrown at least a few hundred times, ranked by run value: runs saved compared with an average pitch in the same counts. Per 100 is the rate; the total rewards pitches thrown a lot.");
     var TYPES = [["all", "All"], ["FF", "4-seam"], ["SI", "Sinker"], ["FC", "Cutter"], ["SL", "Slider"], ["ST", "Sweeper"], ["CU", "Curve"], ["CH", "Changeup"], ["FS", "Splitter"]];
-    html += '<div class="controls">' + svSeg("t", type, TYPES) + "</div>";
+    html += '<div class="controls">' + svSeg("t", type, TYPES) + '<label>Search<input type="search" data-q="q" value="' + esc(state.q.q || "") + '" placeholder="Player"></label></div>';
     var rows = [];
-    Object.keys(SV.pit).forEach(function (id) { (SV.pit[id].ars || []).forEach(function (a) { if ((type === "all" || a[0] === type || (type === "CU" && a[0] === "KC")) && (a[9] || 0) >= 250) rows.push({ id: id, d: SV.pit[id], a: a }); }); });
+    Object.keys(SV.pit).forEach(function (id) { (SV.pit[id].ars || []).forEach(function (a) { if ((type === "all" || a[0] === type || (type === "CU" && a[0] === "KC")) && (a[9] || 0) >= 250 && (!aq || String(SV.pit[id].n).toLowerCase().indexOf(aq) >= 0)) rows.push({ id: id, d: SV.pit[id], a: a }); }); });
     // run value in Savant's pitcher file is from the pitcher's side: positive is runs saved
     var key = { rv100: function (r) { return r.a[3] || 0; }, rv: function (r) { return r.a[4] || 0; }, whiff: function (r) { return r.a[5] || 0; }, pa: function (r) { return r.a[6] || 0; }, xw: function (r) { return -(r.a[7] || 1); }, use: function (r) { return r.a[2] || 0; } }[sort] || function (r) { return r.a[3] || 0; };
     rows.sort(function (a, b) { return key(b) - key(a); });
@@ -872,6 +897,7 @@
     var opt = function (v, l, cur) { return '<option value="' + v + '"' + (v === cur ? " selected" : "") + ">" + l + "</option>"; };
     var html = '<h2 class="sec">Trade Value</h2><p class="lede">Value is what a player should produce over the rest of his contract or team control, at the market price of a win. Contract is what he\'ll be paid. Surplus is the difference, in real contract dollars (set a discount rate below to see today\'s dollars). ' +
       (H.market ? "The price of a win (" + money(H.cfg.dpw) + ") is read from the last few winters of free agent deals." : "The price of a win is an assumption until the free agent data arrives.") + " Change any assumption and every number updates.</p>";
+    html += '<p class="note"><span class="pill sv-due">Due</span> and <span class="pill sv-lucky">Lucky</span> come from Statcast: a hitter whose wOBA ran .025 below or above his xwOBA last season, or a pitcher whose ERA ran three-quarters of a run above or below his xERA. Expected stats predict next year better than the real ones, so Due is a buy-low and Lucky a sell-high. <a href="#/luck">See the full lists</a>.</p>';
     html += controls('<label>Team<select data-q="t">' + opt("", "All teams", tm) + H.teams.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).map(function (t) { return opt(t.abbr, t.name, tm); }).join("") + "</select></label>" +
       '<label>Players<select data-q="k">' + opt("all", "Everyone", kind) + opt("bat", "MLB hitters", kind) + opt("pit", "MLB pitchers", kind) + opt("pros", "Prospects", kind) + "</select></label>" +
       '<label>Show<select data-q="sort">' + opt("", "Most surplus", q.sort || "") + opt("worst", "Worst contracts", q.sort || "") + "</select></label>" +
@@ -880,7 +906,7 @@
     list.forEach(function (x, i) {
       var p = x.p, s = x.s, lastY = s.rows.length ? s.rows[s.rows.length - 1].y : "—";
       var ctr = p.c && p.c.desc ? p.c.desc.replace(/\s*\(.*?\)/, "") : p.fv && p.g === "min" ? "Prospect · FV " + p.fv : s.rows[0] ? s.rows[0].kind : "";
-      html += "<tr><td>" + (i + 1) + ". " + pname(p, 22) + "</td><td>" + logo(p.t, 18) + "</td><td>" + esc(p.pos || "") + "</td><td>" + (p.age ? Math.floor(p.age) : "—") +
+      html += "<tr><td>" + (i + 1) + ". " + pname(p, 22) + svBadge(p.id, !!p.p) + "</td><td>" + logo(p.t, 18) + "</td><td>" + esc(p.pos || "") + "</td><td>" + (p.age ? Math.floor(p.age) : "—") +
         '</td><td style="text-align:left;max-width:220px;overflow:hidden;text-overflow:ellipsis">' + esc(ctr) + "</td><td>" + lastY + "</td><td>" + f1(H.warAt(p, H.season)) + "</td><td>" + money(s.valuePV) + "</td><td>" + money(s.contractPV) +
         '</td><td class="' + (s.pv >= 0 ? "pos" : "neg") + '"><b>' + signed(s.pv) + "</b></td></tr>";
     });
@@ -936,7 +962,7 @@
       ids.forEach(function (id) {
         var p = H.byId[id], sv = H.surplus(p);
         tot += sv.pv; tv += sv.valuePV; tc += sv.contractPV;
-        rows += "<li>" + pname(p, 28) + '<span class="grow"><span class="sub">' + logo(p.t, 14) + " " + esc(p.pos || "") + " · " + (p.c && p.c.desc ? esc(p.c.desc.replace(/\s*\(.*?\)/, "")) : p.fv && p.g === "min" ? "FV " + esc(p.fv) : esc((sv.rows[0] || {}).kind || "")) +
+        rows += "<li>" + pname(p, 28) + svBadge(p.id, !!p.p) + '<span class="grow"><span class="sub">' + logo(p.t, 14) + " " + esc(p.pos || "") + " · " + (p.c && p.c.desc ? esc(p.c.desc.replace(/\s*\(.*?\)/, "")) : p.fv && p.g === "min" ? "FV " + esc(p.fv) : esc((sv.rows[0] || {}).kind || "")) +
           '</span></span><b class="' + (sv.pv >= 0 ? "pos" : "neg") + '">' + signed(sv.pv) + '</b><button class="xbtn" data-rm="' + k + '" data-id="' + esc(id) + '" aria-label="Remove">×</button></li>';
       });
       totals[k] = tot;
@@ -1012,7 +1038,7 @@
       .filter(function (x) { return x.s.rows.length && !on[x.p.id]; })
       .sort(function (x, y) { return (x.p.g === "min") - (y.p.g === "min") || y.s.pv - x.s.pv; });
     var row = function (x) {
-      return '<button type="button" class="org-row" data-pick="' + esc(x.p.id) + '" data-side="' + k + '">' + face(x.p, 22) + '<span class="grow">' + esc(x.p.n) + ' <span class="note">' + esc(x.p.pos || "") + (x.p.fv && x.p.g === "min" ? " · FV " + esc(x.p.fv) : "") + '</span></span><b class="' + (x.s.pv >= 0 ? "pos" : "neg") + '">' + signed(x.s.pv) + "</b></button>";
+      return '<button type="button" class="org-row" data-pick="' + esc(x.p.id) + '" data-side="' + k + '">' + face(x.p, 22) + '<span class="grow">' + esc(x.p.n) + ' <span class="note">' + esc(x.p.pos || "") + (x.p.fv && x.p.g === "min" ? " · FV " + esc(x.p.fv) : "") + "</span>" + svBadge(x.p.id, !!x.p.p) + '</span><b class="' + (x.s.pv >= 0 ? "pos" : "neg") + '">' + signed(x.s.pv) + "</b></button>";
     };
     var mlb = list.filter(function (x) { return x.p.g !== "min"; }), farm = list.filter(function (x) { return x.p.g === "min"; }).slice(0, 25);
     return '<details class="org" open><summary>' + esc(team(abbr).name) + " roster</summary>" + mlb.map(row).join("") + "</details>" +
@@ -1080,6 +1106,7 @@
     var signedN = board.filter(function (x) { return x.signedAav; }).length;
     html += '<p class="lede">' + (board.length - signedN) + " free agents still unsigned, " + signedN + " signed so far.</p>";
     html += gradesPanel(board);
+    html += '<p class="note"><span class="pill sv-due">Due</span> and <span class="pill sv-lucky">Lucky</span> come from Statcast: a hitter whose wOBA ran .025 below or above his xwOBA last season, or a pitcher whose ERA ran three-quarters of a run above or below his xERA. Expected stats predict next year better than the real ones, so Due is a buy-low and Lucky a sell-high. <a href="#/luck">See the full lists</a>.</p>';
     var show = q.f || "open";
     var opt = function (v, l) { return '<option value="' + v + '"' + (v === show ? " selected" : "") + ">" + l + "</option>"; };
     html += controls('<label>Show<select data-q="f">' + opt("open", "Still unsigned") + opt("all", "Everyone") + opt("signed", "Signed") + opt("bat", "Hitters") + opt("sp", "Starters") + opt("rp", "Relievers") + "</select></label>");
@@ -1093,10 +1120,10 @@
       return true;
     });
     var withSigned = list.some(function (x) { return x.signedAav; });
-    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th>' + (withSigned ? "<th>Signed</th><th>vs Market</th><th>Grade</th>" : "") + "</tr></thead><tbody>";
+    html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th title="Statcast expected stats: xwOBA for hitters, xERA for pitchers">xwOBA / xERA</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th>' + (withSigned ? "<th>Signed</th><th>vs Market</th><th>Grade</th>" : "") + "</tr></thead><tbody>";
     list.forEach(function (x, i) {
-      var r = x.r, pl = faName(x, 24);
-      html += "<tr><td>" + x.rank + ". " + pl + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + teamMark(r.from, 20) + "</td><td>" + (x.trust < 1 ? '<span title="' + esc(faithNote(r, x.trust, x.proj)) + '">' + f1(x.war) + "*</span>" : f1(x.war)) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
+      var r = x.r, pl = faName(x, 24), fp = /P$|SP|RP/.test(String(r.pos || ""));
+      html += "<tr><td>" + x.rank + ". " + pl + svBadge(r.id, fp) + "</td><td>" + esc(r.pos || "") + "</td><td>" + (x.age || "—") + "</td><td>" + teamMark(r.from, 20) + "</td><td>" + (x.trust < 1 ? '<span title="' + esc(faithNote(r, x.trust, x.proj)) + '">' + f1(x.war) + "*</span>" : f1(x.war)) + "</td><td>" + svExp(r.id, fp) + "</td><td>" + (r.qo ? '<span class="pill warn">QO</span>' : "") +
         "</td><td>" + (r.my ? r.my + " yr · " + money(x.crowdAav) : "—") + "</td><td>" + money(x.spotAav) + "</td><td><b>" + money(x.mktAav) + "</b></td>" + (!withSigned ? "</tr>" : "<td>" +
         (x.signedAav ? esc(r.to || "") + " " + (r.yrs || "?") + " yr · " + money(x.signedAav) : '<span class="note">unsigned</span>') + "</td><td class=\"" + (x.gap == null ? "" : x.gap > 0 ? "neg" : "pos") + '">' +
         (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>");
@@ -1228,6 +1255,7 @@
     $("#kicker").textContent = "MLB · " + HUB.season + " projections";
     $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
+    loadSavant();
   }).catch(function (e) {
     view.innerHTML = '<p class="loading">Couldn\'t load the data. ' + esc(e.message) + "</p>";
   });

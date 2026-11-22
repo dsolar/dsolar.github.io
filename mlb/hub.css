@@ -337,3 +337,6 @@ td.tmc{padding-left:0;padding-right:4px}
 .svb em{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
 .svb b{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;box-shadow:0 0 0 2px var(--card)}
 @media (max-width:640px){.svseg a{padding:6px 9px;font-size:12px}}
+.pill.sv-due{background:#e2f2e8;color:#1d6b3c}
+.pill.sv-lucky{background:#fbe6e9;color:#a51f37}
+.org-row .pill{margin-left:6px}
