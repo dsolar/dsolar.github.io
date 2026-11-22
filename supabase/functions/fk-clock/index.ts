@@ -384,6 +384,52 @@ async function poolReminders(token: string) {
   return { due: due.length, sent, failed };
 }
 
+// Weekly recaps: Tuesday morning (9 to 11 a.m. Eastern), each member who turned them on gets a note on every pool with a
+// game that finished in the last week: who went out, the top of the standings, where they stand, and what's due.
+async function poolRecaps(token: string) {
+  const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
+  if (!key || !from) return { recaps: "mail not set up" };
+  const et = new Date(new Date().toLocaleString("en-US", { timeZone: "America/New_York" }));
+  if (et.getDay() !== 2 || et.getHours() < 9 || et.getHours() >= 11) return { recaps: "not Tuesday morning" };
+  const wk = `${et.getFullYear()}-${String(et.getMonth() + 1).padStart(2, "0")}-${String(et.getDate()).padStart(2, "0")}`;
+  const r = await rpc("mm_recap_boards", { p_token: token });
+  if (!r || r.error || !Array.isArray(r.boards)) return { error: r && (r.error || r.message) };
+  const P = await loadPoolRules(), now = Date.now(), due: any[] = [];
+  for (const x of r.boards) { try { const c = P.recap(x.board, now, null); if (c && c.lines.length) due.push({ ...x, recap: c }); } catch (_) { /* skip it */ } }
+  if (!due.length) return { recaps: 0 };
+  const c = await rpc("mm_recap_claim", { p_token: token, p_rows: due.map((x) => ({ pool: x.pool, user: x.user, wk })) });
+  const claimed = new Set(((c && c.claimed) || []).map((k: any) => `${k.pool}|${k.user}`));
+  let sent = 0, failed = 0;
+  for (const x of due) {
+    if (!claimed.has(`${x.pool}|${x.user}`)) continue;
+    const url = `https://davidsolar.dev/fantasy/pools/?p=${encodeURIComponent(x.pool)}`;
+    const next = x.recap.due ? `Your next pick is due ${etTime(x.recap.due)}.` : "";
+    const subject = `${x.pool_name}: your week in review`;
+    const foot = "You get this because you turned on the weekly recap for this pool. Turn it off on the pool's Settings tab.";
+    const text = `Hi ${x.name || "there"},\n\n${x.recap.lines.join("\n\n")}${next ? `\n\n${next}` : ""}\n\nOpen the pool: ${url}\n\n${foot}\n\nDraft Lab, davidsolar.dev`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>${h(subject)}</title></head>
+<body style="margin:0;padding:0;background:#F1F3F6"><div style="display:none;max-height:0;overflow:hidden">${h(x.recap.lines[0] || "")}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F3F6"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:14px;overflow:hidden;border:1px solid #E1E5EB">
+  <tr><td style="background:#13233A;padding:20px 24px"><div style="font:700 12.5px ${FONT};color:rgba(255,255,255,.78)">${h(x.pool_name)} &middot; ${h(POOL_KIND[x.kind] || "Pool")}</div>
+    <div style="font:800 22px/1.25 ${FONT};color:#FFFFFF;margin-top:4px">Your week in review</div></td></tr>
+  <tr><td style="padding:22px 24px 8px">
+    <p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">Hi ${h(x.name || "there")},</p>
+    ${x.recap.lines.map((l: string) => `<p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">${h(l)}</p>`).join("")}
+    ${next ? `<p style="margin:0 0 14px;font:700 16px/1.5 ${FONT};color:#26303D">${h(next)}</p>` : ""}
+    <p style="margin:18px 0 22px"><a href="${h(url)}" style="display:inline-block;background:#F6C445;color:#13233A;font:800 16px ${FONT};text-decoration:none;padding:12px 20px;border-radius:10px">Open the pool</a></p></td></tr>
+  <tr><td style="padding:14px 24px 20px;border-top:1px solid #E1E5EB;font:400 13px/1.5 ${FONT};color:#6B7684">${h(foot)}<br>Draft Lab, davidsolar.dev</td></tr>
+</table></td></tr></table></body></html>`;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: [x.email], subject, text, html }),
+    }).catch(() => null);
+    if (res && res.ok) sent++; else failed++;
+    await new Promise((ok) => setTimeout(ok, 550));
+  }
+  return { recaps: due.length, sent, failed };
+}
+
 // Bots on time. Every save to a live draft (fk_wake_clock, a database trigger) calls ?league=<id>: if the next pick
 // is a bot's, or a manager's clock running out, within the next nine seconds, wait for it, read the draft again and
 // make it. That save wakes the next call, so a run of bot picks keeps going with nobody's page open. A page that
@@ -425,5 +471,6 @@ Deno.serve(async (req) => {
   if ((leagues as any).error === "no") return new Response("Not the clock", { status: 401 });
   const mail = await sendMail(token).catch((e) => ({ error: String(e.message || e) }));
   const reminders = await poolReminders(token).catch((e) => ({ error: String(e.message || e) }));
-  return new Response(JSON.stringify({ ...leagues, mail, reminders, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
+  const recaps = await poolRecaps(token).catch((e) => ({ error: String(e.message || e) }));
+  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
 });

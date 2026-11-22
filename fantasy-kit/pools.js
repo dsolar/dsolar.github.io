@@ -183,6 +183,17 @@
     if (st.user) {
       [mine, groups] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => [])]);
       stat = await statuses(mine || []);
+      if ((groups || []).length) {
+        try {
+          const pb = await C.rpc("pk_board", {});
+          const gs = (pb && pb.games) || [], open = gs.filter((g) => !g.locked && g.spread != null), todo = open.filter((g) => !g.pick);
+          const picked = gs.filter((g) => g.pick).length, rec = pb.me && pb.me.w + pb.me.l + pb.me.p ? `${pb.me.w}-${pb.me.l}${pb.me.p ? "-" + pb.me.p : ""} this season` : "";
+          const wkn = pb.week ? `Week ${pb.week}` : "This week";
+          st.pkStat = !gs.length ? null : todo.length ? { text: `${wkn}: ${picked} of ${gs.length} picked${rec ? ". " + rec : ""}`, tone: "todo", due: Math.min(...todo.map((g) => Date.parse(g.kickoff))) }
+            : gs.some((g) => g.spread != null) ? { text: `${wkn}: ${picked} of ${gs.length} picked${rec ? ". " + rec : ""}`, tone: "ok" }
+            : { text: `${wkn}: lines lock ${pb.freezeAt ? tipTime(pb.freezeAt) : "soon"}${rec ? ". " + rec : ""}`, tone: "wait" };
+        } catch (e) { st.pkStat = null; }
+      }
     }
     const now = Date.now();
     GAMES.forEach((g) => { g.isLive = now >= day0(g.open) && now < day0(g.end) + 864e5; });
@@ -197,8 +208,8 @@
     const row = (href, key, sc, name, sub, x) => `<li class="${x ? "t-" + x.tone : ""}"><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
     const sorted = (mine || []).slice().sort((a, c) => { const x = stat[a.id] || { tone: "ok" }, y = stat[c.id] || { tone: "ok" }; return (TONE_ORDER[x.tone] - TONE_ORDER[y.tone]) || ((x.due || 0) - (y.due || 0)); });
     const items = sorted.map((p) => { const x = stat[p.id]; return row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x); })
-      .concat((groups || []).map((g) => row("/pickem/?tab=groups", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${g.members} ${g.members === 1 ? "member" : "members"}`, null)));
-    const todo = Object.values(stat).filter((x) => x.tone === "todo").sort((a, c) => (a.due || Infinity) - (c.due || Infinity));
+      .concat((groups || []).map((g) => row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat)));
+    const todo = Object.values(stat).concat(st.pkStat && (groups || []).length ? [st.pkStat] : []).filter((x) => x.tone === "todo").sort((a, c) => (a.due || Infinity) - (c.due || Infinity));
     const summary = !items.length ? "" : todo.length ? `<p class="pl-todo"><b>${todo.length === 1 ? "1 pool needs" : `${todo.length} pools need`} your picks.</b>${todo[0].due ? ` ${todo.length === 1 ? "Due" : "The first is due"} ${esc(dueText(todo[0].due))}.` : ""}</p>` : mine.length ? `<p class="pl-todo ok">You're all set. Nothing due right now.</p>` : "";
     // the make-a-pool choices in the same order as the games below: playing now, then soonest
     const kinds = live.concat(soon, far).map((g) => g.key).filter((k) => k !== "pickem");
@@ -226,7 +237,7 @@
   async function load() {
     try { st.board = await (st.as ? C.rpc("mm_board_as", { p_pool: st.code, p_user: st.as }) : C.rpc("mm_board", { p_pool: st.code })); } catch (e) { st.board = { error: e.message }; }
     if (st.as && st.board && st.board.error) { st.msg = st.board.error; st.as = null; st.board = await C.rpc("mm_board", { p_pool: st.code }).catch((e) => ({ error: e.message })); }
-    if (st.board && st.board.ok && st.remind == null) { try { st.remind = !!(await C.rpc("mm_remind_get", { p_pool: st.code })).remind; } catch (e) { st.remind = false; } }
+    if (st.board && st.board.ok && st.remind == null) { try { const g = await C.rpc("mm_remind_get", { p_pool: st.code }); st.remind = !!g.remind; st.recap = !!g.recap; } catch (e) { st.remind = false; st.recap = false; } }
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
@@ -283,6 +294,7 @@
     const you = `<section class="card pl-set"><div class="mod-h"><h2>You</h2></div><div class="bd pl-setb">
       <form id="pl-entry" class="pl-row"><label>Your name in this pool<input name="entry" maxlength="28" value="${esc(mine.name || "")}"></label><button class="btn sm">Save</button></form>
       ${remindable(b) ? `<label class="pl-remind"><input type="checkbox" data-remind${st.remind ? " checked" : ""}><span><b>Email me before a pick is due</b> <span class="ps">About 3 hours ahead, only if I haven't made it</span></span></label>` : ""}
+      ${p.kind !== "squares" ? `<label class="pl-remind"><input type="checkbox" data-recap${st.recap ? " checked" : ""}><span><b>Email me a weekly recap</b> <span class="ps">Tuesday mornings: who went out, the standings and what's due</span></span></label>` : ""}
       <div class="pl-row"><button type="button" class="btn sm go" data-invite>Invite people</button>${owner ? "" : `<button type="button" class="btn sm ghost${st.leave ? " danger" : ""}" data-leave>${st.leave ? "Tap again to leave. Your picks go too" : "Leave this pool"}</button>`}</div></div></section>`;
     const members = `<section class="card pl-set"><div class="mod-h"><h2>Members</h2><span class="grow"></span><span class="ps">${b.members.length}</span></div>
       <ul class="pl-mem">${b.members.map((m) => `<li><b>${esc(m.name)}</b>${m.me ? ` <span class="ps">you</span>` : ""}${m.owner ? ` <span class="tag">Owner</span>` : ""}
@@ -1041,6 +1053,7 @@
     if (t.hasAttribute("data-ffhide")) { st.ffhide = t.checked; render(); return; }
     if (t.hasAttribute("data-ffsort")) { st.ffsort = t.value; render(); return; }
     if (t.hasAttribute("data-luvs")) { st.luvs = t.value || null; render(); return; }
+    if (t.hasAttribute("data-recap")) { const on = t.checked; C.rpc("mm_recap_set", { p_pool: st.code, p_on: on }).then(ok).then(() => { st.recap = on; st.msg = on ? "Weekly recap on. It comes Tuesday mornings." : "Weekly recap off."; render(); }).catch((e) => { t.checked = !on; fail(e); }); return; }
     if (t.hasAttribute("data-xfer")) { st.xfer = t.value || null; st.xferArm = false; render(); return; }
     if (t.hasAttribute("data-paid")) { const on = t.checked; C.rpc("mm_member_paid", { p_pool: st.code, p_user: t.dataset.paid, p_paid: on }).then(ok).then(load).then(render).catch((e) => { t.checked = !on; fail(e); }); return; }
     if (t.hasAttribute("data-closed")) { const on = t.checked; C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { closed: on } }).then(ok).then(() => { st.msg = on ? "Closed to new entries." : "Open to new entries."; return load(); }).then(render).catch((e) => { t.checked = !on; fail(e); }); return; }

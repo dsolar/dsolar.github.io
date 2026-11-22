@@ -312,3 +312,14 @@ test('survivor planner: each team once, the best overall path, byes and used tea
   const r = P.survPlan({ games: [['REG', 4, 'd', 'BAD', 'GOOD', null, null, null, 0, 0]], ratings: { GOOD: 5, BAD: -5 }, from: 4, to: 4 });
   assert.equal(r.path[0].team, 'GOOD'); assert.ok(r.grid.GOOD[4] > 0.75);
 });
+
+test('weekly recap: who went out, how many are left, and nothing when no game finished', () => {
+  const me = nmem.map((m) => Object.assign({}, m, { me: m.id === 'a' }));
+  const games = [ng('g1', 11, 22, 'NYJ', 'BUF', 10, 30), ng('g3', 12, 29, 'KC', 'DEN')];
+  const b = { pool: { kind: 'nfl' }, games, members: me, picks: [np('a', 11, 'BUF'), np('b', 11, 'NYJ'), np('c', 11, 'BUF')] };
+  const r = P.recap(b, '2026-11-25T12:00:00Z');
+  assert.ok(r.lines.some((l) => /Week 11: Bo went out/.test(l)));
+  assert.ok(r.lines.some((l) => /2 of 3 still alive\. You're one of them/.test(l)));
+  assert.ok(r.due);                                                 // week 12 pick still to make
+  assert.equal(P.recap(b, '2026-12-20T12:00:00Z'), null);           // nothing finished in the last eight days
+});

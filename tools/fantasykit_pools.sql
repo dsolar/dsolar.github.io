@@ -1542,3 +1542,62 @@ begin
     from (select * from mm_log where pool = p.id order by at desc limit 12) l), '[]'::jsonb));
   return b;
 end $$;
+
+-- Weekly recap emails: members who turn them on get a Tuesday-morning note on each pool with a game that finished in
+-- the last week (fk-clock builds it with fantasy-kit/pools-core.js recap). mm_recapped makes sure it's once a week.
+alter table public.mm_members add column if not exists recap boolean not null default false;
+create table if not exists public.mm_recapped (
+  pool text not null, user_id uuid not null, wk date not null, sent_at timestamptz not null default now(),
+  primary key (pool, user_id, wk),
+  foreign key (pool, user_id) references public.mm_members (pool, user_id) on delete cascade);
+alter table public.mm_recapped enable row level security;
+revoke all on public.mm_recapped from anon, authenticated;
+
+create or replace function public.mm_remind_get(p_pool text) returns jsonb
+language sql stable security definer set search_path to 'public' as $$
+  select jsonb_build_object('remind', coalesce(m.remind, false), 'recap', coalesce(m.recap, false))
+  from (select 1) x left join mm_members m on m.pool = upper(trim(p_pool)) and m.user_id = auth.uid();
+$$;
+create or replace function public.mm_recap_set(p_pool text, p_on boolean) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+begin
+  if auth.uid() is null then return jsonb_build_object('error', 'Sign in first.'); end if;
+  update mm_members set recap = coalesce(p_on, false) where pool = upper(trim(p_pool)) and user_id = auth.uid();
+  if not found then return jsonb_build_object('error', 'Join this pool first.'); end if;
+  return jsonb_build_object('ok', true, 'recap', coalesce(p_on, false));
+end $$;
+revoke all on function public.mm_recap_set(text, boolean) from public, anon;
+grant execute on function public.mm_recap_set(text, boolean) to authenticated;
+
+create or replace function public.mm_recap_boards(p_token text) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare m record; out jsonb := '[]'::jsonb; b jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  for m in select mb.pool, mb.user_id, u.email, mm_name(mb.pool, mb.user_id) as nm, p.name as pool_name, p.kind
+      from mm_members mb join mm_pools p on p.id = mb.pool join auth.users u on u.id = mb.user_id
+      where mb.recap and u.email is not null and p.kind <> 'squares' loop
+    perform set_config('request.jwt.claims', jsonb_build_object('sub', m.user_id, 'role', 'authenticated')::text, true);
+    b := mm_board(m.pool);
+    if b ? 'ok' then
+      out := out || jsonb_build_array(jsonb_build_object('pool', m.pool, 'user', m.user_id, 'email', m.email, 'name', m.nm, 'pool_name', m.pool_name, 'kind', m.kind, 'board', b));
+    end if;
+  end loop;
+  perform set_config('request.jwt.claims', '', true);
+  return jsonb_build_object('boards', out);
+end $$;
+create or replace function public.mm_recap_claim(p_token text, p_rows jsonb) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare out jsonb;
+begin
+  if not fk_token_ok(p_token) then return jsonb_build_object('error', 'no'); end if;
+  with ins as (
+    insert into mm_recapped (pool, user_id, wk)
+      select r ->> 'pool', (r ->> 'user')::uuid, (r ->> 'wk')::date from jsonb_array_elements(coalesce(p_rows, '[]'::jsonb)) r
+    on conflict do nothing returning pool, user_id, wk)
+  select coalesce(jsonb_agg(jsonb_build_object('pool', pool, 'user', user_id, 'wk', wk)), '[]'::jsonb) into out from ins;
+  delete from mm_recapped where sent_at < now() - interval '200 days';
+  return jsonb_build_object('claimed', out);
+end $$;
+revoke all on function public.mm_recap_boards(text), public.mm_recap_claim(text, jsonb) from public, authenticated;
+grant execute on function public.mm_recap_boards(text), public.mm_recap_claim(text, jsonb) to anon;

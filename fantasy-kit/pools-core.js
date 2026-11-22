@@ -552,6 +552,50 @@
       mine: cells.filter(function (c) { return c && c.mine; }).length, people: people, locked: !!nums };
   }
 
+  /* The weekly recap for one member: what happened in the last eight days, the top of the standings, where they stand,
+     and what's due next. null when no game in the pool finished in that time. Returns { lines: [...], due }. */
+  function recap(board, now, stats) {
+    now = now == null ? Date.now() : ms(now);
+    var kind = board.pool && board.pool.kind, games = board.games || [], since = now - 8 * 864e5;
+    var when = function (g) { return ms(g.kickoff || g.tip); };
+    var recent = games.filter(function (g) { return g.final && when(g) >= since && when(g) <= now; });
+    if (!recent.length || kind === "squares") return null;
+    var names = {}; (board.members || []).forEach(function (m) { names[m.id] = m.name; });
+    var lines = [], list = function (a) { return a.length <= 2 ? a.join(" and ") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1]; };
+    var top = function (rows, val) {
+      var t = rows.slice(0, 3).map(function (r) { return r.place + ". " + r.name + " (" + val(r) + ")"; }).join(", ");
+      var me = rows.filter(function (r) { return r.me; })[0];
+      lines.push("Top of the standings: " + t + ".");
+      if (me && me.place > 3) lines.push("You're " + ord(me.place) + " of " + rows.length + " (" + val(me) + ").");
+    };
+    if (kind === "nfl" || kind === "survivor") {
+      var S = kind === "nfl" ? nfl(board, now) : survivor(board, now), unit = kind === "nfl" ? "week" : "day";
+      var periods = (S.weeks || S.days).filter(function (w) { return w.done && w.lock >= since; });
+      periods.forEach(function (w) {
+        var k = w.week || w.n, out = S.rows.filter(function (r) { return r.out === k; }).map(function (r) { return r.name; });
+        lines.push((unit === "week" ? "Week " : "Day ") + k + ": " + (out.length ? list(out) + (out.length === 1 ? " went out." : " went out.") : "everyone survived."));
+      });
+      var alive = S.rows.filter(function (r) { return r.alive; }).length, meR = S.rows.filter(function (r) { return r.me; })[0];
+      if (S.winners) lines.push(S.winners.length > 1 ? "The pool is over: " + list(S.winners.map(function (w) { return names[w]; })) + " split it." : "The pool is over: " + names[S.winners[0]] + " won it.");
+      else lines.push(alive + " of " + S.rows.length + " still alive." + (meR ? (meR.alive ? " You're one of them." : " You went out in " + unit + " " + meR.out + ".") : ""));
+    } else if (kind === "bowls") {
+      var B = bowls(board, now);
+      lines.push(recent.length + (recent.length === 1 ? " game" : " games") + " finished this week.");
+      top(B.rows, function (r) { return r.points + " pts"; });
+    } else if (kind === "five") {
+      var F = five(board, now);
+      top(F.rows, function (r) { return r.points + " pts"; });
+    } else if (kind === "nflpo") {
+      var Pq = nflpo(board, now);
+      top(Pq.rows, function (r) { return r.points + " pts"; });
+    } else if (kind === "nflff") {
+      var X = nflff(board, stats);
+      top(X.rows, function (r) { return r.total + " pts"; });
+    }
+    var st = status(board, now, stats);
+    return { lines: lines, due: st.tone === "todo" ? st.due || null : null, todo: st.tone === "todo" ? st.text : null };
+  }
+
   /* Where you stand in a pool, in one line, for the pools list: { text, tone, due }. tone is "todo" (a pick is missing
      and its deadline is still ahead; due is that deadline, in ms), "ok" (in it, nothing to do), "out", "won", "wait"
      (nothing to pick yet) or "done". The text has no times in it; the page words due itself. */
@@ -646,7 +690,7 @@
   }
 
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign };
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);
