@@ -1,0 +1,32 @@
+name: probe-splits
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
+          K=https://api.elections.kalshi.com/trade-api/v2
+          curl -s -A "$UA" "$K/series?category=Sports" -o /tmp/s.json -w "series HTTP %{http_code} %{size_download}B\n"
+          python3 -c "
+          import json;d=json.load(open('/tmp/s.json'));ss=d.get('series') or []
+          print(len(ss));[print(s['ticker'],'|',s.get('title')) for s in ss if any(k in (s['ticker']+s.get('title','')).upper() for k in ['NFL','NBA','NHL','NCAA','COLLEGE','CBB','CFB','MLB']) and 'GAME' in s['ticker']]"
+          for t in KXNFLGAME KXNCAAFGAME KXNCAAMBGAME KXNBAGAME KXNHLGAME KXNFLSPREAD KXNFLTOTAL; do
+            curl -s -A "$UA" "$K/markets?series_ticker=$t&status=open&limit=6" -o /tmp/m.json -w "== $t HTTP %{http_code}\n"
+            python3 -c "
+          import json;d=json.load(open('/tmp/m.json'));ms=d.get('markets') or []
+          print('markets',len(ms),'cursor',bool(d.get('cursor')))
+          for m in ms[:4]: print('  ',m.get('ticker'),'|',m.get('event_ticker'),'|',m.get('title'),'|',m.get('yes_sub_title'),'| last',m.get('last_price_dollars'),'bid',m.get('yes_bid_dollars'),'vol',m.get('volume_fp'),'oi',m.get('open_interest_fp'),'close',m.get('close_time'),'exp',m.get('expected_expiration_time'))"
+          done
+          curl -s -A "$UA" -o /tmp/a.json "https://api.actionnetwork.com/web/v2/scoreboard/ncaab?bookIds=15&date=20261122"
+          python3 -c "
+          import json;d=json.load(open('/tmp/a.json'));g=d['games'][0];print('AN team',json.dumps(g['teams'][0])[:600]);print('start',g['start_time'],'status',g['status'])"
+          for dt in 20261123 20261125 20261127; do curl -s -A "$UA" -o /tmp/a.json "https://api.actionnetwork.com/web/v2/scoreboard/ncaab?bookIds=15&date=$dt&division=D1"; python3 -c "
+          import json;d=json.load(open('/tmp/a.json'));gs=d.get('games') or [];print('ncaab $dt D1 games',len(gs),'with markets',sum(1 for g in gs if g.get('markets')))"; done
+          curl -s -A "$UA" -o /tmp/a.json "https://api.actionnetwork.com/web/v2/scoreboard/ncaab?bookIds=15&date=20261122&division=D1"; python3 -c "
+          import json;d=json.load(open('/tmp/a.json'));gs=d.get('games') or [];print('ncaab today D1',len(gs),'with markets',sum(1 for g in gs if g.get('markets')))"
+          curl -s -A "$UA" -o /tmp/a.json "https://api.actionnetwork.com/web/v2/scoreboard/ncaaf?bookIds=15&week=14&seasonType=reg&division=FBS"; python3 -c "
+          import json;d=json.load(open('/tmp/a.json'));gs=d.get('games') or [];print('ncaaf wk14 FBS',len(gs),'with markets',sum(1 for g in gs if g.get('markets')))"
+          curl -s -A "$UA" -o /tmp/a.json "https://api.actionnetwork.com/web/v2/scoreboard/nfl?bookIds=15&week=13&seasonType=reg"; python3 -c "
+          import json;d=json.load(open('/tmp/a.json'));gs=d.get('games') or [];print('nfl wk13',len(gs),'with markets',sum(1 for g in gs if g.get('markets')),'bets',[g.get('num_bets') for g in gs][:6])"
