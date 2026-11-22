@@ -751,6 +751,45 @@
     return "";
   }
   const trackBlock = (title, season, chips, note, link) => `<div class="pc-line pc-trackrow"><div class="pc-trkh"><span class="ps"><b>${esc(title)}</b>${season ? `, ${esc(String(season))}` : ""}</span><a class="ps" href="${link}">Leaderboard</a></div><div class="pc-trks">${chips.map(trkChip).join("")}</div>${note ? `<div class="ps pc-trknote">${esc(note)}</div>` : ""}</div>`;
+  // The rankings' Tracking column: each player's headline tracking number for his position, with its percentile
+  // (MLB xwOBA or xERA, NFL CPOE / yards over expected / separation, NHL top speed or high-danger save %, NBA
+  // deflections). Sorts on the percentile. Resolves to [] for a sport without a tracking file.
+  async function trackColumns(sport) {
+    const k = sport && sport.key;
+    if (!TRACK[k]) return [];
+    const j = await trackFile(k);
+    if (!j) return [];
+    const ix = (cols, c) => (cols || []).indexOf(c);
+    const pick = (p) => {
+      const ps = S.positions(p);
+      if (k === "mlb") {
+        const pit = ps.some((x) => /^(SP|RP|P)$/.test(x)) && !ps.some((x) => /^(C|1B|2B|3B|SS|OF|LF|CF|RF|DH|UT)$/.test(x));
+        const d = (pit ? j.pit : j.bat)[p.id]; if (!d || !d.x) return null;
+        const P = d.pct || {};
+        if (pit) { const v = d.x[8], e = d.x[7]; return v == null ? null : { label: "xERA", txt: v.toFixed(2), pc: P.xera, tag: e != null && e - v >= 0.75 ? "due" : e != null && e - v <= -0.75 ? "lucky" : null, why: e != null ? "ERA " + e.toFixed(2) + " vs. xERA " + v.toFixed(2) : "" }; }
+        const v = d.x[6], w = d.x[5]; return v == null ? null : { label: "xwOBA", txt: r3(v), pc: P.xwoba, tag: w != null && w - v <= -0.025 ? "due" : w != null && w - v >= 0.025 ? "lucky" : null, why: w != null ? "wOBA " + r3(w) + " vs. xwOBA " + r3(v) : "" };
+      }
+      if (k === "nfl") {
+        const h = j.byEspn && j.byEspn[p.espn]; if (!h) return null;
+        const c = { qb: ["cpoe", "CPOE", 1], rb: ["ryoe_att", "Yds over exp./carry", 2], rec: ["sep", "Separation", 2] }[h.g], i = ix((j.cols || {})[h.g], c[0]), v = i >= 0 ? h.d.x[i] : null;
+        return v == null ? null : { label: c[1], txt: (c[0] !== "sep" && v > 0 ? "+" : "") + v.toFixed(c[2]), pc: (h.d.pct || {})[c[0]] };
+      }
+      if (k === "nhl") {
+        const g = ps.includes("G"), e = (g ? j.g : j.sk)[p.id], m = e && e[g ? "high.savePctg" : "speedMax"];
+        return m ? { label: g ? "High-danger Sv%" : "Top speed", txt: g ? r3(m[0]) : m[0].toFixed(1), pc: m[1] } : null;
+      }
+      if (k === "nba") {
+        const nid = (j.dl || {})[p.id], d = nid && j.p[nid], i = ix(j.cols, "defl"); if (!d || i < 0 || d.x[i] == null) return null;
+        return { label: "Deflections", txt: d.x[i].toFixed(1), pc: (d.pct || {}).defl };
+      }
+      return null;
+    };
+    const memo = new Map(), get = (p) => { if (!memo.has(p.id)) memo.set(p.id, pick(p)); return memo.get(p.id); };
+    const title = { mlb: "Statcast: xwOBA for hitters, xERA for pitchers (last season), with its percentile. Due or Lucky when his results ran well off his expected stats", nfl: "Next Gen Stats: CPOE for quarterbacks, rush yards over expected per carry for backs, separation for receivers, with the percentile at his position", nhl: "NHL Edge: top skating speed for skaters, high-danger save % for goalies, with the league percentile", nba: "NBA tracking: deflections a game, with the percentile among regulars" }[k];
+    return [{ k: "trk", label: "Tracking", cls: "r num trkc", hide: "s", title, sort: (p) => { const t = get(p); return t && t.pc != null ? t.pc : -1; },
+      html: (p) => { const t = get(p); if (!t) return '<span class="ps">-</span>';
+        return `<span class="trk" title="${esc(t.label + " " + t.txt + (t.pc != null ? ", " + ord(t.pc) + " percentile" : "") + (t.why ? ". " + t.why : ""))}">${t.tag ? `<span class="trk-${t.tag}">${t.tag === "due" ? "Due" : "Lucky"}</span>` : ""}<b>${esc(t.txt)}</b>${t.pc != null ? `<i class="${t.pc >= 70 ? "hi" : t.pc <= 30 ? "lo" : ""}">${t.pc}</i>` : ""}</span>`; } }];
+  }
   function fillTrack(root) {
     $$(".pc-track[data-tk]", root).forEach((el) => {
       const k = el.dataset.tk;
@@ -2451,5 +2490,5 @@
   FK.ui = { leagueBrand, leagueCrest, brandC, statSwitch, setView, setSwitch, setStatSet, statSet, sampleOf, prevStat, hasPrev, pushBox, botSpeed, startIn, faceAv, squarePhoto, profileDialog, statColumns, LINEUP_PRESETS: PRESETS, lineupBuilder, orderLineup, lineupStep, slotDesc, esc, $, $$, store, toast, dialog, dialogOpen, focusKey, refocus, keyboardPlayers, confirm, theme, fmtLeft, money, ord, last, initials, ago,
     teamAv, SHAPES, GLYPHS, logoSvg, glyphOf, shapeOf, playerAv, pname, teamName, posChip, posChips, colorOf, injTag,
     proTeam, shell, switcher, route, table, sortRows, nextSort, poolColumns, posFilter, search, passes, groupOf, statCell, label, isPoints,
-    groupLabel, playerGroup, slotGroup, contractPanel, capMoney, playerCard, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
+    groupLabel, playerGroup, slotGroup, contractPanel, capMoney, playerCard, trackColumns, scoreboard, versus, vsTable, standingsTable, feed, txLine, tradeCard, tradeWindow, room, board: myBoard, viewSelect, setView, initView, hasProj, lineOf };
 })(this);

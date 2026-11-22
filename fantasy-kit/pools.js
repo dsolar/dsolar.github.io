@@ -638,7 +638,7 @@
   };
   // the same player card as the rest of Draft Lab (fantasy-kit/ui.js and friends, loaded the first time one opens)
   let cardLibs = null;
-  const loadCardLibs = () => cardLibs || (cardLibs = ["sports.js?v=20261121lg", "value.js?v=202611201102", "experience.js?v=202611201102", "../assets/faces.js?v=20261121b", "ui.js?v=20261122inj"].reduce((pr, f) => pr.then(() => new Promise((res) => {
+  const loadCardLibs = () => cardLibs || (cardLibs = ["sports.js?v=20261121lg", "value.js?v=202611201102", "experience.js?v=202611201102", "../assets/faces.js?v=20261121b", "ui.js?v=20261122trk"].reduce((pr, f) => pr.then(() => new Promise((res) => {
     const sc = document.createElement("script"); sc.src = "/fantasy-kit/" + f; sc.onload = res; sc.onerror = res; document.body.appendChild(sc);
   })), Promise.resolve()));
   async function ffCard(id, b) {

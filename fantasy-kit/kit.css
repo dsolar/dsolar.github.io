@@ -2936,3 +2936,12 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .tag.inj.inj-d{background:#FAD7BE;color:#9A3F06}
 .tag.inj.inj-ir,.tag.inj.inj-sus,.tag.inj.inj-pup,.tag.inj.inj-nfi{background:#B42525;color:#fff}
 .tag.inj[data-tip]:hover::after,.tag.inj[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:max-content;max-width:260px;white-space:normal;text-align:left;background:#14213d;color:#fff;font:500 12px/1.35 system-ui,sans-serif;letter-spacing:0;text-transform:none;padding:6px 8px;border-radius:7px;box-shadow:0 3px 12px rgba(0,0,0,.2);z-index:60;pointer-events:none}
+/* the rankings' Tracking column (ui.js trackColumns) */
+.trk{display:inline-flex;align-items:baseline;gap:5px;white-space:nowrap}
+.trk b{font-variant-numeric:tabular-nums}
+.trk i{font-style:normal;font-size:10.5px;font-weight:700;min-width:22px;text-align:center;padding:0 4px;border-radius:999px;background:rgba(127,127,127,.15)}
+.trk i.hi{background:#d22d49;color:#fff}
+.trk i.lo{background:#3661ad;color:#fff}
+.trk .trk-due,.trk .trk-lucky{font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:0 4px;border-radius:3px}
+.trk .trk-due{background:#DDF0E2;color:#1C6B3A}
+.trk .trk-lucky{background:#FBE0E4;color:#A51F37}

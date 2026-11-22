@@ -490,7 +490,8 @@
       { k: "cons", label: "Cons", cls: "r num", title: "Outside dynasty consensus rank (FantasyPros, plus FantasyCalc for football)", sort: (p) => p.cons || 1e4, asc: true, html: (p) => (p.cons ? String(p.cons) : `<span class="ps">-</span>`) },
       { k: "dyn", label: "Outlook", cls: "r num", hide: "s", title: "How age moves his value over the next five seasons: above 1 he's still climbing, below 1 he's fading", sort: (p) => p.dyn || 1, html: (p) => (p.dyn && p.dyn !== 1 ? `<span class="${p.dyn > 1 ? "win" : "loss"}">&times;${p.dyn.toFixed(2)}</span>` : `<span class="ps">&times;1</span>`) },
     ] : [];
-    const cols = U.poolColumns(sp, { players: P.players, group: U.groupOf(sp, rank.f), scoring: P.scoring, extra });
+    const tcols = U.trackColumns ? await U.trackColumns(sp) : [];
+    const cols = U.poolColumns(sp, { players: P.players, group: U.groupOf(sp, rank.f), scoring: P.scoring, extra: extra.concat(tcols) });
     // college: a conference picker, and the school list narrows to it (by school name, not the abbreviation)
     const tinfo = (sp.college && sp.data && sp.data.teams && !Array.isArray(sp.data.teams)) ? sp.data.teams : null;
     const confs = tinfo ? [...new Set(P.players.map((p) => tinfo[p.t] && tinfo[p.t].conf).filter(Boolean))].sort((a, b) => ((RANK_POWERS[sp.key] || []).indexOf(a) + 1 || 99) - ((RANK_POWERS[sp.key] || []).indexOf(b) + 1 || 99) || a.localeCompare(b)) : [];
