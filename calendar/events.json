@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-21T17:46:32Z",
+ "updated": "2026-11-22T18:02:31Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,274 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkfYGkecxgAM",
-   "date": "2026-11-21",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-21-2026/event/01006530AD8B5177",
-   "source": "ticketmaster",
-   "times": [
-    "14:00",
-    "19:30"
-   ],
-   "aka": [
-    "tm-vv1AvZkfYGkec-gA-"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18721514",
-   "date": "2026-11-21",
-   "time": "16:00",
-   "title": "Bed By 10PM",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/bed-by-10pm-tickets/boston-massachusetts-royale-boston-2026-11-21-4-pm/concert/18721514",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_2SFlCcT",
-   "date": "2026-11-21",
-   "time": "17:00",
-   "title": "Ali Siddiq: The Custom Fit Tour",
-   "cat": "comedy",
-   "venue": "Boch Center Shubert Theatre",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ali-siddiq-the-custom-fit-tour-boston-massachusetts-11-21-2026/event/010064FCC8ACEB7F",
-   "source": "ticketmaster",
-   "times": [
-    "17:00",
-    "20:00"
-   ],
-   "aka": [
-    "tm-vvG17Z_udGsPDf",
-    "sg-18413077",
-    "sg-18328212"
-   ],
-   "score": 1
-  },
-  {
-   "id": "sg-18666674",
-   "date": "2026-11-21",
-   "time": "18:30",
-   "title": "Deric Cahill",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/deric-cahill-tickets/comedy/2026-11-21-6-30-pm/18666674",
-   "source": "seatgeek",
-   "times": [
-    "18:30",
-    "21:00"
-   ],
-   "aka": [
-    "sg-18666680"
-   ],
-   "score": 1
-  },
-  {
-   "id": "sg-18723194",
-   "date": "2026-11-21",
-   "time": "18:30",
-   "title": "Joe Fenti",
-   "cat": "comedy",
-   "venue": "Off Cabot Comedy and Events",
-   "city": "Beverly, MA",
-   "url": "https://seatgeek.com/joe-fenti-tickets/comedy/2026-11-21-6-30-pm/18723194",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
-   "id": "espn-401892758",
-   "date": "2026-11-21",
-   "time": "19:00",
-   "title": "Bruins vs Capitals",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892758/capitals-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1AAeFvd",
-   "date": "2026-11-21",
-   "time": "19:00",
-   "title": "Earlybirds Club - Ages 21+",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAeFvd",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GkREH1kW",
-   "date": "2026-11-21",
-   "time": "19:00",
-   "title": "Letters To Cleo (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/letters-to-cleo-18-boston-massachusetts-11-21-2026/event/0100650BE7F0A1BD",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18511822",
-    "2026-11-21-letters-to-cleo-and-the-sheila-d-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vvG17Z_2khzXCh",
-   "date": "2026-11-21",
-   "time": "19:00",
-   "title": "Ryan Hamilton: Making Good Time",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/ryan-hamilton-making-good-time-boston-massachusetts-11-21-2026/event/010064F19BE3E39B",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18396775",
-    "2026-11-21-ryan-hamilton-the-wilbur"
-   ],
-   "sub": "Making Good Time Tour",
-   "score": 1
-  },
-  {
-   "id": "tm-Z7r9jZ1A70b-_",
-   "date": "2026-11-21",
-   "time": "19:00",
-   "title": "The Menzingers w/ Hot Water Music",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70b-_",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18224672",
-    "2026-11-21-the-menzingers-roadrunner"
-   ],
-   "sub": "with Hot Water Music and Weakened Friends",
-   "score": 0
-  },
-  {
-   "id": "tm-G5vVZ_6n-zPJb",
-   "date": "2026-11-21",
-   "time": "19:30",
-   "title": "Metallica",
-   "cat": "music",
-   "venue": "Mohegan Sun Arena",
-   "city": "Uncasville, CT",
-   "url": "https://www.ticketmaster.com/metallica-uncasville-connecticut-11-21-2026/event/1D00647AA1E25998",
-   "source": "ticketmaster",
-   "drive_hours": 1.75,
-   "act": "Metallica",
-   "times": [
-    "19:30",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18164313"
-   ],
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vv177Z_oGkXBi8-I",
-   "date": "2026-11-21",
-   "time": "19:30",
-   "title": "TREY ANASTASIO + BILLY STRINGS: A BENEFIT FOR DIVIDED SKY- Sat Only",
-   "cat": "music",
-   "venue": "DCU Center",
-   "city": "Worcester, MA",
-   "url": "https://www.ticketmaster.com/trey-anastasio-billy-strings-a-benefit-worcester-massachusetts-11-21-2026/event/0100651FBAB10868",
-   "source": "ticketmaster",
-   "drive_hours": 1.0,
-   "act": "Trey Anastasio",
-   "aka": [
-    "tm-vv177Z_oGkXBi8-I"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-vv177Z_KGkDQyR3t",
-   "date": "2026-11-21",
-   "time": "20:00",
-   "title": "Emo Night Brooklyn (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/emo-night-brooklyn-18-boston-massachusetts-11-21-2026/event/0100653EDAE6F4A9",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18655810"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18634479",
-   "date": "2026-11-21",
-   "time": "20:00",
-   "title": "LCD Soundsystem",
-   "cat": "music",
-   "venue": "Knockdown Center",
-   "city": "Queens, NY",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-21-8-pm/concert/18634479",
-   "source": "seatgeek",
-   "drive_hours": 4.25,
-   "act": "LCD Soundsystem",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vvG17Z_CY_Tyni",
-   "date": "2026-11-21",
-   "time": "20:00",
-   "title": "Orville Peck - Man Turned Mule Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/orville-peck-man-turned-mule-tour-boston-massachusetts-11-21-2026/event/010064EC19FF9AAC",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18398330",
-    "2026-11-21-orville-peck-mgm-music-hall-at-fe"
-   ],
-   "sub": "with Abbie Callahan",
-   "score": 0
-  },
-  {
-   "id": "tm-LvZ18Qcje8uBXb3NIEhxW",
-   "date": "2026-11-21",
-   "time": "21:00",
-   "title": "Favela Encantada Lawrence | Nov 21 @ Centro Night Club",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.universe.com/events/favela-encantada-lawrence-nov-21-centro-night-club-tickets-16S95C?ref=ticketmaster",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18721521",
-   "date": "2026-11-21",
-   "time": "22:00",
-   "title": "Space Laces (21+)",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/space-laces-tickets/boston-massachusetts-royale-boston-2026-11-21-10-pm/concert/18721521",
-   "source": "seatgeek",
-   "score": 0
-  },
   {
    "id": "tm-vv1AvZkfYGkecNgk6",
    "date": "2026-11-22",
@@ -1434,6 +1166,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18618956"
+   ],
    "score": 0
   },
   {
@@ -3851,6 +3586,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18734188"
+   ],
    "score": 0
   },
   {
@@ -4281,11 +4019,11 @@
    "id": "sg-18825186",
    "date": "2027-01-15",
    "time": "20:00",
-   "title": "Rage Against The Machine",
+   "title": "The Machine - Pink Floyd Tribute",
    "cat": "music",
    "venue": "The Cabot",
    "city": "Beverly, MA",
-   "url": "https://seatgeek.com/rage-against-the-machine-tickets/beverly-massachusetts-the-cabot-2027-01-15-8-pm/concert/18825186",
+   "url": "https://seatgeek.com/the-machine-pink-floyd-tribute-tickets/beverly-massachusetts-the-cabot-2027-01-15-8-pm/concert/18825186",
    "source": "seatgeek",
    "score": 0
   },
@@ -4937,6 +4675,21 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18825197"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18863445",
+   "date": "2027-01-29",
+   "time": "20:00",
+   "title": "Bruce in the USA - Bruce Springsteen Tribute",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/bruce-in-the-usa-bruce-springsteen-tribute-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-01-29-8-pm/concert/18863445",
+   "source": "seatgeek",
+   "aka": [
+    "sg-18863445"
    ],
    "score": 0
   },
@@ -6088,7 +5841,8 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7P-Co",
    "source": "ticketmaster",
    "aka": [
-    "sg-18316935"
+    "sg-18316935",
+    "sg-18813618"
    ],
    "score": 0
   },
@@ -10848,8 +10602,8 @@
  "sources": {
   "picks": 2,
   "venues": 0,
-  "espn": 67,
-  "ticketmaster": 496,
-  "seatgeek": 163
+  "espn": 66,
+  "ticketmaster": 485,
+  "seatgeek": 159
  }
 }
