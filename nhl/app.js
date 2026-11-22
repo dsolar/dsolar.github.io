@@ -85,8 +85,8 @@
   function render() {
     parse();
     // Three sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
-    var r = state.route, GROUP = { standings: "standings", teams: "teams", team: "teams", contracts: "teams", players: "players", stats: "players" };
-    var SUBS = { teams: [["teams", "Teams"], ["contracts", "Contracts"]], players: [["players", "Player ratings"], ["stats", "Stats"], ["", "Fantasy NHL ↗", "../fantasy/nhl/"]] };
+    var r = state.route, GROUP = { standings: "standings", teams: "teams", team: "teams", contracts: "teams", players: "players", stats: "players", edge: "players" };
+    var SUBS = { teams: [["teams", "Teams"], ["contracts", "Contracts"]], players: [["players", "Player ratings"], ["stats", "Stats"], ["edge", "Edge tracking"], ["", "Fantasy NHL ↗", "../fantasy/nhl/"]] };
     var group = GROUP[r] || "standings", cur = r === "team" ? "teams" : r, subs = SUBS[group];
     if (subs && subs.some(function (x) { return x[0] === cur; })) { try { localStorage.setItem("nhl.sub." + group, cur); } catch (e) { /* private mode */ } }
     document.querySelectorAll(".tabs a").forEach(function (a) {
@@ -101,10 +101,11 @@
     else if (r === "team" && TEAMS[state.arg]) view.innerHTML = teamView(TEAMS[state.arg]);
     else if (r === "players") view.innerHTML = playersView();
     else if (r === "stats") view.innerHTML = statsView();
+    else if (r === "edge") view.innerHTML = edgeView();
     else if (r === "contracts") view.innerHTML = contractsView();
     else if (r === "method") view.innerHTML = methodView();
     else view.innerHTML = standingsView();
-    var k = { standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", stats: "Stats", contracts: "Contracts", method: "How it works" }[r] || "Standings";
+    var k = { standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", stats: "Stats", edge: "Edge tracking", contracts: "Contracts", method: "How it works" }[r] || "Standings";
     document.title = k + " · NHL Hub | David Solar";
   }
 
@@ -465,13 +466,15 @@
       (p.age ? " · age " + p.age : "") + (p.shoots ? " · " + (G ? "catches " : "shoots ") + p.shoots : "") + (ht ? " · " + ht + (p.wt ? ", " + p.wt + " lb" : "") : "") + (p.country ? " · " + esc(p.country) : "") + "</div></div></div>";
     h += '<div class="card-b"><div class="kv"><div><b>' + f1(p.war) + "</b><span>" + (G ? "WAR / 58 starts" : "WAR / 82") + "</span></div><div><b>" + ord(p.rank) + "</b><span>among " + (G ? "goalies" : p.grp === "D" ? "defensemen" : "forwards") +
       "</span></div><div><b>" + tierDot(p) + esc(tr.label) + "</b><span>Tier</span></div><div><b>" + (p.gar_now == null ? "—" : sgn(p.gar_now)) + "</b><span>GAR this season</span></div></div>";
-    h += '<div class="cardtabs" role="tablist"><button type="button" role="tab" data-ct="rate" aria-selected="true">Rating</button><button type="button" role="tab" data-ct="stats" aria-selected="false">Stats</button>' + (p.k ? '<button type="button" role="tab" data-ct="deal" aria-selected="false">Contract</button>' : "") + "</div>";
+    h += '<div class="cardtabs" role="tablist"><button type="button" role="tab" data-ct="rate" aria-selected="true">Rating</button><button type="button" role="tab" data-ct="stats" aria-selected="false">Stats</button>' + (p.k ? '<button type="button" role="tab" data-ct="deal" aria-selected="false">Contract</button>' : "") + '<button type="button" role="tab" data-ct="edge" aria-selected="false">Edge</button></div>';
     h += '<div data-pane="rate">' + (G ? goalieRating(p) : skaterRating(p)) + "</div>";
     h += '<div data-pane="stats" hidden>' + (G ? goalieStats(p) : skaterStats(p)) + "</div>";
     h += p.k ? '<div data-pane="deal" hidden>' + dealTab(p) + "</div>" : "";
+    h += '<div data-pane="edge" hidden>' + edgePane(p) + "</div>";
     h += "</div>";
     cardBody.innerHTML = h;
     if (!card.open) card.showModal();
+    if (!EDGE) loadEdge().then(function () { var pn = card.querySelector('[data-pane="edge"]'); if (pn && PLAYERS[id] === p) pn.innerHTML = edgePane(p); });
   }
   function dealTab(p) {
     var k = p.k;
@@ -558,13 +561,79 @@
       '<p class="note">Expected goals and line data from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>; contracts from <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a>; standings, rosters and stats from the NHL. Built ' + esc(H.built.slice(0, 10)) + ".</p></div>";
   }
 
+  // ---------- NHL Edge ----------
+  // nhl/data/edge.json from tools/nhl_edge.py: each player's Edge numbers as {metric: [value, percentile]}, sk for
+  // skaters and g for goalies, with league averages in avg. The NHL's percentiles already run good-is-high (less time
+  // in the defensive zone ranks higher), so they shade as they come
+  var EDGE = null, edgeWait = null;
+  function loadEdge() {
+    if (!edgeWait) edgeWait = fetch("data/edge.json?d=" + new Date().toISOString().slice(0, 10)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (j) { EDGE = j || { sk: {}, g: {}, avg: { sk: {}, g: {} }, none: true }; if (state.route === "edge") render(); return EDGE; });
+    return edgeWait;
+  }
+  // [key, column, format, tooltip]; format: s speed (mph), n count, d distance (miles), p share, v save %
+  var EDGE_SK = [["speedMax", "Top speed", "s", "Fastest skating speed this season, mph"], ["burstsOver20", "20+ mph bursts", "n", "Times he topped 20 mph"], ["topShotSpeed", "Hardest shot", "s", "Hardest shot this season, mph"],
+    ["totalDistanceSkated", "Distance", "d", "Miles skated this season"], ["distanceMaxGame", "Most in a game", "d", "Most miles skated in one game"], ["offensiveZonePctg", "O-zone time", "p", "Share of his ice time in the offensive zone"],
+    ["defensiveZonePctg", "D-zone time", "p", "Share of his ice time in the defensive zone (less ranks higher)"], ["sog.high.shots", "High-danger shots", "n", "Shots on goal from the slot and crease"], ["sog.high.shootingPctg", "High-danger Sh%", "p"], ["sog.all.shootingPctg", "Sh%", "p", "Shooting percentage, all shots"]];
+  var EDGE_G = [["all.savePctg", "Sv%", "v"], ["high.savePctg", "High-danger Sv%", "v", "Save % on shots from the slot and crease"], ["mid.savePctg", "Mid-range Sv%", "v"], ["long.savePctg", "Long-range Sv%", "v"],
+    ["goalsAgainstAvg", "GAA", "g", "Goals against a game (lower ranks higher)"], ["gamesAbove900", ".900+ games", "p", "Share of his games with a .900 save % or better"], ["goalDifferentialPer60", "Goal diff / 60", "g", "Team goal differential a 60 minutes with him in net"], ["goalSupportAvg", "Goal support", "g", "Goals his team scores for him a game"], ["pointPctg", "Points %", "p", "Share of available standings points in his starts"]];
+  function edgeColor(v) {
+    if (v == null) return "transparent";
+    var t = Math.max(0, Math.min(100, v)) / 100, mx = function (a, b, k) { return Math.round(a + (b - a) * k); };
+    var c = t < 0.5 ? [mx(54, 222, t * 2), mx(97, 222, t * 2), mx(173, 222, t * 2)] : [mx(222, 210, (t - 0.5) * 2), mx(222, 45, (t - 0.5) * 2), mx(222, 73, (t - 0.5) * 2)];
+    return "rgb(" + c.join(",") + ")";
+  }
+  function edgeFmt(v, f) {
+    if (v == null) return "—";
+    if (f === "s") return v.toFixed(1);
+    if (f === "d") return v.toFixed(1);
+    if (f === "p") return (v * 100).toFixed(1) + "%";
+    if (f === "v") return v.toFixed(3).replace(/^0/, "");
+    if (f === "g") return v.toFixed(2);
+    return String(Math.round(v));
+  }
+  function edgeView() {
+    if (!EDGE) { loadEdge(); return '<p class="loading">Loading NHL Edge…</p>'; }
+    var q = state.q, g = /^(F|D|G)$/.test(q.g) ? q.g : "F", team = q.t || "", find = (q.q || "").toLowerCase(), G = g === "G", cols = G ? EDGE_G : EDGE_SK, src = G ? EDGE.g : EDGE.sk;
+    var s = cols.some(function (c) { return c[0] === q.s; }) ? q.s : G ? "high.savePctg" : "speedMax";
+    var minGp = G ? 5 : 5;
+    var list = H.players.filter(function (p) { return p.grp === g && src[p.id] && (!team || p.team === team) && (!find || p.name.toLowerCase().indexOf(find) >= 0) && (find || (p.now && p.now.gp >= minGp)); });
+    var val = function (p) { var e = src[p.id][s]; return e ? e[1] : -1; };  // sort on the percentile, so lower-is-better stats sort right
+    list.sort(function (a, b) { return val(b) - val(a) || ((src[b.id][s] || [0])[0] - (src[a.id][s] || [0])[0]); });
+    var h = '<h2 class="sec">Edge tracking</h2><p class="lede">The NHL\'s own tracking: sensors in the puck and in every player\'s sweater record skating speed, shot speed, distance and where the puck is. Shaded cells are the league\'s percentiles' + (G ? " among goalies" : " among skaters") + ": red is good, blue is bad. Click a column to sort, a player for his card.</p>";
+    h += '<div class="controls"><label>Position<span class="seg" role="group">' + [["F", "Forwards"], ["D", "Defense"], ["G", "Goalies"]].map(function (x) {
+      return '<button type="button" data-g="' + x[0] + '" aria-pressed="' + (g === x[0]) + '">' + x[1] + "</button>";
+    }).join("") + '</span></label><label>Team<select id="pteam"><option value="">All teams</option>' +
+      H.teams.slice().sort(function (a, b) { return a.name < b.name ? -1 : 1; }).map(function (t) { return '<option value="' + t.abbr + '"' + (t.abbr === team ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("") +
+      '</select></label><label>Find<input type="search" id="pfind" placeholder="Player name" value="' + esc(q.q || "") + '"></label></div>';
+    h += '<div class="div"><div class="scroll-x"><table class="t ptab edge"><thead><tr><th>#</th><th>Player</th><th class="hide-m">Team</th>' +
+      cols.map(function (c) { return '<th class="sort' + (s === c[0] ? " on" : "") + '" data-s="' + c[0] + '"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + (s === c[0] ? " ▾" : "") + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      list.slice(0, 150).map(function (p, i) {
+        var e = src[p.id];
+        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p) + '</td><td class="hide-m">' + logo(TEAMS[p.team], 18) + " " + p.team + "</td>" +
+          cols.map(function (c) { var x = e[c[0]]; return x ? '<td class="ec" style="background:' + edgeColor(x[1]) + ";color:" + (x[1] >= 80 || x[1] <= 20 ? "#fff" : "inherit") + '" title="' + x[1] + 'th percentile">' + edgeFmt(x[0], c[2]) + "</td>" : "<td>—</td>"; }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div></div>";
+    h += '<p class="note">' + list.length + (G ? " goalies" : " skaters") + (find ? "" : " with " + minGp + "+ games") + ", top 150 shown. From <a href=\"https://edge.nhl.com/\" rel=\"noopener\">NHL Edge</a>, pulled " + esc((EDGE.pulled || "").slice(0, 10)) + ". Speeds in mph, distance in miles.</p>";
+    return h;
+  }
+  function edgePane(p) {
+    if (!EDGE) return '<p class="note">Loading NHL Edge…</p>';
+    var G = p.grp === "G", e = (G ? EDGE.g : EDGE.sk)[p.id], avg = (G ? EDGE.avg.g : EDGE.avg.sk) || {};
+    if (!e) return '<p class="note">No Edge numbers for him this season yet.</p>';
+    var cols = (G ? EDGE_G : EDGE_SK).filter(function (c) { return e[c[0]]; });
+    return '<div class="edgebars">' + cols.map(function (c) {
+      var x = e[c[0]], v = x[1];
+      return '<div class="egb"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><span>" + c[1] + " <small>" + edgeFmt(x[0], c[2]) + (avg[c[0]] != null ? " · avg " + edgeFmt(avg[c[0]], c[2]) : "") + '</small></span><i><em style="width:' + Math.max(4, v) + "%;background:" + edgeColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + edgeColor(v) + ";color:" + (v >= 80 || v <= 20 ? "#fff" : "#1b2433") + '">' + v + "</b></i></div>";
+    }).join("") + '</div><p class="note">Percentile among ' + (G ? "goalies" : "skaters") + ": red is good, blue is bad. From NHL Edge.</p>";
+  }
+
   // ---------- events ----------
   view.addEventListener("click", function (e) {
     var el;
     if ((el = e.target.closest("[data-p]"))) { openCard(+el.dataset.p); return; }
     if ((el = e.target.closest("tr[data-team]"))) { go("team", el.dataset.team); return; }
     if ((el = e.target.closest("[data-v]"))) { setQ({ v: el.dataset.v }); return; }
-    if ((el = e.target.closest("[data-g]"))) { setQ({ g: el.dataset.g, s: state.route === "stats" ? "" : "war", p: "" }); return; }
+    if ((el = e.target.closest("[data-g]"))) { setQ({ g: el.dataset.g, s: state.route === "stats" || state.route === "edge" ? "" : "war", p: "" }); return; }
     if ((el = e.target.closest("th[data-s]"))) { setQ({ s: el.dataset.s, p: "" }); return; }
     if ((el = e.target.closest("[data-pg]"))) { setQ({ p: el.dataset.pg }); window.scrollTo({ top: view.offsetTop - 10 }); return; }
     if ((el = e.target.closest("[data-cv]"))) { go("contracts", null, { v: el.dataset.cv }); return; }
@@ -580,7 +649,7 @@
     typing = setTimeout(function () {
       history.replaceState(null, "", location.pathname + "#/" + state.route + "?" + ["g=" + (state.q.g || "F"), state.q.t ? "t=" + state.q.t : "", state.q.s ? "s=" + state.q.s : "", v ? "q=" + encodeURIComponent(v) : ""].filter(Boolean).join("&"));
       parse();
-      view.innerHTML = state.route === "stats" ? statsView() : playersView();
+      view.innerHTML = state.route === "stats" ? statsView() : state.route === "edge" ? edgeView() : playersView();
       var box = $("#pfind"); box.focus(); box.setSelectionRange(v.length, v.length);
     }, 180);
   });

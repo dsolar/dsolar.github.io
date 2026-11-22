@@ -77,7 +77,7 @@ def short(name):
     """Drop the outer wrapper names the NHL nests numbers in, so skatingSpeed.speedMax reads speedMax."""
     for w in ("skatingSpeed.", "stats.", "zoneTimeDetails.", "shotLocationSummary.", "zoneStarts."):
         name = name.replace(w, "")
-    return name
+    return name.replace("sogSummary.", "sog.")
 
 
 def main():
@@ -102,7 +102,8 @@ def main():
             return pid, kind, None, None, str(e)
         out, avg = {}, {}
         flatten(page, "", out, avg)
-        return pid, kind, {short(k): v for k, v in out.items()}, {short(k): v for k, v in avg.items()}, None
+        keep = lambda k: not k.startswith(("sogDetails.", "shotLocationDetails."))  # the rink-area detail runs long
+        return pid, kind, {short(k): v for k, v in out.items() if keep(k)}, {short(k): v for k, v in avg.items() if keep(k)}, None
 
     res = {"season": season, "pulled": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"), "failed": [], "sk": {}, "g": {}, "avg": {"sk": {}, "g": {}}}
     with ThreadPoolExecutor(max_workers=4) as ex:

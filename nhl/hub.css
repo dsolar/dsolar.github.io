@@ -63,3 +63,13 @@ table.t.ptab td:first-child{color:var(--faint);width:28px}
 @media (max-width:640px){.oddbar i{display:none}}
 .tag{display:inline-block;font:700 10.5px/1 var(--cond);letter-spacing:.06em;padding:3px 5px;border-radius:4px;background:var(--paper-2);color:var(--muted);vertical-align:1px}
 sup{font-size:10px;color:var(--faint);margin-left:2px}
+/* NHL Edge: percentile cells and the card's bars */
+.scroll-x{overflow-x:auto}
+table.t.edge td.ec{font-variant-numeric:tabular-nums;font-weight:700}
+table.t.edge th{white-space:nowrap}
+.edgebars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:10px 22px;margin:6px 0 12px}
+.egb{display:grid;grid-template-columns:150px 1fr;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.egb small{display:block;font-weight:600;color:var(--faint)}
+.egb i{position:relative;display:block;height:8px;border-radius:4px;background:var(--rule);margin-right:14px}
+.egb em{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.egb b{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;box-shadow:0 0 0 2px var(--card)}
