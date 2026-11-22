@@ -1,0 +1,24 @@
+name: probe-savant
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Try Savant's CSV leaderboards
+        run: |
+          B="https://baseballsavant.mlb.com"
+          for u in \
+            "$B/leaderboard/expected_statistics?type=batter&year=2026&position=&team=&min=q&csv=true" \
+            "$B/leaderboard/expected_statistics?type=pitcher&year=2026&position=&team=&min=q&csv=true" \
+            "$B/leaderboard/percentile-rankings?type=batter&year=2026&csv=true" \
+            "$B/leaderboard/percentile-rankings?type=pitcher&year=2026&csv=true" \
+            "$B/leaderboard/bat-tracking?year=2026&csv=true" \
+            "$B/leaderboard/statcast?type=batter&year=2026&position=&team=&min=q&csv=true" \
+            "$B/leaderboard/pitch-arsenal-stats?type=pitcher&pitchType=&year=2026&team=&min=10&csv=true" \
+            "$B/leaderboard/swing-take?year=2026&team=&leverage=Neutral&group=Batter&type=All&sub_type=null&min=q&csv=true" \
+            "$B/leaderboard/sprint_speed?year=2026&position=&team=&min=10&csv=true" \
+            "$B/leaderboard/outs_above_average?type=Fielder&year=2026&team=&range=year&min=q&pos=&roles=&viz=show&csv=true" ; do
+            code=$(curl -s -A "Mozilla/5.0 (davidsolar.dev data pull)" -o /tmp/o.csv -w "%{http_code}" "$u")
+            echo "=== $code $(wc -c < /tmp/o.csv) bytes, $(wc -l < /tmp/o.csv) lines: $u"
+            head -c 600 /tmp/o.csv | head -3; echo
+          done
