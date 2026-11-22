@@ -1,8 +1,8 @@
 {
- "built": "2026-11-21",
+ "built": "2026-11-22",
  "sports": {
   "mlb": {
-   "registry": 12323,
+   "registry": 12324,
    "shown": 851,
    "found": 824,
    "missing": [
@@ -189,9 +189,9 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7362,
-   "shown": 1162,
-   "found": 1073,
+   "registry": 7365,
+   "shown": 1161,
+   "found": 1072,
    "missing": [
     "Derek M. Smith",
     "Maceo Beard"
@@ -373,7 +373,7 @@
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
-    "Stefan Joksimović"
+    "Stefan Joksimovic"
    ],
    "noPhoto": [
     "A.J. Williams",
@@ -382,7 +382,41 @@
     "Tony Bryant"
    ],
    "shared": [],
-   "fixed": 0
+   "fixed": 0,
+   "notCollege": [
+    "A.J. Williams",
+    "Adam Atamna",
+    "Adan Diggs",
+    "Asa Montgomery",
+    "Beckham Black",
+    "CJ Rosser",
+    "Cameron Houindo",
+    "Cheickh Niang",
+    "Darrius Wabbington",
+    "Dash Daniels",
+    "Demarcus Henry",
+    "Fabian Kayser",
+    "Godson Okokoh",
+    "Hugo Yimga-Moukouri",
+    "Jordan Page",
+    "Josh Leonard",
+    "Kager Knueppel",
+    "Klark Riethauser",
+    "Lewis Uvwo",
+    "Luke Paul",
+    "Marc-Owen Fodzo Dada",
+    "Mathias Vazquez",
+    "Matija Lukic",
+    "Messi Yangala",
+    "Mouhamed Faye",
+    "Nasir (Rudy) Anderson",
+    "Nathan Soliman",
+    "Paul Osaruyi",
+    "Pavle Backo",
+    "Petar Bjelica",
+    "Ryan Hampton",
+    "Tony Bryant"
+   ]
   },
   "ncaaf": {
    "registry": 221,
