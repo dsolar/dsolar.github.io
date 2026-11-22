@@ -55,6 +55,11 @@ jobs:
         timeout-minutes: 20
         run: python3 tools/nhl_edge.py
 
+      # card-sized copies of the tracking files for Draft Lab's player cards
+      - name: Card-sized tracking files
+        continue-on-error: true
+        run: python3 tools/track_cards.py nhl
+
       - name: Refresh fantasy players and contracts
         continue-on-error: true
         run: node tools/fantasykit_nhl.mjs --pool-only

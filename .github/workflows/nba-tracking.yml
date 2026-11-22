@@ -38,9 +38,14 @@ jobs:
       - name: Build the tracking file from the latest drop
         run: python3 tools/nba_tracking.py
 
+      # card-sized copies of the tracking files for Draft Lab's player cards
+      - name: Card-sized tracking files
+        continue-on-error: true
+        run: python3 tools/track_cards.py nba
+
       - name: Commit it
         run: |
-          git add nba/data/tracking.json
+          git add nba/data/tracking.json nba/data/tracking_card.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

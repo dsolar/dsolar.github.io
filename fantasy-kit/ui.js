@@ -686,8 +686,11 @@
   // card leaves a slot naming the player; once the card is open, the slot fills from the file (fetched once).
   // MLB and NHL ids are the leagues' own ids, as the hubs use; NFL players match on ESPN id; NBA players through the
   // tracking file's own map from Draft Lab ids to NBA ids (tools/nba_tracking.py matches them by name).
-  const TRACK = { mlb: "/mlb/data/savant.json", nfl: "/nfl/data/ngs.json", nhl: "/nhl/data/edge.json", nba: "/nba/data/tracking.json" }, trackFiles = {};
-  const trackFile = (k) => trackFiles[k] || (trackFiles[k] = fetch(TRACK[k], { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((j) => {
+  // card-sized copies (tools/track_cards.py), with the hub's full file as the fallback
+  const TRACK = { mlb: "/mlb/data/savant_card.json", nfl: "/nfl/data/ngs.json", nhl: "/nhl/data/edge_card.json", nba: "/nba/data/tracking_card.json" }, trackFiles = {};
+  const TRACK_FULL = { mlb: "/mlb/data/savant.json", nhl: "/nhl/data/edge.json", nba: "/nba/data/tracking.json" };
+  const getJson = (u) => fetch(u, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  const trackFile = (k) => trackFiles[k] || (trackFiles[k] = getJson(TRACK[k]).then((j) => j || (TRACK_FULL[k] ? getJson(TRACK_FULL[k]) : null)).then((j) => {
     if (j && k === "nfl") { j.byEspn = {}; ["qb", "rb", "rec"].forEach((g) => Object.values(j[g] || {}).forEach((d) => { if (d.e) j.byEspn[d.e] = { g, d }; })); }
     return j;
   }));
