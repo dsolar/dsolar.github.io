@@ -275,6 +275,7 @@ function matchup(q) {
     (l ? '<div class="verdict">' + logo(fav) + " <b>" + esc(fav.short) + " by " + half(l.spread) + "</b> · total " + half(l.total) + "<br><small>Projected " + esc(away.short) + " " + int(l.ap) + ", " + esc(home.short) + " " + int(l.hp) + (neutral ? " at a neutral site" : " in " + esc(home.short) + "'s stadium") + "</small></div>" +
       '<div class="wp"><span class="wp-l">' + logo(a) + esc(a.short) + " <b>" + pct(pa) + '</b></span><div class="wp-bar"><b style="width:' + (pa * 100).toFixed(1) + "%;background:" + esc(a.color) + '"></b><i style="background:' + esc(b.color) + '"></i></div><span class="wp-r"><b>' + pct(1 - pa) + "</b> " + esc(b.short) + logo(b) + "</span></div>" : '<p class="callout">No line for these teams.</p>') +
     (real.length ? '<p class="callout">' + real.map(g => { const h = team(g.home), aw = team(g.away); return (g.state === "post" ? "They played " : "They play ") + dLabel(g.day, { weekday: "short" }) + ": " + esc(aw.short) + (g.neutral ? " vs " : " at ") + esc(h.short) + (g.state === "post" ? " — final " + int(g.as) + "-" + int(g.hs) : g.market && fin(g.market.spread) ? " · book " + favText(g.market.spread, h, aw) : ""); }).join("<br>") + "</p>" : "") +
+    (ADV(a.id) && ADV(b.id) ? '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against FBS teams from CollegeFootballData, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' : "") +
     '<div class="panel"><table class="t tape"><thead><tr><th>' + logo(a) + " " + esc(a.short) + '</th><th class="mid">Tale of the tape</th><th>' + esc(b.short) + " " + logo(b) + "</th></tr></thead><tbody>" +
     row("Record", rec(a), rec(b)) + row("Poll", pollRank(a) ? "#" + pollRank(a) : "—", pollRank(b) ? "#" + pollRank(b) : "—") +
     row("Hub power", ra.power, rb.power) + row("Hub rank", ra.rank, rb.rank, "low") + row("Adj. points scored", X.base + ra.o, X.base + rb.o) + row("Adj. points allowed", X.base + ra.d, X.base + rb.d, "low") +
@@ -353,10 +354,24 @@ const A_GROUPS = [
 let A_SORTED = null;
 function advBars(t) {
   const a = ADV(t.id); if (!a || !a.off || !a.def) return "";
-  if (!A_SORTED) { const pool = D.teams.filter((x) => !x.fcs).map((x) => ADV(x.id)).filter((x) => x && x.off && x.def); A_SORTED = A_GROUPS.map(([, rows]) => rows.map(([, fn]) => pool.map(fn).filter(fin).sort((p, q) => p - q))); A_SORTED.n = pool.length; }
+  ensureA();
   const groups = A_GROUPS.map(([title, rows]) => [title, rows.map(([l, fn, d, f]) => [l, () => fn(a), d, f])]);
   return tbarsHtml(groups, (g, r) => A_SORTED[g][r], cfbColor, cfbPct) + '<p class="note">Percentile among ' + A_SORTED.n + ' FBS teams: red is good, blue is bad. Points per trip counts drives that reach the opponent\'s 40. Havoc is tackles for loss, sacks, interceptions, breakups and forced fumbles per play.</p>';
 }
+
+function muPanel(off, def, rows, color, logoFn) {
+  const ok = rows.filter((r) => r[1] && r[2]); if (!ok.length) return "";
+  const bar = (pc, side) => { const c = color(pc), w = Math.max(4, pc); return '<i class="' + side + '"><em style="width:' + w + "%;background:" + c + '"></em><b style="' + (side === "l" ? "right" : "left") + ":calc(" + w + "% - 13px);background:" + c + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i>"; };
+  const wins = ok.filter((r) => r[1].pc > r[2].pc).length, loses = ok.filter((r) => r[1].pc < r[2].pc).length;
+  const verdict = wins > loses ? esc(off.short) + " offense has the edge in " + wins + " of " + ok.length : loses > wins ? esc(def.short) + " defense has the edge in " + loses + " of " + ok.length : "Even" + (wins ? ", " + wins + (wins === 1 ? " edge" : " edges") + " each way" : "");
+  return '<div class="panel"><h3>When ' + esc(off.short) + ' has the ball <small>' + verdict + '</small></h3><div class="body"><div class="mups"><div class="mu-r mu-h"><span>' + logoFn(off) + esc(off.short) + ' offense</span><span></span><span>' + esc(def.short) + " defense " + logoFn(def) + "</span></div>" +
+    ok.map(([lab, o, d]) => '<div class="mu-r">' + bar(o.pc, "l") + '<span class="mid">' + lab + "<small>" + o.v + " · " + d.v + "</small></span>" + bar(d.pc, "r") + "</div>").join("") + "</div></div></div>";
+}
+
+function ensureA() { if (!A_SORTED) { const pool = D.teams.filter((x) => !x.fcs).map((x) => ADV(x.id)).filter((x) => x && x.off && x.def); A_SORTED = A_GROUPS.map(([, rows]) => rows.map(([, fn]) => pool.map(fn).filter(fin).sort((p, q) => p - q))); A_SORTED.n = pool.length; } }
+function aPct(t, gi, ri) { const a = ADV(t.id); if (!a || !a.off || !a.def) return null; ensureA(); const [, fn, d, f] = A_GROUPS[gi][1][ri], v = fn(a), p = cfbPct(A_SORTED[gi][ri], v); return p == null ? null : { pc: d < 0 ? 100 - p : p, v: f(v) }; }
+const MU_LABELS = ["EPA per play", "Success rate", "Explosiveness", "Points per trip", "Passing", "Running", "Line yards", "Stuffs", "Havoc", "Field position"];
+const muSide = (o, d) => muPanel(o, d, MU_LABELS.map((lab, i) => [lab, aPct(o, 0, i), aPct(d, 1, i)]), cfbColor, logo);
 
 function efficiency(t) {
   const a = ADV(t.id), sp = SPR(t.id), rr = advRank[t.id] || {}, n = D.teams.length, rc = C && C.recruiting && C.recruiting.teams && C.recruiting.teams[t.id], rp = C && C.returning && C.returning.teams && C.returning.teams[t.id];

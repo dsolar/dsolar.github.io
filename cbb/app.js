@@ -257,12 +257,28 @@ const T_GROUPS = [
 ];
 let T_SORTED = null;
 function teamBars(t) {
-  if (!T_SORTED) { const boxes = D.teams.map((x) => [x, teamBox(x)]); T_SORTED = T_GROUPS.map(([, rows]) => rows.map(([, fn]) => boxes.map(([x, b]) => fn(x, b)).filter(fin).sort((a, b) => a - b))); }
-  const b = teamBox(t), groups = T_GROUPS.map(([title, rows]) => [title, rows.map(([l, fn, d, f]) => [l, () => fn(t, b), d, f])]);
+  ensureT();
+  const b = tbox(t), groups = T_GROUPS.map(([title, rows]) => [title, rows.map(([l, fn, d, f]) => [l, () => fn(t, b), d, f])]);
   const html = tbarsHtml(groups, (g, r) => T_SORTED[g][r], pctColorC, (s, v) => { const p = pctOf(s, v); return p == null ? null : Math.round(p); });
   return '<div class="panel"><h3>Against Division I <small>percentile among all ' + D.teams.length + ' teams</small></h3><div class="body">' + html +
     '<p class="note">Red is good, blue is bad; gray bars describe style, not quality. Adjusted offense and defense, pace, 3P%, rim FG% and shot mix are Haslametrics\'. True shooting, assist, turnover and free throw rates, steals and blocks come from ESPN box scores. Schedule faced is ESPN\'s strength of schedule.</p></div></div>';
 }
+
+function muPanel(off, def, rows, color, logoFn) {
+  const ok = rows.filter((r) => r[1] && r[2]); if (!ok.length) return "";
+  const bar = (pc, side) => { const c = color(pc), w = Math.max(4, pc); return '<i class="' + side + '"><em style="width:' + w + "%;background:" + c + '"></em><b style="' + (side === "l" ? "right" : "left") + ":calc(" + w + "% - 13px);background:" + c + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i>"; };
+  const wins = ok.filter((r) => r[1].pc > r[2].pc).length, loses = ok.filter((r) => r[1].pc < r[2].pc).length;
+  const verdict = wins > loses ? esc(off.short) + " offense has the edge in " + wins + " of " + ok.length : loses > wins ? esc(def.short) + " defense has the edge in " + loses + " of " + ok.length : "Even" + (wins ? ", " + wins + (wins === 1 ? " edge" : " edges") + " each way" : "");
+  return '<div class="panel"><h3>When ' + esc(off.short) + ' has the ball <small>' + verdict + '</small></h3><div class="body"><div class="mups"><div class="mu-r mu-h"><span>' + logoFn(off) + esc(off.short) + ' offense</span><span></span><span>' + esc(def.short) + " defense " + logoFn(def) + "</span></div>" +
+    ok.map(([lab, o, d]) => '<div class="mu-r">' + bar(o.pc, "l") + '<span class="mid">' + lab + "<small>" + o.v + " · " + d.v + "</small></span>" + bar(d.pc, "r") + "</div>").join("") + "</div></div></div>";
+}
+
+const TBOX = {};
+function ensureT() { if (!T_SORTED) { const boxes = D.teams.map((x) => [x, tbox(x)]); T_SORTED = T_GROUPS.map(([, rows]) => rows.map(([, fn]) => boxes.map(([x, b]) => fn(x, b)).filter(fin).sort((a, b) => a - b))); } }
+function tbox(t) { return TBOX[t.id] || (TBOX[t.id] = teamBox(t)); }
+function tPct(t, gi, ri) { ensureT(); const [, fn, d, f] = T_GROUPS[gi][1][ri], v = fn(t, tbox(t)), p = pctOf(T_SORTED[gi][ri], v); return p == null ? null : { pc: d < 0 ? 100 - p : p, v: f(v) }; }
+const MU_PAIRS = [["Efficiency", [0, 0], [1, 0]], ["Threes", [0, 2], [1, 1]], ["Turnovers vs steals", [0, 5], [1, 2]], ["At the rim", [0, 3], [1, 3]]];
+const muSide = (o, d) => muPanel(o, d, MU_PAIRS.map(([lab, op, dp]) => [lab, tPct(o, op[0], op[1]), tPct(d, dp[0], dp[1])]), pctColorC, logo);
 
 function outlook(t) {
   const o = odds(t.id); if (!o) return "";
@@ -384,6 +400,7 @@ function matchup(q) {
     '<div class="verdict"><b>' + (sp < 0.5 ? "Pick'em" : esc(fav.short) + " by " + half(sp)) + "</b> " + (neutral ? "on a neutral court" : "at " + esc(home.short)) + '<small>Projected ' + esc(a.short) + " " + Math.round(aPts) + ", " + esc(b.short) + " " + Math.round(bPts) + " · Total " + half(l.total) + " · " + f1(l.pace, 0) + " possessions" + (g ? ' · <a href="#/today?day=' + g.day + '">They meet ' + dLabel(g.day) + "</a>" : "") + "</small></div>" +
     '<div class="wp"><div class="wp-l">' + logo(a) + "<b>" + esc(a.short) + "</b> " + pct(aProb) + '</div><div class="wp-bar"><b style="width:' + (aProb * 100).toFixed(1) + '%;background:' + esc(a.color || "var(--ink)") + '"></b><i style="background:' + esc(b.color || "var(--red)") + '"></i></div><div class="wp-r">' + pct(1 - aProb) + " <b>" + esc(b.short) + "</b>" + logo(b) + "</div></div>" +
     (sp >= 0.5 && Math.min(aProb, 1 - aProb) >= 0.25 && (dog.haslamRank || 999) - (fav.haslamRank || 999) >= 25 ? '<p class="callout">Upset watch: ' + esc(dog.short) + " wins this about " + pct(Math.min(aProb, 1 - aProb)) + " of the time.</p>" : "") +
+    '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against all Division I teams, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' +
     '<div class="two"><div class="panel"><h3>Tale of the tape</h3><div class="scroll"><table class="t tape"><thead><tr><th>' + esc(a.short) + '</th><th class="mid"></th><th>' + esc(b.short) + "</th></tr></thead><tbody>" + tape + "</tbody></table></div></div>" +
     '<div><div class="panel"><h3>At every court</h3><table class="t"><thead><tr><th class=l>Court</th><th>Line</th><th>' + esc(a.short) + "</th><th>" + esc(b.short) + "</th></tr></thead><tbody>" + venues + "</tbody></table></div>" +
     '<div class="panel"><h3>' + esc(a.short) + ' go-to players</h3><ul class="rlist">' + keyMen(a) + '</ul></div><div class="panel"><h3>' + esc(b.short) + ' go-to players</h3><ul class="rlist">' + keyMen(b) + "</ul></div></div></div>";
