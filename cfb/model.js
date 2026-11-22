@@ -14,7 +14,9 @@ function line(home, away, neutral, X) {
   if (!rh || !ra) return null;
   const spread = rh.power - ra.power + (neutral ? 0 : H), e = neutral ? 0 : H / 2;
   let hp = base + rh.o + ra.d + e, ap = base + ra.o + rh.d - e;
-  const shift = (spread - (hp - ap)) / 2; hp += shift; ap -= shift;
+  // totals keep X.totK of the points model's distance from average scoring (calibrate_totals in tools/cfb_extras.py)
+  const k = num(X.totK) ?? 1, total = k !== 1 ? num(X.totAvg) + k * (hp + ap - num(X.totRaw)) : hp + ap;
+  hp = (total + spread) / 2; ap = (total - spread) / 2;
   hp = Math.max(hp, 3); ap = Math.max(ap, 3);
   return { spread: round(spread), total: round(hp + ap), hp: round(hp), ap: round(ap), prob: round(phi(spread / SD), 3) };
 }

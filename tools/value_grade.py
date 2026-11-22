@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 HUB_EDGE, PUBLIC_MAX, TOTAL_EDGE = 3.0, 40, 4.0
+T1_SINCE = {"cfb": "2026-11-23"}   # CFB totals were recalibrated (tools/cfb_extras.py calibrate_totals); grade only the new ones
 
 
 def finals(hub):
@@ -76,10 +77,12 @@ def grade(hub):
                 if o is not None and o != close and abs(hub_m + close) < abs(hub_m + o):
                     add("s3", r)
         t, ht = h["c"][1], l.get("total")
+        if l.get("day", "") < T1_SINCE.get(hub, ""):
+            t = None
         if t is not None and ht is not None and abs(ht - t) >= TOTAL_EDGE:
             tt = f[0] + f[1] - t
             add("t1", 0 if tt == 0 else (1 if (tt > 0) == (ht > t) else -1))
-    return {"since": since, "rules": {"hubEdge": HUB_EDGE, "publicMax": PUBLIC_MAX, "totalEdge": TOTAL_EDGE}, "records": rec}
+    return {"since": since, "t1Since": T1_SINCE.get(hub), "rules": {"hubEdge": HUB_EDGE, "publicMax": PUBLIC_MAX, "totalEdge": TOTAL_EDGE}, "records": rec}
 
 
 def main():

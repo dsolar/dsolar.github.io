@@ -31,6 +31,8 @@ DRIFT = 3.5        # season-long uncertainty in a team's true rating for the sim
 FPI_WEIGHT = 0.5   # share of the power rating from ESPN FPI; the rest from the hub's own points model
 SP_WEIGHT = 1 / 3  # when SP+ is available (CFBD), power is a third each: FPI, SP+ and the points model
 REGRESS = 0.85     # raw ratings overstate the gaps between teams; power is pulled 15% toward average
+TOT_K = 0.45       # totals keep 45% of the points model's distance from average scoring (see calibrate_totals)
+TOT = {"k": 1.0, "raw": 0.0, "avg": 0.0}   # set each run by calibrate_totals; k = 1 means no adjustment
 BLOWOUT = 24       # margins beyond this count at 40% in the points model
 RIDGE = 2.5        # games' worth of pull toward average in the points model
 FCS_PRIOR = (-11.0, 11.0)  # FCS opponents start 22 points worse than an average FBS team
@@ -99,9 +101,24 @@ def line(h, a, neutral, R, base):
     spread = rh["power"] - ra["power"] + (0 if neutral else HFA)
     e = 0 if neutral else HFA / 2
     hp = base + rh["o"] + ra["d"] + e; ap = base + ra["o"] + rh["d"] - e
-    shift = (spread - (hp - ap)) / 2; hp += shift; ap -= shift
+    total = TOT["avg"] + TOT["k"] * (hp + ap - TOT["raw"]) if TOT["k"] != 1.0 else hp + ap
+    hp, ap = (total + spread) / 2, (total - spread) / 2
     hp = max(hp, 3.0); ap = max(ap, 3.0)
     return {"spread": round(spread, 1), "total": round(hp + ap, 1), "hp": round(hp, 1), "ap": round(ap, 1), "prob": round(phi(spread / SD), 3)}
+
+
+def calibrate_totals(games, R, base, fcs):
+    """The points model's totals run far too wide (two good defenses come out near 28 points, two bad ones near 80):
+    against closing totals its spread was more than twice the market's, and out of sample the best fit kept about 45% of
+    its distance from average. So each total = this season's average FBS game total + TOT_K x (model total - the model's
+    own average), which also removes the model's low bias from damping blowouts. Out of sample this cut the average
+    miss from 13.4 points to 11.4 (the closing total's was 11.2)."""
+    done = [g for g in games if g["state"] == "post" and g.get("hs") is not None and g["home"] in R and g["away"] in R
+            and g["home"] not in fcs and g["away"] not in fcs]
+    if len(done) < 50:
+        return
+    raw = [2 * base + R[g["home"]]["o"] + R[g["away"]]["d"] + R[g["away"]]["o"] + R[g["home"]]["d"] for g in done]
+    TOT.update(k=TOT_K, raw=sum(raw) / len(raw), avg=sum(g["hs"] + g["as"] for g in done) / len(done))
 
 
 def resume_value(team_power, opp_power, site, won, bar):
@@ -500,6 +517,7 @@ def main():
     for t in fbs:
         if week_ago and week_ago.get(t):
             R[t]["move"] = week_ago[t] - R[t]["rank"]
+    calibrate_totals(hub["games"], R, base, {t for t in teams if teams[t].get("fcs")})
     season = simulate(hub, R, base, sims)
     lad = heisman(pl.get("players", []), teams, R)
     hh = dict((old.get("heisman") or {}).get("history") or {})
@@ -511,7 +529,7 @@ def main():
             r["prev"] = hh[ref_day].get(r["id"])
     lines, record = update_lines(old.get("lines"), hub, R, base, today, cf.get("lines") or {})
     out = {"schema": 1, "updated": datetime.now(timezone.utc).isoformat(), "season": hub["season"], "today": today.isoformat(),
-           "hfa": HFA, "sd": SD, "spBlend": use_sp, "base": round(base, 2), "stretch": round(stretch, 3), "fpiWeight": FPI_WEIGHT, "regress": REGRESS, "bar": round(bar, 2),
+           "hfa": HFA, "sd": SD, "spBlend": use_sp, "base": round(base, 2), "totK": TOT["k"], "totRaw": round(TOT["raw"], 3), "totAvg": round(TOT["avg"], 3), "stretch": round(stretch, 3), "fpiWeight": FPI_WEIGHT, "regress": REGRESS, "bar": round(bar, 2),
            "ratings": R, "history": hist, "season_sim": season,
            "heisman": {"ladder": lad, "since": ref_day, "history": hh},
            "lines": lines, "record": record, "seconds": round(time.time() - t0, 1)}

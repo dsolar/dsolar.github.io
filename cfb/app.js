@@ -124,7 +124,7 @@ function betRow(g, h, a) {
 // Value watch: where the hub's own line and the market disagree, especially with the public on the other side.
 // Same definitions as tools/value_grade.py, which grades each signal against the closing line all season.
 let VAL = null;
-const SHOW_T1 = false; // the hub's CFB totals run far from the market (14-27 against the close so far), so no totals tag here
+const SHOW_T1 = false; // CFB totals were recalibrated Nov. 23 (they had run far from the market); the tag returns once the new totals have a record
 fetch("data/value.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((v) => { VAL = v; if (D && ["week"].includes(route().page)) render(); }).catch(() => {});
 function recTxt(k) { const r = VAL && VAL.records && VAL.records[k]; if (!r || r[0] + r[1] === 0) return "no graded games yet"; return r[0] + "-" + r[1] + (r[2] ? "-" + r[2] : "") + " (" + Math.round((100 * r[0]) / (r[0] + r[1])) + "%)"; }
 function betSignals(g, l) {
@@ -149,7 +149,7 @@ function valuePills(g, l, h, a) {
 }
 function valueBoard() {
   if (!VAL || !VAL.records) return "";
-  const rows = [["s1", "Hub disagrees with the book by " + VAL.rules.hubEdge + "+ points"], ["s2", "...and under " + VAL.rules.publicMax + "% of bets are on the hub's side"], ["s3", "...and the line has moved toward the hub"], ["t1", "Hub total off the book's by " + VAL.rules.totalEdge + "+ points"], ["pub", "The heavy public side (70%+ of bets)"]];
+  const rows = [["s1", "Hub disagrees with the book by " + VAL.rules.hubEdge + "+ points"], ["s2", "...and under " + VAL.rules.publicMax + "% of bets are on the hub's side"], ["s3", "...and the line has moved toward the hub"], ["t1", "Hub total off the book's by " + VAL.rules.totalEdge + "+ points" + (VAL.t1Since ? " (new totals, since " + dLabel(VAL.t1Since) + ")" : "")], ["pub", "The heavy public side (70%+ of bets)"]];
   const cell = (k) => { const r = VAL.records[k], n = r[0] + r[1], p = n ? (100 * r[0]) / n : null; return '<td class="num">' + r[0] + "-" + r[1] + (r[2] ? "-" + r[2] : "") + '</td><td class="num"><b class="' + (p === null ? "" : p >= 52.4 ? "pos" : "neg") + '">' + (p === null ? "—" : p.toFixed(1) + "%") + "</b></td>"; };
   return '<div class="panel"><h3>Value watch scorecard <small>against the closing line since ' + esc(dLabel(VAL.since)) + '</small></h3><div class="scroll"><table class="t"><thead><tr><th class="l">Signal</th><th>Record</th><th>Win %</th></tr></thead><tbody>' +
     rows.map(([k, lab]) => '<tr><td class="l">' + lab + "</td>" + cell(k) + "</tr>").join("") + '</tbody></table></div><p class="note" style="padding:0 14px 12px">Break-even at standard −110 juice is 52.4%. Green beats it, red doesn\'t. "Value" tags on game cards mark the second signal and "Value+" the third, so read them with these records in mind: a tag is a disagreement worth a look, not a proven edge. The closing line is the market\'s sharpest number, so these records are a tough test.</p></div>';
