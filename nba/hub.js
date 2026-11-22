@@ -84,9 +84,9 @@
       const n = x => (/^\d+$/.test(x) ? +x : NUM[String(x).toLowerCase()] || 0);
       let wk = 0, m;
       if ((m = /(\w+)\s*(?:to|-)\s*(\w+)\s+(weeks|months)/i.exec(note))) wk = (n(m[1]) + n(m[2])) / 2 * (/month/i.test(m[3]) ? 4.3 : 1);
-      else if ((m = /(?:at least|approximately|about|another|re-evaluated in|for)\s+(?:approximately |about |another )?(\w+)\s+(weeks?|months?)/i.exec(note))) wk = n(m[1]) * (/month/i.test(m[2]) ? 4.3 : 1);
+      else if ((m = /(?:at least|approximately|about|another|re-evaluated in|for)\s+(?:approximately |about |another )?(\w+)\s+(?:more |additional |further )?(weeks?|months?)/i.exec(note))) wk = n(m[1]) * (/month/i.test(m[2]) ? 4.3 : 1);
       else if (/\bmonths\b/i.test(note)) wk = 13;                     // "will miss months"
-      else if (/^out$/i.test(st)) wk = 1;
+      else if (/^out$/i.test(st)) { wk = 1; out.guess = true; }       // a placeholder for playing time, not a return date
       if (wk > 0 && date) { const d = new Date(date + "T12:00:00Z"); d.setUTCDate(d.getUTCDate() + Math.round(wk * 7)); out.back = d.toISOString().slice(0, 10); if (out.back >= SEASON_END) { out.season = true; out.back = null; } }
       return out;
     };
@@ -1578,7 +1578,11 @@
       const j = p && p.injury; if (!j) return null;
       const share = outShare(p);
       const label = j.season ? "Out for season" : /^out$/i.test(j.st) ? "Out" : j.st || "Injured";
-      return { label, season: j.season, share, dtd: !/^out$/i.test(j.st) && !j.season, note: j.note, date: j.date, back: j.season ? null : j.back };
+      // the game designation: ESPN's feed only says Out or Day-To-Day, so the latest note decides (it's usually newer:
+      // "questionable to play Sunday", "won't play"); a long absence stays Out whatever the note says
+      const n = String(j.note || "").toLowerCase(), far = !j.guess && j.back && j.back > asOf && (Date.parse(j.back) - Date.parse(asOf)) / 864e5 > 4;
+      const code = j.season || far ? "O" : /\bprobable\b/.test(n) ? "P" : /\bdoubtful\b/.test(n) ? "D" : /\bquestionable\b|game-time decision/.test(n) ? "Q" : /^out$/i.test(j.st) || /won'?t play|will (miss|not play|sit)|\bout\b/.test(n) ? "O" : "Q";
+      return { label, code, season: j.season, share, dtd: !/^out$/i.test(j.st) && !j.season, note: j.note, date: j.date, back: j.season ? null : j.back, guess: !!j.guess };
     };
     H.findPlayer = id => W.P[id] || null;
     H.teamPlayers = code => Object.values(W.P).filter(p => p.t === code);

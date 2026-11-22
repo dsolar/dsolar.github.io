@@ -35,12 +35,17 @@
     return window.DSFaces.html({ sport: "nba", id: p.espn || null, name: p.n, color: team(p.t).color, size: size || 24 });
   }
   // Injury badge: red for out (with the season-long ones marked), amber for day-to-day; the latest news on hover
+  // Injury: one letter (P probable, Q questionable, D doubtful, O out), the status, return and latest note on hover
+  var INJ_WORD = { P: "Probable", Q: "Questionable", D: "Doubtful", O: "Out" };
   function injTag(p) {
     var j = H.injuryTag && H.injuryTag(p);
     if (!j) return "";
-    var txt = j.season ? "Out for season" : j.dtd ? "Day-to-day" : "Out" + (j.back && j.back > H.asOf ? " to ~" + fmtShort(j.back) : "");
-    return ' <span class="injb' + (j.dtd ? " dtd" : "") + (j.season ? " sea" : "") + '" title="' + esc((j.note || txt) + (j.date ? " (" + j.date + ")" : "")) + '"><i aria-hidden="true">+</i><span class="ijt">' + esc(txt) + "</span></span>";
+    var c = j.code || (j.dtd ? "Q" : "O");
+    var head = j.season ? "Out for the season" : INJ_WORD[c] + (c === "O" && j.back && !j.guess && j.back > H.asOf ? ", back around " + fmtShort(j.back) : "");
+    var tip = head + (j.note ? ". " + j.note : "") + (j.date ? " (" + fmtShort(j.date) + ")" : "");
+    return ' <span class="injd inj-' + c.toLowerCase() + (j.season ? " sea" : "") + '" data-tip="' + esc(tip) + '" tabindex="0" role="img" aria-label="' + esc(head) + '">' + c + "</span>";
   }
+
   function shortName(n) { var w = String(n || "").split(" "); if (w.length < 2) return n; var suf = /^(Jr\.?|Sr\.?|II|III|IV)$/.test(w[w.length - 1]) ? w.pop() : ""; return w[0].charAt(0) + ". " + w.slice(1).join(" ") + (suf ? " " + suf : ""); }
   function pname(p, size, extra) {
     extra = (extra || "") + (p.fill || p.rook ? "" : injTag(p));
@@ -267,7 +272,7 @@
       lu.starters.concat(lu.bench).map(function (x, k) {
         var p = x.p, mins = lu.mins[p.id] || 0;
         var line = i === 0 ? (p.line ? f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast) : "—") : money(x.sal);
-        return "<tr" + (k === 5 || k === 10 ? ' class="cut"' : "") + "><td>" + pname(p, 24, p.inj ? ' <span class="pill warn" title="' + esc(p.inj) + '">' + esc(p.inj) + "</span>" : "") + "</td><td>" + esc(posOf(p)) + "</td><td>" + (p.fill || p.age == null ? "—" : p.rook ? p.age + i - p.arrive : p.age + i) + "</td><td>" + rchip(x.r) + "</td><td>" + (mins ? f0(mins) : "—") + "</td><td>" + line + "</td><td>" + contractCell(x, i) + "</td></tr>";
+        return "<tr" + (k === 5 || k === 10 ? ' class="cut"' : "") + "><td>" + pname(p, 24) + "</td><td>" + esc(posOf(p)) + "</td><td>" + (p.fill || p.age == null ? "—" : p.rook ? p.age + i - p.arrive : p.age + i) + "</td><td>" + rchip(x.r) + "</td><td>" + (mins ? f0(mins) : "—") + "</td><td>" + line + "</td><td>" + contractCell(x, i) + "</td></tr>";
       }).join(""), (i === 0 ? "This season's numbers" : "") + (inj.length && i === 0 ? " · " + inj.length + " on the injury report" : ""));
     if (i === 0) html += teamLineups(code) + teamTracking(code);
     html += '<p class="note">Cap sheet, exceptions and draft picks are on the <a href="' + href("contracts/" + code, { y: yq(i) }) + '">Contracts tab</a>.</p>';
@@ -1618,7 +1623,7 @@
             var p = H.W.P[a.id], last = H.lastYear(p);
             circleImg(ctx, im, x + 16, yy + 12, 66, team(p.t).color, window.DSFaces.initials(p.n), true);
             title = p.n; sub = posOf(p) + ", age " + p.age + ", " + rt(H.rating(p, 0)) + " impact"; sub2 = last > 0 ? "Thru " + sname(last) : "Expiring"; right = money(H.salary(p, 0) + H.kicker(p));
-            var ij = H.injuryTag(p); injLbl = ij ? (ij.season ? "OUT FOR SEASON" : ij.dtd ? "DAY-TO-DAY" : "OUT") : "";
+            var ij = H.injuryTag(p); injLbl = ij ? (ij.season ? "OUT FOR SEASON" : (INJ_WORD[ij.code] || (ij.dtd ? "Questionable" : "Out")).toUpperCase()) : "";
           } else if (a.kind === "k") {
             var pk = pickOf(a.id);
             circleImg(ctx, im, x + 16, yy + 12, 66, "#ECEBE6", pk.from);

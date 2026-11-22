@@ -294,7 +294,15 @@
     const img = src ? `<img src="${esc(src)}" alt="" loading="lazy" onerror="${fall}">` : "";
     return `<span class="pav c${colorOf(sport, p)}${size ? " " + size : ""}${face ? " face" + (face.espn ? " espn" : "") : src ? " lgo" : ""}" aria-hidden="true"${ask}>${face ? `<span class="pav-c">${img}</span>${logo ? `<img class="pav-b" src="${esc(S.teamLogo(sport.key, p.t, 48))}" alt="" loading="lazy" onerror="this.remove()">` : ""}` : img}${esc(initials(p.n))}</span>`;
   };
-  const injTag = (p) => (p && p.inj ? ` <span class="tag inj" title="${esc(p.inj)}">${esc(String(p.inj).replace(/^day.*/i, "DTD").replace(/^questionable/i, "Q").slice(0, 3).toUpperCase())}</span>` : "");
+  // An injury as one letter: P probable, Q questionable (day-to-day and game-time decisions too), D doubtful, O out;
+  // IR, SUS, PUP and NFI stay as they are. The feed's full status shows on hover.
+  const INJ_CODE = [[/^(probable|p)$/i, "P", "Probable"], [/^(questionable|q|day[- ]?to[- ]?day|dtd|gtd|game[- ]time)/i, "Q", "Questionable"], [/^(doubtful|d)$/i, "D", "Doubtful"], [/^(out|o|dtd-out)$/i, "O", "Out"], [/^(ir|il|injured reserve|injured list|il\d+)/i, "IR", "Injured reserve"], [/^(sus|suspended|suspension)/i, "SUS", "Suspended"], [/^pup/i, "PUP", "Physically unable to perform"], [/^nfi/i, "NFI", "Non-football injury"]];
+  const injTag = (p) => {
+    if (!p || !p.inj) return "";
+    const raw = String(p.inj).trim(), hit = INJ_CODE.find(([re]) => re.test(raw)), code = hit ? hit[1] : raw.slice(0, 3).toUpperCase(), word = hit ? hit[2] : raw;
+    const tip = word + (p.injNote ? ". " + p.injNote : "") + (hit && word.toLowerCase() !== raw.toLowerCase() && !/^(p|q|d|o)$/i.test(raw) ? " (" + raw + ")" : "");
+    return ` <span class="tag inj inj-${code.toLowerCase()}" data-tip="${esc(tip)}" tabindex="0" role="img" aria-label="${esc(word)}">${esc(code)}</span>`;
+  };
   // Avatar, name and a small line (positions and team) for any player.
   // A draft pick as a tradeable item: { id, n: "Pick 2.5", pick: true, sub, price }.
   const pickItem = (p, extra = "") => `<span class="pname"><span class="pav pk" aria-hidden="true">#</span><span><span class="pn">${esc(p.n)}</span><span class="sub">${esc(p.sub || "Draft pick")}${extra ? ", " + extra : ""}</span></span></span>`;
