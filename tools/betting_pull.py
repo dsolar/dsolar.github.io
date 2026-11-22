@@ -74,9 +74,10 @@ def college_games(hub):
     return teams, games, keys
 
 
-def match_college(hub, an_games, k_events):
+def match_college(hub, an_games, k_events, lo=None, hi=None):
     teams, games, keys = college_games(hub)
-    lo, hi = (now - timedelta(days=2)).strftime("%Y-%m-%d"), (now + timedelta(days=8)).strftime("%Y-%m-%d")
+    lo = lo or (now - timedelta(days=2)).strftime("%Y-%m-%d")
+    hi = hi or (now + timedelta(days=8)).strftime("%Y-%m-%d")
     window = [g for g in games if lo <= g.get("day", "") <= hi and g.get("at")]
     by_team_day = {}
     for g in window:
@@ -163,6 +164,7 @@ def flip(d):
     d = dict(d)
     if "sp" in d: d["sp"] = [-d["sp"][0] if d["sp"][0] is not None else None, 100 - d["sp"][1] if d["sp"][1] is not None else None]
     if "ml" in d: d["ml"] = [d["ml"][1], d["ml"][0], 100 - d["ml"][2] if d["ml"][2] is not None else None]
+    if "op" in d and d["op"][0] is not None: d["op"] = [-d["op"][0], d["op"][1]]
     return d
 
 
@@ -174,7 +176,7 @@ def flipk(d):
 def an_pull(league, queries):
     games = []
     for q in queries:
-        d = get(AN + league + "?bookIds=15&" + q)
+        d = get(AN + league + "?bookIds=15,30&" + q)
         for g in (d or {}).get("games") or []:
             m = ((g.get("markets") or {}).get("15") or {}).get("event") or {}
             if not m or g.get("status") not in ("scheduled", "inprogress", "complete", "closed"):
@@ -202,6 +204,10 @@ def an_pull(league, queries):
             if tot_pct == 0 and tix(tu) == 0: tot_pct = None
             if ml_pct == 0 and tix(ma) == 0: ml_pct = None
             data = {"id": g["id"], "n": g.get("num_bets"), "at": now.strftime("%Y-%m-%dT%H:%MZ")}
+            m30 = ((g.get("markets") or {}).get("30") or {}).get("event") or {}         # book 30 is the opening line
+            o_sp = next((r.get("value") for r in m30.get("spread") or [] if r.get("side") == "home" or r.get("team_id") == hid), None)
+            o_tot = next((r.get("value") for r in m30.get("total") or [] if r.get("side") == "over"), None)
+            if o_sp is not None or o_tot is not None: data["op"] = [o_sp, o_tot]
             if g.get("status") != "scheduled": data["_live"] = True
             if sh: data["sp"] = [sh.get("value"), sp_pct]
             if th: data["tot"] = [th.get("value"), tot_pct]
@@ -291,10 +297,40 @@ def write(hub, fresh, src_note):
     merged = {gid: v for gid, v in merged.items() if day_of(gid, v) >= cutoff}
     body = {"updated": now.strftime("%Y-%m-%dT%H:%MZ"), "src": src_note, "games": merged}
     text = json.dumps(body, separators=(",", ":"), sort_keys=True)
+    if hub == "nfl":                                  # NFL games have started once their kickoff day has passed
+        today = now.astimezone(ET).strftime("%Y-%m-%d")
+        started |= {gid for gid in merged if gid.split("|")[0] < today}
+    hist_changed = keep_closing(hub, merged, started)
     if p.exists() and json.loads(p.read_text()).get("games") == merged:
-        return False
+        return hist_changed
     p.write_text(text)
     return True
+
+
+def keep_closing(hub, merged, started_ids):
+    """lines_hist.json: one compact row per game that has started, for grading the hub against the market all season.
+    c = closing home spread and total, o = opening home spread and total, bp = % of spread bets on the home team,
+    tp = % of total bets on the over, n = bets. Spreads use the book convention: negative = home favored."""
+    p = ROOT / hub / "data/lines_hist.json"
+    try:
+        hist = json.loads(p.read_text())
+    except Exception:
+        hist = {}
+    n0 = json.dumps(hist, sort_keys=True)
+    for gid, v in merged.items():
+        x = v.get("an")
+        if not x or gid not in started_ids or not x.get("sp"):
+            continue
+        hist[gid] = row(x)
+    if json.dumps(hist, sort_keys=True) != n0:
+        p.write_text(json.dumps(hist, separators=(",", ":"), sort_keys=True))
+        return True
+    return False
+
+
+def row(x):
+    sp, tot, op = x.get("sp") or [None, None], x.get("tot") or [None, None], x.get("op") or [None, None]
+    return {"c": [sp[0], tot[0]], "o": op, "bp": sp[1], "tp": tot[1], "n": x.get("n")}
 
 
 SRC = {"an": "Share of bets (tickets) and number of bets: Action Network consensus across the books it tracks (actionnetwork.com). Money percentages are an Action Network PRO feature and are not shown.",

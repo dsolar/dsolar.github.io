@@ -40,7 +40,7 @@ jobs:
 
       - name: Commit it
         run: |
-          git add cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json 2>/dev/null || true
+          for f in cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json cbb/data/lines_hist.json cfb/data/lines_hist.json nfl/data/lines_hist.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

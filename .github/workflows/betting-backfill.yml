@@ -1,0 +1,22 @@
+# One-time: closing lines, openers and bet shares for games already played (tools/betting_backfill.py). Run by hand.
+name: Betting backfill
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - run: cd tools && python3 betting_backfill.py
+      - run: |
+          git add cbb/data/lines_hist.json cfb/data/lines_hist.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Backfill closing lines"
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
