@@ -1094,6 +1094,8 @@
     html += tablePanel(V.name, "<th>Player</th><th>Team</th><th>GP</th><th>MIN</th>" + V.cols.map(th).join(""),
       rows.slice(0, 200).map(function (r) { var d = r.d; return "<tr><td>" + trkName(r.id, d) + '</td><td class="tm">' + logo(d.t, 18) + '<span class="nm">' + esc(d.t) + "</span></td><td>" + (d.gp || "—") + "</td><td>" + f1(d.min) + "</td>" + V.cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
       rows.length + " players" + (rows.length > 200 ? ", top 200 shown" : ""));
+    var trkAge = TRK.pulled ? (Date.now() - Date.parse(TRK.pulled)) / 864e5 : null;
+    if (trkAge != null && trkAge > 9) html = html.replace('<div class="controls">', '<p class="fresh">These numbers are ' + Math.floor(trkAge) + " days old: the weekly pull (it runs through David's browser, since the NBA blocks cloud servers) has missed. They'll catch up on the next one.</p><div class=\"controls\">");
     html += '<p class="note">From <a href="https://www.nba.com/stats/players/speed-distance" rel="noopener">NBA.com tracking</a>, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + " (it refreshes weekly). Percentages are shown as percents, and sort and rank only players with enough attempts this season (25 catch-and-shoot threes, 35 pull-ups, 40 drives, 40 rim shots defended).</p>";
     view.innerHTML = html;
   }

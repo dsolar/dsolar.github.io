@@ -23,6 +23,21 @@
     ["Team cap figures", "nfl/data/teamcap.json", j => j.asOf, 30, "otc"],                       // Over The Cap, every week or two: warns only
     ["Draft Big Board", "draft/nfl.json", j => j.updated, 3, "draft-board"],
   ];
+  // The MLB and NHL hubs, and every hub's tracking feed (the daily check watches these; the hub pages show their own dates)
+  const MLB = [
+    ["Projections and rosters", "mlb/data/hub.json", j => j.built, 3, "mlb-hub"],
+    ["Statcast (Baseball Savant)", "mlb/data/savant.json", j => j.pulled, 3, "mlb-hub"],
+  ];
+  const NHL = [
+    ["Rosters, stats and ratings", "nhl/data/hub.json", j => j.built, 2, "nhl-hub"],
+    ["Edge tracking", "nhl/data/edge.json", j => j.pulled, 3, "nhl-hub"],
+  ];
+  const TRACKING = [
+    ["NFL Next Gen Stats", "nfl/data/ngs.json", j => j.pulled, 3, "nfl-hub"],
+    // pulled weekly through David's Chrome by a scheduled task (stats.nba.com refuses cloud servers), so it warns
+    // rather than fails: a missed Monday usually means the computer was off
+    ["NBA player tracking", "nba/data/tracking.json", j => j.pulled, 9, "nba-tracking"],
+  ];
   // Site-wide feeds the daily check also watches
   const SITE = [
     ["Player faces", "assets/faces/report.json", j => j.built, 3, "faces"],
@@ -46,9 +61,10 @@
       const age = t == null ? null : (now - t) / 864e5;
       const off = GAME.has(label) && !season;
       // a feed updated by hand only warns; the automatic ones fail the daily check
-      return { label, file, when: s || null, age, max, how, manual: how === "by hand" || how === "nba-ringer" || how === "otc", stale: !off && (age == null || age > max), missing: !j };
+      return { label, file, when: s || null, age, max, how, manual: how === "by hand" || how === "nba-ringer" || how === "otc" || how === "nba-tracking", stale: !off && (age == null || age > max), missing: !j };
     });
   }
-  const api = { FEEDS, NFL, SITE, check, files: [...new Set(FEEDS.map(f => f[1]))], nflFiles: [...new Set(NFL.map(f => f[1]))], siteFiles: [...new Set(SITE.map(f => f[1]))] };
+  const uniq = (l) => [...new Set(l.map(f => f[1]))];
+  const api = { FEEDS, NFL, MLB, NHL, TRACKING, SITE, check, files: uniq(FEEDS), nflFiles: uniq(NFL), siteFiles: uniq(SITE), mlbFiles: uniq(MLB), nhlFiles: uniq(NHL), trackFiles: uniq(TRACKING) };
   if (typeof module !== "undefined" && module.exports) module.exports = api; else root.Fresh = api;
 })(typeof self !== "undefined" ? self : this);
