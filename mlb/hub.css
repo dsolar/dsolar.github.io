@@ -342,3 +342,16 @@ td.tmc{padding-left:0;padding-right:4px}
 .org-row .pill{margin-left:6px}
 .controls label.chk{flex-direction:row;align-items:center;gap:8px;align-self:end;padding-bottom:7px;cursor:pointer}
 .controls label.chk input{width:16px;height:16px;accent-color:var(--accent,#c8102e)}
+/* tracking tables on phones (every hub loads this file): minor columns step aside and the player stays pinned while
+   the numbers scroll sideways */
+@media (max-width:640px){
+  table.t.trkt th.hm,table.t.trkt td.hm{display:none}
+  table.t.trkt th:first-child,table.t.trkt td:first-child{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:1px 0 0 var(--rule)}
+  table.t.trkt td:first-child .nm{display:inline-block;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+  table.t.trkt th,table.t.trkt td{padding-left:6px;padding-right:6px}
+  table.t.trkt td:first-child .pill,table.t.trkt td:first-child .sv-tag{display:none}
+}
+@media (max-width:640px){
+  table.t.trkt th.stk,table.t.trkt td.stk{position:sticky;left:0;z-index:2;background:var(--card);box-shadow:1px 0 0 var(--rule)}
+  table.t.trkt td.stk .nm{display:inline-block;max-width:112px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+}

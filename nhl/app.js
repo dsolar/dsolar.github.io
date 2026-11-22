@@ -614,11 +614,11 @@
     }).join("") + '</span></label><label>Team<select id="pteam"><option value="">All teams</option>' +
       H.teams.slice().sort(function (a, b) { return a.name < b.name ? -1 : 1; }).map(function (t) { return '<option value="' + t.abbr + '"' + (t.abbr === team ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("") +
       '</select></label><label>Find<input type="search" id="pfind" placeholder="Player name" value="' + esc(q.q || "") + '"></label></div>';
-    h += '<div class="div"><div class="scroll-x"><table class="t ptab edge"><thead><tr><th>#</th><th>Player</th><th class="hide-m">Team</th>' +
+    h += '<div class="div"><div class="scroll-x"><table class="t ptab edge trkt"><thead><tr><th class="hm">#</th><th class="stk">Player</th><th class="hide-m">Team</th>' +
       cols.map(function (c) { return '<th class="sort' + (s === c[0] ? " on" : "") + '" data-s="' + c[0] + '"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + (s === c[0] ? " ▾" : "") + "</th>"; }).join("") + "</tr></thead><tbody>" +
       list.slice(0, 150).map(function (p, i) {
         var e = src[p.id];
-        return "<tr><td>" + (i + 1) + "</td><td>" + pname(p) + '</td><td class="hide-m">' + logo(TEAMS[p.team], 18) + " " + p.team + "</td>" +
+        return '<tr><td class="hm">' + (i + 1) + '</td><td class="stk">' + pname(p) + '</td><td class="hide-m">' + logo(TEAMS[p.team], 18) + " " + p.team + "</td>" +
           cols.map(function (c) { var x = e[c[0]]; return x ? '<td class="ec" style="background:' + edgeColor(x[1]) + ";color:" + (x[1] >= 80 || x[1] <= 20 ? "#fff" : "inherit") + '" title="' + ord(x[1]) + ' percentile">' + edgeFmt(x[0], c[2]) + "</td>" : "<td>—</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody></table></div></div>";
     h += '<p class="note">' + list.length + (G ? " goalies" : " skaters") + (find ? "" : " with " + minGp + "+ games") + ", top 150 shown. From <a href=\"https://edge.nhl.com/\" rel=\"noopener\">NHL Edge</a>, pulled " + esc((EDGE.pulled || "").slice(0, 10)) + ". Speeds in mph, distance in miles.</p>";
@@ -636,8 +636,8 @@
     var gs = ros.filter(function (p) { return p.grp === "G" && EDGE.g[p.id]; }).sort(function (a, b) { return b.war - a.war; });
     if (!sk.length && !gs.length) return "";
     var h = '<h3 class="sec2">NHL Edge tracking</h3><p class="note">This season\'s puck and player tracking, shaded by the league\'s percentiles: red is good, blue is bad. <a href="#/edge">League leaderboards</a>.</p>';
-    if (sk.length) h += '<div class="div"><div class="scroll-x"><table class="t edge"><thead><tr><th>Skater</th>' + EDGE_SK.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" + sk.map(function (p) { return row(p, EDGE_SK, EDGE.sk); }).join("") + "</tbody></table></div></div>";
-    if (gs.length) h += '<div class="div"><div class="scroll-x"><table class="t edge"><thead><tr><th>Goalie</th>' + EDGE_G.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" + gs.map(function (p) { return row(p, EDGE_G, EDGE.g); }).join("") + "</tbody></table></div></div>";
+    if (sk.length) h += '<div class="div"><div class="scroll-x"><table class="t edge trkt"><thead><tr><th>Skater</th>' + EDGE_SK.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" + sk.map(function (p) { return row(p, EDGE_SK, EDGE.sk); }).join("") + "</tbody></table></div></div>";
+    if (gs.length) h += '<div class="div"><div class="scroll-x"><table class="t edge trkt"><thead><tr><th>Goalie</th>' + EDGE_G.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" + gs.map(function (p) { return row(p, EDGE_G, EDGE.g); }).join("") + "</tbody></table></div></div>";
     return h;
   }
   function edgePane(p) {

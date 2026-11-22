@@ -918,14 +918,14 @@
     };
     var html = '<h2 class="sec">Next Gen Stats</h2><p class="lede">The NFL\'s player tracking numbers: chips in every player\'s shoulder pads record where everyone is ten times a second. Over expected stats compare each player with what an average player would do in the same spots. Shaded cells are percentiles within the position: red is good, blue is bad. Click a column to sort, a player for his card.</p>';
     html += '<div class="controls"><label>Position<select data-q="g">' + [["QB", "Quarterbacks"], ["RB", "Running backs"], ["WR", "Wide receivers"], ["TE", "Tight ends"]].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === g ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + '</select></label><label>Search<input type="search" data-q="q" value="' + esc(state.q.q || "") + '" placeholder="Player"></label></div>';
-    html += tablePanel({ QB: "Quarterbacks", RB: "Running backs", WR: "Wide receivers", TE: "Tight ends" }[g] + " · " + rows.length, "<th>Player</th><th>Team</th>" + cols.map(th).join(""),
+    html += tablePanel({ QB: "Quarterbacks", RB: "Running backs", WR: "Wide receivers", TE: "Tight ends" }[g] + " · " + rows.length, "<th>Player</th><th class=\"hm\">Team</th>" + cols.map(th).join(""),
       rows.map(function (r) {
         var p = W.byId[r.id], P2 = r.d.pct || {};
-        return "<tr><td>" + (p ? pname(p, 24) : esc(r.d.n)) + '</td><td class="tm">' + logo(r.d.t, 18) + '<span class="nm">' + esc(r.d.t) + "</span></td>" + cols.map(function (c) {
+        return "<tr><td>" + (p ? pname(p, 24) : esc(r.d.n)) + '</td><td class="tm hm">' + logo(r.d.t, 18) + '<span class="nm">' + esc(r.d.t) + "</span></td>" + cols.map(function (c) {
           var v = r.d.x[idx[c[1]]], pc = P2[c[1]];
           return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + ngOrd(pc) + ' percentile">' + ngFmt(v, c[2]) + "</td>";
         }).join("") + "</tr>";
-      }).join(""), "qualified players, " + (NG.season || "") + " through week " + (NG.week || "—"));
+      }).join(""), "qualified players, " + (NG.season || "") + " through week " + (NG.week || "—"), "trkt");
     html += '<p class="note">From the NFL\'s <a href="https://nextgenstats.nfl.com/" rel="noopener">Next Gen Stats</a> via nflverse, pulled ' + esc((NG.pulled || "").slice(0, 10)) + ". Only qualified players are listed (NGS's own cutoffs: about 14 attempts a game for quarterbacks, 6.25 carries for backs, 1.875 catches for receivers).</p>";
     view.innerHTML = html;
   }
@@ -947,7 +947,7 @@
             var v = d.x[idx[c[1]]], pc = P2[c[1]];
             return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + ngOrd(pc) + ' percentile">' + ngFmt(v, c[2]) + "</td>";
           }).join("") + "</tr>";
-        }).join(""), "");
+        }).join(""), "", "trkt");
     });
     return any ? html : html + '<p class="note">None of this team\'s players meet the NGS qualifying cutoffs yet.</p>';
   }

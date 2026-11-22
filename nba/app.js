@@ -1096,9 +1096,9 @@
       Object.keys(H.W.T || {}).sort().map(function (t) { return opt(t, team(t).name, tm); }).join("") + '</select></label><label>Search<input type="search" data-q="q" value="' + esc(q.q || "") + '" placeholder="Player"></label>' +
       '<label>Players<select data-q="all">' + opt("", "Regulars (" + TRK.qual.min + "+ min)", all ? "1" : "") + opt("1", "Everyone", all ? "1" : "") + "</select></label></div>";
     var th = function (c) { return '<th><a href="' + href("track", Object.assign({}, q, { s: c[0] })) + '"' + (c[0] === sort ? ' class="on"' : "") + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</a></th>"; };
-    html += tablePanel(V.name, "<th>Player</th><th>Team</th><th>GP</th><th>MIN</th>" + V.cols.map(th).join(""),
-      rows.slice(0, 200).map(function (r) { var d = r.d; return "<tr><td>" + trkName(r.id, d) + '</td><td class="tm">' + logo(d.t, 18) + '<span class="nm">' + esc(d.t) + "</span></td><td>" + (d.gp || "—") + "</td><td>" + f1(d.min) + "</td>" + V.cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
-      rows.length + " players" + (rows.length > 200 ? ", top 200 shown" : ""));
+    html += tablePanel(V.name, "<th>Player</th><th class=\"hm\">Team</th><th class=\"hm\">GP</th><th class=\"hm\">MIN</th>" + V.cols.map(th).join(""),
+      rows.slice(0, 200).map(function (r) { var d = r.d; return "<tr><td>" + trkName(r.id, d) + '</td><td class="tm hm">' + logo(d.t, 18) + '<span class="nm">' + esc(d.t) + '</span></td><td class="hm">' + (d.gp || "—") + '</td><td class="hm">' + f1(d.min) + "</td>" + V.cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
+      rows.length + " players" + (rows.length > 200 ? ", top 200 shown" : ""), "trkt");
     var trkAge = TRK.pulled ? (Date.now() - Date.parse(TRK.pulled)) / 864e5 : null;
     if (trkAge != null && trkAge > 9) html = html.replace('<div class="controls">', '<p class="fresh">These numbers are ' + Math.floor(trkAge) + " days old: the weekly pull (it runs through David's browser, since the NBA blocks cloud servers) has missed. They'll catch up on the next one.</p><div class=\"controls\">");
     html += '<p class="note">From <a href="https://www.nba.com/stats/players/speed-distance" rel="noopener">NBA.com tracking</a>, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + " (it refreshes weekly). Percentages are shown as percents, and sort and rank only players with enough attempts this season (25 catch-and-shoot threes, 35 pull-ups, 40 drives, 40 rim shots defended).</p>";
@@ -1111,9 +1111,9 @@
     var ids = Object.keys(TRK.p).filter(function (id) { var hp = TRK.hub[id] && H.W.P[TRK.hub[id]]; return (hp ? hp.t : TRK.p[id].t) === code && (TRK.p[id].gp || 0) >= 3; })
       .sort(function (a, b) { return (TRK.p[b].min || 0) - (TRK.p[a].min || 0); });
     if (!ids.length) return "";
-    return tablePanel("Player tracking", "<th>Player</th><th>MIN</th>" + cols.map(function (c) { return "<th>" + c[1] + "</th>"; }).join(""),
-      ids.map(function (id) { var d = TRK.p[id]; return "<tr><td>" + trkName(id, d) + "</td><td>" + f1(d.min) + "</td>" + cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
-      'Per game this season, shaded by percentile among regulars. <a href="' + href("track", { t: code }) + '">More</a>');
+    return tablePanel("Player tracking", "<th>Player</th><th class=\"hm\">MIN</th>" + cols.map(function (c) { return "<th>" + c[1] + "</th>"; }).join(""),
+      ids.map(function (id) { var d = TRK.p[id]; return "<tr><td>" + trkName(id, d) + "</td><td class=\"hm\">" + f1(d.min) + "</td>" + cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
+      'Per game this season, shaded by percentile among regulars. <a href="' + href("track", { t: code }) + '">More</a>', "trkt");
   }
   function trackPane(p) {
     if (!TRK) return '<p class="note">Loading tracking…</p>';

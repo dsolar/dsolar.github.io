@@ -405,8 +405,8 @@
     if (!first) html += '<p class="note">* Arbitration salaries are estimates: 25%, 40% and 60% of market value in years one to three.</p>';
     return html;
   }
-  function tablePanel(title, head, body, right) {
-    return '<div class="panel"><h3>' + esc(title) + " <small>" + esc(right || "") + '</small></h3><div class="scroll"><table class="t"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody yet.</td></tr>') + "</tbody></table></div></div>";
+  function tablePanel(title, head, body, right, cls) {
+    return '<div class="panel"><h3>' + esc(title) + " <small>" + esc(right || "") + '</small></h3><div class="scroll"><table class="t' + (cls ? " " + cls : "") + '"><thead><tr>' + head + "</tr></thead><tbody>" + (body || '<tr><td class="note">Nobody yet.</td></tr>') + "</tbody></table></div></div>";
   }
   // The payroll grid: every player's salary each season, how it's set (guaranteed, option, arbitration estimate,
   // pre-arb), and the totals, like RosterResource's payroll pages
@@ -724,10 +724,10 @@
   // a Savant player as the hub knows him (team, photo, card), or by name alone if he isn't on a hub roster
   function svWho(id, d) {
     var p = H.byId[id] || H.byId[+id];
-    if (p) return '<td class="tm">' + pname(p, 22) + '</td><td class="tmc">' + logo(p.t, 16) + "</td>";
+    if (p) return '<td class="tm">' + pname(p, 22) + '</td><td class="tmc hm">' + logo(p.t, 16) + "</td>";
     // not on a hub roster (an unsigned free agent, say): his MLB photo and name, and his Savant team when it has one
     var ph = window.DSFaces ? window.DSFaces.html({ sport: "mlb", id: +id, name: d.n, size: 22 }) : "";
-    return '<td class="tm"><span class="pl nolink">' + ph + '<span class="nm">' + esc(d.n || id) + '</span></span></td><td class="tmc">' + (d.t && H.byAbbr[d.t] ? logo(d.t, 16) : "") + "</td>";
+    return '<td class="tm"><span class="pl nolink">' + ph + '<span class="nm">' + esc(d.n || id) + '</span></span></td><td class="tmc hm">' + (d.t && H.byAbbr[d.t] ? logo(d.t, 16) : "") + "</td>";
   }
   // Statcast's luck read on one player: actual against expected (wOBA vs. xwOBA for hitters, ERA vs. xERA for pitchers).
   // "Due" hit better than his results, "Lucky" got more than he hit. About the top and bottom tenth of qualified players
@@ -792,10 +792,10 @@
       var rows = Object.keys(SV.bat).map(function (id) { return { id: id, d: SV.bat[id] }; }).filter(function (r) { return r.d.x && r.d.x[0] && (!q || String(r.d.n).toLowerCase().indexOf(q) >= 0); });
       var key = { xwoba: function (d) { return d.x[6]; }, xba: function (d) { return d.x[2]; }, xslg: function (d) { return d.x[4]; }, ev: function (d) { return d.ev && d.ev[0]; }, max: function (d) { return d.ev && d.ev[1]; }, brl: function (d) { return d.ev && d.ev[3]; }, hh: function (d) { return d.ev && d.ev[5]; }, bs: function (d) { return d.bt && d.bt[0]; }, spd: function (d) { return d.spd && d.spd[0]; }, oaa: function (d) { return d.oaa && d.oaa[1]; }, rv: function (d) { return d.sw && d.sw[0]; } }[sort] || function (d) { return d.x[6]; };
       rows.sort(function (a, b) { return (key(b.d) == null ? -1e9 : key(b.d)) - (key(a.d) == null ? -1e9 : key(a.d)); });
-      html += tablePanel("Hitters", "<th>Player</th><th></th><th>PA</th>" + svSortTh("xwoba", "xwOBA", sort, "Expected weighted on-base average, from quality of contact, strikeouts and walks") + svSortTh("xba", "xBA", sort) + svSortTh("xslg", "xSLG", sort) + svSortTh("ev", "Avg EV", sort, "Average exit velocity") + svSortTh("max", "Max EV", sort) + svSortTh("brl", "Barrel%", sort) + svSortTh("hh", "Hard hit%", sort, "Batted balls at 95 mph or harder") + svSortTh("bs", "Bat speed", sort) + svSortTh("spd", "Sprint", sort, "Feet per second on his fastest runs") + svSortTh("oaa", "OAA", sort, "Outs above average in the field") + svSortTh("rv", "Swing runs", sort, "Runs from his swing and take decisions"),
+      html += trkPanel("Hitters", "<th>Player</th><th class=\"hm\"></th><th class=\"hm\">PA</th>" + svSortTh("xwoba", "xwOBA", sort, "Expected weighted on-base average, from quality of contact, strikeouts and walks") + svSortTh("xba", "xBA", sort) + svSortTh("xslg", "xSLG", sort) + svSortTh("ev", "Avg EV", sort, "Average exit velocity") + svSortTh("max", "Max EV", sort) + svSortTh("brl", "Barrel%", sort) + svSortTh("hh", "Hard hit%", sort, "Batted balls at 95 mph or harder") + svSortTh("bs", "Bat speed", sort) + svSortTh("spd", "Sprint", sort, "Feet per second on his fastest runs") + svSortTh("oaa", "OAA", sort, "Outs above average in the field") + svSortTh("rv", "Swing runs", sort, "Runs from his swing and take decisions"),
         rows.slice(0, 250).map(function (r) {
           var d = r.d, P = d.pct || {};
-          return "<tr>" + svWho(r.id, d) + "<td>" + f0(d.x[0]) + "</td>" + pctCell(P.xwoba, f3(d.x[6])) + pctCell(P.xba, f3(d.x[2])) + pctCell(P.xslg, f3(d.x[4])) + pctCell(P.exit_velocity, d.ev ? f1(d.ev[0]) : "—") + pctCell(P.max_ev, d.ev ? f1(d.ev[1]) : "—") + pctCell(P.brl_percent, d.ev ? f1(d.ev[3]) : "—") + pctCell(P.hard_hit_percent, d.ev ? f1(d.ev[5]) : "—") + pctCell(P.bat_speed, d.bt ? f1(d.bt[0]) : "—") + pctCell(P.sprint_speed, d.spd ? f1(d.spd[0]) : "—") + pctCell(P.oaa, d.oaa ? (d.oaa[1] > 0 ? "+" : "") + d.oaa[1] : "—") + "<td>" + (d.sw ? (d.sw[0] > 0 ? "+" : "") + f1(d.sw[0]) : "—") + "</td></tr>";
+          return "<tr>" + svWho(r.id, d) + "<td class=\"hm\">" + f0(d.x[0]) + "</td>" + pctCell(P.xwoba, f3(d.x[6])) + pctCell(P.xba, f3(d.x[2])) + pctCell(P.xslg, f3(d.x[4])) + pctCell(P.exit_velocity, d.ev ? f1(d.ev[0]) : "—") + pctCell(P.max_ev, d.ev ? f1(d.ev[1]) : "—") + pctCell(P.brl_percent, d.ev ? f1(d.ev[3]) : "—") + pctCell(P.hard_hit_percent, d.ev ? f1(d.ev[5]) : "—") + pctCell(P.bat_speed, d.bt ? f1(d.bt[0]) : "—") + pctCell(P.sprint_speed, d.spd ? f1(d.spd[0]) : "—") + pctCell(P.oaa, d.oaa ? (d.oaa[1] > 0 ? "+" : "") + d.oaa[1] : "—") + "<td>" + (d.sw ? (d.sw[0] > 0 ? "+" : "") + f1(d.sw[0]) : "—") + "</td></tr>";
         }).join(""), rows.length + " qualified hitters");
     } else {
       var sortp = state.q.s || "xera";
@@ -803,16 +803,17 @@
       var pk = { xera: function (d) { return -(d.x[8] == null ? 99 : d.x[8]); }, era: function (d) { return -(d.x[7] == null ? 99 : d.x[7]); }, xwoba: function (d) { return -d.x[6]; } }[sortp] || function (d) { var v = (d.pct || {})[sortp]; return v == null ? -1 : v; };
       prow.sort(function (a, b) { return pk(b.d) - pk(a.d); });
       var cols = [["k_percent", "K%"], ["bb_percent", "BB%"], ["whiff_percent", "Whiff%"], ["chase_percent", "Chase%"], ["brl_percent", "Barrel%"], ["hard_hit_percent", "Hard hit%"], ["fb_velocity", "FB velo"], ["fb_spin", "FB spin"]];
-      html += tablePanel("Pitchers", "<th>Player</th><th></th><th>PA</th>" + svSortTh("era", "ERA", sortp) + svSortTh("xera", "xERA", sortp, "Expected ERA, from quality of contact allowed, strikeouts and walks") + svSortTh("xwoba", "xwOBA", sortp) + cols.map(function (c) { return svSortTh(c[0], c[1], sortp, "Percentile"); }).join(""),
+      html += trkPanel("Pitchers", "<th>Player</th><th class=\"hm\"></th><th class=\"hm\">PA</th>" + svSortTh("era", "ERA", sortp) + svSortTh("xera", "xERA", sortp, "Expected ERA, from quality of contact allowed, strikeouts and walks") + svSortTh("xwoba", "xwOBA", sortp) + cols.map(function (c) { return svSortTh(c[0], c[1], sortp, "Percentile"); }).join(""),
         prow.slice(0, 250).map(function (r) {
           var d = r.d, P = d.pct || {};
-          return "<tr>" + svWho(r.id, d) + "<td>" + f0(d.x[0]) + "</td><td>" + (d.x[7] != null ? d.x[7].toFixed(2) : "—") + "</td>" + pctCell(P.xera, d.x[8] != null ? d.x[8].toFixed(2) : "—") + pctCell(P.xwoba, f3(d.x[6])) + cols.map(function (c) { return pctCell(P[c[0]]); }).join("") + "</tr>";
+          return "<tr>" + svWho(r.id, d) + "<td class=\"hm\">" + f0(d.x[0]) + "</td><td>" + (d.x[7] != null ? d.x[7].toFixed(2) : "—") + "</td>" + pctCell(P.xera, d.x[8] != null ? d.x[8].toFixed(2) : "—") + pctCell(P.xwoba, f3(d.x[6])) + cols.map(function (c) { return pctCell(P[c[0]]); }).join("") + "</tr>";
         }).join(""), prow.length + " qualified pitchers. The last eight columns are percentiles");
     }
     if (q && !(kind === "b" ? rows : prow).length) html += '<p class="note">No qualified ' + (kind === "b" ? "hitter" : "pitcher") + ' matches "' + esc(state.q.q) + '". Savant only ranks players who met its playing-time cutoffs, so anyone who missed much of the season drops off. His card still shows what Savant has.</p>';
     html += svFoot();
     view.innerHTML = html;
   }
+  function trkPanel(title, head, body, right) { return tablePanel(title, head, body, right, "trkt"); }
   function svFoot() { return '<p class="note">From <a href="https://baseballsavant.mlb.com/" rel="noopener">Baseball Savant</a>, pulled ' + esc(SV && SV.pulled ? SV.pulled.slice(0, 10) : "—") + ". Qualified players only (Savant's own cutoffs).</p>"; }
 
   // A team's Statcast: last season's numbers for the players on its roster now, PA-weighted into team lines and ranked
@@ -833,13 +834,13 @@
       stat(me.xera != null ? me.xera.toFixed(2) : "—", "Pitchers' xERA (" + rk("xera", true) + ")") + stat(me.era != null ? (me.era - me.xera > 0 ? "+" : "") + (me.era - me.xera).toFixed(2) : "—", "ERA minus xERA") + "</div>";
     var bats = Object.keys(SV.bat).filter(function (id) { var p = H.byId[id] || H.byId[+id]; return p && p.t === abbr && SV.bat[id].x && SV.bat[id].x[0]; }).sort(function (a, b) { return SV.bat[b].x[0] - SV.bat[a].x[0]; });
     var pits = Object.keys(SV.pit).filter(function (id) { var p = H.byId[id] || H.byId[+id]; return p && p.t === abbr && SV.pit[id].x && SV.pit[id].x[0]; }).sort(function (a, b) { return SV.pit[b].x[0] - SV.pit[a].x[0]; });
-    html += tablePanel("Hitters", "<th>Player</th><th></th><th>PA</th><th>wOBA</th><th>xwOBA</th><th>xBA</th><th>xSLG</th><th>Barrel%</th><th>Avg EV</th><th>Hard hit%</th><th>Bat speed</th><th>Sprint</th>",
+    html += trkPanel("Hitters", "<th>Player</th><th class=\"hm\"></th><th class=\"hm\">PA</th><th>wOBA</th><th>xwOBA</th><th>xBA</th><th>xSLG</th><th>Barrel%</th><th>Avg EV</th><th>Hard hit%</th><th>Bat speed</th><th>Sprint</th>",
       bats.map(function (id) { var d = SV.bat[id], P = d.pct || {}, p = H.byId[id] || H.byId[+id];
-        return '<tr><td class="tm">' + pname(p, 22) + svBadge(id, false) + "</td><td></td><td>" + f0(d.x[0]) + "</td><td>" + f3(d.x[5]) + "</td>" + pctCell(P.xwoba, f3(d.x[6])) + pctCell(P.xba, f3(d.x[2])) + pctCell(P.xslg, f3(d.x[4])) + pctCell(P.brl_percent, d.ev ? f1(d.ev[3]) : "—") + pctCell(P.exit_velocity, d.ev ? f1(d.ev[0]) : "—") + pctCell(P.hard_hit_percent, d.ev ? f1(d.ev[5]) : "—") + pctCell(P.bat_speed, d.bt ? f1(d.bt[0]) : "—") + pctCell(P.sprint_speed, d.spd ? f1(d.spd[0]) : "—") + "</tr>"; }).join(""),
+        return '<tr><td class="tm">' + pname(p, 22) + svBadge(id, false) + "</td><td class=\"hm\"></td><td class=\"hm\">" + f0(d.x[0]) + "</td><td>" + f3(d.x[5]) + "</td>" + pctCell(P.xwoba, f3(d.x[6])) + pctCell(P.xba, f3(d.x[2])) + pctCell(P.xslg, f3(d.x[4])) + pctCell(P.brl_percent, d.ev ? f1(d.ev[3]) : "—") + pctCell(P.exit_velocity, d.ev ? f1(d.ev[0]) : "—") + pctCell(P.hard_hit_percent, d.ev ? f1(d.ev[5]) : "—") + pctCell(P.bat_speed, d.bt ? f1(d.bt[0]) : "—") + pctCell(P.sprint_speed, d.spd ? f1(d.spd[0]) : "—") + "</tr>"; }).join(""),
       bats.length + " qualified last season");
-    html += tablePanel("Pitchers", "<th>Player</th><th></th><th>PA</th><th>ERA</th><th>xERA</th><th>xwOBA</th><th>K%</th><th>BB%</th><th>Whiff%</th><th>Chase%</th><th>Barrel%</th><th>FB velo</th>",
+    html += trkPanel("Pitchers", "<th>Player</th><th class=\"hm\"></th><th class=\"hm\">PA</th><th>ERA</th><th>xERA</th><th>xwOBA</th><th>K%</th><th>BB%</th><th>Whiff%</th><th>Chase%</th><th>Barrel%</th><th>FB velo</th>",
       pits.map(function (id) { var d = SV.pit[id], P = d.pct || {}, p = H.byId[id] || H.byId[+id];
-        return '<tr><td class="tm">' + pname(p, 22) + svBadge(id, true) + "</td><td></td><td>" + f0(d.x[0]) + "</td><td>" + (d.x[7] != null ? d.x[7].toFixed(2) : "—") + "</td>" + pctCell(P.xera, d.x[8] != null ? d.x[8].toFixed(2) : "—") + pctCell(P.xwoba, f3(d.x[6])) + ["k_percent", "bb_percent", "whiff_percent", "chase_percent", "brl_percent", "fb_velocity"].map(function (k) { return pctCell(P[k]); }).join("") + "</tr>"; }).join(""),
+        return '<tr><td class="tm">' + pname(p, 22) + svBadge(id, true) + "</td><td class=\"hm\"></td><td class=\"hm\">" + f0(d.x[0]) + "</td><td>" + (d.x[7] != null ? d.x[7].toFixed(2) : "—") + "</td>" + pctCell(P.xera, d.x[8] != null ? d.x[8].toFixed(2) : "—") + pctCell(P.xwoba, f3(d.x[6])) + ["k_percent", "bb_percent", "whiff_percent", "chase_percent", "brl_percent", "fb_velocity"].map(function (k) { return pctCell(P[k]); }).join("") + "</tr>"; }).join(""),
       pits.length + " qualified last season; the last six columns are percentiles");
     return html + svFoot();
   }
@@ -852,16 +853,16 @@
     html += '<div class="controls">' + svSeg("k", kind, [["b", "Hitters"], ["p", "Pitchers"]]) + "</div>";
     if (kind === "b") {
       var r = Object.keys(SV.bat).map(function (id) { var d = SV.bat[id]; return d.x && d.x[5] != null && d.x[6] != null ? { id: id, d: d, gap: d.x[5] - d.x[6] } : null; }).filter(Boolean);
-      var row = function (x) { return "<tr>" + svWho(x.id, x.d) + "<td>" + f0(x.d.x[0]) + "</td><td>" + f3(x.d.x[5]) + "</td><td>" + f3(x.d.x[6]) + '</td><td class="' + (x.gap > 0 ? "neg" : "pos") + '"><b>' + (x.gap > 0 ? "+" : "") + f3(x.gap) + "</b></td><td>" + f3(x.d.x[1]) + " / " + f3(x.d.x[2]) + "</td><td>" + f3(x.d.x[3]) + " / " + f3(x.d.x[4]) + "</td></tr>"; };
-      var head = "<th>Player</th><th></th><th>PA</th><th>wOBA</th><th>xwOBA</th><th>Gap</th><th>BA / xBA</th><th>SLG / xSLG</th>";
-      html += '<div class="grid2">' + tablePanel("Due for better", head, r.slice().sort(function (a, b) { return a.gap - b.gap; }).slice(0, 25).map(row).join(""), "hit better than he got") +
-        tablePanel("Outran his contact", head, r.slice().sort(function (a, b) { return b.gap - a.gap; }).slice(0, 25).map(row).join(""), "got more than he hit") + "</div>";
+      var row = function (x) { return "<tr>" + svWho(x.id, x.d) + "<td class=\"hm\">" + f0(x.d.x[0]) + "</td><td>" + f3(x.d.x[5]) + "</td><td>" + f3(x.d.x[6]) + '</td><td class="' + (x.gap > 0 ? "neg" : "pos") + '"><b>' + (x.gap > 0 ? "+" : "") + f3(x.gap) + "</b></td><td>" + f3(x.d.x[1]) + " / " + f3(x.d.x[2]) + "</td><td>" + f3(x.d.x[3]) + " / " + f3(x.d.x[4]) + "</td></tr>"; };
+      var head = "<th>Player</th><th class=\"hm\"></th><th class=\"hm\">PA</th><th>wOBA</th><th>xwOBA</th><th>Gap</th><th>BA / xBA</th><th>SLG / xSLG</th>";
+      html += '<div class="grid2">' + trkPanel("Due for better", head, r.slice().sort(function (a, b) { return a.gap - b.gap; }).slice(0, 25).map(row).join(""), "hit better than he got") +
+        trkPanel("Outran his contact", head, r.slice().sort(function (a, b) { return b.gap - a.gap; }).slice(0, 25).map(row).join(""), "got more than he hit") + "</div>";
     } else {
       var pr = Object.keys(SV.pit).map(function (id) { var d = SV.pit[id]; return d.x && d.x[7] != null && d.x[8] != null ? { id: id, d: d, gap: d.x[7] - d.x[8] } : null; }).filter(Boolean);
-      var prow = function (x) { return "<tr>" + svWho(x.id, x.d) + "<td>" + f0(x.d.x[0]) + "</td><td>" + x.d.x[7].toFixed(2) + "</td><td>" + x.d.x[8].toFixed(2) + '</td><td class="' + (x.gap > 0 ? "pos" : "neg") + '"><b>' + (x.gap > 0 ? "+" : "") + x.gap.toFixed(2) + "</b></td><td>" + f3(x.d.x[5]) + " / " + f3(x.d.x[6]) + "</td></tr>"; };
-      var ph = "<th>Player</th><th></th><th>PA</th><th>ERA</th><th>xERA</th><th>Gap</th><th>wOBA / xwOBA</th>";
-      html += '<div class="grid2">' + tablePanel("Due for better", ph, pr.slice().sort(function (a, b) { return b.gap - a.gap; }).slice(0, 25).map(prow).join(""), "ERA above his xERA") +
-        tablePanel("Outran his contact", ph, pr.slice().sort(function (a, b) { return a.gap - b.gap; }).slice(0, 25).map(prow).join(""), "ERA below his xERA") + "</div>";
+      var prow = function (x) { return "<tr>" + svWho(x.id, x.d) + "<td class=\"hm\">" + f0(x.d.x[0]) + "</td><td>" + x.d.x[7].toFixed(2) + "</td><td>" + x.d.x[8].toFixed(2) + '</td><td class="' + (x.gap > 0 ? "pos" : "neg") + '"><b>' + (x.gap > 0 ? "+" : "") + x.gap.toFixed(2) + "</b></td><td>" + f3(x.d.x[5]) + " / " + f3(x.d.x[6]) + "</td></tr>"; };
+      var ph = "<th>Player</th><th class=\"hm\"></th><th class=\"hm\">PA</th><th>ERA</th><th>xERA</th><th>Gap</th><th>wOBA / xwOBA</th>";
+      html += '<div class="grid2">' + trkPanel("Due for better", ph, pr.slice().sort(function (a, b) { return b.gap - a.gap; }).slice(0, 25).map(prow).join(""), "ERA above his xERA") +
+        trkPanel("Outran his contact", ph, pr.slice().sort(function (a, b) { return a.gap - b.gap; }).slice(0, 25).map(prow).join(""), "ERA below his xERA") + "</div>";
     }
     view.innerHTML = html + svFoot();
   }
@@ -879,7 +880,7 @@
     var key = { rv100: function (r) { return r.a[3] || 0; }, rv: function (r) { return r.a[4] || 0; }, whiff: function (r) { return r.a[5] || 0; }, pa: function (r) { return r.a[6] || 0; }, xw: function (r) { return -(r.a[7] || 1); }, use: function (r) { return r.a[2] || 0; } }[sort] || function (r) { return r.a[3] || 0; };
     rows.sort(function (a, b) { return key(b) - key(a); });
     var flip = svRv;
-    html += tablePanel("Best pitches", "<th>Player</th><th></th><th>Pitch</th>" + svSortTh("use", "Usage", sort) + svSortTh("rv100", "Runs per 100", sort, "Runs saved per 100 pitches") + svSortTh("rv", "Runs", sort, "Runs saved over the season") + svSortTh("whiff", "Whiff%", sort) + svSortTh("pa", "Put away%", sort, "Two-strike pitches that end in a strikeout") + svSortTh("xw", "xwOBA", sort) + "<th>Hard hit%</th><th>Pitches</th>",
+    html += trkPanel("Best pitches", "<th>Player</th><th class=\"hm\"></th><th>Pitch</th>" + svSortTh("use", "Usage", sort) + svSortTh("rv100", "Runs per 100", sort, "Runs saved per 100 pitches") + svSortTh("rv", "Runs", sort, "Runs saved over the season") + svSortTh("whiff", "Whiff%", sort) + svSortTh("pa", "Put away%", sort, "Two-strike pitches that end in a strikeout") + svSortTh("xw", "xwOBA", sort) + "<th>Hard hit%</th><th>Pitches</th>",
       rows.slice(0, 200).map(function (r) { var a = r.a; return "<tr>" + svWho(r.id, r.d) + '<td style="text-align:left">' + esc(a[1]) + "</td><td>" + f1(a[2]) + "%</td><td><b>" + flip(a[3]) + "</b></td><td>" + flip(a[4]) + "</td><td>" + f1(a[5]) + "</td><td>" + f1(a[6]) + "</td><td>" + f3(a[7]) + "</td><td>" + f1(a[8]) + "</td><td>" + f0(a[9]) + "</td></tr>"; }).join(""),
       rows.length + " pitches");
     view.innerHTML = html + svFoot();
