@@ -11,8 +11,28 @@ import csv, io, json, os, sys, time, datetime, urllib.request
 B = "https://baseballsavant.mlb.com"
 OUT = "mlb/data/savant.json"
 now = datetime.date.today()
-YEAR = int(os.environ.get("SAVANT_YEAR") or (now.year if now.month >= 3 else now.year - 1))
 UA = {"User-Agent": "Mozilla/5.0 (davidsolar.dev MLB Hub; daily leaderboard pull)"}
+
+
+def _qualified_hitters(year):
+    """How many hitters qualify for Savant's expected-stats board this year (0 if it won't answer)."""
+    try:
+        u = f"{B}/leaderboard/expected_statistics?type=batter&year={year}&position=&team=&min=q&csv=true"
+        with urllib.request.urlopen(urllib.request.Request(u, headers=UA), timeout=60) as r:
+            return len(list(csv.DictReader(io.StringIO(r.read().decode("utf-8-sig")))))
+    except Exception:  # noqa: BLE001
+        return 0
+
+
+# The season to show: last year's until this year's has real data (100+ qualified hitters, a few weeks into April),
+# so spring training doesn't blank the page
+if os.environ.get("SAVANT_YEAR"):
+    YEAR = int(os.environ["SAVANT_YEAR"])
+elif now.month < 3:
+    YEAR = now.year - 1
+else:
+    YEAR = now.year if _qualified_hitters(now.year) >= 100 else now.year - 1
+print("Savant season", YEAR)
 
 URLS = {
     "xbat": f"{B}/leaderboard/expected_statistics?type=batter&year={YEAR}&position=&team=&min=q&csv=true",

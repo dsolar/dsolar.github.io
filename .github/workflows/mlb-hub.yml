@@ -53,6 +53,12 @@ jobs:
         run: |
           if [ -f tools/mlb_hub_build.py ]; then python3 tools/mlb_hub_build.py; fi
 
+      # once a year, just before opening day: save the preseason projections and last season's Statcast, so the
+      # "Lean on Statcast" setting can be backtested against what actually happened
+      - name: Spring snapshot
+        continue-on-error: true
+        run: python3 tools/mlb_snapshot.py
+
       - name: Commit
         run: |
           git add tools/mlb_hub mlb/data 2>/dev/null || git add tools/mlb_hub

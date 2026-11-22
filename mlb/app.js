@@ -566,7 +566,8 @@
     if (fx && fx.trust < 1) html += '<p class="note">' + esc(faithNote(fx.r, fx.trust, fx.proj)) + " His value below counts it the same way.</p>";
     if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
     var lk = svLuck(p.id, !!p.p);
-    if (lk && lk.tag) html += '<p class="tldr"><b>Statcast:</b> ' + lk.line + ". " + (lk.tag === "due" ? "His contact was better than his results, so expect a bounce back. A buy-low." : "His results beat his contact, so expect a step back. A sell-high.") + "</p>";
+    if (lk && lk.tag) html += '<p class="tldr"><b>Statcast:</b> ' + lk.line + ". " + (lk.tag === "due" ? "His contact was better than his results, so expect a bounce back. A buy-low." : "His results beat his contact, so expect a step back. A sell-high.") + (H.cfg.statcast && p.svd ? " With Lean on Statcast on, his projection moves " + (p.svd > 0 ? "+" : "") + p.svd.toFixed(1) + " WAR this season and half that next." : "") + "</p>";
+    else if (H.cfg.statcast && p.svd) html += '<p class="tldr"><b>Lean on Statcast:</b> ' + (lk ? lk.line + ", so h" : "H") + "is projection moves " + (p.svd > 0 ? "+" : "") + p.svd.toFixed(1) + " WAR this season and half that next.</p>";
     if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
     else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
     var stats = statTables(p);
@@ -752,6 +753,30 @@
   }
   function svExp(id, pit) { var L = svLuck(id, pit); return !L ? "—" : L.p ? L.xera.toFixed(2) : f3(L.xw); }
   function svRv(v) { return v == null ? "—" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v); }
+  // The "Lean on Statcast" lens: nudge each qualified player's projection by a third of the gap between last season's
+  // expected stats and his results, in WAR for a full season (a third because the projections already use some of
+  // what xwOBA knows). Hitters: wOBA points to runs at the wOBA scale over his projected plate appearances; pitchers:
+  // ERA against xERA over his projected innings; about 10 runs a win. Capped at a win either way. Off by default.
+  var SV_K = 1 / 3, SV_CAP = 1;
+  function svDelta(id, p, r) {
+    var L = svLuck(id, p ? !!p.p : r ? /P$|SP|RP/.test(String(r.pos || "")) : undefined);
+    if (!L) return 0;
+    var pj = (p && p.pj) || {}, d;
+    if (L.p) { var ip = pj.ip || (r && /RP/.test(String(r.pos || "")) ? 60 : 150); d = SV_K * L.gap * ip / 9 / 10; }
+    else { var pa = pj.pa || 500; d = SV_K * -L.gap / 1.25 * pa / 10; }
+    return Math.max(-SV_CAP, Math.min(SV_CAP, Math.round(d * 100) / 100));
+  }
+  function applyStatcast(on) {
+    H.svd = {};
+    H.players.forEach(function (p) { delete p.svd; });
+    if (on && SV && !SV.none) {
+      H.players.forEach(function (p) { var d = svDelta(p.id, p); if (d) { p.svd = d; H.svd[p.id] = d; } });
+      var cls = (H.fa && H.fa.classes && H.fa.classes[H.season]) || [];
+      cls.forEach(function (r) { if (r.id && H.svd[r.id] == null) { var d = svDelta(r.id, null, r); if (d) H.svd[r.id] = d; } });
+    }
+    H.set("statcast", !!on);
+    surplusCache = null;
+  }
   function svWaitNote() { return '<p class="loading">Loading Statcast…</p>'; }
   function svHead(title, lede) { return '<h2 class="sec">' + title + '</h2><p class="lede">' + lede + "</p>"; }
   function svSeg(name, cur, items) { return '<div class="svseg" role="group">' + items.map(function (x) { return '<a href="' + href(state.route, Object.assign({}, state.q, (function () { var o = {}; o[name] = x[0]; return o; })())) + '" class="' + (cur === x[0] ? "on" : "") + '" aria-pressed="' + (cur === x[0]) + '">' + x[1] + "</a>"; }).join("") + "</div>"; }
@@ -889,8 +914,16 @@
       '<label title="Seasons more than three years out count this share of the projection, compounding: projections that far ahead miss more often. 100% counts the full projection every season">Far-off seasons count %<input type="number" step="5" min="50" max="100" data-cfg="lateFade" value="' + (H.cfg.lateFade * 100).toFixed(0) + '"></label>' +
       '<label title="Teams pay for less than the full projection: a margin of safety for injuries and misses">WAR counted %<input type="number" step="5" min="50" max="100" data-cfg="haircut" value="' + (H.cfg.haircut * 100).toFixed(0) + '"></label>' +
       '<label title="Production: what he should produce. Market: what a free agent gets for that many years, length premium included (like Baseball Trade Values)">Value as<select data-cfg-lens><option value="production"' + (H.cfg.lens !== "market" ? " selected" : "") + '>Production</option><option value="market"' + (H.cfg.lens === "market" ? " selected" : "") + ">Market price</option></select></label>" +
-      '<label title="How much an unproven big leaguer\'s value (under 3 years of service and short of two full seasons\' playing time) keeps from one year to the next">Young players keep %<input type="number" step="5" min="30" max="100" data-cfg="youngFade" value="' + (H.cfg.youngFade * 100).toFixed(0) + '"></label>' + (extra || "") + "</div>";
+      '<label title="How much an unproven big leaguer\'s value (under 3 years of service and short of two full seasons\' playing time) keeps from one year to the next">Young players keep %<input type="number" step="5" min="30" max="100" data-cfg="youngFade" value="' + (H.cfg.youngFade * 100).toFixed(0) + '"></label>' +
+      '<label class="chk" title="Nudges each qualified player\'s projection by a third of the gap between last season\'s Statcast expected stats and his results: due-for-better players gain, lucky ones lose (up to a win either way). Your read, not the model: the projections already use some of this.">Lean on Statcast<input type="checkbox" data-statcast' + (H.cfg.statcast ? " checked" : "") + "></label>" + (extra || "") + "</div>";
   }
+  view.addEventListener("change", function (e) {
+    var c = e.target.closest("[data-statcast]");
+    if (!c) return;
+    var on = c.checked;
+    save("statcast", on);
+    loadSavant().then(function () { applyStatcast(on); render(); });
+  });
   view.addEventListener("change", function (e) {
     var l = e.target.closest("[data-cfg-lens]");
     if (!l) return;
@@ -1269,7 +1302,8 @@
       "<h3>Trade grades</h3><p>The Trade Builder grades each team in a two-team deal the way signings are graded: the surplus it takes in against the surplus it gives up, as a share of the bigger side (at least $20M, so a swap of spare parts doesn't swing a full letter). An even swap is a B. Winning by 8% of the deal is a B+, 18% an A-, 30% an A and 50% an A+; losing by the same steps gives a B-, C+, C, D and F. The edge is scaled by how sure it is: from both sides' value ranges, the chance the winning side really comes out ahead (P), times 2P - 1. A sure thing keeps its full edge, a 75% chance keeps half, and a coin flip grades as even, so a team that gives up steady value for a player whose seasons swing isn't handed an F. A team that takes in a hitter or starter who fills a hole (by the same test as signings) gets 8 points more room. Next season's WAR changing hands is shown beside the grade, since a contender may happily lose on surplus to win now.</p>" +
       "<h3>Production value or market price</h3><p>By default, value is what a player should produce: projected WAR, aged a year at a time, at the going rate for a win. Some trade-value sites (Baseball Trade Values, for one) value a player at what he'd get as a free agent instead. Free agent deals pay a premium for length (deals of six years or more ran about 19% over the going rate in the last five winters), so a star's long contract can look fair there and underwater here. The Value as switch on the Trade Value tab flips to market price: a remaining term of four or five years gets the premium those deals drew (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[4] : 0, 0) + "), six or more theirs (" + pct(H.cfg.lenPrem ? H.cfg.lenPrem[6] : 0, 0) + ").</p>" +
       "<h3>What it doesn't know</h3><ul><li>Trades and signings that haven't happened, beyond the switch for filling open spots.</li><li>Injuries after the first season, platoons, and teams' payroll limits.</li><li>Super Two arbitration, and anything the next CBA changes (the current one expires December 1, 2026).</li></ul>" +
-      '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p></div>";
+      '<p class="note">Data pulled ' + esc(HUB.pulled || "—") + ", built " + esc(HUB.built) + (HUB.failed && HUB.failed.length ? " (last pull missed: " + esc(HUB.failed.join(", ")) + "; using the previous copy)" : "") + ".</p>" +
+      '<h3>Statcast and the "Lean on Statcast" setting</h3><p>Baseball Savant\'s expected stats credit each batted ball by how hard and at what angle it was hit, not where it landed. Tested on every hitter and pitcher with 300+ plate appearances in back-to-back seasons from 2018 to 2026, last season\'s xwOBA predicts next season\'s wOBA better than last season\'s wOBA does (out of sample, R\u00b2 .265 against .224 for hitters, .157 against .121 for pitchers). The projections here already use quality of contact, though, so the setting is off by default and, when on, counts only a third of each player\'s gap: a hitter\'s wOBA minus xwOBA turned into runs at the wOBA scale (about 1.25) over his projected plate appearances, a pitcher\'s ERA minus xERA over his projected innings, about 10 runs a win, capped at a win either way, all of it this season and half the next. Every spring the hub saves its preseason projections and last season\'s Statcast (mlb/data/archive), so the setting can be checked against what actually happens, and made the default if it beats the projections alone.</p></div>";
   }
 
   // ---------- start ----------
@@ -1288,7 +1322,7 @@
     $("#kicker").textContent = "MLB · " + HUB.season + " projections";
     $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
-    loadSavant();
+    loadSavant().then(function () { if (load("statcast", false)) { applyStatcast(true); render(); } });
   }).catch(function (e) {
     view.innerHTML = '<p class="loading">Couldn\'t load the data. ' + esc(e.message) + "</p>";
   });

@@ -264,11 +264,14 @@
     return w * (cfg.tiered && !(p && isProspect(p)) ? tierMult(w) : 1) * dpwAt(cfg, year, season); // a prospect is priced on his grade's path
   }
 
+  // The optional Statcast lens (app.js applyStatcast sets p.svd, in WAR for a full season): last season's expected
+  // stats against his results, all of it this season and half the next, since expected stats predict the near term
+  function svNudge(p, year, season) { return p && p.svd ? p.svd * (year === season ? 1 : year === season + 1 ? 0.5 : 0) : 0; }
   // Expected WAR in a season for value purposes: the rate times a playing-time share
   function warAt(p, year, season) {
     var rate = rateAt(p, year, season);
     var dc = p.pjs === "dc" && p.pj && p.pj.war != null ? p.pj.war : null;
-    if (year === season && dc != null && p.g !== "min") return dc + pitchWarAt(p, year, season);
+    if (year === season && dc != null && p.g !== "min") return dc + pitchWarAt(p, year, season) + svNudge(p, year, season);
     // Playing time. A big leaguer: FanGraphs' share for the coming season, growing a little each year. A prospect:
     // half a season the year he arrives, then a regular's share if he's good enough (FanGraphs' share for him this
     // season only reflects that he starts it in the minors). Minor league depth that isn't a graded prospect keeps
@@ -281,7 +284,7 @@
       var share0 = dc != null && p.rate > 0.3 ? Math.max(0.15, Math.min(1.2, dc / p.rate)) : null;
       share = share0 == null ? reg : Math.min(Math.max(cap, share0), share0 + 0.05 * (year - season));
     }
-    return Math.max(-0.3, rate * share) + pitchWarAt(p, year, season);
+    return Math.max(-0.3, rate * share) + pitchWarAt(p, year, season) + svNudge(p, year, season);
   }
   // A two-way player's pitching (Ohtani): FanGraphs' pitching projection, aged on its own
   function pitchWarAt(p, year, season) {
@@ -933,6 +936,7 @@
     return cls.map(function (r) {
       var p = r.id ? self.byId[r.id] : null;
       var proj = r.wj != null ? r.wj : p && p.pj ? p.pj.war : null, trust = faith(r, self);
+      if (proj != null && self.svd && r.id && self.svd[r.id]) proj += self.svd[r.id]; // the Statcast lens, when on
       var war = proj == null ? null : proj * trust;
       var yrs = r.yrs || r.my || (war >= 3 ? 4 : war >= 1.5 ? 2 : 1);
       var age = r.age || (p ? seasonAge(p, self.season, self.season) : 30);

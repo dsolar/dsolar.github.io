@@ -340,3 +340,5 @@ td.tmc{padding-left:0;padding-right:4px}
 .pill.sv-due{background:#e2f2e8;color:#1d6b3c}
 .pill.sv-lucky{background:#fbe6e9;color:#a51f37}
 .org-row .pill{margin-left:6px}
+.controls label.chk{flex-direction:row;align-items:center;gap:8px;align-self:end;padding-bottom:7px;cursor:pointer}
+.controls label.chk input{width:16px;height:16px;accent-color:var(--accent,#c8102e)}
