@@ -1,0 +1,49 @@
+# Publishes NBA player tracking (speed and distance, drives, rim protection, hustle...) to nba/data/tracking.json.
+# stats.nba.com refuses GitHub's servers, so a weekly scheduled task pulls the feeds in a browser on nba.com
+# (tools/nba_tracking_pull.js) and drops them in Supabase; this job reads the latest drop, checks it and commits it.
+# Runs every few hours (a fresh drop shows up within a few hours), when the script or this file changes, or by hand.
+name: NBA tracking
+
+on:
+  schedule:
+    - cron: "23 */6 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/nba_tracking.py
+      - .github/workflows/nba-tracking.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-tracking
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Build the tracking file from the latest drop
+        run: python3 tools/nba_tracking.py
+
+      - name: Commit it
+        run: |
+          git add nba/data/tracking.json
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update NBA tracking"
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done

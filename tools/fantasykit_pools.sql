@@ -1601,3 +1601,40 @@ begin
 end $$;
 revoke all on function public.mm_recap_boards(text), public.mm_recap_claim(text, jsonb) from public, authenticated;
 grant execute on function public.mm_recap_boards(text), public.mm_recap_claim(text, jsonb) to anon;
+
+-- ---------- NBA tracking handoff (2026-11-22) ----------
+-- stats.nba.com refuses cloud servers, so tools/nba_tracking_pull.js runs in a browser on nba.com and drops the
+-- result here; nba-tracking.yml reads it back (tools/nba_tracking.py) and publishes nba/data/tracking.json.
+create table if not exists public.nba_tracking_drop (
+  id bigserial primary key,
+  created timestamptz not null default now(),
+  season text not null,
+  players int not null,
+  body jsonb not null
+);
+alter table public.nba_tracking_drop enable row level security;
+revoke all on public.nba_tracking_drop from anon, authenticated;
+create or replace function public.nba_tracking_put(body jsonb)
+returns json language plpgsql security definer set search_path = public as $$
+declare n int; sz int;
+begin
+  sz := octet_length(body::text);
+  if sz > 400000 then raise exception 'too large'; end if;
+  if jsonb_typeof(body) <> 'object' or coalesce(body->>'season', '') !~ '^\d{4}-\d{2}$' then raise exception 'bad season'; end if;
+  if jsonb_typeof(body->'cols') <> 'array' or jsonb_array_length(body->'cols') > 80 then raise exception 'bad cols'; end if;
+  if jsonb_typeof(body->'p') <> 'object' then raise exception 'bad players'; end if;
+  select count(*) into n from jsonb_object_keys(body->'p');
+  if n < 150 or n > 900 then raise exception 'unexpected player count %', n; end if;
+  if exists (select 1 from nba_tracking_drop where created > now() - interval '10 minutes') then raise exception 'too soon'; end if;
+  insert into nba_tracking_drop (season, players, body) values (body->>'season', n, body);
+  delete from nba_tracking_drop where id not in (select id from nba_tracking_drop order by id desc limit 5);
+  return json_build_object('ok', true, 'players', n, 'bytes', sz);
+end $$;
+create or replace function public.nba_tracking_get()
+returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('created', created, 'body', body) from nba_tracking_drop order by id desc limit 1
+$$;
+revoke all on function public.nba_tracking_put(jsonb) from public;
+revoke all on function public.nba_tracking_get() from public;
+grant execute on function public.nba_tracking_put(jsonb) to anon, authenticated;
+grant execute on function public.nba_tracking_get() to anon, authenticated;
