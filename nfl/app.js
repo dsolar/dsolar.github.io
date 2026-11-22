@@ -85,11 +85,11 @@
     state.route = parts[0] || "standings"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
   }
   // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
-  var GROUP = { standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", contracts: "players", fa: "moves", trade: "moves" };
+  var GROUP = { standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", contracts: "players", fa: "moves", trade: "moves" };
   var SUBS = {
     standings: [["standings", "Standings"], ["power", "Power rankings"]],
     teams: [["teams", "Teams"], ["offseason", "Offseason"], ["cap", "League cap"]],
-    players: [["players", "Players"], ["contracts", "Contracts"]],
+    players: [["players", "Players"], ["ngs", "Next Gen Stats"], ["contracts", "Contracts"]],
     moves: [["fa", "Free agents"], ["trade", "Trade value"]]
   };
   function render() {
@@ -104,7 +104,7 @@
     var st = $("#subtabs");
     st.hidden = false;
     st.innerHTML = subs.map(function (x) { return '<a href="' + href(x[0], {}) + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
-    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
   }
   window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
 
@@ -849,7 +849,7 @@
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) + " · age " + (p.age ? Math.floor(p.age) : "—") + " · " + p.exp + " yrs exp" + (p.draft ? " · " + p.draft[0] + " pick " + p.draft[1] : "") + "</div></div></div>";
     html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
       "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value this season</span></div><div><b>" + m(P.value(W, p, W.season + 1)) + "</b><span>Value next season</span></div></div>" + ratingBlock(p) + nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
-    html += statBlock(p) + '<div id="glog"></div>';
+    html += statBlock(p) + '<div id="ngsc"></div><div id="glog"></div>';
     if (ys.length) {
       html += '<h4 class="card-sec">Contract year by year</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th title="Base salary">Base</th><th title="Signing and option bonus money counted this year">Bonus</th><th title="Roster, workout and other bonuses">Other</th><th title="Guaranteed salary">Gtd</th><th>Cap hit</th><th title="Dead money if cut before June 1">Dead</th><th title="Cap saved by cutting him before June 1">Saves</th><th title="Cap saved with a post-June 1 cut">June 1</th></tr></thead><tbody>' + ys.map(function (y) {
         var r = c.rows[y], cut = !r[C.R.void] ? C.effect(p, { kind: "cut", year: y }) : null, june = !r[C.R.void] ? C.effect(p, { kind: "cutJune", year: y }) : null;
@@ -863,6 +863,72 @@
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
     gameLog(p);
+    ngsCard(p);
+  }
+  // ---------- Next Gen Stats ----------
+  // nfl/data/ngs.json from tools/nfl_ngs.py: NGS's qualified season totals by GSIS id, in three pools (qb, rb, rec),
+  // each player's numbers in x (order in NG.cols[pool]) and percentiles within his position in pct
+  var NG = null, ngWait = null;
+  function loadNgs() {
+    if (!ngWait) ngWait = fetch("data/ngs.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (j) { NG = j || { cols: {}, qb: {}, rb: {}, rec: {}, none: true }; return NG; });
+    return ngWait;
+  }
+  // label, key, decimals, tooltip; the pool's percentile (when it has one) shades the cell
+  var NGCOLS = {
+    qb: [["Att", "att", 0], ["Yds", "yds", 0], ["TD", "td", 0], ["INT", "int", 0], ["Rating", "rate", 1], ["Cmp%", "cmp", 1], ["xCmp%", "xcmp", 1, "Expected completion %: how often an average passer completes these same throws, from receiver separation, distance, pressure and more"], ["CPOE", "cpoe", 1, "Completion % over expected"], ["Time to throw", "ttt", 2, "Seconds from snap to release"], ["Air yds", "iay", 1, "Average air yards per attempt"], ["Air yds (comp)", "cay", 1, "Average air yards per completion"], ["Air yds to sticks", "sticks", 1, "How far past (or short of) the first-down marker his throws travel"], ["Tight window%", "aggr", 1, "Share of throws into tight coverage (a defender within a yard)"]],
+    rb: [["Att", "att", 0], ["Yds", "yds", 0], ["Yds/att", "ypc", 1], ["TD", "td", 0], ["RYOE", "ryoe", 0, "Rush yards over expected: yards beyond what an average back would gain from the same blocking and defenders"], ["RYOE/att", "ryoe_att", 2], ["Beat expected", "beat", 1, "Share of carries that gained more than expected"], ["Efficiency", "eff", 2, "Yards run per yard gained: lower is a more north-south runner"], ["8+ in box%", "box8", 1, "Share of carries against eight or more defenders in the box"], ["Time to LOS", "tlos", 2, "Seconds to reach the line of scrimmage"]],
+    rec: [["Tgt", "tgt", 0], ["Rec", "rec", 0], ["Yds", "yds", 0], ["TD", "td", 0], ["Catch%", "catch", 1], ["Separation", "sep", 2, "Yards from the nearest defender when the ball arrives or the pass is thrown"], ["Cushion", "cush", 2, "Yards between him and his defender at the snap"], ["Air yds", "iay", 1, "Average depth of his targets"], ["Air yds share", "share", 1, "His share of his team's intended air yards"], ["YAC", "yac", 1, "Yards after catch per reception"], ["xYAC", "xyac", 1], ["YAC over exp.", "yacoe", 2, "YAC per catch beyond what an average receiver gets on the same catches"]]
+  };
+  function ngColor(v) {
+    if (v == null) return "transparent";
+    var t = Math.max(0, Math.min(100, v)) / 100, mix = function (a, b, k) { return Math.round(a + (b - a) * k); };
+    var c = t < 0.5 ? [mix(54, 222, t * 2), mix(97, 222, t * 2), mix(173, 222, t * 2)] : [mix(222, 210, (t - 0.5) * 2), mix(222, 45, (t - 0.5) * 2), mix(222, 73, (t - 0.5) * 2)];
+    return "rgb(" + c.join(",") + ")";
+  }
+  function ngInk(v) { return v != null && (v >= 80 || v <= 20) ? "#fff" : "inherit"; }
+  function ngFmt(v, d) { return v == null ? "—" : d ? v.toFixed(d) : String(Math.round(v)); }
+  function ngPool(g) { return g === "QB" ? "qb" : g === "RB" ? "rb" : "rec"; }
+  function ngsPage() {
+    if (!NG) { view.innerHTML = '<p class="loading">Loading Next Gen Stats…</p>'; loadNgs().then(function () { if (state.route === "ngs") render(); }); return; }
+    var g = /^(QB|RB|WR|TE)$/.test(state.q.g) ? state.q.g : "QB", pool = ngPool(g), cols = NGCOLS[pool], idx = {};
+    (NG.cols[pool] || []).forEach(function (k, i) { idx[k] = i; });
+    var sort = idx[state.q.s] != null ? state.q.s : { qb: "cpoe", rb: "ryoe", rec: "sep" }[pool], dir = state.q.d === "asc" ? 1 : -1, sq = (state.q.q || "").toLowerCase();
+    var rows = Object.keys(NG[pool] || {}).map(function (id) { return { id: id, d: NG[pool][id] }; })
+      .filter(function (r) { return (pool !== "rec" || r.d.pos === g) && (!sq || String(r.d.n).toLowerCase().indexOf(sq) >= 0); });
+    var val = function (r) { var v = r.d.x[idx[sort]]; return v == null ? -dir * 1e9 : v; };
+    rows.sort(function (a, b) { return dir * (val(a) - val(b)); });
+    var th = function (c) {
+      var on = c[1] === sort, nd = on && dir < 0 ? "asc" : null;
+      return '<th><a href="' + href("ngs", Object.assign({}, state.q, { s: c[1], d: nd })) + '"' + (on ? ' class="on"' : "") + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[0] + (on ? (dir < 0 ? " ↓" : " ↑") : "") + "</a></th>";
+    };
+    var html = '<h2 class="sec">Next Gen Stats</h2><p class="lede">The NFL\'s player tracking numbers: chips in every player\'s shoulder pads record where everyone is ten times a second. Over expected stats compare each player with what an average player would do in the same spots. Shaded cells are percentiles within the position: red is good, blue is bad. Click a column to sort, a player for his card.</p>';
+    html += '<div class="controls"><label>Position<select data-q="g">' + [["QB", "Quarterbacks"], ["RB", "Running backs"], ["WR", "Wide receivers"], ["TE", "Tight ends"]].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === g ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + '</select></label><label>Search<input type="search" data-q="q" value="' + esc(state.q.q || "") + '" placeholder="Player"></label></div>';
+    html += tablePanel({ QB: "Quarterbacks", RB: "Running backs", WR: "Wide receivers", TE: "Tight ends" }[g] + " · " + rows.length, "<th>Player</th><th>Team</th>" + cols.map(th).join(""),
+      rows.map(function (r) {
+        var p = W.byId[r.id], P2 = r.d.pct || {};
+        return "<tr><td>" + (p ? pname(p, 24) : esc(r.d.n)) + '</td><td class="tm">' + logo(r.d.t, 18) + '<span class="nm">' + esc(r.d.t) + "</span></td>" + cols.map(function (c) {
+          var v = r.d.x[idx[c[1]]], pc = P2[c[1]];
+          return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + pc + 'th percentile">' + ngFmt(v, c[2]) + "</td>";
+        }).join("") + "</tr>";
+      }).join(""), "qualified players, " + (NG.season || "") + " through week " + (NG.week || "—"));
+    html += '<p class="note">From the NFL\'s <a href="https://nextgenstats.nfl.com/" rel="noopener">Next Gen Stats</a> via nflverse, pulled ' + esc((NG.pulled || "").slice(0, 10)) + ". Only qualified players are listed (NGS's own cutoffs: about 14 attempts a game for quarterbacks, 6.25 carries for backs, 1.875 catches for receivers).</p>";
+    view.innerHTML = html;
+  }
+  function ngsCard(p) {
+    var el = document.getElementById("ngsc");
+    if (!el) return;
+    var draw = function () {
+      var pool = ngPool(P.group(p)), d = NG && NG[pool] && NG[pool][p.id];
+      if (!d) { el.innerHTML = ""; return; }
+      var idx = {}; (NG.cols[pool] || []).forEach(function (k, i) { idx[k] = i; });
+      var bars = NGCOLS[pool].filter(function (c) { return d.pct && d.pct[c[1]] != null; });
+      var plain = NGCOLS[pool].filter(function (c) { return !(d.pct && d.pct[c[1]] != null) && !/^(att|yds|td|int|tgt|rec)$/.test(c[1]); });
+      el.innerHTML = '<h4 class="card-sec">Next Gen Stats <small class="note">percentile among ' + (pool === "rec" ? d.pos + "s" : pool === "qb" ? "QBs" : "RBs") + "</small></h4>" +
+        '<div class="ngbars">' + bars.map(function (c) { var v = d.pct[c[1]]; return '<div class="ngb"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><span>" + c[0] + " <small>" + ngFmt(d.x[idx[c[1]]], c[2]) + '</small></span><i><em style="width:' + Math.max(4, v) + "%;background:" + ngColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + ngColor(v) + ";color:" + (v >= 80 || v <= 20 ? "#fff" : "#1b2433") + '">' + v + "</b></i></div>"; }).join("") + "</div>" +
+        '<div class="kv stats-kv">' + plain.map(function (c) { return "<div" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><b>" + ngFmt(d.x[idx[c[1]]], c[2]) + "</b><span>" + c[0] + "</span></div>"; }).join("") + "</div>";
+    };
+    if (NG) draw(); else loadNgs().then(draw);
   }
   // The rating and its two parts
   // His next deal, for players whose contracts end within two seasons: the estimate and the deals behind it

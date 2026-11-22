@@ -41,6 +41,11 @@ jobs:
       - name: Build the league file
         run: python3 tools/nfl_pull.py
 
+      # NFL Next Gen Stats (separation, CPOE, rush yards over expected...) from nflverse's copies; a miss keeps the last file
+      - name: Pull Next Gen Stats
+        continue-on-error: true
+        run: python3 tools/nfl_ngs.py
+
       # The on-field rating rests on the last two seasons of play-by-play, which only change in the offseason, so
       # rebuild it on Mondays (or when the script changes) rather than every day
       - name: Build the player rating
@@ -57,7 +62,7 @@ jobs:
 
       - name: Commit it
         run: |
-          git add nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json
+          git add nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json nfl/data/ngs.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0

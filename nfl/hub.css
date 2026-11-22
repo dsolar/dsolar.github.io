@@ -284,3 +284,12 @@ table.tcon th.on a{text-decoration:underline;text-underline-offset:3px}
 table.tfeed th,table.tfeed td{text-align:left}
 table.tfeed tr.stale td{color:#b42318}
 @media (max-width:640px){ table.tfeed th:nth-child(3),table.tfeed td:nth-child(3){display:none} }
+/* Next Gen Stats: percentile cells and the card's bars */
+td.ngc{font-variant-numeric:tabular-nums;font-weight:700}
+.ngbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:8px 22px;margin:6px 0 12px}
+.ngb{display:grid;grid-template-columns:128px 1fr;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--muted)}
+.ngb small{font-weight:600;color:var(--faint,#8a93a3)}
+.ngb i{position:relative;display:block;height:8px;border-radius:4px;background:var(--rule);margin-right:14px}
+.ngb em{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.ngb b{position:absolute;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11.5px;font-weight:800;box-shadow:0 0 0 2px var(--card,#fff)}
+.card-sec small{text-transform:none;letter-spacing:0;font-weight:500}
