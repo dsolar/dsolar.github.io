@@ -8,7 +8,8 @@ const round=(x,n=1)=>finite(x)?Math.round(Number(x)*10**n)/10**n:null;
 const key=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]/g,"");
 const teamMetric=(t,k)=>num(t&&t.metrics&&t.metrics[k]);
 const em=t=>{const o=teamMetric(t,"adjO"),d=teamMetric(t,"adjD");return o!==null&&d!==null?o-d:null;};
-const HOME_EDGE=3,SPREAD_SD=11;
+const HOME_EDGE=3;let SPREAD_SD=11; // the page sets the measured width from extras.json (spreadSd) with setSpreadSd
+const setSpreadSd=v=>{if(v!==null&&v!==undefined&&Number.isFinite(Number(v)))SPREAD_SD=Number(v);};
 const phi=z=>{const t=1/(1+0.3275911*Math.abs(z)/Math.SQRT2),y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z/2);return 0.5*(1+(z<0?-y:y));};
 const leagueAvg=teams=>mean(teams.map(t=>teamMetric(t,"adjO")));
 // Projected score from adjusted efficiency and tempo. tools/cbb_extras.py logs the same line before each game.
@@ -120,5 +121,5 @@ function gamesFromESPN(data,byId,season){
  }
  return out;
 }
-return {gameScore,HOME_EDGE,SPREAD_SD,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
+return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });

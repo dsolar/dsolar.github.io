@@ -18,7 +18,8 @@ HUB = ROOT / "cbb/data/hub.json"
 WATCH = ROOT / "cbb/data/naismith-watch.json"
 OUT = ROOT / "cbb/data/extras.json"
 HOME_EDGE = 3.0   # points, split evenly between the two teams' projected scores
-SPREAD_SD = 11.0  # typical miss of a college basketball point spread, in points
+SPREAD_SD = 11.0  # typical miss of a college basketball point spread, in points; recalibrated each run by calibrate_sd
+SD_FLOOR, SD_CEIL, SD_N, SD_MIN = 10.5, 14.5, 400, 150
 KEEP_DAYS = 120
 RESUME = 1.0      # selection score = rating (points per game vs average) + RESUME x Wins Above Bubble
 SWING_DAYS = 7    # games this far ahead get win/loss splits of every team's tournament odds
@@ -390,12 +391,29 @@ def ny_today():
     return datetime.now(ZoneInfo("America/New_York")).date()
 
 
+def calibrate_sd(prior):
+    """Win odds come from the spread through a normal curve whose width is the typical miss. Measure it instead of
+    assuming it: the standard deviation of (actual margin - hub spread) over the last SD_N graded games, kept between
+    SD_FLOOR and SD_CEIL. Early-season ratings miss by more (13.5 points in November 2026, when an assumed 11 made the
+    hub overconfident: its 80-95% calls won 73%), and the width tightens on its own as the ratings settle."""
+    global SPREAD_SD
+    gs = [g for g in ((prior.get("lines") or {}).get("games") or {}).values() if g.get("final") and g.get("spread") is not None]
+    gs = sorted(gs, key=lambda g: g.get("day", ""))[-SD_N:]
+    if len(gs) < SD_MIN:
+        return
+    res = [(g["final"][0] - g["final"][1]) - g["spread"] for g in gs]
+    m = sum(res) / len(res)
+    sd = (sum((r - m) ** 2 for r in res) / (len(res) - 1)) ** 0.5
+    SPREAD_SD = round(min(SD_CEIL, max(SD_FLOOR, sd)), 1)
+
+
 def main():
     hub = read(HUB)
     if not hub or not hub.get("teams"):
         sys.exit("cbb/data/hub.json is missing; run tools/cbb_build.py first")
     watch = read(WATCH, {"players": []})
     prior = read(OUT, {}) or {}
+    calibrate_sd(prior)
     today = ny_today()
     stamp = datetime.now(timezone.utc).isoformat()
     teams = hub["teams"]
