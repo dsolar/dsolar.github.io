@@ -82,14 +82,28 @@
     if (i >= 0) { qs = h.slice(i + 1); h = h.slice(0, i); }
     var parts = h.split("/").filter(Boolean), q = {};
     qs.split("&").forEach(function (kv) { if (!kv) return; var a = kv.split("="); q[a[0]] = decodeURIComponent(a[1] || ""); });
-    state.route = parts[0] || "league"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
+    state.route = parts[0] || "standings"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
   }
+  // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
+  var GROUP = { standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", contracts: "players", fa: "moves", trade: "moves" };
+  var SUBS = {
+    standings: [["standings", "Standings"], ["power", "Power rankings"]],
+    teams: [["teams", "Teams"], ["offseason", "Offseason"], ["cap", "League cap"]],
+    players: [["players", "Players"], ["contracts", "Contracts"]],
+    moves: [["fa", "Free agents"], ["trade", "Trade value"]]
+  };
   function render() {
     parse();
+    var cur = state.route === "team" ? "teams" : state.route === "league" ? "cap" : state.route, group = GROUP[state.route] || "standings", subs = SUBS[group];
+    if (subs.some(function (x) { return x[0] === cur; })) save("sub." + group, cur);
     document.querySelectorAll(".tabs a").forEach(function (a) {
-      var on = a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team") || (a.dataset.tab === "cap" && state.route === "league");
-      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      var last = load("sub." + a.dataset.tab, null);
+      if (last && SUBS[a.dataset.tab]) a.setAttribute("href", href(last, {}));
     });
+    var st = $("#subtabs");
+    st.hidden = false;
+    st.innerHTML = subs.map(function (x) { return '<a href="' + href(x[0], {}) + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
     ({ standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
   }
   window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
@@ -1025,7 +1039,7 @@
     W.games = r[0].games || []; W.stats = r[0].stats || null; W.week = r[0].week || 10;
     SIM = S.simulate(W.games, Object.keys(S.divOf), { sims: 6000 });
     W.sim = SIM;
-    $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts.";
+    $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts." + ' <a href="#/method">How it works</a>.';
     render();
     setTimeout(warmTrade, 1200);
   }).catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });

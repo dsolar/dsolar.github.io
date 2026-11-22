@@ -9,7 +9,7 @@
 
   // Each hub's address for a kind of page. Kinds: standings, teams, contracts, value, builder, fa, method
   var TO = {
-    mlb: { standings: "#standings", teams: "#teams", contracts: "#contracts", value: "#value", builder: "#trade", fa: "#fa", method: "#method" },
+    mlb: { standings: "#standings", teams: "#teams", contracts: "#team/BOS?view=money", value: "#value", builder: "#trade", fa: "#fa", method: "#method" },
     nba: { standings: "#/standings", teams: "#/teams", contracts: "#/contracts/BOS", value: "#/value", builder: "#/trade", fa: "#/fa", method: "#/method" },
     nfl: { standings: "#/standings", teams: "#/teams", contracts: "#/cap", value: "#/trade", builder: "#/trade", fa: "#/fa", method: "#/method" },
     // its player ratings stand in for the other hubs' value boards

@@ -84,8 +84,19 @@
 
   function render() {
     parse();
-    var r = state.route, tab = r === "team" ? "teams" : r;
-    document.querySelectorAll(".tabs a").forEach(function (a) { if (a.dataset.tab === tab) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+    // Three sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
+    var r = state.route, GROUP = { standings: "standings", teams: "teams", team: "teams", contracts: "teams", players: "players", stats: "players" };
+    var SUBS = { teams: [["teams", "Teams"], ["contracts", "Contracts"]], players: [["players", "Player ratings"], ["stats", "Stats"], ["", "Fantasy NHL ↗", "../fantasy/nhl/"]] };
+    var group = GROUP[r] || "standings", cur = r === "team" ? "teams" : r, subs = SUBS[group];
+    if (subs && subs.some(function (x) { return x[0] === cur; })) { try { localStorage.setItem("nhl.sub." + group, cur); } catch (e) { /* private mode */ } }
+    document.querySelectorAll(".tabs a").forEach(function (a) {
+      if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      var last = null; try { last = localStorage.getItem("nhl.sub." + a.dataset.tab); } catch (e) { /* private mode */ }
+      if (last && SUBS[a.dataset.tab]) a.setAttribute("href", "#/" + last);
+    });
+    var stb = document.getElementById("subtabs");
+    stb.hidden = !subs;
+    if (subs) stb.innerHTML = subs.map(function (x) { return x[2] ? '<a href="' + x[2] + '">' + x[1] + "</a>" : '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
     if (r === "teams") view.innerHTML = teamsView();
     else if (r === "team" && TEAMS[state.arg]) view.innerHTML = teamView(TEAMS[state.arg]);
     else if (r === "players") view.innerHTML = playersView();
@@ -587,7 +598,7 @@
     H = d;
     H.teams.forEach(function (t) { TEAMS[t.abbr] = t; });
     H.players.forEach(function (p) { PLAYERS[p.id] = p; (ROSTER[p.team] = ROSTER[p.team] || []).push(p); });
-    $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Contracts from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset (CC0). Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + ".";
+    $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Contracts from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset (CC0). Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + '. <a href="#/method">How it works</a>.';
     render();
   }).catch(function () { view.innerHTML = '<p class="loading">The hub didn\'t load. Try again in a minute.</p>'; });
 })();

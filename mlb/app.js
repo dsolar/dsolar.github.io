@@ -119,14 +119,22 @@
     var y = +q.y;
     state.year = y && y >= H.season && y < H.season + H.cfg.years ? y : (state.year || H.season);
   }
+  // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
+  var GROUP = { standings: "standings", teams: "teams", team: "teams", value: "trades", trade: "trades", fa: "fa" };
   function render() {
     parse();
+    var money = state.route === "team" && state.q.view === "money", group = GROUP[state.route] || "standings";
+    var moneyHref = href("team/" + (state.route === "team" && state.arg ? state.arg.toUpperCase() : load("team", "BOS")), { view: "money" });
+    var SUBS = { teams: [["teams", "Teams", href("teams", {})], ["money", "Contracts", moneyHref]], trades: [["value", "Trade value", href("value", {})], ["trade", "Builder", href("trade", {})]] };
+    var cur = money ? "money" : state.route === "team" ? "teams" : state.route, subs = SUBS[group];
+    if (subs && (state.route === "value" || state.route === "trade")) save("sub.trades", state.route);
     document.querySelectorAll(".tabs a").forEach(function (a) {
-      var money = state.route === "team" && state.q.view === "money";
-      var on = a.dataset.tab === "contracts" ? money : a.dataset.tab === state.route || (a.dataset.tab === "teams" && state.route === "team" && !money);
-      if (a.dataset.tab === "contracts") a.setAttribute("href", href("team/" + (state.route === "team" && state.arg ? state.arg.toUpperCase() : load("team", "BOS")), { view: "money" }));
-      if (on) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      if (a.dataset.tab === group) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
+      if (a.dataset.tab === "trades") a.setAttribute("href", href(load("sub.trades", "value"), {}));
     });
+    var st = $("#subtabs");
+    st.hidden = !subs;
+    if (subs) st.innerHTML = subs.map(function (x) { return '<a href="' + x[2] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
     var withYears = state.route === "standings" || state.route === "team";
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
@@ -1083,7 +1091,7 @@
     fillBox.checked = f;
     H.set("fill", f);
     $("#kicker").textContent = "MLB · " + HUB.season + " projections";
-    $("#foot").textContent = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + (HUB.pulled || "—") + ". Photos from MLB.";
+    $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
   }).catch(function (e) {
     view.innerHTML = '<p class="loading">Couldn\'t load the data. ' + esc(e.message) + "</p>";
