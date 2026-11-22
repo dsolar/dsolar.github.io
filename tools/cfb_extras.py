@@ -26,7 +26,8 @@ OUT = ROOT / "cfb/data/extras.json"
 NY = ZoneInfo("America/New_York")
 
 HFA = 2.5          # home-field edge in points, applied to the spread (split across the two projected scores)
-SD = 14.0          # typical miss of a college football point spread, in points
+SD = 14.0          # typical miss of a college football point spread, in points; recalibrated each run by calibrate_sd
+SD_FLOOR, SD_CEIL, SD_N, SD_MIN = 15.0, 18.0, 400, 150   # see calibrate_sd
 DRIFT = 3.5        # season-long uncertainty in a team's true rating for the simulation, in points
 FPI_WEIGHT = 0.5   # share of the power rating from ESPN FPI; the rest from the hub's own points model
 SP_WEIGHT = 1 / 3  # when SP+ is available (CFBD), power is a third each: FPI, SP+ and the points model
@@ -105,6 +106,21 @@ def line(h, a, neutral, R, base):
     hp, ap = (total + spread) / 2, (total - spread) / 2
     hp = max(hp, 3.0); ap = max(ap, 3.0)
     return {"spread": round(spread, 1), "total": round(hp + ap, 1), "hp": round(hp, 1), "ap": round(ap, 1), "prob": round(phi(spread / SD), 3)}
+
+
+def calibrate_sd(prior):
+    """Width of the normal curve that turns a spread into win odds. The closing line missed by 15.0 points (standard
+    deviation) across 801 games in 2026, and the hub's lines are less accurate than the close, so 15 is the floor.
+    Once SD_MIN games are graded, use the hub's own measured miss over its last SD_N games (capped at SD_CEIL)."""
+    global SD
+    gs = [g for g in ((prior.get("lines") or {}).get("games") or {}).values() if g.get("final") and g.get("spread") is not None]
+    gs = sorted(gs, key=lambda g: g.get("day", ""))[-SD_N:]
+    sd = SD_FLOOR
+    if len(gs) >= SD_MIN:
+        res = [(g["final"][0] - g["final"][1]) - g["spread"] for g in gs]
+        mu = sum(res) / len(res)
+        sd = (sum((r - mu) ** 2 for r in res) / (len(res) - 1)) ** 0.5
+    SD = round(min(SD_CEIL, max(SD_FLOOR, sd)), 1)
 
 
 def calibrate_totals(games, R, base, fcs):
@@ -452,6 +468,7 @@ def main():
     if not hub:
         raise SystemExit("cfb/data/hub.json is missing; run tools/cfb_build.py first")
     old = read(OUT, {}) or {}
+    calibrate_sd(old)
     today = datetime.now(NY).date()
     teams = {t["id"]: t for t in hub["teams"]}
     fbs = list(teams)
