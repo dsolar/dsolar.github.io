@@ -234,11 +234,23 @@
     var html = '<h2 class="sec">Player rankings</h2><p class="lede">Ranked by the player rating (50 is an average starter-level player at the position): his on-field plus-minus from the last two seasons of play-by-play, blended with this season\'s production. EPA is expected points added: how much each play moved the team\'s chances of scoring. The average run loses a little (' + baselines().rush.toFixed(2) + " per carry) and the average target gains some (+" + baselines().rec.toFixed(2) + "), so backs and receivers are measured against those averages: \"EPA vs avg\" is how many points better than an average player he's been on his touches." + ' Linemen have no box-score stats, so their rating is all on-field. Tap a player for his stats, game log and contract.</p>';
     html += '<div class="controls"><label>Position<select data-q="g">' + Object.keys(GROUP_NAME).map(function (k) { return '<option value="' + k + '"' + (k === g ? " selected" : "") + ">" + GROUP_NAME[k] + "</option>"; }).join("") + '</select></label><label>Team<select data-q="t"><option value="">All teams</option>' + codes().map(function (c) { return '<option value="' + c + '"' + (c === tm ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></label></div>";
     var cols = (R ? R.cols : []).concat([["Snaps", "_share"]]);
-    html += tablePanel(GROUP_NAME[g] + " · " + rows.length, "<th>#</th><th>Player</th><th>Team</th><th>Age</th><th>Rating</th><th>G</th>" + cols.map(function (c) { return "<th>" + c[0] + "</th>"; }).join("") + "<th>2026 cap</th><th>Value</th>",
+    // Next Gen Stats beside the rating for the skill spots, shaded by percentile at the position (loads after the page)
+    var NGK = { QB: [["CPOE", "cpoe", 1], ["Time to throw", "ttt", 2]], RB: [["RYOE/att", "ryoe_att", 2], ["Beat exp.", "beat", 1]], WR: [["Separation", "sep", 2], ["YAC over exp.", "yacoe", 2]], TE: [["Separation", "sep", 2], ["YAC over exp.", "yacoe", 2]] }[g] || [];
+    if (NGK.length && !NG) loadNgs().then(function () { if (state.route === "players") render(); });
+    var ngPoolK = ngPool(g), ngIdx = {};
+    if (NG && NG.cols && NG.cols[ngPoolK]) NG.cols[ngPoolK].forEach(function (k, i) { ngIdx[k] = i; });
+    var ngCell = function (p, c) {
+      var d = NG && NG[ngPoolK] && NG[ngPoolK][p.id];
+      if (!d) return "<td>" + (NG ? "—" : "…") + "</td>";
+      var v = d.x[ngIdx[c[1]]], pc = (d.pct || {})[c[1]];
+      return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + ngOrd(pc) + ' percentile">' + ngFmt(v, c[2]) + "</td>";
+    };
+    html += tablePanel(GROUP_NAME[g] + " · " + rows.length, "<th>#</th><th>Player</th><th>Team</th><th>Age</th><th>Rating</th><th>G</th>" + cols.map(function (c) { return "<th>" + c[0] + "</th>"; }).join("") + NGK.map(function (c) { return '<th title="Next Gen Stats, qualified players">' + c[0] + "</th>"; }).join("") + "<th>2026 cap</th><th>Value</th>",
       rows.slice(0, 100).map(function (x, i) {
         var p = x.p, s = x.s || {};
         return "<tr><td>" + (i + 1) + "</td><td>" + pname(p, 24, x.cc ? ' <span class="pill warn" title="' + esc(x.cc.why) + '">cap casualty?</span>' : "") + '</td><td class="tm">' + logo(p.t, 18) + '<span class="nm">' + esc(p.t) + "</span></td><td>" + (p.age ? Math.floor(p.age) : "—") + "</td><td>" + scoreChip(p) + "</td><td>" + (s.games || (p.snaps ? p.snaps[3] : "—")) + "</td>" +
           cols.map(function (c) { if (c[1] === "_share") return "<td>" + Math.round(P.share(W, p) * 100) + "%</td>"; var v = statVal(s, c[1]); return "<td>" + (v == null ? "—" : Math.abs(v % 1) > 0.001 ? v.toFixed(1) : v) + "</td>"; }).join("") +
+          NGK.map(function (c) { return ngCell(p, c); }).join("") +
           "<td>" + m(C.capHit(p, 2026)) + "</td><td>" + m(P.value(W, p, 2026)) + "</td></tr>";
       }).join(""), "ranked on the player rating: on-field plus-minus and three seasons of production", "rank");
     view.innerHTML = html;

@@ -428,6 +428,7 @@
     function val(p) {
       if (s === "war") return p.war; if (s === "gar_now") return p.gar_now == null ? -99 : p.gar_now;
       if (s === "age") return -(p.age || 0); if (s === "gsax60") return p.gsax60;
+      if (s.indexOf("e:") === 0) { var ex = EDGE && (g === "G" ? EDGE.g : EDGE.sk)[p.id], em = ex && ex[s.slice(2)]; return em ? em[0] : -1e9; }
       return p.comp ? p.comp[s] : 0;
     }
     list.sort(function (a, b) { return val(b) - val(a); });
@@ -441,14 +442,20 @@
       H.teams.slice().sort(function (a, b) { return a.name < b.name ? -1 : 1; }).map(function (t) { return '<option value="' + t.abbr + '"' + (t.abbr === team ? " selected" : "") + ">" + esc(t.name) + "</option>"; }).join("") +
       '</select></label><label>Find<input type="search" id="pfind" placeholder="Player name" value="' + esc(q.q || "") + '"></label></div>';
     var cols = g === "G" ? [["war", "WAR/58", "Wins above replacement over 58 starts"], ["gsax60", "GSAx/60", "Goals saved above expected a 60 minutes, regressed: the talent estimate"], ["gar_now", "This season", "Goals above replacement so far this season"]] : SK_COLS;
+    // NHL Edge beside the rating, shaded by the league's percentile (loads after the page)
+    var ecols = g === "G" ? [["e:high.savePctg", "HD Sv%", "NHL Edge: save % on shots from the slot and crease this season", "v"]] : [["e:speedMax", "Top speed", "NHL Edge: fastest skating speed this season, mph", "s"], ["e:sog.high.shots", "HD shots", "NHL Edge: shots on goal from the slot and crease this season", "n"]];
+    if (!EDGE) loadEdge();
+    cols = cols.concat(ecols);
     h += '<div class="div"><table class="t ptab"><thead><tr><th>#</th><th>Player</th><th class="hide-m">Team</th><th>Pos</th><th class="hide-m">Age</th><th class="hide-m">Tier</th>' +
       cols.map(function (c, i) { return '<th class="sort' + (s === c[0] ? " on" : "") + (i > 0 ? " hide-m" : "") + '" data-s="' + c[0] + '" title="' + esc(c[2]) + '">' + c[1] + (s === c[0] ? " ▾" : "") + "</th>"; }).join("") + "</tr></thead><tbody>" +
       shown.map(function (p, i) {
         var t = TEAMS[p.team];
         var cells = g === "G" ? ["<b>" + f1(p.war) + "</b>", sgn(p.gsax60, 2), p.gar_now == null ? "—" : sgn(p.gar_now)]
           : ["<b>" + f1(p.war) + "</b>", p.gar_now == null ? "—" : sgn(p.gar_now), sgn(p.comp.evo), sgn(p.comp.evd), sgn(p.comp.ppo), sgn(p.comp.pkd), sgn(p.comp.fin), sgn(p.comp.pen)];
+        var ex = EDGE && (g === "G" ? EDGE.g : EDGE.sk)[p.id];
+        ecols.forEach(function (c) { var m = ex && ex[c[0].slice(2)]; cells.push(m ? { ec: m[1], v: edgeFmt(m[0], c[3]) } : EDGE ? "—" : "…"); });
         return "<tr><td>" + (page * per + i + 1) + "</td><td>" + pname(p) + '</td><td class="hide-m"><a href="#/team/' + p.team + '" style="display:inline-flex;gap:5px;align-items:center;color:inherit;text-decoration:none">' + logo(t, 18) + p.team + "</a></td><td>" + posLabel(p) +
-          '</td><td class="hide-m">' + (p.age || "—") + '</td><td class="hide-m">' + tierDot(p) + esc(tier(p).label) + "</td>" + cells.map(function (c, j) { return "<td" + (j > 0 ? ' class="hide-m"' : "") + ">" + c + "</td>"; }).join("") + "</tr>";
+          '</td><td class="hide-m">' + (p.age || "—") + '</td><td class="hide-m">' + tierDot(p) + esc(tier(p).label) + "</td>" + cells.map(function (c, j) { return c && c.ec != null ? '<td class="ec hide-m" style="background:' + edgeColor(c.ec) + ";color:" + (c.ec >= 80 || c.ec <= 20 ? "#fff" : "inherit") + '" title="' + ord(c.ec) + ' percentile">' + c.v + "</td>" : "<td" + (j > 0 ? ' class="hide-m"' : "") + ">" + c + "</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody></table></div>";
     if (pages > 1) h += '<div class="pager">' + (page * per + 1) + "–" + Math.min(list.length, page * per + per) + " of " + list.length +
       ' <button class="btn" data-pg="' + (page - 1) + '"' + (page ? "" : " disabled") + '>Previous</button><button class="btn" data-pg="' + (page + 1) + '"' + (page < pages - 1 ? "" : " disabled") + ">Next</button></div>";
@@ -568,7 +575,7 @@
   var EDGE = null, edgeWait = null;
   function loadEdge() {
     if (!edgeWait) edgeWait = fetch("data/edge.json?d=" + new Date().toISOString().slice(0, 10)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-      .then(function (j) { EDGE = j || { sk: {}, g: {}, avg: { sk: {}, g: {} }, none: true }; if (state.route === "edge") render(); return EDGE; });
+      .then(function (j) { EDGE = j || { sk: {}, g: {}, avg: { sk: {}, g: {} }, none: true }; if (state.route === "edge" || state.route === "players") render(); return EDGE; });
     return edgeWait;
   }
   // [key, column, format, tooltip]; format: s speed (mph), n count, d distance (miles), p share, v save %
