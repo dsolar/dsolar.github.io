@@ -1,0 +1,49 @@
+# Public betting data for the CBB, CFB and NFL hubs (tools/betting_pull.py): Action Network's share of bets and bet
+# counts (money percentages are a paid Action Network feature and are never read) and Kalshi's public market prices.
+# Writes cbb/data/betting.json, cfb/data/betting.json and nfl/data/betting.json.
+# Runs at about 8am, 11am, 2pm, 5pm, 8pm and 11pm ET, when the script or this file changes, or by hand.
+name: Betting splits
+
+on:
+  schedule:
+    - cron: "37 13,16,19,22,1,4 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/betting_pull.py
+      - .github/workflows/betting.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: betting
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Pull the splits and market prices
+        run: python3 tools/betting_pull.py
+
+      - name: Commit it
+        run: |
+          git add cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "Nothing changed."
+            exit 0
+          fi
+          git commit -m "Update betting splits"
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
