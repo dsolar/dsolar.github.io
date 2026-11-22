@@ -141,7 +141,11 @@
     var hm = g[10].split(":"), h = +hm[0], ap = h >= 12 ? "PM" : "AM";
     return day + " · " + ((h % 12) || 12) + ":" + hm[1] + " " + ap + " ET";
   }
-  function lineOf(g) { var v = g[7]; if (v == null) return "—"; if (Math.abs(v) < 0.25) return "Pick'em"; return esc(v > 0 ? g[4] : g[3]) + " −" + String(Math.abs(v)).replace(/\.0$/, ""); }
+  function lineOf(g) {
+    var v = g[7];
+    if (v == null) { var b = BETN && BETN.games && BETN.games[gkey(g)]; if (b && b.an && b.an.sp && b.an.sp[0] != null) v = -b.an.sp[0]; }   // before nflverse posts a line, the betting feed's consensus
+    if (v == null) return "—"; if (Math.abs(v) < 0.25) return "Pick'em"; return esc(v > 0 ? g[4] : g[3]) + " −" + String(Math.abs(v)).replace(/\.0$/, "");
+  }
   function injuredOf(code, wk) {
     var rank = { O: 0, D: 1, Q: 2, P: 3 };
     return W.players.filter(function (p) { return p.t === code && p.inj && INJ_CODE[p.inj[0]] && p.inj[3] >= wk && p.inj[0] !== "Probable"; })
@@ -213,7 +217,7 @@
       return Object.keys(NG[pool] || {}).filter(function (id) { var p = W.byId[id]; return (p ? p.t : NG[pool][id].t) === code; })
         .map(function (id) { return { id: id, d: NG[pool][id], idx: idx }; }).sort(function (a, b) { return (b.d.x[b.idx[sortKey]] || 0) - (a.d.x[a.idx[sortKey]] || 0); }).slice(0, nTop);
     };
-    var chip = function (r, key, lab, dec) { var v = r.d.x[r.idx[key]], pc = r.d.pct ? r.d.pct[key] : null; if (v == null) return ""; return '<span class="ngchip" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '"' + (pc != null ? ' title="' + ngOrd(pc) + ' percentile"' : "") + ">" + lab + " " + (dec ? (v > 0 && key !== "sep" ? "+" : "") + v.toFixed(dec) : Math.round(v)) + "</span>"; };
+    var chip = function (r, key, lab, dec) { var v = r.d.x[r.idx[key]], pc = r.d.pct ? r.d.pct[key] : null; if (v == null) return ""; return '<span class="ngchip" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '"' + (pc != null ? ' title="' + ngOrd(pc) + ' percentile"' : "") + ">" + lab + " " + (dec ? (v > 0 && /^(cpoe|ryoe_att|yacoe)$/.test(key) ? "+" : "") + v.toFixed(dec) : Math.round(v)) + "</span>"; };
     var row = function (r, chips) { var p = W.byId[r.id]; return "<li>" + (p ? pname(p, 22) : esc(r.d.n)) + '<span class="grow"></span>' + chips + "</li>"; };
     var html = pick("qb", "att", 1).map(function (r) { return row(r, chip(r, "cpoe", "CPOE", 1) + chip(r, "ttt", "TTT", 2)); }).join("") +
       pick("rb", "att", 1).map(function (r) { return row(r, chip(r, "ryoe_att", "RYOE/att", 2) + chip(r, "ypc", "YPC", 1)); }).join("") +
@@ -221,8 +225,8 @@
     return html ? '<div class="panel"><h3>' + logo(code, 18) + " " + esc(team(code).short) + ' key players <small>Next Gen Stats, shaded by percentile at the position</small></h3><ul class="rlist">' + html + "</ul></div>" : "";
   }
   function injPanel(code, wk) {
-    var list = injuredOf(code, wk).slice(0, 12);
-    return '<div class="panel"><h3>' + logo(code, 18) + " " + esc(team(code).short) + " injuries <small>" + (list.length ? "this week's report" : "none listed") + "</small></h3>" +
+    var list = injuredOf(code, wk).slice(0, 12), out = W.players.some(function (p) { return p.inj && p.inj[3] >= wk; });
+    return '<div class="panel"><h3>' + logo(code, 18) + " " + esc(team(code).short) + " injuries <small>" + (list.length ? "this week's report" : out ? "none listed" : "this week's report isn't out yet (it starts Wednesday)") + "</small></h3>" +
       (list.length ? '<ul class="rlist">' + list.map(function (p) { return "<li>" + pname(p, 22) + '<span class="grow sub">' + esc(posOf(p)) + (p.inj[1] ? " · " + esc(p.inj[1]) : "") + '</span><span class="num">' + esc(p.inj[0]) + "</span></li>"; }).join("") + "</ul>" : "") + "</div>";
   }
   function gamePage() {
