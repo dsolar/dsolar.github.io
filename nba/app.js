@@ -539,7 +539,7 @@
     var s = H.surplus(p), sm = H.surplus(p, H.cfg.mode === "market" ? "prod" : "market"), t = team(p.t), r = H.adv ? p.adv : null;
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + ", " + esc(posOf(p)) +
       ", age " + (r && r.age != null ? Math.floor(r.age) : p.age != null ? p.age : "—") + (p.yos != null && !p.two ? ", " + p.yos + (p.yos === 1 ? " yr" : " yrs") + " in the league" : "") + "</div>" + (r || p.injury ? '<div class="meta2">' + (r ? '<span class="pill new archpill ab-' + ((ARCH[r.arch] || [])[1] || "role") + '">' + archIcon(r.arch, 14) + esc(r.arch) + "</span>" : "") + injTag(p) + "</div>" : "") + (p.injury ? '<p class="note injnote">' + esc(p.injury.note) + (p.injury.date ? " (" + esc(p.injury.date) + ")" : "") + "</p>" : "") + "</div></div>";
-    var tabs = [["ov", "Overview"]].concat(r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], p.rook || p.fill ? [] : [["tr", "Tracking"]], [["ct", "Contract"]]);
+    var tabs = [["ov", "Overview"]].concat(hasBox(p) ? [["st", "Stats"]] : [], r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], p.rook || p.fill ? [] : [["tr", "Tracking"]], [["ct", "Contract"]]);
     if (!tabs.some(function (x) { return x[0] === cardTab; })) cardTab = "ov";
     html += '<div class="ctabs" role="tablist">' + tabs.map(function (x) { return '<button type="button" role="tab" data-ctab="' + x[0] + '" aria-selected="' + (x[0] === cardTab) + '">' + x[1] + "</button>"; }).join("") + "</div>";
     html += '<div class="card-b">';
@@ -562,13 +562,15 @@
     }
     if (contractYears(p, 0).length) ov += '<h4 class="card-sec">Contract</h4>' + contractStrip(p, 0);
     html += '<div class="cpane" data-pane="ov"' + (cardTab === "ov" ? "" : " hidden") + ">" + ov + "</div>";
+    // stats
+    if (hasBox(p)) html += '<div class="cpane" data-pane="st"' + (cardTab === "st" ? "" : " hidden") + ">" + statsPane(p) + "</div>";
     // skills
     if (r) {
       var st = r.s, pc = function (x) { return x == null ? "—" : (x * 100).toFixed(1) + "%"; };
       html += '<div class="cpane" data-pane="sk"' + (cardTab === "sk" ? "" : " hidden") + ">" + skillBars(r) +
         '<p class="note">Percentiles among players with real minutes (99 is best), then his rank among ' + GROUP1[r.g] + "." + (r.mp ? " Last season counts at half weight while this one is young." : "") + "</p>" +
         '<div class="kv">' + kv(f1(st.pts100), "Points per 100") + kv(pc(st.ts), "True shooting") + kv(f1(st.usg) + "%", "Usage") + kv(f1(st.unast100), "Unassisted pts / 100") + kv(f1(st.ast) + "%", "Assist rate") + kv(f1(st.tov) + "%", "Turnover rate") +
-        kv(f1(st.orb) + " / " + f1(st.drb), "Off / def reb %") + kv(f1(st.stl) + " / " + f1(st.blk), "Steal / block %") + (st.ortg ? kv(f0(st.ortg) + " / " + f0(st.drtg), "Off / def rating") : "") + "</div>" + deeper(r, p) + "</div>";
+        kv(f1(st.orb) + " / " + f1(st.drb), "Off / def reb %") + kv(f1(st.stl) + " / " + f1(st.blk), "Steal / block %") + (st.ortg ? kv(f0(st.ortg) + " / " + f0(st.drtg), "Off / def rating") : "") + "</div></div>";
     }
     // shooting
     if (r && r.zones && r.zones.rim) {
@@ -624,6 +626,35 @@
     html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a>" + (p.prospect ? ' <a class="btn" href="' + boardHref("p=" + encodeURIComponent(p.prospect), p.board) + '">On the Big Board</a>' : "") + "</p></div>";
     cardBody.innerHTML = html;
     if (!card.open) card.showModal();
+  }
+  // ---------- the card's Stats tab: box-score lines from hardcap/stats.json (per game), this season and last, then by week
+  // cols: gp min fgm fga ftm fta tpm pts reb oreb ast stl blk tov pf tpa pm dd td
+  function boxOf(p, yr) { var a = H.box && H.box.avg && H.box.avg[String(yr)]; return a && a[p.id]; }
+  function hasBox(p) { return !p.fill && !p.rook && !!(boxOf(p, 2027) || boxOf(p, 2026)); }
+  function statsPane(p) {
+    var pc = function (m, a) { return a > 0 ? (100 * m / a).toFixed(1) : "—"; };
+    var line = function (label, a, note) {
+      return "<tr><td>" + label + (note ? ' <span class="note">' + note + "</span>" : "") + "</td><td>" + a[0] + "</td><td>" + f1(a[1]) + "</td><td><b>" + f1(a[7]) + "</b></td><td>" + f1(a[8]) + "</td><td>" + f1(a[10]) + "</td><td>" + f1(a[11]) + "</td><td>" + f1(a[12]) + "</td><td>" + f1(a[13]) +
+        "</td><td>" + pc(a[2], a[3]) + "</td><td>" + f1(a[6]) + "-" + f1(a[15]) + "</td><td>" + pc(a[6], a[15]) + "</td><td>" + pc(a[4], a[5]) + "</td></tr>";
+    };
+    var head = "<th>Season</th><th>GP</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TOV</th><th>FG%</th><th>3PM-A</th><th>3P%</th><th>FT%</th>";
+    var now = boxOf(p, 2027), prev = boxOf(p, 2026);
+    var html = '<h4 class="card-sec">Per game</h4><div class="scroll"><table class="t"><thead><tr>' + head + "</tr></thead><tbody>" + (now ? line("2026-27", now) : "") + (prev ? line("2025-26", prev) : "") + "</tbody></table></div>";
+    // week by week this season: the weekly totals, shown per game
+    var wk = (H.box && H.box.wk) || {}, weeks = Object.keys(wk).map(Number).sort(function (a, b) { return b - a; }).filter(function (w) { return wk[w][p.id]; });
+    if (weeks.length) {
+      var open = H.box.opener ? new Date(H.box.opener + "T12:00:00Z") : null;
+      var wkLabel = function (w) { if (!open) return "Week " + w; var d = new Date(open.getTime() + (w - 1) * 7 * 864e5); return "Week " + w + ' <span class="note">' + fmtShort(d.toISOString().slice(0, 10)) + "</span>"; };
+      html += '<h4 class="card-sec">By week</h4><div class="scroll"><table class="t"><thead><tr><th>Week</th><th>G</th><th>MIN</th><th>PTS</th><th>REB</th><th>AST</th><th>STL</th><th>BLK</th><th>TOV</th><th>FG</th><th>3P</th><th>FT</th></tr></thead><tbody>' +
+        weeks.map(function (w) {
+          var t = wk[w][p.id], g = t[0] || 1, pg = function (i) { return f1(t[i] / g); };
+          return "<tr><td>" + wkLabel(w) + "</td><td>" + t[0] + "</td><td>" + pg(1) + "</td><td><b>" + pg(7) + "</b></td><td>" + pg(8) + "</td><td>" + pg(10) + "</td><td>" + pg(11) + "</td><td>" + pg(12) + "</td><td>" + pg(13) +
+            "</td><td>" + t[2] + "-" + t[3] + "</td><td>" + t[6] + "-" + t[15] + "</td><td>" + t[4] + "-" + t[5] + "</td></tr>";
+        }).join("") + "</tbody></table></div><p class=\"note\">Week columns are per game, except the shooting columns, which are makes and attempts for the week.</p>";
+    }
+    var r = H.adv ? p.adv : null;
+    if (r && r.s) html += '<div class="kv">' + kv(r.s.ts != null ? (r.s.ts * 100).toFixed(1) + "%" : "—", "True shooting") + kv(r.s.usg != null ? f1(r.s.usg) + "%" : "—", "Usage") + kv(f1(r.s.pts100), "Points per 100") + (r.s.ortg ? kv(f0(r.s.ortg) + " / " + f0(r.s.drtg), "Off / def rating") : "") + "</div>";
+    return html + '<p class="note">From ESPN box scores, updated daily. Skills has the advanced numbers and how they rank.</p>';
   }
   // Two-way and 10-day deals don't count against the cap, so the hub carries them at no salary; the card says what they are
   function twoWayNote(p) {
@@ -976,7 +1007,7 @@
   }
   function archBadge(a) {
     var x = ARCH[a] || ["?", "role"], ic = archIcon(a);
-    return '<span class="ab ab-' + x[1] + (ic ? " ab-ico" : "") + '" title="' + esc(a) + '" role="img" aria-label="' + esc(a) + '">' + (ic || esc(x[0])) + "</span>";
+    return '<span class="ab ab-' + x[1] + (ic ? " ab-ico" : "") + '" data-tip="' + esc(a) + '" tabindex="0" role="img" aria-label="' + esc(a) + '">' + (ic || esc(x[0])) + "</span>";
   }
   // the key under the ratings table: every archetype by family
   function archKey() {
@@ -1180,11 +1211,7 @@
     };
     return '<div class="skills"><div><h5>Impact</h5>' + CAT_IMP.map(bar).join("") + "<h5>Defense</h5>" + CAT_DEF.map(bar).join("") + "</div><div><h5>Offense</h5>" + CAT_OFF.map(bar).join("") + "</div></div>";
   }
-  function deeper(r, p) {
-    var nmq = encodeURIComponent(r ? r.n : p.n), id = r && r.nba;
-    return '<p class="deeper">More on him: ' + (id ? '<a href="https://www.nba.com/player/' + esc(id) + '" target="_blank" rel="noopener">NBA.com</a>, ' : "") +
-      '<a href="https://www.basketball-reference.com/search/search.fcgi?search=' + nmq + '" target="_blank" rel="noopener">Basketball-Reference</a>. Other models: <a href="https://www.darko.app/" target="_blank" rel="noopener">DARKO</a>, <a href="https://craftednba.com/" target="_blank" rel="noopener">CraftedNBA</a>, <a href="https://dunksandthrees.com/epm" target="_blank" rel="noopener">Dunks &amp; Threes</a>, <a href="https://www.nbarapm.com/" target="_blank" rel="noopener">NBA RAPM</a>, <a href="https://cleaningtheglass.com/" target="_blank" rel="noopener">Cleaning the Glass</a>.</p>';
-  }
+
 
   // ---------- trade value ----------
   // Page filters stay in view; the model's knobs fold into "Model settings" (open state remembered)
@@ -2018,7 +2045,7 @@
           fb.innerHTML = "<b>Some data is behind.</b> " + desc + '. Numbers that lean on it may be off. <a href="' + href("method", {}) + '">See the data feeds</a>';
         }
       }
-      H.fixes = r[2] || {}; H.minScale = r[0] && r[0].cba && r[0].cba.min_scale;
+      H.box = r[1] || {}; H.fixes = r[2] || {}; H.minScale = r[0] && r[0].cba && r[0].cba.min_scale;
       H.keep = load("keep", {}) || {};
       var adj0 = load("adj", {}) || {}; Object.keys(adj0).forEach(function (id) { if (H.W.P[id]) H.adj[id] = +adj0[id]; }); if (Object.keys(H.adj).length) H.reset();
       fillBox.checked = H.cfg.fill;

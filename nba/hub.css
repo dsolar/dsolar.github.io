@@ -865,3 +865,9 @@ table.tfeed tr.stale td{color:var(--red)}
 .archkey>div{display:flex;flex-wrap:wrap;align-items:center;align-content:flex-start;gap:6px 12px;font-size:13px}
 .archkey b{flex-basis:100%;font-size:12px;color:var(--muted)}
 .archkey .ak{display:inline-flex;align-items:center;gap:6px}
+/* the player type's name on hover or focus (title tooltips don't fire over SVG) */
+.ab[data-tip]{position:relative}
+.ab.ab-ico svg{pointer-events:none}
+.ab[data-tip]:hover::after,.ab[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 6px);transform:translateX(-50%);white-space:nowrap;background:var(--ink,#14213d);color:#fff;font:600 12px/1.2 var(--body);letter-spacing:0;text-transform:none;padding:5px 8px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:30;pointer-events:none}
+.ab[data-tip]:hover::before,.ab[data-tip]:focus-visible::before{content:"";position:absolute;left:50%;bottom:calc(100% + 1px);transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink,#14213d);z-index:30}
+.archkey .ab[data-tip]:hover::after,.archkey .ab[data-tip]:hover::before{display:none}
