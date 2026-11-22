@@ -992,7 +992,7 @@
       return (all || qual || find) && (!tm || d.t === tm) && (!find || String(d.n).toLowerCase().indexOf(find) >= 0);
     });
     // a rate sorts only players with enough attempts behind it (TRK.vol, the same rule as the percentiles)
-    var vol = (TRK.vol || {})[sort], enough = function (d) { return !vol || (d.x[TRK.ix[vol[0]]] || 0) >= vol[1]; };
+    var vol = (TRK.vol || {})[sort], enough = function (d) { return !vol || (d.x[TRK.ix[vol[0]]] || 0) * (d.gp || 0) >= vol[1]; };
     var key = function (r) { var x = r.d.x[TRK.ix[sort]]; return x == null || !enough(r.d) ? (asc ? 1e9 : -1e9) : x; };
     rows.sort(function (a, b) { return asc ? key(a) - key(b) : key(b) - key(a); });
     var html = '<h2 class="sec">Player tracking</h2><p class="lede">The NBA\'s tracking cameras follow every player and the ball 25 times a second. These are this season\'s numbers a game: how far and fast he moves, how he creates, how he shoots off the catch and the dribble, and the defense and hustle plays the box score misses. Shaded cells are percentiles among players with ' + TRK.qual.min + "+ minutes in " + TRK.qual.gp + "+ games: red is good, blue is bad. Click a column to sort, a player for his card.</p>";
@@ -1003,7 +1003,7 @@
     html += tablePanel(V.name, "<th>Player</th><th>Team</th><th>GP</th><th>MIN</th>" + V.cols.map(th).join(""),
       rows.slice(0, 200).map(function (r) { var d = r.d; return "<tr><td>" + trkName(r.id, d) + '</td><td class="tm">' + logo(d.t, 18) + '<span class="nm">' + esc(d.t) + "</span></td><td>" + (d.gp || "—") + "</td><td>" + f1(d.min) + "</td>" + V.cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
       rows.length + " players" + (rows.length > 200 ? ", top 200 shown" : ""));
-    html += '<p class="note">From <a href="https://www.nba.com/stats/players/speed-distance" rel="noopener">NBA.com tracking</a>, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + " (it refreshes weekly). Percentages are shown as percents, and sort and rank only players with enough attempts (a catch-and-shoot three a game, two pull-ups, two drives, two rim shots defended).</p>";
+    html += '<p class="note">From <a href="https://www.nba.com/stats/players/speed-distance" rel="noopener">NBA.com tracking</a>, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + " (it refreshes weekly). Percentages are shown as percents, and sort and rank only players with enough attempts this season (25 catch-and-shoot threes, 35 pull-ups, 40 drives, 40 rim shots defended).</p>";
     view.innerHTML = html;
   }
   function trackPane(p) {
