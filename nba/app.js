@@ -96,9 +96,9 @@
   }
   new MutationObserver(function () { scrollA11y(view); }).observe(view, { childList: true, subtree: true });
   var subtabs = $("#subtabs");
-  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", rank: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
+  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", rank: "players", track: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
   var SUBS = {
-    players: [["ratings", "Ratings"], ["rank", "Rankings"], ["value", "Contracts"], ["lineups", "Lineups"]],
+    players: [["ratings", "Ratings"], ["rank", "Rankings"], ["track", "Tracking"], ["value", "Contracts"], ["lineups", "Lineups"]],
     draft: [["draft", "Lottery odds", "", "Lottery"], ["picks", "Traded picks", "", "Picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock", "Mock"], ["", "More", "../draft/#nba/challenge"]]
   };
   function render() {
@@ -121,7 +121,7 @@
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if ((state.route === "team" || state.route === "style") && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, rank: rankPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
+    var fn = { draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, rank: rankPage, track: trackPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
     fn();
   }
   function drawYears() {
@@ -539,7 +539,7 @@
     var s = H.surplus(p), sm = H.surplus(p, H.cfg.mode === "market" ? "prod" : "market"), t = team(p.t), r = H.adv ? p.adv : null;
     var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + ", " + esc(posOf(p)) +
       ", age " + (p.age != null ? p.age : "—") + (p.yos != null ? ", " + p.yos + " yrs in the league" : "") + "</div>" + (r || p.injury ? '<div class="meta2">' + (r ? '<span class="pill new">' + esc(r.arch) + "</span>" : "") + injTag(p) + "</div>" : "") + (p.injury ? '<p class="note injnote">' + esc(p.injury.note) + (p.injury.date ? " (" + esc(p.injury.date) + ")" : "") + "</p>" : "") + "</div></div>";
-    var tabs = [["ov", "Overview"]].concat(r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], [["ct", "Contract"]]);
+    var tabs = [["ov", "Overview"]].concat(r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], p.rook || p.fill ? [] : [["tr", "Tracking"]], [["ct", "Contract"]]);
     if (!tabs.some(function (x) { return x[0] === cardTab; })) cardTab = "ov";
     html += '<div class="ctabs" role="tablist">' + tabs.map(function (x) { return '<button type="button" role="tab" data-ctab="' + x[0] + '" aria-selected="' + (x[0] === cardTab) + '">' + x[1] + "</button>"; }).join("") + "</div>";
     html += '<div class="card-b">';
@@ -576,6 +576,11 @@
       html += '<div class="cpane" data-pane="sh"' + (cardTab === "sh" ? "" : " hidden") + ">" + shotChart(r.zones) + zoneTable(r.zones) +
         '<div class="kv">' + kv(pct(st2.p3, 1), "3P% (regressed)") + kv(f1(st2.fg3a100), "3PA per 100") + kv(pct(st2.pft, 1), "FT% (regressed)") + kv(pct(st2.prim, 1), "Rim FG% (regressed)") + kv(f1(st2.rim100), "Rim attempts / 100") + kv(pct(st2.ast_share), "Of his buckets assisted") + "</div>" +
         '<p class="note">Regressed percentages are pulled toward the league average by how many shots back them up.</p></div>';
+    }
+    // tracking (loads the first time a card opens)
+    if (!p.rook && !p.fill) {
+      html += '<div class="cpane" data-pane="tr"' + (cardTab === "tr" ? "" : " hidden") + ">" + trackPane(p) + "</div>";
+      if (!TRK) loadTrack().then(function () { var pn = card.querySelector('[data-pane="tr"]'); if (pn) pn.innerHTML = trackPane(p); });
     }
     // contract
     var ct = "";
@@ -934,6 +939,90 @@
   }
   function ord(n) { return n == null ? "—" : ordinal(n); }
   var PER = 50;
+
+  // ---------- player tracking (nba/data/tracking.json) ----------
+  // The NBA's tracking cameras, pulled weekly through a browser (stats.nba.com refuses cloud servers) and published by
+  // tools/nba_tracking.py: per-game numbers by NBA id, percentiles among players with 10+ minutes in 5+ games
+  var TRK = null, trkWait = null;
+  function loadTrack() {
+    if (!trkWait) trkWait = fetch("data/tracking.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (j) {
+        TRK = j || { cols: [], p: {}, dl: {}, none: true };
+        TRK.ix = {}; TRK.cols.forEach(function (c, i) { TRK.ix[c] = i; });
+        var AB = { BKN: "BRK", CHA: "CHO", PHX: "PHO" }; // the NBA's codes to the hub's
+        Object.keys(TRK.p).forEach(function (k) { var d = TRK.p[k]; if (AB[d.t]) d.t = AB[d.t]; });
+        TRK.hub = {}; // NBA id -> hub player id, through the ratings' ids, then Draft Lab's name match
+        if (H.adv) H.adv.players.forEach(function (r) { if (r.nba && r.id) TRK.hub[String(r.nba)] = r.id; });
+        Object.keys(TRK.dl || {}).forEach(function (pid) { var n = TRK.dl[pid]; if (!TRK.hub[n] && H.W.P[pid]) TRK.hub[n] = pid; });
+        TRK.of = {}; Object.keys(TRK.hub).forEach(function (n) { TRK.of[TRK.hub[n]] = n; });
+        if (state.route === "track") render();
+        return TRK;
+      });
+    return trkWait;
+  }
+  // [key, label, format, tooltip]; f: 1 one decimal, 2 two, p a share, i a whole number
+  var TRK_VIEWS = {
+    move: { name: "Movement", sort: "dist", cols: [["dist", "Miles", 1, "Miles run a game"], ["dist_o", "On offense", 1], ["dist_d", "On defense", 1], ["spd", "Avg speed", 2, "Average speed, mph"], ["spd_o", "Offense mph", 2], ["spd_d", "Defense mph", 2]] },
+    create: { name: "Creating", sort: "drv", cols: [["drv", "Drives", 1, "Drives a game"], ["drv_pts", "Drive pts", 1, "His points off drives"], ["drv_fg", "Drive FG%", "p"], ["drv_ast", "Drive ast", 1], ["drv_tov", "Drive TOV", 1], ["tch", "Touches", 1], ["top", "Time of poss.", 1, "Minutes with the ball a game"], ["sec_tch", "Sec/touch", 2], ["drib_tch", "Dribbles/touch", 2], ["passes", "Passes", 1], ["pot_ast", "Potential ast", 1, "Passes that would be assists if the shot went in"], ["ast_pts", "Ast pts created", 1], ["sec_ast", "Hockey ast", 1, "The pass before the assist"]] },
+    shoot: { name: "Shooting", sort: "cs3a", cols: [["cs3a", "C&S 3PA", 1, "Catch-and-shoot threes a game"], ["cs3", "C&S 3P%", "p"], ["cs_efg", "C&S eFG%", "p"], ["pu_fga", "Pull-up FGA", 1], ["pu3", "Pull-up 3P%", "p"], ["pu_efg", "Pull-up eFG%", "p"]] },
+    defend: { name: "Defense & hustle", sort: "defl", cols: [["rim_fga", "Rim shots faced", 1, "Shots at the rim he defended a game"], ["rim_fg", "Opp. rim FG%", "p", "Opponents' shooting at the rim with him defending (lower ranks higher)"], ["contest", "Contests", 1], ["defl", "Deflections", 1], ["charges", "Charges", 2], ["loose", "Loose balls", 2], ["boxouts", "Box outs", 1], ["reb_ch", "Reb chances", 1, "Times he was near a rebound"], ["reb_con", "Contested reb%", "p"], ["scr_pts", "Screen ast pts", 1, "Points off his screens"]] }
+  };
+  function trkFmt(v, f) { return v == null ? "—" : f === "p" ? (v * 100).toFixed(1) : f === 2 ? v.toFixed(2) : f === "i" ? String(Math.round(v)) : v.toFixed(1); }
+  function trkColor(v) {
+    if (v == null) return "transparent";
+    var t = Math.max(0, Math.min(100, v)) / 100, mx = function (a, b, k) { return Math.round(a + (b - a) * k); };
+    var c = t < 0.5 ? [mx(54, 222, t * 2), mx(97, 222, t * 2), mx(173, 222, t * 2)] : [mx(222, 210, (t - 0.5) * 2), mx(222, 45, (t - 0.5) * 2), mx(222, 73, (t - 0.5) * 2)];
+    return "rgb(" + c.join(",") + ")";
+  }
+  function trkCell(d, c) {
+    var v = d.x[TRK.ix[c[0]]], pc = (d.pct || {})[c[0]];
+    return pc == null ? "<td>" + trkFmt(v, c[2]) + "</td>" : '<td class="pc" style="background:' + trkColor(pc) + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "inherit") + '" title="' + ord(pc) + ' percentile">' + trkFmt(v, c[2]) + "</td>";
+  }
+  function trkName(id, d) {
+    var p = TRK.hub[id] && H.W.P[TRK.hub[id]];
+    return p ? pname(p, 22) : '<span class="pl static">' + window.DSFaces.html({ sport: "nba", name: d.n, color: team(d.t).color, size: 22 }) + '<span class="nm">' + esc(d.n) + "</span></span>";
+  }
+  function trackPage() {
+    if (!TRK) { view.innerHTML = '<p class="loading">Loading tracking…</p>'; loadTrack(); return; }
+    var q = state.q, v = TRK_VIEWS[q.v] ? q.v : "move", V = TRK_VIEWS[v], all = q.all === "1", tm = q.t || "", find = (q.q || "").toLowerCase();
+    var sort = V.cols.some(function (c) { return c[0] === q.s; }) ? q.s : V.sort, asc = sort === "rim_fg" || sort === "drv_tov";
+    var opt = function (val, l, cur) { return '<option value="' + val + '"' + (val === cur ? " selected" : "") + ">" + l + "</option>"; };
+    var rows = Object.keys(TRK.p).map(function (id) { return { id: id, d: TRK.p[id] }; }).filter(function (r) {
+      var d = r.d, qual = (d.gp || 0) >= TRK.qual.gp && (d.min || 0) >= TRK.qual.min;
+      return (all || qual || find) && (!tm || d.t === tm) && (!find || String(d.n).toLowerCase().indexOf(find) >= 0);
+    });
+    // a rate sorts only players with enough attempts behind it (TRK.vol, the same rule as the percentiles)
+    var vol = (TRK.vol || {})[sort], enough = function (d) { return !vol || (d.x[TRK.ix[vol[0]]] || 0) >= vol[1]; };
+    var key = function (r) { var x = r.d.x[TRK.ix[sort]]; return x == null || !enough(r.d) ? (asc ? 1e9 : -1e9) : x; };
+    rows.sort(function (a, b) { return asc ? key(a) - key(b) : key(b) - key(a); });
+    var html = '<h2 class="sec">Player tracking</h2><p class="lede">The NBA\'s tracking cameras follow every player and the ball 25 times a second. These are this season\'s numbers a game: how far and fast he moves, how he creates, how he shoots off the catch and the dribble, and the defense and hustle plays the box score misses. Shaded cells are percentiles among players with ' + TRK.qual.min + "+ minutes in " + TRK.qual.gp + "+ games: red is good, blue is bad. Click a column to sort, a player for his card.</p>";
+    html += '<div class="controls"><label>Show<select data-q="v">' + Object.keys(TRK_VIEWS).map(function (k) { return opt(k, TRK_VIEWS[k].name, v); }).join("") + '</select></label><label>Team<select data-q="t">' + opt("", "All teams", tm) +
+      Object.keys(H.W.T || {}).sort().map(function (t) { return opt(t, team(t).name, tm); }).join("") + '</select></label><label>Search<input type="search" data-q="q" value="' + esc(q.q || "") + '" placeholder="Player"></label>' +
+      '<label>Players<select data-q="all">' + opt("", "Regulars (" + TRK.qual.min + "+ min)", all ? "1" : "") + opt("1", "Everyone", all ? "1" : "") + "</select></label></div>";
+    var th = function (c) { return '<th><a href="' + href("track", Object.assign({}, q, { s: c[0] })) + '"' + (c[0] === sort ? ' class="on"' : "") + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</a></th>"; };
+    html += tablePanel(V.name, "<th>Player</th><th>Team</th><th>GP</th><th>MIN</th>" + V.cols.map(th).join(""),
+      rows.slice(0, 200).map(function (r) { var d = r.d; return "<tr><td>" + trkName(r.id, d) + '</td><td class="tm">' + logo(d.t, 18) + '<span class="nm">' + esc(d.t) + "</span></td><td>" + (d.gp || "—") + "</td><td>" + f1(d.min) + "</td>" + V.cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
+      rows.length + " players" + (rows.length > 200 ? ", top 200 shown" : ""));
+    html += '<p class="note">From <a href="https://www.nba.com/stats/players/speed-distance" rel="noopener">NBA.com tracking</a>, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + " (it refreshes weekly). Percentages are shown as percents, and sort and rank only players with enough attempts (a catch-and-shoot three a game, two pull-ups, two drives, two rim shots defended).</p>";
+    view.innerHTML = html;
+  }
+  function trackPane(p) {
+    if (!TRK) return '<p class="note">Loading tracking…</p>';
+    var id = (p.adv && p.adv.nba) || TRK.of[p.id] || (TRK.dl || {})[p.id], d = id && TRK.p[String(id)];
+    if (!d) return '<p class="note">No tracking numbers for him this season yet.</p>';
+    var bars = function (keys) {
+      return keys.map(function (k) {
+        var c = null; Object.keys(TRK_VIEWS).some(function (vk) { c = TRK_VIEWS[vk].cols.filter(function (x) { return x[0] === k; })[0]; return c; });
+        var v = (d.pct || {})[k], val = d.x[TRK.ix[k]];
+        if (v == null || !c) return "";
+        return '<div class="svb"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><span>" + c[1] + ' <small style="font-weight:600;color:var(--faint)">' + trkFmt(val, c[2]) + (c[2] === "p" ? "%" : "") + '</small></span><i><em style="width:' + Math.max(4, v) + "%;background:" + trkColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + trkColor(v) + ";color:" + (v >= 80 || v <= 20 ? "#fff" : "var(--ink)") + '">' + v + "</b></i></div>";
+      }).join("");
+    };
+    var sec = function (title, keys) { var b = bars(keys); return b ? '<h4 class="card-sec">' + title + '</h4><div class="svbars">' + b + "</div>" : ""; };
+    return '<p class="note">' + d.gp + " games, " + f1(d.min) + " minutes a game. Percentile among regulars (" + TRK.qual.min + "+ minutes): red is good, blue is bad.</p>" +
+      sec("Movement", ["dist", "spd"]) + sec("Creating", ["drv", "drv_pts", "drv_fg", "tch", "pot_ast", "ast_pts"]) + sec("Shooting", ["cs3a", "cs3", "pu_fga", "pu3"]) + sec("Defense & hustle", ["rim_fga", "rim_fg", "contest", "defl", "loose", "boxouts", "reb_con", "scr_pts"]) +
+      '<p class="note"><a href="' + href("track", {}) + '">Full tracking leaderboards</a>. From NBA.com, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + ".</p>";
+  }
   function ratingsPage() {
     var A = H.adv;
     if (!A) { view.innerHTML = '<h2 class="sec">Ratings</h2><p class="lede">The skill ratings haven\'t loaded. They rebuild every morning; try again in a bit.</p>'; return; }

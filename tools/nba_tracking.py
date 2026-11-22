@@ -20,6 +20,8 @@ KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4"  # the site's public key 
 QUAL_MIN, QUAL_GP = 10.0, 5
 # percentile direction: -1 lower is better, 0 no percentile (style, not quality); everything else higher is better
 DIRECTION = {"rim_fg": -1, "drv_tov": -1, "sec_tch": 0, "drib_tch": 0, "dist_o": 0, "dist_d": 0, "spd_o": 0, "spd_d": 0, "top": 0}
+# a rate only ranks players with enough of what it's a rate of (per game): [volume column, minimum]
+VOLUME = {"cs3": ["cs3a", 1.0], "cs_efg": ["cs3a", 1.0], "pu3": ["pu_fga", 2.0], "pu_efg": ["pu_fga", 2.0], "drv_fg": ["drv", 2.0], "rim_fg": ["rim_fga", 2.0], "reb_chp": ["reb_ch", 3.0], "reb_con": ["reb_ch", 3.0]}
 # each column's believable range, to catch a broken pull before it's published
 RANGE = {"dist": (0, 4), "spd": (2, 6.5), "drv": (0, 35), "rim_fg": (0, 1), "cs3": (0, 1), "pu3": (0, 1), "tch": (0, 120), "defl": (0, 8), "contest": (0, 25)}
 
@@ -75,14 +77,20 @@ def main():
     for pid, r in raw.items():
         players[pid] = {"n": r[0], "t": r[1], "gp": r[2], "min": r[3], "x": r[4:4 + len(cols)]}
     qual = [p for p in players.values() if (p["gp"] or 0) >= QUAL_GP and (p["min"] or 0) >= QUAL_MIN]
+    def enough(p, c):
+        if c not in VOLUME or VOLUME[c][0] not in cols:
+            return True
+        vol = p["x"][cols.index(VOLUME[c][0])]
+        return vol is not None and vol >= VOLUME[c][1]
+
     for i, c in enumerate(cols):
         d = DIRECTION.get(c, 1)
         if not d:
             continue
-        pool = sorted(p["x"][i] for p in qual if p["x"][i] is not None)
+        pool = sorted(p["x"][i] for p in qual if p["x"][i] is not None and enough(p, c))
         for p in players.values():
             v = p["x"][i]
-            if v is None:
+            if v is None or not enough(p, c):
                 continue
             r = pct_rank(pool, v)
             if r is not None:
@@ -105,7 +113,7 @@ def main():
         print(f"Draft Lab ids: {e}", file=sys.stderr)
 
     out = {"season": b.get("season"), "pulled": b.get("pulled"), "built": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-           "failed": b.get("failed") or [], "cols": cols, "qual": {"min": QUAL_MIN, "gp": QUAL_GP, "n": len(qual)}, "p": players, "dl": dl}
+           "failed": b.get("failed") or [], "cols": cols, "vol": {k: v for k, v in VOLUME.items() if k in cols}, "qual": {"min": QUAL_MIN, "gp": QUAL_GP, "n": len(qual)}, "p": players, "dl": dl}
     with open(OUT, "w") as f:
         json.dump(out, f, separators=(",", ":"))
     print(f"wrote {OUT}: {len(players)} players ({len(qual)} qualified), {len(dl)} Draft Lab matches, pulled {b.get('pulled')}")

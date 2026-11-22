@@ -676,8 +676,9 @@
   /* ---------- tracking data on the player card: Statcast (MLB), Next Gen Stats (NFL), NHL Edge ---------- */
   // Each hub pulls its sport's tracking file daily (mlb/data/savant.json, nfl/data/ngs.json, nhl/data/edge.json). The
   // card leaves a slot naming the player; once the card is open, the slot fills from the file (fetched once).
-  // MLB and NHL ids are the leagues' own ids, as the hubs use; NFL players match on ESPN id.
-  const TRACK = { mlb: "/mlb/data/savant.json", nfl: "/nfl/data/ngs.json", nhl: "/nhl/data/edge.json" }, trackFiles = {};
+  // MLB and NHL ids are the leagues' own ids, as the hubs use; NFL players match on ESPN id; NBA players through the
+  // tracking file's own map from Draft Lab ids to NBA ids (tools/nba_tracking.py matches them by name).
+  const TRACK = { mlb: "/mlb/data/savant.json", nfl: "/nfl/data/ngs.json", nhl: "/nhl/data/edge.json", nba: "/nba/data/tracking.json" }, trackFiles = {};
   const trackFile = (k) => trackFiles[k] || (trackFiles[k] = fetch(TRACK[k], { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((j) => {
     if (j && k === "nfl") { j.byEspn = {}; ["qb", "rb", "rec"].forEach((g) => Object.values(j[g] || {}).forEach((d) => { if (d.e) j.byEspn[d.e] = { g, d }; })); }
     return j;
@@ -720,6 +721,14 @@
         : h.g === "rb" ? [["Yds over exp./carry", sgn(v("ryoe_att"), 2), pc("ryoe_att"), "Rush yards over expected per carry"], ["Beat expected", pcts("beat"), pc("beat"), "Share of carries that gained more than expected"], ["8+ in box", pcts("box8"), null, "Share of carries against a stacked box"]]
         : [["Separation", fx(v("sep"), 2), pc("sep"), "Yards from the nearest defender when the ball arrives"], ["YAC over exp.", sgn(v("yacoe"), 2), pc("yacoe")], ["Air yds share", pcts("share"), pc("share"), "His share of his team's intended air yards"], ["Catch rate", pcts("catch"), pc("catch")]];
       return trackBlock("Next Gen Stats", j.season, chips, "", "/nfl/#/ngs?g=" + (h.g === "qb" ? "QB" : h.g === "rb" ? "RB" : h.d.pos));
+    }
+    if (k === "nba") {
+      const nid = (j.dl || {})[id], d = nid && j.p[nid];
+      if (!d) return "";
+      const v = (c) => { const i = (j.cols || []).indexOf(c); return i >= 0 ? d.x[i] : null; }, pc = (c) => (d.pct || {})[c];
+      const one = (c) => fx(v(c), 1), pcs = (c) => (v(c) == null ? null : (v(c) * 100).toFixed(1) + "%");
+      const chips = [["Drives", one("drv"), pc("drv"), "Drives a game"], ["Touches", one("tch"), pc("tch")], ["Potential ast", one("pot_ast"), pc("pot_ast"), "Passes that would be assists if the shot went in"], ["C&S 3P%", pcs("cs3"), pc("cs3"), "Catch-and-shoot threes"], ["Deflections", one("defl"), pc("defl")], ["Contests", one("contest"), pc("contest")], ["Miles", one("dist"), pc("dist"), "Miles run a game"]];
+      return trackBlock("Player tracking", j.season, chips, "", "/nba/#/track");
     }
     if (k === "nhl") {
       const g = !!el.dataset.g, e = (g ? j.g : j.sk)[id];
