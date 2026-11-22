@@ -15,7 +15,7 @@ async function boot(hash = "#/week", opts = {}) {
   const ready = new Promise(resolve => w.document.addEventListener("cfb:ready", resolve, { once: true }));
   w.eval(core); w.eval(app); await ready; await pause(0); return w;
 }
-async function go(w, hash) { w.location.hash = hash; const tab = hash.startsWith("#/team?") ? "teams" : hash.split("/")[1].split("?")[0]; await until(() => w.document.querySelector('[data-tab="' + tab + '"]')?.getAttribute("aria-current") === "page"); await pause(20); }
+async function go(w,hash){w.location.hash=hash;const page=hash.split("/")[1].split("?")[0];await until(()=>w.document.body.dataset.page===page);await pause(20);}
 const text = w => w.document.querySelector("#view").textContent;
 
 test("every section renders from the actual snapshot without printing missing values", async () => {

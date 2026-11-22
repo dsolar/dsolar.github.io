@@ -500,6 +500,7 @@ function render() {
   st.hidden = !subs;
   if (subs) st.innerHTML = subs.map(x => '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>").join("");
   view.innerHTML = fn(r.q);
+  document.body.dataset.page = page;
 }
 function index() {
   byId = Object.fromEntries(D.teams.map(t => [t.id, t]));
