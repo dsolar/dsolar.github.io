@@ -635,3 +635,42 @@ button.pl-chip{cursor:pointer}
 .pl-splan .pl-pc.bye{color:var(--muted);font-size:11px;font-weight:600;background:none}
 .pl-splan .pl-pc.path{outline:2px solid var(--ink);outline-offset:-2px;border-radius:4px}
 .pl-splan .pl-pc.mine{box-shadow:inset 0 -3px 0 var(--accent)}
+/* player picker: views, stats table, and a sheet on phones */
+.pl-ffctl{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pl-ffseg button{padding:6px 11px;font-size:13px}
+.pl .pl-ffseg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.pl-ffpick h2 small{font-size:12px;font-weight:650}
+.pl-ffclear{border-bottom:1px solid var(--line)}
+.pl-ffback{display:none}
+.pl-ffst{max-height:560px;overflow:auto}
+.pl-ffst table{min-width:100%}
+.pl-ffst th,.pl-ffst td{padding:6px 8px;white-space:nowrap}
+.pl-ffst thead th{position:sticky;top:0;z-index:2;background:var(--surface)}
+.pl-ffst th button{border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;text-transform:inherit;letter-spacing:inherit}
+.pl-ffst th button[aria-pressed="true"]{color:var(--ink)}
+.pl-ffst .pl-stk{position:sticky;left:0;z-index:1;background:var(--surface);min-width:190px;max-width:230px}
+.pl-ffst thead .pl-stk{z-index:3}
+.pl-ffsn{display:flex;align-items:center;gap:8px;width:100%;border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer;min-width:0}
+.pl-ffsn .pl-tn{min-width:0}
+.pl-ffsn .pl-tn b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:14px}
+.pl-ffsn .pl-tn small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11.5px;color:var(--muted)}
+.pl-ffst tr:hover td{background:var(--surface-2)}
+.pl-ffst tr:hover .pl-stk{background:var(--surface-2)}
+.pl-ffst tr.used td{color:var(--muted)}
+.pl-ffst tr.used .pl-tn b{text-decoration:line-through}
+.pl-ffst .fp{font-weight:850}
+.pl-ffst .pl-ffinfo{border-left:0;width:28px;height:28px}
+.pl-ffwrap:has(.pl-ffpick.wide){grid-template-columns:minmax(0,1fr)}
+@media (max-width:760px){
+  /* on a phone the picker slides up over the lineup, so you don't scroll past nine spots to find it */
+  body.pl-sheet-on{overflow:hidden}
+  .pl-ffback{display:block;position:fixed;inset:0;z-index:60;background:rgba(10,18,30,.45)}
+  .pl-ffpick{position:fixed!important;left:0;right:0;bottom:0;top:auto;z-index:61;max-height:88vh;margin:0;border-radius:16px 16px 0 0;display:flex;flex-direction:column;overflow:hidden;animation:pl-up .18s ease-out}
+  .pl-ffpick .mod-h{flex:none}
+  .pl-ffpick .pl-ffbar{flex:none;padding:10px 12px}
+  .pl-ffpick .pl-fflist,.pl-ffpick .pl-ffst{flex:1;min-height:0;overflow:auto;max-height:none;-webkit-overflow-scrolling:touch}
+  .pl-ffst .pl-stk{min-width:150px;max-width:170px}
+  .pl-ffseg button{padding:6px 9px;font-size:12.5px}
+}
+@keyframes pl-up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.pl-ffpick{animation:none!important}}

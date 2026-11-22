@@ -581,13 +581,13 @@
         // each player's season points in all three scorings, per game, and the latest week's projection
         const L = d.lines || {}, cols = (L.tot && L.tot.cols) || [], gi = cols.indexOf("g"), SC = ["pts_std", "pts_half_ppr", "pts_ppr"];
         const wk = Object.keys(L).filter((k) => /^wk\d+$/.test(k)).sort((x, y) => +y.slice(2) - +x.slice(2))[0], wc = wk ? L[wk].cols : [];
-        st.ffWeek = wk ? +wk.slice(2) : null; st.ffdata = d; st.ffraw = {};
+        st.ffWeek = wk ? +wk.slice(2) : null; st.ffdata = d; st.ffraw = {}; st.ffcols = cols; st.ffwcols = wc;
         st.ffp = {};
         (d.players || []).forEach((p) => {
           const t = p.l && p.l.tot, g = t ? t[gi] || 0 : 0, w = wk && p.l && p.l[wk];
           const tot = SC.map((c) => (t ? t[cols.indexOf(c)] || 0 : 0)), pj = SC.map((c) => (w && wc.indexOf(c) >= 0 ? w[wc.indexOf(c)] || 0 : null));
           st.ffraw[p.id] = p;
-          st.ffp[p.id] = { id: p.id, n: p.n, t: p.t === "WAS" ? "WSH" : p.t, pos: p.pos[0], g, tot, pj, espn: p.espn, ppg: g ? tot[1] / g : 0 };
+          st.ffp[p.id] = { id: p.id, n: p.n, t: p.t === "WAS" ? "WSH" : p.t, pos: p.pos[0], g, tot, pj, espn: p.espn, ppg: g ? tot[1] / g : 0, s: t || null, w: w || null };
         });
       } catch (e) { st.ffp = {}; }
     }
@@ -610,6 +610,23 @@
     return c;
   };
   const ffSiOf = (b) => (b && b.pool ? ffSi(b) : 1);
+  // the stats table's columns for each spot
+  const REC = [["rec_tgt", "Tgt"], ["rec", "Rec"], ["rec_yd", "Rec yds"], ["rec_td", "Rec TD"], ["rush_yd", "Rush yds"]];
+  const FF_COLS = {
+    QB: [["pass_cmp", "Cmp"], ["pass_att", "Att"], ["pass_yd", "Pass yds"], ["pass_td", "Pass TD"], ["pass_int", "INT"], ["rush_yd", "Rush yds"], ["rush_td", "Rush TD"]],
+    RB: [["rush_att", "Car"], ["rush_yd", "Rush yds"], ["rush_td", "Rush TD"], ["rec_tgt", "Tgt"], ["rec", "Rec"], ["rec_yd", "Rec yds"], ["rec_td", "Rec TD"]],
+    WR: REC, TE: REC,
+    FLEX: [["rush_yd", "Rush yds"], ["rush_td", "Rush TD"], ["rec_tgt", "Tgt"], ["rec", "Rec"], ["rec_yd", "Rec yds"], ["rec_td", "Rec TD"]],
+    K: [["fgm", "FGM"], ["fga", "FGA"], ["fgm_50p", "50+"], ["xpm", "XPM"]],
+    DEF: [["def_sack", "Sacks"], ["def_int", "INT"], ["fum_rec", "Fum rec"], ["def_td", "TD"], ["pts_allow", "Pts allowed"]],
+  };
+  // one stat for a player in the chosen view: season total, per game, or this week's projection
+  const ffStat = (p, col, view) => {
+    if (view === "proj") { const i = (st.ffwcols || []).indexOf(col); return p.w && i >= 0 ? p.w[i] || 0 : null; }
+    const i = (st.ffcols || []).indexOf(col); if (!p.s || i < 0) return null;
+    const v = p.s[i] || 0; return view === "pg" ? (p.g ? v / p.g : 0) : v;
+  };
+  const fmt1 = (v, view) => (v == null ? "&ndash;" : view === "tot" && Number.isInteger(v) ? String(v) : (Math.round(v * 10) / 10).toFixed(1));
   const FF_SI = { std: 0, half: 1, ppr: 2 }, FF_SL = ["Standard", "Half PPR", "PPR"];
   const ffSi = (b) => (FF_SI[((b.pool && b.pool.extra) || {}).scoring] != null ? FF_SI[b.pool.extra.scoring] : 1);
   // a player's number for a sort: points a game, season points, or this week's projection, in the pool's scoring
@@ -686,16 +703,29 @@
     };
     let picker = "";
     if (st.ffslot && !locked) {
-      const want = P.ffSlots(st.ffslot), q = (st.ffq || "").toLowerCase(), inLu = new Set(Object.entries(st.ffl).filter(([k, v]) => v && k !== st.ffslot).map(([, v]) => v));
-      const mode = st.ffsort || "pg", SORTS = { pg: "a game", tot: "season", proj: st.ffWeek ? `proj, wk ${st.ffWeek}` : "proj" };
-      const fits = Object.values(st.ffp || {}).filter((p) => want.includes(p.pos) && teams[p.t] && !started(p.t) && !inLu.has(p.id)).sort((x, y) => ffVal(y, b, mode) - ffVal(x, b, mode));
+      const want = P.ffSlots(st.ffslot), inLu = new Set(Object.entries(st.ffl).filter(([k, v]) => v && k !== st.ffslot).map(([, v]) => v));
+      // the numbers: season totals, per game, or this week's projection; shown as a list or as a stats table
+      const view = st.ffstat || "pg", table = st.ffview === "table", cols = FF_COLS[st.ffslot] || FF_COLS[st.ffslot.replace(/\d/, "")] || [];
+      const VL = { tot: "season", pg: "a game", proj: st.ffWeek ? `proj, wk ${st.ffWeek}` : "proj" };
+      const sc = st.ffsortcol && (st.ffsortcol === "fp" || st.ffsortcol === "g" || cols.some(([k]) => k === st.ffsortcol)) ? st.ffsortcol : "fp", dir = st.ffsortdir || -1;
+      const key = (p) => (sc === "fp" ? ffVal(p, b, view) : sc === "g" ? p.g || 0 : ffStat(p, sc, view) || 0);
+      const fits = Object.values(st.ffp || {}).filter((p) => want.includes(p.pos) && teams[p.t] && !started(p.t) && !inLu.has(p.id)).sort((x, y) => dir * (key(x) - key(y)));
       // players you've already used stay in the list, grayed out with the round you used them, unless you hide them
       const list = fits.filter((p) => !usedElsewhere.has(p.id)).slice(0, 60).concat(st.ffhide ? [] : fits.filter((p) => usedElsewhere.has(p.id)));
-      picker = `<div class="card pl-ffpick"><div class="mod-h"><h2>${SLOT_NAME[st.ffslot]}${st.ffslot === "FLEX" ? " (RB, WR or TE)" : ""}</h2><span class="grow"></span><button type="button" class="btn sm ghost" data-ffslot="">Close</button></div>
+      const seg = (attr, cur, items) => `<div class="seg pl-ffseg" role="group">${items.map(([v, l]) => `<button type="button" ${attr}="${v}" aria-pressed="${cur === v}">${l}</button>`).join("")}</div>`;
+      const opp = (p) => `${esc(p.t)} ${ffKick(b, r, p.t) && (b.games || []).some((g) => g.round === r && g.b === p.t) ? "vs" : ffProj(b) && r === 1 ? "vs" : "at"} ${esc(teams[p.t])}`;
+      const usedNote = (p) => (usedElsewhere.has(p.id) ? ` &middot; used in the ${esc(usedIn[p.id] || "playoffs")}` : "");
+      const clear = st.ffl[st.ffslot] ? `<button type="button" class="pl-ffp pl-ffclear" data-ffpick=""><span class="pl-tn"><b>Clear this spot</b></span></button>` : "";
+      const body = table
+        ? `<div class="table-wrap pl-ffst"><table class="t"><thead><tr><th class="pl-stk">Player</th>${view === "proj" ? "" : `<th class="r"><button type="button" data-ffcol="g" aria-pressed="${sc === "g"}">G</button></th>`}${cols.map(([k, l]) => `<th class="r"><button type="button" data-ffcol="${k}" aria-pressed="${sc === k}">${l}${sc === k ? (dir < 0 ? " &darr;" : " &uarr;") : ""}</button></th>`).join("")}<th class="r"><button type="button" data-ffcol="fp" aria-pressed="${sc === "fp"}">FP${sc === "fp" ? (dir < 0 ? " &darr;" : " &uarr;") : ""}</button></th><th></th></tr></thead><tbody>
+            ${list.map((p) => { const used = usedElsewhere.has(p.id); return `<tr class="${used ? "used" : ""}"><td class="pl-stk"><button type="button" class="pl-ffsn" data-ffpick="${esc(p.id)}"${used ? " disabled" : ""}>${ffPhoto(p, 26)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.pos)} &middot; ${opp(p)}${usedNote(p)}</small></span></button></td>${view === "proj" ? "" : `<td class="r num">${p.g || 0}</td>`}${cols.map(([k]) => `<td class="r num">${fmt1(ffStat(p, k, view), view)}</td>`).join("")}<td class="r num fp">${fmt1(ffVal(p, b, view), "pg")}</td><td><button type="button" class="pl-ffinfo" data-ffcard="${esc(p.id)}" aria-label="${esc(p.n)}: player card">i</button></td></tr>`; }).join("")}
+            </tbody></table></div>`
+        : `<div class="pl-fflist">${list.map((p) => { const used = usedElsewhere.has(p.id), v = ffVal(p, b, view); return `<div class="pl-ffi"><button type="button" class="pl-ffp${used ? " used" : ""}" data-ffpick="${esc(p.id)}"${used ? " disabled" : ""}>${ffPhoto(p, 30)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.pos)} &middot; ${opp(p)}${usedNote(p)}</small></span><span class="pl-ffpg">${v ? v.toFixed(1) : "&ndash;"}<small>${esc(VL[view])}</small></span></button><button type="button" class="pl-ffinfo" data-ffcard="${esc(p.id)}" aria-label="${esc(p.n)}: player card" title="Player card">i</button></div>`; }).join("")}</div>`;
+      picker = `<div class="card pl-ffpick${table ? " wide" : ""}" role="dialog" aria-label="Pick your ${SLOT_NAME[st.ffslot]}"><div class="mod-h"><h2>Pick your ${SLOT_NAME[st.ffslot]}${st.ffslot === "FLEX" ? " <small class=\"ps\">RB, WR or TE</small>" : ""}</h2><span class="grow"></span><button type="button" class="btn sm ghost" data-ffslot="">Close</button></div>
         <div class="bd pl-ffbar"><input class="pl-ffq" type="search" data-ffq placeholder="Search players or a team" value="${esc(st.ffq || "")}" aria-label="Search players">
-          <label class="pl-ffsort">Sort<select data-ffsort>${[["pg", "Points per game"], ["tot", "Season points"], ["proj", st.ffWeek ? `Projected (week ${st.ffWeek})` : "Projected"]].map(([v, l]) => `<option value="${v}"${mode === v ? " selected" : ""}>${l}</option>`).join("")}</select></label>
+          <div class="pl-ffctl">${seg("data-ffstat", view, [["pg", "Per game"], ["tot", "Season"], ["proj", st.ffWeek ? `Proj wk ${st.ffWeek}` : "Projected"]])}${seg("data-ffview", table ? "table" : "list", [["list", "List"], ["table", "Stats"]])}</div>
           ${usedElsewhere.size ? `<label class="pl-ffhide"><input type="checkbox" data-ffhide${st.ffhide ? " checked" : ""}> Hide players I've used</label>` : ""}</div>
-        <div class="pl-fflist">${st.ffl[st.ffslot] ? `<button type="button" class="pl-ffp" data-ffpick=""><span class="pl-tn"><b>Clear this spot</b></span></button>` : ""}${list.map((p) => { const used = usedElsewhere.has(p.id), v = ffVal(p, b, mode); return `<div class="pl-ffi"><button type="button" class="pl-ffp${used ? " used" : ""}" data-ffpick="${esc(p.id)}"${used ? " disabled" : ""}>${ffPhoto(p, 30)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.pos)} &middot; ${esc(p.t)} vs ${esc(teams[p.t])}${used ? ` &middot; used in the ${esc(usedIn[p.id] || "playoffs")}` : ""}</small></span><span class="pl-ffpg">${v ? v.toFixed(1) : "&ndash;"}<small>${esc(SORTS[mode])}</small></span></button><button type="button" class="pl-ffinfo" data-ffcard="${esc(p.id)}" aria-label="${esc(p.n)}: player card" title="Player card">i</button></div>`; }).join("") || `<p class="ps" style="padding:0 14px">No players left for this spot.</p>`}</div></div>`;
+        ${clear}${list.length ? body : `<p class="ps" style="padding:0 14px 14px">No players left for this spot.</p>`}</div>`;
     }
     const total = row.rounds[r] && row.rounds[r].pts;
     const lineup = `<div class="card pl-fflu"><div class="mod-h"><h2>${RNAME[r]} lineup</h2><span class="grow"></span><span class="ps">${total != null ? `<b>${total}</b> points${locked ? "" : " so far"}` : locked ? "Locked" : proj ? "Projected matchups" : `Each player locks at his kickoff, from ${tipTime(lk)}`}</span></div>
@@ -703,6 +733,8 @@
       ${locked ? "" : `<div class="pl-save bd"><span class="ps">${Object.values(st.ffl).filter(Boolean).length} of 9 set. ${dirty ? "Not saved yet." : "Saved."}</span><button type="button" class="btn go" data-ffsave${dirty ? "" : " disabled"}>Save lineup</button></div>`}</div>`;
     const usedList = Object.keys(usedIn).length ? `<div class="card pl-ffused"><div class="mod-h"><h2>Already used</h2><span class="grow"></span><span class="ps">${Object.keys(usedIn).length} players, out for the rest of the playoffs</span></div><div class="bd">${[1, 2, 3, 4].filter((x) => x !== r && row.rounds[x] && row.rounds[x].set).map((x) => `<p class="pl-ffur"><b>${RNAME[x]}</b>${Object.values(row.rounds[x].lineup).map((id) => `<span class="pl-ffchip">${esc(pl(id).n)}</span>`).join("")}</p>`).join("")}</div></div>` : "";
     const projNote = proj ? `<div class="pl-note"><b>Projected Wild Card matchups.</b> These are the games if the season ended today: ${["AFC", "NFC"].map((cf) => { const by = {}; b.field.forEach((f) => { if (f.conf === cf) by[f.seed] = f.team; }); return `${cf} ${[[2, 7], [3, 6], [4, 5]].map(([x, y]) => `${by[y]} at ${by[x]}`).join(", ")}`; }).join("; ")}. Your lineup saves now. If a player's team falls out of the field by week 18, swap him out or he scores nothing.</div>` : "";
+    document.body.classList.toggle("pl-sheet-on", !!picker);
+    if (picker) picker = `<div class="pl-ffback" data-ffback aria-hidden="true"></div>` + picker;
     return tabs + projNote + `<div class="pl-ffwrap">${lineup}${picker || usedList || (locked ? "" : `<div class="pl-note"><b>Tap a spot to pick a player.</b> Anyone you start is gone for the rest of the playoffs, so check Plan ahead before spending a star from a team that should go deep.</div>`)}</div>` + ffPlan(b, r, row, pl) + (picker ? usedList : "") + `<p class="ps">Points are ${FF_SL[ffSi(b)]}, from Sleeper. "A game" is each player's regular-season average. Tap <b>i</b> for a player's card.</p>`;
   }
   /* Plan ahead: how far each team should go (the bracket simulated from point differential) next to the players you
@@ -970,11 +1002,12 @@
 
   // ---------- render and events ----------
   async function render() {
+    document.body.classList.remove("pl-sheet-on");
     themeBtn();
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -990,6 +1023,10 @@
       return;
     }
     if (t.dataset.ffcard) { ffCard(t.dataset.ffcard, st.board); return; }
+    if (t.dataset.ffstat) { st.ffstat = t.dataset.ffstat; return render(); }
+    if (t.dataset.ffview) { st.ffview = t.dataset.ffview; return render(); }
+    if (t.dataset.ffcol) { if (st.ffsortcol === t.dataset.ffcol) st.ffsortdir = -(st.ffsortdir || -1); else { st.ffsortcol = t.dataset.ffcol; st.ffsortdir = t.dataset.ffcol === "pass_int" || t.dataset.ffcol === "pts_allow" ? 1 : -1; } return render(); }
+    if (t.hasAttribute("data-ffback")) { st.ffslot = null; return render(); }
     if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return render(); }
     if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
     if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); return render(); }
@@ -1005,7 +1042,12 @@
     if (t.hasAttribute("data-bauto")) { st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return render(); }
     if (t.dataset.ffr) { st.ffr = +t.dataset.ffr; st.ffl = null; return render(); }
     if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return render(); }
-    if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]); st.ffslot = t.dataset.ffpick && nx ? nx : null; st.ffq = ""; return render(); }
+    if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]);
+      // on a phone the sheet closes after each pick, so the lineup (and its Save button) is right there
+      const phone = matchMedia("(max-width: 760px)").matches;
+      st.ffslot = t.dataset.ffpick && nx && !phone ? nx : null; st.ffq = "";
+      if (phone && t.dataset.ffpick) st.msg = `${((st.ffp || {})[t.dataset.ffpick] || {}).n || "Player"} added. ${nx ? "Tap the next spot, or save." : "Lineup full: save it."}`;
+      return render(); }
     if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = P.bracketPicks(st.board.field, st.kb); return render(); }
     if (t.hasAttribute("data-sqdraw") && !st.sqDraw) { st.sqDraw = true; st.sqOwn = true; return render(); }
     if (t.dataset.five) {
@@ -1076,7 +1118,7 @@
     if (t.hasAttribute("data-ffq")) {
       // filter the player list in place, so typing keeps the keyboard up
       st.ffq = t.value; const q = t.value.toLowerCase();
-      document.querySelectorAll(".pl-ffp[data-ffpick]").forEach((el) => { if (!el.dataset.ffpick) return; (el.closest(".pl-ffi") || el).hidden = !!q && !el.textContent.toLowerCase().includes(q); });
+      document.querySelectorAll(".pl-ffp[data-ffpick], .pl-ffsn[data-ffpick]").forEach((el) => { if (!el.dataset.ffpick) return; (el.closest(".pl-ffi") || el.closest("tr") || el).hidden = !!q && !el.textContent.toLowerCase().includes(q); });
     }
     if (t.hasAttribute("data-ktb")) { st.ktb = t.value; const b = document.querySelector("[data-ksave]"); if (b) b.disabled = false; }
   });
