@@ -149,6 +149,18 @@ select{padding-right:2rem}
 .kp{display:grid;grid-template-columns:1fr auto;gap:.25rem 1rem;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--rule)}
 .kp-name{font-weight:600;min-width:0;overflow-wrap:anywhere}
 .kp-sub{display:block;font-size:.8125rem;color:var(--muted);font-weight:400}
+/* Statcast on keepers: a Due / Lucky tag (why on hover) and a section in the player card */
+.sv-tag{position:relative;display:inline-block;margin-left:6px;padding:1px 6px;border-radius:4px;font:700 .6875rem/1.4 var(--f-ui,system-ui);letter-spacing:.04em;text-transform:uppercase;vertical-align:2px;cursor:help}
+.sv-tag.sv-due{background:#DDF0E2;color:#1C6B3A}
+.sv-tag.sv-lucky{background:#FBE0E4;color:#A51F37}
+.sv-tag[data-tip]:hover::after,.sv-tag[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:0;bottom:calc(100% + 6px);width:max-content;max-width:260px;white-space:normal;text-transform:none;letter-spacing:0;font:500 .75rem/1.35 var(--f-ui,system-ui);background:#16241d;color:#fff;padding:6px 8px;border-radius:6px;box-shadow:0 3px 10px rgba(0,0,0,.2);z-index:50;pointer-events:none}
+.sv-grid{display:flex;flex-wrap:wrap;gap:4px 14px}
+.sv-grid span{display:inline-flex;align-items:baseline;gap:4px;white-space:nowrap}
+.sv-grid small{opacity:.7}
+.sv-grid i{font-style:normal;font-size:.6875rem;font-weight:700;padding:0 5px;border-radius:999px;background:rgba(127,127,127,.15)}
+.sv-grid i.hi{background:#d22d49;color:#fff}
+.sv-grid i.lo{background:#3661ad;color:#fff}
+.sv-note{display:block;margin-top:6px;font-size:.8125rem}
 .kp-right{display:flex;align-items:center;gap:.9rem}
 .kp-cost{min-width:6.6rem;text-align:right;font-size:.875rem;line-height:1.25}
 .kp-cost b{display:block;font:600 1.15rem/1.1 var(--f-sign)}
@@ -931,7 +943,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     $("reigning").innerHTML = last.year + " champion: <strong>" + esc(champ) + "</strong>" + (MAN[champ] ? " (" + esc(MAN[champ]) + ")" : "");
     $("foot").textContent = "Updated " + new Date(d.updated + "T12:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) + ". Data from the league's Yahoo draft and standings pages, the keeper sheet and the commissioner's league emails.";
     initHero();
-    loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initH2H(); initWaivers(); initAnalysis(); initPlayers(); initManagers(); initRace(); initDrafts();
+    loadSavant(); loadMine(); initKeepers(); initHistory(); initBest(); initOffseason(); initTitles(); initRegular(); initStats(); initAwards(); initTrades(); initH2H(); initWaivers(); initAnalysis(); initPlayers(); initManagers(); initRace(); initDrafts();
     loadSheet();
     if (location.hash === "#drafts") { $("kt-draft").click(); $("keepers").scrollIntoView(); }
   }
@@ -1181,13 +1193,56 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     return (s.b ? '<span class="player-stat-kind">2026 hitting, ' + s.b[8] + " plate appearances</span>" + statsGrid(s.b, BAT_COLS) : "") +
       (s.p ? '<span class="player-stat-kind">2026 pitching, ' + s.p[8] + " innings</span>" + statsGrid(s.p, PIT_COLS) : "");
   }
+  // ---------- Statcast (the MLB Hub's mlb/data/savant.json, matched by name) ----------
+  // Expected stats credit how hard and at what angle each ball was hit, not where it landed, and predict next season
+  // better than the real results do. A keeper whose results ran well past his contact is a sell-high ("Lucky"); one
+  // whose contact beat his results is a buy-low ("Due"). Same cutoffs as the MLB Hub: wOBA .025 off his xwOBA, ERA
+  // three-quarters of a run off his xERA.
+  var SV = null;
+  function svKey(n) { return String(n || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\b(jr|sr|ii|iii|iv)\b\.?/g, "").replace(/[^a-z]/g, ""); }
+  function loadSavant() {
+    fetch("../mlb/data/savant.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      if (!j) return;
+      SV = { season: j.season, by: {} };
+      ["bat", "pit"].forEach(function (k) { Object.keys(j[k] || {}).forEach(function (id) { var d = j[k][id], key = svKey(d.n); (SV.by[key] = SV.by[key] || {})[k] = d; }); });
+      if ($("k-list")) drawKeepers();
+    }).catch(function () {});
+  }
+  function svOf(name) { return SV && SV.by[svKey(name)]; }
+  function svLuck(name) {
+    var h = svOf(name); if (!h) return null;
+    var b = h.bat && h.bat.x, p = h.pit && h.pit.x, out = null;
+    if (b && b[5] != null && b[6] != null && (b[0] || 0) >= 150) { var g = b[5] - b[6]; out = { tag: g <= -0.025 ? "due" : g >= 0.025 ? "lucky" : null, why: "wOBA " + r3(b[5]) + " vs. xwOBA " + r3(b[6]) }; }
+    if (p && p[7] != null && p[8] != null && (!out || (p[0] || 0) > (b ? b[0] : 0))) { var e = p[7] - p[8]; out = { tag: e >= 0.75 ? "due" : e <= -0.75 ? "lucky" : null, why: "ERA " + p[7].toFixed(2) + " vs. xERA " + p[8].toFixed(2) }; }
+    return out;
+  }
+  function r3(v) { return v == null ? "—" : v.toFixed(3).replace(/^0/, ""); }
+  function svTag(name) {
+    var L = svLuck(name); if (!L || !L.tag) return "";
+    var tip = L.why + (L.tag === "due" ? ": his contact beat his results, so 2027 should be better. A buy-low." : ": his results beat his contact, so expect a step back. A sell-high.");
+    return ' <span class="sv-tag sv-' + L.tag + '" data-tip="' + esc(tip) + '" tabindex="0">' + (L.tag === "due" ? "Due" : "Lucky") + "</span>";
+  }
+  function svBody(name) {
+    var h = svOf(name); if (!h) return "";
+    var ord = function (n) { var v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); };
+    var cell = function (label, val, pc) { return val == null && pc == null ? "" : "<span><small>" + label + "</small><b>" + (val != null ? val : "") + "</b>" + (pc != null ? '<i class="' + (pc >= 70 ? "hi" : pc <= 30 ? "lo" : "") + '">' + ord(pc) + "</i>" : "") + "</span>"; };
+    var out = "", L = svLuck(name);
+    var has = function (d) { return d && ((d.x && d.x[0]) || Object.keys(d.pct || {}).length > 2); };
+    var X = function (d, i) { return d.x && d.x[i] != null ? d.x[i] : null; };
+    if (has(h.bat)) { var b = h.bat, P = b.pct || {};
+      out += '<span class="player-stat-kind">' + (SV.season || "") + " Statcast, hitting</span><span class=\"sv-grid\">" + cell("xwOBA", X(b, 6) != null ? r3(X(b, 6)) : null, P.xwoba) + cell("xBA", X(b, 2) != null ? r3(X(b, 2)) : null, P.xba) + cell("Barrel%", b.ev ? b.ev[3].toFixed(1) : null, P.brl_percent) + cell("Avg EV", b.ev ? b.ev[0].toFixed(1) : null, P.exit_velocity) + cell("Bat speed", b.bt ? b.bt[0].toFixed(1) : null, P.bat_speed) + cell("Sprint", b.spd ? b.spd[0].toFixed(1) : null, P.sprint_speed) + "</span>"; }
+    if (has(h.pit)) { var q = h.pit, Q = q.pct || {};
+      out += '<span class="player-stat-kind">' + (SV.season || "") + " Statcast, pitching</span><span class=\"sv-grid\">" + cell("xERA", X(q, 8) != null ? X(q, 8).toFixed(2) : null, Q.xera) + cell("ERA", X(q, 7) != null ? X(q, 7).toFixed(2) : null, null) + cell("K%", null, Q.k_percent) + cell("Whiff%", null, Q.whiff_percent) + cell("Barrels allowed", null, Q.brl_percent) + cell("FB velo", null, Q.fb_velocity) + "</span>"; }
+    if (L && L.tag) out += '<span class="sv-note">' + esc(L.why) + (L.tag === "due" ? ": due for better in 2027." : ": due for a step back in 2027.") + "</span>";
+    return out;
+  }
   // a player's face from the faces registry (assets/faces.js), initials until it loads
   function face(name, size) { return window.DSFaces ? DSFaces.html({ sport: "mlb", name: name, size: size || 28, color: "#1D4A36" }) : ""; }
   function playerCard(name) {
     return '<span class="player-detail">' + face(name, 28) + '<button type="button" class="player-name-trigger" aria-expanded="false">' + esc(name) + "</button>" +
       '<span class="player-popover" role="group" aria-label="' + esc(name) + ', 2026 stats"><span class="player-popover-head"><strong>' + esc(name) + "</strong><span>Yahoo 2027: <b>" + yahooRank(name) + "</b></span></span>" +
-      '<span class="player-stat-body">' + statBody(name) + "</span>" +
-      '<span class="player-source">Stats from MLB. Rank from Yahoo\'s early 2027 top 25.</span></span></span>';
+      '<span class="player-stat-body">' + statBody(name) + svBody(name) + "</span>" +
+      '<span class="player-source">Stats from MLB, Statcast from Baseball Savant. Rank from Yahoo\'s early 2027 top 25.</span></span></span>';
   }
   // Hover or focus shows a card; a tap toggles it (for phones), and a tap elsewhere or Escape closes it
   function initPlayerCards() {
@@ -1204,7 +1259,7 @@ footer{font-size:.8125rem;color:var(--muted);border-top:1px solid var(--rule);pa
     if (OFF().league) pickable = null;           // keepers are declared in the league on Draft Lab, not here
     var on = pickable && mineFor(pickable).indexOf(e.p) > -1;
     var box = pickable && e.next ? '<label class="keep"><input type="checkbox" data-keep="' + esc(e.p) + '"' + (on ? " checked" : "") + (locked() ? " disabled" : "") + '>Keep</label>' : "";
-    return '<li class="kp' + (e.next ? "" : " out") + (on ? " picked" : "") + '"><div class="kp-name">' + playerCard(e.p) + '<span class="kp-sub">' + esc(subText(e, team)) + "</span></div>" +
+    return '<li class="kp' + (e.next ? "" : " out") + (on ? " picked" : "") + '"><div class="kp-name">' + playerCard(e.p) + svTag(e.p) + '<span class="kp-sub">' + esc(subText(e, team)) + "</span></div>" +
       '<div class="kp-right">' + tilesHtml(e) + '<div class="kp-cost">' + costHtml(e) + "</div>" + box + "</div></li>";
   }
   function initKeepers() {
