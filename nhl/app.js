@@ -270,6 +270,7 @@
         return "<tr><td>" + pname(p) + '</td><td class="hide-m">' + (p.age || "—") + "</td><td>" + (n.gp || 0) + "</td><td>" + (n.gp ? n.w + "-" + n.l + "-" + n.otl : "—") + "</td><td>" + (n.sv != null && n.gp ? n.sv.toFixed(3).replace(/^0/, "") : "—") +
           '</td><td class="hide-m">' + (n.gaa != null && n.gp ? n.gaa.toFixed(2) : "—") + "</td><td><b>" + tierDot(p) + f1(p.war) + '</b></td><td class="hide-m">' + (p.gar_now == null ? "—" : sgn(p.gar_now) + " GAR") + "</td>" + capCells(p) + "</tr>";
       }).join("") + "</tbody></table></div>";
+    h += teamEdge(t);
     return h;
   }
   function capCells(p) {
@@ -575,7 +576,7 @@
   var EDGE = null, edgeWait = null;
   function loadEdge() {
     if (!edgeWait) edgeWait = fetch("data/edge.json?d=" + new Date().toISOString().slice(0, 10)).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
-      .then(function (j) { EDGE = j || { sk: {}, g: {}, avg: { sk: {}, g: {} }, none: true }; if (state.route === "edge" || state.route === "players") render(); return EDGE; });
+      .then(function (j) { EDGE = j || { sk: {}, g: {}, avg: { sk: {}, g: {} }, none: true }; if (state.route === "edge" || state.route === "players" || state.route === "team") render(); return EDGE; });
     return edgeWait;
   }
   // [key, column, format, tooltip]; format: s speed (mph), n count, d distance (miles), p share, v save %
@@ -621,6 +622,22 @@
           cols.map(function (c) { var x = e[c[0]]; return x ? '<td class="ec" style="background:' + edgeColor(x[1]) + ";color:" + (x[1] >= 80 || x[1] <= 20 ? "#fff" : "inherit") + '" title="' + ord(x[1]) + ' percentile">' + edgeFmt(x[0], c[2]) + "</td>" : "<td>—</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody></table></div></div>";
     h += '<p class="note">' + list.length + (G ? " goalies" : " skaters") + (find ? "" : " with " + minGp + "+ games") + ", top 150 shown. From <a href=\"https://edge.nhl.com/\" rel=\"noopener\">NHL Edge</a>, pulled " + esc((EDGE.pulled || "").slice(0, 10)) + ". Speeds in mph, distance in miles.</p>";
+    return h;
+  }
+  // the team's skaters and goalies in NHL Edge, shaded by the league's percentiles
+  function teamEdge(t) {
+    if (!EDGE) { loadEdge(); return '<h3 class="sec2">NHL Edge</h3><p class="loading">Loading tracking…</p>'; }
+    var ros = (ROSTER[t.abbr] || []).slice();
+    var row = function (p, cols, src) {
+      var e = src[p.id];
+      return "<tr><td>" + pname(p) + "</td>" + cols.map(function (c) { var x = e && e[c[0]]; return x ? '<td class="ec" style="background:' + edgeColor(x[1]) + ";color:" + (x[1] >= 80 || x[1] <= 20 ? "#fff" : "inherit") + '" title="' + ord(x[1]) + ' percentile">' + edgeFmt(x[0], c[2]) + "</td>" : "<td>—</td>"; }).join("") + "</tr>";
+    };
+    var sk = ros.filter(function (p) { return p.grp !== "G" && EDGE.sk[p.id]; }).sort(function (a, b) { return b.war - a.war; });
+    var gs = ros.filter(function (p) { return p.grp === "G" && EDGE.g[p.id]; }).sort(function (a, b) { return b.war - a.war; });
+    if (!sk.length && !gs.length) return "";
+    var h = '<h3 class="sec2">NHL Edge tracking</h3><p class="note">This season\'s puck and player tracking, shaded by the league\'s percentiles: red is good, blue is bad. <a href="#/edge">League leaderboards</a>.</p>';
+    if (sk.length) h += '<div class="div"><div class="scroll-x"><table class="t edge"><thead><tr><th>Skater</th>' + EDGE_SK.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" + sk.map(function (p) { return row(p, EDGE_SK, EDGE.sk); }).join("") + "</tbody></table></div></div>";
+    if (gs.length) h += '<div class="div"><div class="scroll-x"><table class="t edge"><thead><tr><th>Goalie</th>' + EDGE_G.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[1] + "</th>"; }).join("") + "</tr></thead><tbody>" + gs.map(function (p) { return row(p, EDGE_G, EDGE.g); }).join("") + "</tbody></table></div></div>";
     return h;
   }
   function edgePane(p) {

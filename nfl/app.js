@@ -664,12 +664,13 @@
     html += '<div class="stats">' + stat(pctTxt(o.div), "Win the division") + stat(pctTxt(o.playoffs), "Make the playoffs") + stat(pctTxt(o.bye), "No. 1 seed") + stat(pctTxt(o.sb), "Win the Super Bowl") + "</div>";
     html += '<div class="stats sm">' + stat(m(base[0].space), "2026 cap space") + stat('<i class="' + (plan[1].space >= 0 ? "pos" : "neg") + '">' + m(plan[1].space) + "</i>", "2027 space" + (ms.length ? " (with plan)" : "")) + stat(m(base[0].dead), "2026 dead money") +
       stat(m(cc.future), "Pushed into later years") + stat(cc.voids > 0.05 ? m(cc.voids) : "None", "In void years") + "</div>";
-    html += '<div class="subtabs">' + [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"]].map(function (x) { return '<a href="' + href("team/" + code, Object.assign({}, state.q, { v: x[0] })) + '"' + (v === x[0] ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
+    html += '<div class="subtabs">' + [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"], ["ngs", "Next Gen Stats"]].map(function (x) { return '<a href="' + href("team/" + code, Object.assign({}, state.q, { v: x[0] })) + '"' + (v === x[0] ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
     if (v === "sheet") html += capSheet(code, ms);
     else if (v === "depth") html += depthChart(code);
     else if (v === "draft") html += draftTab(code);
     else if (v === "gm") html += gmTab(code, ms);
     else if (v === "plan") html += planner(code, y, ms, base, plan);
+    else if (v === "ngs") html += teamNgs(code);
     else html += overview(code);
     view.innerHTML = html;
   }
@@ -927,6 +928,28 @@
       }).join(""), "qualified players, " + (NG.season || "") + " through week " + (NG.week || "—"));
     html += '<p class="note">From the NFL\'s <a href="https://nextgenstats.nfl.com/" rel="noopener">Next Gen Stats</a> via nflverse, pulled ' + esc((NG.pulled || "").slice(0, 10)) + ". Only qualified players are listed (NGS's own cutoffs: about 14 attempts a game for quarterbacks, 6.25 carries for backs, 1.875 catches for receivers).</p>";
     view.innerHTML = html;
+  }
+  // a team's qualified players in Next Gen Stats, by position, shaded by percentile
+  function teamNgs(code) {
+    if (!NG) { loadNgs().then(function () { if (state.route === "team" && state.q.v === "ngs") render(); }); return '<p class="loading">Loading Next Gen Stats…</p>'; }
+    var html = '<p class="lede">This season\'s NFL tracking numbers for this team\'s qualified players, shaded by percentile at the position: red is good, blue is bad. <a href="' + href("ngs", {}) + '">League leaderboards</a>.</p>';
+    var any = false;
+    [["qb", "Quarterbacks"], ["rb", "Running backs"], ["rec", "Receivers"]].forEach(function (pg) {
+      var pool = pg[0], idx = {}; (NG.cols[pool] || []).forEach(function (k, i) { idx[k] = i; });
+      var ids = Object.keys(NG[pool] || {}).filter(function (id) { var p = W.byId[id]; return (p ? p.t : NG[pool][id].t) === code; });
+      if (!ids.length) return;
+      any = true;
+      var cols = NGCOLS[pool];
+      html += tablePanel(pg[1], "<th>Player</th>" + (pool === "rec" ? "<th>Pos</th>" : "") + cols.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[0] + "</th>"; }).join(""),
+        ids.map(function (id) {
+          var d = NG[pool][id], p = W.byId[id], P2 = d.pct || {};
+          return "<tr><td>" + (p ? pname(p, 22) : esc(d.n)) + "</td>" + (pool === "rec" ? "<td>" + esc(d.pos) + "</td>" : "") + cols.map(function (c) {
+            var v = d.x[idx[c[1]]], pc = P2[c[1]];
+            return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + ngOrd(pc) + ' percentile">' + ngFmt(v, c[2]) + "</td>";
+          }).join("") + "</tr>";
+        }).join(""), "");
+    });
+    return any ? html : html + '<p class="note">None of this team\'s players meet the NGS qualifying cutoffs yet.</p>';
   }
   function ngsCard(p) {
     var el = document.getElementById("ngsc");

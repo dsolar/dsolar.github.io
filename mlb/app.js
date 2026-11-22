@@ -229,11 +229,12 @@
       stat(pct(st.playoff), "Playoffs") + stat(pct(st.ws), "World Series") +
       stat(ordinal(H.rank(y, "bat", tm.bat)), "Hitting") + stat(ordinal(H.rank(y, "pit", tm.pit)), "Pitching") +
       stat(f1(tm.war), "Team WAR") + stat(money(H.payroll(abbr, y), 0), "Payroll") + "</div>";
-    var sub = state.q.view === "money" ? "money" : state.q.view === "farm" ? "farm" : "depth";
+    var sub = state.q.view === "money" ? "money" : state.q.view === "farm" ? "farm" : state.q.view === "statcast" ? "statcast" : "depth";
     var subLink = function (k, label) { return '<a href="' + href("team/" + abbr, { y: y === H.season ? null : y, view: k === "depth" ? null : k }) + '"' + (sub === k ? ' aria-current="page"' : "") + ">" + label + "</a>"; };
-    html += '<nav class="subtabs">' + subLink("depth", "Depth chart") + subLink("money", "Contracts &amp; cap") + subLink("farm", "Farm system") + "</nav>";
+    html += '<nav class="subtabs">' + subLink("depth", "Depth chart") + subLink("money", "Contracts &amp; cap") + subLink("farm", "Farm system") + subLink("statcast", "Statcast") + "</nav>";
     if (sub === "money") { view.innerHTML = html + moneyView(abbr, y); return; }
     if (sub === "farm") { view.innerHTML = html + farmPanel(abbr, true); return; }
+    if (sub === "statcast") { view.innerHTML = html + teamStatcast(abbr); return; }
     html += '<div class="legend">' + ["Fringe", "Weak", "Average", "Strong", "Elite"].map(function (k) { return '<span class="T-' + k + '">' + k + "</span>"; }).join("") + "</div>";
     html += field(tm, y);
     // what changed going into this season
@@ -704,7 +705,7 @@
     if (svWait) return svWait;
     svWait = fetch("data/savant.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) {
       SV = j || { bat: {}, pit: {}, none: true };
-      if (GROUP[state.route] === "players" || /^(fa|value|trade)$/.test(state.route)) render();
+      if (GROUP[state.route] === "players" || /^(fa|value|trade)$/.test(state.route) || (state.route === "team" && state.q.view === "statcast")) render();
       return SV;
     });
     return svWait;
@@ -788,6 +789,35 @@
     view.innerHTML = html;
   }
   function svFoot() { return '<p class="note">From <a href="https://baseballsavant.mlb.com/" rel="noopener">Baseball Savant</a>, pulled ' + esc(SV && SV.pulled ? SV.pulled.slice(0, 10) : "—") + ". Qualified players only (Savant's own cutoffs).</p>"; }
+
+  // A team's Statcast: last season's numbers for the players on its roster now, PA-weighted into team lines and ranked
+  function svTeams() {
+    var T = {};
+    var add = function (abbr, k, d, w) { var t = T[abbr] = T[abbr] || { b: { pa: 0, xw: 0, w: 0 }, p: { pa: 0, xe: 0, e: 0 } }; t[k].pa += w; if (k === "b") { t.b.xw += d.x[6] * w; t.b.w += d.x[5] * w; } else { t.p.xe += d.x[8] * w; t.p.e += d.x[7] * w; } };
+    Object.keys(SV.bat).forEach(function (id) { var p = H.byId[id] || H.byId[+id], d = SV.bat[id]; if (p && p.t && d.x && d.x[0] && d.x[5] != null && d.x[6] != null) add(p.t, "b", d, d.x[0]); });
+    Object.keys(SV.pit).forEach(function (id) { var p = H.byId[id] || H.byId[+id], d = SV.pit[id]; if (p && p.t && d.x && d.x[0] && d.x[7] != null && d.x[8] != null) add(p.t, "p", d, d.x[0]); });
+    Object.keys(T).forEach(function (a) { var t = T[a]; t.xwoba = t.b.pa ? t.b.xw / t.b.pa : null; t.woba = t.b.pa ? t.b.w / t.b.pa : null; t.xera = t.p.pa ? t.p.xe / t.p.pa : null; t.era = t.p.pa ? t.p.e / t.p.pa : null; });
+    return T;
+  }
+  function teamStatcast(abbr) {
+    if (!SV) { loadSavant(); return svWaitNote(); }
+    var T = svTeams(), me = T[abbr] || {}, all = Object.keys(T);
+    var rk = function (k, low) { var v = me[k]; if (v == null) return "—"; return ordinal(1 + all.filter(function (a) { return T[a][k] != null && (low ? T[a][k] < v : T[a][k] > v); }).length); };
+    var html = '<p class="lede">Last season\'s Statcast numbers for the players on this roster now, from Baseball Savant: expected stats credit how hard and at what angle each ball was hit, not where it landed. Team lines weight each player by his plate appearances. Red is good, blue is bad.</p>';
+    html += '<div class="stats">' + stat(f3(me.xwoba), "Hitters' xwOBA (" + rk("xwoba") + ")") + stat(me.woba != null ? (me.woba - me.xwoba > 0 ? "+" : "") + f3(me.woba - me.xwoba) : "—", "wOBA minus xwOBA") +
+      stat(me.xera != null ? me.xera.toFixed(2) : "—", "Pitchers' xERA (" + rk("xera", true) + ")") + stat(me.era != null ? (me.era - me.xera > 0 ? "+" : "") + (me.era - me.xera).toFixed(2) : "—", "ERA minus xERA") + "</div>";
+    var bats = Object.keys(SV.bat).filter(function (id) { var p = H.byId[id] || H.byId[+id]; return p && p.t === abbr && SV.bat[id].x && SV.bat[id].x[0]; }).sort(function (a, b) { return SV.bat[b].x[0] - SV.bat[a].x[0]; });
+    var pits = Object.keys(SV.pit).filter(function (id) { var p = H.byId[id] || H.byId[+id]; return p && p.t === abbr && SV.pit[id].x && SV.pit[id].x[0]; }).sort(function (a, b) { return SV.pit[b].x[0] - SV.pit[a].x[0]; });
+    html += tablePanel("Hitters", "<th>Player</th><th></th><th>PA</th><th>wOBA</th><th>xwOBA</th><th>xBA</th><th>xSLG</th><th>Barrel%</th><th>Avg EV</th><th>Hard hit%</th><th>Bat speed</th><th>Sprint</th>",
+      bats.map(function (id) { var d = SV.bat[id], P = d.pct || {}, p = H.byId[id] || H.byId[+id];
+        return '<tr><td class="tm">' + pname(p, 22) + svBadge(id, false) + "</td><td></td><td>" + f0(d.x[0]) + "</td><td>" + f3(d.x[5]) + "</td>" + pctCell(P.xwoba, f3(d.x[6])) + pctCell(P.xba, f3(d.x[2])) + pctCell(P.xslg, f3(d.x[4])) + pctCell(P.brl_percent, d.ev ? f1(d.ev[3]) : "—") + pctCell(P.exit_velocity, d.ev ? f1(d.ev[0]) : "—") + pctCell(P.hard_hit_percent, d.ev ? f1(d.ev[5]) : "—") + pctCell(P.bat_speed, d.bt ? f1(d.bt[0]) : "—") + pctCell(P.sprint_speed, d.spd ? f1(d.spd[0]) : "—") + "</tr>"; }).join(""),
+      bats.length + " qualified last season");
+    html += tablePanel("Pitchers", "<th>Player</th><th></th><th>PA</th><th>ERA</th><th>xERA</th><th>xwOBA</th><th>K%</th><th>BB%</th><th>Whiff%</th><th>Chase%</th><th>Barrel%</th><th>FB velo</th>",
+      pits.map(function (id) { var d = SV.pit[id], P = d.pct || {}, p = H.byId[id] || H.byId[+id];
+        return '<tr><td class="tm">' + pname(p, 22) + svBadge(id, true) + "</td><td></td><td>" + f0(d.x[0]) + "</td><td>" + (d.x[7] != null ? d.x[7].toFixed(2) : "—") + "</td>" + pctCell(P.xera, d.x[8] != null ? d.x[8].toFixed(2) : "—") + pctCell(P.xwoba, f3(d.x[6])) + ["k_percent", "bb_percent", "whiff_percent", "chase_percent", "brl_percent", "fb_velocity"].map(function (k) { return pctCell(P[k]); }).join("") + "</tr>"; }).join(""),
+      pits.length + " qualified last season; the last six columns are percentiles");
+    return html + svFoot();
+  }
 
   // who's outrun his contact, and who's due: actual against expected
   function luckPage() {

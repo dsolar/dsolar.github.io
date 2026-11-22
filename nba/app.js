@@ -269,7 +269,7 @@
         var line = i === 0 ? (p.line ? f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast) : "—") : money(x.sal);
         return "<tr" + (k === 5 || k === 10 ? ' class="cut"' : "") + "><td>" + pname(p, 24, p.inj ? ' <span class="pill warn" title="' + esc(p.inj) + '">' + esc(p.inj) + "</span>" : "") + "</td><td>" + esc(posOf(p)) + "</td><td>" + (p.fill || p.age == null ? "—" : p.rook ? p.age + i - p.arrive : p.age + i) + "</td><td>" + rchip(x.r) + "</td><td>" + (mins ? f0(mins) : "—") + "</td><td>" + line + "</td><td>" + contractCell(x, i) + "</td></tr>";
       }).join(""), (i === 0 ? "This season's numbers" : "") + (inj.length && i === 0 ? " · " + inj.length + " on the injury report" : ""));
-    if (i === 0) html += teamLineups(code);
+    if (i === 0) html += teamLineups(code) + teamTracking(code);
     html += '<p class="note">Cap sheet, exceptions and draft picks are on the <a href="' + href("contracts/" + code, { y: yq(i) }) + '">Contracts tab</a>.</p>';
     view.innerHTML = html;
   }
@@ -1015,7 +1015,7 @@
         if (H.adv) H.adv.players.forEach(function (r) { if (r.nba && r.id) TRK.hub[String(r.nba)] = r.id; });
         Object.keys(TRK.dl || {}).forEach(function (pid) { var n = TRK.dl[pid]; if (!TRK.hub[n] && H.W.P[pid]) TRK.hub[n] = pid; });
         TRK.of = {}; Object.keys(TRK.hub).forEach(function (n) { TRK.of[TRK.hub[n]] = n; });
-        if (state.route === "track") render();
+        if (state.route === "track" || state.route === "team") render();
         return TRK;
       });
     return trkWait;
@@ -1065,6 +1065,17 @@
       rows.length + " players" + (rows.length > 200 ? ", top 200 shown" : ""));
     html += '<p class="note">From <a href="https://www.nba.com/stats/players/speed-distance" rel="noopener">NBA.com tracking</a>, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + " (it refreshes weekly). Percentages are shown as percents, and sort and rank only players with enough attempts this season (25 catch-and-shoot threes, 35 pull-ups, 40 drives, 40 rim shots defended).</p>";
     view.innerHTML = html;
+  }
+  // the team's players in the tracking data, a column or two from each view
+  function teamTracking(code) {
+    if (!TRK) { loadTrack(); return ""; }
+    var cols = [["dist", "Miles", 1], ["spd", "Speed", 2], ["drv", "Drives", 1], ["tch", "Touches", 1], ["pot_ast", "Pot. ast", 1], ["cs3a", "C&S 3PA", 1], ["cs3", "C&S 3P%", "p"], ["defl", "Deflections", 1], ["contest", "Contests", 1], ["rim_fg", "Opp. rim FG%", "p"]];
+    var ids = Object.keys(TRK.p).filter(function (id) { var hp = TRK.hub[id] && H.W.P[TRK.hub[id]]; return (hp ? hp.t : TRK.p[id].t) === code && (TRK.p[id].gp || 0) >= 3; })
+      .sort(function (a, b) { return (TRK.p[b].min || 0) - (TRK.p[a].min || 0); });
+    if (!ids.length) return "";
+    return tablePanel("Player tracking", "<th>Player</th><th>MIN</th>" + cols.map(function (c) { return "<th>" + c[1] + "</th>"; }).join(""),
+      ids.map(function (id) { var d = TRK.p[id]; return "<tr><td>" + trkName(id, d) + "</td><td>" + f1(d.min) + "</td>" + cols.map(function (c) { return trkCell(d, c); }).join("") + "</tr>"; }).join(""),
+      'Per game this season, shaded by percentile among regulars. <a href="' + href("track", { t: code }) + '">More</a>');
   }
   function trackPane(p) {
     if (!TRK) return '<p class="note">Loading tracking…</p>';
