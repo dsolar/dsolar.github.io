@@ -48,6 +48,13 @@ jobs:
         run: |
           if [ -f tools/nhl_hub_build.py ]; then python3 tools/nhl_hub_build.py; fi
 
+      # NHL Edge tracking (skating speed, shot speed, zone time; goalie save % by shot location) for every player,
+      # about 800 small calls; a miss keeps the last good file
+      - name: Pull NHL Edge
+        continue-on-error: true
+        timeout-minutes: 20
+        run: python3 tools/nhl_edge.py
+
       - name: Refresh fantasy players and contracts
         continue-on-error: true
         run: node tools/fantasykit_nhl.mjs --pool-only
