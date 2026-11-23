@@ -18,7 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 HUB_EDGE, PUBLIC_MAX, TOTAL_EDGE = 3.0, 40, 4.0
-T1_SINCE = {"cfb": "2026-11-23"}   # CFB totals were recalibrated (tools/cfb_extras.py calibrate_totals); grade only the new ones
+T1_SINCE = {"cfb": "2026-11-23"}
+S_SINCE = {"cbb": "2026-11-23"}   # CBB spreads became a market-rating blend (fit_market in tools/cbb_extras.py)   # CFB totals were recalibrated (tools/cfb_extras.py calibrate_totals); grade only the new ones
 
 
 def finals(hub):
@@ -68,7 +69,7 @@ def grade(hub):
         side = 1 if edge > 0 else -1
         r = 0 if cov == 0 or edge == 0 else (1 if (cov > 0) == (side == 1) else -1)
         add("all", r)
-        if abs(edge) >= HUB_EDGE:
+        if abs(edge) >= HUB_EDGE and l.get("day", "") >= S_SINCE.get(hub, ""):
             add("s1", r)
             pct = None if h.get("bp") is None else (h["bp"] if side == 1 else 100 - h["bp"])
             if pct is not None and pct < PUBLIC_MAX:
@@ -82,7 +83,7 @@ def grade(hub):
         if t is not None and ht is not None and abs(ht - t) >= TOTAL_EDGE:
             tt = f[0] + f[1] - t
             add("t1", 0 if tt == 0 else (1 if (tt > 0) == (ht > t) else -1))
-    return {"since": since, "t1Since": T1_SINCE.get(hub), "rules": {"hubEdge": HUB_EDGE, "publicMax": PUBLIC_MAX, "totalEdge": TOTAL_EDGE}, "records": rec}
+    return {"since": since, "t1Since": T1_SINCE.get(hub), "sSince": S_SINCE.get(hub), "rules": {"hubEdge": HUB_EDGE, "publicMax": PUBLIC_MAX, "totalEdge": TOTAL_EDGE}, "records": rec}
 
 
 def main():

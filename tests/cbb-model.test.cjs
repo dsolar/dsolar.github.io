@@ -42,7 +42,7 @@ test("game snapshots use the New York game day and never manufacture pregame sco
 
 test("the browser line matches every line the updater logged",()=>{
  const d=JSON.parse(fs.readFileSync(path.join(__dirname,"../cbb/data/hub.json"),"utf8")),x=JSON.parse(fs.readFileSync(path.join(__dirname,"../cbb/data/extras.json"),"utf8"));
- M.setSpreadSd(x.spreadSd);const by=Object.fromEntries(d.teams.map(t=>[t.id,t])),avg=M.leagueAvg(d.teams),pre=new Set(d.games.filter(g=>g.state==="pre").map(g=>g.id));
+ M.setSpreadSd(x.spreadSd);M.setMarket(x.mkt);const by=Object.fromEntries(d.teams.map(t=>[t.id,t])),avg=M.leagueAvg(d.teams),pre=new Set(d.games.filter(g=>g.state==="pre").map(g=>g.id));
  let n=0;for(const [id,g] of Object.entries(x.lines.games)){if(!pre.has(id))continue;const l=M.line(by[g.home],by[g.away],g.neutral,avg);assert.ok(Math.abs(l.spread-g.spread)<=0.11,id);assert.ok(Math.abs(l.homeProb-g.homeProb)<=0.002,id);n++;}
  assert.ok(n>0);assert.equal(x.homeEdge,M.HOME_EDGE);assert.equal(x.spreadSd,M.SPREAD_SD);
 });

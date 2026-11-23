@@ -9,6 +9,9 @@ const key=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLow
 const teamMetric=(t,k)=>num(t&&t.metrics&&t.metrics[k]);
 const em=t=>{const o=teamMetric(t,"adjO"),d=teamMetric(t,"adjD");return o!==null&&d!==null?o-d:null;};
 const HOME_EDGE=3;let SPREAD_SD=11; // the page sets the measured width from extras.json (spreadSd) with setSpreadSd
+let MKT=null;const setMarket=m=>{MKT=m&&m.r?m:null;};
+// home court as the blended line counts it: Haslametrics' HOME_EDGE and the market's fitted value, weighted like the spread
+const homeEdgeFor=(home,away)=>{if(!MKT||!MKT.r||MKT.r[home.id]==null||MKT.r[away.id]==null)return HOME_EDGE;const w=MKT.w*Math.min(1,Math.min(MKT.n[home.id]||0,MKT.n[away.id]||0)/MKT.full);return (1-w)*HOME_EDGE+w*MKT.home;};
 const setSpreadSd=v=>{if(v!==null&&v!==undefined&&Number.isFinite(Number(v)))SPREAD_SD=Number(v);};
 const phi=z=>{const t=1/(1+0.3275911*Math.abs(z)/Math.SQRT2),y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-z*z/2);return 0.5*(1+(z<0?-y:y));};
 const leagueAvg=teams=>mean(teams.map(t=>teamMetric(t,"adjO")));
@@ -17,8 +20,12 @@ function line(home,away,neutral,avg){
  if(!home||!away)return null;
  const ho=teamMetric(home,"adjO"),hd=teamMetric(home,"adjD"),ao=teamMetric(away,"adjO"),ad=teamMetric(away,"adjD"),ht=teamMetric(home,"tempo"),at=teamMetric(away,"tempo");
  if([ho,hd,ao,ad,ht,at,avg].some(x=>x===null||x===undefined))return null;
- const pace=(ht+at)/2,edge=neutral?0:HOME_EDGE/2,hp=ho*ad/avg*pace/100+edge,ap=ao*hd/avg*pace/100-edge,m=hp-ap;
- return {homePts:round(hp),awayPts:round(ap),spread:round(m),total:round(hp+ap),homeProb:round(phi(m/SPREAD_SD),3),pace:round(pace)};
+ const pace=(ht+at)/2,edge=neutral?0:HOME_EDGE/2;let hp=ho*ad/avg*pace/100+edge,ap=ao*hd/avg*pace/100-edge;
+ // blend with the market rating (fit to closing lines; fit_market in tools/cbb_extras.py): 80% market, less for teams with few lined games
+ const hub=hp-ap,tot=hp+ap;let m=hub,mk=null;
+ if(MKT&&MKT.r){const rh=MKT.r[home.id],ra=MKT.r[away.id];if(rh!=null&&ra!=null){mk=rh-ra+(neutral?0:MKT.home);const w=MKT.w*Math.min(1,Math.min(MKT.n[home.id]||0,MKT.n[away.id]||0)/MKT.full);m=(1-w)*hub+w*mk;}}
+ hp=(tot+m)/2;ap=(tot-m)/2;
+ return {homePts:round(hp),awayPts:round(ap),spread:round(m),total:round(tot),homeProb:round(phi(m/SPREAD_SD),3),pace:round(pace),hub:round(hub),mkt:mk==null?null:round(mk)};
 }
 // Game Score per game (Hollinger, rebounds weighted 0.45). Mirrors production() in tools/cbb_extras.py.
 function gameScore(p){
@@ -121,5 +128,5 @@ function gamesFromESPN(data,byId,season){
  }
  return out;
 }
-return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
+return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,setMarket,homeEdgeFor,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });

@@ -65,6 +65,65 @@ def league_average(teams):
     return mean([num(t.get("metrics", {}).get("adjO")) for t in teams])
 
 
+# ---------- market rating ----------
+# Team ratings fit to the closing point spreads stored in cbb/data/lines_hist.json (betting_pull.py): each closing line
+# says the home team is X points better, so solve for the ratings (plus one home-court value) that best explain every
+# line, pulled lightly toward zero (MKT_LAMBDA). Tested on 275 games the hub had logged before tipoff, using only lines
+# from earlier days, the market rating missed final margins by 10.55 points on average against 11.08 for the hub's
+# Haslametrics-only line (the closing line itself: 10.70). Blending in any more than a little Haslametrics made it
+# worse, so the hub's line is 80% market rating and 20% Haslametrics, leaning back toward Haslametrics for a team
+# with fewer than MKT_FULL lined games.
+MKT_LAMBDA, MKT_W, MKT_FULL = 0.1, 0.8, 4
+MKT = {"r": {}, "n": {}, "home": 0.0}
+
+
+def fit_market():
+    hist = read(ROOT / "cbb/data/lines_hist.json", {}) or {}
+    games = {}
+    for g in (read(ROOT / "cbb/data/schedule.json", {}) or {}).get("games", []):
+        games[g["id"]] = g
+    for g in (read(ROOT / "cbb/data/hub.json", {}) or {}).get("games", []):
+        games[g["id"]] = g
+    rows, seen = [], set()
+    for gid, h in hist.items():
+        g = games.get(gid)
+        c = (h.get("c") or [None])[0]
+        if not g or c is None:
+            continue
+        key = (g.get("day"), frozenset((g["home"], g["away"])))
+        if key in seen:
+            continue
+        seen.add(key)
+        rows.append((g["home"], g["away"], 0 if g.get("neutral") else 1, -c))
+    if len(rows) < 200:
+        return
+    teams = sorted({r[0] for r in rows} | {r[1] for r in rows})
+    r = {t: 0.0 for t in teams}
+    n = {t: 0 for t in teams}
+    for hm, aw, _, _ in rows:
+        n[hm] += 1; n[aw] += 1
+    home = 3.0
+    by = {t: [] for t in teams}
+    for k, row in enumerate(rows):
+        by[row[0]].append(k); by[row[1]].append(k)
+    for _ in range(300):                       # coordinate descent on the ridge least-squares problem
+        moved = 0.0
+        for t in teams:
+            num_, den = 0.0, MKT_LAMBDA
+            for k in by[t]:
+                hm, aw, hf, m = rows[k]
+                if hm == t: num_ += m - home * hf + r[aw]
+                else: num_ += r[hm] + home * hf - m
+                den += 1
+            new = num_ / den
+            moved = max(moved, abs(new - r[t])); r[t] = new
+        hs = [rw for rw in rows if rw[2]]
+        home = sum(m - r[hm] + r[aw] for hm, aw, _, m in hs) / len(hs) if hs else 0.0
+        if moved < 1e-5:
+            break
+    MKT.update(r={t: round(v, 2) for t, v in r.items()}, n=n, home=round(home, 2))
+
+
 def line(home, away, neutral, avg):
     """Projected score for a game, from adjusted efficiency and tempo. Mirrors CBB.line()."""
     hm, am = home.get("metrics", {}), away.get("metrics", {})
@@ -75,9 +134,18 @@ def line(home, away, neutral, avg):
     edge = 0 if neutral else HOME_EDGE / 2
     hp = ho * ad / avg * pace / 100 + edge
     ap = ao * hd / avg * pace / 100 - edge
-    margin = hp - ap
-    return {"homePts": round(hp, 1), "awayPts": round(ap, 1), "spread": round(margin, 1), "total": round(hp + ap, 1),
-            "homeProb": round(phi(margin / SPREAD_SD), 3), "pace": round(pace, 1)}
+    hub = hp - ap
+    margin, mk = hub, None
+    rh, ra = MKT["r"].get(str(home.get("id"))), MKT["r"].get(str(away.get("id")))
+    if rh is not None and ra is not None:
+        mk = rh - ra + (0 if neutral else MKT["home"])
+        w = MKT_W * min(1.0, min(MKT["n"].get(str(home.get("id")), 0), MKT["n"].get(str(away.get("id")), 0)) / MKT_FULL)
+        margin = (1 - w) * hub + w * mk
+    total = hp + ap
+    hp, ap = (total + margin) / 2, (total - margin) / 2
+    return {"homePts": round(hp, 1), "awayPts": round(ap, 1), "spread": round(margin, 1), "total": round(total, 1),
+            "homeProb": round(phi(margin / SPREAD_SD), 3), "pace": round(pace, 1), "hub": round(hub, 1),
+            "mkt": None if mk is None else round(mk, 1)}
 
 
 def zscores(values):
@@ -413,6 +481,7 @@ def main():
         sys.exit("cbb/data/hub.json is missing; run tools/cbb_build.py first")
     watch = read(WATCH, {"players": []})
     prior = read(OUT, {}) or {}
+    fit_market()
     calibrate_sd(prior)
     today = ny_today()
     stamp = datetime.now(timezone.utc).isoformat()
@@ -483,7 +552,8 @@ def main():
     hcut = (today - timedelta(days=45)).isoformat()
     bh = {d: v for d, v in sorted(bh.items()) if d >= hcut}
     out = {"schema": 1, "updated": stamp, "season": season, "bubbleHist": bh, "today": today.isoformat(), "leagueAvgEff": round(avg, 2) if avg else None,
-           "homeEdge": HOME_EDGE, "spreadSd": SPREAD_SD, "naismith": naismith,
+           "homeEdge": HOME_EDGE, "spreadSd": SPREAD_SD,
+           "mkt": {"r": MKT["r"], "n": MKT["n"], "home": MKT["home"], "w": MKT_W, "full": MKT_FULL}, "naismith": naismith,
            "lines": {"since": min([v["day"] for v in log.values()], default=None), "games": log}, "record": record}
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(json.dumps({"naismith": len(on), "unmatched": missing, "knocking": len(knocking), "lines": len(log), "graded": record["games"], "sims": season and season.get("sims"), "seconds": season and season.get("seconds")}))

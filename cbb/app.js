@@ -133,7 +133,7 @@ function valuePills(g, l, h, a) {
 }
 function valueBoard() {
   if (!VAL || !VAL.records) return "";
-  const rows = [["s1", "Hub disagrees with the book by " + VAL.rules.hubEdge + "+ points"], ["s2", "...and under " + VAL.rules.publicMax + "% of bets are on the hub's side"], ["s3", "...and the line has moved toward the hub"], ["t1", "Hub total off the book's by " + VAL.rules.totalEdge + "+ points"], ["pub", "The heavy public side (70%+ of bets)"]];
+  const rows = [["s1", "Hub disagrees with the book by " + VAL.rules.hubEdge + "+ points" + (VAL.sSince ? " (blended line, since " + dLabel(VAL.sSince) + ")" : "")], ["s2", "...and under " + VAL.rules.publicMax + "% of bets are on the hub's side"], ["s3", "...and the line has moved toward the hub"], ["t1", "Hub total off the book's by " + VAL.rules.totalEdge + "+ points"], ["pub", "The heavy public side (70%+ of bets)"]];
   const cell = (k) => { const r = VAL.records[k], n = r[0] + r[1], p = n ? (100 * r[0]) / n : null; return '<td class="num">' + r[0] + "-" + r[1] + (r[2] ? "-" + r[2] : "") + '</td><td class="num"><b class="' + (p === null ? "" : p >= 52.4 ? "pos" : "neg") + '">' + (p === null ? "—" : p.toFixed(1) + "%") + "</b></td>"; };
   return '<div class="panel"><h3>Value watch scorecard <small>against the closing line since ' + esc(dLabel(VAL.since)) + '</small></h3><div class="scroll"><table class="t"><thead><tr><th class="l">Signal</th><th>Record</th><th>Win %</th></tr></thead><tbody>' +
     rows.map(([k, lab]) => '<tr><td class="l">' + lab + "</td>" + cell(k) + "</tr>").join("") + '</tbody></table></div><p class="note" style="padding:0 14px 12px">Break-even at standard −110 juice is 52.4%. Green beats it, red doesn\'t. "Value" tags on game cards mark the second signal and "Value+" the third, so read them with these records in mind: a tag is a disagreement worth a look, not a proven edge. The closing line is the market\'s sharpest number, so these records are a tough test.</p></div>';
@@ -195,8 +195,15 @@ function today(q) {
     "</div>" + (SIM() ? '<div class="panel"><h3>National title odds <small><a href="#/bracket">Tournament odds →</a></small></h3><div class="body">' + titleStrip(8) + "</div></div>" : "");
 }
 
+// market rating (fit to closing lines, X.mkt) and its rank among teams with one
+let MKT_RANK = null;
+function mktRank(t) {
+  if (!X || !X.mkt || !X.mkt.r) return null;
+  if (!MKT_RANK) { MKT_RANK = {}; Object.entries(X.mkt.r).filter(([id]) => (X.mkt.n[id] || 0) >= 2).sort((a, b) => b[1] - a[1]).forEach(([id], i) => { MKT_RANK[id] = i + 1; }); }
+  return MKT_RANK[t.id] || null;
+}
 const RCOLS = [
-  ["haslam", "Rk", t => t.haslamRank, true], ["bpi", "BPI", t => t.bpiRank, true], ["sor", "SOR", t => t.sorRank, true],
+  ["haslam", "Rk", t => t.haslamRank, true], ["mkt", "Mkt", t => mktRank(t), true], ["bpi", "BPI", t => t.bpiRank, true], ["sor", "SOR", t => t.sorRank, true],
   ["net", "Net", t => M.em(t)], ["adjO", "Off", t => M.num(t.metrics.adjO)], ["adjD", "Def", t => M.num(t.metrics.adjD), true],
   ["tempo", "Pace", t => M.num(t.metrics.tempo)], ["three", "3PA%", t => M.num(t.metrics.threeShare)], ["rim", "Rim%", t => M.num(t.metrics.rimShare)],
   ["tp", "3P%", t => M.num(t.metrics.threePct)], ["otp", "Opp 3P%", t => M.num(t.metrics.oppThreePct), true],
@@ -215,7 +222,7 @@ function ratings(q) {
   const body = show.map(t => {
     const m = t.metrics, mv = M.num(t.change7);
     return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference || "") + " · " + rec(t) + "</small></td>" +
-      "<td><b>" + int(t.haslamRank) + "</b></td><td>" + int(t.bpiRank) + "</td><td>" + int(t.sorRank) + "</td>" +
+      "<td><b>" + int(t.haslamRank) + "</b></td><td>" + (mktRank(t) || "—") + "</td><td>" + int(t.bpiRank) + "</td><td>" + int(t.sorRank) + "</td>" +
       '<td class="' + (M.em(t) > 0 ? "pos" : "neg") + '"><b>' + sg(M.em(t)) + "</b></td>" +
       '<td><span class="chip ' + tier(M.percentile(D.teams, t, "adjO")) + '">' + f1(m.adjO) + '</span> <small class="rr">' + (rankO[t.id] || "") + "</small></td>" +
       '<td><span class="chip ' + tier(M.percentile(D.teams, t, "adjD", true)) + '">' + f1(m.adjD) + '</span> <small class="rr">' + (rankD[t.id] || "") + "</small></td>" +
@@ -224,7 +231,7 @@ function ratings(q) {
   }).join("");
   return head + '<div class="panel"><div class="scroll"><table class="t rt"><thead>' + th + "</thead><tbody>" + body + "</tbody></table></div></div>" +
     (show.length < ts.length ? '<p><button class="btn" data-more="all">Show all ' + ts.length + " teams</button></p>" : "") +
-    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
+    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). Mkt: market rating rank, from team ratings fit to every closing point spread this season (teams with 2+ lined games). BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => fin(t.metrics.adjO) && fin(t.metrics.adjD));
@@ -457,7 +464,7 @@ function matchup(q) {
   const fav = aProb >= 0.5 ? a : b, dog = fav === a ? b : a, sp = Math.abs(l.spread);
   const venues = [["a", a.short + " home"], ["n", "Neutral"], ["b", b.short + " home"]].map(([s, lab]) => { const h = s === "a" ? a : b, w = h === a ? b : a, x = M.line(h, w, s === "n", avg), pa = h === a ? x.homeProb : 1 - x.homeProb, m = h === a ? x.spread : -x.spread; return "<tr><td>" + esc(lab) + "</td><td>" + (Math.abs(m) < 0.5 ? "Pick'em" : esc((m > 0 ? a : b).short) + " −" + half(m)) + "</td><td>" + pct(pa) + "</td><td>" + pct(1 - pa) + "</td></tr>"; }).join("");
   const tape = [
-    ["Haslametrics rank", t => int(t.haslamRank), t => -(t.haslamRank || 999)], ["BPI rank", t => int(t.bpiRank), t => -(t.bpiRank || 999)], ["Record", rec, null],
+    ["Market rating rank", t => mktRank(t) || "—", t => -(mktRank(t) || 999)], ["Haslametrics rank", t => int(t.haslamRank), t => -(t.haslamRank || 999)], ["BPI rank", t => int(t.bpiRank), t => -(t.bpiRank || 999)], ["Record", rec, null],
     ["Adj. offense", t => f1(t.metrics.adjO), t => t.metrics.adjO], ["Adj. defense", t => f1(t.metrics.adjD), t => -t.metrics.adjD], ["Net", t => sg(M.em(t)), t => M.em(t)],
     ["Pace", t => f1(t.metrics.tempo), null], ["3-point rate", t => f1(t.metrics.threeShare) + "%", null], ["3P%", t => f1(t.metrics.threePct), t => t.metrics.threePct],
     ["Opp 3P%", t => f1(t.metrics.oppThreePct), t => -t.metrics.oppThreePct], ["Rim rate", t => f1(t.metrics.rimShare) + "%", null], ["Rim FG%", t => f1(t.metrics.rimPct), t => t.metrics.rimPct],
@@ -468,8 +475,9 @@ function matchup(q) {
   const pair = (x) => (x.home === a.id && x.away === b.id) || (x.home === b.id && x.away === a.id);
   // prefer ESPN's own game (numeric id) over a schedule placeholder for the same game
   const meet = [...D.games.filter(pair), ...((SCHED && SCHED.games) || []).filter(pair)].filter((x) => BET && BET.games && BET.games[x.id]).sort((x, y) => /^\d+$/.test(y.id) - /^\d+$/.test(x.id))[0];
-  return '<h2 class="sec">Spread machine</h2><p class="lede">Pick any two teams and a court. The hub projects each team\'s points from its adjusted offense against the other\'s adjusted defense at their average pace, adds ' + M.HOME_EDGE + ' points for home court, and turns the margin into a win probability.</p>' + controls +
+  return '<h2 class="sec">Spread machine</h2><p class="lede">Pick any two teams and a court. The hub\'s line blends a market rating (team ratings fit to every closing point spread this season) with Haslametrics\' adjusted efficiency, then turns the margin into a win probability. The total comes from the two offenses against the two defenses at their average pace.</p>' + controls +
     '<div class="verdict"><b>' + (sp < 0.5 ? "Pick'em" : esc(fav.short) + " by " + half(sp)) + "</b> " + (neutral ? "on a neutral court" : "at " + esc(home.short)) + '<small>Projected ' + esc(a.short) + " " + Math.round(aPts) + ", " + esc(b.short) + " " + Math.round(bPts) + " · Total " + half(l.total) + " · " + f1(l.pace, 0) + " possessions" + (g ? ' · <a href="#/today?day=' + g.day + '">They meet ' + dLabel(g.day) + "</a>" : "") + "</small></div>" +
+    (fin(l.mkt) ? (() => { const side = (m) => { const v = home === a ? m : -m; return Math.abs(v) < 0.5 ? "pick'em" : esc((v > 0 ? a : b).short) + " by " + half(Math.abs(v)); }; return '<p class="note">Market rating: ' + side(l.mkt) + " · Haslametrics: " + side(l.hub) + " · The hub\'s line weights the market rating 80% once both teams have " + X.mkt.full + "+ lined games.</p>"; })() : "") +
     '<div class="wp"><div class="wp-l">' + logo(a) + "<b>" + esc(a.short) + "</b> " + pct(aProb) + '</div><div class="wp-bar"><b style="width:' + (aProb * 100).toFixed(1) + '%;background:' + esc(a.color || "var(--ink)") + '"></b><i style="background:' + esc(b.color || "var(--red)") + '"></i></div><div class="wp-r">' + pct(1 - aProb) + " <b>" + esc(b.short) + "</b>" + logo(b) + "</div></div>" +
     (sp >= 0.5 && Math.min(aProb, 1 - aProb) >= 0.25 && (dog.haslamRank || 999) - (fav.haslamRank || 999) >= 25 ? '<p class="callout">Upset watch: ' + esc(dog.short) + " wins this about " + pct(Math.min(aProb, 1 - aProb)) + " of the time.</p>" : "") +
     '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against all Division I teams, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' +
@@ -587,6 +595,7 @@ function method() {
   const graded = X ? Object.values(X.lines.games).filter(v => v.final).sort((a, b) => b.day.localeCompare(a.day)) : [];
   const upsets = graded.filter(v => v.upset).slice(0, 8);
   return '<div class="method"><h2 class="sec">How it works</h2>' +
+    "<h3>The market rating</h3><p>Every closing point spread says one team is so many points better than the other. The hub solves for the team ratings, plus one home-court value (" + (X && X.mkt ? f1(X.mkt.home) : "3.6") + " points this season), that best explain every closing line so far, pulled lightly toward average. Tested on 275 games the hub had logged before tipoff, using only lines from earlier days, the market rating missed final margins by 10.55 points on average. The Haslametrics-only line missed by 11.08 and that game\'s own closing line by 10.70. Adding more than a little Haslametrics made the market rating worse, so the hub\'s line is 80% market rating and 20% Haslametrics once both teams have " + (X && X.mkt ? X.mkt.full : 4) + " lined games, leaning back toward Haslametrics before that. Bart Torvik\'s T-Rank would be a third source, but his site blocks the hub\'s automated updates.</p>" +
     "<h3>The line</h3><p>Each team's projected points are its adjusted offense times the opponent's adjusted defense, divided by the Division I average (" + f1(avg) + " points per 100 possessions), scaled to the two teams' average pace. Home court is worth " + M.HOME_EDGE + " points, split between the two scores. The margin becomes a win probability with a normal curve whose spread is " + M.SPREAD_SD + " points: how far the hub\'s lines have actually missed over its last 400 graded games, measured again every day. Early-season ratings miss by more, so the hub is less sure of itself in November than in March. Ratings are Haslametrics' adjusted efficiency and tempo; early in the season they still lean on preseason priors.</p>" +
     "<h3>Keeping score</h3><p>Every few hours the updater logs the hub's line for each scheduled game, refreshing it until tipoff, then grades it against the final. Nothing is graded with hindsight ratings.</p>" +
     (r && r.games ? '<div class="panel"><h3>Hub record <small>since ' + dLabel(X.lines.since) + "</small></h3>" + tiles4([[r.right + "-" + (r.games - r.right), "Picking winners"], [Math.round(r.right / r.games * 100) + "%", "Right"], [f1(r.avgMiss), "Avg spread miss"], [f1(r.avgTotalMiss), "Avg total miss"]]) + '<table class="t"><thead><tr><th class=l>Confidence</th><th>Games</th><th>Right</th><th>Expected</th></tr></thead><tbody>' + r.buckets.map(b => "<tr><td>" + esc(b.label) + "</td><td>" + b.games + "</td><td>" + (b.games ? Math.round(b.right / b.games * 100) + "%" : "—") + "</td><td>" + (fin(b.expected) ? b.expected + "%" : "—") + "</td></tr>").join("") + "</tbody></table></div>" : '<p class="callout">The hub started logging lines on ' + dLabel(X && X.lines.since || D.today) + ". Its record appears once those games go final.</p>") +
@@ -707,7 +716,7 @@ async function load() {
   try {
     const [h, x] = await Promise.all([fetch("data/hub.json", { cache: "no-store" }), fetch("data/extras.json", { cache: "no-store" }).catch(() => null)]);
     if (!h.ok) throw Error("Data snapshot unavailable");
-    D = await h.json(); X = x && x.ok ? await x.json() : null; if (X && X.spreadSd) M.setSpreadSd(X.spreadSd);
+    D = await h.json(); X = x && x.ok ? await x.json() : null; if (X && X.spreadSd) M.setSpreadSd(X.spreadSd); if (X && X.mkt) M.setMarket(X.mkt);
     index();
     $("#kicker").textContent = "College basketball · " + (D.seasonLabel || "");
     $("#foot").innerHTML = "Ratings from <a href=\"https://haslametrics.com/\">Haslametrics</a> (" + dLabel(D.sources.haslam && D.sources.haslam.updated) + ") and <a href=\"https://www.espn.com/mens-college-basketball/bpi\">ESPN BPI</a>. Rosters, stats and scores from ESPN. Prospects from the site's <a href=\"../draft/\">NBA Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ". <a href=\"#/method\">How it works</a>.";

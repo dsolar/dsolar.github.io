@@ -39,7 +39,7 @@ test("the spread machine is symmetric and home court is worth the documented edg
  const [a,b]=[data.teams[0],data.teams[1]],w=await boot("#/matchup?a="+a.id+"&b="+b.id+"&site=n");try{
   const M=w.CBB,avg=M.leagueAvg(data.teams),n=M.line(b,a,true,avg),flip=M.line(a,b,true,avg);
   assert.equal(M.round(n.spread+flip.spread),0);assert.equal(M.round(n.homeProb+flip.homeProb,2),1);
-  const h=M.line(b,a,false,avg);assert.equal(M.round(h.spread-n.spread),M.HOME_EDGE);
+  const h=M.line(b,a,false,avg),edge=M.homeEdgeFor(b,a);assert.ok(Math.abs(h.spread-n.spread-edge)<=0.11,"home edge "+(h.spread-n.spread)+" vs "+edge);assert.ok(edge>=Math.min(M.HOME_EDGE,3)-0.01&&edge<=6);
   assert.ok(text(w).includes(a.short)&&text(w).includes(b.short));assert.ok(w.document.querySelector(".verdict"));
   w.document.querySelector("[data-swap]").click();await pause(20);assert.ok(w.location.hash.includes("a="+b.id));
  }finally{w.close();}
