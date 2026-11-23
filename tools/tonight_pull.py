@@ -89,12 +89,10 @@ def team_stats(path, year):
         own = {}
         for cat in ("offensive", "defensive", "general"):
             own.update({k: v for k, v in (vals.get(cat) or {}).items() if isinstance(v, (int, float))})
-        diff = {k: v for k, v in (vals.get("differential") or {}).items() if isinstance(v, (int, float))}
+        diff = {k.replace("Differential", ""): v for k, v in (vals.get("differential") or {}).items() if isinstance(v, (int, float))}
         opp = {k: round(own[k] - diff[k], 4) for k in diff if k in own}
         if ab:
             out[ab] = {"o": {k: round(v, 4) for k, v in own.items()}, "d": opp}
-        if ab and not out.get("_dbg"):
-            out["_dbg"] = {"diff": dict(list((vals.get("differential") or {}).items())[:40]), "cats": [(c.get("name"), len(c.get("values") or [])) for c in t.get("categories") or []]}
     return out
 
 
@@ -128,13 +126,8 @@ def main():
             continue
         body = {"updated": now.strftime("%Y-%m-%dT%H:%MZ"), "season": year, "src": "ESPN", "games": games, "teams": teams, "inj": inj}
         (ROOT / hub / "data/tonight.json").write_text(json.dumps(body, separators=(",", ":")))
-        dbg = teams.pop("_dbg", None)
-        if dbg: print(hub, "DEBUG", json.dumps(dbg)[:1500])
         some = next(iter(teams.items())) if teams else ("-", {})
         print(f"{hub}: {len(games)} games, {len(teams)} teams with stats, {sum(len(v['rows']) for v in inj.values())} injuries | sample {some[0]} own keys {len(some[1].get('o', {}))} opp keys {len(some[1].get('d', {}))}")
-        if teams:
-            o, dd = some[1]["o"], some[1]["d"]
-            print("   own:", json.dumps(o)[:600]); print("   opp:", json.dumps(dd)[:600])
     print("\n".join(log))
 
 

@@ -1,0 +1,44 @@
+# Tonight's games for the NBA and NHL hubs (tools/tonight_pull.py, from ESPN): schedule with tip times and TV, ESPN's
+# line, injury reports, and season team stats for the previews. Writes nba/data/tonight.json and nhl/data/tonight.json.
+# Runs at about 7am, 11am, 3pm, 6pm and 9pm ET, when the script or this file changes, or by hand.
+name: Tonight's games
+
+on:
+  schedule:
+    - cron: "23 12,16,20,23,2 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/tonight_pull.py
+      - .github/workflows/tonight.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tonight
+  cancel-in-progress: false
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Response decoder
+        run: pip install brotli >/dev/null 2>&1 || true
+      - name: Pull tonight's games
+        run: python3 tools/tonight_pull.py
+      - name: Commit it
+        run: |
+          git add nba/data/tonight.json nhl/data/tonight.json 2>/dev/null || true
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit -m "Update tonight's NBA and NHL games"
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done

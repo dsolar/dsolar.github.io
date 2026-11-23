@@ -1,9 +1,0 @@
-name: probe-splits
-on: workflow_dispatch
-jobs:
-  probe:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - run: pip install brotli >/dev/null 2>&1 || true
-      - run: python3 tools/tonight_pull.py
