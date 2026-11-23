@@ -7364,7 +7364,7 @@
       "nfl": "MIN",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 44,
-      "next_proj": 15.79
+      "next_proj": 15.74
      },
      {
       "n": "Bucky Irving",
@@ -7372,7 +7372,7 @@
       "nfl": "TB",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 32,
-      "next_proj": 18.98
+      "next_proj": 18.91
      },
      {
       "n": "Brock Purdy",
@@ -7396,7 +7396,7 @@
       "nfl": "CAR",
       "claimed_by": "Holofernes",
       "bid": 8,
-      "next_proj": 11.62
+      "next_proj": 11.72
      },
      {
       "n": "Chase Brown",
@@ -7419,7 +7419,7 @@
       "pos": "RB",
       "nfl": "LAC",
       "bid": 1,
-      "next_proj": 9.51
+      "next_proj": 9.45
      },
      {
       "n": "Saquon Barkley",
@@ -7435,25 +7435,25 @@
       "nfl": "GB",
       "claimed_by": "Holofernes",
       "bid": 0,
-      "next_proj": 18.51
+      "next_proj": 18.25
      },
      {
       "n": "Corey Kiner",
       "pos": "RB",
       "nfl": "NE",
-      "next_proj": 6.34
+      "next_proj": 6.2
      },
      {
       "n": "Jalen Coker",
       "pos": "WR",
       "nfl": "CAR",
-      "next_proj": 10.55
+      "next_proj": 10.63
      },
      {
       "n": "Zach Charbonnet",
       "pos": "RB",
       "nfl": "SEA",
-      "next_proj": 9.04
+      "next_proj": 9.03
      }
     ]
    },
@@ -7606,7 +7606,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 26.4,
+      "proj": 26.03,
       "pts": null
      },
      {
@@ -7638,7 +7638,7 @@
       "pos": "WR",
       "nfl": "WAS",
       "slot": "BN",
-      "proj": 11.21,
+      "proj": 11.17,
       "pts": null
      },
      {
@@ -7680,7 +7680,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 18.71,
+      "proj": 18.48,
       "pts": null
      },
      {
@@ -7712,8 +7712,8 @@
       "pos": "RB",
       "nfl": "SF",
       "slot": "W/R/T",
-      "proj": 18.13,
-      "pts": null
+      "proj": 18.2,
+      "pts": 13.2
      },
      {
       "n": "C.J. Stroud",
@@ -7778,8 +7778,8 @@
       "pos": "QB",
       "nfl": "SF",
       "slot": "QB",
-      "proj": 17.63,
-      "pts": null
+      "proj": 17.66,
+      "pts": 22.2
      },
      {
       "n": "Derrick Henry",
@@ -7810,7 +7810,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.21,
+      "proj": 16.04,
       "pts": null
      },
      {
@@ -7826,15 +7826,15 @@
       "pos": "TE",
       "nfl": "SF",
       "slot": "TE",
-      "proj": 10.19,
-      "pts": null
+      "proj": 10.24,
+      "pts": 16.9
      },
      {
       "n": "Chase Brown",
       "pos": "RB",
       "nfl": "CIN",
       "slot": "W/R/T",
-      "proj": 13.02,
+      "proj": 12.88,
       "pts": null
      },
      {
@@ -7924,8 +7924,8 @@
       "pos": "WR",
       "nfl": "MIN",
       "slot": "WR",
-      "proj": 14.93,
-      "pts": null
+      "proj": 14.86,
+      "pts": 10.2
      },
      {
       "n": "DJ Moore",
@@ -7964,7 +7964,7 @@
       "pos": "QB",
       "nfl": "WAS",
       "slot": "Q/W/R/T",
-      "proj": 21.74,
+      "proj": 21.65,
       "pts": null
      },
      {
@@ -8102,8 +8102,8 @@
       "pos": "WR",
       "nfl": "SF",
       "slot": "BN",
-      "proj": 11.91,
-      "pts": null
+      "proj": 11.89,
+      "pts": 19.9
      },
      {
       "n": "Saquon Barkley",
@@ -8112,22 +8112,6 @@
       "slot": "BN",
       "proj": 11.83,
       "pts": 13.5
-     },
-     {
-      "n": "Emeka Egbuka",
-      "pos": "WR",
-      "nfl": "TB",
-      "slot": "BN",
-      "proj": 8.3,
-      "pts": 2.8
-     },
-     {
-      "n": "Puka Nacua",
-      "pos": "WR",
-      "nfl": "LAR",
-      "slot": "IR",
-      "proj": 0,
-      "pts": null
      }
     ]
    },
