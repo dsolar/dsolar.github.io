@@ -13,10 +13,12 @@ import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from cbb_build import decode_body
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "cbb/data/avail.json"
-SUMMARY = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event="
-UA = "davidsolar-cbbhub/1.0 (+https://davidsolar.dev/cbb/)"
+SUMMARY = "https://site.web.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?region=us&lang=en&contentorigin=espn&event="   # same host and headers as cbb_build.py, which ESPN serves to the runners
+UA = "Mozilla/5.0 (compatible; davidsolar-cbb/1.0; +https://davidsolar.dev/cbb/)"
 ROT_MIN, ROT_GP, LOOKBACK_DAYS, KEEP_DAYS = 15, 2, 21, 30
 BUDGET_S, WORKERS = 240, 8   # stop fetching after this many seconds; the cache carries the rest to the next run
 
@@ -31,9 +33,9 @@ def read(p, default):
 def get(url):
     for i in range(2):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA})
+            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/json", "Accept-Encoding": "identity"})
             with urllib.request.urlopen(req, timeout=12) as r:
-                return json.load(r)
+                return json.loads(decode_body(r.read(), r.headers.get("Content-Encoding", ""), r.headers.get_content_charset()))
         except Exception:
             time.sleep(1.5 * (i + 1))
     return None
