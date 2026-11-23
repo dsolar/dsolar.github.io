@@ -91,6 +91,16 @@ function betPanel(g, h, a) { // matchup page: the full row for the game these tw
   const row = g ? betRow(g, h, a) : ""; if (!row) return "";
   return '<div class="panel betbox"><h3>Public betting <small>' + (g.state === "pre" ? "updates until " + (g.at ? "tip" : "start") : "closing numbers") + "</small></h3>" + row + "</div>";
 }
+// who missed his team's last game (data/avail.json, from ESPN box scores; tools/cbb_avail.py)
+let AVAIL = null;
+fetch("data/avail.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((v) => { AVAIL = v && v.teams && !Array.isArray(v.teams) ? v : null; if (AVAIL && D && ["today", "matchup"].includes(route().page)) render(); }).catch(() => {});
+const playerById = (id) => (D.players || []).find((p) => String(p.id) === String(id));
+function outLast(t) { const a = AVAIL && AVAIL.teams && AVAIL.teams[t.id]; return a && Array.isArray(a.out) ? a.out.map((o) => ({ ...o, p: playerById(o.id) })).filter((o) => o.p) : []; }
+function availRow(g, h, a) {
+  if (g.state !== "pre") return "";
+  const bits = [h, a].map((t) => { const o = outLast(t).filter((x) => M.pointValue(x.p) >= 0.5); return o.length ? esc(t.abbr || t.short) + ": " + o.map((x) => esc(x.n.split(" ").slice(-1)[0]) + " <small>−" + f1(M.pointValue(x.p)) + "</small>").join(", ") : ""; }).filter(Boolean);
+  return bits.length ? '<div class="bets avail" title="Rotation players who missed their team\'s last game (ESPN box score), with each one\'s rough worth in points. The hub\'s line does not assume they sit; set them in the spread machine.">Missed last game · ' + bits.join(" · ") + "</div>" : "";
+}
 function betRow(g, h, a) {
   const b = BET && BET.games && BET.games[g.id]; if (!b) return "";
   const x = b.an, k = b.k, bits = [];
@@ -156,7 +166,7 @@ function gameCard(g) {
   const foot = shown ? "<span><b>" + favLine(shown, h, a) + "</b></span><span>O/U <b>" + half(shown.total) + "</b></span>" : "<span class=\"note\">No line: a team lacks ratings</span>";
   return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + valuePills(g, l, h, a) + "</header>" +
     side(a, false, g.awayScore) + side(h, true, g.homeScore) +
-    '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, pace and stars on the floor">' + w + '</span><a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a></footer>' + betRow(g, h, a) + "</article>";
+    '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, pace and stars on the floor">' + w + '</span><a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a></footer>' + betRow(g, h, a) + availRow(g, h, a) + "</article>";
 }
 
 /* ---------- pages ---------- */
@@ -457,7 +467,14 @@ function matchup(q) {
     else { const r = M.ranked(D.teams); a = a || r[0]; b = b || (r[1].id === a.id ? r[0] : r[1]); }
   }
   const neutral = site === "n", home = site === "a" ? a : b, away = home === a ? b : a;
-  const l = M.line(home, away, neutral, avg);
+  const l0 = M.line(home, away, neutral, avg);
+  // availability: ?out=ids (or "none"); without it, start from who missed each team's last game
+  const outParam = q.get("out"), detected = new Set([...outLast(a), ...outLast(b)].map((o) => o.id));
+  const outSet = outParam == null ? detected : new Set(outParam === "none" ? [] : outParam.split(","));
+  const rot = (t) => (rosters[t.id] || []).filter((p) => (stat(p, "gp") || 0) >= 1 && (stat(p, "min") || 0) >= 8).sort((x, y) => (stat(y, "min") || 0) - (stat(x, "min") || 0)).slice(0, 9);
+  const lost = (t) => rot(t).filter((p) => outSet.has(String(p.id))).reduce((s2, p) => s2 + M.pointValue(p), 0);
+  const lh = lost(home), la = lost(away);
+  const l = l0 && (lh || la) ? { ...l0, homePts: l0.homePts - lh, awayPts: l0.awayPts - la, spread: M.round(l0.spread - lh + la), total: M.round(l0.total - lh - la), homeProb: M.round(M.phi((l0.spread - lh + la) / M.SPREAD_SD), 3), adjusted: true } : l0;
   const controls = '<div class="controls">' + teamSelect("a", a.id, "Team") + '<button class="btn" type="button" data-swap>⇄ Swap</button>' + teamSelect("b", b.id, "Opponent") + '<label>Court' + seg("site", [["a", a.short + " home"], ["n", "Neutral"], ["b", b.short + " home"]], site) + "</label></div>";
   if (!l) return '<h2 class="sec">Spread machine</h2>' + controls + '<p class="callout">One of these teams has no efficiency ratings yet, so the hub can\'t set a line.</p>';
   const aProb = home === a ? l.homeProb : 1 - l.homeProb, aPts = home === a ? l.homePts : l.awayPts, bPts = home === a ? l.awayPts : l.homePts;
@@ -477,6 +494,11 @@ function matchup(q) {
   const meet = [...D.games.filter(pair), ...((SCHED && SCHED.games) || []).filter(pair)].filter((x) => BET && BET.games && BET.games[x.id]).sort((x, y) => /^\d+$/.test(y.id) - /^\d+$/.test(x.id))[0];
   return '<h2 class="sec">Spread machine</h2><p class="lede">Pick any two teams and a court. The hub\'s line blends a market rating (team ratings fit to every closing point spread this season) with Haslametrics\' adjusted efficiency, then turns the margin into a win probability. The total comes from the two offenses against the two defenses at their average pace.</p>' + controls +
     '<div class="verdict"><b>' + (sp < 0.5 ? "Pick'em" : esc(fav.short) + " by " + half(sp)) + "</b> " + (neutral ? "on a neutral court" : "at " + esc(home.short)) + '<small>Projected ' + esc(a.short) + " " + Math.round(aPts) + ", " + esc(b.short) + " " + Math.round(bPts) + " · Total " + half(l.total) + " · " + f1(l.pace, 0) + " possessions" + (g ? ' · <a href="#/today?day=' + g.day + '">They meet ' + dLabel(g.day) + "</a>" : "") + "</small></div>" +
+    (() => {
+      const card = (t) => { const det = new Map(outLast(t).map((o) => [o.id, o])); return '<div class="panel avail-pick"><h3>' + logo(t) + " " + esc(t.short) + " <small>check anyone who sits</small></h3><ul class=\"rlist\">" +
+        rot(t).map((p) => { const id = String(p.id), d = det.get(id), v = M.pointValue(p); return '<li><label class="grow"><input type="checkbox" data-out="' + esc(id) + '"' + (outSet.has(id) ? " checked" : "") + "> " + esc(p.name) + ' <small class="sub">' + f1(stat(p, "min"), 0) + " min" + (d ? " · missed " + (d.m > 1 ? "last " + d.m + " games" : "last game") + (d.note ? " (" + esc(d.note) + ")" : "") : "") + '</small></label><span class="num">' + (v >= 0.05 ? "−" + f1(v) : "—") + "</span></li>"; }).join("") + "</ul></div>"; };
+      return '<div class="two">' + card(a) + card(b) + '</div><p class="note">' + (l.adjusted ? "Line adjusted for the players checked: " + [[home, lh], [away, la]].filter((x) => x[1] > 0).map((x) => esc(x[0].short) + " −" + f1(x[1])).join(", ") + " points. " : "") + "Each player\'s worth is rough: his Game Score per 40 minutes above a replacement-level rotation player, times his minutes, capped at 7 points. Players who missed their team\'s last game (ESPN box scores) start checked." + (outParam != null ? ' <a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(b.id) + "&site=" + site + '">Reset to last game\'s absences</a>' : "") + "</p>";
+    })() +
     (fin(l.mkt) ? (() => { const side = (m) => { const v = home === a ? m : -m; return Math.abs(v) < 0.5 ? "pick'em" : esc((v > 0 ? a : b).short) + " by " + half(Math.abs(v)); }; return '<p class="note">Market rating: ' + side(l.mkt) + " · Haslametrics: " + side(l.hub) + " · The hub\'s line weights the market rating 80% once both teams have " + X.mkt.full + "+ lined games.</p>"; })() : "") +
     '<div class="wp"><div class="wp-l">' + logo(a) + "<b>" + esc(a.short) + "</b> " + pct(aProb) + '</div><div class="wp-bar"><b style="width:' + (aProb * 100).toFixed(1) + '%;background:' + esc(a.color || "var(--ink)") + '"></b><i style="background:' + esc(b.color || "var(--red)") + '"></i></div><div class="wp-r">' + pct(1 - aProb) + " <b>" + esc(b.short) + "</b>" + logo(b) + "</div></div>" +
     (sp >= 0.5 && Math.min(aProb, 1 - aProb) >= 0.25 && (dog.haslamRank || 999) - (fav.haslamRank || 999) >= 25 ? '<p class="callout">Upset watch: ' + esc(dog.short) + " wins this about " + pct(Math.min(aProb, 1 - aProb)) + " of the time.</p>" : "") +
@@ -747,6 +769,7 @@ view.addEventListener("change", e => {
   const el = e.target;
   if (el.matches("select[data-param]")) setParams({ [el.dataset.param]: el.value, n: null });
   else if (el.matches('input[type="checkbox"][data-param]')) setParams({ [el.dataset.param]: el.checked ? "1" : null });
+  else if (el.matches('input[type="checkbox"][data-out]')) { const ids = [...view.querySelectorAll('input[data-out]:checked')].map((x) => x.dataset.out); setParams({ out: ids.length ? ids.join(",") : "none" }); }
   else if (el.matches("select[data-vs]") && el.value) go("matchup", { a: el.dataset.vs, b: el.value, site: "a" });
 });
 document.addEventListener("click", e => {

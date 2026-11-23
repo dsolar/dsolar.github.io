@@ -9,6 +9,12 @@ const key=s=>String(s||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLow
 const teamMetric=(t,k)=>num(t&&t.metrics&&t.metrics[k]);
 const em=t=>{const o=teamMetric(t,"adjO"),d=teamMetric(t,"adjD");return o!==null&&d!==null?o-d:null;};
 const HOME_EDGE=3;let SPREAD_SD=11; // the page sets the measured width from extras.json (spreadSd) with setSpreadSd
+// A player's worth in points of margin: his Game Score per 40 minutes above a replacement-level rotation player's
+// (8.2, the 25th percentile among Division I rotation players in November 2026), times his share of the game's minutes,
+// scaled so the best players land around 5-6 points, discounted for players with few games, capped at 7.
+// Rough by design: Game Score is a box-score summary, not a plus-minus.
+const PV_REPL=8.2,PV_K=0.3,PV_CAP=7;
+const pointValue=p=>{const s=p&&p.stats||{},mn=Number(s.min)||0,gp=Number(s.gp)||0;if(mn<5||gp<1)return 0;const g=gameScore(p);if(!finite(g))return 0;return Math.max(0,Math.min(PV_CAP,(g/mn*40-PV_REPL)*mn/40*PV_K*gp/(gp+3)));};
 let MKT=null;const setMarket=m=>{MKT=m&&m.r?m:null;};
 // home court as the blended line counts it: Haslametrics' HOME_EDGE and the market's fitted value, weighted like the spread
 const homeEdgeFor=(home,away)=>{if(!MKT||!MKT.r||MKT.r[home.id]==null||MKT.r[away.id]==null)return HOME_EDGE;const w=MKT.w*Math.min(1,Math.min(MKT.n[home.id]||0,MKT.n[away.id]||0)/MKT.full);return (1-w)*HOME_EDGE+w*MKT.home;};
@@ -128,5 +134,5 @@ function gamesFromESPN(data,byId,season){
  }
  return out;
 }
-return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,setMarket,homeEdgeFor,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
+return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,setMarket,homeEdgeFor,pointValue,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });
