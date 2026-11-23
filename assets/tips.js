@@ -23,7 +23,7 @@
     cbb: {
       "rk": "The hub's rating rank (Haslametrics adjusted efficiency)",
       "mkt": "Market rating rank: team ratings fit to every closing point spread this season (teams with 2+ lined games). It's 80% of the hub's line",
-      "bpi": "ESPN's Basketball Power Index rank", "sor": "ESPN's Strength of Record rank: how hard the team's record would be for a typical top-25 team to match",
+      "torvik": "Bart Torvik's T-Rank, pulled daily. Shown for comparison; tested, it didn't improve the hub's line", "bpi": "ESPN's Basketball Power Index rank", "sor": "ESPN's Strength of Record rank: how hard the team's record would be for a typical top-25 team to match",
       "off": "Adjusted offense: points scored per 100 possessions against an average defense", "def": "Adjusted defense: points allowed per 100 possessions against an average offense (lower is better)",
       "pace": "Possessions per 40 minutes, adjusted for opponents", "3pa%": "Share of shots taken from three", "rim%": "Share of shots taken at the rim",
       "3p%": "Three-point percentage", "opp 3p%": "Opponents' three-point percentage (lower is better)",

@@ -1,12 +1,12 @@
 # Bart Torvik's T-Rank for the CBB Hub. His site refuses GitHub's servers, so a daily scheduled task runs
 # tools/torvik_pull.js in a browser on barttorvik.com and drops the ratings in Supabase; this job reads the latest drop
 # (tools/torvik.py) and publishes cbb/data/torvik.json and cbb/data/torvik_hist.json.
-# Runs about an hour after the browser task, when the script or this file changes, or by hand.
+# Runs daily at 1:41pm ET, about an hour after the browser task (12:47pm ET), when the script or this file changes, or by hand.
 name: Torvik ratings
 
 on:
   schedule:
-    - cron: "41 16 * * *"
+    - cron: "41 18 * * *"
   push:
     branches: [main]
     paths:

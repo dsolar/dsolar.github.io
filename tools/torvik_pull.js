@@ -8,7 +8,7 @@
 // Set window.__torvikDays first to reach further back (the first run used 21 to cover the season so far).
 //
 // Payload: {season, pulled, cur: [[team, conf, adjoe, adjde, adjt, barthag, rank, record], ...],
-//           hist: {YYYYMMDD: [[team, adjoe, adjde, adjt], ...]}}   (archive files are the ratings as of that morning)
+//           hist: {YYYYMMDD: [[team, adjoe, adjde, adjt], ...]}}   (each archive file is the ratings at the end of that day)
 window.__torvikDone = null;
 (async () => {
   const now = new Date(), season = String(now.getMonth() >= 7 ? now.getFullYear() + 1 : now.getFullYear());

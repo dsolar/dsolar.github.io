@@ -2,7 +2,9 @@
 """Publish Bart Torvik's T-Rank for the CBB Hub from the latest browser drop (tools/torvik_pull.js -> Supabase).
 
 Writes cbb/data/torvik.json (today's ratings, keyed by the hub's team ids) and merges the daily archive into
-cbb/data/torvik_hist.json (ratings as of each morning; the hub uses it to test and blend Torvik's numbers fairly).
+cbb/data/torvik_hist.json. Each archive file holds the ratings at the END of that day, games included, so a fair test of
+day D's games uses the file for D-1. Tested that way on 298 games (Nov. 2026) Torvik missed final margins by 10.71 points
+against 10.37 for the hub's market rating, and blending him in didn't help, so he's shown but not in the hub's line.
 Team names are matched to the hub's by name, with a few fixed spellings; anything unmatched is listed in the file and
 the log rather than guessed.
 """
