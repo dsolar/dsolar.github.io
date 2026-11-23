@@ -1638,3 +1638,17 @@ revoke all on function public.nba_tracking_put(jsonb) from public;
 revoke all on function public.nba_tracking_get() from public;
 grant execute on function public.nba_tracking_put(jsonb) to anon, authenticated;
 grant execute on function public.nba_tracking_get() to anon, authenticated;
+
+-- barttorvik.com refuses cloud servers, so tools/torvik_pull.js runs in a browser there and drops the ratings here;
+-- torvik.yml reads them back (tools/torvik.py) and publishes cbb/data/torvik.json.
+create table if not exists public.torvik_drop (
+  id bigserial primary key,
+  created timestamptz not null default now(),
+  season text not null,
+  teams int not null,
+  body jsonb not null
+);
+alter table public.torvik_drop enable row level security;
+revoke all on public.torvik_drop from anon, authenticated;
+-- torvik_put(body jsonb) and torvik_get(): same shape and limits as the nba_tracking pair above (900 KB cap,
+-- 300-420 teams, one drop per 10 minutes, last 5 kept); applied as migration torvik_drop.

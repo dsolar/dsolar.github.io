@@ -1,0 +1,43 @@
+# Bart Torvik's T-Rank for the CBB Hub. His site refuses GitHub's servers, so a daily scheduled task runs
+# tools/torvik_pull.js in a browser on barttorvik.com and drops the ratings in Supabase; this job reads the latest drop
+# (tools/torvik.py) and publishes cbb/data/torvik.json and cbb/data/torvik_hist.json.
+# Runs about an hour after the browser task, when the script or this file changes, or by hand.
+name: Torvik ratings
+
+on:
+  schedule:
+    - cron: "41 16 * * *"
+  push:
+    branches: [main]
+    paths:
+      - tools/torvik.py
+      - .github/workflows/torvik.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: torvik
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Publish the latest Torvik drop
+        run: python3 tools/torvik.py
+      - name: Commit it
+        run: |
+          git add cbb/data/torvik.json cbb/data/torvik_hist.json
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit -m "Update Torvik ratings"
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
