@@ -12,6 +12,7 @@ on:
       - tools/cbb_extras.py
       - tools/cbb_dfs.py
       - tools/cbb_pool_teams.py
+      - tools/cbb_avail.py
       - cbb/data/naismith-watch.json
       - tests/cbb*.cjs
       - tests/cbb*.py
