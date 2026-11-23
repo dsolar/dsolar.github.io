@@ -8,6 +8,7 @@ Box scores are cached by game id, so each finished game is fetched once.
 """
 import json
 import time
+from concurrent.futures import ThreadPoolExecutor
 import urllib.request
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -17,6 +18,7 @@ OUT = ROOT / "cbb/data/avail.json"
 SUMMARY = "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event="
 UA = "davidsolar-cbbhub/1.0 (+https://davidsolar.dev/cbb/)"
 ROT_MIN, ROT_GP, LOOKBACK_DAYS, KEEP_DAYS = 15, 2, 21, 30
+BUDGET_S, WORKERS = 240, 8   # stop fetching after this many seconds; the cache carries the rest to the next run
 
 
 def read(p, default):
@@ -27,10 +29,10 @@ def read(p, default):
 
 
 def get(url):
-    for i in range(3):
+    for i in range(2):
         try:
             req = urllib.request.Request(url, headers={"User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=25) as r:
+            with urllib.request.urlopen(req, timeout=12) as r:
                 return json.load(r)
         except Exception:
             time.sleep(1.5 * (i + 1))
@@ -75,15 +77,21 @@ def main():
     for g in sorted(games.values(), key=lambda g: (g["day"], g.get("at") or "")):
         for side in ("home", "away"):
             by_team.setdefault(g[side], []).append(g)
-    need = sorted({g["id"] for gs in by_team.values() for g in gs[-2:]} - set(cache))
-    fetched = 0
-    for gid in need:
-        s = get(SUMMARY + gid)
-        if s is None:
-            continue
-        cache[gid] = {"day": games[gid]["day"], "t": box_of(s)}
-        fetched += 1
-        time.sleep(0.15)
+    # newest games first, so every team's latest game is covered before anyone's second-latest
+    latest = {gs[-1]["id"] for gs in by_team.values()}
+    need = sorted({g["id"] for gs in by_team.values() for g in gs[-2:]} - set(cache), key=lambda gid: (gid not in latest, games[gid]["day"]), reverse=False)
+    fetched, t0 = 0, time.time()
+
+    def one(gid):
+        if time.time() - t0 > BUDGET_S:
+            return gid, None
+        return gid, get(SUMMARY + gid)
+
+    with ThreadPoolExecutor(WORKERS) as ex:
+        for gid, s in ex.map(one, need):
+            if s is not None:
+                cache[gid] = {"day": games[gid]["day"], "t": box_of(s)}
+                fetched += 1
     players = {}
     for p in hub.get("players") or []:
         st = p.get("stats") or {}

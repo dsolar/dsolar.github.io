@@ -46,6 +46,7 @@ jobs:
       # who missed his team's last game, from ESPN box scores (cbb/data/avail.json); a miss keeps the last file
       - name: Who missed the last game
         continue-on-error: true
+        timeout-minutes: 6
         run: python3 tools/cbb_avail.py
       - name: Draft Lab college pool and featured slates
         run: python3 tools/cbb_dfs.py && python3 tools/fantasykit_teams.py cbb
