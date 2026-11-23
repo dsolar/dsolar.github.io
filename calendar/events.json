@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T18:02:31Z",
+ "updated": "2026-11-23T22:14:14Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,140 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv1AvZkfYGkecNgk6",
-   "date": "2026-11-22",
-   "time": "14:00",
-   "title": "Late Nite Catechism: Til Death Do Us Part",
-   "cat": "comedy",
-   "venue": "Charles Playhouse Theater 2",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/late-nite-catechism-til-death-do-boston-massachusetts-11-22-2026/event/01006530AD8F5187",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkfbGkdc6T8E",
-   "date": "2026-11-22",
-   "time": "19:00",
-   "title": "Fox Stevenson & Mystery Skulls (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/fox-stevenson-mystery-skulls-18-boston-massachusetts-11-22-2026/event/01006518ED1FF427",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18537163"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_8GklYPyP_",
-   "date": "2026-11-22",
-   "time": "19:00",
-   "title": "Missio (18+)",
-   "cat": "music",
-   "venue": "Brighton Music Hall presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/missio-18-boston-massachusetts-11-22-2026/event/0100650AF0979959",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18492289"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1A70tjs",
-   "date": "2026-11-22",
-   "time": "19:30",
-   "title": "Sweet Pill",
-   "cat": "music",
-   "venue": "The Sinclair Music Hall",
-   "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A70tjs",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18702709",
-    "2026-11-22-sweet-pill-the-sinclair"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAv_38",
-   "date": "2026-11-22",
-   "time": "20:00",
-   "title": "Action Bronson and Human Growth Hormone",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAv_38",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18558880"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv1AvZkffGkdnLs3M",
-   "date": "2026-11-22",
-   "time": "20:00",
-   "title": "Jessie Reyez: A Little Vengeance Tour",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/jessie-reyez-a-little-vengeance-tour-boston-massachusetts-11-22-2026/event/01006514EA7F14B7",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18528081",
-    "2026-11-22-jessie-reyez-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18634482",
-   "date": "2026-11-22",
-   "time": "20:00",
-   "title": "LCD Soundsystem",
-   "cat": "music",
-   "venue": "Knockdown Center",
-   "city": "Queens, NY",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
-   "source": "seatgeek",
-   "drive_hours": 4.25,
-   "act": "LCD Soundsystem",
-   "score": 2,
-   "why": "big"
-  },
-  {
-   "id": "tm-vvG17Z_2r0FNm1",
-   "date": "2026-11-22",
-   "time": "20:00",
-   "title": "Samantha Fish: Paper Doll Live World Tour",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/samantha-fish-paper-doll-live-world-boston-massachusetts-11-22-2026/event/010064F7A4223B8A",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18408687"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-rZ7HnEZ1Af83Q7",
-   "date": "2026-11-22",
-   "time": "20:30",
-   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
-   "cat": "music",
-   "venue": "Wild Horses",
-   "city": "New York, NY",
-   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412684",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Grateful Dead",
-   "score": 3,
-   "why": "love"
-  },
   {
    "id": "tm-vv1F7ZbS09vyZd227",
    "date": "2026-11-23",
@@ -173,9 +39,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe_7z",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18830707"
-   ],
    "score": 0
   },
   {
@@ -1166,9 +1029,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18618956"
-   ],
    "score": 0
   },
   {
@@ -3586,9 +3446,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gimme-gimme-disco-21-boston-massachusetts-12-31-2026/event/0100655CCF75B6D1",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18734188"
-   ],
    "score": 0
   },
   {
@@ -5841,8 +5698,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7P-Co",
    "source": "ticketmaster",
    "aka": [
-    "sg-18316935",
-    "sg-18813618"
+    "sg-18316935"
    ],
    "score": 0
   },
@@ -10525,6 +10381,30 @@
     "sg-18723953"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18747206",
+   "date": "2027-05-22",
+   "time": "20:00",
+   "title": "Hudson Freeman with James Eichman",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/hudson-freeman-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-22-8-pm/concert/18747206",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18252179",
+   "date": "2027-05-22",
+   "time": "20:00",
+   "title": "The Airborne Toxic Event",
+   "cat": "music",
+   "venue": "Orpheum Theatre - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/the-airborne-toxic-event-tickets/boston-massachusetts-orpheum-theatre-boston-2027-05-22-8-pm/concert/18252179",
+   "source": "seatgeek",
+   "score": 0
   }
  ],
  "movies": [
@@ -10603,7 +10483,7 @@
   "picks": 2,
   "venues": 0,
   "espn": 66,
-  "ticketmaster": 485,
-  "seatgeek": 159
+  "ticketmaster": 477,
+  "seatgeek": 160
  }
 }
