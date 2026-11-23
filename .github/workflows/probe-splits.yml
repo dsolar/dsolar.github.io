@@ -1,0 +1,15 @@
+name: probe-splits
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: probe
+        run: |
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36"
+          for u in "https://barttorvik.com/2027_team_results.json" "https://barttorvik.com/2027_team_results.csv" "https://barttorvik.com/trank.php?year=2027&json=1" \
+                   "https://barttorvik.com/timemachine/team_results/20261116_team_results.json.gz" "https://barttorvik.com/timemachine/team_results/20261110_team_results.json.gz" \
+                   "https://barttorvik.com/getadvstats.php?year=2027&csv=1" "https://barttorvik.com/2027_fffinal.csv"; do
+            curl -s -L -A "$UA" -o /tmp/t -w "== $u HTTP %{http_code} %{size_download}B type %{content_type}\n" "$u"
+            (file /tmp/t; (zcat /tmp/t 2>/dev/null || cat /tmp/t) | head -c 400; echo) | head -c 700; echo
+          done
