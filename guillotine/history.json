@@ -7356,7 +7356,7 @@
       "nfl": "SF",
       "claimed_by": "Holofernes",
       "bid": 87,
-      "next_proj": 16.44
+      "next_proj": 16.84
      },
      {
       "n": "Justin Jefferson",
@@ -7364,7 +7364,7 @@
       "nfl": "MIN",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 44,
-      "next_proj": 15.74
+      "next_proj": 15.32
      },
      {
       "n": "Bucky Irving",
@@ -7372,7 +7372,7 @@
       "nfl": "TB",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 32,
-      "next_proj": 18.91
+      "next_proj": 19.14
      },
      {
       "n": "Brock Purdy",
@@ -7380,7 +7380,7 @@
       "nfl": "SF",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 28,
-      "next_proj": 16.51
+      "next_proj": 16.63
      },
      {
       "n": "Zay Flowers",
@@ -7388,7 +7388,7 @@
       "nfl": "BAL",
       "claimed_by": "Holofernes",
       "bid": 11,
-      "next_proj": 13.67
+      "next_proj": 13.44
      },
      {
       "n": "Tetairoa McMillan",
@@ -7396,7 +7396,7 @@
       "nfl": "CAR",
       "claimed_by": "Holofernes",
       "bid": 8,
-      "next_proj": 11.72
+      "next_proj": 11.63
      },
      {
       "n": "Chase Brown",
@@ -7404,7 +7404,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 2,
-      "next_proj": 14.58
+      "next_proj": 14.31
      },
      {
       "n": "Sam LaPorta",
@@ -7412,7 +7412,7 @@
       "nfl": "DET",
       "claimed_by": "Holofernes",
       "bid": 2,
-      "next_proj": 10.78
+      "next_proj": 10.42
      },
      {
       "n": "Omarion Hampton",
@@ -7427,7 +7427,7 @@
       "nfl": "PHI",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 14.28
+      "next_proj": 12.91
      },
      {
       "n": "Jordan Love",
@@ -7435,25 +7435,25 @@
       "nfl": "GB",
       "claimed_by": "Holofernes",
       "bid": 0,
-      "next_proj": 18.25
+      "next_proj": 17.55
      },
      {
       "n": "Corey Kiner",
       "pos": "RB",
       "nfl": "NE",
-      "next_proj": 6.2
+      "next_proj": 6.53
      },
      {
       "n": "Jalen Coker",
       "pos": "WR",
       "nfl": "CAR",
-      "next_proj": 10.63
+      "next_proj": 10.29
      },
      {
       "n": "Zach Charbonnet",
       "pos": "RB",
       "nfl": "SEA",
-      "next_proj": 9.03
+      "next_proj": 8.29
      }
     ]
    },
@@ -7606,7 +7606,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 26.03,
+      "proj": 26.52,
       "pts": null
      },
      {
@@ -7638,7 +7638,7 @@
       "pos": "WR",
       "nfl": "WAS",
       "slot": "BN",
-      "proj": 11.17,
+      "proj": 11.27,
       "pts": null
      },
      {
@@ -7680,7 +7680,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 18.48,
+      "proj": 18.72,
       "pts": null
      },
      {
@@ -7810,7 +7810,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.04,
+      "proj": 16.22,
       "pts": null
      },
      {
@@ -7834,7 +7834,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "W/R/T",
-      "proj": 12.88,
+      "proj": 12.8,
       "pts": null
      },
      {
@@ -7964,7 +7964,7 @@
       "pos": "QB",
       "nfl": "WAS",
       "slot": "Q/W/R/T",
-      "proj": 21.65,
+      "proj": 21.9,
       "pts": null
      },
      {
