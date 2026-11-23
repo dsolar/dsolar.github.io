@@ -4,17 +4,6 @@ jobs:
   probe:
     runs-on: ubuntu-latest
     steps:
-      - name: probe
-        run: |
-          W="https://site.web.api.espn.com/apis"; Q="region=us&lang=en&contentorigin=espn"
-          UA="Mozilla/5.0 (compatible; davidsolar-hub/1.0; +https://davidsolar.dev/)"
-          get() { curl -s -A "$UA" -H "Accept-Encoding: identity" -o /tmp/j.json -w "== $1 HTTP %{http_code} %{size_download}B\n" "$1"; }
-          for L in basketball/nba hockey/nhl; do
-            get "$W/common/v3/sports/$L/statistics/byteam?$Q&season=2027&seasontype=2&limit=40"
-            python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));print('cats',[(c['name'],len(c.get('names',[]))) for c in d['categories']])
-          t=d['teams'][0];print('team keys',list(t));print('team cat names',[c.get('name') for c in t.get('categories',[])])
-          for c in d['categories']:
-            print(c['name'], list(zip(c['names'],c.get('labels',[])))[:40])
-          c0=t['categories'][0];print('sample values',json.dumps(c0)[:400])"
-          done
+      - uses: actions/checkout@v5
+      - run: pip install brotli >/dev/null 2>&1 || true
+      - run: python3 tools/tonight_pull.py
