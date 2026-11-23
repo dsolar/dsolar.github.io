@@ -9,24 +9,12 @@ jobs:
           W="https://site.web.api.espn.com/apis"; Q="region=us&lang=en&contentorigin=espn"
           UA="Mozilla/5.0 (compatible; davidsolar-hub/1.0; +https://davidsolar.dev/)"
           get() { curl -s -A "$UA" -H "Accept-Encoding: identity" -o /tmp/j.json -w "== $1 HTTP %{http_code} %{size_download}B\n" "$1"; }
-          get "$W/site/v2/sports/basketball/nba/scoreboard?$Q&dates=20261123"
-          python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));e=d['events'][0];c=e['competitions'][0]
-          print('events',len(d['events']),'| date',e['date'],'| status',e['status']['type']['name'],'| tv',[b.get('names') for b in c.get('broadcasts',[])])
-          print([(x['homeAway'],x['team']['abbreviation'],x['team']['id']) for x in c['competitors']]); print('odds', json.dumps(c.get('odds'))[:300])"
-          get "$W/site/v2/sports/hockey/nhl/scoreboard?$Q&dates=20261123"
-          python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));e=d['events'][0];c=e['competitions'][0]
-          print('events',len(d['events']),'| date',e['date'],'| tv',[b.get('names') for b in c.get('broadcasts',[])]); print([(x['homeAway'],x['team']['abbreviation']) for x in c['competitors']])"
-          get "$W/site/v2/sports/basketball/nba/teams/2/statistics?$Q"
-          python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));print(list(d)[:10]);r=d.get('results') or d.get('statistics') or {};print(json.dumps(r)[:1500])"
-          get "$W/common/v3/sports/basketball/nba/statistics/byteam?$Q&season=2027&seasontype=2&limit=40"
-          python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));print(list(d)[:10]);print(json.dumps(d.get('categories'))[:800]);t=(d.get('teams') or [None])[0];print(json.dumps(t)[:900])"
-          get "$W/common/v3/sports/basketball/nba/statistics/byteam?$Q&season=2027&seasontype=2&limit=40&category=opponent"
-          python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));t=(d.get('teams') or [None])[0];print(json.dumps(d.get('categories'))[:500]);print(json.dumps(t)[:600])"
-          get "$W/site/v2/sports/basketball/nba/injuries?$Q"
-          python3 -c "
-          import json;d=json.load(open('/tmp/j.json'));print(list(d)[:6]);i=(d.get('injuries') or [{}])[0];print(json.dumps(i)[:700])"
+          for L in basketball/nba hockey/nhl; do
+            get "$W/common/v3/sports/$L/statistics/byteam?$Q&season=2027&seasontype=2&limit=40"
+            python3 -c "
+          import json;d=json.load(open('/tmp/j.json'));print('cats',[(c['name'],len(c.get('names',[]))) for c in d['categories']])
+          t=d['teams'][0];print('team keys',list(t));print('team cat names',[c.get('name') for c in t.get('categories',[])])
+          for c in d['categories']:
+            print(c['name'], list(zip(c['names'],c.get('labels',[])))[:40])
+          c0=t['categories'][0];print('sample values',json.dumps(c0)[:400])"
+          done
