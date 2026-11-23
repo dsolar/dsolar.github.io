@@ -101,7 +101,7 @@
   }
   new MutationObserver(function () { scrollA11y(view); }).observe(view, { childList: true, subtree: true });
   var subtabs = $("#subtabs");
-  var GROUP = { standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", rank: "players", track: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
+  var GROUP = { tonight: "tonight", game: "tonight", standings: "standings", teams: "teams", team: "teams", style: "teams", contracts: "teams", ratings: "players", rank: "players", track: "players", lineups: "players", trade: "trades", value: "players", fa: "fa", draft: "draft", picks: "draft" };
   var SUBS = {
     players: [["ratings", "Ratings"], ["rank", "Rankings"], ["track", "Tracking"], ["value", "Contracts"], ["lineups", "Lineups"]],
     draft: [["draft", "Lottery odds", "", "Lottery"], ["picks", "Traded picks", "", "Picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock", "Mock"], ["", "More", "../draft/#nba/challenge"]]
@@ -126,8 +126,31 @@
     yearbar.hidden = !withYears;
     if (withYears) drawYears();
     if ((state.route === "team" || state.route === "style") && state.arg) save("team", state.arg.toUpperCase());
-    var fn = { draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, rank: rankPage, track: trackPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
+    var fn = { tonight: tonightPage, game: gamePage, draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, rank: rankPage, track: trackPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
     fn();
+  }
+  // ---------- tonight: game cards and previews (assets/tonight.js, data/tonight.json) ----------
+  var ESPN2CODE = null;
+  function tonightCfg() {
+    if (!ESPN2CODE) { ESPN2CODE = {}; Object.keys(H.teams).forEach(function (c) { ESPN2CODE[String(H.teams[c].espn || c).toUpperCase()] = c; }); }
+    var f1 = function (v) { return v == null ? "—" : v.toFixed(1); }, p1 = function (v) { return v == null ? "—" : v.toFixed(1) + "%"; };
+    return {
+      base: "tonight", preview: "game", word: "on offense", sides: ["offense", "defense"],
+      href: href,
+      team: function (ab, name) { var c = ESPN2CODE[ab] || ab, t = team(c); return { code: c, short: t.short || c, name: t.name || name, logo: logo(c, 24), link: href("team/" + c, {}) }; },
+      rows: [["Points a game", "avgPoints", "d:avgPoints", 1, f1], ["Field goal %", "fieldGoalPct", "d:fieldGoalPct", 1, p1], ["3-point %", "threePointFieldGoalPct", "d:threePointFieldGoalPct", 1, p1],
+        ["Threes made", "avgThreePointFieldGoalsMade", "d:avgThreePointFieldGoalsMade", 1, f1], ["Free throw attempts", "avgFreeThrowsAttempted", "d:avgFreeThrowsAttempted", 1, f1],
+        ["Offensive rebounds", "avgOffensiveRebounds", "d:avgOffensiveRebounds", 1, f1], ["Assists", "avgAssists", "d:avgAssists", 1, f1], ["Turnovers", "avgTurnovers", "d:avgTurnovers", -1, f1]],
+      note: "Season averages from ESPN, ranked against all 30 teams: each team's offense next to what the other team's opponents have done against it. Red is good, blue is bad, and the bigger number wins the row."
+    };
+  }
+  function tonightPage() {
+    if (!window.Tonight || !Tonight.ready()) { view.innerHTML = '<p class="loading">Loading tonight\'s games…</p>'; if (window.Tonight) Tonight.load().then(function () { if (state.route === "tonight") render(); }); return; }
+    view.innerHTML = Tonight.list(tonightCfg(), state.q || {});
+  }
+  function gamePage() {
+    if (!window.Tonight || !Tonight.ready()) { view.innerHTML = '<p class="loading">Loading the preview…</p>'; if (window.Tonight) Tonight.load().then(function () { if (state.route === "game") render(); }); return; }
+    view.innerHTML = Tonight.preview(tonightCfg(), state.arg);
   }
   function drawYears() {
     var b = "";

@@ -160,6 +160,43 @@ def match_nfl(an_games, k_events):
     return out, len(rows)
 
 
+def pro_games(hub):
+    try:
+        return json.loads((ROOT / hub / "data/tonight.json").read_text()).get("games") or []
+    except Exception:
+        return []
+
+
+def match_pro(hub, an_games, k_events):
+    """NBA and NHL: match to tonight.json's ESPN games by day and full team names (Kalshi lists short names, like
+    "Los Angeles L", which match as the start of the full name)."""
+    games = pro_games(hub)
+    names = lambda g, side: norm(g[side]["n"])
+    hit = lambda full, cands: any(c and (c == full or (len(c) > 3 and full.startswith(c + " ")) or full.startswith(c)) for c in cands if c)
+    out = {}
+
+    def find(day, hn, an_):
+        for g in games:
+            if g["day"] != day:
+                continue
+            if hit(names(g, "h"), hn) and hit(names(g, "a"), an_):
+                return g, False
+            if hit(names(g, "h"), an_) and hit(names(g, "a"), hn):
+                return g, True
+        return None, False
+
+    for ag in an_games:
+        d, _ = et_day(ag["start"])
+        g, fl = find(d, ag["home_names"], ag["away_names"])
+        if g:
+            out.setdefault(g["id"], {})["an"] = flip(ag["data"]) if fl else ag["data"]
+    for ke in k_events:
+        g, fl = find(ke["day"], ke["home_names"], ke["away_names"])
+        if g:
+            out.setdefault(g["id"], {})["k"] = flipk(ke["data"]) if fl else ke["data"]
+    return out, len(games)
+
+
 def flip(d):
     d = dict(d)
     if "sp" in d: d["sp"] = [-d["sp"][0] if d["sp"][0] is not None else None, 100 - d["sp"][1] if d["sp"][1] is not None else None]
@@ -288,6 +325,8 @@ def write(hub, fresh, src_note):
     except Exception:
         pass
     started = set()
+    if hub in ("nba", "nhl"):
+        started = {g["id"] for g in pro_games(hub) if g.get("st") in ("in", "post")}
     if hub in ("cbb", "cfb"):
         _, games, _ = college_games(hub)
         for g in games:
@@ -381,6 +420,14 @@ def main():
     m, n = match_nfl(an, ks)
     report.append("nfl: AN %d games, Kalshi %d events -> matched %d hub games (AN %d, Kalshi %d)" % (len(an), len(ks), len(m), sum("an" in v for v in m.values()), sum("k" in v for v in m.values())))
     if write("nfl", m, SRC): changed.append("nfl")
+
+    # NBA and NHL, keyed by ESPN game id (the games in <hub>/data/tonight.json)
+    for hub, league, series in (("nba", "nba", "KXNBAGAME"), ("nhl", "nhl", "KXNHLGAME")):
+        an = an_pull(league, ["date=" + d for d in days])
+        ks = kalshi_pull(series)
+        m, n = match_pro(hub, an, ks)
+        report.append("%s: AN %d games, Kalshi %d events -> matched %d hub games (AN %d, Kalshi %d)" % (hub, len(an), len(ks), len(m), sum("an" in v for v in m.values()), sum("k" in v for v in m.values())))
+        if write(hub, m, SRC): changed.append(hub)
 
     print("\n".join(report + log))
     print("changed:", ",".join(changed) or "none")

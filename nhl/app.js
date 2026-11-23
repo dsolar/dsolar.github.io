@@ -85,7 +85,7 @@
   function render() {
     parse();
     // Three sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
-    var r = state.route, GROUP = { standings: "standings", teams: "teams", team: "teams", contracts: "teams", players: "players", stats: "players", edge: "players" };
+    var r = state.route, GROUP = { tonight: "tonight", game: "tonight", standings: "standings", teams: "teams", team: "teams", contracts: "teams", players: "players", stats: "players", edge: "players" };
     var SUBS = { teams: [["teams", "Teams"], ["contracts", "Contracts"]], players: [["players", "Player ratings"], ["stats", "Stats"], ["edge", "Edge tracking"], ["", "Fantasy NHL ↗", "../fantasy/nhl/"]] };
     var group = GROUP[r] || "standings", cur = r === "team" ? "teams" : r, subs = SUBS[group];
     if (subs && subs.some(function (x) { return x[0] === cur; })) { try { localStorage.setItem("nhl.sub." + group, cur); } catch (e) { /* private mode */ } }
@@ -97,7 +97,8 @@
     var stb = document.getElementById("subtabs");
     stb.hidden = !subs;
     if (subs) stb.innerHTML = subs.map(function (x) { return x[2] ? '<a href="' + x[2] + '">' + x[1] + "</a>" : '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
-    if (r === "teams") view.innerHTML = teamsView();
+    if (r === "tonight" || r === "game") view.innerHTML = tonightView();
+    else if (r === "teams") view.innerHTML = teamsView();
     else if (r === "team" && TEAMS[state.arg]) view.innerHTML = teamView(TEAMS[state.arg]);
     else if (r === "players") view.innerHTML = playersView();
     else if (r === "stats") view.innerHTML = statsView();
@@ -105,10 +106,30 @@
     else if (r === "contracts") view.innerHTML = contractsView();
     else if (r === "method") view.innerHTML = methodView();
     else view.innerHTML = standingsView();
-    var k = { standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", stats: "Stats", edge: "Edge tracking", contracts: "Contracts", method: "How it works" }[r] || "Standings";
+    var k = { tonight: "Tonight", game: "Game preview", standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", stats: "Stats", edge: "Edge tracking", contracts: "Contracts", method: "How it works" }[r] || "Standings";
     document.title = k + " · NHL Hub | David Solar";
   }
 
+  // ---------- tonight: game cards and previews (assets/tonight.js, data/tonight.json) ----------
+  var ESPN_NHL = { NJ: "NJD", LA: "LAK", TB: "TBL", SJ: "SJS", UTAH: "UTA", MON: "MTL", WAS: "WSH" };
+  function tonightCfg() {
+    var norm = function (s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); };
+    var f2 = function (v) { return v == null ? "—" : v.toFixed(2); }, f1 = function (v) { return v == null ? "—" : v.toFixed(1); };
+    var pc = function (v) { return v == null ? "—" : (v < 1 ? v * 100 : v).toFixed(1) + "%"; };
+    var byName = function (name) { var n = norm(name); return Object.keys(TEAMS).filter(function (c) { return norm(TEAMS[c].name) === n; })[0]; };
+    return {
+      base: "tonight", preview: "game", word: "attacking", sides: ["attack", "defense"],
+      href: function (route, q) { var k = Object.keys(q || {}).filter(function (x) { return q[x]; }); return "#/" + route + (k.length ? "?" + k.map(function (x) { return x + "=" + encodeURIComponent(q[x]); }).join("&") : ""); },
+      team: function (ab, name) { var c = TEAMS[ab] ? ab : TEAMS[ESPN_NHL[ab]] ? ESPN_NHL[ab] : byName(name) || ab, t = TEAMS[c]; return t ? { code: c, short: t.common, name: t.name, logo: logo(t, 24), link: "#/team/" + c } : { code: ab, short: name, name: name, logo: "", link: "#/teams" }; },
+      rows: [["Goals a game", "avgGoals", "avgGoalsAgainst", 1, f2], ["Shots a game", function (t) { return t.o.games ? t.o.shotsTotal / t.o.games : null; }, function (t) { return t.o.games ? t.o.shotsAgainst / t.o.games : null; }, 1, f1],
+        ["Shooting vs saves", "shootingPct", "savePct", 1, pc, -1], ["Power play vs penalty kill", "powerPlayPct", "penaltyKillPct", 1, pc, -1]],
+      note: "Season numbers from ESPN, ranked against all 32 teams: each team's attack next to the other team's defense (goals and shots allowed, save percentage, penalty kill). Red is good, blue is bad, and the bigger number wins the row."
+    };
+  }
+  function tonightView() {
+    if (!window.Tonight || !Tonight.ready()) { if (window.Tonight) Tonight.load().then(function () { if (state.route === "tonight" || state.route === "game") render(); }); return '<p class="loading">Loading tonight\'s games…</p>'; }
+    return state.route === "game" ? Tonight.preview(tonightCfg(), state.arg) : Tonight.list(tonightCfg(), state.q || {});
+  }
   // ---------- standings ----------
   function standRow(t, i, cut, wide) {
     return '<tr class="go' + (cut ? " cut" : "") + '" data-team="' + t.abbr + '">' +

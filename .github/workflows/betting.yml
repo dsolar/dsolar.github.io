@@ -1,6 +1,6 @@
 # Public betting data for the CBB, CFB and NFL hubs (tools/betting_pull.py): Action Network's share of bets and bet
 # counts (money percentages are a paid Action Network feature and are never read) and Kalshi's public market prices.
-# Writes cbb/data/betting.json, cfb/data/betting.json and nfl/data/betting.json.
+# Writes betting.json for the CBB, CFB, NFL, NBA and NHL hubs.
 # Runs at about 8am, 11am, 2pm, 5pm, 8pm and 11pm ET, when the script or this file changes, or by hand.
 name: Betting splits
 
@@ -44,7 +44,7 @@ jobs:
 
       - name: Commit it
         run: |
-          for f in cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json cbb/data/lines_hist.json cfb/data/lines_hist.json nfl/data/lines_hist.json cbb/data/value.json cfb/data/value.json; do [ -f "$f" ] && git add "$f"; done
+          for f in cbb/data/betting.json cfb/data/betting.json nfl/data/betting.json cbb/data/lines_hist.json cfb/data/lines_hist.json nfl/data/lines_hist.json cbb/data/value.json cfb/data/value.json nba/data/betting.json nhl/data/betting.json nba/data/lines_hist.json nhl/data/lines_hist.json; do [ -f "$f" ] && git add "$f"; done
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
