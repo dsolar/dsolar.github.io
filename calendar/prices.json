@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-22T11:39:33Z",
+ "updated": "2026-11-23T01:49:19Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -1190,31 +1190,40 @@
    "url": "https://www.ticketmaster.com/joe-list-boston-massachusetts-04-17-2027/event/01006538259313C0",
    "src": null,
    "low": null
+  },
+  "tm-rZ7HnEZ1Af83Q7": {
+   "history": [],
+   "sg": 18700720,
+   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
+   "date": "2026-11-22",
+   "venue": "Wild Horses",
+   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412684",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-rZ7HnEZ1AfuNZ7": "2026-11-20",
-  "tm-rZ7HnEZ1AfuYF0": "2026-11-20",
-  "tm-rZ7HnEZ1Afugk7": "2026-11-20",
-  "tm-Z7r9jZ1AA77-E": "2026-11-20",
-  "tm-rZ7HnEZ1Af83Q7": "2026-11-20",
-  "tm-rZ7HnEZ1Af83jf": "2026-11-20",
-  "tm-rZ7HnEZ1Af83jV": "2026-11-20",
-  "tm-rZ7HnEZ1Af83j7": "2026-11-20",
-  "tm-rZ7HnEZ1Af83Qf": "2026-11-20",
-  "tm-rZ7HnEZ1Af83j0": "2026-11-20",
-  "tm-rZ7HnEZ1Af83qf": "2026-11-20",
-  "tm-vv1AvZkf7GkdbzXaM": "2026-11-20",
-  "tm-vvG17Z_2wSVFP-": "2026-11-20",
-  "tm-rZ7HnEZ1AfCa-f": "2026-11-20",
-  "tm-rZ7HnEZ1AfCa0f": "2026-11-20",
-  "tm-vvG17Z_CTNmdDP": "2026-11-20",
+  "tm-rZ7HnEZ1AfuNZ7": "2026-11-22",
+  "tm-rZ7HnEZ1AfuYF0": "2026-11-22",
+  "tm-rZ7HnEZ1Afugk7": "2026-11-22",
+  "tm-Z7r9jZ1AA77-E": "2026-11-22",
+  "tm-rZ7HnEZ1Af83jf": "2026-11-22",
+  "tm-rZ7HnEZ1Af83jV": "2026-11-22",
+  "tm-rZ7HnEZ1Af83j7": "2026-11-22",
+  "tm-rZ7HnEZ1Af83Qf": "2026-11-22",
+  "tm-rZ7HnEZ1Af83j0": "2026-11-22",
+  "tm-rZ7HnEZ1Af83qf": "2026-11-22",
+  "tm-vv1AvZkf7GkdbzXaM": "2026-11-22",
+  "tm-vvG17Z_2wSVFP-": "2026-11-22",
+  "tm-rZ7HnEZ1AfCa-f": "2026-11-22",
+  "tm-rZ7HnEZ1AfCa0f": "2026-11-22",
+  "tm-vvG17Z_CTNmdDP": "2026-11-22",
   "tm-vv177Z_KGknM09Yr": "2026-11-21",
-  "tm-k7vGF_KBmAa9o": "2026-11-20",
-  "tm-1AdZZ_KGklJMams": "2026-11-20",
+  "tm-k7vGF_KBmAa9o": "2026-11-22",
+  "tm-1AdZZ_KGklJMams": "2026-11-22",
   "tm-vv177Z_pGklqR-Eh": "2026-11-21",
-  "tm-vv1AvZkfSGkdTcSmB": "2026-11-20",
-  "tm-rZ7HnEZ1A4v9FN": "2026-11-20"
+  "tm-vv1AvZkfSGkdTcSmB": "2026-11-22",
+  "tm-rZ7HnEZ1A4v9FN": "2026-11-22"
  },
  "drops": []
 }
