@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-23T01:49:19Z",
+ "updated": "2026-11-23T13:12:01Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -294,6 +294,10 @@
     [
      "2026-11-22",
      56
+    ],
+    [
+     "2026-11-23",
+     56
     ]
    ],
    "sg": null,
@@ -465,6 +469,10 @@
     ],
     [
      "2026-11-22",
+     22
+    ],
+    [
+     "2026-11-23",
      22
     ]
    ],
@@ -700,6 +708,10 @@
     [
      "2026-11-22",
      28
+    ],
+    [
+     "2026-11-23",
+     28
     ]
    ],
    "sg": null,
@@ -768,16 +780,6 @@
    "date": "2026-12-11",
    "venue": "Bearsville Theater",
    "url": "https://seatgeek.com/moe-tickets/woodstock-new-york-bearsville-theater-2026-12-11-8-pm/concert/18668758",
-   "src": null,
-   "low": null
-  },
-  "sg-18634482": {
-   "history": [],
-   "sg": 18634482,
-   "title": "LCD Soundsystem",
-   "date": "2026-11-22",
-   "venue": "Knockdown Center",
-   "url": "https://seatgeek.com/lcd-soundsystem-tickets/queens-new-york-knockdown-center-2026-11-22-8-pm/concert/18634482",
    "src": null,
    "low": null
   },
@@ -918,6 +920,10 @@
     [
      "2026-11-22",
      44
+    ],
+    [
+     "2026-11-23",
+     44
     ]
    ],
    "sg": null,
@@ -965,6 +971,10 @@
     ],
     [
      "2026-11-22",
+     44
+    ],
+    [
+     "2026-11-23",
      44
     ]
    ],
@@ -1130,6 +1140,10 @@
     [
      "2026-11-22",
      34
+    ],
+    [
+     "2026-11-23",
+     34
     ]
    ],
    "sg": null,
@@ -1188,16 +1202,6 @@
    "date": "2027-04-17",
    "venue": "The Wilbur",
    "url": "https://www.ticketmaster.com/joe-list-boston-massachusetts-04-17-2027/event/01006538259313C0",
-   "src": null,
-   "low": null
-  },
-  "tm-rZ7HnEZ1Af83Q7": {
-   "history": [],
-   "sg": 18700720,
-   "title": "(Grateful) DEAD Night: Never Miss a Sunday Show",
-   "date": "2026-11-22",
-   "venue": "Wild Horses",
-   "url": "https://www.ticketweb.com/event/grateful-dead-night-never-miss-wild-horses-tickets/14412684",
    "src": null,
    "low": null
   }
