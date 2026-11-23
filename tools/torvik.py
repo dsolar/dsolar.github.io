@@ -27,7 +27,7 @@ FIX = {
     "cal state bakersfield": "cal state bakersfield", "tennessee martin": "ut martin", "arkansas pine bluff": "arkansas pine bluff",
     "illinois chicago": "uic", "detroit": "detroit mercy", "fiu": "fiu", "liu": "long island university", "liu brooklyn": "long island university",
     "saint francis": "saint francis", "st francis pa": "saint francis", "loyola md": "loyola maryland", "loyola chicago": "loyola chicago",
-    "albany": "ualbany", "nebraska omaha": "omaha", "purdue fort wayne": "purdue fort wayne", "iu indy": "iu indianapolis",
+    "albany": "ualbany", "umkc": "kansas city", "nebraska omaha": "omaha", "purdue fort wayne": "purdue fort wayne", "iu indy": "iu indianapolis",
     "texas rio grande valley": "ut rio grande valley", "louisiana tech": "louisiana tech", "usc upstate": "south carolina upstate",
     "southeastern louisiana": "se louisiana", "mcneese state": "mcneese", "nicholls state": "nicholls", "grambling state": "grambling",
     "bethune cookman": "bethune cookman", "sam houston state": "sam houston", "kansas city": "kansas city", "queens": "queens university",
@@ -79,6 +79,8 @@ def main():
         n = norm(name)
         if n in FIX and norm(FIX[n]) in shorts:
             return shorts[norm(FIX[n])]
+        if n in shorts:                               # an exact short name beats a mascot-stripped one ("Houston" vs "Houston Christian")
+            return shorts[n]
         ids = by_key.get(n) or by_key.get(norm(FIX.get(n, "")))
         return next(iter(ids)) if ids and len(ids) == 1 else None
 
