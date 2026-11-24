@@ -2957,3 +2957,13 @@ dialog.fk-dlg:has(> .pc) > .dlg-x{margin:10px 10px -44px 8px}
 .pc .pc-pane .stack,.pc .pc-pane .stack>*{min-width:0}
 
 .pc .pc-face .pav-b{display:none}
+
+/* The site bar's name and Hubs / Draft Lab switch (same as assets/navigation.css on the hubs) */
+.fk-site.ds-name{opacity:1;gap:9px;color:#fff;text-decoration:none;border-right:0;padding-right:4px}
+.fk-site.ds-name b{font:700 18px/1 "Besley",Georgia,serif;letter-spacing:-.3px;white-space:nowrap}
+.ds-prod{display:inline-flex;flex:none;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.1)}
+.ds-prod a{font:600 13px/1 var(--f,system-ui);color:#C9D3E0;text-decoration:none;padding:7px 11px;border-radius:999px;white-space:nowrap}
+.ds-prod a:hover{color:#fff}
+.ds-prod a[aria-current="page"]{background:#fff;color:#002244}
+.fk-top .fk-mast.inline,.fk-mast.fk-band.inline{border-bottom:3px solid #E8B020}
+@media (max-width:600px){.fk-site.ds-name b{display:none}.ds-prod a{padding:7px 9px;font-size:12.5px}}

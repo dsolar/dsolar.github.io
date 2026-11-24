@@ -183,8 +183,8 @@
         return '<a href="' + h + '"' + (t[0] === "home" ? ' aria-current="page"' : "") + ">" + esc(t[1]) + "</a>";
       };
       el.insertAdjacentHTML("beforebegin", '<header class="fk-top hub-top"><div class="fk-mast fk-band inline"><div class="wrap">' +
-        '<a class="fk-site" href="' + ROOT + '" title="davidsolar.dev" aria-label="David Solar, home"><img src="' + ROOT + 'assets/nav-mark.svg" alt="" width="26" height="26"></a>' +
-        '<a class="fk-brand" href="' + ROOT + 'fantasy/"><img src="' + KIT + 'mark.svg" alt=""><b class="disp">Draft Lab</b></a>' +
+        '<a class="fk-site ds-name" href="' + ROOT + '" aria-label="David Solar, home"><img src="' + ROOT + 'assets/nav-mark.svg" alt="" width="26" height="26"><b>David Solar</b></a>' +
+        '<nav class="ds-prod" aria-label="Hubs or Draft Lab"><a href="' + ROOT + 'simulations/">Hubs</a><a href="' + ROOT + 'fantasy/" aria-current="page">Draft Lab</a></nav>' +
         '<nav class="mast-nav" aria-label="Sections">' + N.TABS.map(tab).join("") + "</nav>" + (N.findHtml ? N.findHtml(KIT) : "") +
         '<div class="fk-who"><button class="btn sm ghost fh-theme" type="button" id="theme">Dark</button><div class="ds-account" id="ds-account"></div></div></div></div></header>');
     }

@@ -67,3 +67,11 @@ body.mobile-world .ds-navigation{display:none}
 .ds-skip:focus{left:12px;top:10px;padding:8px 14px;border-radius:4px;background:#f6c445;color:#002244;font:700 14px/1.2 "Libre Franklin","Helvetica Neue",Arial,sans-serif;text-decoration:none;outline:2px solid #002244;outline-offset:2px}
 main[tabindex="-1"]:focus,#ds-content:focus{outline:none}
 
+
+/* Hubs / Draft Lab switch (same as fantasy-kit/kit.css on Draft Lab's bar) */
+.ds-navigation .ds-prod{display:inline-flex;flex:none;gap:2px;padding:3px;border-radius:999px;background:rgba(255,255,255,.1)}
+.ds-navigation .ds-prod a{font:600 13px/1 "Barlow",system-ui,sans-serif;color:#C9D3E0;text-decoration:none;padding:7px 11px;border-radius:999px;white-space:nowrap}
+.ds-navigation .ds-prod a:hover{color:#fff}
+.ds-navigation .ds-prod a[aria-current="page"]{background:#fff;color:#002244}
+@media(max-width:520px){.ds-navigation .ds-prod a{padding:7px 9px;font-size:12.5px}}
+@media(max-width:430px){.ds-navigation:has(.ds-prod) .ds-brand span{display:none}}

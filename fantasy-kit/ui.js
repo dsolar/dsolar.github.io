@@ -322,6 +322,8 @@
   // account button (assets/account.js draws it into #ds-account)
   const SITE = `<a class="fk-site" href="/" title="davidsolar.dev" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"></a>`;
   const ACCOUNT = `<div class="ds-account" id="ds-account"></div>`;
+  // Draft Lab's site pages carry the same bar as the hubs: David Solar, then a Hubs / Draft Lab switch
+  const SITE_BAR = `<a class="fk-site ds-name" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"><b>David Solar</b></a><nav class="ds-prod" aria-label="Hubs or Draft Lab"><a href="/simulations/">Hubs</a><a href="/fantasy/" aria-current="page">Draft Lab</a></nav>`;
   function shell(opts) {
     const href = opts.hrefOf || ((t, s) => "#" + t + (s ? "/" + s : ""));
     const badge = (n) => (n ? `<span class="badge">${n}</span>` : "");
@@ -332,7 +334,7 @@
         ${m.crest}<div class="lgm-id"><div class="lgm-top"><span class="lgm-brand">${SITE}<a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a></span>${opts.title || ""}</div>${opts.slim ? "" : m.body}</div>
         <div class="lgm-side"><div class="fk-who">${opts.right || ""}${ACCOUNT}</div>${opts.slim ? "" : m.champs}</div></div></div>`
       : opts.inline && opts.tabs && opts.tabs.length ? `<div class="fk-mast fk-band inline"><div class="wrap">
-        ${SITE}<a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a>
+        ${SITE_BAR}
         <nav class="mast-nav" aria-label="Sections">${opts.tabs.map(([k, n, b]) => `<a href="${href(k)}"${k === opts.tab ? ' aria-current="page"' : ""}>${esc(n)}${badge(b)}</a>`).join("")}</nav>
         ${opts.find || ""}<div class="fk-who">${opts.right || ""}${ACCOUNT}</div></div></div>`
       : `<div class="fk-mast fk-band"><div class="wrap">
