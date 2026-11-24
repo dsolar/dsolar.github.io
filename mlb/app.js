@@ -1211,11 +1211,11 @@
     return t ? '<span class="tm" title="' + esc(t.name) + '">' + logo(abbr, size) + "</span>" : '<span class="pill" title="' + esc(abbr) + '">' + esc(abbr) + "</span>";
   }
   function gradesPanel(board) {
-    var all = board.filter(function (x) { return x.signed; });
+    var all = board.filter(function (x) { return x.signed && x.rank != null && x.rank <= 25; });
     if (!all.length) return "";
     var per = 10, pages = Math.ceil(all.length / per), pg = Math.min(pages, Math.max(1, +state.q.dp || 1));
     var deals = all.slice((pg - 1) * per, pg * per);
-    var html = '<div class="panel"><h3>Deals so far <small>' + all.length + " major-league signings, by FA rank</small></h3>" + '<div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th title="Rank in this winter\'s free agent class, by projected value">FA rank</th><th>Player</th><th>From</th><th></th><th>To</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
+    var html = '<div class="panel"><h3>Deals so far <small>' + all.length + " of the top 25 free agents signed</small></h3>" + '<div class="scroll"><table class="t grades"><thead><tr><th>Grade</th><th title="Rank in this winter\'s free agent class, by projected value">FA rank</th><th>Player</th><th>From</th><th></th><th>To</th><th>Deal</th><th>Market price</th><th>vs Market</th><th>Surplus</th></tr></thead><tbody>';
     deals.forEach(function (x) {
       var r = x.r, gr = x.grade, sv = x.p ? H.surplus(x.p).total : gr ? gr.prod : null;
       var tot = gr ? gr.paid : r.tot ? r.tot / 1e6 : r.yrs && x.signedAav ? x.signedAav * r.yrs : null;
