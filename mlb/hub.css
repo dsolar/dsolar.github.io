@@ -401,3 +401,18 @@ td.bt{white-space:nowrap;font-size:12px;color:var(--muted)}td.bt b{color:var(--i
 .wg.is-live{border-color:var(--red)}.wg header .live{color:var(--red)}
 
 button.card-link{font:inherit;color:inherit;background:transparent;border:0;padding:0;cursor:pointer;text-align:inherit}
+/* phones: filters as one compact run of pills ("TEAM  All teams"), not a boxed form with a label over each field */
+@media (max-width:640px){
+  .controls{background:none;border:0;border-radius:0;padding:0;margin:4px 0 10px;gap:6px;align-items:center}
+  /* one swipeable row when it's only filters; a row with notes, segmented buttons or extra settings still wraps */
+  .controls:not(:has(.msets,.seg,.note,.fresh,p)){flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-14px;margin-right:-14px;padding:0 14px 2px;-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 24px),transparent)}
+  .controls:not(:has(.msets,.seg,.note,.fresh,p))::-webkit-scrollbar{display:none}
+  .controls:not(:has(.msets,.seg,.note,.fresh,p)) > label:has(input[type=search]){flex:none;min-width:170px}
+  .controls > label:not(.chk):not(.switch):not(:has(.seg)){flex-direction:row;align-items:center;gap:7px;min-height:38px;padding:0 4px 0 12px;border:1px solid var(--rule);border-radius:999px;background:var(--card);font-size:10.5px;letter-spacing:.06em;max-width:100%}
+  .controls > label:not(.chk):not(.switch):not(:has(.seg)){flex:none;white-space:nowrap;width:auto}
+  .controls > label:not(.chk):not(.switch):not(:has(.seg)) select{-webkit-appearance:none;appearance:none;width:auto;min-width:0;border:0;border-radius:0;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='m1 1 4 4 4-4' fill='none' stroke='%2366717F' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 8px center;padding:8px 26px 8px 0;font-size:14px;font-weight:600;max-width:60vw;text-overflow:ellipsis}
+  .controls > label input[type=number]{border:0;background:var(--paper-2);border-radius:999px;width:64px;padding:6px 10px;font-weight:600}
+  .controls > label:has(input[type=search]){flex:1 1 100%}
+  .controls > label input[type=search]{border:0;background:transparent;padding:8px 8px 8px 0;flex:1;min-width:0}
+  .controls label.chk{font-size:13px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--muted);padding:0 4px}
+}
