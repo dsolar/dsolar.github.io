@@ -16,7 +16,7 @@
   --p1:#DCEBFF; --p1i:#0D3F82; --p2:#E2F5D6; --p2i:#2B5C0E; --p3:#FFE6CC; --p3i:#7A3A00; --p4:#F0E0FF; --p4i:#53198A;
   --p5:#FFDCE0; --p5i:#8A1424; --p6:#E2E6EB; --p6i:#3A4452; --p7:#D4F2EE; --p7i:#0E5A52; --p8:#FFF1BC; --p8i:#6A5200;
   --t0:#2563EB; --t1:#DC2626; --t2:#059669; --t3:#7C3AED; --t4:#EA580C; --t5:#0891B2; --t6:#DB2777; --t7:#65A30D; --t8:#334155; --t9:#92400E; --t10:#0F766E; --t11:#4338CA;
-  --f:"Archivo",system-ui,-apple-system,"Segoe UI",Arial,sans-serif; --disp-style:normal; --disp-wdth:78;
+  --f:"Barlow",system-ui,-apple-system,"Segoe UI",Arial,sans-serif;--f-cond:"Barlow Condensed","Arial Narrow",sans-serif;--f-disp:"Besley",Georgia,serif; --disp-style:normal; --disp-wdth:78;
   --r:8px; --rl:12px; --gut:16px; --shadow:0 1px 2px rgba(16,24,40,.05),0 1px 3px rgba(16,24,40,.06);
   color-scheme:light;
 }
@@ -41,7 +41,7 @@ a{color:var(--accent)}
 /* the focus ring: the gold on dark surfaces, the darker gold (readable on white) on light ones */
 :focus-visible{outline:2px solid var(--focus,var(--accent));outline-offset:2px}
 :root[data-theme="dark"],.fk-dark,.fk-band,.fk-mast,.dr-top,.lgm{--focus:var(--brand)}
-.disp{font-weight:900;font-style:var(--disp-style);font-variation-settings:"wdth" var(--disp-wdth);letter-spacing:-.01em;line-height:.98}
+.disp{font-family:var(--f-disp);font-weight:800;font-style:var(--disp-style);letter-spacing:-.01em;line-height:1.02}
 .muted{color:var(--muted)} .small{font-size:13px} .ps{font-size:12px;color:var(--muted)}
 .ok,.win{color:var(--win)} .bad,.loss{color:var(--loss)} .warn-t{color:var(--gold)}
 .row{display:flex;align-items:center;gap:8px;min-width:0}
@@ -2967,3 +2967,10 @@ dialog.fk-dlg:has(> .pc) > .dlg-x{margin:10px 10px -44px 8px}
 .ds-prod a[aria-current="page"]{background:#fff;color:#002244}
 .fk-top .fk-mast.inline,.fk-mast.fk-band.inline{border-bottom:3px solid #E8B020}
 @media (max-width:600px){.fk-site.ds-name b{display:none}.ds-prod a{padding:7px 9px;font-size:12.5px}}
+
+/* Shared type with the hubs: Barlow for text, Besley for titles (.disp), Barlow Condensed wherever Draft Lab used
+   Archivo's narrow widths for numbers, avatars and names in tight spots */
+.av,.pav,.dollar,.versus .score,.lot .bid b,.grade,.bid-amt,.pc-wk-n b,.en-bud-n b,.pnt span,.lgcr-t,.cell b,.nl-name input,.lgm .switch summary .ell{font-family:var(--f-cond)}
+.versus .nm{font-family:var(--f);font-weight:700}
+/* titles at the hubs' weight */
+h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
