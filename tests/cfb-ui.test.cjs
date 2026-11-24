@@ -45,7 +45,7 @@ test("the projected bracket shows twelve seeded teams and the bubble", async () 
 });
 test("the spread machine swaps sides and shows a verdict", async () => {
   const [a, b] = data.teams, w = await boot("#/matchup?a=" + a.id + "&b=" + b.id + "&site=n"); try {
-    assert.ok(w.document.querySelector(".verdict")); w.document.querySelector("[data-swap]").click(); await pause(20); assert.ok(w.location.hash.includes("a=" + b.id));
+    assert.ok(w.document.querySelector(".pg .pg-verdict"), "the shared game page"); assert.ok(w.document.querySelector('.pg [data-ctab="details"]'), "a Details tab"); w.document.querySelector("[data-swap]").click(); await pause(20); assert.ok(w.location.hash.includes("a=" + b.id));
   } finally { w.close(); }
 });
 test("following a team persists locally and filters the team grid; player cards open", async () => {

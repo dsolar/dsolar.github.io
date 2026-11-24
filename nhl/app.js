@@ -32,6 +32,8 @@
   function oddbar(x) { return '<span class="oddbar">' + pct(x) + '<i><b style="width:' + Math.round(Math.min(1, x || 0) * 100) + '%"></b></i></span>'; }
   function toi(min) { if (!min) return "—"; var m = Math.floor(min), s = Math.round((min - m) * 60); if (s === 60) { m++; s = 0; } return m + ":" + (s < 10 ? "0" : "") + s; }
   function ord(n) { var v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); }
+  // primary colors, for the rings on team and game pages (the NHL's feed doesn't carry them)
+  var NHL_COLOR = { ANA: "#F47A38", BOS: "#FFB81C", BUF: "#003087", CGY: "#C8102E", CAR: "#CE1126", CHI: "#CF0A2C", COL: "#6F263D", CBJ: "#002654", DAL: "#006847", DET: "#CE1126", EDM: "#FF4C00", FLA: "#C8102E", LAK: "#111111", MIN: "#154734", MTL: "#AF1E2D", NSH: "#FFB81C", NJD: "#CE1126", NYI: "#00539B", NYR: "#0038A8", OTT: "#C52032", PHI: "#F74902", PIT: "#FCB514", SJS: "#006D75", SEA: "#001628", STL: "#002F87", TBL: "#002868", TOR: "#00205B", UTA: "#69B3E7", VAN: "#00205B", VGK: "#B4975A", WSH: "#C8102E", WPG: "#041E42" };
   function logo(t, size) { return t ? '<img class="logo" src="' + esc(t.logo) + '" alt="" loading="lazy"' + (size ? ' style="width:' + size + "px;height:" + size + 'px"' : "") + ">" : ""; }
   function hs(p, size) { return '<img class="hs" src="' + esc(p.head || "") + '" alt="" loading="lazy" style="--s:' + (size || 28) + 'px" onerror="this.style.visibility=\'hidden\'">'; }
   function pname(p, size) {
@@ -129,7 +131,7 @@
     return {
       base: "tonight", preview: "game", word: "attacking", sides: ["attack", "defense"],
       href: function (route, q) { var k = Object.keys(q || {}).filter(function (x) { return q[x]; }); return "#/" + route + (k.length ? "?" + k.map(function (x) { return x + "=" + encodeURIComponent(q[x]); }).join("&") : ""); },
-      team: function (ab, name) { var c = TEAMS[ab] ? ab : TEAMS[ESPN_NHL[ab]] ? ESPN_NHL[ab] : byName(name) || ab, t = TEAMS[c]; return t ? { code: c, short: t.common, name: t.name, logo: logo(t, 24), link: "#/team/" + c } : { code: ab, short: name, name: name, logo: "", link: "#/teams" }; },
+      team: function (ab, name) { var c = TEAMS[ab] ? ab : TEAMS[ESPN_NHL[ab]] ? ESPN_NHL[ab] : byName(name) || ab, t = TEAMS[c]; return t ? { code: c, short: t.common, name: t.name, logo: logo(t, 24), link: "#/team/" + c, color: NHL_COLOR[c] } : { code: ab, short: name, name: name, logo: "", link: "#/teams" }; },
       rows: [["Goals a game", "avgGoals", "avgGoalsAgainst", 1, f2], ["Shots a game", function (t) { return t.o.games ? t.o.shotsTotal / t.o.games : null; }, function (t) { return t.o.games ? t.o.shotsAgainst / t.o.games : null; }, 1, f1],
         ["Shooting vs saves", "shootingPct", "savePct", 1, pc, -1], ["Power play vs penalty kill", "powerPlayPct", "penaltyKillPct", 1, pc, -1]],
       note: "Season numbers from ESPN, ranked against all 32 teams: each team's attack next to the other team's defense (goals and shots allowed, save percentage, penalty kill). Red is good, blue is bad, and the bigger number wins the row."
@@ -237,7 +239,7 @@
     var r = t.rec, ps = ROSTER[t.abbr] || [];
     var rank = H.teams.slice().sort(function (a, b) { return b.rating - a.rating; }).indexOf(t) + 1;
     // the shared team header (assets/pcard.js), then the team picker
-    var h = window.PCard.teamHead({ logo: logo(t, 44), name: t.name, follow: { sport: "nhl", id: t.abbr }, color: "var(--ink)",
+    var h = window.PCard.teamHead({ logo: logo(t, 44), name: t.name, follow: { sport: "nhl", id: t.abbr }, color: NHL_COLOR[t.abbr] || "var(--ink)",
       meta: [esc(t.div) + " Division", rec(t) + ", " + r.points + " points in " + r.gamesPlayed + " games"],
       chips: [["Last 10: " + r.l10Wins + "-" + r.l10Losses + "-" + r.l10OtLosses, ""], r.streakCode ? [r.streakCode + r.streakCount + " streak", r.streakCode === "W" ? "tag" : ""] : null, ["Strength " + sgn(t.rating, 2) + ", " + ord(rank), t.rating >= 0 ? "tag" : ""], t.cap ? [m(t.cap.space, 1) + " cap space", t.cap.space >= 0 ? "" : "inj"] : null],
       head: [{ v: Math.round(t.projPts), l: "Projected points" }, { v: pct(t.odds.po), l: "Playoffs" }, { v: pct(t.odds.div), l: "Division" }, { v: pct(t.odds.cup), l: "Stanley Cup" }],

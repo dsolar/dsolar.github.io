@@ -63,13 +63,49 @@
   }
 
   document.addEventListener("click", function (e) {
-    var b = e.target.closest && e.target.closest(".pc [data-ctab]");
+    var b = e.target.closest && e.target.closest(".pc [data-ctab], .pgw [data-ctab]");
     if (!b) return;
-    var root = b.closest(".pc"), id = b.getAttribute("data-ctab");
-    root.querySelectorAll("[data-ctab]").forEach(function (x) { x.setAttribute("aria-selected", x === b); });
-    root.querySelectorAll("[data-pane]").forEach(function (p) { p.hidden = p.getAttribute("data-pane") !== id; });
-    last = id; try { sessionStorage.setItem("pcard.tab", id); } catch (err) {}
+    var root = b.closest(".pc, .pgw"), id = b.getAttribute("data-ctab"), game = root.classList.contains("pgw");
+    root.querySelectorAll("[data-ctab]").forEach(function (x) { if (x.closest(".pc, .pgw") === root) x.setAttribute("aria-selected", x === b); });
+    root.querySelectorAll("[data-pane]").forEach(function (p) { if (p.closest(".pc, .pgw") === root) p.hidden = p.getAttribute("data-pane") !== id; });
+    if (game) { gameLast = id; try { sessionStorage.setItem("pgame.tab", id); } catch (err) {} }
+    else { last = id; try { sessionStorage.setItem("pcard.tab", id); } catch (err) {} }
   });
+
+  // The shared game page: a scoreboard header, up to four numbers, the win-probability bar, then tabs in the same order
+  // on every hub (Matchup, Players, Injuries, Betting, Details). o:
+  //   away, home   {logo, name, rec, href, score, color}   (score shows once the game is live or final)
+  //   at           "at" or "vs" (neutral site)
+  //   status       markup: tip time and TV, "Final", or the live clock
+  //   meta         [markup]  week, conference game, venue...
+  //   head         [{v, l, tone, html}]  the hub's line, the book's line, the total, a market price
+  //   prob         {away: 0-1, src: "Hub" / "Kalshi"}  the bar under the numbers
+  //   verdict      markup: one line on what the numbers say ("BYU by 2.5, projected 76-73")
+  //   tabs         [{id, label, html}]  ids: matchup, players, injuries, betting, details (others allowed)
+  //   tab          the tab to open (else the last one picked on any game page, else the first)
+  //   before       markup above the header (a back link, the matchup pickers)
+  var gameLast = null;
+  try { gameLast = sessionStorage.getItem("pgame.tab"); } catch (e) {}
+  function game(o) {
+    var side = function (t, k) {
+      var sc = t.score != null && t.score !== "" ? '<b class="pg-sc">' + esc(t.score) + "</b>" : "";
+      return '<a class="pg-t pg-' + k + (t.won ? " won" : "") + '" href="' + esc(t.href || "#") + '" style="--tc:' + esc(t.color || "var(--ink)") + '"><span class="pg-logo">' + (t.logo || "") + '</span><span class="pg-nm"><b>' + esc(t.name) + "</b><small>" + esc(t.rec || "") + "</small></span>" + sc + "</a>";
+    };
+    var head = (o.head || []).filter(function (x) { return x && x.v != null && x.v !== ""; }).slice(0, 4);
+    var tabs = (o.tabs || []).filter(function (t) { return t && t.html; });
+    var want = o.tab || gameLast, cur = tabs.some(function (t) { return t.id === want; }) ? want : tabs.length ? tabs[0].id : null;
+    var pr = o.prob && o.prob.away != null && isFinite(o.prob.away) ? Math.max(0, Math.min(1, o.prob.away)) : null;
+    var pc = function (x) { return x >= 0.995 ? ">99%" : x <= 0.005 ? "<1%" : Math.round(x * 100) + "%"; };
+    var h = (o.before || "") + '<div class="pgw"><section class="pg">' +
+      '<p class="pg-status">' + (o.status || "") + ((o.meta || []).filter(Boolean).length ? '<span class="pg-meta">' + o.meta.filter(Boolean).join(" · ") + "</span>" : "") + "</p>" +
+      '<div class="pg-teams">' + side(o.away, "a") + '<span class="pg-at">' + esc(o.at || "at") + "</span>" + side(o.home, "h") + "</div>" +
+      (o.verdict ? '<p class="pg-verdict">' + o.verdict + "</p>" : "") +
+      (head.length ? '<div class="pc-head" style="--n:' + head.length + '">' + head.map(function (x) { return "<div><b" + (x.tone ? ' class="' + x.tone + '"' : "") + ">" + (x.html ? x.v : esc(x.v)) + "</b><span>" + esc(x.l) + "</span></div>"; }).join("") + "</div>" : "") +
+      (pr != null ? '<div class="pg-prob" title="Chance to win' + (o.prob.src ? ", from " + esc(o.prob.src) : "") + '"><span class="pg-pa">' + pc(pr) + '</span><span class="pg-bar"><i style="width:' + (pr * 100).toFixed(1) + "%;background:" + esc(o.away.color || "var(--ink)") + '"></i><i style="background:' + esc(o.home.color || "var(--muted)") + '"></i></span><span class="pg-ph">' + pc(1 - pr) + "</span>" + (o.prob.src ? '<small class="pg-src">' + esc(o.prob.src) + "</small>" : "") + "</div>" : "") +
+      (tabs.length > 1 ? '<div class="pg-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-ctab="' + t.id + '" aria-selected="' + (t.id === cur) + '">' + esc(t.label) + "</button>"; }).join("") + "</div>" : "") +
+      "</section>" + tabs.map(function (t) { return '<div class="pg-pane" data-pane="' + t.id + '"' + (t.id === cur ? "" : " hidden") + ">" + t.html + "</div>"; }).join("") + "</div>";
+    return h;
+  }
 
   // The shared team page header: logo, name, a line of context, chips, up to four headline numbers, then the page's
   // sections as tabs (links: each is a route in the hub). o: {logo, name, color, meta: [..], chips: [[text, kind]],
@@ -87,5 +123,5 @@
       "</section>" + (o.after || "");
   }
 
-  window.PCard = { html: html, sec: sec, bars: bars, line: line, facts: facts, table: table, color: color, esc: esc, teamHead: teamHead };
+  window.PCard = { html: html, sec: sec, bars: bars, line: line, facts: facts, table: table, color: color, esc: esc, teamHead: teamHead, game: game };
 })();

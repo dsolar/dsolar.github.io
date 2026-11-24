@@ -146,7 +146,7 @@
     return {
       base: "tonight", preview: "game", word: "on offense", sides: ["offense", "defense"],
       href: href,
-      team: function (ab, name) { var c = ESPN2CODE[ab] || ab, t = team(c); return { code: c, short: t.short || c, name: t.name || name, logo: logo(c, 24), link: href("team/" + c, {}) }; },
+      team: function (ab, name) { var c = ESPN2CODE[ab] || ab, t = team(c); return { code: c, short: t.short || c, name: t.name || name, logo: logo(c, 24), link: href("team/" + c, {}), color: t.color }; },
       rows: [["Points a game", "avgPoints", "d:avgPoints", 1, f1], ["Field goal %", "fieldGoalPct", "d:fieldGoalPct", 1, p1], ["3-point %", "threePointFieldGoalPct", "d:threePointFieldGoalPct", 1, p1],
         ["Threes made", "avgThreePointFieldGoalsMade", "d:avgThreePointFieldGoalsMade", 1, f1], ["Free throw attempts", "avgFreeThrowsAttempted", "d:avgFreeThrowsAttempted", 1, f1],
         ["Offensive rebounds", "avgOffensiveRebounds", "d:avgOffensiveRebounds", 1, f1], ["Assists", "avgAssists", "d:avgAssists", 1, f1], ["Turnovers", "avgTurnovers", "d:avgTurnovers", -1, f1]],

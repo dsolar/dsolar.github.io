@@ -245,12 +245,29 @@
     if (!g) { view.innerHTML = '<p class="note">That game isn\'t on the schedule. <a href="' + href("week", {}) + '">This week\'s games</a></p>'; return; }
     wk = g[1];
     var done = g[5] != null;
-    var head = '<div class="gphead">' + [a, h].map(function (c, i) { var sc = i ? g[6] : g[5]; return '<a class="gpt" href="' + href("team/" + c, {}) + '">' + logo(c, 48) + "<b>" + esc(team(c).name) + "</b><small>" + recordOf(c) + (done ? " · " + sc : "") + "</small></a>"; }).join('<span class="gpat">' + (g[8] ? "vs" : "at") + "</span>") + "</div>";
-    var meta = '<p class="gpmeta">' + (done ? "Final" : kickTxt(g)) + " · Week " + wk + (g[9] ? " · Division game" : "") + " · Line <b>" + lineOf(g) + "</b></p>";
     var ts = TS.teams[a] && TS.teams[h];
-    view.innerHTML = '<p class="back"><a href="' + href("week", { w: wk }) + '">← Week ' + wk + "</a></p>" + head + meta + betLine(g, true) +
-      (ts ? '<div class="two">' + muSide(a, h) + muSide(h, a) + '</div><p class="note">Percentiles against all 32 teams this season, each side\'s offense next to the other\'s defense: red is good, blue is bad, and the bigger number wins the row. EPA per play, success rate, passing, running and explosive plays leave out garbage time. From nflverse play-by-play through week ' + TS.week + ".</p>" : '<p class="note">Team numbers are still loading from the play-by-play.</p>') +
-      '<div class="two"><div>' + keyPlayers(a) + injPanel(a, wk) + "</div><div>" + keyPlayers(h) + injPanel(h, wk) + "</div></div>";
+    var b = BETN && BETN.games && BETN.games[gkey(g)], k = b && b.k, x = b && b.an, kOk = k && k.h != null && k.a != null && (k.v || 0) >= 500;
+    var side = function (c, sc, won) { return { logo: logo(c, 44), name: team(c).name, rec: recordOf(c), href: href("team/" + c, {}), color: team(c).color, score: done ? sc : null, won: won }; };
+    var injN = function (c) { try { return injuredOf(c, wk).length; } catch (e) { return 0; } }, nInj = injN(a) + injN(h);
+    // the shared game page (assets/pcard.js)
+    view.innerHTML = window.PCard.game({
+      before: '<p class="back"><a href="' + href("week", { w: wk }) + '">← Week ' + wk + "</a></p>",
+      away: side(a, g[5], done && g[5] > g[6]), home: side(h, g[6], done && g[6] > g[5]), at: g[8] ? "vs" : "at",
+      status: done ? "<b>Final</b>" : kickTxt(g), meta: ["Week " + wk, g[9] ? "Division game" : "", g[8] ? "Neutral site" : ""],
+      head: [
+        lineOf(g) !== "—" ? { v: lineOf(g), l: "Line", html: true } : null,
+        x && x.tot && x.tot[0] != null ? { v: x.tot[0], l: "Total" } : null,
+        kOk ? { v: (k.h >= k.a ? h : a) + " " + Math.round(100 * Math.max(k.h, k.a)) + "¢", l: "Kalshi price" } : null,
+        x && x.sp && x.sp[0] != null && betOk(x.sp[1]) ? { v: Math.round(Math.max(x.sp[1], 100 - x.sp[1])) + "%", l: "Bets on " + (x.sp[1] >= 50 ? h : a) + " " + sgn(x.sp[1] >= 50 ? x.sp[0] : -x.sp[0]) } : null
+      ],
+      prob: kOk ? { away: k.a / (k.a + k.h), src: "Kalshi prices" } : null,
+      tabs: [
+        { id: "matchup", label: "Matchup", html: ts ? '<div class="two">' + muSide(a, h) + muSide(h, a) + '</div><p class="note">Percentiles against all 32 teams this season, each side\'s offense next to the other\'s defense: red is good, blue is bad, and the bigger number wins the row. EPA per play, success rate, passing, running and explosive plays leave out garbage time. From nflverse play-by-play through week ' + TS.week + ".</p>" : '<p class="note">Team stats aren\'t in yet.</p>' },
+        { id: "players", label: "Key players", html: '<div class="two"><div>' + keyPlayers(a) + "</div><div>" + keyPlayers(h) + "</div></div>" },
+        { id: "injuries", label: "Injuries" + (nInj ? " (" + nInj + ")" : ""), html: '<div class="two"><div>' + injPanel(a, wk) + "</div><div>" + injPanel(h, wk) + "</div></div>" },
+        { id: "betting", label: "Betting", html: (betLine(g, true) || '<p class="note">No betting numbers for this game yet.</p>') + '<p class="note">Line: nflverse, else the betting feed\'s consensus. Bets: share of bets across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks. Kalshi: the price of each team\'s win contract at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, shown once 500+ contracts have traded; a 56¢ price is about a 56% chance.</p>' }
+      ]
+    });
   }
 
   // ---------- league ----------

@@ -92,13 +92,31 @@
     if (!T.data) return null;
     var g = (T.data.games || []).filter(function (x) { return x.id === id; })[0];
     if (!g) return '<p class="note">That game isn\'t in the next week\'s schedule. <a href="' + cfg.href(cfg.base, {}) + '">Tonight\'s games</a></p>';
-    var H = cfg.team(g.h.ab, g.h.n), A = cfg.team(g.a.ab, g.a.n), done = g.st === "post";
-    var head = '<div class="gphead">' + [[A, g.a], [H, g.h]].map(function (p) { return '<a class="gpt" href="' + p[0].link + '">' + p[0].logo.replace(/width="\d+"|height="\d+"|style="[^"]*"/g, "").replace("<img", '<img style="width:48px;height:48px"') + "<b>" + esc(p[0].name) + "</b><small>" + esc(p[1].rec || "") + (done ? " · " + p[1].s : "") + "</small></a>"; }).join('<span class="gpat">' + (g.neutral ? "vs" : "at") + "</span>") + "</div>";
-    var meta = '<p class="gpmeta">' + (done ? "Final" : g.st === "in" ? esc(g.detail || "Live") : esc(dayLabel(g.day)) + " · " + tipTxt(g)) + (g.tv && g.tv.length ? " · " + esc(g.tv.join(", ")) : "") + " · Line <b>" + lineTxt(g) + "</b></p>";
+    var H = cfg.team(g.h.ab, g.h.n), A = cfg.team(g.a.ab, g.a.n), done = g.st === "post", live = g.st === "in";
+    var b = T.bets && T.bets.games[g.id], k = b && b.k, x = b && b.an;
+    var kOk = k && k.h != null && k.a != null && (k.v || 0) >= 500;
+    var big = function (t) { return (t.logo || "").replace(/width="\d+"|height="\d+"|style="[^"]*"/g, ""); };
+    var side = function (t, s, won) { return { logo: big(t), name: t.name, rec: s.rec || "", href: t.link, color: t.color, score: done || live ? s.s : null, won: won }; };
     var stats = T.data.teams[g.a.ab] && T.data.teams[g.h.ab];
-    return '<p class="back"><a href="' + cfg.href(cfg.base, { d: g.day }) + '">← ' + esc(dayLabel(g.day)) + "</a></p>" + head + meta + betLine(g, cfg, true) +
-      (stats ? '<div class="two">' + muSide(cfg, g.a.ab, g.h.ab, A, H, cfg.word) + muSide(cfg, g.h.ab, g.a.ab, H, A, cfg.word) + '</div><p class="note">' + cfg.note + "</p>" : '<p class="note">Team stats aren\'t in yet.</p>') +
-      '<div class="two">' + injPanel(A, g.a.n) + injPanel(H, g.h.n) + "</div>";
+    var head = [
+      g.line ? { v: g.line, l: "Line (DraftKings)" } : null,
+      g.ou ? { v: g.ou, l: "Total" } : null,
+      kOk ? { v: (k.h >= k.a ? H : A).code + " " + Math.round(100 * Math.max(k.h, k.a)) + "¢", l: "Kalshi price" } : null,
+      x && x.sp && x.sp[0] != null && betOk(x.sp[1]) ? { v: Math.round(Math.max(x.sp[1], 100 - x.sp[1])) + "%", l: "Bets on " + (x.sp[1] >= 50 ? H : A).code + " " + sgn(x.sp[1] >= 50 ? x.sp[0] : -x.sp[0]) } : null
+    ];
+    var injCount = function (n) { return injFor(n).length; };
+    return window.PCard.game({
+      before: '<p class="back"><a href="' + cfg.href(cfg.base, { d: g.day }) + '">← ' + esc(dayLabel(g.day)) + "</a></p>",
+      away: side(A, g.a, done && g.a.s > g.h.s), home: side(H, g.h, done && g.h.s > g.a.s), at: "at",
+      status: done ? "<b>Final</b>" : live ? '<b class="live">● ' + esc(g.detail || "Live") + "</b>" : esc(dayLabel(g.day)) + " · " + tipTxt(g) + (g.tv && g.tv.length ? " · " + esc(g.tv.join(", ")) : ""),
+      head: head,
+      prob: kOk ? { away: k.a / (k.a + k.h), src: "Kalshi prices" } : null,
+      tabs: [
+        { id: "matchup", label: "Matchup", html: stats ? '<div class="two">' + muSide(cfg, g.a.ab, g.h.ab, A, H, cfg.word) + muSide(cfg, g.h.ab, g.a.ab, H, A, cfg.word) + '</div><p class="note">' + cfg.note + "</p>" : '<p class="note">Team stats aren\'t in yet.</p>' },
+        { id: "injuries", label: "Injuries" + (injCount(g.a.n) + injCount(g.h.n) ? " (" + (injCount(g.a.n) + injCount(g.h.n)) + ")" : ""), html: '<div class="two">' + injPanel(A, g.a.n) + injPanel(H, g.h.n) + "</div>" },
+        { id: "betting", label: "Betting", html: (betLine(g, cfg, true) || '<p class="note">No betting numbers for this game yet.</p>') + '<p class="note">Line and total: DraftKings, via ESPN. Bets: share of bets across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks. Kalshi: the price of each team\'s win contract at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, shown once 500+ contracts have traded; a 56¢ price is about a 56% chance.</p>' }
+      ]
+    });
   }
   // a team's next game for the shared player card: {today, when, what, sub, right} or null. code(ab) maps ESPN's abbreviation to the hub's
   function next(cfg, code, me) {

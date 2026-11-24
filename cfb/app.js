@@ -338,19 +338,33 @@ function matchup(q) {
   const real = D.games.filter(g => (g.home === a.id && g.away === b.id) || (g.home === b.id && g.away === a.id));
   const row = (lab, va, vb, better) => { const x = M.num(va), y = M.num(vb), ea = x !== null && y !== null && (better === "low" ? x < y : x > y), eb = x !== null && y !== null && (better === "low" ? y < x : y > x); return "<tr><td" + (ea ? ' class="edge"' : "") + ">" + (typeof va === "string" ? va : f1(va)) + '</td><td class="mid">' + lab + "</td><td" + (eb ? ' class="edge"' : "") + ">" + (typeof vb === "string" ? vb : f1(vb)) + "</td></tr>"; };
   const fav = l ? (l.spread > 0 ? home : away) : null;
-  return '<h2 class="sec">Spread machine</h2><p class="lede">Any two FBS teams, any site: the hub\'s spread, total, projected score and win probability.</p>' +
-    '<div class="controls">' + teamSelect("a", a.id, "Team A") + teamSelect("b", b.id, "Team B") + seg("site", [["b", esc(b.short) + " home"], ["a", esc(a.short) + " home"], ["n", "Neutral"]], site) + '<button class="btn" type="button" data-swap>Swap ⇄</button></div>' +
-    (l ? '<div class="verdict">' + logo(fav) + " <b>" + esc(fav.short) + " by " + half(l.spread) + "</b> · total " + half(l.total) + "<br><small>Projected " + esc(away.short) + " " + int(l.ap) + ", " + esc(home.short) + " " + int(l.hp) + (neutral ? " at a neutral site" : " in " + esc(home.short) + "'s stadium") + "</small></div>" +
-      '<div class="wp"><span class="wp-l">' + logo(a) + esc(a.short) + " <b>" + pct(pa) + '</b></span><div class="wp-bar"><b style="width:' + (pa * 100).toFixed(1) + "%;background:" + esc(a.color) + '"></b><i style="background:' + esc(b.color) + '"></i></div><span class="wp-r"><b>' + pct(1 - pa) + "</b> " + esc(b.short) + logo(b) + "</span></div>" : '<p class="callout">No line for these teams.</p>') +
-    (() => { const m = real.find((g) => BET && BET.games && BET.games[g.id]); return m ? betPanel(m, team(m.home), team(m.away)) : ""; })() +
-    (real.length ? '<p class="callout">' + real.map(g => { const h = team(g.home), aw = team(g.away); return (g.state === "post" ? "They played " : "They play ") + dLabel(g.day, { weekday: "short" }) + ": " + esc(aw.short) + (g.neutral ? " vs " : " at ") + esc(h.short) + (g.state === "post" ? " — final " + int(g.as) + "-" + int(g.hs) : g.market && fin(g.market.spread) ? " · book " + favText(g.market.spread, h, aw) : ""); }).join("<br>") + "</p>" : "") +
-    (ADV(a.id) && ADV(b.id) ? '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against FBS teams from CollegeFootballData, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' : "") +
-    '<div class="panel"><table class="t tape"><thead><tr><th>' + logo(a) + " " + esc(a.short) + '</th><th class="mid">Tale of the tape</th><th>' + esc(b.short) + " " + logo(b) + "</th></tr></thead><tbody>" +
+  // the shared game page (assets/pcard.js): pickers on top, then the scoreboard header and the tabs every hub uses
+  const g0 = real.filter(g => g.state !== "post").sort((x, y) => x.day.localeCompare(y.day))[0] || real.filter(g => g.state === "post").sort((x, y) => y.day.localeCompare(x.day))[0];
+  const done = g0 && g0.state === "post", live = g0 && g0.state === "in";
+  const left = neutral ? a : away, right = neutral ? b : home, lProb = pa == null ? null : left === a ? pa : 1 - pa;
+  const scoreOf = (t) => !g0 || !(done || live) ? null : t.id === g0.home ? g0.hs : g0.as;
+  const sideOf = (t) => { const sc = scoreOf(t), o = scoreOf(t === a ? b : a); return { logo: logo(t), name: t.short, rec: rec(t) + (pollRank(t) ? " · No. " + pollRank(t) : ""), href: "#/team?id=" + encodeURIComponent(t.id), color: t.color, score: sc, won: done && fin(sc) && fin(o) && sc > o }; };
+  const book = g0 && g0.market && fin(g0.market.spread) ? favText(g0.market.spread, team(g0.home), team(g0.away)) : null;
+  const bm = real.find((g) => BET && BET.games && BET.games[g.id]);
+  return window.PCard.game({
+    before: '<h2 class="sec">Spread machine</h2>' + '<div class="controls">' + teamSelect("a", a.id, "Team A") + teamSelect("b", b.id, "Team B") + seg("site", [["b", esc(b.short) + " home"], ["a", esc(a.short) + " home"], ["n", "Neutral"]], site) + '<button class="btn" type="button" data-swap>Swap ⇄</button></div>',
+    away: sideOf(left), home: sideOf(right), at: neutral ? "vs" : "at",
+    status: !g0 ? "Any two teams, any site" : done ? "<b>Final</b> · " + dLabel(g0.day, { weekday: "short" }) : live ? '<b class="live">● Live</b>' : dLabel(g0.at || g0.day, { weekday: "long" }) + (g0.at ? " · " + new Date(g0.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }) + " ET" : ""),
+    meta: [g0 && g0.post ? "Bowl" : g0 && g0.week ? "Week " + g0.week : "", g0 && g0.conf ? "Conference game" : "", neutral ? "Neutral site" : "", g0 && g0.note ? esc(g0.note) : ""],
+    verdict: l ? "<b>" + esc(fav.short) + " by " + half(l.spread) + "</b>" + (neutral ? " at a neutral site" : " in " + esc(home.short) + "'s stadium") + "<br>Projected " + esc(away.short) + " " + int(l.ap) + ", " + esc(home.short) + " " + int(l.hp) : '<span class="note">No line for these teams.</span>',
+    head: l ? [{ v: fav.short + " −" + half(l.spread), l: "Hub line" }, book ? { v: book, l: done ? "Closing line" : "Book line", html: true } : null, { v: half(l.total), l: "Hub total" }, { v: pct(Math.max(pa, 1 - pa)), l: fav.short + " win chance" }] : [],
+    prob: lProb == null ? null : { away: lProb, src: "Hub model" },
+    tabs: [
+      { id: "matchup", label: "Matchup", html: ADV(a.id) && ADV(b.id) ? '<div class="two">' + muSide(a, b) + muSide(b, a) + '</div><p class="note">Percentiles against FBS teams from CollegeFootballData, each side\'s offense next to the other\'s defense. Red is good, blue is bad; the bigger number wins the row.</p>' : '<p class="note">Advanced stats aren\'t in for one of these teams yet.</p>' },
+      { id: "betting", label: "Betting", html: bm ? betPanel(bm, team(bm.home), team(bm.away)) : '<p class="note">' + (g0 ? "No betting numbers for this game yet." : "These two aren\'t on the schedule, so there are no book lines or bets. The hub\'s line is up top.") + "</p>" },
+      { id: "details", label: "Details", html: '<div class="panel"><table class="t tape"><thead><tr><th>' + logo(a) + " " + esc(a.short) + '</th><th class="mid">Tale of the tape</th><th>' + esc(b.short) + " " + logo(b) + "</th></tr></thead><tbody>" +
     row("Record", rec(a), rec(b)) + row("Poll", pollRank(a) ? "#" + pollRank(a) : "—", pollRank(b) ? "#" + pollRank(b) : "—") +
     row("Hub power", ra.power, rb.power) + row("Hub rank", ra.rank, rb.rank, "low") + row("Adj. points scored", X.base + ra.o, X.base + rb.o) + row("Adj. points allowed", X.base + ra.d, X.base + rb.d, "low") +
     row("ESPN FPI", a.fpi.fpi, b.fpi.fpi) + (SPR(a.id) && SPR(b.id) ? row("SP+", SPR(a.id).rating, SPR(b.id).rating) : "") +
     (ADV(a.id) && ADV(b.id) ? row("Off EPA/play", e3(ADV(a.id).off.epa), e3(ADV(b.id).off.epa)) + row("Def EPA/play", e3(ADV(a.id).def.epa), e3(ADV(b.id).def.epa)) + row("Off success rate", p1(ADV(a.id).off.sr), p1(ADV(b.id).off.sr)) + row("Havoc", p1(ADV(a.id).def.havoc), p1(ADV(b.id).def.havoc)) : "") + row("Résumé rank", ra.resRank, rb.resRank, "low") + row("Schedule rank", ra.sosRank, rb.sosRank, "low") +
-    row("Make CFP", odds(a.id) ? pct(odds(a.id).cfp) : "—", odds(b.id) ? pct(odds(b.id).cfp) : "—") + "</tbody></table></div>";
+    row("Make CFP", odds(a.id) ? pct(odds(a.id).cfp) : "—", odds(b.id) ? pct(odds(b.id).cfp) : "—") + "</tbody></table></div>" + '<p class="note">Any two FBS teams, any site: the hub\'s spread, total, projected score and win probability. <a href="#/method">How the hub works</a></p>' }
+    ]
+  });
 }
 
 /* ---------- conferences ---------- */
