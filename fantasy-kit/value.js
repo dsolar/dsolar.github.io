@@ -97,6 +97,7 @@
   const volume = (sport, p, line) => (line === "bat" ? S.stat(sport, p, "bat", "pa") : line === "pit" ? S.stat(sport, p, "pit", "ip") : S.stat(sport, p, line, "min") || S.stat(sport, p, line, "gp")) || 0;
 
   // How much of a season projection a hurt player is likely to play.
+  const LONG_OUT = /^(ir|il|injured reserve|pup|nfi|out|o|sus|suspended)\b/i;
   const AVAIL = { ir: 0.5, pup: 0.5, out: 0.82, o: 0.82, doubtful: 0.9, d: 0.9, questionable: 0.97, q: 0.97, sus: 0.7 };
   function pointValues(sport, players, sc) {
     for (const p of players) {
@@ -340,6 +341,10 @@
         const pr = p.proj > 0 ? p.proj / left : null;
         const w = p.g ? p.g / (p.g + 6) : 0;
         let rate = pr == null ? p.v : p.g ? w * p.v + (1 - w) * pr : pr;
+        // In season, a player on IR, out or suspended is worth what his rest-of-season projection says, not his
+        // healthy rate blended in: that projection already counts the games he'll miss, and a zero there means he isn't
+        // expected back (it used to read as "no projection" and keep his full early-season rate)
+        if (meta.ros && p.proj != null && LONG_OUT.test(String(p.inj || "").trim())) rate = p.proj > 0 ? p.proj / left : 0;
         // vPlay: his rate when he plays, before the injury discount (a salary cap game prices a hurt player on it)
         p.vPlay = rate * games;
         if (!meta.ros) rate *= AVAIL[String(p.inj || "").toLowerCase()] || 1;

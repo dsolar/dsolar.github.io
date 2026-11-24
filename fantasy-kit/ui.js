@@ -300,8 +300,10 @@
   const injTag = (p) => {
     if (!p || !p.inj) return "";
     const raw = String(p.inj).trim(), hit = INJ_CODE.find(([re]) => re.test(raw)), code = hit ? hit[1] : raw.slice(0, 3).toUpperCase(), word = hit ? hit[2] : raw;
+    // the ones that keep a player off the field read as words; probable and questionable stay a letter
+    const label = { O: "Out", D: "Doubtful" }[code] || code;
     const tip = word + (p.injNote ? ". " + p.injNote : "") + (hit && word.toLowerCase() !== raw.toLowerCase() && !/^(p|q|d|o)$/i.test(raw) ? " (" + raw + ")" : "");
-    return ` <span class="tag inj inj-${code.toLowerCase()}" data-tip="${esc(tip)}" tabindex="0" role="img" aria-label="${esc(word)}">${esc(code)}</span>`;
+    return ` <span class="tag inj inj-${code.toLowerCase()}" data-tip="${esc(tip)}" tabindex="0" role="img" aria-label="${esc(word)}">${esc(label)}</span>`;
   };
   // Avatar, name and a small line (positions and team) for any player.
   // A draft pick as a tradeable item: { id, n: "Pick 2.5", pick: true, sub, price }.
@@ -1569,7 +1571,7 @@
     }
     function draftCoach() {
       const a = draftCoachAdvice(); if (!a) return "";
-      const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button><span>${why}</span></div>`;
+      const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button>${injTag(p)}<span>${why}</span></div>`;
       return `<div class="lab-coach" aria-label="Draft guidance">${item("Best available", a.best, `#${a.best.rank} for this scoring`)}${item("Roster fit", a.fit, auction() ? "Values your open slots and budget" : "Values your open slots")}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
     }
     function players() {
@@ -1579,6 +1581,8 @@
       const st = auction() && d.phase === "live" ? F.auctionState(d, n) : null;
       const myNom = st && st.kind === "nominate" && st.team === mine;
       let rows = (ui.show === "all" ? opts.players : ctx.available).filter((p) => passes(sport, p, ui.f));
+      // healthy: leaves out anyone listed out, doubtful, on IR or suspended (questionable and probable stay)
+      if (ui.show === "healthy") rows = rows.filter((p) => !/^(out|o|d|doubtful|ir|il|injured reserve|pup|nfi|sus|suspended)\b/i.test(String(p.inj || "").trim()));
       // prospect rounds: the list is the prospects (always, on "Prospects"), unless you ask for everyone
       const proNow = d.prospects && d.phase === "live" && c && F.prospectRound && F.prospectRound(d, c.index);
       if (d.prospects && (ui.show === "pros" || (proNow && ui.show !== "all"))) rows = rows.filter((p) => S.isProspect(d.prospects.rule, p)).sort((a, b) => (a.prk || 9999) - (b.prk || 9999));
@@ -1746,7 +1750,10 @@
         return `<div class="card${isMe(t) ? " res-me" : ""}"${isMe(t) ? ` style="border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)"` : ""}><div class="mod-h">${teamAv(t, "md")}<div style="min-width:0"><b class="ell" style="display:block">${esc(t.name)}${isMe(t) ? ` <span class="tag you">You</span>` : ""}</b><span class="ps">${ord(r.rank)}, ${pts() ? `${Math.round(r.score)} projected` : `${r.score.toFixed(1)} value`}${r.spent != null ? `, spent ${money(r.spent)}` : ""}${d.bank ? `, ${fmtLeft(t.bank)} banked for ${bankFaab(t)} FAAB` : ""}${R.budget ? `<br>$${R.spent[r.team] || 0} of $${R.budget} spent` : ""}${bv && bv.diff > 0 ? `<br>${R.pack ? `Best steal: ${esc(last(ctx.byId[bv.pid].n))}, ${passedBy(bv.passed)}` : `Best value: ${esc(last(ctx.byId[bv.pid].n))}, ${recapGap(bv, true)}`}` : ""}</span></div><b class="grade disp">${r.grade}</b></div>
           <ol>${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li><span class="slot">${esc(sl)}</span>${p ? `<button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span>` : `<span class="ps">Empty</span>`}</li>`; }).join("")}${r.bench.map((p) => `<li class="bn"><span class="slot">BN</span><button class="btn link ell" data-player="${esc(p.id)}">${esc(p.n)}</button><span class="grow"></span><span class="ps">#${p.rank}</span></li>`).join("")}</ol></div>`; };
       const mine = st.filter((r) => isMe(team(r.team))), rest = st.filter((r) => !isMe(team(r.team)));
-      return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${mine.length ? `<div class="res-mine">${mine.map(cardOf).join("")}</div>` : ""}${recapCard()}<div class="teams">${rest.map(cardOf).join("")}</div></div>`;
+      // the whole league at a glance: finish, grade, projection and best value; a row jumps to that team's card
+      const table = st.length > 1 ? `<div class="card res-league"><div class="pk-h"><b>The league</b><span class="ps">By projected finish. Tap a team for its roster.</span></div><table class="t dense"><thead><tr><th class="r">#</th><th>Team</th><th class="r">Grade</th><th class="r">${pts() ? "Projected" : "Value"}</th><th class="hide-sm">Best value</th></tr></thead><tbody>${st.slice().sort((a, b) => a.rank - b.rank).map((r) => { const t = team(r.team), bv = R.best[r.team], bp = bv && bv.diff > 0 && ctx.byId[bv.pid];
+          return `<tr class="${isMe(t) ? "me" : ""}" data-res-team="${esc(r.team)}" tabindex="0"><td class="r">${r.rank}</td><td><span class="res-tn">${teamAv(t, "sm")}<span class="ell">${esc(t.name)}</span>${isMe(t) ? ' <span class="tag you">You</span>' : ""}</span></td><td class="r"><b class="grade-sm">${r.grade}</b></td><td class="r">${pts() ? Math.round(r.score) : r.score.toFixed(1)}</td><td class="hide-sm ps">${bp ? esc(last(bp.n)) + ", " + esc(recapGap(bv, true)) : ""}</td></tr>`; }).join("")}</tbody></table></div>` : "";
+      return `<div style="overflow:auto;flex:1;min-height:0">${heistOutcome()}${mine.length ? `<div class="res-mine">${mine.map(cardOf).join("")}</div>` : ""}${table}${recapCard()}<div class="teams">${rest.map((r) => cardOf(r).replace('<div class="card', `<div id="res-t-${esc(r.team)}" class="card`)).join("")}</div></div>`;
     }
     // Projected standings from the rosters so far: each team's best lineup, its category totals and the roto points
     // they'd earn (or its projected points), on the stats or projections the switch shows.
@@ -2041,6 +2048,8 @@
       const rights = (me() != null ? [["team", "My team"]].concat(over ? [] : [["queue", "Queue"]], [["teams", "Teams"]], d.trading && !over ? [["trades", offers ? `Trades (${offers})` : "Trades"]] : []) : [["teams", "Teams"]])
         .concat(opts.chat ? [["chat", unread ? `Chat (${unread})` : "Chat"]] : []);
       if (!rights.some((x) => x[0] === ui.right)) ui.right = rights[0][0];
+      // once the draft is over, Results already shows your team: the side panel switches to everyone else's
+      if (over && !ui.doneSeen) { ui.doneSeen = true; if (!ui.mobileRight && ui.right === "team" && rights.some((x) => x[0] === "teams")) ui.right = "teams"; }
       const keep = { f: focusKey(el), scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       if (d.phase === "heist") { const sc = $(".hz-scroll", el), y = sc ? sc.scrollTop : 0; el.innerHTML = `<div class="droom hzr fk-dark">${top()}<div class="hz-scroll">${heistView()}</div></div>`; if (y) $(".hz-scroll", el).scrollTop = y; drawTimer(); if (opts.onChange) opts.onChange(d); return; }
@@ -2056,7 +2065,7 @@
       const xm = (attr) => extraM.some(([v]) => v === attr) ? " x-m" : "";
       const moreM = extraM.length ? `<select class="seg-more show-m" aria-label="More views" onchange="var v=this.value.split('=');var b=this.parentNode.querySelector('['+v[0]+'=&quot;'+v[1]+'&quot;]');if(b)b.click();this.selectedIndex=0"><option value="">More</option>${extraM.map(([v, n]) => `<option value="${esc(v)}">${esc(n)}</option>`).join("")}</select>` : "";
       const seg = `<div class="seg" id="fk-seg" role="group" aria-label="View">${lefts.map(([k, n]) => `<button type="button" class="${xm("data-left=" + k).trim()}" data-left="${k}" aria-pressed="${onL(k)}">${esc(n)}</button>`).join("")}${rights.map(([k, n]) => `<button type="button" class="show-m${xm("data-mright=" + k)}" data-mright="${k}" aria-pressed="${onR(k)}">${esc(n)}</button>`).join("")}${moreM}</div>`;
-      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option>${d.prospects ? `<option value="pros"${ui.show === "pros" ? " selected" : ""}>Prospects</option>` : ""}</select>${statSeg()}` : "";
+      const filters = ui.left === "players" ? `${search(ui.f)}<label class="sr" for="fk-show">Show</label><select id="fk-show" style="width:auto;border-radius:999px;min-height:36px;font-size:13px"><option value="avail"${ui.show === "avail" ? " selected" : ""}>Available</option><option value="healthy"${ui.show === "healthy" ? " selected" : ""}>Available, healthy</option><option value="all"${ui.show === "all" ? " selected" : ""}>All players</option>${d.prospects ? `<option value="pros"${ui.show === "pros" ? " selected" : ""}>Prospects</option>` : ""}</select>${statSeg()}` : "";
       const tq = d.phase === "live" && !auction() && me() != null ? F.onClock(d, now()) : null;
       if (tq && tq.trivia && tq.team === me() && !team(me()).auto) {
         const q = tq.trivia;
@@ -2229,7 +2238,12 @@
       save(); render();
     }
 
+    // the league table on Results: a row scrolls to that team's card
+    const toTeamCard = (row) => { const id = row.dataset.resTeam, card = $("#res-t-" + id, el) || (row.classList.contains("me") ? $(".res-mine .card", el) : null); if (card) { card.scrollIntoView({ behavior: "smooth", block: "start" }); card.classList.add("res-flash"); setTimeout(() => card.classList.remove("res-flash"), 1400); } };
+    el.addEventListener("keydown", (e) => { const row = e.key === "Enter" && e.target.closest && e.target.closest("[data-res-team]"); if (row) toTeamCard(row); });
     el.addEventListener("click", (e) => {
+      const rtm = e.target.closest("[data-res-team]");
+      if (rtm) { toTeamCard(rtm); return; }
       const lb = e.target.closest("[data-left]");
       if (lb) { ui.left = lb.dataset.left; ui.mobileRight = false; render(); return; }
       const rb = e.target.closest("[data-right]");

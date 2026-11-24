@@ -122,7 +122,9 @@
   }
   function draftAdvice(F, D, ctx, team) {
     if (team == null || !D.teams[team] || D.phase === "done" || !["snake", "linear", "3rr", "auction"].includes(D.type) || (D.auction && D.auction.dutch) || D.roulette || D.trivia) return null;
-    const legal = ctx.available.slice(0, 120).filter((p) => F.canAdd(D, ctx, team, p).ok);
+    // guidance skips players who won't play for a while (IR, PUP, NFI, suspended); they can still be drafted
+    const away = (p) => /^(ir|il|injured reserve|pup|nfi|sus|suspended)\b/i.test(String(p.inj || "").trim());
+    const all = ctx.available.slice(0, 120).filter((p) => F.canAdd(D, ctx, team, p).ok), legal = all.filter((p) => !away(p)).length ? all.filter((p) => !away(p)) : all;
     if (!legal.length) return null;
     const best = legal[0], fit = legal.reduce((b, p) => F.worth(D, ctx, team, p) > F.worth(D, ctx, team, b) ? p : b, best);
     const next = D.type === "auction" ? null : F.nextPickOf(D, team);

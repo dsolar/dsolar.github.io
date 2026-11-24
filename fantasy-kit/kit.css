@@ -3006,3 +3006,16 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .wv-bar i{display:block;height:100%;background:var(--brand);transition:width .25s linear}
 @media (max-width:600px){.wave{padding:8px 12px 10px}.wv-g{grid-template-columns:1fr;gap:6px}.wv-d b{font-size:24px}.wv-c{padding:6px 8px 9px}.wv-h .bid-limit{margin-left:0;flex-basis:100%}}
 @media (prefers-reduced-motion:reduce){.wave.open .wv-d b.tick{animation:none}.wv-bar i{transition:none}}
+
+/* Results: the league table under your team */
+.res-league{margin:0 0 14px}
+.res-league table{width:100%}
+.res-league tbody tr{cursor:pointer}
+.res-league tbody tr:hover td{background:var(--surface-2,rgba(127,127,127,.08))}
+.res-league tr.me td{background:color-mix(in srgb,var(--accent) 12%,transparent)}
+.res-league .res-tn{display:inline-flex;align-items:center;gap:8px;min-width:0;max-width:100%}
+.res-league .grade-sm{font:800 15px/1 var(--f-disp,inherit)}
+.res-flash{animation:resflash 1.4s ease-out}
+@keyframes resflash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.res-flash{animation:none}}
+@media (max-width:640px){.res-league .hide-sm{display:none}}
