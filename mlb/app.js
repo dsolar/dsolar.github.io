@@ -1349,4 +1349,14 @@
   }).catch(function (e) {
     view.innerHTML = '<p class="loading">Couldn\'t load the data. ' + esc(e.message) + "</p>";
   });
+  // find any player or team (assets/search.js)
+  if (window.Search) Search.mount({ sport: "mlb", placeholder: "Search MLB players and teams", hint: "Type a player or a team, like Devers or Red Sox.",
+    index: function () {
+      if (!H || !H.byId) return [];
+      var out = Object.keys(H.byAbbr).map(function (a) { var t = team(a); return { id: a, kind: "t", name: t.name, sub: (t.lg || "") + " " + (t.div || ""), also: a, w: 5 }; });
+      Object.keys(H.byId).forEach(function (id) { var p = H.byId[id]; if (!p || !p.n) return; var t = team(p.t); out.push({ id: id, kind: "p", name: p.n, sub: (H.byAbbr[p.t] ? t.name : "Free agent") + (p.pos ? ", " + p.pos : ""), also: (p.t || "") + " " + (p.pos || ""), w: Math.max(0, Math.min(5, (p.pj && p.pj.war) || 0)) }); });
+      return out;
+    },
+    pic: function (x, s) { return x.kind === "t" ? logo(x.id, s) : face(H.byId[x.id], s); },
+    open: function (x) { if (x.kind === "t") location.hash = href("team/" + x.id, {}); else openCard(x.id); } });
 })();

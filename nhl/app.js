@@ -726,4 +726,14 @@
     $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Contracts from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset (CC0). Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + '. <a href="#/method">How it works</a>.';
     render();
   }).catch(function () { view.innerHTML = '<p class="loading">The hub didn\'t load. Try again in a minute.</p>'; });
+  // find any player or team (assets/search.js)
+  if (window.Search) Search.mount({ sport: "nhl", placeholder: "Search NHL players and teams", hint: "Type a player or a team, like Pastrnak or Bruins.",
+    index: function () {
+      if (!H) return [];
+      var out = H.teams.map(function (t) { return { id: t.abbr, kind: "t", name: t.name, sub: t.div + " Division", also: t.abbr + " " + (t.common || "") + " " + (t.place || ""), w: 5 }; });
+      Object.keys(PLAYERS).forEach(function (id) { var p = PLAYERS[id], t = TEAMS[p.team]; if (!p || !p.name) return; out.push({ id: id, kind: "p", name: p.name, sub: (t ? t.common : "Free agent") + (p.pos ? ", " + p.pos : ""), also: (t ? t.name : "") + " " + (p.team || ""), w: Math.max(0, Math.min(5, p.war || 0)) }); });
+      return out;
+    },
+    pic: function (x, s) { return x.kind === "t" ? logo(TEAMS[x.id], s) : hs(PLAYERS[x.id], s); },
+    open: function (x) { if (x.kind === "t") location.hash = "#/team/" + x.id; else openCard(+x.id); } });
 })();

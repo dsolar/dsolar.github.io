@@ -875,5 +875,15 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && ro
 setInterval(() => { if (!document.hidden && route().page === "today" && D && D.games.some(g => g.day === dayNY() && g.state !== "post")) refreshLive(false); }, 90000);
 // followed teams live in assets/follow.js (synced to your account); redraw when they change here or on another device
 window.addEventListener("ds-follow", (e) => { if (e.detail && e.detail.sport === "ncaab") { faves = new Set(Follow.list("ncaab")); render(); } });
+// find any player or team (assets/search.js)
+if (window.Search) Search.mount({ sport: "ncaab", placeholder: "Search players and teams", hint: "Type a player or a team, like Hurley or Boston College.",
+  index: () => {
+    if (!D) return [];
+    const out = D.teams.map(t => ({ id: t.id, kind: "t", name: t.name, sub: (t.conferenceName || t.conference || "") + ", " + rec(t), also: (t.short || "") + " " + (t.abbr || ""), w: 5 }));
+    if (D && D.players) D.players.forEach(p => { const t = byId[p.teamId]; if (p && p.name) out.push({ id: p.id, kind: "p", name: p.name, sub: (t ? t.short : "") + (p.pos ? ", " + p.pos : "") + (p.year ? ", " + p.year : ""), also: t ? t.name + " " + (t.abbr || "") : "", w: stat(p, "min") ? Math.min(5, stat(p, "min") / 7) : 0 }); });
+    return out;
+  },
+  pic: (x, s) => x.kind === "t" ? logo(byId[x.id]) : face(byPlayer[x.id] || null, s),
+  open: (x) => { if (x.kind === "t") location.hash = "#/team?id=" + encodeURIComponent(x.id); else openPlayer(x.id); } });
 load();
 })();

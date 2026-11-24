@@ -2127,4 +2127,14 @@
       render();
     })
     .catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
+  // find any player or team (assets/search.js)
+  if (window.Search) Search.mount({ sport: "nba", placeholder: "Search NBA players and teams", hint: "Type a player or a team, like Tatum or Celtics.",
+    index: function () {
+      if (!H || !H.W || !H.W.P) return [];
+      var out = Object.keys(H.teams).map(function (c) { var t = team(c); return { id: c, kind: "t", name: t.name, sub: (t.conf === "E" ? "East" : "West") + (t.w != null ? ", " + t.w + "-" + t.l : ""), also: c + " " + (t.short || ""), w: 5 }; });
+      Object.keys(H.W.P).forEach(function (id) { var p = H.W.P[id]; if (!p || !p.n || p.fill) return; var t = team(p.t); out.push({ id: id, kind: "p", name: p.n, sub: (H.teams[p.t] ? t.short : "Free agent") + (p.pos ? ", " + p.pos : ""), also: (t.name || "") + " " + (p.t || ""), w: Math.min(5, (H.salary(p, 0) || 0) / 1e7) }); });
+      return out;
+    },
+    pic: function (x, s) { return x.kind === "t" ? logo(x.id, s) : face(H.W.P[x.id], s); },
+    open: function (x) { if (x.kind === "t") location.hash = href("team/" + x.id, {}); else openCard(x.id); } });
 })();

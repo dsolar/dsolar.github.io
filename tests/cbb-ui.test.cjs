@@ -1,6 +1,6 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),{JSDOM}=require("jsdom");
 const ROOT=path.join(__dirname,".."),html=fs.readFileSync(path.join(ROOT,"cbb/index.html"),"utf8").replace(/<script[^>]*src=[^>]*><\/script>/g,"");
-const follow=fs.readFileSync(path.join(ROOT,"assets/follow.js"),"utf8"),pcard=fs.readFileSync(path.join(ROOT,"assets/pcard.js"),"utf8"),core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
+const follow=fs.readFileSync(path.join(ROOT,"assets/follow.js"),"utf8"),search=fs.readFileSync(path.join(ROOT,"assets/search.js"),"utf8"),pcard=fs.readFileSync(path.join(ROOT,"assets/pcard.js"),"utf8"),core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
 const data=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/hub.json"),"utf8")),extras=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/extras.json"),"utf8"));
 const board=JSON.parse(fs.readFileSync(path.join(ROOT,"draft/nba.json"),"utf8")),sched=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/schedule.json"),"utf8"));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
@@ -14,7 +14,7 @@ async function boot(hash="#/today",live=null){
  w.fetch=async url=>{url=String(url);if(url.includes("espn.com")){if(!live)throw Error("offline test");return {ok:true,json:async()=>structuredClone(live)};}
   const body=url.includes("draft/nba")?board:url.includes("extras")?extras:url.includes("schedule")?sched:data;return {ok:true,json:async()=>structuredClone(body)};};
  const ready=new Promise(resolve=>w.document.addEventListener("cbb:ready",resolve,{once:true}));
- w.eval(follow);w.eval(pcard);w.eval(core);w.eval(app);await ready;await pause(0);return w;
+ w.eval(follow);w.eval(search);w.eval(pcard);w.eval(core);w.eval(app);await ready;await pause(0);return w;
 }
 async function go(w,hash){w.location.hash=hash;const page=hash.split("/")[1].split("?")[0];await until(()=>w.document.body.dataset.page===page);await pause(20);}
 const text=w=>w.document.querySelector("#view").textContent;
@@ -120,5 +120,16 @@ test("team pages show the full season schedule and players have leaderboards",as
   await until(()=>w.document.querySelectorAll(".sched tbody tr").length===n);assert.ok(n>20,"a full season");
   await go(w,"#/players");assert.ok(w.document.querySelectorAll(".leaders .panel").length>=8);
   await go(w,"#/players?view=table&sort=gs");assert.ok(w.document.querySelector('th[data-sort="gs"].on'));
+ }finally{w.close();}
+});
+test("search finds players and teams as you type and opens them",async()=>{
+ const w=await boot("#/today");try{
+  assert.ok(w.document.querySelector(".mast .ds-sbtn"),"a Search button in the header");
+  const p=data.players.find(x=>x.name&&x.name.split(" ").length>=2);
+  w.Search.open();const inp=w.document.querySelector("dialog.ds-srch input");
+  inp.value=p.name.split(" ").slice(-1)[0].slice(0,4);inp.dispatchEvent(new w.Event("input"));
+  const names=[...w.document.querySelectorAll(".ds-sr b")].map(b=>b.textContent);assert.ok(names.includes(p.name),"finds "+p.name);
+  const t=data.teams[0];inp.value=t.name;inp.dispatchEvent(new w.Event("input"));
+  inp.dispatchEvent(new w.KeyboardEvent("keydown",{key:"Enter"}));await pause(20);assert.ok(w.location.hash.includes("team?id="+t.id),"Enter opens the top match");
  }finally{w.close();}
 });

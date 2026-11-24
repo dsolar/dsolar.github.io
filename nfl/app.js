@@ -1344,4 +1344,14 @@
     render();
     setTimeout(warmTrade, 1200);
   }).catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
+  // find any player or team (assets/search.js)
+  if (window.Search) Search.mount({ sport: "nfl", placeholder: "Search NFL players and teams", hint: "Type a player or a team, like Maye or Patriots.",
+    index: function () {
+      if (!W || !TEAMS) return [];
+      var out = Object.keys(TEAMS).map(function (c) { var t = team(c); return { id: c, kind: "t", name: t.name, sub: "Team", also: c + " " + t.short, w: 5 }; });
+      W.players.forEach(function (p) { if (!p || !p.n) return; var t = team(p.t); out.push({ id: p.id, kind: "p", name: p.n, sub: (TEAMS[p.t] ? t.short : "Free agent") + (p.pos ? ", " + p.pos : ""), also: t.name + " " + (p.t || "") + " " + (p.pos || ""), w: p.st === "DEV" ? 0 : p.c && p.c.apy ? Math.min(5, p.c.apy / (p.c.apy > 1000 ? 1e7 : 10)) : 1 }); });
+      return out;
+    },
+    pic: function (x, s) { return x.kind === "t" ? logo(x.id, s) : face(W.byId[x.id], s); },
+    open: function (x) { if (x.kind === "t") location.hash = href("team/" + x.id, {}); else openCard(x.id); } });
 })();
