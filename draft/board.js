@@ -40,13 +40,15 @@
     const live = liveBoards(), mk = mocks();
     const th = (k, label, cls = "", title = "") => `<th class="${cls}"${ui.sort === k ? ` aria-sort="${ui.dir > 0 ? "ascending" : "descending"}"` : ""}${title ? ` title="${esc(title)}"` : ""}><button type="button" data-sort="${k}">${label}</button></th>`;
     const prev = D.dates.length > 1 ? fmtDay(D.dates[D.dates.length - 2]) : "";
-    $("#thead").innerHTML = `<tr>${th("rank", "#", "r")}${th("move", "Move", "", prev ? `Spots since ${prev}` : "")}${th("name", "Player")}
-      ${hasStats() ? `<th class="hide-m">${D.league === "nba" ? "This season" : "2026 season"}</th>` : ""}${th("score", "Avg", "r hide-s", "Weighted average rank")}
+    // Move only once a player has moved; on a phone it rides next to the rank instead of taking a column
+    const moved = D.players.some((p) => { const m = move(p); return m != null && m !== 0; });
+    $("#thead").innerHTML = `<tr>${th("rank", "#", "r")}${moved ? th("move", "Move", "hide-s", prev ? `Spots since ${prev}` : "") : ""}${th("name", "Player")}
+      ${hasStats() ? `<th class="hide-m">${D.league === "nba" ? "This season" : "2026 season"}</th>` : ""}${th("score", "Avg", "r", "Weighted average rank")}
       ${live.map((s) => th("s:" + s.id, esc(s.abbr), "r col-src", `${s.name}${s.analyst ? `, ${s.analyst}` : ""}, ${fmtDay(s.date)}`)).join("")}
       ${live.length > 1 ? `${th("spread", "Range", "rng", "Best and worst rank across the boards")}` : ""}${mk.length ? th("mock", "Mock", "hide-s", mk.map((m) => `${m.name}, ${fmtDay(m.date)}`).join("; ")) : ""}</tr>`;
   }
 
-  function cols() { return 4 + (hasStats() ? 1 : 0) + liveBoards().length + (liveBoards().length > 1 ? 1 : 0) + (mocks().length ? 1 : 0); }
+  function cols() { return 3 + (D.players.some((p) => { const m = move(p); return m != null && m !== 0; }) ? 1 : 0) + (hasStats() ? 1 : 0) + liveBoards().length + (liveBoards().length > 1 ? 1 : 0) + (mocks().length ? 1 : 0); }
 
   function rows() {
     const live = liveBoards(), mk = mocks();
@@ -65,7 +67,7 @@
     const spreads = D.players.slice(0, 60).map((p) => p.lo - p.hi).sort((a, b) => b - a);
     const hotCut = spreads[Math.min(5, spreads.length - 1)] || 99;
     const maxR = Math.max(60, ...ps.slice(0, 100).map((p) => p.lo));
-    const n = live.length, st = hasStats();
+    const n = live.length, st = hasStats(), moved = D.players.some((p) => { const m = move(p); return m != null && m !== 0; });
     if (!ps.length) { $("#tbody").innerHTML = `<tr><td class="empty" colspan="${cols()}">No one matches that.</td></tr>`; return; }
     $("#tbody").innerHTML = ps.slice(0, 250).map((p) => {
       const m = move(p);
@@ -75,10 +77,10 @@
       const mockCell = mk.map((s) => p.mocks[s.id]).find(Boolean);
       const open = ui.open === p.id;
       return `<tr class="p${open ? " open" : ""}" data-id="${esc(p.id)}" tabindex="0">
-        <td class="rk r">${p.rank}</td><td>${mvTxt}</td>
+        <td class="rk r">${p.rank}${moved && m ? `<small class="mv-in ${m > 0 ? "up" : "down"}">${m > 0 ? "&#9650;" + m : "&#9660;" + -m}</small>` : ""}</td>${moved ? `<td class="hide-s">${mvTxt}</td>` : ""}
         <td><div class="who-cell">${BB.who(p)}<div class="nm">${esc(p.n)}<small>${esc([p.pos, p.school].filter(Boolean).join(", "))}</small></div></div></td>
         ${st ? `<td class="stl hide-m">${BB.statLine(p) || `<span class="faint">&ndash;</span>`}</td>` : ""}
-        <td class="r sc hide-s">${p.score.toFixed(1)}</td>
+        <td class="r sc">${p.score.toFixed(1)}</td>
         ${live.map((s) => p.ranks[s.id] != null ? `<td class="r cell col-src">${p.ranks[s.id]}</td>` : `<td class="r cell miss col-src" title="Not on this board">&ndash;</td>`).join("")}
         ${n > 1 ? `<td class="rng"><span${spread >= hotCut && p.on > 1 ? ` class="hot"` : ""}>${p.on > 1 ? `${p.hi}&ndash;${p.lo}` : `${p.hi} only`}</span>
           <div class="bar" aria-hidden="true"><i style="left:${pct(p.hi)}%;right:${(100 - pct(p.lo)).toFixed(1)}%"></i><b style="left:${pct(p.rank)}%"></b></div></td>` : ""}

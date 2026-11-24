@@ -282,6 +282,9 @@ tr.open td{background:rgba(242,193,78,.05)}
 .card-img{display:block;width:100%;height:auto;border-radius:10px}
 a.btn{text-decoration:none;display:inline-block}
 @media (max-width:560px){.trade-cols{grid-template-columns:1fr}}
+/* Big Board on a phone: a player's move sits under his rank, the average rank keeps its column, the range narrows */
+.mv-in{display:none}
+@media (max-width:560px){.mv-in{display:block;font-size:10px;font-weight:700;line-height:1;margin-top:2px}.mv-in.up{color:var(--up,#16804A)}.mv-in.down{color:var(--down,#C0392B)}td.rng{width:76px}td.sc{font-variant-numeric:tabular-nums}}
 .col-src{display:table-cell}
 @media (max-width:860px){.col-src{display:none}}
 @media (max-width:560px){
@@ -689,7 +692,7 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
 <script src="../assets/pcard.js?v=20261124a"></script>
 <script src="common.js?v=32"></script>
 <script src="engine.js?v=32"></script>
-<script src="board.js?v=38"></script>
+<script src="board.js?v=39"></script>
 <script src="mock.js?v=34"></script>
 <script src="challenge.js?v=32"></script>
 <script src="markets.js?v=30"></script>
