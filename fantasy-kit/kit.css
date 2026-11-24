@@ -2846,6 +2846,11 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
   #fk-seg .x-m,#fk-seg2 .x-m{display:none!important}
   .seg-more.show-m{display:block!important;flex:none;border:0;border-left:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;font-size:13px;font-weight:700;padding:0 26px 0 12px;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,currentColor 50%),linear-gradient(135deg,currentColor 50%,transparent 50%);background-position:calc(100% - 13px) 55%,calc(100% - 9px) 55%;background-size:4px 4px;background-repeat:no-repeat}
   .turn-bar.show-m{display:flex!important}
+  /* the view switch fills the row, so the main views fit without scrolling */
+  .droom #fk-seg,.droom #fk-seg2{display:flex;width:100%;padding-right:0;-webkit-mask-image:none;mask-image:none}
+  .droom #fk-seg>button,.droom #fk-seg2>button{flex:1 1 auto;min-width:0;padding-left:8px;padding-right:8px}
+  /* a select is as wide as its longest option; More only needs room for its own label */
+  .droom #fk-seg>.seg-more,.droom #fk-seg2>.seg-more{flex:0 0 auto;width:74px;padding-left:10px;padding-right:20px}
   .droom:has(.turn-bar) .dr-main{padding-bottom:78px}
 }
 .turn-bar{display:none;position:fixed;left:8px;right:8px;bottom:calc(8px + env(safe-area-inset-bottom,0px));z-index:30;align-items:center;gap:10px;padding:10px 12px;border-radius:16px;background:var(--brand,#F6C445);color:#111;box-shadow:0 10px 30px rgba(0,0,0,.45)}
@@ -2974,3 +2979,4 @@ dialog.fk-dlg:has(> .pc) > .dlg-x{margin:10px 10px -44px 8px}
 .versus .nm{font-family:var(--f);font-weight:700}
 /* titles at the hubs' weight */
 h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
+@media (max-width:420px){.droom #fk-seg>button,.droom #fk-seg>.seg-more,.droom #fk-seg2>button,.droom #fk-seg2>.seg-more{font-size:13px}}
