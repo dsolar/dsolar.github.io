@@ -860,12 +860,11 @@
   // A signed deal's grade: what deals this long go for (market) against what the team pays, plus the draft pick
   // and pool money a team gives up for another club's qualifying-offer player, as a share of the market price.
   // A B is a deal at the going rate or a little over it (teams expect to pay a small premium), and a signing that fills
-  // a real hole gets NEED_CREDIT more room before the grade drops. Only deals of $2M+ for players projected at 1+ WAR are graded: that's the range
-  // the market study covers (most relievers and depth signings fall below it, and their percentages swing wildly)
+  // a real hole gets NEED_CREDIT more room before the grade drops. Lower-dollar deals use the same market comparison.
   var GRADES = [[0.4, "A+"], [0.25, "A"], [0.15, "A-"], [0.06, "B+"], [-0.1, "B"], [-0.18, "B-"], [-0.27, "C+"], [-0.37, "C"], [-0.5, "D"]];
   var NEED_CREDIT = 0.08;
   function gradeDeal(r, yrs, war, val, mktAav, cfg, need) {
-    if (!r.aav || !r.yrs || !mktAav || war == null || war < 1 || r.aav < 2e6 || /MiLB/i.test(r.ctype || "")) return null;
+    if (!r.aav || !r.yrs || !mktAav || war == null || /MiLB/i.test(r.ctype || "")) return null;
     var paid = r.tot ? r.tot / 1e6 : r.aav / 1e6 * r.yrs, mkt = mktAav * yrs;
     var pick = r.qo && !r.qoa && r.to && r.from && r.to !== r.from ? cfg.qoPickCost : 0;
     var edge = (mkt - paid - pick) / mkt, credit = need && need.fills ? NEED_CREDIT : 0, g = "F";
@@ -944,13 +943,13 @@
       for (var k = 0; k < path.length; k++) val += path[k] * dpwAt(cfg, self.season + k, self.season);
       // Fair: his wins at the price wins from a player of his tier go for (marginal players are plentiful and cheap
       // per win; good regulars cost more). Market: what deals that long add on top
-      var spotAav = yrs ? Math.max(cfg.minSalary, val / yrs * (mk ? mk.tierF(war) : 1)) : null;
+      var spotAav = war != null && yrs ? Math.max(cfg.minSalary, val / yrs * (mk ? mk.tierF(war) : 1)) : null;
       var mktAav = spotAav != null && mk ? Math.max(cfg.minSalary, spotAav * mk.lenF(yrs)) : spotAav;
       return { r: r, p: p, war: war, proj: proj, trust: trust, yrs: yrs, age: age, path: path, value: val, spotAav: spotAav, mktAav: mktAav,
-        crowdAav: r.ma ? r.ma / 1e6 : null, signedAav: r.aav ? r.aav / 1e6 : null,
+        signed: !!(r.to || r.aav) && !/MiLB/i.test(r.ctype || ""), crowdAav: r.ma ? r.ma / 1e6 : null, signedAav: r.aav ? r.aav / 1e6 : null,
         gap: r.aav && mktAav ? (r.aav / 1e6) / mktAav - 1 : null, grade: r.aav ? gradeDeal(r, yrs, war, val, mktAav, cfg, self.need(r, war)) : null };
-    }).filter(function (x) { return x.war != null; }).sort(function (a, b) { return b.value - a.value; })
-      .map(function (x, i) { x.rank = i + 1; return x; }); // rank in the whole class by value, signed or not
+    }).filter(function (x) { return !/MiLB/i.test(x.r.ctype || "") && (x.war != null || x.signed); }).sort(function (a, b) { return (a.war == null) - (b.war == null) || b.value - a.value; })
+      .map(function (x, i) { x.rank = x.war == null ? null : i + 1; return x; }); // rank in the whole class by value, signed or not
   };
 
   Hub.prototype.surplus = function (p) { return surplus(p, this.cfg, this.season, this.resigned[p.id]); };

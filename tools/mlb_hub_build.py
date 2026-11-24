@@ -54,6 +54,35 @@ def load(name):
         return json.load(f)
 
 
+def reconcile_signings(rows, payroll, reports, season):
+    """Fill gaps in the tracker from team payrolls and sourced offseason agreements."""
+    by_fg = {str(r["fg"]): r for r in rows if r.get("fg")}
+    deals = []
+    for tid, team in (payroll or {}).get("teams", {}).items():
+        for c in team.get("contracts", []):
+            if c.get("start") != season or c.get("type") != "Free Agent" or not c.get("fg"):
+                continue
+            length = re.match(r"(\d+) yr", c.get("desc") or "")
+            deals.append({"fg": str(c["fg"]), "id": c.get("mlbam"), "n": c.get("name"),
+                          "to": ABBR[int(tid)], "yrs": int(length[1]) if length else None,
+                          "aav": c.get("aav"), "tot": c.get("total"), "ctype": "Free Agent"})
+    deals.extend((reports or {}).get(str(season), []))
+    for deal in deals:
+        fg = str(deal["fg"])
+        if fg not in by_fg:
+            by_fg[fg] = {"fg": fg}
+            rows.append(by_fg[fg])
+        row = by_fg[fg]
+        if row.get("to") and row["to"] != deal["to"]:
+            continue
+        for key, value in deal.items():
+            if key != "source" and value is not None and row.get(key) is None:
+                row[key] = value
+    for row in rows:
+        if not row.get("aav") and row.get("tot") and row.get("yrs"):
+            row["aav"] = row["tot"] / row["yrs"]
+
+
 def rows_of(t):
     """{"cols", "rows"} -> list of dicts"""
     if not t:
@@ -379,6 +408,8 @@ def build():
                     "ctype": r.get("ContractType"), "opt": r.get("option_type"), "optst": r.get("option_status"),
                     "b": r.get("Bats"), "th": r.get("Throws")}.items() if v not in (None, "")})
             fa_out["classes"][yr] = out
+    current = fa_out["classes"].setdefault(str(season), [])
+    reconcile_signings(current, pay, load("reported_signings.json"), season)
     os.makedirs(OUT, exist_ok=True)
     for name, data in (("hub.json", hub), ("fa.json", fa_out)):
         path = os.path.join(OUT, name)

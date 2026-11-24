@@ -127,7 +127,8 @@ test('deal grades: at market is a B, a bargain an A, a QO pick costs the signing
   assert.equal(qo.pick, cfg.qoPickCost);
   assert.ok(qo.edge < M.gradeDeal(r, 4, 2.5, 70, 18, cfg).edge);
   assert.equal(M.gradeDeal(Object.assign({}, r, { qo: 22e6, to: 'MIL' }), 4, 2.5, 70, 18, cfg).pick, 0, 're-signing his own team costs no pick');
-  assert.equal(M.gradeDeal(r, 4, 0.5, 10, 3, cfg), null, 'low-WAR signings go ungraded');
+  assert.equal(M.gradeDeal({ aav: 1e6, yrs: 1 }, 1, 0, 0, 1, cfg).g, 'B');
+  assert.equal(M.gradeDeal(r, 4, null, 0, 3, cfg), null);
   assert.equal(M.gradeDeal(Object.assign({}, r, { ctype: 'MiLB' }), 4, 2.5, 70, 15, cfg), null);
 });
 
