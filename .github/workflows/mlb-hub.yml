@@ -11,6 +11,7 @@ on:
     paths:
       - tools/mlb_hub_pull.py
       - tools/mlb_hub_build.py
+      - tools/mlb_hub/reported_signings.json
       - .github/workflows/mlb-hub.yml
   workflow_dispatch:
 
