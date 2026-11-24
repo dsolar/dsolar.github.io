@@ -50,10 +50,18 @@
     ".hubswitch a{font:700 12px/1 var(--body,system-ui);letter-spacing:.08em;padding:6px 11px;border-radius:999px;text-decoration:none;" +
     "color:var(--muted,#667);border:1px solid var(--rule,#d9dce1);background:transparent}" +
     ".hubswitch a:hover{color:var(--ink,#111);border-color:var(--ink,#111)}" +
-    ".hubswitch a[aria-current=page]{color:#fff;background:var(--navy,#002244);border-color:var(--navy,#002244)}";
+    ".hubswitch a[aria-current=page]{color:#fff;background:var(--navy,#002244);border-color:var(--navy,#002244)}" +
+    // phones: all six pills fit on one line, and a page's intro paragraph folds to two lines (tap to read it all)
+    "@media (max-width:640px){.hubswitch{gap:4px;justify-content:space-between}.hubswitch a{flex:1 1 0;text-align:center;letter-spacing:.02em;padding:6px 0;font-size:11.5px}" +
+    "p.lede{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;cursor:pointer}p.lede.open{display:block;-webkit-line-clamp:unset}}";
   var st = document.createElement("style");
   st.textContent = css;
   document.head.appendChild(st);
+
+  document.addEventListener("click", function (e) {
+    var p = e.target.closest && e.target.closest("p.lede");
+    if (p && !e.target.closest("a,button,input,select") && window.matchMedia("(max-width:640px)").matches) p.classList.toggle("open");
+  });
 
   var nav = document.createElement("nav");
   nav.className = "hubswitch";

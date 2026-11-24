@@ -71,7 +71,7 @@
   function parse() {
     var h = location.hash.replace(/^#\/?/, ""), parts = h.split("?"), path = parts[0].split("/"), q = {};
     (parts[1] || "").split("&").forEach(function (kv) { if (!kv) return; var a = kv.split("="); q[decodeURIComponent(a[0])] = decodeURIComponent(a[1] || ""); });
-    state.route = path[0] || "standings";
+    state.route = path[0] || "tonight";
     state.arg = path[1] || null;
     state.q = q;
   }

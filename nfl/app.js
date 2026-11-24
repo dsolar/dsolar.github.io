@@ -91,7 +91,7 @@
     if (i >= 0) { qs = h.slice(i + 1); h = h.slice(0, i); }
     var parts = h.split("/").filter(Boolean), q = {};
     qs.split("&").forEach(function (kv) { if (!kv) return; var a = kv.split("="); q[a[0]] = decodeURIComponent(a[1] || ""); });
-    state.route = parts[0] || "standings"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
+    state.route = parts[0] || "week"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
   }
   // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
   var GROUP = { week: "games", game: "games", standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", contracts: "players", fa: "moves", trade: "moves" };

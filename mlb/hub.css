@@ -320,6 +320,7 @@ tr.ungraded td{color:var(--muted)}
 #subtabs.subtabs{display:flex;width:max-content;max-width:100%;overflow-x:auto;flex-wrap:nowrap;margin:10px 0 2px;border-bottom:0}
 #subtabs.subtabs a{white-space:nowrap}
 #subtabs[hidden]{display:none}
+#subtabs:has(> a:only-child){display:none}
 @media (max-width:760px){
   .tabs{gap:0;justify-content:space-between}
   .tabs a{padding:9px 6px 8px;font-size:13px;letter-spacing:0;text-transform:none}

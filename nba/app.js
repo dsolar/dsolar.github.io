@@ -84,7 +84,7 @@
     if (i >= 0) { qs = h.slice(i + 1); h = h.slice(0, i); }
     var parts = h.split("/").filter(Boolean), q = {};
     qs.split("&").forEach(function (kv) { if (!kv) return; var a = kv.split("="); q[a[0]] = decodeURIComponent(a[1] || ""); });
-    state.route = parts[0] || "standings";
+    state.route = parts[0] || "tonight";
     state.arg = parts[1] || null;
     state.q = q;
     var y = +q.y;
