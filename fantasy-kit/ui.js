@@ -797,8 +797,13 @@
     $$(".pc-track[data-tk]", root).forEach((el) => {
       const k = el.dataset.tk;
       trackFile(k).then((j) => {
-        if (!j || !el.isConnected) return;
-        const h = trackHtml(k, j, el);
+        if (!el.isConnected) return;
+        const h = j && trackHtml(k, j, el);
+        const state = el.nextElementSibling;
+        if (state && state.classList.contains("track-state")) {
+          state.hidden = !!h;
+          if (!h) state.textContent = "Tracking data is unavailable for this player.";
+        }
         if (h) { el.innerHTML = h; el.hidden = false; }
       });
     });
@@ -855,19 +860,35 @@
     // strength by category (z-scores against the pool) is a detail: it sits at the bottom, folded
     const zs = sc.type === "cats" && p.zc && !opts.noZ ? `<div class="zbars" aria-label="Category strength">${sc.cats.filter((c) => p.zc[c.k] != null).map((c) => { const z = Math.max(-3, Math.min(3, p.zc[c.k])); const w = (Math.abs(z) / 3) * 50; return `<span class="ps"><b>${esc(c.label)}</b></span><span class="zbar"><i class="${z < 0 ? "n" : ""}" style="${z < 0 ? `right:50%;width:${w}%` : `left:50%;width:${w}%`}"></i></span><span class="num ps" style="text-align:right">${z >= 0 ? "+" : ""}${z.toFixed(1)}</span>`; }).join("")}</div>` : "";
     const zsFold = zs ? `<details class="pc-more"><summary>Strength by category</summary><p class="ps" style="margin:6px 0">Against the player pool, in standard deviations</p>${zs}</details>` : "";
-    const keep = opts.fold ? (typeof opts.fold === "number" ? opts.fold : 1) : lines.length;
-    const contract = opts.contract === "fold" ? "" : contractPanel(sport, p);
-    const more = lines.slice(keep).join("") + past + adv + (opts.contract === "fold" ? contractPanel(sport, p) : "") + (zs ? `<div class="ps"><b>Strength by category</b>, against the player pool</div>${zs}` : "");
     const pastFold = past ? `<details class="pc-more"><summary>Last season, ${esc(prevSeason)}${p.l0t ? `, at ${esc(p.l0t)}` : ""}</summary><div class="stack">${past}</div></details>` : "";
-    const linesHtml = opts.lines === false ? adv + pastFold : opts.fold ? `${lines.slice(0, keep).join("")}${more ? `<details class="pc-more"><summary>${opts.contract === "fold" && sport.key === "nhl" ? "More stats and his contract" : "More stats"}</summary><div class="stack">${more}</div></details>` : ""}` : lines.join("") + pastFold + adv;
-    const statRow = (opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]]).map(([k, v]) => `<div><small>${esc(k)}</small><b>${v}</b></div>`).join("");
-    // opts.logo: his pro team's logo at the right of the header
-    const lg = opts.logo && p.t && p.t !== "FA" && S.teamLogo ? S.teamLogo(sport.key, p.t, 96) : null;
-    return `<div class="pc-h">${playerAv(sport, p, "lg")}<div style="min-width:0;flex:1"><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)}${p.school ? ` ${esc(p.school)}` : ""}${p.yr && YR[p.yr] ? `, ${YR[p.yr]}` : ""}${p.age ? `, age ${Math.floor(p.age)}` : ""}${bodyOf(p)}${p.inj ? `, <span class="bad">${esc(p.inj)}</span>` : ""}${bye ? `, bye in week ${bye}` : ""}</div>${opts.status ? `<div class="ps row" style="margin-top:6px">${opts.status}</div>` : ""}</div>${lg ? `<img class="pc-logo" src="${esc(lg)}" alt="" width="64" height="64" loading="lazy" onerror="this.remove()">` : ""}</div>
-      ${opts.week || ""}<div class="stat-row pc-stats" style="margin-bottom:14px">${statRow}</div>
-      ${(() => { const s = sampleOf(sport, p); return s ? `<p class="small pc-ss" style="margin:0 0 12px"><span class="tag ss">Small sample</span> ${s.g} of ${s.of} games so far, so his rates can still move a lot.</p>` : ""; })()}
-      ${opts.note ? `<p class="small" style="margin:0 0 12px">${opts.note}</p>` : ""}
-      <div class="stack">${trackSlot(sport, p)}${opts.extra || ""}${contract}${opts.after || ""}${linesHtml}${opts.fold && opts.lines !== false ? "" : zsFold}</div>${opts.actions ? `<div class="acts pc-acts">${opts.actions}</div>` : ""}`;
+    const stats = opts.stats || [["Overall", p.rank], ["Position", esc(p.prank)], [sc.type === "points" ? (sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection") : "Value", sc.type === "points" ? (sport.weekOf != null ? (p.v / 17).toFixed(1) : Math.round(p.v)) : p.v.toFixed(1)], ["Auction", p.$ ? money(p.$) : "-"]];
+    // League-specific values can carry trend markup. Keep those details intact in Overview.
+    const head = [], details = [];
+    for (const [l, v] of stats) {
+      if (head.length < 4 && !/[<&]/.test(String(v))) head.push({ l, v });
+      else details.push(`<div><small>${esc(l)}</small><b>${v}</b></div>`);
+    }
+    const sample = sampleOf(sport, p);
+    const overview = [opts.status, opts.week, opts.note, opts.extra, opts.after,
+      sample && `<p class="small">Small sample · ${sample.g} of ${sample.of} games played</p>`,
+      details.length && `<div class="stat-row pc-stats">${details.join("")}</div>`, zsFold].filter(Boolean).join("");
+    const tracking = trackSlot(sport, p);
+    const color = S.teamColor && S.teamColor(sport.key, p.t);
+    const logo = opts.logo && p.t && p.t !== "FA" && S.teamLogo && S.teamLogo(sport.key, p.t, 32);
+    return window.PCard.html({
+      name: p.n, face: playerAv(sport, p, "lg"), color: color && color.bg,
+      team: (logo ? `<img src="${esc(logo)}" alt="" onerror="this.remove()">` : "") + proTeam(sport, p.t),
+      meta: [S.positions(p).join(" / "), p.school, YR[p.yr], p.age && `Age ${Math.floor(p.age)}`, bodyOf(p).replace(/^, /, "")],
+      chips: [[p.inj, "inj"], [bye && `Week ${bye} bye`, ""]], head,
+      tabs: [
+        { id: "overview", label: "Overview", html: overview ? `<div class="stack">${overview}</div>` : lines[0] },
+        { id: "stats", label: "Stats", html: [opts.lines !== false && lines.join(""), pastFold, adv].filter(Boolean).join("") },
+        { id: "tracking", label: "Tracking", html: tracking && tracking + '<p class="ps track-state" aria-live="polite">Loading tracking data…</p>' },
+        { id: "contract", label: "Contract", html: contractPanel(sport, p) },
+        { id: "draft", label: "Draft", html: opts.draft }
+      ],
+      foot: opts.actions && `<div class="acts pc-acts">${opts.actions}</div>`
+    });
   }
 
   const capMoney = (n) => n == null || !Number.isFinite(+n) ? "—" : +n >= 1e6 ? `$${(+n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : `$${Math.round(+n).toLocaleString("en-US")}`;
@@ -2142,7 +2163,7 @@
       if (sk && sk.ok) actions += `<button class="btn warn" data-card="steal">Steal ${esc(last(p.n))}</button>`;
       if (can && can.ok && st && st.kind === "nominate" && st.team === mine) actions += `<button class="btn go" data-card="nominate">Nominate</button>`;
       const status = taken ? `${teamAv(team(ctx.own[pid]), "sm")} On ${esc(team(ctx.own[pid]).name)}${elephant() ? `, stolen ${F.stealsOf(d, pid)} of ${d.steals.freeze} times${sk && !sk.ok && c && c.team === mine ? `. <span class="bad">${esc(sk.why)}</span>` : ""}` : ""}` : can && !can.ok ? `<span class="bad">${esc(can.why)}</span>` : "";
-      const Dl = dialog(playerCard(sport, p, { scoring: d.scoring, actions, status, stats: cardStats(p), extra: cardDraft(p, taken, can), fold: 2, contract: d.hardCap ? undefined : "fold" }), null, { wide: true, dark: true });
+      const Dl = dialog(playerCard(sport, p, { scoring: d.scoring, actions, status, stats: cardStats(p), draft: cardDraft(p, taken, can) }), null, { wide: true, dark: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card;
         if (a === "pick") { if (act(() => F.pick(D(), ctx, mine, pid, now()))) Dl.close(); }
