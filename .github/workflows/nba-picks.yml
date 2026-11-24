@@ -1,0 +1,43 @@
+# NBA future picks for the NBA Hub and Big Board. RealGM refuses GitHub's servers, so tools/nba_picks_pull.js runs in a
+# browser on RealGM's detailed future-picks page and drops the tables in Supabase; this job saves the latest drop
+# (tools/nba_picks_raw.json) and rebuilds the pick ledger in tools/draft_future.json.
+name: NBA future picks
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - tools/nba_picks.py
+      - tools/nba_picks_parse.py
+      - .github/workflows/nba-picks.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nba-picks
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+      - name: Set the bot's git identity
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Save the latest RealGM drop
+        run: python3 tools/nba_picks.py
+      - name: Rebuild the ledger
+        run: if [ -f tools/nba_picks_parse.py ]; then cd tools && python3 nba_picks.py --build; fi
+      - name: Commit it
+        run: |
+          git add tools/nba_picks_raw.json tools/draft_future.json
+          if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
+          git commit -m "Update NBA future picks from RealGM"
+          for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done

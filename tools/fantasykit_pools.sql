@@ -1652,3 +1652,37 @@ alter table public.torvik_drop enable row level security;
 revoke all on public.torvik_drop from anon, authenticated;
 -- torvik_put(body jsonb) and torvik_get(): same shape and limits as the nba_tracking pair above (900 KB cap,
 -- 300-420 teams, one drop per 10 minutes, last 5 kept); applied as migration torvik_drop.
+
+-- ---------- NBA future picks handoff (2026-11-24) ----------
+-- RealGM refuses cloud servers, so tools/nba_picks_pull.js runs in a browser on its detailed future-picks page and drops
+-- the page's tables here; tools/nba_picks.py reads them back and rebuilds the NBA pick ledger in tools/draft_future.json.
+create table if not exists public.nba_picks_drop (
+  id bigserial primary key,
+  created timestamptz not null default now(),
+  teams int not null,
+  body jsonb not null
+);
+alter table public.nba_picks_drop enable row level security;
+revoke all on public.nba_picks_drop from anon, authenticated;
+create or replace function public.nba_picks_put(body jsonb)
+returns json language plpgsql security definer set search_path = public as $$
+declare n int; sz int;
+begin
+  sz := octet_length(body::text);
+  if sz > 600000 then raise exception 'too large'; end if;
+  if jsonb_typeof(body) <> 'object' or jsonb_typeof(body->'teams') <> 'object' then raise exception 'bad body'; end if;
+  select count(*) into n from jsonb_object_keys(body->'teams');
+  if n <> 30 then raise exception 'expected 30 teams, got %', n; end if;
+  if exists (select 1 from nba_picks_drop where created > now() - interval '2 minutes') then raise exception 'too soon'; end if;
+  insert into nba_picks_drop (teams, body) values (n, body);
+  delete from nba_picks_drop where id not in (select id from nba_picks_drop order by id desc limit 5);
+  return json_build_object('ok', true, 'teams', n, 'bytes', sz);
+end $$;
+create or replace function public.nba_picks_get()
+returns jsonb language sql stable security definer set search_path = public as $$
+  select jsonb_build_object('created', created, 'body', body) from nba_picks_drop order by id desc limit 1
+$$;
+revoke all on function public.nba_picks_put(jsonb) from public;
+revoke all on function public.nba_picks_get() from public;
+grant execute on function public.nba_picks_put(jsonb) to anon, authenticated;
+grant execute on function public.nba_picks_get() to anon, authenticated;
