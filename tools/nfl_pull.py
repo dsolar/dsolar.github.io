@@ -7,8 +7,8 @@ Everything comes from nflverse's public data releases on GitHub (https://github.
   rosters        this season's weekly rosters (status, team, ages, IDs, draft info)
   depth_charts   ESPN's depth charts, many snapshots a day; the newest per team is kept
   snap_counts    Pro Football Reference's snap counts by game, summed to season shares
-Team-level cap figures (carryover, dead money) aren't in those feeds; they live in nfl/data/teamcap.json, copied
-from Over The Cap's cap space page.
+Team-level cap figures (carryover, dead money) aren't in those feeds; they live in nfl/data/teamcap.json, pulled
+from Over The Cap's cap space page by tools/nfl_teamcap.py.
 
 Usage: python3 tools/nfl_pull.py [season] [--cache DIR]   (a cache dir of already-downloaded files is for testing)
 Needs pyarrow for the contracts file (pip install pyarrow).

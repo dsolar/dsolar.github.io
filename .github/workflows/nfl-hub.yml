@@ -10,6 +10,7 @@ on:
     branches: [main]
     paths:
       - tools/nfl_pull.py
+      - tools/nfl_teamcap.py
       - tools/nfl_rating.py
       - tools/nfl_teamstats.py
       - .github/workflows/nfl-hub.yml
@@ -38,6 +39,11 @@ jobs:
 
       - name: Install pyarrow, numpy and scipy (parquet files, and the player rating's ridge regression)
         run: pip install pyarrow numpy scipy
+
+      # Over The Cap's team totals (cap space, active spending, dead money); keeps the last copy if the page won't parse
+      - name: Team cap totals
+        continue-on-error: true
+        run: python3 tools/nfl_teamcap.py
 
       - name: Build the league file
         run: python3 tools/nfl_pull.py
@@ -68,7 +74,7 @@ jobs:
 
       - name: Commit it
         run: |
-          git add nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json nfl/data/ngs.json nfl/data/teamstats.json
+          git add nfl/data/teamcap.json nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json nfl/data/ngs.json nfl/data/teamstats.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
