@@ -261,7 +261,7 @@ window.PROJECTS = [
     cover: { image: "assets/covers/nhl-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
-    title: "CBB Hub",
+    title: "NCAAB Hub",
     hub: true,
     line: "A line on every game, team ratings, Naismith Watch and prospects",
     tag: "Updated three times a day",
@@ -276,7 +276,7 @@ window.PROJECTS = [
     cover: { image: "assets/covers/cbb-hub.svg", bg: "#F5F4F0", band: "#002244" }
   },
   {
-    title: "CFB Hub",
+    title: "NCAAF Hub",
     hub: true,
     line: "Lines against the book, playoff odds, a projected bracket and the Heisman ladder",
     tag: "Updated three times a day, every 30 minutes on Saturdays",

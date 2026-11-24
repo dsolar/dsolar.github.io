@@ -59,7 +59,7 @@
   nav.className = "hubswitch";
   nav.setAttribute("aria-label", "Switch sport");
   nav.innerHTML = HUBS.map(function (s) {
-    return '<a href="../' + s + '/"' + (s === here ? ' aria-current="page"' : "") + ' data-hub="' + s + '">' + s.toUpperCase() + "</a>";
+    return '<a href="../' + s + '/"' + (s === here ? ' aria-current="page"' : "") + ' data-hub="' + s + '">' + ({ cbb: "NCAAB", cfb: "NCAAF" }[s] || s.toUpperCase()) + "</a>";
   }).join("");
   // links follow the page you're on, so they're set when you hover, focus or tap rather than once
   function aim(a) {

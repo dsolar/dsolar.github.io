@@ -13,8 +13,32 @@ const HOME_EDGE=3;let SPREAD_SD=11; // the page sets the measured width from ext
 // (8.2, the 25th percentile among Division I rotation players in November 2026), times his share of the game's minutes,
 // scaled so the best players land around 5-6 points, discounted for players with few games, capped at 7.
 // Rough by design: Game Score is a box-score summary, not a plus-minus.
-const PV_REPL=8.2,PV_K=0.3,PV_CAP=7;
-const pointValue=p=>{const s=p&&p.stats||{},mn=Number(s.min)||0,gp=Number(s.gp)||0;if(mn<5||gp<1)return 0;const g=gameScore(p);if(!finite(g))return 0;return Math.max(0,Math.min(PV_CAP,(g/mn*40-PV_REPL)*mn/40*PV_K*gp/(gp+3)));};
+// What a missing player costs his team against the spread: his production minus what the players who take his minutes
+// produce, in points. Fit November 2026 on all of Division I: a team's Game Score per game explains its market rating
+// (r 0.75) at 0.59 points of margin per Game Score point; 0.5 is used, since part of that cross-team slope is coaching and
+// depth that doesn't leave with one player. Rates are Game Score per 40 minutes, pulled toward what players with his
+// minutes usually produce (6.69 + 0.241 x minutes a game) until he has about 120 minutes behind him, so three big games
+// don't make a star and a missing starter isn't written off as a small sample. His minutes go mostly to the bench (top-five
+// teammates take a share too), more to players at his position, and several players out are counted together.
+const PV_B=0.5,PV_K0=120,PV_PRIOR=[6.69,0.241],PV_CAP=8;
+const pvGroup=p=>{const s=String(p&&p.pos||"").toUpperCase();return /C/.test(s)&&!/G/.test(s)?"C":/F/.test(s)&&!/G/.test(s)?"F":"G";};
+const pvRate=p=>{const s=p&&p.stats||{},mpg=Number(s.min)||0,gp=Number(s.gp)||0,prior=PV_PRIOR[0]+PV_PRIOR[1]*mpg,g=gameScore(p);if(!(mpg>0)||!finite(g))return prior;const w=gp*mpg;return (w*g/mpg*40+PV_K0*prior)/(w+PV_K0);};
+// roster: the team's players; out: ids (strings or numbers) of the missing. Returns {total, per: {id: points}, repl: {id: replacement rate}}
+function teamLoss(roster,out){
+ const ids=new Set((out||[]).map(String)),ros=(roster||[]).filter(p=>(Number(p.stats&&p.stats.gp)||0)>=1&&(Number(p.stats&&p.stats.min)||0)>0);
+ const left=ros.filter(p=>!ids.has(String(p.id))),top5=new Set(left.slice().sort((a,b)=>b.stats.min-a.stats.min).slice(0,5).map(p=>String(p.id)));
+ const per={},repl={};let total=0;
+ for(const o of ros.filter(p=>ids.has(String(p.id)))){
+  if(o.stats.min<5){per[o.id]=0;continue;}
+  const g0=pvGroup(o);let sw=0,sr=0;
+  for(const q of left){const w=q.stats.min*(top5.has(String(q.id))?0.35:1)*(pvGroup(q)===g0?1.6:1);sw+=w;sr+=w*pvRate(q);}
+  const R=sw>0?sr/sw:PV_PRIOR[0]+PV_PRIOR[1]*8,v=Math.max(0,Math.min(PV_CAP,PV_B*(pvRate(o)-R)*o.stats.min/40));
+  per[o.id]=round(v,2);repl[o.id]=round(R,1);total+=v;
+ }
+ return {total:round(total,2),per,repl};
+}
+// one player's value with his own roster behind him (without a roster, against a typical bench)
+const pointValue=(p,roster)=>{if(!p||!p.stats||(Number(p.stats.min)||0)<5||(Number(p.stats.gp)||0)<1)return 0;if(roster&&roster.length)return teamLoss(roster,[p.id]).total;return round(Math.max(0,Math.min(PV_CAP,PV_B*(pvRate(p)-10.5)*p.stats.min/40)),2);};
 let MKT=null;const setMarket=m=>{MKT=m&&m.r?m:null;};
 // home court as the blended line counts it: Haslametrics' HOME_EDGE and the market's fitted value, weighted like the spread
 const homeEdgeFor=(home,away)=>{if(!MKT||!MKT.r||MKT.r[home.id]==null||MKT.r[away.id]==null)return HOME_EDGE;const w=MKT.w*Math.min(1,Math.min(MKT.n[home.id]||0,MKT.n[away.id]||0)/MKT.full);return (1-w)*HOME_EDGE+w*MKT.home;};
@@ -134,5 +158,5 @@ function gamesFromESPN(data,byId,season){
  }
  return out;
 }
-return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,setMarket,homeEdgeFor,pointValue,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
+return {gameScore,HOME_EDGE,get SPREAD_SD(){return SPREAD_SD;},setSpreadSd,setMarket,homeEdgeFor,pointValue,teamLoss,pvRate,phi,leagueAvg,line,finite,num,mean,round,key,em,ranked,conferences,percentile,teamStory,matchup,watchScore,gameReason,playerValue,selectPlayers,strengthField,providerField,gamesFromESPN};
 });
