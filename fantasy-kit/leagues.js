@@ -680,7 +680,7 @@
     if (oneWeek() || (!twistOk() && !gl)) return "";
     const on = [form.pyoOn, form.robinOn, form.conqOn, form.crownOn, form.hangOn].filter(Boolean).length + (gl && form.tbOn ? 1 : 0) + (form.dealOn ? 1 : 0);
     const deal = blocked("dealOn") || toggle("dealOn", "Deal or No Deal", "Every week the banker offers a guaranteed score, a little under your projection. Take it before the first game, or play it out", form.dealOn,
-      fld("Deals a season", seg("dealMax", [[1, "1"], [2, "2"], [3, "3"], [0, "No limit"]], form.dealMax, "Deals a season"), "The offer is new every morning and ends at the week's first game (Thursday night in football). Regular season only."));
+      fld("Deals a season", seg("dealMax", [[1, "1"], [2, "2"], [3, "3"], [0, "No limit"]], form.dealMax, "Deals a season"), "The offer is new every day and ends at the week's first game (Thursday night in football). Regular season only."));
     const odd = form.teams % 2 === 1, faab = form.waivers === "faab";
     const body = gl ? toggle("tbOn", "Top-score bonus", "The week's top scorer gets extra FAAB: a reason to spend early instead of hoarding", form.tbOn,
         fld("Bonus", seg("tbAmt", [[10, "$10"], [25, "$25"], [50, "$50"], [100, "$100"]], form.tbAmt, "Top-score bonus"))) + deal

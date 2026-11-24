@@ -8,7 +8,7 @@
      released  Year and month it went live, "YYYY-MM". For your records; it doesn't show on the card.
      line      One short line for its home page tile (about 35 characters).
      daily     true for a daily game; it also gets a row in Today's slate (assets/slate.js).
-     tag       Optional short note next to the type, e.g. "Updated every morning". Leave it out for none.
+     tag       Optional short note next to the type, e.g. "Updated daily". Leave it out for none.
      url       Where it lives on this site, relative to the home page (folder name + /).
      question  The question that started it. Shows in italics.
      summary   One or two sentences on what it is.
@@ -121,7 +121,7 @@ window.PROJECTS = [
   {
     title: "Night Out",
     line: "Boston plans for the group",
-    tag: "Updated every morning",
+    tag: "Updated daily",
     hidden: true,
     type: "Social Tools",
     released: "2026-10",
@@ -234,7 +234,7 @@ window.PROJECTS = [
     title: "MLB Hub",
     hub: true,
     line: "Standings, depth charts five years out, trade value",
-    tag: "Updated every morning",
+    tag: "Updated daily",
     type: "Simulations",
     released: "2026-11",
     url: "mlb/",
@@ -249,7 +249,7 @@ window.PROJECTS = [
     title: "NHL Hub",
     hub: true,
     line: "Playoff and Cup odds, lines, ratings and cap sheets",
-    tag: "Updated every morning",
+    tag: "Updated daily",
     type: "Simulations",
     released: "2026-11",
     url: "nhl/",
@@ -264,7 +264,7 @@ window.PROJECTS = [
     title: "NCAAB Hub",
     hub: true,
     line: "A line on every game, team ratings, Naismith Watch and prospects",
-    tag: "Updated three times a day",
+    tag: "Updated daily",
     type: "Simulations",
     released: "2026-11",
     url: "cbb/",
@@ -279,7 +279,7 @@ window.PROJECTS = [
     title: "NCAAF Hub",
     hub: true,
     line: "Lines against the book, playoff odds, a projected bracket and the Heisman ladder",
-    tag: "Updated three times a day, every 30 minutes on Saturdays",
+    tag: "Updated daily",
     type: "Simulations",
     released: "2026-11",
     url: "cfb/",
@@ -292,9 +292,10 @@ window.PROJECTS = [
   },
   {
     title: "Big Board",
-    hub: true,
+    // lives under the NBA and NFL hubs now (each hub's Draft tab): listed nowhere, direct links still work
+    section: "off",
     line: "Every 2027 draft board, plus a mock draft",
-    tag: "Updated every day",
+    tag: "Updated daily",
     type: "Simulations",
     released: "2026-11",
     url: "draft/",

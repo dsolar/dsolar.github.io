@@ -125,7 +125,7 @@
   const ladderSeed = (L) => Math.max(0, Math.min(3, Math.floor(Number(L.settings.ladder && L.settings.ladder.seed) || 0)));
   const seeding = (L, w) => !!L.ladder && w <= ladderSeed(L);
   /* Deal or No Deal (settings.deal = { max }): every week of the regular season the banker offers each team a
-     guaranteed score, a bit under what its lineup projects (86 to 94%, a new number every morning). Take the deal
+     guaranteed score, a bit under what its lineup projects (86 to 94%, a new number every day). Take the deal
      before the week's first game and that's the team's score, whatever its players do; no deal and it plays it out.
      max deals a season (0: no limit). Bots take a deal that should beat their opponent's projection.
      L.deals = { w: { team: { offer, base, day, taken, passed, actual } } } */

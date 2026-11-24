@@ -149,7 +149,7 @@
     var teams = H.teams.slice();
     var fav = teams.slice().sort(function (a, b) { return b.odds.cup - a.odds.cup; }).slice(0, 8);
     var h = '<h2 class="sec">Stanley Cup odds</h2><p class="lede">The rest of the regular season, ' + H.gamesLeft.toLocaleString() + " games, played out " +
-      H.sims.toLocaleString() + " times from each team's strength, then the playoffs to the Cup. Updated every morning through " + fmtDate(H.asOf) + ".</p>" +
+      H.sims.toLocaleString() + " times from each team's strength, then the playoffs to the Cup. Updated daily, through " + fmtDate(H.asOf) + ".</p>" +
       '<div class="cupstrip">' + fav.map(function (t) { return '<a href="#/team/' + t.abbr + '">' + logo(t, 30) + "<div><b>" + pct(t.odds.cup) + "</b><span>" + esc(t.common) + "</span></div></a>"; }).join("") + "</div>";
     h += '<div class="toolbar"><h2 class="sec" style="margin:0">Standings</h2><div class="seg" role="group" aria-label="Standings view">' +
       [["div", "Division"], ["wc", "Wild card"], ["league", "League"]].map(function (x) { return '<button type="button" data-v="' + x[0] + '" aria-pressed="' + (v === x[0]) + '">' + x[1] + "</button>"; }).join("") + "</div></div>";
@@ -566,7 +566,7 @@
     return '<div class="method"><h2 class="sec">How it works</h2>' +
       "<h3>Where the numbers come from</h3><p>Standings, rosters, this season's box-score stats and the schedule come from the NHL's own stats API. Everything built on expected goals comes from " +
       '<a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>\'s public season files: on-ice and individual expected goals for every skater, every goalie\'s shots faced, team totals and line combinations, for this season and the two before it. ' +
-      "MoneyPuck's expected goals give every shot a chance of going in from where and how it was taken. The hub rebuilds every morning.</p>" +
+      "MoneyPuck's expected goals give every shot a chance of going in from where and how it was taken. The hub updates daily.</p>" +
       "<h3>Player ratings</h3><p>Each skater is rated in goals a 60 minutes against an average player, in parts:</p><ul>" +
       "<li><b>Even-strength offense.</b> Mostly what he creates himself at 5-on-5: the expected goals of his own shots plus half a goal for every primary assist and a little for secondary ones, against the average at his position. On top of that, a small share of the expected goals for while he's on the ice, measured against the league and against his own team when he's on the bench.</li>" +
       "<li><b>Even-strength defense.</b> Expected goals against while he's on the ice, the same two ways (against the league, and against his team without him). He gets " + Math.round(P.credit.league * 100) + "% and " + Math.round(P.credit.rel * 100) + "% of those differences, since four teammates share the ice with him.</li>" +

@@ -33,7 +33,7 @@
       "</tbody></table>";
     $("#srcList").innerHTML = D.sources.map((s) => `<li><a href="${esc(s.link || s.url)}" target="_blank" rel="noopener">${esc(s.name)}${s.analyst ? ` (${esc(s.analyst)})` : ""}</a>: ${s.date ? `${s.kind === "mock" ? "mock draft" : `top ${s.count}`}, ${fmtDay(s.date)}${s.versions > 1 ? `, ${s.versions} readings` : ""}` : "not out for this class yet"}${s.kind === "mock" ? ". Shown, not counted" : ""}</li>`).join("")
       + (Object.keys(D.excluded || {}).length ? `<li>Left out on purpose: WalterFootball. PFF and The Athletic only if pasted from a subscription.</li>` : "")
-      + `<li>Size, age and stats: <a href="${D.league === "nba" ? "https://www.tankathon.com/big_board" : "https://www.tankathon.com/nfl/big_board"}" target="_blank" rel="noopener">Tankathon</a>, every morning.</li>`;
+      + `<li>Size, age and stats: <a href="${D.league === "nba" ? "https://www.tankathon.com/big_board" : "https://www.tankathon.com/nfl/big_board"}" target="_blank" rel="noopener">Tankathon</a>, daily.</li>`;
   }
 
   function head() {
