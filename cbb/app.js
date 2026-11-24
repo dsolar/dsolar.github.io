@@ -707,7 +707,7 @@ function teamShare(p) {
 function openPlayer(id) {
   const p = byPlayer[id]; if (!p) return;
   // the Big Board loads on first use: open now, then fill the Draft tab in once it lands (same tab stays open)
-  if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { const d = $("#card"); if (d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }); } else ensureBoard();
+  if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { const d = $("#card"); if (d && d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }); } else ensureBoard();
   const P = window.PCard, t = byId[p.teamId], b = BOARD ? (BOARD.players || []).find(x => M.key(x.n) === M.key(p.name)) : null, n = X && X.naismith.ladder.find(r => r.id === id), g = nextGame(p.teamId);
   const sh = teamShare(p), out = outLast(t).find(o => o.p.id === p.id), pr = pctRows(p), gp = stat(p, "gp") || 0;
   const chips = [out ? ["Out last game" + (out.note ? " (" + out.note + ")" : ""), "out"] : null, n ? ["Naismith ladder #" + n.rank, "tag"] : null, fin(p.draftRank) ? ["Big Board #" + p.draftRank, "tag"] : null,
