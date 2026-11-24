@@ -127,8 +127,10 @@
   const BANKS = [[-120, "2 min"], [-200, "200 sec"], [-300, "5 min"], [-480, "8 min"]];
   const CLOCKS = PICK_CLOCKS.concat(BANKS.map(([v, l]) => [v, `${l} bank`]));
   const BID_CLOCKS = [[10, "10 sec"], [15, "15 sec"], [20, "20 sec"], [30, "30 sec"]];
+  // a Dutch auction: how long a wave's prices take to fall to $1
+  const FALL_CLOCKS = [[20, "20 sec"], [30, "30 sec"], [45, "45 sec"], [60, "60 sec"]];
   const fmtBank = (sec) => (sec % 60 ? `${sec} seconds` : `${sec / 60} minutes`);
-  const NUM = /^(hc|teams|slot|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day|elSteals|elFreeze|elTax|elGold)$/;
+  const NUM = /^(hc|teams|slot|wave|clock|bank|budget|bench|test|trades|rl|rlRound|hz|sd|day|elSteals|elFreeze|elTax|elGold)$/;
   // the one-week twists: team roulette (drafts that go pick by pick), and for football a showdown (one game, a
   // captain and five flex spots, no bench) or a heist right after the draft (the one-week lineup, no bench)
   const ONE_WEEK_NFL = ["QB", "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"];
@@ -197,7 +199,7 @@
     app.innerHTML = `<div class="wrap page">
       <section class="start-hero"><p class="start-kicker">Draft Lab</p><h1 class="disp">Your next draft starts here.</h1><p>Real players. Bots that know their budgets. Jump into a familiar draft, or build something a little stranger.</p></section>
       ${E.mockConflict(qs && cfg.sport, mock) ? `<div class="banner"><b>You chose ${esc(sport.name.toLowerCase())}.</b> Your saved ${esc(S[mock.D.sport].name.toLowerCase())} draft is separate. Resume it below, or start a ${esc(sport.name.toLowerCase())} mock with the choices here.</div>` : ""}
-      ${mock ? `<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">${mock.D.phase === "done" ? "Your draft is in the books." : "Your seat is still here."}</h2><p>${esc(S[mock.D.sport] ? S[mock.D.sport].name : "")} · ${esc(K.DRAFT_SHORT[mock.D.type] || mock.D.type)} · ${mock.D.teams.length} teams. ${mock.D.phase === "done" ? "See your roster and results." : "Continue your saved draft on this device."}</p></div><a class="btn go" href="${N.URLS.draft}#draft">${mock.D.phase === "done" ? "View your results" : "Continue your draft"}</a></section>` : ""}
+      ${mock ? `<section class="start-resume" aria-label="Your saved mock"><div><h2 class="disp">${mock.D.phase === "done" ? "Your draft is in the books." : "Your seat is still here."}</h2><p>${esc(S[mock.D.sport] ? S[mock.D.sport].name : "")} · ${esc(K.DRAFT_SHORT[F.formatOf(mock.D)] || mock.D.type)} · ${mock.D.teams.length} teams. ${mock.D.phase === "done" ? "See your roster and results." : "Continue your saved draft on this device."}</p></div><a class="btn go" href="${N.URLS.draft}#draft">${mock.D.phase === "done" ? "View your results" : "Continue your draft"}</a></section>` : ""}
       <div class="start-sports" role="group" aria-label="Choose a sport">${S.SEASON_SPORTS.map(s => `<button type="button" class="btn" data-entry-sport="${s.key}" aria-pressed="${s.key === cfg.sport}">${K.icon(s.key)} ${esc(s.short || s.name)}</button>`).join("")}</div>
       <section class="start-cards" aria-label="Choose how to play">
         <article class="start-card start-card-primary"><p class="start-kicker">01 / Take a seat</p><h2 class="disp">Quick mock</h2><p>A 10-team ${esc(sport.name.toLowerCase())} snake draft. ${esc(scoring)}, standard rosters, and 30 seconds a pick. We’ll find you a seat.</p><button type="button" class="btn go" data-quick>Start a quick mock →</button><p id="quick-error" role="alert"></p></article>
@@ -244,9 +246,10 @@
     const scoring = sport.scorings[c.scoring] ? c.scoring : Object.keys(sport.scorings)[0];
     const lu = (c.lineup || sport.lineup.join(" ")).split(/[\s,]+/).filter((x) => sport.slots[x] && x !== "BN");
     const bench = c.bench == null ? sport.bench : c.bench;
-    const auction = c.type === "auction", mystery = c.type === "mystery", elephant = c.type === "elephant";
+    const dutch = c.type === "dutch", auction = c.type === "auction" || dutch, mystery = c.type === "mystery", elephant = c.type === "elephant";
     const tradesOk = !auction && !elephant && c.type !== "pack";
-    const clock = (auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? BID_CLOCKS[1] : CLOCKS[1]);
+    const clock = (dutch ? FALL_CLOCKS : auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? (dutch ? FALL_CLOCKS : BID_CLOCKS)[1] : CLOCKS[1]);
+    const waves = [...new Set([6, 8, 10, 12, 15, c.wave || Math.max(6, Math.min(12, c.teams))])].sort((a, b) => a - b);
     const sc = (sport.scorings[scoring] || {}).label || "";
     const twHtml = twists(c);
     const dsl = dayOn(c) ? daySlate(c) : null;
@@ -263,15 +266,15 @@
         <h1 class="disp">Mock a ${esc(sport.name.toLowerCase())} draft</h1>
         <p>Draft against bots that know positions, budgets and the clock, with real player data. It saves on this device, so you can leave and come back.</p>
       </div></div>
-      ${mock ? `<a class="mk-resume" href="${N.URLS.draft}#draft"><span><b>Your ${esc(S[mock.D.sport] ? S[mock.D.sport].name.toLowerCase() : "")} mock is ${mock.D.phase === "done" ? "done" : "still going"}</b><small>${esc(K.DRAFT_SHORT[mock.D.type] || "")}, ${mock.D.teams.length} teams${mock.D.phase === "done" ? ". See how it turned out." : ". Pick up where you left off."}</small></span><span class="btn sm">Back to your mock</span></a>` : ""}
+      ${mock ? `<a class="mk-resume" href="${N.URLS.draft}#draft"><span><b>Your ${esc(S[mock.D.sport] ? S[mock.D.sport].name.toLowerCase() : "")} mock is ${mock.D.phase === "done" ? "done" : "still going"}</b><small>${esc(K.DRAFT_SHORT[F.formatOf(mock.D)] || "")}, ${mock.D.teams.length} teams${mock.D.phase === "done" ? ". See how it turned out." : ". Pick up where you left off."}</small></span><span class="btn sm">Back to your mock</span></a>` : ""}
       <form class="nl-body" id="setup" novalidate>
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}</section>
         <section class="nl-sec nl-ess">
           <div class="g2">${K.fld("Teams", K.stepper("teams", teamVals(c), c.teams, (x) => `${x} teams`, "Teams"))}
-            ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
+            ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : dutch ? K.fld("Players a wave", K.stepper("wave", waves, c.wave || Math.max(6, Math.min(12, c.teams)), (x) => `${x} players`, "Players a wave")) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
-          <div class="g2">${K.fld(auction ? "Bid clock" : "Pick clock", K.seg("clock", auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], auction ? "Bid clock" : "Pick clock", { wrap: true }),
-              auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (dsl ? dsl.lineup.lineup.length + dsl.lineup.bench : sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
+          <div class="g2">${K.fld(dutch ? "Prices fall for" : auction ? "Bid clock" : "Pick clock", K.seg("clock", dutch ? FALL_CLOCKS : auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], dutch ? "Prices fall for" : auction ? "Bid clock" : "Pick clock", { wrap: true }),
+              dutch ? "Nobody bids. Every player in a wave opens high and falls to $1 on this clock. The first claim wins at the price showing." : auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (dsl ? dsl.lineup.lineup.length + dsl.lineup.bench : sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
             ${auction ? K.fld("Budget per team", `<div class="row" style="flex-wrap:wrap">${K.numIn("budget", c.budget, { pre: "$", min: 10, max: 100000, label: "Budget per team" })}<span class="qk">${[100, 200, 260, 1000].map((x) => `<button type="button" data-bset="${x}" aria-pressed="${x === c.budget}">$${x}</button>`).join("")}</span></div>`, "Any amount, the same for every team.") : c.clock < 0 ? K.fld("Time bank", K.seg("bank", BANKS, c.clock, "Time bank", { wrap: true }), "For your whole draft.") : "<div></div>"}</div>
           <div class="g2"><div class="fl"><div class="fl-l"><label for="s-name">Your team name</label></div><input type="text" id="s-name" maxlength="28" value="${esc(c.name)}" placeholder="Your team"></div>${confField(c)}</div>
           ${tradesOk || mystery ? `<div class="nl-bb">${K.toggle("trades", "Trades during the draft", "Trade picks and drafted players with any team. Bots answer right away.", c.trades)}${mystery ? K.toggle("test", "Even out the packages", "Deal five times and keep the most even draft", c.test) : ""}</div>` : ""}
@@ -356,7 +359,7 @@
       if (!live()) return;
       const sport = S[cfg.sport];
       const ty = e.target.closest("[data-type]");
-      if (ty) { setupGrab(); cfg.type = ty.dataset.type; if (cfg.type === "auction") { if (![10, 15, 20, 30].includes(cfg.clock)) cfg.clock = 15; } else if (!CLOCKS.some(([v]) => v === cfg.clock)) cfg.clock = 30; save(`[data-type="${cfg.type}"]`); return; }
+      if (ty) { setupGrab(); cfg.type = ty.dataset.type; if (cfg.type === "dutch") { if (![20, 30, 45, 60].includes(cfg.clock)) cfg.clock = 30; } else if (cfg.type === "auction") { if (![10, 15, 20, 30].includes(cfg.clock)) cfg.clock = 15; } else if (!CLOCKS.some(([v]) => v === cfg.clock)) cfg.clock = 30; save(`[data-type="${cfg.type}"]`); return; }
       const st = e.target.closest("[data-stp]");
       if (st) {
         setupGrab();
@@ -439,7 +442,7 @@
     const order = others.slice(0, slot).concat(0, others.slice(slot));
     const total = n * (P.lineup.length + P.bench);
     const D = F.create({ sport: P.sport, type: c.type, teams: n, seed, now: Date.now(), lineup: P.lineup, bench: P.bench, scoring: P.scoring,
-      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.clock < 0 ? 0 : c.clock, bank: c.clock < 0 && c.type !== "auction" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : P.conf ? `${P.conf} ${P.sport.name.toLowerCase()} mock` : `${P.sport.name} mock`,
+      botDelay: U.botSpeed.delay(), clock: c.type === "auction" || c.type === "dutch" || c.clock < 0 ? 0 : c.clock, dutch: c.type === "dutch" ? { fall: c.clock || 30, size: c.wave || undefined } : undefined, bank: c.clock < 0 && c.type !== "auction" && c.type !== "dutch" ? { perRound: -c.clock / Math.max(1, P.lineup.length + P.bench), floor: 10 } : null, bidClock: c.clock || 15, nomClock: 30, budget: sdOn(c) ? 50 : c.budget, order, name: P.slate ? `${window.FK.slates.dayName(P.slate.day)}: ${P.slate.label}` : P.conf ? `${P.conf} ${P.sport.name.toLowerCase()} mock` : `${P.sport.name} mock`,
       trades: c.trades !== 0, steals: c.type === "elephant" ? window.FK.setup.elephantSteals(c, (P.sport.scorings[P.scoring] || {}).type === "points") : undefined, curve: c.type === "mystery" ? F.pickCurve(P.players, total) : null, reveal: c.reveal });
     if (P.conf) D.pool = [...new Set(P.players.map((p) => p.t))];   // a season played after it keeps the same schools
     if (P.hcf) { const h = P.hcf; D.hardCap = { line: S.suggestLine(P.players, n, P.lineup.length + P.bench, h), min: h.min, year: h.year, cap: h.cap, held: [] }; }

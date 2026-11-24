@@ -260,7 +260,7 @@
   function paintHome() {
     const el = $("#app"); if (!el) return;
     const name = info.name || D.name, sc = sport.scorings && sport.scorings[D.scoring];
-    const sub = [sport.name, `${D.teams.length} teams`, `${(F.FORMATS[D.type] || "Snake").toLowerCase()} draft`, sc ? sc.label : ""].filter(Boolean).join(", ");
+    const sub = [sport.name, `${D.teams.length} teams`, `${(F.FORMATS[F.formatOf(D)] || "Snake").toLowerCase()} draft`, sc ? sc.label : ""].filter(Boolean).join(", ");
     const html = `${guestNote()}<div class="wrap page lh">
       <section class="lh-hero"><div class="lh-id"><h1 class="disp">${esc(name)}</h1><p class="ps">${esc(sub)}</p></div>
         <div class="lh-go"><a class="btn go" href="#draft">Enter the draft room</a><small class="ps">${info.commish ? "Build your queue, and start the draft from there." : "Build your queue before it starts."}</small></div></section>
@@ -299,7 +299,7 @@
   function lobbyRules() {
     const s = D.season || {}, sc = sport.scorings && sport.scorings[D.scoring], out = [];
     const clock = D.bank ? "a time bank" : D.clock >= 3600 ? `${D.clock / 3600} hours a pick` : D.clock ? `${D.clock} seconds a pick` : "";
-    out.push(`${F.FORMATS[D.type] || "Snake"} draft, ${D.teams.length} teams, ${D.rounds} rounds${clock ? `, ${clock}` : ""}`);
+    out.push(`${F.FORMATS[F.formatOf(D)] || "Snake"} draft, ${D.teams.length} teams, ${D.rounds} rounds${clock ? `, ${clock}` : ""}`);
     if (sc) out.push(`Scoring: ${sc.label}`);
     if (sc && S.bonusLines) for (const x of S.bonusLines(sc, sport.key)) out.push(x);
     if (D.steals) out.push(`${D.steals.perTeam} steals a team, frozen after ${D.steals.freeze}${F.taxOf && F.taxOf(D) < 1 ? `; a stolen player scores ${Math.round(F.taxOf(D) * 100)}%` : ""}${F.goldenOf && F.goldenOf(D) > 1 ? `, a make-up pick ${Math.round(F.goldenOf(D) * 100)}%` : ""}`);
@@ -880,6 +880,9 @@
   }
   /* ---------- the next season: keepers, then a new draft ---------- */
   const seasonOver = () => L && L.week > G.totalWeeks(L);
+  // a split season between its halves: what comes next is the redraft and the second half, not a new season
+  const midSeason = () => !!(L && L.settings.halves && L.settings.halves.half !== 2);
+  const nextName = () => (midSeason() ? "the second half" : "next season");
   const lctx = () => G.context(L, players, sport, hooks());
   // keeper picks: open until L.next.due, then locked for managers (the commissioner can still set anyone's)
   const keepDue = () => (L && L.next && L.next.due) || null;
@@ -889,7 +892,7 @@
     if (!seasonOver() || !L.next || info.me == null || !L.settings.keepers) return "";
     const mine = L.next.picks && L.next.picks[info.me], lock = keepLocked();
     const left = keepDue() && !lock ? keepDue() - now() : 0, soon = left && left < 2 * 864e5 ? ` That's ${left < 36e5 ? "less than an hour" : `${Math.round(left / 36e5)} hours`} from now.` : "";
-    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for next season.` : "Pick your keepers for next season."}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button> <button class="btn sm ghost" data-live="practice">${practiceMid() ? "Resume the practice draft" : "Practice the draft"}</button></div></div>`;
+    return `<div class="wrap" style="padding-top:12px"><div class="banner${lock ? "" : " go"}"><b>${lock ? (mine ? `Keepers are locked. You kept ${mine.length}.` : "Keepers are locked.") : mine ? `You're keeping ${mine.length} for ${nextName()}.` : `Pick your keepers for ${nextName()}.`}</b> <span class="muted">${lock ? `The deadline was ${esc(whenTxt(keepDue()))}.` : `Up to ${L.settings.keepers}${keepDue() ? `, by ${esc(whenTxt(keepDue()))}.${soon}` : "."}`}</span> <button class="btn sm${lock ? "" : " go"}" data-live="keepers">${lock ? "See your keepers" : mine ? "Change keepers" : "Pick keepers"}</button> <button class="btn sm ghost" data-live="practice">${practiceMid() ? "Resume the practice draft" : "Practice the draft"}</button></div></div>`;
   }
   // a team's keepers: every player with his cost (or why he can't be kept), and where the picks land in the draft
   function keeperDialog(teamId = info.me) {
@@ -1060,13 +1063,13 @@
     if (!seasonOver()) return "";
     if (pyrOn()) return pyramidNextCard();
     const k = L.settings.keepers || 0;
-    if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack"><p class="small" style="margin:0">The season is over. Open keeper picks with a deadline: every manager gets an email and picks up to ${k}.</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
-    return `${k && L.next ? keeperTracker() : ""}<div class="card"><div class="mod-h"><h2>Next season</h2></div><div class="bd stack">
-      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : `The season is over. Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
+    if (k && !L.next) return `<div class="card"><div class="mod-h"><h2>${midSeason() ? "The redraft" : "Next season"}</h2></div><div class="bd stack"><p class="small" style="margin:0">${midSeason() ? `The first half is over${L.halves && L.halves.champ != null ? `, and ${esc(L.teams[L.halves.champ].name)} won it` : ""}. Open keeper picks with a deadline: every manager gets an email and picks up to ${k} to carry through the redraft.` : `The season is over. Open keeper picks with a deadline: every manager gets an email and picks up to ${k}.`}</p><div><button class="btn go" data-live="open-keepers">Open keeper picks</button></div></div></div>`;
+    return `${k && L.next ? keeperTracker() : ""}<div class="card"><div class="mod-h"><h2>${midSeason() ? "The redraft" : "Next season"}</h2></div><div class="bd stack">
+      <p class="small" style="margin:0">${L.settings.dynasty ? `The season is over. Starting next season saves this one to the league's history. Every roster carries over, and a ${L.settings.dynasty.rounds}-round rookie and free agent draft opens, worst team first${G.pickRounds(L) ? ", with traded picks going to the teams that hold them" : ""}. Until then, trades stay open.` : midSeason() ? `The first half is over${L.halves && L.halves.champ != null ? `: ${esc(L.teams[L.halves.champ].name)} won it and has a place in the final` : ""}. Starting the redraft saves the first half to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}, worst team first. The second half starts the week the draft ends.` : `The season is over. Starting next season saves this one to the league's history and opens a new draft room${k ? " with the keepers on the board" : ""}.`}</p>
       ${expiringHtml()}
       ${L.settings.dynasty ? "" : L.settings.draftOrder === "lottery" ? lotteryLine() : `<p class="small" style="margin:0"><b>Draft order:</b> ${L.nextOrder ? `set by you, ${esc(L.teams[L.nextOrder[0]].name)} first` : "worst to first, unless you set it"}. <button type="button" class="btn sm ghost" data-live="draft-order">${L.nextOrder ? "Change" : "Set the order"}</button></p>`}
       ${practiceLine()}
-      <div><button class="btn go" data-live="new-season">Start next season's draft</button></div></div></div>`;
+      <div><button class="btn go" data-live="new-season">${midSeason() ? "Start the redraft" : "Start next season's draft"}</button></div></div></div>`;
   }
   /* The commissioner's keeper tracker: the clock to the deadline, who's in and who isn't, each team's keepers with the
      round each lands in (and the year he's being kept), anything that breaks the rules, what the deadline rule would
@@ -1173,7 +1176,7 @@
     if (r.error) { U.toast(r.error, true); return; }
     version = r.version; D = D2; L = null; base = clone({ draft: D, league: null });
     app = null; mount();
-    U.toast("Next season's draft room is open.");
+    U.toast(D2.half === 2 ? "The redraft room is open." : "Next season's draft room is open.");
   }
   /* ---------- commissioner tools ---------- */
   const opt = (v, l, cur) => `<option value="${esc(v)}"${String(v) === String(cur) ? " selected" : ""}>${esc(l)}</option>`;
@@ -1194,7 +1197,7 @@
     const movesCard = L ? card("Move a player", `<p class="small" style="margin:0">Move any player to another team or to free agency. Roster limits don't stop you; a team left over the limit has to cut.</p>`, `<button class="btn" data-cm="move">Move a player</button>`) : "";
     const tradesCard = L ? card("Reverse a trade", trades.length ? `<ul class="seatl">${trades.map((t) => `<li><span class="grow"><b>${esc(teamName(t.from))} &#8644; ${esc(teamName(t.to))}</b><small>${esc([].concat(t.get, t.give).map((x2) => (byId[x2] ? byId[x2].n : "?")).join(", "))}${(t.pickGive || []).length + (t.pickGet || []).length ? ", plus picks" : ""}, ${esc(U.ago(t.done || t.at, now()))}</small></span><button type="button" class="btn sm ghost" data-cm-rev="${t.id}">Reverse</button></li>`).join("")}</ul>` : `<p class="small" style="margin:0">No trades yet. When one goes through, you can reverse it here if every player is still where it sent him.</p>`) : "";
     const danger = `<div class="card danger"><div class="mod-h"><h2>Delete the league</h2></div><div class="bd stack"><p class="small" style="margin:0">Deletes the league for everyone: teams, history and chat. You can't undo it.</p><div><button class="btn warn" data-cm="delete">Delete the league</button></div></div></div>`;
-    if (sec === "season") return head("Season", seasonOver() ? "The season is over: keepers, next season's draft order and the draft." : `Week ${L ? L.week : 1}${L ? ` of ${G.totalWeeks(L)}` : ""}.`) + `<div class="stack">${nextSeasonCard() || (L ? card("This season", `<p class="small" style="margin:0">The season is on. Once the final is played, keeper picks, the draft order and next season's draft open here.</p>`) : "")}${noteCard}</div>`;
+    if (sec === "season") return head("Season", seasonOver() ? (midSeason() ? "The first half is over: keepers, the redraft order and the redraft." : "The season is over: keepers, next season's draft order and the draft.") : `Week ${L ? L.week : 1}${L ? ` of ${G.totalWeeks(L)}` : ""}.`) + `<div class="stack">${nextSeasonCard() || (L ? card("This season", `<p class="small" style="margin:0">The season is on. Once the final is played, keeper picks, the draft order and next season's draft open here.</p>`) : "")}${noteCard}</div>`;
     if (sec === "managers") return head("Managers", `${docTeams().length - openSeats()} of ${docTeams().length} teams have a manager.`) + `<div class="cols2">${inviteCard}<div class="card"><div class="mod-h"><h2>Who has each team</h2></div><div class="bd">${seatList()}</div></div></div>${x.contacts ? x.contacts() : ""}`;
     if (sec === "rules") return head("Rules and look", "How the league runs, and how it looks.") + `<div class="cols2">${rulesCard}<div class="stack">${lookCard}${teamsCard}</div></div>${danger}`;
     if (sec === "rosters") return head("Rosters and trades", "Fix a roster or undo a trade. Every change shows up in the transactions.") + `<div class="cols2">${movesCard}${tradesCard}</div>`;
@@ -1217,7 +1220,7 @@
       L ? tile("Teams", "Names, FAAB, waiver order", `<button class="btn sm" data-cm="teams">Edit</button>`) : "",
       L ? tile("Move a player", "To another team or free agency", `<button class="btn sm" data-cm="move">Move</button>`) : "",
       L ? tile("Reverse a trade", trades.length ? `${trades.length} recent` : "None yet", `<a class="btn sm" href="#commish/rosters">Open</a>`) : "",
-      L && seasonOver() ? tile("Next season", "Keepers, draft order, the draft", `<a class="btn sm" href="#commish/season">Open</a>`) : "",
+      L && seasonOver() ? tile(midSeason() ? "The redraft" : "Next season", "Keepers, draft order, the draft", `<a class="btn sm" href="#commish/season">Open</a>`) : "",
     ].join("");
     return head("Commissioner", "Every change here saves for the whole league and shows up in its transactions.") + `<div class="stack">
       ${todo.length ? `<div class="card cm-todo"><div class="mod-h"><h2>Needs you</h2><span class="ps">${todo.length} thing${todo.length > 1 ? "s" : ""}</span></div><ul class="seatl">${todo.map(([t, d, a2]) => `<li><span class="grow"><b>${esc(t)}</b><small>${esc(d)}</small></span>${a2}</li>`).join("")}</ul></div>` : `<div class="card cm-todo"><div class="bd"><p class="small" style="margin:0"><b>Nothing needs you right now.</b> Everything is in hand.</p></div></div>`}
@@ -1485,7 +1488,7 @@
     if (cm && info.commish) { const k = cm.dataset.cm; if (k === "rules") rulesDialog(); else if (k === "name") nameDialog(); else if (k === "look") lookDialog(); else if (k === "teams") teamsDialog(); else if (k === "move") moveDialog(); else if (k === "delete") deleteDialog(); else if (k === "note") noteDialog(); else if (k === "unnote") { L.notes = []; commishSave({ ok: true }, "The note is down."); } }
     const rv = e.target.closest("[data-cm-rev]");
     if (rv && info.commish) { const tid = Number(rv.dataset.cmRev); U.confirm("Reverse this trade?", "Every player, pick and FAAB dollar goes back to the team that sent it.", "Reverse the trade", () => commishSave(G.reverseTrade(L, lctx(), tid, now()), "Trade reversed.")); }
-    if (lv && lv.dataset.live === "new-season") U.confirm("Start next season?", "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", "Start next season", newSeason);
+    if (lv && lv.dataset.live === "new-season") U.confirm(midSeason() ? "Start the redraft?" : "Start next season?", midSeason() ? "The first half goes into the league's history, and the league opens a new draft room for the second half. You can't undo it." : "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", midSeason() ? "Start the redraft" : "Start next season", newSeason);
     const fr = e.target.closest("#app [data-free]");
     if (fr) { const t = Number(fr.dataset.free); U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} loses the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {
       const r = await C.rpc("fk_leave", { p_id: id, p_team: t }).catch((err) => ({ error: err.message }));

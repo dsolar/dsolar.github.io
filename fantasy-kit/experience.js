@@ -20,7 +20,7 @@
     const n = slate && Number(slate.week) > 0 ? Number(slate.week) : sportWeek(sport, at);
     return n ? `NCAAF Week ${n}` : `League week ${week}`;
   }
-  const RULE_FIELDS = ("sport teams type clock aBudget season weeks trades scoring lineup bench playoffs deadline review faab waiverDays gameLock weights cats waivers ir maxAdds posMax keepers keeperCost legs cons median bestball divs rookie fpicks taxi ohold tep ptd b100r b100c b300p reviewHours vetoShare waiverOrder minBid waiverPrice maxAddsSeason dealOn dealMax ladOn ladSeed ladReach splitAfter pyrOn pyrTeams pyrMode pyrK pyrTop pyrBot capBudget capBonus hcOn hcScale confOn reseed confs cbbEnd cfbEnd tvOn pyoOn robinOn robinP conqOn conqP conqLike crownOn crownStep crownKeep hangOn tbOn tbAmt reveal kind rlOn rlRound respins hzOn hzShields hzSteals hzJinxes hzClock keepN tepOn tepAmt b100rOn b100rAmt b100cOn b100cAmt b300pOn b300pAmt vampOn vampWho poolOnly proRounds proRule nhlDaily minGoalieGames chaseOn chaseWeeks elSteals elFreeze elTax elGold sx slKind slWeek slOne slGames").split(" ");
+  const RULE_FIELDS = ("sport teams type clock aBudget season weeks trades scoring lineup bench playoffs deadline review faab waiverDays gameLock weights cats waivers ir maxAdds posMax keepers keeperCost legs cons median bestball divs rookie fpicks taxi ohold tep ptd b100r b100c b300p reviewHours vetoShare waiverOrder minBid waiverPrice maxAddsSeason dealOn dealMax ladOn ladSeed ladReach splitAfter halfOn halfAfter halfKeep pyrOn pyrTeams pyrMode pyrK pyrTop pyrBot capBudget capBonus hcOn hcScale confOn reseed confs cbbEnd cfbEnd tvOn pyoOn robinOn robinP conqOn conqP conqLike crownOn crownStep crownKeep hangOn tbOn tbAmt reveal kind rlOn rlRound respins hzOn hzShields hzSteals hzJinxes hzClock keepN tepOn tepAmt b100rOn b100rAmt b100cOn b100cAmt b300pOn b300pAmt vampOn vampWho poolOnly proRounds proRule nhlDaily minGoalieGames chaseOn chaseWeeks elSteals elFreeze elTax elGold sx slKind slWeek slOne slGames").split(" ");
   RULE_FIELDS.push("slPeriod");
   const BAD = new Set(["__proto__", "constructor", "prototype"]);
   function safe(value, depth = 0) {
@@ -50,7 +50,7 @@
     for (const k of ["weights", "posMax"]) if (r[k] && Object.values(r[k]).some((v) => typeof v !== "number" || !Number.isFinite(v))) throw new Error("Scoring weights and roster limits must be numbers.");
     if (r.scoring && !sp.scorings[r.scoring] && !["cp", "cc"].includes(r.scoring)) throw new Error("That scoring system is not available for this sport.");
     if (r.kind && !["redraft", "keeper", "dynasty", "week"].includes(r.kind)) throw new Error("That league type is not available.");
-    if (r.type && !["snake", "linear", "3rr", "auction", "mystery", "elephant", "pack", "sealed", "cap"].includes(r.type)) throw new Error("That draft format is not available.");
+    if (r.type && !["snake", "linear", "3rr", "auction", "dutch", "mystery", "elephant", "pack", "sealed", "cap"].includes(r.type)) throw new Error("That draft format is not available.");
     return r;
   }
   function applyQuery(form, params, S) {
@@ -104,6 +104,7 @@
     if (s.topBonus) Object.assign(r, { tbOn: 1, tbAmt: s.topBonus });
     if (s.ladder) Object.assign(r, { ladOn: 1, ladSeed: s.ladder.seed, ladReach: s.ladder.reach });
     if (s.split) r.splitAfter = s.split.after;
+    if (s.halves && Array.isArray(s.halves.weeks)) Object.assign(r, { halfOn: 1, halfAfter: s.halves.weeks[0], halfKeep: s.halves.keepers || 0, weeks: s.halves.weeks[0] + s.halves.weeks[1], kind: "redraft", keepers: 0 });
     if (s.heist) Object.assign(r, { hzOn: 1, hzShields: s.heist.shields, hzSteals: s.heist.steals, hzJinxes: s.heist.jinxes, hzClock: s.heist.clock });
     if (s.slate) Object.assign(r, { slKind: s.slate.kind });
     if (D.hardCap) { r.hcOn = 1; r.hcScale = D.hardCap.scale || "auto"; }
@@ -120,7 +121,7 @@
     return !lines.length || lines.some(([k, x]) => (S.stat(sport, p, k, x.col) || 0) >= Math.ceil(x.hi * 0.4));
   }
   function draftAdvice(F, D, ctx, team) {
-    if (team == null || !D.teams[team] || D.phase === "done" || !["snake", "linear", "3rr", "auction"].includes(D.type) || D.roulette || D.trivia) return null;
+    if (team == null || !D.teams[team] || D.phase === "done" || !["snake", "linear", "3rr", "auction"].includes(D.type) || (D.auction && D.auction.dutch) || D.roulette || D.trivia) return null;
     const legal = ctx.available.slice(0, 120).filter((p) => F.canAdd(D, ctx, team, p).ok);
     if (!legal.length) return null;
     const best = legal[0], fit = legal.reduce((b, p) => F.worth(D, ctx, team, p) > F.worth(D, ctx, team, b) ? p : b, best);

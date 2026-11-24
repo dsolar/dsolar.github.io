@@ -36,7 +36,7 @@
   }
   function hash01(str) { let h = 2166136261; for (const c of String(str)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return ((h >>> 0) % 100000) / 100000; }
 
-  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack draft", auction: "Auction" };
+  const FORMATS = { snake: "Snake", linear: "Linear", "3rr": "Third-round reversal", mystery: "Mystery packages", elephant: "White elephant", pack: "Pack draft", auction: "Auction", dutch: "Dutch auction" };
   const REVEALS = { start: "When the draft starts", own: "Yours at the start, the rest as they come up", now: "Right away" };
   const NAMES = [
     ["Night Shift", "NS"], ["Bench Mob", "BM"], ["Waiver Wire", "WW"], ["Late Scratch", "LS"], ["Deep Sleepers", "DS"], ["Box Score", "BX"],
@@ -92,7 +92,9 @@
     const sit = (opts.sit || []).filter((t) => t >= 0 && t < n);
     if (sit.length) first = first.filter((t) => !sit.includes(t));
     const m = first.length;
-    const type = FORMATS[opts.type] ? opts.type : "snake";
+    // a Dutch auction is an auction underneath (budgets, sales, keepers by price); only how a player is sold differs
+    const dutch = opts.type === "dutch";
+    const type = dutch ? "auction" : FORMATS[opts.type] ? opts.type : "snake";
     const D = {
       v: 1, kind: "fk-draft", sport: sport.key, type, seed, created: opts.now || Date.now(), name: opts.name || "Mock draft",
       scoring: opts.scoring || Object.keys(sport.scorings)[0],
@@ -101,7 +103,8 @@
       teams, round1: first, order: type === "auction" ? [] : type === "mystery" ? Array(m * rounds).fill(0) : makeOrder(type === "elephant" ? "snake" : type === "pack" ? "linear" : type, first, rounds),
       board: type === "auction" ? [] : Array(m * rounds).fill(null), sales: [], sit: sit.length ? sit : undefined,
       phase: "setup", clockStart: null, paused: false, left: null, log: [],
-      auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null } : null,
+      auction: type === "auction" ? { budget: opts.budget || 200, minBid: opts.minBid == null ? 1 : opts.minBid, nomClock: opts.nomClock || 30, bidClock: opts.bidClock || 15, nom: 0, lot: null,
+        dutch: dutch ? dutchRules(opts.dutch, n) : undefined } : null,
       bank: type !== "auction" && opts.bank ? { perRound: opts.bank.perRound || 30, floor: opts.bank.floor == null ? 10 : opts.bank.floor } : null,
       trading: type !== "auction" && type !== "elephant" && type !== "pack" && opts.trades !== false,
       steals: type === "elephant" ? { freeze: (opts.steals && opts.steals.freeze) || 2, perTeam: (opts.steals && opts.steals.perTeam) || 3, lastRounds: opts.steals && opts.steals.lastRounds != null ? opts.steals.lastRounds : 2,
@@ -618,13 +621,13 @@
 
   function pause(D, now, on) {
     if (D.phase !== "live") return { ok: false, why: "The draft isn't running" };
-    const lot = D.auction && D.auction.lot;
+    const lot = D.auction && (D.auction.lot || D.auction.wave);
     if (on && !D.paused) {
       D.paused = true;
       D.left = lot ? lot.ends - now : D.clockStart + (D.type === "auction" ? D.auction.nomClock * 1000 : Math.min(1e12, clockLen(D, nextIndex(D)))) - now;
     } else if (!on && D.paused) {
       D.paused = false; delete D.hold;
-      if (lot) lot.ends = now + D.left;
+      if (lot) { lot.ends = now + D.left; if (lot.lots) lot.at = lot.ends - lot.len; }
       else D.clockStart = now - ((D.type === "auction" ? D.auction.nomClock * 1000 : Math.min(1e12, clockLen(D, nextIndex(D)))) - D.left);
       D.left = null;
     }
@@ -965,7 +968,7 @@
   }
   const holdLeft = (D, now) => (D.hold ? Math.max(0, HOLD_MAX - (now - D.hold.at)) : 0);
   function tick(D, ctx, now, max = 1000) {
-    if (D.type === "auction") return auctionTick(D, ctx, now, max);
+    if (D.type === "auction") return D.auction.dutch ? dutchTick(D, ctx, now, max) : auctionTick(D, ctx, now, max);
     if (D.packs) return packTick(D, ctx, now, max);
     offerHold(D, now);
     let n = 0;
@@ -1008,7 +1011,9 @@
       if (k < 0) return { ok: false, why: "Nothing to undo" };
       const s = D.sales.splice(k, 1)[0];
       D.teams[s.team].budget += s.price;
-      D.auction.lot = null; D.phase = "live"; D.clockStart = now;
+      D.auction.lot = null; D.phase = "live"; D.clockStart = now; delete D.done;
+      // a Dutch auction: he goes back in the pool and comes up again in a later wave
+      if (D.auction.wave) D.auction.wave.sold = Math.max(0, (D.auction.wave.sold || 0) - 1);
       if (ctx) refresh(D, ctx);
       return { ok: true, sale: s };
     }
@@ -1046,6 +1051,7 @@
   function auctionState(D, now) {
     if (D.type !== "auction" || D.phase !== "live") return null;
     const A = D.auction;
+    if (A.dutch) return dutchState(D, now);
     if (A.lot) return { kind: "lot", lot: A.lot, ends: A.lot.ends, left: D.paused ? D.left : A.lot.ends - now };
     const t = nominator(D);
     return { kind: "nominate", team: t, ends: D.clockStart + A.nomClock * 1000, left: D.paused ? D.left : D.clockStart + A.nomClock * 1000 - now };
@@ -1165,6 +1171,178 @@
     return n;
   }
 
+
+  /* ---------- Dutch auction ---------- */
+  /* An auction turned upside down: nobody bids. Players come up in waves (auction.dutch.size at a time), each at well
+     over his value, and every price falls on the same clock until someone claims him. The first claim wins at the
+     price showing; waiting saves money and risks losing him. Budgets, the $1-a-spot guard (maxBid), keepers and the
+     results are the auction's.
+
+     auction.dutch = { size, fall (seconds a wave's prices take to reach the floor), gap (seconds a wave shows before
+       its prices move), mult (the opening price, as a multiple of his value), passed: { pid: times unsold } }
+     auction.wave  = { n, at (when prices start to fall), ends, len, wait, lots: [{ pid, start }], sold }
+     The fall is quick at the top, slow around his value (where the standoff is) and quick again to the $1 floor.
+     A player nobody claims comes back in a later wave at a lower opening price. A wave that sells no one is a dead
+     wave: every team with an open spot is handed its best fit at the minimum, so the draft always ends. */
+  const DUTCH_CURVE = [[0, 1], [0.2, 0.75], [0.75, 0.45], [1, 0]];     // [share of the clock gone, share of (start - floor) left]
+  const dclamp = (x, d, lo, hi) => { const v = Number(x); return x == null || !Number.isFinite(v) ? d : Math.max(lo, Math.min(hi, v)); };
+  function dutchRules(o, teams) {
+    o = o || {};
+    return { size: Math.round(dclamp(o.size, Math.max(6, Math.min(12, teams)), 3, 20)), fall: Math.round(dclamp(o.fall, 30, 10, 120)),
+      gap: Math.round(dclamp(o.gap, 6, 0, 30)), mult: Math.round(dclamp(o.mult, 1.6, 1.2, 2.5) * 100) / 100, passed: {} };
+  }
+  const dutchOn = (D) => !!(D && D.auction && D.auction.dutch);
+  const formatOf = (D) => (dutchOn(D) ? "dutch" : D.type);
+  const dutchShare = (u) => {
+    if (u <= 0) return 1;
+    for (let i = 1; i < DUTCH_CURVE.length; i++) { const [u0, s0] = DUTCH_CURVE[i - 1], [u1, s1] = DUTCH_CURVE[i]; if (u <= u1) return s0 + (s1 - s0) * ((u - u0) / (u1 - u0)); }
+    return 0;
+  };
+  // the clock a paused wave is stopped at
+  const dutchNow = (D, now) => { const w = D.auction.wave; return D.paused && D.left != null && w ? w.ends - D.left : now; };
+  // What a lot costs at a moment: whole dollars, never under the minimum bid.
+  function dutchPrice(D, lot, now) {
+    const w = D.auction.wave, floor = D.auction.minBid;
+    if (!w || !lot) return null;
+    const u = w.len > 0 ? (dutchNow(D, now) - w.at) / w.len : 1;
+    return Math.max(floor, Math.round(floor + (lot.start - floor) * dutchShare(Math.min(1, u))));
+  }
+  // The first moment a lot costs `target` or less (Infinity when it never gets there).
+  function dutchWhen(D, lot, target) {
+    const w = D.auction.wave, floor = D.auction.minBid;
+    if (target < floor) return Infinity;
+    if (lot.start <= floor) return w.at;
+    const share = (target + 0.499 - floor) / (lot.start - floor);
+    if (share >= 1) return w.at;
+    for (let i = 1; i < DUTCH_CURVE.length; i++) {
+      const [u0, s0] = DUTCH_CURVE[i - 1], [u1, s1] = DUTCH_CURVE[i];
+      if (share >= s1) return w.at + Math.ceil(w.len * (u0 + (u1 - u0) * ((s0 - share) / (s0 - s1))));
+    }
+    return w.ends;
+  }
+  const dutchOpen = (D, ctx) => D.teams.filter((t) => spotsLeft(D, t.id) > 0);
+  // The next wave: the best players left that somebody can still roster.
+  function dutchWave(D, ctx, at) {
+    const A = D.auction, R = A.dutch, open = dutchOpen(D, ctx);
+    if (!open.length) return null;
+    const lots = [];
+    const pool = ctx.available.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0) || a.rank - b.rank);
+    for (const p of pool) {
+      if (lots.length >= R.size) break;
+      if (!open.some((t) => canAdd(D, ctx, t.id, p).ok)) continue;
+      const cut = Math.pow(0.75, (R.passed || {})[p.id] || 0);
+      lots.push({ pid: p.id, start: Math.max(A.minBid + 2, Math.ceil(Math.max(1, p.$ || 0) * R.mult * cut)) });
+    }
+    if (!lots.length) return null;
+    const len = R.fall * 1000, wait = R.gap * 1000;
+    A.wave = { n: (A.waves || 0) + 1, at: at + wait, ends: at + wait + len, len, wait, lots, sold: 0 };
+    A.waves = A.wave.n;
+    return A.wave;
+  }
+  function dutchState(D, now) {
+    const A = D.auction, w = A.wave;
+    if (!w) return { kind: "wave", wave: null, n: (A.waves || 0) + 1, open: false, lots: [], left: null, ends: null };
+    const t = dutchNow(D, now), open = t >= w.at;
+    return { kind: "wave", wave: w, n: w.n, open, opens: w.at, ends: w.ends, left: D.paused ? D.left : (open ? w.ends : w.at) - now, total: open ? w.len : w.wait,
+      lots: w.lots.map((l) => ({ pid: l.pid, start: l.start, price: open ? dutchPrice(D, l, now) : l.start })) };
+  }
+  function dutchSell(D, ctx, teamId, lot, price, at, auto) {
+    const w = D.auction.wave;
+    const sale = { team: teamId, pid: lot.pid, price, at, wave: w ? w.n : undefined, from: lot.start };
+    if (auto) sale.auto = true;
+    D.sales.push(sale);
+    D.teams[teamId].budget -= price;
+    for (const t of D.teams) t.queue = t.queue.filter((x) => x !== lot.pid);
+    if (w) { w.lots = w.lots.filter((l) => l.pid !== lot.pid); w.sold = (w.sold || 0) + 1; }
+    refresh(D, ctx);
+    if (finishIfDone(D, at)) D.auction.wave = null;
+  }
+  // A bot waits for its price: its top price for the player (botMax), shaded a little, since the first claim pays
+  // what's showing and nobody pushes it up.
+  function dutchTarget(D, ctx, teamId, p) {
+    const top = botMax(D, ctx, teamId, p);
+    if (top < D.auction.minBid) return 0;
+    return Math.max(D.auction.minBid, Math.min(maxBid(D, teamId), Math.floor(top * (0.84 + 0.14 * hash01(`${D.seed}:dutch:${teamId}:${p.id}`)))));
+  }
+  // The next bot claim in this wave: { team, lot, at }. Worked out once per sale (every sale moves budgets and needs).
+  const dutchMemo = new WeakMap();
+  function dutchNext(D, ctx) {
+    const w = D.auction.wave, sig = `${w.n}:${D.sales.length}:${w.at}`;
+    const m = dutchMemo.get(D);
+    if (m && m.sig === sig) return m.next;
+    const lag = Math.min(D.botDelay || 0, w.len * 0.1);
+    let next = null;
+    for (const lot of w.lots) {
+      const p = ctx.byId[lot.pid];
+      if (!p) continue;
+      for (const t of D.teams) {
+        if (!isBot(t) || spotsLeft(D, t.id) <= 0) continue;
+        const tg = dutchTarget(D, ctx, t.id, p);
+        if (!tg) continue;
+        const at = Math.max(dutchWhen(D, lot, tg), w.at + lag);
+        if (at > w.ends) continue;
+        if (!next || at < next.at || (at === next.at && tg > next.tg)) next = { team: t.id, lot, at, tg };
+      }
+    }
+    dutchMemo.set(D, { sig, next });
+    return next;
+  }
+  // The wave is over: unsold players go back (cheaper next time), and a wave that sold no one hands every team with
+  // an open spot its best fit at the minimum.
+  function dutchClose(D, ctx, at) {
+    const A = D.auction, w = A.wave, R = A.dutch;
+    R.passed = R.passed || {};
+    for (const l of w.lots) R.passed[l.pid] = (R.passed[l.pid] || 0) + 1;
+    const dead = !w.sold;
+    A.wave = null; D.clockStart = at;
+    if (dead) {
+      for (const t of D.round1) {
+        if (D.phase !== "live" || spotsLeft(D, t) <= 0) continue;
+        const p = autoChoice(D, ctx, t, rng(D.seed + D.sales.length * 17 + 5));
+        if (!p) continue;
+        dutchSell(D, ctx, t, { pid: p.id, start: A.minBid }, A.minBid, at, true);
+      }
+      // nobody could be handed anyone: there's no one left to draft
+      if (D.phase === "live" && !ctx.available.some((p) => dutchOpen(D, ctx).some((t) => canAdd(D, ctx, t.id, p).ok))) { D.phase = "done"; D.done = at; }
+    }
+    finishIfDone(D, at);
+  }
+  function dutchTick(D, ctx, now, max) {
+    let n = 0;
+    while (n < max && D.phase === "live" && !D.paused) {
+      const A = D.auction;
+      if (!A.wave) {
+        if (finishIfDone(D, now)) break;
+        if (!dutchWave(D, ctx, D.clockStart)) { D.phase = "done"; D.done = now; break; }
+        n++; continue;
+      }
+      const w = A.wave;
+      if (now < w.at) break;
+      if (!w.lots.length) { dutchClose(D, ctx, Math.min(now, w.ends)); n++; continue; }
+      const nx = dutchNext(D, ctx);
+      if (nx && nx.at <= Math.min(now, w.ends)) { dutchSell(D, ctx, nx.team, nx.lot, dutchPrice(D, nx.lot, nx.at), nx.at); n++; continue; }
+      if (now < w.ends) break;
+      dutchClose(D, ctx, w.ends); n++;
+    }
+    return n;
+  }
+  // A manager takes a player at the price showing. Bots that would have claimed first already have (the tick runs
+  // up to this moment before the claim counts).
+  function claim(D, ctx, teamId, pid, now) {
+    if (!dutchOn(D) || D.phase !== "live") return { ok: false, why: "Nothing is up for sale" };
+    if (D.paused) return { ok: false, why: "The draft is paused" };
+    dutchTick(D, ctx, now, 50);
+    const w = D.auction.wave, lot = w && w.lots.find((l) => l.pid === pid);
+    if (D.phase !== "live" || !lot) return { ok: false, why: ctx.own[pid] != null ? `${D.teams[ctx.own[pid]].name} got there first` : "He's not in this wave" };
+    if (now < w.at) return { ok: false, why: "Prices haven't started falling yet" };
+    const p = ctx.byId[pid];
+    const ok = canAdd(D, ctx, teamId, p);
+    if (!ok.ok) return ok;
+    const price = dutchPrice(D, lot, now);
+    if (price > maxBid(D, teamId)) return { ok: false, why: `You can spend at most $${maxBid(D, teamId)} on one player` };
+    dutchSell(D, ctx, teamId, lot, price, now);
+    return { ok: true, price };
+  }
 
 
   /* ---------- white elephant ---------- */
@@ -1726,7 +1904,7 @@
     return true;
   }
   return { payroll, capRoom, triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
-    start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, botMax, standings, sizeOf,
+    start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, claim, dutchOn, formatOf, dutchPrice, dutchRules, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, prospectRound, prospectPicks, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });

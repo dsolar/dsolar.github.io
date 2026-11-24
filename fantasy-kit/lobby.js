@@ -67,7 +67,7 @@
       const tag = seats[t] == null ? "" : ready[t] ? `<span class="tag win">Ready</span>` : `<span class="tag">Not yet</span>`;
       return `<li class="lb-row${t === me && !hidden ? " me" : ""}${hidden ? " hid" : ""}${live && i === n - shown ? " now" : ""}"><span class="lb-n">${D.type === "auction" ? "" : i + 1}</span>${hidden ? `<span class="lb-q">?</span><b class="grow ps">${i === n - shown - 1 ? "Drawing…" : ""}</b>` : `${o.teamAv(team)}<span class="grow lb-t"><b>${esc(team.name)}</b><small>${who}</small></span>${tag}`}</li>`;
     }).join("");
-    const head = D.type === "auction" ? "Nomination order" : D.type === "mystery" ? "Teams" : "Draft order";
+    const head = D.auction && D.auction.dutch ? "Teams" : D.type === "auction" ? "Nomination order" : D.type === "mystery" ? "Teams" : "Draft order";
     const mineBtns = mine ? `<button type="button" class="btn${imReady ? "" : " go"}" data-live="ready">${imReady ? "I'm not ready" : "I'm ready"}</button>` : "";
     const commish = o.commish ? `<div class="lb-cm"><b class="ps">${o.part === "commish" ? "Draft order and invites" : "Commissioner"}</b><div class="lb-acts">
         ${o.canDraw ? `<button type="button" class="btn sm" data-live="draw"${live ? " disabled" : ""}>Draw the order live</button><button type="button" class="btn sm ghost" data-live="draft-order">Set it by hand</button>` : ""}

@@ -1261,6 +1261,7 @@
     const team = (id) => D().teams[id];
     const isMe = (t) => me() != null && t && t.id === me();
     const auction = () => D().type === "auction";
+    const dutch = () => F.dutchOn(D());
     const mystery = () => D().type === "mystery";
     const pts = () => isPoints(sport, D().scoring);
     const canTrade = () => { const d = D(); return d.trading && me() != null && d.phase !== "done"; };
@@ -1295,7 +1296,7 @@
     function top() {
       const d = D(), n = now();
       const brand = opts.brand || {};
-      const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><h1 class="lg-h">${esc(d.name || brand.name || "Draft")}</h1><small>${esc(F.FORMATS[d.type])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
+      const lg = `<a class="lg" href="${esc((opts.exit && opts.exit.href) || "#")}">${brand.mark || ""}<span><h1 class="lg-h">${esc(d.name || brand.name || "Draft")}</h1><small>${esc(F.FORMATS[F.formatOf(d)])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></a>`;
       // Up front: what you do mid-draft (start, sim, trade, autodraft). Beside them on a wide screen, the league's own
       // tools and Exit; on a phone those fold into More. Settings (sound, bot speed, pause, undo) always live in More.
       const prim = [], side = [], menu = [];
@@ -1327,8 +1328,12 @@
       let mid = "";
       if (d.phase === "heist") mid = `<div class="otc me"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>The draft is done</small><b>The heist</b><span>Shield yours, strike at theirs</span></span></div>`;
       else if (d.phase === "setup" && d.startAt) mid = `<div class="otc"><span class="ring" style="--p:1"><span id="fk-startin" data-at="${d.startAt}">${esc(startIn(d.startAt))}</span></span><span class="who"><small>The draft starts</small><b>${esc(new Date(d.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }))}</b><span>On its own. Set your queue: if you're not here, your picks come from it.</span></span></div>`;
-      else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : "Build your queue"}</b><span>${auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
+      else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (dutch() ? d.auction.dutch.fall : auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : dutch() ? "Scout the board" : "Build your queue"}</b><span>${dutch() ? `$${d.auction.budget} budgets. ${d.auction.dutch.size} players a wave, prices fall for ${d.auction.dutch.fall} seconds` : auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
+      else if (dutch()) {
+        const st = F.auctionState(d, n), mineUp = me() != null && F.spotsLeft(d, me()) > 0;
+        mid = `<div class="otc${st.open && mineUp ? " me" : ""}"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>Wave ${st.n}</small><b>${!st.wave ? "Next wave coming" : st.open ? "Prices are falling" : "On the block next"}</b><span>${d.sales.length} of ${d.teams.length * d.rounds} bought${d.paused ? ", paused" : st.open ? `, ${st.lots.length} left in this wave` : ""}</span></span></div>`;
+      }
       else if (auction()) {
         const st = F.auctionState(d, n);
         // the high bidder shows once, by the bid itself; up here is who's on the block
@@ -1439,6 +1444,7 @@
       if (d.phase !== "live") return `<div><div class="budgets">${budgetChips()}</div></div>`;
       const st = F.auctionState(d, n);
       const mine = me() != null;
+      if (st.kind === "wave") return waveBar(st);
       if (st.kind === "nominate") {
         const t = team(st.team);
         return `<div><div class="lot">${teamAv(t, "lg")}<div class="lotp"><b class="disp">${isMe(t) ? "Your nomination" : esc(t.name) + " is nominating"}</b><span class="ps">${isMe(t) ? "Pick a player below and set an opening bid. Your queue nominates for you if time runs out." : "The next player goes up in a moment."}</span></div><span></span><span></span><span></span></div><div class="budgets">${budgetChips()}</div></div>`;
@@ -1453,6 +1459,39 @@
         <div class="acts"><span class="bid-limit">${mine ? `Max bid ${money(max)} · ${F.spotsLeft(d, me())} spots left` : ""}</span>${can ? (() => { const v = ui.bidAmt && ui.bidAmt > lot.bid ? Math.min(max, ui.bidAmt) : next; return `<span class="bid-q">${[1, 5, 10].filter((x) => lot.bid + x <= max).map((x) => `<button type="button" class="btn sm" data-bid="${lot.bid + x}" data-lot="${esc(lot.pid)}" aria-label="Bid ${money(lot.bid + x)} now" title="Bid ${money(lot.bid + x)} now">+${money(x)}</button>`).join("")}</span><label class="sr" for="fk-bid">Your bid</label><input type="number" inputmode="numeric" step="1" id="fk-bid" min="${next}" max="${max}" value="${v}"><button class="btn go" data-act="bid" data-lot="${esc(lot.pid)}">Bid <span id="fk-bidv">${money(v)}</span></button>${passed ? `<span class="ps">You passed</span>` : `<button class="btn ghost" data-act="pass">Pass</button>`}`; })()
           : mine ? `<span class="ps">${isMe(lead) ? "You have the high bid." : max <= lot.bid ? `Your max bid is ${money(max)}.` : esc(F.canAdd(d, ctx, me(), p).why || "")}</span>` : ""}</div></div>
         <div class="budgets">${budgetChips()}</div></div>`;
+    }
+    // A Dutch auction's wave: every player in it with the price showing, falling together. The first claim wins.
+    function waveBar(st) {
+      const d = D(), mine = me(), max = mine != null ? F.maxBid(d, mine) : 0, spots = mine != null ? F.spotsLeft(d, mine) : 0;
+      const cards = st.lots.map((l) => {
+        const p = ctx.byId[l.pid]; if (!p) return "";
+        const fit = mine != null && spots > 0 ? F.canAdd(d, ctx, mine, p) : null;
+        const can = fit && fit.ok && st.open && !d.paused && l.price <= max;
+        const why = mine == null ? "" : spots <= 0 ? "Your roster is full" : fit && !fit.ok ? fit.why || "Doesn't fit" : l.price > max ? `Yours at ${money(max)}` : !st.open ? "Opens in a moment" : "";
+        const q = mine != null && team(mine).queue.includes(p.id);
+        return `<div class="wv-c${q ? " star" : ""}${fit && !fit.ok ? " off" : ""}" data-wlot="${esc(l.pid)}" data-start="${l.start}">
+          <span class="wv-p" data-player="${esc(p.id)}">${playerAv(sport, p, "sm")}<span class="wv-n"><b>${esc(p.n)}</b><small>${posChips(sport, p)} ${proTeam(sport, p.t)} · value ${money(p.$)}</small></span></span>
+          <span class="wv-d"><b data-wprice="${esc(l.pid)}">${money(l.price)}</b><small>from ${money(l.start)}</small></span>
+          ${mine != null ? `<button class="btn sm go" data-claim="${esc(l.pid)}"${can ? "" : " disabled"} title="${esc(why || "Take him at the price showing")}">Claim</button><small class="wv-w" data-wwhy="${esc(l.pid)}">${esc(why)}</small>` : ""}
+          <span class="wv-bar"><i data-wbar="${esc(l.pid)}" style="width:${Math.round(100 * (l.price - 1) / Math.max(1, l.start - 1))}%"></i></span></div>`;
+      }).join("");
+      const head = !st.wave ? "The next wave is being set." : st.open ? "Every price falls until someone claims him. First claim wins." : "Look them over. Prices start falling in a moment.";
+      return `<div><div class="wave${st.open ? " open" : ""}"><div class="wv-h"><b class="disp">Wave ${st.n}</b><span class="ps">${head}</span>${mine != null ? `<span class="bid-limit">Most you can spend on one player: ${money(max)} · ${spots} spot${spots === 1 ? "" : "s"} left</span>` : ""}</div><div class="wv-g">${cards || `<p class="ps" style="margin:0">Everyone in this wave is sold.</p>`}</div></div><div class="budgets">${budgetChips()}</div></div>`;
+    }
+    // the falling prices, between renders: the number, its bar, and whether you can claim yet
+    function drawWave() {
+      const d = D();
+      if (!dutch() || d.phase !== "live") return;
+      const st = F.auctionState(d, now()), mine = me(), max = mine != null ? F.maxBid(d, mine) : 0;
+      for (const l of st.lots) {
+        const id = (window.CSS && CSS.escape) ? CSS.escape(l.pid) : l.pid;
+        const b = $(`[data-wprice="${id}"]`, el); if (!b) continue;
+        const txt = money(l.price);
+        if (b.textContent !== txt) { b.textContent = txt; b.classList.remove("tick"); void b.offsetWidth; b.classList.add("tick"); }
+        const bar = $(`[data-wbar="${id}"]`, el); if (bar) bar.style.width = Math.round(100 * (l.price - 1) / Math.max(1, l.start - 1)) + "%";
+        const btn = $(`[data-claim="${id}"]`, el), why = $(`[data-wwhy="${id}"]`, el);
+        if (btn && mine != null && st.open && !d.paused && btn.disabled && l.price <= max && F.spotsLeft(d, mine) > 0 && F.canAdd(d, ctx, mine, ctx.byId[l.pid]).ok) { btn.disabled = false; if (why) why.textContent = ""; }
+      }
     }
     function budgetChips() {
       const d = D(), lot = d.auction.lot;
@@ -1918,7 +1957,7 @@
     function queuePanel() {
       const t = team(me());
       return `<div class="mod-h"><b>Your queue</b><span class="ps" style="margin-left:auto">${t.queue.length} player${t.queue.length === 1 ? "" : "s"}</span></div>
-        <p class="ps" style="margin:8px 12px">When your clock runs out${auction() ? " or it's your nomination" : ""}, the first player here who still fits ${auction() ? "goes up for bid" : "is your pick"}. Star players to add them.</p>
+        <p class="ps" style="margin:8px 12px">${dutch() ? "Star the players you want: they're marked when their wave comes up. Nothing is claimed for you unless autodraft is on." : `When your clock runs out${auction() ? " or it's your nomination" : ""}, the first player here who still fits ${auction() ? "goes up for bid" : "is your pick"}. Star players to add them.`}</p>
         <ul class="rslots">${t.queue.map((id, i) => { const p = ctx.byId[id], taken = ctx.own[id] != null; return `<li${taken ? ` style="opacity:.45"` : ""}><span class="slot">${i + 1}</span><span data-player="${esc(id)}" style="cursor:pointer;min-width:0">${pname(sport, p, taken ? "taken" : "", { size: "sm" })}</span><span class="row" style="gap:4px"><button class="btn xs" data-qup="${esc(id)}"${i ? "" : " disabled"} aria-label="Move up">&uarr;</button><button class="btn xs" data-queue="${esc(id)}" aria-label="Remove">&times;</button></span></li>`; }).join("") || `<li class="open"><span></span><span class="ps">Empty</span><span></span></li>`}</ul>`;
     }
     function teamsPanel() {
@@ -1939,12 +1978,12 @@
         let t = now(), moved = 0;
         try {
           for (let i = 0; i < 20000 && d.phase === "live" && !d.paused; i++) {
-            const lot = auction() && d.auction.lot;
+            const lot = auction() && (d.auction.lot || d.auction.wave);
             if (lot && lot.ends > t) t = lot.ends;
             else if (!lot && !auction()) t += (d.clock || 30) * 1000 + 1;
             const m = F.tick(d, ctx, t, 5000);
             moved += m;
-            if (!m && !(auction() && d.auction.lot)) { if (auction()) t += (d.auction.nomClock || 30) * 1000 + 1; else if (i > 50) break; }
+            if (!m && !(auction() && (d.auction.lot || d.auction.wave))) { if (auction()) t += (d.auction.nomClock || 30) * 1000 + 1; else if (i > 50) break; }
           }
         } finally { d.botDelay = keep; }
         if (moved) { d.clockStart = Math.min(d.clockStart || now(), now()); save(); render(); }
@@ -2092,6 +2131,7 @@
       let left = null, total = 1;
       if (d.phase === "heist") { left = Math.max(0, d.heist.ends - n); total = F.heistRules(d).clock * 1000; }
       else if (d.packs && d.phase === "live") { left = d.clock ? Math.max(0, d.clockStart + d.clock * 1000 - n) : null; total = (d.clock || 1) * 1000; }
+      else if (dutch()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = (st && st.total) || 1; drawWave(); }
       else if (auction()) { const st = F.auctionState(d, n); left = st ? st.left : null; total = st && st.kind === "lot" ? d.auction.bidClock * 1000 : d.auction.nomClock * 1000; }
       else if (F.onClock(d, n) && F.onClock(d, n).trivia) { const c = F.onClock(d, n); left = Math.max(0, c.left - 2500); total = (d.trivia.sec || 15) * 1000; }   // the grace for the question to arrive isn't shown
       else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
@@ -2233,13 +2273,18 @@
         toast(r.right ? "Right! Make your pick." : `Not quite: it was ${r.answer}. Your pick moves to the end of the round.`, !r.right);
         return;
       }
-      const b = e.target.closest("button[data-pick],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act],th[data-act]");
+      const b = e.target.closest("button[data-pick],button[data-claim],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act],th[data-act]");
       if (b) {
         e.stopPropagation();
         const d = D(), n = now();
         if (b.dataset.pick) {
           const pid = b.dataset.pick, myst = d.packs && d.packs.mystery && d.packs.mystery[pid], cost = d.packs && d.packs.price ? F.packPrice(d, me(), pid) : null;
           if (act(() => F.pick(d, ctx, me(), pid, n))) { const p = ctx.byId[pid]; if (myst) toast(`The mystery card: ${p.n}, ${S.positions(p)[0]} ${p.t}, ranked #${p.rank}. You paid $${cost}.`); else if (p) toast(`You drafted ${p.n}.`); }
+        }
+        else if (b.dataset.claim) {
+          const pid = b.dataset.claim, r = F.claim(d, ctx, me(), pid, n);
+          if (r.ok) { const p = ctx.byId[pid]; toast(`${p ? p.n : "He"} is yours for ${money(r.price)}.`); alerts.chime("deck"); } else toast(r.why, true);
+          save(); render();
         }
         else if (b.dataset.queue) toggleQueue(b.dataset.queue);
         else if (b.dataset.nominate) nominateDialog(b.dataset.nominate);
@@ -2336,7 +2381,7 @@
 
     // The clock: redraw the timer; when this page drives the draft, bots and expired clocks move it.
     let lastSig = "";
-    const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : "", (d.trades || []).map((T) => T.status[0]).join(""), d.trivia ? `${d.trivia.cur ? d.trivia.cur.k : ""}:${(d.trivia.log || []).length}:${d.order.join("")}` : ""].join("|"); };
+    const sig = () => { const d = D(); return [d.phase, d.paused, F.made(d).length, d.auction && d.auction.lot ? d.auction.lot.bid + ":" + d.auction.lot.team + ":" + (d.auction.lot.passed || []).length : d.auction && d.auction.wave ? `w${d.auction.wave.n}:${d.auction.wave.lots.length}:${now() >= d.auction.wave.at ? 1 : 0}` : "", (d.trades || []).map((T) => T.status[0]).join(""), d.trivia ? `${d.trivia.cur ? d.trivia.cur.k : ""}:${(d.trivia.log || []).length}:${d.order.join("")}` : ""].join("|"); };
     let seenOffers = new Set((D().trades || []).map((T) => T.id)), seenDone = new Set((D().trades || []).filter((T) => T.status === "accepted").map((T) => T.id)), ready = true;
     let seenSteals = (D().log || []).filter((x) => x.kind === "steal").length;
     // a trivia draft: say it when a team misses its question (your own wrong answers are told when you answer)

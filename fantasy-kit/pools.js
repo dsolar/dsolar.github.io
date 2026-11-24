@@ -109,7 +109,7 @@
   // in season first: NFL from September through January, March Madness the rest of the year
   const nflSeason = () => { const m = new Date().getMonth(); return m >= 8 || m === 0; };
   // each sport's color, and a small drawn icon for each game
-  const SPORT_C = { NFL: "#C8102E", "College football": "#1F7A4D", "March Madness": "#E0702A" };
+  const SPORT_C = { NFL: "#C8102E", NBA: "#1D5FBF", "College football": "#1F7A4D", "March Madness": "#E0702A" };
   const ico = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   const ICON = {
     pickem: ico('<path d="M4 6h10M4 12h10M4 18h7"/><path d="m15 17 2.5 2.5L22 15"/>'),
@@ -119,12 +119,13 @@
     bowls: ico('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3M12 13v4M8 20h8M9 17h6"/>'),
     survivor: ico('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-2.5 2.4-3.6 5.2-3.6 8.5s1.1 6.1 3.6 8.5M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5"/>'),
     squares: ico('<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/>'),
+    wins: ico('<path d="M4 20h16M6 20v-5h3v5M10.5 20V10h3v10M15 20V5h3v15"/>'),
     five: ico('<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>'),
   };
   /* The season's dates, Eastern. Each game is "live" from open to end, and the list puts live games first, then the
      rest by when they open. Roll these forward each summer. */
   const CAL = {
-    nflWeek1: "2026-09-10", bowlsSet: "2026-12-06", bowls: "2026-12-12", nflField: "2027-01-10", wildCard: "2027-01-16",
+    nflWeek1: "2026-09-10", nbaTip: "2026-10-20", nbaEnd: "2027-04-11", bowlsSet: "2026-12-06", bowls: "2026-12-12", nflField: "2027-01-10", wildCard: "2027-01-16",
     cfpTitle: "2027-01-25", superBowl: "2027-02-14", selection: "2027-03-14", mmTitle: "2027-04-05",
   };
   const MILESTONES = [
@@ -140,6 +141,8 @@
   const GAMES = [
     { sport: "NFL", key: "pickem", name: "Pick'em", tag: "Every game against the spread. One board for everyone, plus private groups.", facts: ["Every game", "Against the spread", "Groups"], live: "Live now", href: "/pickem/", cta: "Make this week's picks", open: CAL.nflWeek1, end: CAL.nflField },
     { sport: "NFL", key: "nfl", name: "Survivor", tag: "One team a week to win. Lose and you're out.", facts: ["1 team a week", "Each team once", "Through week 18"], live: "Live now", open: CAL.nflWeek1, end: CAL.nflField },
+    { sport: "NFL", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/fantasy/pools/wins/?make=nfl", cta: "Start a wins pool", open: CAL.nflWeek1, end: CAL.nflField },
+    { sport: "NBA", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/fantasy/pools/wins/?make=nba", cta: "Start a wins pool", open: CAL.nbaTip, end: CAL.nbaEnd },
     { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflWeek1, end: CAL.superBowl },
@@ -179,9 +182,11 @@
   const dueText = (t) => t - Date.now() < 6 * 864e5 ? tipTime(t) : new Date(t).toLocaleDateString("en-US", Object.assign({ month: "short", day: "numeric" }, ET));
   const TONE_ORDER = { todo: 0, ok: 1, wait: 2, won: 3, out: 4, done: 5 };
   async function home() {
-    let mine = [], groups = [], stat = {};
+    let mine = [], groups = [], wins = [], stat = {};
     if (st.user) {
-      [mine, groups] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => [])]);
+      // wins pools (their own page, fantasy/pools/wins/) are listed here with the rest
+      [mine, groups, wins] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => []), C.rpc("wn_mine").catch(() => [])]);
+      if (!Array.isArray(wins)) wins = [];
       stat = await statuses(mine || []);
       if ((groups || []).length) {
         try {
@@ -209,10 +214,12 @@
     const sorted = (mine || []).slice().sort((a, c) => { const x = stat[a.id] || { tone: "ok" }, y = stat[c.id] || { tone: "ok" }; return (TONE_ORDER[x.tone] - TONE_ORDER[y.tone]) || ((x.due || 0) - (y.due || 0)); });
     const items = sorted.map((p) => { const x = stat[p.id]; return row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x); })
       .concat((groups || []).map((g) => row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat)));
-    const todo = Object.values(stat).concat(st.pkStat && (groups || []).length ? [st.pkStat] : []).filter((x) => x.tone === "todo").sort((a, c) => (a.due || Infinity) - (c.due || Infinity));
+    const winStat = wins.map((p) => (window.FK.wins ? window.FK.wins.status(p) : null));
+    wins.forEach((p, i) => items.push(row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i])));
+    const todo = Object.values(stat).concat(st.pkStat && (groups || []).length ? [st.pkStat] : [], winStat.filter(Boolean)).filter((x) => x.tone === "todo").sort((a, c) => (a.due || Infinity) - (c.due || Infinity));
     const summary = !items.length ? "" : todo.length ? `<p class="pl-todo"><b>${todo.length === 1 ? "1 pool needs" : `${todo.length} pools need`} your picks.</b>${todo[0].due ? ` ${todo.length === 1 ? "Due" : "The first is due"} ${esc(dueText(todo[0].due))}.` : ""}</p>` : mine.length ? `<p class="pl-todo ok">You're all set. Nothing due right now.</p>` : "";
     // the make-a-pool choices in the same order as the games below: playing now, then soonest
-    const kinds = live.concat(soon, far).map((g) => g.key).filter((k) => k !== "pickem");
+    const kinds = live.concat(soon, far).map((g) => g.key).filter((k) => k !== "pickem" && k !== "wins");
     const pick = st.make && kinds.includes(st.make) ? st.make : kinds[0];
     const panel = st.panel || (st.make ? "make" : st.code ? "join" : null);
     const makeForm = `<form class="pl-panel" id="pl-new"><div class="pl-form">
@@ -638,7 +645,7 @@
   };
   // the same player card as the rest of Draft Lab (fantasy-kit/ui.js and friends, loaded the first time one opens)
   let cardLibs = null;
-  const loadCardLibs = () => cardLibs || (cardLibs = ["sports.js?v=20261121lg", "value.js?v=202611201102", "experience.js?v=202611201102", "../assets/faces.js?v=20261121b", "../assets/pcard.js?v=20261124a", "ui.js?v=20261124sw"].reduce((pr, f) => pr.then(() => new Promise((res) => {
+  const loadCardLibs = () => cardLibs || (cardLibs = ["sports.js?v=20261121lg", "value.js?v=202611201102", "experience.js?v=20261124df", "../assets/faces.js?v=20261121b", "../assets/pcard.js?v=20261124a", "ui.js?v=20261124df"].reduce((pr, f) => pr.then(() => new Promise((res) => {
     const sc = document.createElement("script"); sc.src = "/fantasy-kit/" + f; sc.onload = res; sc.onerror = res; document.body.appendChild(sc);
   })), Promise.resolve()));
   async function ffCard(id, b) {
@@ -1151,6 +1158,12 @@
         const raw = await C.rpc("mm_pool_join", { p_code: v("code"), p_entry: v("entry") || null });
         // a pick'em group's code: its own page joins it
         if (raw && raw.error === "pickem") { location.href = `/pickem/?join=${encodeURIComponent(raw.id)}`; return; }
+        // not one of these pools: a wins pool's code joins on its own page
+        if (raw && raw.error && /No pool has that code/.test(raw.error)) {
+          const w = await C.rpc("wn_join", { p_code: v("code"), p_entry: v("entry") || null }).catch(() => null);
+          if (w && w.ok) { location.href = `/fantasy/pools/wins/?p=${encodeURIComponent(w.id)}`; return; }
+          if (w && w.error && !/No pool has that code/.test(w.error)) throw new Error(w.error);
+        }
         const r = ok(raw);
         history.replaceState(null, "", `/fantasy/pools/?p=${r.id}`); st.code = r.id; st.tab = "picks"; return render();
       }

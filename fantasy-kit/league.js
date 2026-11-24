@@ -87,6 +87,22 @@
     if (s.split && !splitOk(s, n)) delete s.split;
     // the playoffs come from the top half
     if (s.split && s.playoffTeams > Math.ceil(n / 2)) { s.playoffTeams = Math.ceil(n / 2); s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0); }
+    /* A split season: settings.halves = { half, weeks: [first, second], keepers, champ1, champ1Name }. The year is two
+       short seasons with a redraft between them (season.js nextDraft: every team keeps `keepers`, worst picks first).
+       The first half has no playoffs: its table's leader is the first-half champion. The second half ends with one
+       final, the first-half champion against the second half's leader (seedOrder). A team that wins both halves is
+       the champion outright and no final is played (halvesWeek). Head to head only, without the table split, a ladder
+       or a pyramid. */
+    if (s.halves && !halvesOk(s, n)) delete s.halves;
+    if (s.halves) {
+      const h = s.halves;
+      h.half = h.half === 2 ? 2 : 1;
+      delete s.split; delete s.ladder; delete L.ladder; delete s.playoffFinal; delete s.chaseWeeks;
+      s.playoffLegs = "1"; s.consolation = "none";
+      s.playoffTeams = h.half === 2 && h.champ1 != null && teams[h.champ1] ? 2 : 0;
+      s.playoffWeeks = planOf(s).reduce((a, rd) => a + rd.weeks.length, 0);
+      if (s.deadline != null) s.deadline = Math.max(1, Math.min(s.deadline, s.weeks - 1));
+    }
     // a rookie draft's picks can go on the taxi squad, rookies or not
     if (D && D.rookie) { L.taxiOk = {}; for (const pk of D.board || []) if (pk && pk.pid && !pk.keeper) L.taxiOk[pk.pid] = true; }
     if (D && D.promoted) L.promoted = Object.assign({}, D.promoted);
@@ -277,6 +293,23 @@
      only (one game or categories), no divisions, no pick your opponent, at least two weeks on each side of it. */
   const SPLIT_NAMES = ["Top half", "Bottom half"];
   const splitOk = (s, n) => !!s.split && s.format === "h2h" && s.tally !== "allplay" && !s.divisions && !s.pyo && n >= 4 && s.split.after >= 2 && s.split.after <= s.weeks - 2;
+  // a split season (two halves and a final): see create()
+  const halvesOk = (s, n) => !!s.halves && s.format === "h2h" && !s.pyramid && !s.dynasty && !s.vampire && n >= 4 && s.weeks >= 2;
+  const halfOf = (L) => (L.settings.halves ? L.settings.halves.half || 1 : 0);
+  const HALF_NAMES = ["First half", "Second half"];
+  // The last regular week of a half is in: the first half names its champion; the second names its own, and if it's
+  // the same team there's nothing left to play for, so the final comes off the schedule.
+  function halvesWeek(L, now) {
+    const h = L.settings.halves, top = standings(L, L.settings.weeks)[0];
+    if (!h || !top || L.halves) return;
+    const nm = L.teams[top.team].name;
+    if (h.half !== 2) { L.halves = { champ: top.team }; log(L, now, { type: "half", team: top.team, text: `${nm} won the first half. Everyone redrafts for the second, and the two half winners meet in the final.` }); return; }
+    L.halves = { champ: top.team, double: h.champ1 === top.team };
+    if (L.halves.double) {
+      L.settings.playoffTeams = 0; L.settings.playoffWeeks = 0;
+      log(L, now, { type: "half", team: top.team, text: `${nm} won both halves and is the champion. No final needed.` });
+    } else log(L, now, { type: "half", team: top.team, text: `${nm} won the second half and plays ${L.teams[h.champ1] ? L.teams[h.champ1].name : h.champ1Name || "the first-half champion"} in the final.` });
+  }
   const splitOn = (L, upTo) => !!(L.split && (upTo == null || upTo > L.split.after));
   // the ladder as it stood after week upTo (the first ladder before any week is played): a team's rung, for sorting
   function ladderAt(L, upTo) {
@@ -1182,6 +1215,7 @@
     for (const t of L.teams) L.lineups[w][t.id] = best[t.id] || lineupFor(L, ctx, t.id, w);
     L.week = w + 1;
     if (L.settings.split && w === L.settings.split.after && !L.split) applySplit(L, now);
+    if (L.settings.halves && w === L.settings.weeks) halvesWeek(L, now);
     if (L.ladder && w <= L.settings.weeks) ladderWeek(L, w, games, now, ctx);
     // the deals: what each team that took one would have scored without it
     for (const [t, d] of Object.entries((L.deals && L.deals[w]) || {})) if (d.taken && d.actual == null) { const x = teamWeek0(L, ctx, +t, w); d.actual = x && x.total != null ? Math.round(x.total * 100) / 100 : null; }
@@ -1592,6 +1626,13 @@
   function seedOrder(L, st) {
     st = st || standings(L);
     const order = st.map((r) => r.team);
+    // a split season's final: the second half's leader and the first-half champion
+    const h = L.settings.halves;
+    if (h && h.half === 2 && h.champ1 != null && L.settings.playoffTeams === 2) {
+      const top = order.find((t) => t !== h.champ1), lead = order[0];
+      const two = lead === h.champ1 ? [h.champ1, top] : [lead, h.champ1];
+      return two.concat(order.filter((t) => !two.includes(t)));
+    }
     if (!L.divs || L.settings.playoffTeams < L.settings.divisions) return order;
     const leaders = [];
     for (const t of order) if (!leaders.some((x) => L.divs[x] === L.divs[t])) leaders.push(t);
@@ -1850,7 +1891,7 @@
     order.forEach((t, i) => (place[t] = i + 1));
     if (fin.places) for (const [t, k2] of Object.entries(fin.places)) place[t] = k2;
     let k = Math.max(order.length, ...Object.values(place), 0); for (const r of st) if (place[r.team] == null) place[r.team] = ++k;
-    return { season: L.season, year: (L.draft && L.draft.year) || 1, sport: L.sport, format: L.settings.format || "h2h", champion: champ != null ? who(champ) : null, runnerUp: who(fin.runnerUp), third: who(fin.third),
+    return { season: halfOf(L) ? `${L.season || ""} ${HALF_NAMES[halfOf(L) - 1].toLowerCase()}`.trim() : L.season, half: halfOf(L) || undefined, year: (L.draft && L.draft.year) || 1, sport: L.sport, format: L.settings.format || "h2h", champion: champ != null ? who(champ) : null, runnerUp: who(fin.runnerUp), third: who(fin.third),
       playoffTeams: L.settings.playoffTeams || 0, records: records(L),
       standings: st.map((r) => ({ team: r.team, name: L.teams[r.team].name, owner: L.teams[r.team].owner, rank: r.rank, place: place[r.team], w: r.w, l: r.l, t: r.t, pts: r.pts != null ? r.pts : r.pf, pa: r.pa })) };
   }
@@ -2945,5 +2986,5 @@
   return { payroll, capRoom, sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
     finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
-    weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
+    halfOf, halvesOk, HALF_NAMES, weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

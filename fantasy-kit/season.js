@@ -68,6 +68,8 @@
     if (s.ladder && s.format !== "guillotine" && s.format !== "roto" && s.format !== "total") settings.ladder = { reach: Math.max(1, Math.min(3, Number(s.ladder.reach) || 2)), seed: Math.max(0, Math.min(3, Math.floor(Number(s.ladder.seed) || 0))) };
     // the split: the table splits in half after this week (league.js applySplit)
     if (s.split && s.split.after) settings.split = { after: s.split.after, names: Array.isArray(s.split.names) ? s.split.names.slice(0, 2) : undefined };
+    // a split season: two halves with a redraft between them and a final (league.js create)
+    if (s.halves && Array.isArray(s.halves.weeks)) settings.halves = JSON.parse(JSON.stringify(s.halves));
     // promotion and relegation: which tier of which pyramid (pyramid.js)
     if (s.pyramid && s.format !== "guillotine" && !s.oneWeek) settings.pyramid = Object.assign({}, s.pyramid);
     // a vampire league (football, head to head): which team is the vampire, and its swap rules
@@ -653,7 +655,7 @@
     if (pros) for (const k of keepers) if (k.round != null) k.round = Math.min(k.round, mainR);
     // a keeper whose round is taken slides to the team's next open pick, so place the earliest rounds first
     keepers.sort((a, b) => (a.round || 0) - (b.round || 0));
-    const D = F.create({ sport, type: D0.type || "snake", teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
+    const D = F.create({ sport, type: F.formatOf(D0) || "snake", dutch: D0.auction && D0.auction.dutch ? { size: D0.auction.dutch.size, fall: D0.auction.dutch.fall, gap: D0.auction.dutch.gap, mult: D0.auction.dutch.mult } : undefined, teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
       nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers: [],
       rounds: D0.rounds, curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal,
@@ -668,6 +670,25 @@
     D.season = D0.season; if (D0.scoringSpec) D.scoringSpec = D0.scoringSpec;
     D.rules = JSON.parse(JSON.stringify(L.settings));
     D.year = (D0.year || 1) + 1;
+    // a split season's redraft: the same season's second half. Its length, no more keepers, and a final between the
+    // first-half champion and whoever leads the second half. It starts in the week the draft ends, when enough is left.
+    const hv = L.settings.halves;
+    if (hv && hv.half !== 2) {
+      const champ = L.halves && L.halves.champ != null ? L.halves.champ : standings(L)[0].team;
+      const h2 = { half: 2, weeks: hv.weeks.slice(0, 2), keepers: hv.keepers || 0, champ1: champ, champ1Name: L.teams[champ].name };
+      D.season = Object.assign({}, D0.season, { halves: h2, weeks: h2.weeks[1], keepers: 0, playoffTeams: 2, when: "now" });
+      delete D.season.keeperCost; delete D.season.deadline;
+      Object.assign(D.rules, { halves: h2, weeks: h2.weeks[1], playoffTeams: 2 });
+      for (const k of ["keepers", "keeperCost", "deadline", "pickTrades"]) delete D.rules[k];
+      D.year = D0.year || 1; D.half = 2;
+    } else if (hv) {
+      // after the final: next year starts over with a fresh first half (nobody is kept across years)
+      const h1 = { half: 1, weeks: hv.weeks.slice(0, 2), keepers: hv.keepers || 0 };
+      D.season = Object.assign({}, D0.season, { halves: h1, weeks: h1.weeks[0], keepers: h1.keepers, playoffTeams: 0 });
+      delete D.season.when;
+      Object.assign(D.rules, { halves: h1, weeks: h1.weeks[0], playoffTeams: 0 });
+      if (h1.keepers) D.rules.keepers = h1.keepers; else delete D.rules.keepers;
+    }
     // the prospect pool: refreshed from the board when the page passes it (o.extraPlayers), else last season's
     const xs = o.extraPlayers || L.extraPlayers || D0.extraPlayers;
     if (Array.isArray(xs) && xs.length) D.extraPlayers = xs.slice();
