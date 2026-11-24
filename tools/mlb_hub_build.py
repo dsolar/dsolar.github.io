@@ -209,6 +209,7 @@ def build():
                 return a
         return None
     hist = {}
+    rates = {}
     for y in range(season - 3, season):
         path = os.path.join(HERE, "mlb", f"{y}.json")
         if not os.path.exists(path):
@@ -217,11 +218,16 @@ def build():
         for r in d.get("hitting", []):
             if (r.get("pa") or 0) < 5 or not r.get("id"):
                 continue
+            rates.setdefault(r["id"], {}).setdefault(y, {}).update({
+                "ops": r.get("ops"), "bbRate": r["bb"] / r["pa"] if r.get("bb") is not None else None,
+                "kRate": r["so"] / r["pa"] if r.get("so") is not None else None})
             hist.setdefault(r["id"], {}).setdefault("b", []).append(
                 [y, abbr_of(r.get("team")), r.get("g"), r.get("pa"), r.get("hr"), r.get("r"), r.get("rbi"), r.get("sb"), r.get("avg"), r.get("obp"), r.get("slg")])
         for r in d.get("pitching", []):
             if not r.get("id") or not r.get("g"):
                 continue
+            if r.get("bf") and r.get("k") is not None and r.get("bb") is not None:
+                rates.setdefault(r["id"], {}).setdefault(y, {})["kbb"] = (r["k"] - r["bb"]) / r["bf"]
             hist.setdefault(r["id"], {}).setdefault("p", []).append(
                 [y, abbr_of(r.get("team")), r.get("g"), r.get("gs"), r.get("ip"), r.get("w"), r.get("l"), r.get("sv"), r.get("k"), r.get("bb"), r.get("era"), r.get("whip")])
     # actual WAR, last three seasons (tools/mlb_hub/war.json): by MLBAM id, else FanGraphs id
@@ -411,7 +417,9 @@ def build():
     current = fa_out["classes"].setdefault(str(season), [])
     reconcile_signings(current, pay, load("reported_signings.json"), season)
     os.makedirs(OUT, exist_ok=True)
-    for name, data in (("hub.json", hub), ("fa.json", fa_out)):
+    roster_ids = {p["id"] for p in players}
+    history = {"season": season, "rates": rates, "unrostered": {k: v for k, v in hist.items() if k not in roster_ids}}
+    for name, data in (("hub.json", hub), ("fa.json", fa_out), ("history.json", history)):
         path = os.path.join(OUT, name)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, separators=(",", ":"), ensure_ascii=False)
