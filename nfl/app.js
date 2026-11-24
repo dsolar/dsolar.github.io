@@ -991,25 +991,57 @@
   }
 
   // ---------- player card ----------
+  // the player card, on the shared frame (assets/pcard.js): Overview, Stats, Next Gen, Contract
+  function nextGameOf(code) {
+    var gs = W.games.filter(function (g) { return g[0] === "REG" && g[5] == null && (g[3] === code || g[4] === code); }).sort(function (a, b) { return a[1] - b[1]; });
+    var g = gs[0]; if (!g) return null;
+    var home = g[4] === code, o = home ? g[3] : g[4], d = new Date(g[2] + "T12:00:00");
+    var ln = lineOf(g).replace(/<[^>]+>/g, "").replace(/&amp;/g, "&");
+    var tm = g[10] ? (function (h, mi) { return (h % 12 || 12) + (mi === "00" ? "" : ":" + mi) + (h >= 12 ? " PM" : " AM") + " ET"; })(+g[10].split(":")[0], g[10].split(":")[1]) : "";
+    return { when: [d.toLocaleDateString("en-US", { weekday: "short" }), d.toLocaleDateString("en-US", { month: "short", day: "numeric" })], what: (home ? "vs " : "at ") + '<a href="' + href("game/" + g[3] + "-" + g[4], { w: g[1] }) + '">' + esc(team(o).name) + "</a>",
+      sub: ["Week " + g[1], ln && ln !== "—" ? ln : "", tm].filter(Boolean).join(", ") };
+  }
   function openCard(id) {
     var p = W.byId[id];
     if (!p) return;
-    var t = team(p.t), c = p.c || {}, ys = Object.keys(c.rows || {}).map(Number).sort();
-    var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc(posOf(p)) + " · age " + (p.age ? Math.floor(p.age) : "—") + " · " + p.exp + " yrs exp" + (p.draft ? " · " + p.draft[0] + " pick " + p.draft[1] : "") + "</div></div></div>";
-    html += '<div class="card-b"><div class="kv">' + "<div><b>" + (c.yrs ? c.yrs + " yr, " + m(c.value) : "—") + "</b><span>Contract (" + (c.signed || "—") + ")</span></div><div><b>" + m(c.apy) + "</b><span>Per year</span></div><div><b>" + m(nowHit(p, c)) + "</b><span>" + W.season + " cap hit" + (c.apy && Math.abs(nowHit(p, c) - c.apy) > Math.max(1, c.apy * 0.25) ? " (escalators and bonuses move it off the average)" : "") + "</span></div><div><b>" + m(c.gtd) + "</b><span>Guaranteed</span></div>" +
-      "<div><b>" + (p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—") + "</b><span>Snap share (" + (p.snaps ? p.snaps[3] + " g" : "none yet") + ")</span></div><div><b>" + m(P.value(W, p, W.season)) + "</b><span>Value this season</span></div><div><b>" + m(P.value(W, p, W.season + 1)) + "</b><span>Value next season</span></div></div>" + ratingBlock(p) + nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
-    html += statBlock(p) + '<div id="ngsc"></div><div id="glog"></div>';
+    var PC = window.PCard, t = team(p.t), c = p.c || {}, ys = Object.keys(c.rows || {}).map(Number).sort(), g = P.group(p), s = st(p);
+    // overview: rating, next game, value
+    var ov = ratingBlock(p);
+    var ng = nextGameOf(p.t);
+    if (ng) ov += PC.sec("Next game") + PC.line(ng);
+    ov += PC.sec("Value") + PC.facts([[p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—", "Snap share" + (p.snaps ? " (" + p.snaps[3] + " g)" : "")], [m(P.value(W, p, W.season)), "Value this season"], [m(P.value(W, p, W.season + 1)), "Value next season"]]);
+    // stats: season line and game log (the log loads into #glog)
+    var stp = statBlock(p) + '<div id="glog"></div>';
+    // contract
+    var ct = PC.facts([[c.yrs ? c.yrs + " yr, " + m(c.value) : "—", "Contract (" + (c.signed || "—") + ")"], [m(c.apy), "Per year"], [m(nowHit(p, c)), W.season + " cap hit" + (c.apy && Math.abs(nowHit(p, c) - c.apy) > Math.max(1, c.apy * 0.25) ? " (escalators and bonuses move it off the average)" : "")], [m(c.gtd), "Guaranteed"]]) +
+      nextDeal(p) + (p.c && C.lastYear(p) > W.season ? '<p class="tvlink"><a class="btn sm" href="' + href("trade", { p: p.id }) + '">What would it take to trade for him?</a></p>' : "");
     if (ys.length) {
-      html += '<h4 class="card-sec">Contract year by year</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th title="Base salary">Base</th><th title="Signing and option bonus money counted this year">Bonus</th><th title="Roster, workout and other bonuses">Other</th><th title="Guaranteed salary">Gtd</th><th>Cap hit</th><th title="Dead money if cut before June 1">Dead</th><th title="Cap saved by cutting him before June 1">Saves</th><th title="Cap saved with a post-June 1 cut">June 1</th></tr></thead><tbody>' + ys.map(function (y) {
+      ct += '<h4 class="card-sec">Contract year by year</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th title="Base salary">Base</th><th title="Signing and option bonus money counted this year">Bonus</th><th title="Roster, workout and other bonuses">Other</th><th title="Guaranteed salary">Gtd</th><th>Cap hit</th><th title="Dead money if cut before June 1">Dead</th><th title="Cap saved by cutting him before June 1">Saves</th><th title="Cap saved with a post-June 1 cut">June 1</th></tr></thead><tbody>' + ys.map(function (y) {
         var r = c.rows[y], cut = !r[C.R.void] ? C.effect(p, { kind: "cut", year: y }) : null, june = !r[C.R.void] ? C.effect(p, { kind: "cutJune", year: y }) : null;
         return "<tr" + (r[C.R.void] ? ' class="muted-row"' : "") + "><td>" + y + (r[C.R.void] ? " (void)" : r[C.R.est] ? " (est.)" : "") + "</td><td>" + m(r[0]) + "</td><td>" + m(r[1]) + "</td><td>" + m(r[2] + r[3]) + "</td><td>" + (r[4] ? m(r[4]) : "—") + "</td><td><b>" + m(r[5]) + "</b></td><td>" + (cut ? m(cut.dead[y] || 0) : "") + '</td><td class="' + (cut && -(cut.delta[y] || 0) >= 0 ? "pos" : "neg") + '">' + (cut ? sm(-(cut.delta[y] || 0)) : "") + "</td><td>" + (june ? sm(-(june.delta[y] || 0)) : "") + "</td></tr>";
       }).join("") + "</tbody></table></div>";
-      html += '<p class="note">Bonus: signing and option bonus money spread over the deal. Dead and Saves: if he\'s cut before June 1. June 1: savings with a post-June 1 cut. Cutting before June 1 puts every remaining bonus dollar and guarantee on that year; after June 1 (or with one of the two post-June 1 designations) the later years\' share moves to the next year. Contract data from Over The Cap via nflverse.</p>';
-    } else html += '<p class="note">No contract in the feed.</p>';
+      ct += '<p class="note">Bonus: signing and option bonus money spread over the deal. Dead and Saves: if he\'s cut before June 1. June 1: savings with a post-June 1 cut. Cutting before June 1 puts every remaining bonus dollar and guarantee on that year; after June 1 (or with one of the two post-June 1 designations) the later years\' share moves to the next year. Contract data from Over The Cap via nflverse.</p>';
+    } else ct += '<p class="note">No contract in the feed.</p>';
+    var foot = '<div class="pc-acts"><a href="' + href("team/" + p.t, { v: "plan" }) + '">' + esc(t.name) + " planner</a>" + (c.otc ? '<a href="https://overthecap.com/player/x/' + esc(c.otc) + '/" target="_blank" rel="noopener">Over The Cap</a>' : "") + "</div>";
     var mine = (W.adj && W.adj[p.id]) || 0, steps = [-15, -10, -5, 5, 10, 15];
-    html += '<p class="myadj"><label>Your read <select data-adj="' + esc(p.id) + '"><option value="0"' + (mine ? "" : " selected") + ">Model\'s rating</option>" + steps.map(function (v) { return '<option value="' + v + '"' + (v === mine ? " selected" : "") + ">" + (v > 0 ? "+" : "") + v + " rating points</option>"; }).join("") + '</select></label> <span class="note">Moves his rating, value, trade value and next contract for you only. The season odds don\'t use player ratings.</span></p>';
-    html += '<p><a class="btn" href="' + href("team/" + p.t, { v: "plan" }) + '">' + esc(t.name) + " planner</a>" + (c.otc ? ' <a class="btn" href="https://overthecap.com/player/x/' + esc(c.otc) + '/" target="_blank" rel="noopener">Over The Cap page</a>' : "") + "</p></div>";
-    cardBody.innerHTML = html;
+    foot += '<p class="myadj"><label>Your read <select data-adj="' + esc(p.id) + '"><option value="0"' + (mine ? "" : " selected") + ">Model\'s rating</option>" + steps.map(function (v) { return '<option value="' + v + '"' + (v === mine ? " selected" : "") + ">" + (v > 0 ? "+" : "") + v + " rating points</option>"; }).join("") + '</select></label> <span class="note">Moves his rating, value, trade value and next contract for you only. The season odds don\'t use player ratings.</span></p>';
+    // chips and the headline row
+    var j = p.inj, chips = [];
+    if (j && INJ_CODE[j[0]] && !(W.week && j[3] < W.week)) chips.push([j[0] + (j[1] ? " (" + j[1].toLowerCase() + ")" : ""), INJ_CODE[j[0]] === "O" ? "out" : "inj"]);
+    if (p.draft && p.exp <= 1) chips.push([p.draft[0] + " draft, pick " + p.draft[1], "tag"]);
+    var ks = null;
+    if (s) {
+      if (g === "QB") ks = { v: s.passing_yards, l: "Pass yards" }; else if (g === "RB") ks = { v: s.rushing_yards, l: "Rush yards" }; else if (g === "WR" || g === "TE") ks = { v: s.receiving_yards, l: "Rec yards" };
+      else if (g === "EDGE" || g === "IDL") ks = { v: s.def_sacks, l: "Sacks" }; else if (g === "LB") ks = { v: s.def_tackles_solo + s.def_tackle_assists, l: "Tackles" }; else if (g === "CB" || g === "S") ks = { v: s.def_interceptions + " / " + s.def_pass_defended, l: "INT / PD" };
+      else if (g === "K") ks = { v: s.fg_made + "/" + s.fg_att, l: "Field goals" };
+    }
+    var head = [{ v: score(p), l: "Player rating" }, ks, { v: p.snaps ? Math.round(P.share(W, p) * 100) + "%" : null, l: "Snap share" }, { v: c.apy ? m(nowHit(p, c)) : null, l: W.season + " cap hit" }];
+    var hasNgs = /^(QB|RB|WR|TE)$/.test(g);
+    card.dataset.pid = id;
+    cardBody.innerHTML = PC.html({ face: face(p, 60), name: p.n, color: t.color, team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.name) + "</a>",
+      meta: [posOf(p), p.age ? "Age " + Math.floor(p.age) : "", p.exp === 0 ? "Rookie" : p.exp + " yrs exp", p.draft && p.exp > 1 ? p.draft[0] + " pick " + p.draft[1] : ""], chips: chips, head: head,
+      tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, hasNgs ? { id: "tr", label: "Next Gen", html: '<div id="ngsc"><p class="note">Loading Next Gen Stats…</p></div>' } : null, { id: "ct", label: "Contract", html: ct }],
+      foot: foot });
     if (!card.open) card.showModal();
     gameLog(p);
     ngsCard(p);
@@ -1092,13 +1124,14 @@
     if (!el) return;
     var draw = function () {
       var pool = ngPool(P.group(p)), d = NG && NG[pool] && NG[pool][p.id];
-      if (!d) { el.innerHTML = ""; return; }
+      if (!d) { el.innerHTML = '<p class="note">No Next Gen Stats for him yet: NGS only lists players with enough volume (a qualified passer, rusher or receiver).</p>'; return; }
       var idx = {}; (NG.cols[pool] || []).forEach(function (k, i) { idx[k] = i; });
       var bars = NGCOLS[pool].filter(function (c) { return d.pct && d.pct[c[1]] != null; });
       var plain = NGCOLS[pool].filter(function (c) { return !(d.pct && d.pct[c[1]] != null) && !/^(att|yds|td|int|tgt|rec)$/.test(c[1]); });
-      el.innerHTML = '<h4 class="card-sec">Next Gen Stats <small class="note">percentile among ' + (pool === "rec" ? d.pos + "s" : pool === "qb" ? "QBs" : "RBs") + "</small></h4>" +
-        '<div class="ngbars">' + bars.map(function (c) { var v = d.pct[c[1]]; return '<div class="ngb"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><span>" + c[0] + " <small>" + ngFmt(d.x[idx[c[1]]], c[2]) + '</small></span><i><em style="width:' + Math.max(4, v) + "%;background:" + ngColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + ngColor(v) + ";color:" + (v >= 80 || v <= 20 ? "#fff" : "#1b2433") + '">' + v + "</b></i></div>"; }).join("") + "</div>" +
-        '<div class="kv stats-kv">' + plain.map(function (c) { return "<div" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><b>" + ngFmt(d.x[idx[c[1]]], c[2]) + "</b><span>" + c[0] + "</span></div>"; }).join("") + "</div>";
+      var PC = window.PCard;
+      el.innerHTML = PC.sec("Next Gen Stats", "percentile among " + (pool === "rec" ? d.pos + "s" : pool === "qb" ? "QBs" : "RBs")) +
+        PC.bars(bars.map(function (c) { return { label: c[0], sub: ngFmt(d.x[idx[c[1]]], c[2]), pct: d.pct[c[1]] }; })) +
+        PC.facts(plain.map(function (c) { return [ngFmt(d.x[idx[c[1]]], c[2]), c[0]]; })) + '<p class="note"><a href="' + href("ngs", { g: P.group(p) }) + '">Full Next Gen leaderboards</a>. From NFL Next Gen Stats.</p>';
     };
     if (NG) draw(); else loadNgs().then(draw);
   }

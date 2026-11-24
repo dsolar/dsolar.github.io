@@ -550,54 +550,46 @@
     var p = H.byId[id] || H.byId[+id];
     if (!p) return;
     var s = H.surplus(p), t = team(p.t), pj = p.pj || {};
-    var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + " · " + esc((p.el || [p.pos]).join("/")) +
-      " · age " + (p.age != null ? Math.floor(p.age) : "—") + (p.b ? " · B/T " + esc(p.b) + "/" + esc(p.th) : "") + "</div></div></div>";
-    html += '<div class="card-b"><div class="kv">';
+    var PC = window.PCard, ov = "", ct = "";
     var fth = p.faith || 1; // a thin big league record: WAR shown as counted
-    html += kv(f1(H.warAt(p, H.season) * fth), H.season + " WAR" + (fth < 1 ? " (adj.)" : ""));
-    if (p.p) html += kv(pj.era != null ? pj.era.toFixed(2) : "—", "ERA") + kv(f0(pj.ip), "IP");
-    else html += kv(f0(pj.wrc), "wRC+") + kv(f0(pj.pa), "PA");
-    html += kv(svc(p.st), "Service (yrs.days)");
-    if (p.fv) html += kv(esc(p.fv) + (p.risk ? " / " + esc(p.risk) : ""), "FV / risk") + kv(p.eta || "—", "ETA") + kv(p.ovr ? "#" + p.ovr : "—", "Overall rank");
-    html += "</div>";
+    var head = [{ v: f1(H.warAt(p, H.season) * fth), l: H.season + " WAR" + (fth < 1 ? " (adj.)" : " (proj.)") }].concat(p.p ? [{ v: pj.era != null ? pj.era.toFixed(2) : "—", l: "ERA (proj.)" }, { v: f0(pj.ip), l: "Innings (proj.)" }] : [{ v: f0(pj.wrc), l: "wRC+ (proj.)" }, { v: f0(pj.pa), l: "PA (proj.)" }], [{ v: svc(p.st), l: "Service time" }]);
+    if (p.fv) ov += PC.sec("Prospect") + PC.facts([[p.fv + (p.risk ? " / " + p.risk : ""), "FV / risk"], [p.eta || "—", "ETA"], [p.ovr ? "#" + p.ovr : "—", "Overall rank"]]);
     // headline numbers are plain totals over the deal, so the contract reads as what he's actually owed; the
     // discounted (today's dollars) figures sit underneath and in the table
     var sumV = s.rows.reduce(function (a, r) { return a + r.value; }, 0), sumC = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
     var nS = s.rows.length ? s.rows.length + " season" + (s.rows.length > 1 ? "s" : "") : "";
-    html += '<div class="vcs"><div><span>Value</span><b>' + money(sumV) + "</b><small>what he should produce" + (nS ? ", " + nS : "") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(sumC) +
+    ct += '<div class="vcs"><div><span>Value</span><b>' + money(sumV) + "</b><small>what he should produce" + (nS ? ", " + nS : "") + '</small></div><i>−</i><div><span>Contract</span><b>' + money(sumC) +
       "</b><small>what he'll be paid" + (nS ? ", " + nS : "") + '</small></div><i>=</i><div class="' + (s.total >= 0 ? "up" : "dn") + '"><span>Surplus</span><b>' + signed(s.total) + "</b><small>" + (!s.rows.length ? "not worth a roster spot" : H.cfg.discount > 0 ? signed(s.pv) + " in today's dollars" : "over the deal") + "</small></div></div>";
-    if (s.rows.length) { var rg = H.range(p); html += '<p class="note vrange">Likely range: <b>' + signed(rg.lo) + "</b> to <b>" + signed(rg.hi) + "</b>" + (H.cfg.discount > 0 ? " in today's dollars" : "") + ", if he lands " + pct(rg.k, 0) + " below or above his projection (" + (s.prospect ? "his risk grade sets how wide" : "wider when his seasons have swung or he isn't established") + ").</p>"; }
+    if (s.rows.length) { var rg = H.range(p); ct += '<p class="note vrange">Likely range: <b>' + signed(rg.lo) + "</b> to <b>" + signed(rg.hi) + "</b>" + (H.cfg.discount > 0 ? " in today's dollars" : "") + ", if he lands " + pct(rg.k, 0) + " below or above his projection (" + (s.prospect ? "his risk grade sets how wide" : "wider when his seasons have swung or he isn't established") + ").</p>"; }
     var fx = H.faBoard().filter(function (b) { return String(b.r.id) === String(p.id) && b.r.to === p.t; })[0];
-    html += gradeLine(fx && fx.grade ? fx : null);
-    if (fx && fx.trust < 1) html += '<p class="note">' + esc(faithNote(fx.r, fx.trust, fx.proj)) + " His value below counts it the same way.</p>";
-    if (p.tldr) html += '<p class="tldr">' + esc(p.tldr) + "</p>";
+    ct += gradeLine(fx && fx.grade ? fx : null);
+    if (fx && fx.trust < 1) ct += '<p class="note">' + esc(faithNote(fx.r, fx.trust, fx.proj)) + " His value below counts it the same way.</p>";
+    if (p.tldr) ov += '<p class="tldr">' + esc(p.tldr) + "</p>";
     var lk = svLuck(p.id, !!p.p);
-    if (lk && lk.tag) html += '<p class="tldr"><b>Statcast:</b> ' + lk.line + ". " + (lk.tag === "due" ? "His contact was better than his results, so expect a bounce back. A buy-low." : "His results beat his contact, so expect a step back. A sell-high.") + (H.cfg.statcast && p.svd ? " With Lean on Statcast on, his projection moves " + (p.svd > 0 ? "+" : "") + p.svd.toFixed(1) + " WAR this season and half that next." : "") + "</p>";
-    else if (H.cfg.statcast && p.svd) html += '<p class="tldr"><b>Lean on Statcast:</b> ' + (lk ? lk.line + ", so h" : "H") + "is projection moves " + (p.svd > 0 ? "+" : "") + p.svd.toFixed(1) + " WAR this season and half that next.</p>";
-    if (p.c && p.c.desc) html += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
-    else if (p.acq) html += '<p class="tldr">' + esc(p.acq) + "</p>";
+    if (lk && lk.tag) ov += '<p class="tldr"><b>Statcast:</b> ' + lk.line + ". " + (lk.tag === "due" ? "His contact was better than his results, so expect a bounce back. A buy-low." : "His results beat his contact, so expect a step back. A sell-high.") + (H.cfg.statcast && p.svd ? " With Lean on Statcast on, his projection moves " + (p.svd > 0 ? "+" : "") + p.svd.toFixed(1) + " WAR this season and half that next." : "") + "</p>";
+    else if (H.cfg.statcast && p.svd) ov += '<p class="tldr"><b>Lean on Statcast:</b> ' + (lk ? lk.line + ", so h" : "H") + "is projection moves " + (p.svd > 0 ? "+" : "") + p.svd.toFixed(1) + " WAR this season and half that next.</p>";
+    if (p.c && p.c.desc) ov += '<p class="tldr"><b>Contract:</b> ' + esc(p.c.desc) + (p.c.note ? " " + esc(p.c.note) : "") + "</p>";
+    else if (p.acq) ov += '<p class="tldr">' + esc(p.acq) + "</p>";
     var stats = statTables(p);
     var hasSv = typeof p.id === "number";
-    html += '<nav class="cardtabs" role="tablist"><button type="button" role="tab" data-ctab="deal" aria-selected="true">Contract &amp; value</button><button type="button" role="tab" data-ctab="stats" aria-selected="false">Stats</button>' + (hasSv ? '<button type="button" role="tab" data-ctab="sv" aria-selected="false">Statcast</button>' : "") + "</nav>";
-    html += '<div data-cpane="stats" hidden>' + stats + "</div>";
-    if (hasSv) { html += '<div data-cpane="sv" hidden>' + svPane(p) + "</div>"; if (!SV) loadSavant().then(function () { var pn = card.querySelector('[data-cpane="sv"]'); if (pn) pn.innerHTML = svPane(p); }); }
-    html += '<div data-cpane="deal">';
-    html += '<h4 class="card-sec">Contract value</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>Status</th><th>Proj WAR</th><th>Counted</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
+    var svp = hasSv ? svPane(p) : "";
+    if (hasSv && !SV) loadSavant().then(function () { var pn = card.querySelector('[data-pane="tr"]'); if (pn) pn.innerHTML = svPane(p); });
+    ct += '<h4 class="card-sec">Contract value</h4><div class="scroll"><table class="t"><thead><tr><th>Year</th><th>Age</th><th>Status</th><th>Proj WAR</th><th>Counted</th><th>Value</th><th>Salary</th><th>Surplus</th></tr></thead><tbody>';
     s.rows.forEach(function (r) {
-      html += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war) + "</td><td>" + (r.war > 0 && Math.abs(r.cw - r.war) > r.war * 0.03 ? '<span title="Counted at ' + pct(r.cw / r.war, 0) + ' of the projection">' + f1(r.cw) + "*</span>" : f1(r.cw)) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
+      ct += "<tr><td>" + r.y + "</td><td>" + H.ageAt(p, r.y) + '</td><td style="text-align:left"><span class="pill">' + esc(r.kind) + "</span></td><td>" + f1(r.war) + "</td><td>" + (r.war > 0 && Math.abs(r.cw - r.war) > r.war * 0.03 ? '<span title="Counted at ' + pct(r.cw / r.war, 0) + ' of the projection">' + f1(r.cw) + "*</span>" : f1(r.cw)) + "</td><td>" + money(r.value) + "</td><td>" + money(r.salary) + (r.est ? "*" : "") + '</td><td class="' + (r.surplus >= 0 ? "pos" : "neg") + '">' + signed(r.surplus) + "</td></tr>";
     });
-    if (!s.rows.length) html += '<tr><td class="note" colspan="8">Projects below his pay in every controlled season: a team would cut him before paying more than he\'s worth.</td></tr>';
+    if (!s.rows.length) ct += '<tr><td class="note" colspan="8">Projects below his pay in every controlled season: a team would cut him before paying more than he\'s worth.</td></tr>';
     else {
       var tp = s.rows.reduce(function (a, r) { return a + r.war; }, 0), tw = s.rows.reduce(function (a, r) { return a + r.cw; }, 0), tv = s.rows.reduce(function (a, r) { return a + r.value; }, 0), ts = s.rows.reduce(function (a, r) { return a + r.salary; }, 0);
-      html += '<tr class="tot"><td colspan="3">Total</td><td>' + f1(tp) + "</td><td>" + f1(tw) + "</td><td>" + money(tv) + "</td><td>" + money(ts) + '</td><td class="' + (s.total >= 0 ? "pos" : "neg") + '">' + "<b>" + signed(s.total) + "</b></td></tr>";
+      ct += '<tr class="tot"><td colspan="3">Total</td><td>' + f1(tp) + "</td><td>" + f1(tw) + "</td><td>" + money(tv) + "</td><td>" + money(ts) + '</td><td class="' + (s.total >= 0 ? "pos" : "neg") + '">' + "<b>" + signed(s.total) + "</b></td></tr>";
     }
-    html += "</tbody></table></div>";
+    ct += "</tbody></table></div>";
     var share = M.outlookShare(p, H.cfg), rr = M.recentRead(p);
     if (H.cfg.youngReg && (p.st || 0) < 3 && !s.prospect && p.rate > 0.3) {
       var lean = H.cfg.youngReg * (1 - (rr ? rr.rel : 0));
-      if (lean > 0.02) html += '<p class="note">Young player: with ' + (rr ? pct(rr.rel, 0) : "none") + " of two full seasons' playing time behind him, his projection leans " + pct(lean, 0) + " of the way toward an average regular (" + f1(H.cfg.youngTo == null ? 2 : H.cfg.youngTo) + " WAR a full season), since short records miss often. The lean fades as his record grows.</p>";
+      if (lean > 0.02) ct += '<p class="note">Young player: with ' + (rr ? pct(rr.rel, 0) : "none") + " of two full seasons' playing time behind him, his projection leans " + pct(lean, 0) + " of the way toward an average regular (" + f1(H.cfg.youngTo == null ? 2 : H.cfg.youngTo) + " WAR a full season), since short records miss often. The lean fades as his record grows.</p>";
     }
-    if (Math.abs(share - 1) > 0.02 && rr) html += '<p class="note">Outlook: FanGraphs projects ' + f1(p.rate) + " WAR a full season; his last three seasons ran at " + f1(rr.rate) + " (weighted toward the latest" + (Math.abs(rr.rate - rr.avg) > 0.05 ? ", with a career year that isn't his latest tempered toward his median season" : "") + ")" + (rr.avail < 0.97 ? ", and he's played " + pct(rr.avail, 0) + " of the time FanGraphs projects for him (missed time counts half)" : "") + ", so he's counted at " + pct(share, 0) + " of the projection.</p>";
+    if (Math.abs(share - 1) > 0.02 && rr) ct += '<p class="note">Outlook: FanGraphs projects ' + f1(p.rate) + " WAR a full season; his last three seasons ran at " + f1(rr.rate) + " (weighted toward the latest" + (Math.abs(rr.rate - rr.avg) > 0.05 ? ", with a career year that isn't his latest tempered toward his median season" : "") + ")" + (rr.avail < 0.97 ? ", and he's played " + pct(rr.avail, 0) + " of the time FanGraphs projects for him (missed time counts half)" : "") + ", so he's counted at " + pct(share, 0) + " of the projection.</p>";
     // why counted WAR differs from the projection, in one note
     var why = [];
     if (Math.abs(share - 1) > 0.02 && rr) why.push("the outlook above");
@@ -608,11 +600,18 @@
     if (H.cfg.lateFade < 1 && (p.st || 0) < 6 && s.rows.some(function (r) { return r.y - H.season >= (H.cfg.lateAfter == null ? 3 : H.cfg.lateAfter); }))
       why.push("seasons more than " + (H.cfg.lateAfter == null ? 3 : H.cfg.lateAfter) + " years out count " + pct(H.cfg.lateFade, 0) + " a year, compounding, since projections that far ahead miss more often (the Far-off seasons setting on Trade Value)");
     if (s.rows.some(function (r) { return r.war > 0 && Math.abs(r.cw - r.war) > r.war * 0.03; }) && why.length)
-      html += '<p class="note">* Counted WAR differs from the projection: ' + why.join("; ") + ".</p>";
-    html += '<p class="note">Value is counted WAR times the price of a win: ' + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year" +
-      (H.cfg.tiered ? ", priced by tier (a win from a 1-WAR player costs about 78% of that, from a 3+ WAR player about 115%, the way the market pays)" : "") + ".</p></div>";
-    html += '<p><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade: side A</button> <button class="btn" data-add="b" data-id="' + esc(p.id) + '">Side B</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth chart</a></p></div>";
-    cardBody.innerHTML = html;
+      ct += '<p class="note">* Counted WAR differs from the projection: ' + why.join("; ") + ".</p>";
+    ct += '<p class="note">Value is counted WAR times the price of a win: ' + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year" +
+      (H.cfg.tiered ? ", priced by tier (a win from a 1-WAR player costs about 78% of that, from a 3+ WAR player about 115%, the way the market pays)" : "") + ".</p>";
+    var lk2 = svLuck(p.id, !!p.p), chips = [];
+    if (lk2 && lk2.tag) chips.push([lk2.tag === "due" ? "Statcast: buy low" : "Statcast: sell high", lk2.tag === "due" ? "tag" : "inj"]);
+    if (p.fv) chips.push(["Prospect, FV " + p.fv, "tag"]);
+    if (!ov) ov = '<p class="note">' + esc(p.n) + " projects for " + f1(H.warAt(p, H.season) * fth) + " WAR in " + H.season + ". The Contract tab has his value year by year.</p>";
+    ov += PC.sec("Value") + PC.facts([[money(sumV), "What he should produce" + (nS ? ", " + nS : "")], [money(sumC), "What he'll be paid"], [signed(s.total), "Surplus"]]);
+    cardBody.innerHTML = PC.html({ face: face(p, 60), name: p.n, color: t.color || "var(--ink)", team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.name) + "</a>",
+      meta: [(p.el || [p.pos]).join("/"), p.age != null ? "Age " + Math.floor(p.age) : "", p.b ? "B/T " + p.b + "/" + p.th : ""], chips: chips, head: head,
+      tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stats }, hasSv ? { id: "tr", label: "Statcast", html: svp } : null, { id: "ct", label: "Contract", html: ct }],
+      foot: '<div class="pc-acts"><button type="button" data-add="a" data-id="' + esc(p.id) + '">Trade: side A</button><button type="button" data-add="b" data-id="' + esc(p.id) + '">Side B</button><a href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth</a></div>" });
     if (!card.open) card.showModal();
   }
   // A free agent who isn't on a roster yet: his projection, the crowd's contract, what he's worth year by year
@@ -900,10 +899,7 @@
     var P = d.pct || {}, isP = d === SV.pit[p.id];
     var bars = isP ? [["xera", "xERA"], ["xwoba", "xwOBA"], ["k_percent", "K%"], ["bb_percent", "BB%"], ["whiff_percent", "Whiff%"], ["chase_percent", "Chase%"], ["brl_percent", "Barrel%"], ["hard_hit_percent", "Hard hit%"], ["exit_velocity", "Avg EV"], ["fb_velocity", "Fastball velo"], ["fb_spin", "Fastball spin"], ["curve_spin", "Curve spin"]]
       : [["xwoba", "xwOBA"], ["xba", "xBA"], ["xslg", "xSLG"], ["exit_velocity", "Avg EV"], ["max_ev", "Max EV"], ["brl_percent", "Barrel%"], ["hard_hit_percent", "Hard hit%"], ["bat_speed", "Bat speed"], ["squared_up_rate", "Squared up"], ["k_percent", "K%"], ["bb_percent", "BB%"], ["whiff_percent", "Whiff%"], ["chase_percent", "Chase%"], ["sprint_speed", "Sprint speed"], ["oaa", "Outs above avg"], ["arm_strength", "Arm strength"]];
-    var html = '<h4 class="card-sec">' + (SV.season || "") + ' percentile rankings</h4><div class="svbars">' + bars.filter(function (b) { return P[b[0]] != null; }).map(function (b) {
-      var v = P[b[0]];
-      return '<div class="svb"><span>' + b[1] + '</span><i><em style="width:' + Math.max(4, v) + "%;background:" + pctColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + pctColor(v) + ";color:" + pctInk(v) + '">' + v + "</b></i></div>";
-    }).join("") + "</div>";
+    var html = window.PCard.sec((SV.season || "") + " percentile rankings", "vs MLB " + (isP ? "pitchers" : "hitters")) + window.PCard.bars(bars.filter(function (b) { return P[b[0]] != null; }).map(function (b) { return { label: b[1], pct: P[b[0]] }; }));
     if (Object.keys(P).length < 5) html += '<p class="note">He fell short of Savant\'s playing-time cutoffs for most percentile ranks' + (isP ? ", common for relievers" : "") + ".</p>";
     if (d.x) html += '<div class="kv">' + (isP ? kv(d.x[7] != null ? d.x[7].toFixed(2) : "—", "ERA") + kv(d.x[8] != null ? d.x[8].toFixed(2) : "—", "xERA") : kv(f3(d.x[1]), "BA") + kv(f3(d.x[2]), "xBA") + kv(f3(d.x[4]), "xSLG")) + kv(f3(d.x[5]), "wOBA") + kv(f3(d.x[6]), "xwOBA") + "</div>";
     if (!isP && d.ev) html += '<div class="kv">' + kv(f1(d.ev[0]), "Avg EV") + kv(f1(d.ev[1]), "Max EV") + kv(f1(d.ev[3]) + "%", "Barrel%") + kv(f1(d.ev[2]) + "%", "Sweet spot") + kv(d.bt ? f1(d.bt[0]) : "—", "Bat speed") + kv(d.spd ? f1(d.spd[0]) : "—", "Sprint ft/s") + "</div>";

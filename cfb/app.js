@@ -606,12 +606,12 @@ function cfbColor(v) { const t = Math.max(0, Math.min(100, v)) / 100, mx = (a, b
 function cfbBars(p) {
   const k = cfbPoolOf(p); if (!k) return "";
   const P = CFB_POOLS[k], S = cfbSorted()[k];
-  const bars = P.stats.map(([label, fn, dir, unit], i) => {
-    const v = fn(p); let pc = cfbPct(S.s[i], v); if (pc == null) return ""; if (dir < 0) pc = 100 - pc;
-    return '<div class="svb"><span>' + label + ' <small style="font-weight:600;color:var(--faint)">' + (Math.abs(v) < 1 && v !== 0 ? v.toFixed(2) : f1(v)) + (unit || "") + '</small></span><i><em style="width:' + Math.max(4, pc) + "%;background:" + cfbColor(pc) + '"></em><b style="left:calc(' + Math.max(4, pc) + "% - 13px);background:" + cfbColor(pc) + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i></div>";
-  }).join("");
-  if (!bars) return "";
-  return '<p class="card-sec">Against FBS ' + P.name + '</p><div class="svbars">' + bars + '</div><p class="note">Percentile among ' + S.n + " FBS " + P.name + " with real playing time: red is good, blue is bad." + (P.ok(p) ? "" : " He's short of that volume, so read these as a small sample.") + "</p>";
+  const rows = P.stats.map(([label, fn, dir, unit], i) => {
+    const v = fn(p); let pc = cfbPct(S.s[i], v); if (pc == null) return null; if (dir < 0) pc = 100 - pc;
+    return { label, sub: (Math.abs(v) < 1 && v !== 0 ? v.toFixed(2) : f1(v)) + (unit || ""), pct: pc };
+  }).filter(Boolean);
+  if (!rows.length) return "";
+  return window.PCard.sec("Profile", "percentile vs FBS " + P.name) + window.PCard.bars(rows) + '<p class="note">Among ' + S.n + " FBS " + P.name + " with real playing time." + (P.ok(p) ? "" : " He's short of that volume, so read these as a small sample.") + "</p>";
 }
 function openPlayer(id) {
   const p = byPlayer[id]; if (!p) return;
@@ -623,13 +623,31 @@ function openPlayer(id) {
     ["Receiving", [["rec", "REC"], ["tgt", "TGT"], ["wyd", "YDS"], ["ypr", "Y/R"], ["wtd", "TD"]], (st(p, "rec") || 0) >= 3],
     ["Defense", [["tkl", "TKL"], ["tfl", "TFL"], ["dsk", "SACK"], ["dint", "INT"], ["pd", "PD"], ["ff", "FF"]], (st(p, "tkl") || 0) >= 3 || (st(p, "dint") || 0) > 0]];
   const dec = k => ["cpct", "ypa", "ypc", "ypr", "aqbr", "tfl", "dsk"].includes(k);
-  $("#cardBody").innerHTML = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t) + " " + esc(t.short) + " · " + esc([p.pos, p.year, p.ht, p.wt].filter(Boolean).join(" · ")) + (p.jersey ? " · #" + esc(p.jersey) : "") + "</div><div>" + badges(p) + "</div></div></div>" +
-    '<div class="card-b"><p class="tldr">' + int(st(p, "gp")) + " games" + (p.home ? " · From " + esc(p.home) : "") + "</p>" +
-    groups.filter(x => x[2]).map(([lab, ks]) => '<p class="card-sec">' + lab + '</p><div class="kv">' + ks.filter(([k]) => pv(p, k) !== null).map(([k, l]) => "<div><b>" + (dec(k) ? f1(pv(p, k)) : num0(pv(p, k))) + "</b><span>" + l + "</span></div>").join("") + "</div>").join("") + ng + cfbBars(p) +
-    (PEPA(p.id) ? '<p class="card-sec">Efficiency <small class="note">CollegeFootballData</small></p><div class="kv"><div><b>' + f1(PEPA(p.id).epa) + "</b><span>EPA added</span></div><div><b>" + e3(PEPA(p.id).perPlay) + "</b><span>EPA per play</span></div>" + (fin(PEPA(p.id).pass) ? "<div><b>" + f1(PEPA(p.id).pass) + "</b><span>Passing EPA</span></div>" : "") + (fin(PEPA(p.id).rush) ? "<div><b>" + f1(PEPA(p.id).rush) + "</b><span>Rushing EPA</span></div>" : "") + "</div>" : "") +
-    (hz ? '<p class="card-sec">Heisman ladder</p><p class="tldr">No. <b>' + hz.rank + "</b> · ladder score " + f1(hz.score) + " · " + f1(hz.prod) + ' production per game. <a href="#/heisman">Ladder →</a></p>' : "") +
-    (p.nfl ? '<p class="card-sec">NFL Big Board</p><div class="kv"><div><b>#' + p.nfl.rank + "</b><span>Consensus</span></div><div><b>" + p.nfl.hi + "–" + p.nfl.lo + "</b><span>Range</span></div><div><b>" + esc(p.nfl.on) + "</b><span>Boards</span></div><div><b>" + esc(p.nfl.pos) + '</b><span>Pos</span></div></div><p class="tldr">' + spark(p.nfl.hist) + ' <a href="../draft/">See him on the Big Board →</a></p>' : "") +
-    '<p class="note"><a href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN player page ↗</a> · Season stats from ESPN</p></div>';
+  const PC = window.PCard, live = groups.filter(x => x[2]);
+  const HEAD = { Passing: [["pyd", "Pass yards"], ["ptd", "Pass TD"], ["ypa", "Yards / att"], ["int", "INT"]], Rushing: [["ryd", "Rush yards"], ["ypc", "Yards / carry"], ["rtd", "Rush TD"], ["car", "Carries"]],
+    Receiving: [["wyd", "Rec yards"], ["rec", "Catches"], ["wtd", "Rec TD"], ["ypr", "Yards / catch"]], Defense: [["tkl", "Tackles"], ["tfl", "TFL"], ["dsk", "Sacks"], ["dint", "INT"]] };
+  const head = live.length ? HEAD[live[0][0]].filter(([k2]) => pv(p, k2) !== null).map(([k2, l2]) => ({ v: dec(k2) ? f1(pv(p, k2)) : num0(pv(p, k2)), l: l2 })) : [];
+  let ov = cfbBars(p);
+  if (g) {
+    const home = g.home === p.teamId, o = team(home ? g.away : g.home), l = g.state === "pre" ? lineFor(g) : null, dd = new Date(g.day + "T12:00:00");
+    ov += PC.sec("Next game") + PC.line({ when: [dd.toLocaleDateString("en-US", { weekday: "short" }), dd.toLocaleDateString("en-US", { month: "short", day: "numeric" })],
+      what: (home ? "vs " : "at ") + (o.fcs ? esc(o.short) : '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>"),
+      sub: l ? "Hub line: " + favText(l.spread, team(g.home), team(g.away)).replace(/<[^>]+>/g, "").replace(/&amp;/g, "&") : "", right: l ? pct(home ? l.prob : 1 - l.prob) : "" });
+  }
+  if (hz) ov += '<p class="note">Heisman ladder No. ' + hz.rank + ", ladder score " + f1(hz.score) + ", " + f1(hz.prod) + ' production per game. <a href="#/heisman">Ladder</a></p>';
+  if (!ov) ov = '<p class="note">' + int(st(p, "gp")) + " games, not enough volume for a profile yet.</p>";
+  const pe = PEPA(p.id);
+  const stp = '<p class="note" style="margin-top:2px">' + int(st(p, "gp")) + " games" + (p.home ? ". From " + esc(p.home) : "") + ".</p>" +
+    live.map(([lab, ks]) => { const kk = ks.filter(([k2]) => pv(p, k2) !== null); return PC.sec(lab) + PC.table(kk.map(x => x[1]), [kk.map(([k2]) => dec(k2) ? f1(pv(p, k2)) : num0(pv(p, k2)))]); }).join("") +
+    (pe ? PC.sec("Efficiency", "CollegeFootballData") + PC.facts([[f1(pe.epa), "EPA added"], [e3(pe.perPlay), "EPA per play"], fin(pe.pass) ? [f1(pe.pass), "Passing EPA"] : null, fin(pe.rush) ? [f1(pe.rush), "Rushing EPA"] : null]) : "") +
+    '<p class="note">Season stats from ESPN.</p>';
+  const dr = p.nfl ? PC.sec("NFL Big Board", "consensus of " + p.nfl.on + " boards") + PC.facts([["#" + p.nfl.rank, "Consensus rank"], [p.nfl.hi + "-" + p.nfl.lo, "Range"], [p.nfl.on, "Boards"], [p.nfl.pos, "Position"]]) +
+    '<p class="note">' + spark(p.nfl.hist) + ' <a href="../draft/">See him on the Big Board</a></p>' : "";
+  const chips = [hz ? ["Heisman ladder #" + hz.rank, "tag"] : null, p.nfl ? ["NFL Board #" + p.nfl.rank, "tag"] : null];
+  $("#cardBody").innerHTML = PC.html({ face: face(p, 60), name: p.name, color: t.color || "var(--ink)", team: '<a href="#/team?id=' + esc(t.id) + '">' + logo(t) + " " + esc(t.short) + "</a>",
+    meta: [p.pos, p.year, p.ht, p.wt, p.jersey ? "#" + p.jersey : ""], chips, head,
+    tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, { id: "dr", label: "Draft", html: dr }],
+    foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN page</a></div>' });
   const dlg = $("#card"); if (!dlg.open) dlg.showModal();
 }
 

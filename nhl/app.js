@@ -486,24 +486,28 @@
   }
 
   // ---------- player card ----------
+  // the player card, on the shared frame (assets/pcard.js): Overview (the rating), Stats, Tracking (NHL EDGE), Contract
   function openCard(id) {
     var p = PLAYERS[id];
     if (!p) return;
-    var t = TEAMS[p.team], tr = tier(p), G = p.grp === "G";
+    var PC = window.PCard, t = TEAMS[p.team], tr = tier(p), G = p.grp === "G";
     var ht = p.ht ? Math.floor(p.ht / 12) + "'" + (p.ht % 12) + '"' : "";
-    var h = '<div class="card-h">' + hs(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t, 18) + " " + esc(t ? t.name : p.team) + " · " + posLabel(p) + (p.num ? " · #" + p.num : "") +
-      (p.age ? " · age " + p.age : "") + (p.shoots ? " · " + (G ? "catches " : "shoots ") + p.shoots : "") + (ht ? " · " + ht + (p.wt ? ", " + p.wt + " lb" : "") : "") + (p.country ? " · " + esc(p.country) : "") + "</div></div></div>";
-    h += '<div class="card-b"><div class="kv"><div><b>' + f1(p.war) + "</b><span>" + (G ? "WAR / 58 starts" : "WAR / 82") + "</span></div><div><b>" + ord(p.rank) + "</b><span>among " + (G ? "goalies" : p.grp === "D" ? "defensemen" : "forwards") +
-      "</span></div><div><b>" + tierDot(p) + esc(tr.label) + "</b><span>Tier</span></div><div><b>" + (p.gar_now == null ? "—" : sgn(p.gar_now)) + "</b><span>GAR this season</span></div></div>";
-    h += '<div class="cardtabs" role="tablist"><button type="button" role="tab" data-ct="rate" aria-selected="true">Rating</button><button type="button" role="tab" data-ct="stats" aria-selected="false">Stats</button>' + (p.k ? '<button type="button" role="tab" data-ct="deal" aria-selected="false">Contract</button>' : "") + '<button type="button" role="tab" data-ct="edge" aria-selected="false">Edge</button></div>';
-    h += '<div data-pane="rate">' + (G ? goalieRating(p) : skaterRating(p)) + "</div>";
-    h += '<div data-pane="stats" hidden>' + (G ? goalieStats(p) : skaterStats(p)) + "</div>";
-    h += p.k ? '<div data-pane="deal" hidden>' + dealTab(p) + "</div>" : "";
-    h += '<div data-pane="edge" hidden>' + edgePane(p) + "</div>";
-    h += "</div>";
-    cardBody.innerHTML = h;
+    var ov = (G ? goalieRating(p) : skaterRating(p));
+    var ng = null;
+    if (window.Tonight) {
+      if (Tonight.ready()) { var cfg = tonightCfg(); ng = Tonight.next(cfg, function (ab, n) { return cfg.team(ab, n).code; }, p.team); }
+      else Tonight.load().then(function () { if (card.open && card.dataset.pid === String(id) && Tonight.ready()) openCard(id); });
+    }
+    if (ng) ov += PC.sec(ng.today ? "Tonight" : "Next game") + PC.line(ng);
+    var head = [{ v: f1(p.war), l: G ? "WAR / 58 starts" : "WAR / 82" }, { v: ord(p.rank), l: "Among " + (G ? "goalies" : p.grp === "D" ? "defensemen" : "forwards") }, { v: p.gar_now == null ? null : sgn(p.gar_now), l: "GAR this season" }, p.k && p.k.cap ? { v: m(p.k.cap), l: "Cap hit" } : null];
+    card.dataset.pid = String(id);
+    cardBody.innerHTML = PC.html({ face: hs(p, 60), name: p.name, color: "var(--ink)", team: t ? '<a href="#/team/' + esc(p.team) + '">' + logo(t, 18) + " " + esc(t.common || t.name) + "</a>" : esc(p.team),
+      meta: [posLabel(p), p.num ? "#" + p.num : "", p.age ? "Age " + p.age : "", p.shoots ? (G ? "Catches " : "Shoots ") + p.shoots : "", ht ? ht + (p.wt ? ", " + p.wt + " lb" : "") : "", p.country || ""],
+      chips: [[tr.label, "tag"]], head: head,
+      tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: G ? goalieStats(p) : skaterStats(p) }, { id: "tr", label: "Tracking", html: edgePane(p) }, p.k ? { id: "ct", label: "Contract", html: dealTab(p) } : null],
+      foot: t ? '<div class="pc-acts"><a href="#/team/' + esc(p.team) + '">' + esc(t.common || t.name) + " page</a></div>" : "" });
     if (!card.open) card.showModal();
-    if (!EDGE) loadEdge().then(function () { var pn = card.querySelector('[data-pane="edge"]'); if (pn && PLAYERS[id] === p) pn.innerHTML = edgePane(p); });
+    if (!EDGE) loadEdge().then(function () { var pn = card.querySelector('[data-pane="tr"]'); if (pn && PLAYERS[id] === p) pn.innerHTML = edgePane(p); });
   }
   function dealTab(p) {
     var k = p.k;
@@ -666,10 +670,10 @@
     var G = p.grp === "G", e = (G ? EDGE.g : EDGE.sk)[p.id], avg = (G ? EDGE.avg.g : EDGE.avg.sk) || {};
     if (!e) return '<p class="note">No Edge numbers for him this season yet.</p>';
     var cols = (G ? EDGE_G : EDGE_SK).filter(function (c) { return e[c[0]]; });
-    return '<div class="edgebars">' + cols.map(function (c) {
-      var x = e[c[0]], v = x[1];
-      return '<div class="egb"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><span>" + c[1] + " <small>" + edgeFmt(x[0], c[2]) + (avg[c[0]] != null ? " · avg " + edgeFmt(avg[c[0]], c[2]) : "") + '</small></span><i><em style="width:' + Math.max(4, v) + "%;background:" + edgeColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + edgeColor(v) + ";color:" + (v >= 80 || v <= 20 ? "#fff" : "#1b2433") + '">' + v + "</b></i></div>";
-    }).join("") + '</div><p class="note">Percentile among ' + (G ? "goalies" : "skaters") + ": red is good, blue is bad. From NHL Edge.</p>";
+    return window.PCard.sec("NHL EDGE", "percentile among " + (G ? "goalies" : "skaters")) + window.PCard.bars(cols.map(function (c) {
+      var x = e[c[0]];
+      return { label: c[1], sub: edgeFmt(x[0], c[2]) + (avg[c[0]] != null ? ", avg " + edgeFmt(avg[c[0]], c[2]) : ""), pct: x[1] };
+    })) + '<p class="note">Skating speed, shot speed and zone time from NHL EDGE puck and player tracking.</p>';
   }
 
   // ---------- events ----------
