@@ -65,7 +65,7 @@
       ".ds-yours{display:flex;gap:8px;overflow-x:auto;margin:0 0 14px;padding:2px 0;scrollbar-width:none}.ds-yours::-webkit-scrollbar{display:none}" +
       ".ds-yours a{display:flex;align-items:center;gap:8px;flex:0 0 auto;border:1px solid var(--line,#d5d9e0);border-radius:10px;padding:6px 12px 6px 7px;background:var(--card,#fff);color:inherit;text-decoration:none;font-size:13px;line-height:1.25}" +
       ".ds-yours a:hover{border-color:#d4a514}.ds-yours b{display:block;font-size:14px}.ds-yours small{color:var(--muted,#6b7280)}.ds-yours img{width:28px;height:28px;object-fit:contain}" +
-      ".ds-yours .lbl{align-self:center;flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted,#6b7280);padding-right:2px}";
+      ".ds-yours a.ds-all{border-style:dashed}.ds-yours .lbl{align-self:center;flex:0 0 auto;font-size:13px;font-weight:700;color:var(--muted,#6b7280);padding-right:2px}";
     document.head.appendChild(st);
   }
   // a row of your teams for the top of a hub page: items [{id, href, logo (markup), name, sub}]
@@ -76,7 +76,7 @@
     if (!mine.length) return "";
     return '<nav class="ds-yours" aria-label="Your teams"><span class="lbl">Your teams</span>' + mine.map(function (x) {
       return '<a href="' + esc(x.href) + '">' + (x.logo || "") + "<span><b>" + esc(x.name) + "</b>" + (x.sub ? "<small>" + x.sub + "</small>" : "") + "</span></a>";
-    }).join("") + "</nav>";
+    }).join("") + '<a class="ds-all" href="/my-teams/"><span><b>All my teams</b><small>Every sport, one page</small></span></a></nav>';
   }
   window.Follow = { list: read, has: has, toggle: toggle, star: star, strip: strip };
 })();

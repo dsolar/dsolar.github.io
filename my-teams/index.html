@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>My teams | David Solar</title>
+<meta name="description" content="Every team you follow across the hubs: who they play next, when and on what channel, their record and where they stand.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#002244">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../mlb/hub.css?v=20261124-pf5">
+<script src="../assets/analytics.js" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261124-sw2">
+<script src="../assets/projects.js?v=20261124-bb" defer></script>
+<script src="../assets/navigation.js?v=20261124-fav" defer></script>
+<script src="../assets/follow.js?v=20261124b" defer></script>
+<style>
+  #view{margin-top:14px}
+  .mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:6px 0 24px}
+  .mt{background:var(--card);border:1px solid var(--rule);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+  .mt-hd{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px 14px 10px}
+  .mt-logo{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--tc,var(--rule))}
+  .mt-logo img{width:38px;height:38px;object-fit:contain}
+  .mt-nm{min-width:0}
+  .mt-nm a{color:inherit;text-decoration:none;font:800 19px/1.1 var(--display);letter-spacing:-.01em}
+  .mt-nm a:hover{text-decoration:underline}
+  .mt-nm small{display:block;margin-top:4px;color:var(--muted);font-size:13px}
+  .mt-sp{font:700 11px/1 var(--body);letter-spacing:.06em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:4px 8px;margin-right:6px;vertical-align:1px}
+  .mt-next{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;align-items:center;margin:0 14px;padding:12px 0;border-top:1px solid var(--rule-2)}
+  .mt-when{font:700 13px/1.25 var(--body);text-align:center;min-width:64px;padding:7px 8px;border-radius:9px;background:var(--paper-2)}
+  .mt-when.today{background:var(--ink);color:var(--paper)}
+  .mt-when.live{background:var(--red);color:#fff}
+  .mt-when span{display:block;font-weight:500;font-size:12px;opacity:.85}
+  .mt-vs{min-width:0}
+  .mt-vs b{font-size:16px}
+  .mt-vs small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+  .mt-score{font:800 22px/1 var(--display);font-variant-numeric:tabular-nums}
+  .mt-last{margin:0 14px;padding:10px 0;border-top:1px solid var(--rule-2);font-size:14px;color:var(--muted)}
+  .mt-last b.w{color:var(--up)}.mt-last b.l{color:var(--down)}
+  .mt-acts{display:flex;gap:8px;margin-top:auto;padding:10px 14px 14px}
+  .mt-acts a{flex:1;text-align:center;padding:9px 10px;border-radius:9px;border:1px solid var(--rule);color:var(--ink);text-decoration:none;font:600 14px/1 var(--body)}
+  .mt-acts a.go{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .mt-acts a:hover{border-color:var(--ink)}
+  .mt.skel .mt-nm a{color:var(--muted)}
+  .mt-note{color:var(--muted);font-size:14px}
+  .mt-empty{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:22px;margin:8px 0 24px}
+  .mt-empty h2{margin:0 0 6px;font:800 22px/1.15 var(--display)}
+  .mt-empty p{margin:0 0 14px;color:var(--muted)}
+  .mt-hubs{display:flex;flex-wrap:wrap;gap:8px}
+  .mt-hubs a{padding:9px 14px;border-radius:999px;border:1px solid var(--rule);color:var(--ink);text-decoration:none;font:600 14px/1 var(--body)}
+  .mt-hubs a:hover{border-color:var(--ink)}
+  .mt-sign{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:14px}
+  .mt-sign button{border:0;border-radius:9px;background:var(--ink);color:var(--paper);padding:9px 14px;font:600 14px/1 var(--body)}
+  @media (max-width:640px){.mt-grid{grid-template-columns:1fr}.mt-nm a{font-size:18px}}
+</style>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../#projects">Explore all projects</a>
+</nav>
+
+<main class="wrap">
+  <header class="mast">
+    <div>
+      <p class="kicker">Your teams, every sport</p>
+      <h1>My <span>teams</span></h1>
+      <p class="sub">Every team you follow on the hubs: who they play next, when and where to watch, the record and where they stand.</p>
+    </div>
+  </header>
+  <section id="view" aria-live="polite"><p class="loading">Loading your teams…</p></section>
+  <p class="foot">Schedules, records and standings from ESPN. Follow a team with the ☆ on its team page in any hub.</p>
+</main>
+
+<script src="../assets/hubswitch.js?v=20261124mt2" defer></script>
+<script>
+/* My teams: one card per team you follow (assets/follow.js lists them, synced to your account), filled from ESPN's
+   team schedule (record, standing, next and last game). Sorted by who plays next, live games first. */
+(function () {
+  "use strict";
+  var view = document.getElementById("view");
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+  var lower = function (map) { return function (c) { return map[c] || String(c).toLowerCase(); }; };
+  // each hub's team ids, and how ESPN names the same team (the college hubs already use ESPN's ids)
+  var SPORTS = [
+    { k: "nba", label: "NBA", path: "basketball/nba", hub: "../nba/", espn: lower({ BRK: "bkn", CHO: "cha", PHO: "phx", GSW: "gs", NOP: "no", NYK: "ny", SAS: "sa", UTA: "utah", WAS: "wsh" }), back: { BKN: "BRK", CHA: "CHO", PHX: "PHO", GS: "GSW", NO: "NOP", NY: "NYK", SA: "SAS", UTAH: "UTA", WSH: "WAS" }, team: function (id) { return "#/team/" + id; } },
+    { k: "nfl", label: "NFL", path: "football/nfl", hub: "../nfl/", espn: lower({ WAS: "wsh" }), back: { WSH: "WAS" }, team: function (id) { return "#/team/" + id; } },
+    { k: "nhl", label: "NHL", path: "hockey/nhl", hub: "../nhl/", espn: lower({ NJD: "nj", LAK: "la", TBL: "tb", SJS: "sj", UTA: "utah", MTL: "mtl", WSH: "wsh" }), back: { NJ: "NJD", LA: "LAK", TB: "TBL", SJ: "SJS", UTAH: "UTA", MON: "MTL", WAS: "WSH" }, team: function (id) { return "#/team/" + id; } },
+    { k: "mlb", label: "MLB", path: "baseball/mlb", hub: "../mlb/", espn: lower({ CWS: "chw", ATH: "oak" }), back: { CHW: "CWS", OAK: "ATH" }, team: function (id) { return "#team/" + id; } },
+    { k: "ncaab", label: "NCAAB", path: "basketball/mens-college-basketball", hub: "../cbb/", espn: String, back: {}, team: function (id) { return "#/team?id=" + encodeURIComponent(id); } },
+    { k: "ncaaf", label: "NCAAF", path: "football/college-football", hub: "../cfb/", espn: String, back: {}, team: function (id) { return "#/team?id=" + encodeURIComponent(id); } }
+  ];
+  var BY = {}; SPORTS.forEach(function (s) { BY[s.k] = s; });
+  var data = {};          // "sport:id" -> {team, next, last, err}
+
+  function follows() {
+    if (!window.Follow) return [];
+    var out = [];
+    SPORTS.forEach(function (s) { Follow.list(s.k).forEach(function (id) { out.push({ s: s, id: id, key: s.k + ":" + id }); }); });
+    return out;
+  }
+  // ESPN's schedule for a team, kept for ten minutes in this tab
+  function load(f) {
+    var ck = "mt:" + f.key, hit = null;
+    try { hit = JSON.parse(sessionStorage.getItem(ck)); } catch (e) { hit = null; }
+    if (hit && Date.now() - hit.t < 6e5) { data[f.key] = hit.v; return Promise.resolve(); }
+    var url = "https://site.web.api.espn.com/apis/site/v2/sports/" + f.s.path + "/teams/" + encodeURIComponent(f.s.espn(f.id)) + "/schedule?region=us&lang=en&contentorigin=espn";
+    return fetch(url).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (j) {
+      var t = j.team || {}, ev = j.events || [], now = Date.now();
+      var open = ev.filter(function (e) { var c = e.competitions && e.competitions[0]; return c && !c.status.type.completed; });
+      var next = open.filter(function (e) { return Date.parse(e.date) > now - 5 * 36e5; })[0] || null;
+      var done = ev.filter(function (e) { var c = e.competitions && e.competitions[0]; return c && c.status.type.completed; });
+      var v = { team: { id: t.id, name: t.displayName, abbr: t.abbreviation, rec: t.recordSummary, stand: t.standingSummary, logo: t.logo, color: t.color ? "#" + t.color : null }, next: slim(next, t.id), last: slim(done[done.length - 1], t.id) };
+      data[f.key] = v;
+      try { sessionStorage.setItem(ck, JSON.stringify({ t: Date.now(), v: v })); } catch (e) { /* full */ }
+    }).catch(function () { data[f.key] = { err: true }; });
+  }
+  function slim(e, me) {
+    if (!e) return null;
+    var c = e.competitions[0], us = null, them = null;
+    c.competitors.forEach(function (x) { if (String(x.team.id) === String(me)) us = x; else them = x; });
+    if (!us || !them) return null;
+    var sc = function (x) { return x.score == null ? null : typeof x.score === "object" ? x.score.displayValue : x.score; };
+    return { id: e.id, at: e.date, week: e.week && e.week.number, st: c.status.type.state, detail: c.status.type.shortDetail || c.status.type.detail, home: us.homeAway === "home", neutral: !!c.neutralSite,
+      tv: (c.broadcasts || []).map(function (b) { return b.media && b.media.shortName; }).filter(Boolean).slice(0, 2),
+      opp: { id: them.team.id, abbr: them.team.abbreviation, name: them.team.shortDisplayName || them.team.displayName, logo: them.team.logos && them.team.logos[0] && them.team.logos[0].href },
+      us: sc(us), them: sc(them), won: us.winner === true, tbd: !!c.timeValid === false && c.status.type.state === "pre" && /TBD/i.test(c.status.type.detail || "") };
+  }
+
+  var dayKey = function (d) { return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" }); };
+  function when(g) {
+    if (g.st === "in") return '<div class="mt-when live">Live<span>' + esc(g.detail || "") + "</span></div>";
+    var d = new Date(g.at), today = dayKey(d) === dayKey(new Date()), tmr = dayKey(d) === dayKey(new Date(Date.now() + 864e5));
+    var day = today ? "Today" : tmr ? "Tomorrow" : d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "America/New_York" });
+    var tm = g.tbd ? "TBD" : d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).replace(":00", "");
+    return '<div class="mt-when' + (today ? " today" : "") + '">' + esc(day) + "<span>" + esc(tm) + "</span></div>";
+  }
+  // where the hub previews this game
+  function preview(f, g) {
+    var s = f.s, h = s.hub;
+    if (s.k === "nba" || s.k === "nhl") return h + "#/game/" + g.id;
+    if (s.k === "nfl") { var o = s.back[g.opp.abbr] || g.opp.abbr, a = g.home ? o : f.id, hm = g.home ? f.id : o; return h + "#/game/" + a + "-" + hm + (g.week ? "?w=" + g.week : ""); }
+    if (s.k === "ncaab") return h + "#/matchup?a=" + encodeURIComponent(f.id) + "&b=" + encodeURIComponent(g.opp.id);
+    if (s.k === "ncaaf") return h + "#/matchup?a=" + encodeURIComponent(f.id) + "&b=" + encodeURIComponent(g.opp.id) + "&site=" + (g.neutral ? "n" : g.home ? "a" : "b");
+    return null;
+  }
+  function card(f) {
+    var v = data[f.key], s = f.s;
+    var star = window.Follow ? Follow.star(s.k, f.id, v && v.team ? v.team.name : f.id) : "";
+    if (!v) return '<article class="mt skel"><div class="mt-hd"><span class="mt-logo"></span><div class="mt-nm"><a href="' + s.hub + s.team(f.id) + '"><span class="mt-sp">' + s.label + "</span>" + esc(f.id) + "</a><small>Loading…</small></div>" + star + "</div></article>";
+    var t = v.team || {}, g = v.next, L = v.last;
+    var head = '<div class="mt-hd" style="--tc:' + esc(t.color || "var(--rule)") + '"><span class="mt-logo">' + (t.logo ? '<img src="' + esc(t.logo) + '" alt="" loading="lazy">' : "") + '</span><div class="mt-nm"><a href="' + s.hub + s.team(f.id) + '">' + esc(t.name || f.id) + '</a><small><span class="mt-sp">' + s.label + "</span>" + esc([t.rec, t.stand].filter(Boolean).join(", ")) + "</small></div>" + star + "</div>";
+    if (v.err) return '<article class="mt">' + head + '<p class="mt-last">ESPN didn\'t answer for this team. Try again in a minute.</p><div class="mt-acts"><a href="' + s.hub + s.team(f.id) + '">Team page</a></div></article>';
+    var nx = g ? '<div class="mt-next">' + when(g) + '<div class="mt-vs">' + (g.st === "in" && g.us != null ? '<span class="mt-score">' + esc(g.us) + "-" + esc(g.them) + "</span> " : "") + "<b>" + (g.neutral ? "vs " : g.home ? "vs " : "at ") + esc(g.opp.name) + "</b><small>" + esc([g.neutral ? "Neutral site" : "", g.tv.join(", ")].filter(Boolean).join(" · ") || (g.st === "in" ? "" : "TV to be announced")) + "</small></div></div>" : '<div class="mt-next"><div class="mt-when">No game<span>scheduled</span></div><div class="mt-vs"><small>' + (s.k === "mlb" ? "Offseason" : "Nothing on the schedule yet") + "</small></div></div>";
+    var last = L ? '<p class="mt-last">Last: <b class="' + (L.won ? "w" : "l") + '">' + (L.won ? "W" : "L") + " " + esc(L.us) + "-" + esc(L.them) + "</b> " + (L.neutral ? "vs " : L.home ? "vs " : "at ") + esc(L.opp.name) + ", " + esc(new Date(L.at).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })) + "</p>" : "";
+    var pv = g && preview(f, g);
+    return '<article class="mt">' + head + nx + last + '<div class="mt-acts">' + (pv ? '<a class="go" href="' + pv + '">' + (g.st === "in" ? "Game" : "Preview") + "</a>" : "") + '<a href="' + s.hub + s.team(f.id) + '">Team page</a></div></article>';
+  }
+  // live first, then soonest, then teams with nothing scheduled
+  function order(fs) {
+    var rank = function (f) { var v = data[f.key], g = v && v.next; if (!v) return 2e15; if (!g) return 3e15; return g.st === "in" ? 0 : Date.parse(g.at); };
+    return fs.slice().sort(function (a, b) { return rank(a) - rank(b); });
+  }
+  function draw() {
+    var fs = follows(), A = window.DSAccount, signedOut = A && A.me && !A.me();
+    var sign = signedOut ? '<div class="mt-sign"><span>' + (fs.length ? "Sign in to keep these teams on every device you use." : "Following teams on another device? Sign in to bring them here.") + '</span><button type="button" data-sign>Sign in</button></div>' : "";
+    if (!fs.length) {
+      view.innerHTML = sign + '<div class="mt-empty"><h2>You aren\'t following any teams yet.</h2><p>Open a team page in any hub and tap ☆ Follow. Your teams show up here, at the top of each hub, and on every device you sign in on.</p><div class="mt-hubs">' +
+        SPORTS.map(function (s) { return '<a href="' + s.hub + (s.k === "mlb" ? "#teams" : "#/teams") + '">' + s.label + " teams</a>"; }).join("") + "</div></div>";
+      return;
+    }
+    view.innerHTML = sign + '<div class="mt-grid">' + order(fs).map(card).join("") + "</div>";
+  }
+  view.addEventListener("click", function (e) { if (e.target.closest("[data-sign]") && window.DSAccount) DSAccount.openSignIn(); });
+  function start() {
+    draw();
+    var fs = follows(), left = fs.length;
+    fs.forEach(function (f) { load(f).then(function () { left--; draw(); }); });
+  }
+  // a team followed or unfollowed here, or arriving from another device
+  window.addEventListener("ds-follow", function () { var fs = follows(); fs.filter(function (f) { return !data[f.key]; }).forEach(function (f) { load(f).then(draw); }); draw(); });
+  window.addEventListener("dsolar:auth", draw);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+</body>
+</html>
