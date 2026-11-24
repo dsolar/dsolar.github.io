@@ -1086,11 +1086,16 @@
     if (dayOn() && !form.scoring && S.nba.scorings.points) form.scoring = "points";
     // keep the season inside the real one: fewer playoff weeks first if even one regular week won't fit, then fewer weeks
     const left = oneWeek() || form.season === "guillotine" ? null : weeksLeft();
+    // weeksFull: the length before a short season cut it down, so switching to a sport with more of its season left
+    // (football in late November to basketball) gets the full length back instead of staying at three weeks
     if (form.weeksWant) form.weeks = form.weeksWant;
+    else if (form.weeksFull && form.weeks === form.weeksCut) form.weeks = form.weeksFull;
     if (left != null) {
       const pwOf = (po) => (h2hLike() && po ? playoffWeeks(Math.min(po, form.teams)) : 0);
       while (form.playoffs > 0 && 1 + pwOf(form.playoffs) > left) form.playoffs = [0, 2, 3, 4, 6, 8, 10, 12].filter((x) => x < form.playoffs).pop() || 0;
-      form.weeks = Math.max(1, Math.min(form.weeks, left - pwOf(form.playoffs)));
+      const cap = Math.max(1, left - pwOf(form.playoffs));
+      if (form.weeks > cap) { if (!form.weeksWant) { form.weeksFull = form.weeks; form.weeksCut = cap; } form.weeks = cap; }
+      form.weeks = Math.max(1, form.weeks);
     }
     const tv = teamVals();
     if (!tv.includes(form.teams)) form.teams = tv.reduce((b, v) => (Math.abs(v - form.teams) < Math.abs(b - form.teams) || (Math.abs(v - form.teams) === Math.abs(b - form.teams) && v > b) ? v : b), tv[0]);
