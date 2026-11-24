@@ -566,7 +566,9 @@
     if (!seasons.some(([k]) => k === form.season)) form.season = "h2h";
     if (form.season === "guillotine" && form.kind === "dynasty") form.kind = "redraft";
     if (hcOn() && !HC_TYPES.includes(form.type)) form.type = "snake";
-    if (!form.clocks || form.clocks !== auction) { form.clocks = auction; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800]; if (!ok.includes(form.clock)) form.clock = auction ? 15 : 90; }
+    // a Dutch auction's clock is how long prices fall: 30 seconds unless the commissioner picks another
+    const clocksFor = dutch ? "dutch" : auction;
+    if (!form.clocks || form.clocks !== clocksFor) { const was = form.clocks; form.clocks = clocksFor; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800]; if (!ok.includes(form.clock)) form.clock = dutch ? 30 : auction ? 15 : 90; else if (dutch && was !== undefined) form.clock = 30; else if (auction && was === "dutch") form.clock = 15; }
     const V = values(sp), fmt = formatOf(), gl = form.season === "guillotine";
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
