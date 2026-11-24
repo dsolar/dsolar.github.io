@@ -63,6 +63,7 @@
     const ctx = G.context(L, players, sport, { real: L.settings.real ? weeks : null });
     const w = Math.min(L.week, G.totalWeeks(L));
     const frac = Math.max(0, Math.min(1, (Date.now() - G.weekStart(L, w)) / WEEK));
+    if (live) G.setKicks(L, live);
     const game = G.matchups(L, ctx, w, frac).find((g) => g.a === me || g.b === me);
     if (!game) return null;
     const mine = game.a === me, opp = mine ? game.b : game.a;
@@ -71,10 +72,22 @@
     const pts = G.scoring ? G.scoring(L, ctx).type === "points" : true;
     const lu = G.lineupFor(L, ctx, me, w), offers = (L.trades || []).filter((t) => t.status === "pending" && t.to === me).length;
     const empty = L.settings.bestBall ? 0 : L.settings.lineup.length - lu.filter(Boolean).length;
-    const out = L.settings.bestBall ? 0 : lu.filter((id) => id && ctx.byId[id] && G.plays(ctx.byId[id]) === 0).length;
+    const out = L.settings.bestBall ? 0 : lu.filter((id) => id && ctx.byId[id] && G.plays(ctx.byId[id]) === 0 && !G.isLocked(L, ctx.byId[id], w, Date.now())).length;
     const claims = (L.claims || []).filter((c) => c.team === me && c.status === "open").length;
     const attention = offers ? `${offers} trade offer${offers === 1 ? "" : "s"} to review` : empty ? `${empty} empty lineup spot${empty === 1 ? "" : "s"}` : out ? `${out} starter${out === 1 ? "" : "s"} flagged out` : claims ? `${claims} waiver claim${claims === 1 ? "" : "s"} pending` : "";
-    return { w, you, them, pts, opp: L.teams[opp] ? L.teams[opp].name : "Opponent", live: !!game.live && frac < 1, final: !!game.final || frac >= 1, win, attention, action: offers ? "team/trades" : empty || out ? "team/roster" : claims ? "players/claims" : "" };
+    const rw = G.realWeek(L, ctx, w);
+    const pending = L.settings.real && (!rw || rw.missing);
+    const final = !!game.final || !!(rw && rw.final);
+    const state = pending ? "Awaiting box scores" : final ? "Final" : !L.settings.real ? "Simulated" : game.live ? "Live" : frac >= 1 ? "Awaiting final scores" : "This week";
+    let remaining = "";
+    if (k === "nfl" && !pending && !final && !L.settings.bestBall && L.kick && L.kick.week === w) {
+      const kicks = (lineup) => lineup.map(id => ctx.byId[id]).filter(Boolean)
+        .map(p => L.kick.teams[p.t]).filter(at => at > Date.now());
+      const yours = kicks(lu), theirs = kicks(G.lineupFor(L, ctx, opp, w));
+      const next = Math.min(...yours, ...theirs);
+      if (Number.isFinite(next)) remaining = `Yet to start: you ${yours.length}, opponent ${theirs.length} · Next kickoff ${new Date(next).toLocaleString(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" })}`;
+    }
+    return { w, i: game.i, you, them, pts, opp: L.teams[opp] ? L.teams[opp].name : "Opponent", state, pending, final, win, remaining, attention, action: offers ? "team/trades" : empty || out ? "team/roster" : claims ? "players/claims" : "" };
   }
 
   async function mount(el) {
@@ -83,10 +96,11 @@
     const C = FK.cloud; if (!C || !C.user()) return;
     const mine = await C.rpc("fk_mine", {}).catch(() => null);
     if (!Array.isArray(mine) || !mine.length) return;
-    const list = mine.slice().sort((a, b) => (a.phase === "live" ? -1 : 0) - (b.phase === "live" ? -1 : 0)).slice(0, 8);
+    const priority = l => l.phase === "live" ? 0 : l.phase === "season" && !/^(Finished|Season over|Chopped)/.test(statusOf(l)) ? 1 : 2;
+    const list = mine.slice().sort((a, b) => priority(a) - priority(b)).slice(0, 8);
     const icon = (k) => { const src = FK.sports && FK.sports.leagueLogo && FK.sports.leagueLogo(k); const txt = `<span class="ym-lg ym-sp">${esc((FK.sports.ALL[k] || {}).short || k)}</span>`; return src ? `<img class="ym-lg" src="${src}" alt="" loading="lazy" onerror="this.outerHTML=this.dataset.t" data-t="${esc(txt)}">` : txt; };
     el.innerHTML = `<div class="sec-h"><div><h2>Your leagues, right now</h2><p>Draft rooms, matchups, and decisions waiting on you.</p></div><a href="/fantasy/leagues/">All my leagues &rarr;</a></div>
-      <div class="ym">${list.map((l) => `<a class="ym-c" href="/fantasy/league/?id=${encodeURIComponent(l.id)}" data-ym="${esc(l.id)}">${icon(l.sport)}<span class="ym-m"><b>${esc(l.name)}</b><small>${esc(statusOf(l))}</small><span class="ym-s" data-ys></span></span></a>`).join("")}</div>`;
+      <div class="ym">${list.map((l) => `<article class="ym-item"><a class="ym-c" href="/fantasy/league/?id=${encodeURIComponent(l.id)}" data-ym="${esc(l.id)}">${icon(l.sport)}<span class="ym-m"><b>${esc(l.name)}</b><small>${l.phase === "live" ? "Rejoin draft →" : esc(statusOf(l))}</small><span class="ym-s" data-ys></span></span></a></article>`).join("")}</div>`;
     el.hidden = false;
     // leagues still playing (a finished season shows its finish, not its last matchup)
     const scored = list.filter((l) => l.phase === "season" && l.card && l.card.format !== "guillotine" && !/^(Finished|Season over)/.test(statusOf(l))).slice(0, MAX_SCORED);
@@ -97,8 +111,12 @@
       matchup(l).then((m) => {
         if (!m || !box) return;
         const lead = m.you > m.them ? "up" : m.you < m.them ? "down" : "";
-        box.innerHTML = `<span class="ym-sc ${lead}">${m.pts ? fmt(m.you) : m.you}<i>-</i>${m.pts ? fmt(m.them) : m.them}</span><span class="ym-vs">vs ${esc(m.opp)}${m.live ? ` <em class="ym-live">Live</em>` : m.final ? " (final)" : ""}${m.win != null && !m.final ? `, ${Math.round(m.win * 100)}% to win` : ""}</span>`;
-        if (m.attention) { box.insertAdjacentHTML("beforeend", `<span class="ym-attention">${esc(m.attention)} &rarr;</span>`); const card = box.closest("a"); if (card && m.action) card.href += "#" + m.action; }
+        const card = box.closest("a"), url = card.href;
+        card.href = url + "#matchup/" + m.w + "/" + m.i;
+        box.innerHTML = (m.pending ? "" : `<span class="ym-sc ${lead}">${m.pts ? fmt(m.you) : m.you}<i>–</i>${m.pts ? fmt(m.them) : m.them}</span>`) +
+          `<span class="ym-vs">vs ${esc(m.opp)} · ${esc(m.state)}${m.win != null && !m.final && !m.pending ? `, ${Math.round(m.win * 100)}% to win` : ""}</span>` +
+          (m.remaining ? `<small>${esc(m.remaining)}</small>` : "");
+        if (m.attention && m.action) card.insertAdjacentHTML("afterend", `<a class="ym-attention" href="${esc(url)}#${m.action}">${esc(m.attention)} &rarr;</a>`);
       }).catch(() => {});
     }
   }

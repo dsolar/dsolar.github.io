@@ -444,7 +444,7 @@
     var el = $("[data-yours]"); if (!el) return;
     var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
     if (!on) return;
-    var s = document.createElement("script"); s.src = KIT + "home.js?v=202611181715";
+    var s = document.createElement("script"); s.src = KIT + "home.js?v=20261124manager";
     s.onload = function () { if (window.FK && window.FK.home) window.FK.home.mount(el); };
     document.head.appendChild(s);
   }
