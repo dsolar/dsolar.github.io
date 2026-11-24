@@ -4,9 +4,9 @@
 (function () {
   "use strict";
   var HUBS = ["mlb", "nba", "nfl", "nhl", "cbb", "cfb"];
-  var here = (location.pathname.match(/\/(mlb|nba|nfl|nhl|cbb|cfb|my-teams)\/?/) || [])[1];
+  var here = (location.pathname.match(/\/(mlb|nba|nfl|nhl|cbb|cfb|my-teams|tonight)\/?/) || [])[1];
   if (!here) return;
-  if (here === "my-teams") here = "mine";
+  if (here === "my-teams" || here === "tonight") here = "mine";
 
   // Each hub's address for a kind of page. Kinds: standings, teams, contracts, value, builder, fa, method
   var TO = {

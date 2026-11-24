@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Tonight | David Solar</title>
+<meta name="description" content="Every game tonight across the NBA, NFL, NHL, MLB and college: tip times, lines, TV and live scores, with your teams first.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#002244">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../mlb/hub.css?v=20261124-pf5">
+<script src="../assets/analytics.js" defer></script>
+<link rel="stylesheet" href="../assets/navigation.css?v=20261124-sw2">
+<script src="../assets/projects.js?v=20261124-bb" defer></script>
+<script src="../assets/navigation.js?v=20261124-fav" defer></script>
+<script src="../assets/follow.js?v=20261124b" defer></script>
+<script src="../assets/espn-teams.js?v=20261124"></script>
+<style>
+  #view{margin-top:14px}
+  .tn-bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:0 0 14px}
+  .tn-day{display:flex;align-items:center;gap:6px}
+  .tn-day button{border:1px solid var(--rule);background:var(--card);border-radius:999px;padding:7px 12px;font:600 14px/1 var(--body);color:var(--ink)}
+  .tn-day b{font:700 15px/1 var(--body);padding:0 6px}
+  .tn-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+  .tn-chips::-webkit-scrollbar{display:none}
+  .tn-chips button{flex:none;border:1px solid var(--rule);background:transparent;border-radius:999px;padding:7px 12px;font:700 13px/1 var(--body);color:var(--muted)}
+  .tn-chips button[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+  .tn-chips button small{font-weight:500;opacity:.8;margin-left:3px}
+  .tn-sec{margin:18px 0 8px;font:800 20px/1.1 var(--display)}
+  .tn-sec small{font:500 13px/1 var(--body);color:var(--muted);margin-left:6px}
+  .tn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+  .tg{background:var(--card);border:1px solid var(--rule);border-radius:12px;display:flex;flex-direction:column;overflow:hidden}
+  .tg.mine{border-color:#d4a514;box-shadow:inset 3px 0 0 #d4a514}
+  .tg-hd{display:flex;justify-content:space-between;gap:8px;padding:9px 12px 0;font:600 12.5px/1.3 var(--body);color:var(--muted)}
+  .tg-hd .live{color:var(--red);font-weight:700}
+  .tg-sp{font-weight:700;letter-spacing:.05em}
+  .tg-t{display:grid;grid-template-columns:24px 1fr auto;gap:9px;align-items:center;padding:5px 12px}
+  .tg-t img{width:24px;height:24px;object-fit:contain}
+  .tg-t .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:700 15.5px/1.2 var(--body)}
+  .tg-t .nm small{font-weight:500;color:var(--muted);font-size:12.5px;margin-left:5px}
+  .tg-t .rk{font:600 11.5px/1 var(--body);color:var(--muted);margin-right:4px}
+  .tg-t .sc{font:800 20px/1 var(--display);font-variant-numeric:tabular-nums}
+  .tg-t.lost .nm,.tg-t.lost .sc{color:var(--muted)}
+  .tg-t .fv{color:#d4a514;margin-left:4px}
+  .tg-ft{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-top:auto;padding:8px 12px;border-top:1px solid var(--rule-2);font-size:13px;color:var(--muted)}
+  .tg-ft b{color:var(--ink)}
+  .tg-ft a{font-weight:700;text-decoration:none;white-space:nowrap}
+  .tn-empty{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:18px;color:var(--muted)}
+  .tn-more{display:block;margin:10px auto 0;border:1px solid var(--rule);background:var(--card);border-radius:999px;padding:9px 16px;font:600 14px/1 var(--body);color:var(--ink)}
+  @media (max-width:640px){.tn-grid{grid-template-columns:1fr}.tn-bar{flex-direction:column;align-items:stretch}.tn-day{justify-content:space-between}}
+</style>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="../" aria-label="David Solar, home"><img src="../assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="../#projects">Explore all projects</a>
+</nav>
+
+<main class="wrap">
+  <header class="mast">
+    <div>
+      <p class="kicker">Every sport, one slate</p>
+      <h1>Tonight</h1>
+      <p class="sub">Every game across the NBA, NFL, NHL, MLB and college: when, where to watch, the line and the live score, with your teams first.</p>
+    </div>
+  </header>
+  <nav class="tabs" aria-label="Your sports"><a href="/my-teams/">My teams</a><a href="/tonight/" aria-current="page">Tonight</a></nav>
+  <section id="view" aria-live="polite"><p class="loading">Loading tonight's games…</p></section>
+  <p class="foot">Schedules, lines, TV and scores from ESPN. Scores refresh every minute while games are on. College lists every NCAAB Division I and FBS game; the AP ranking shows next to ranked teams.</p>
+</main>
+
+<script src="../assets/hubswitch.js?v=20261124tn" defer></script>
+<script>
+/* Tonight: every sport's ESPN scoreboard for one day, in one list. Your teams (assets/follow.js) first, then live,
+   upcoming by start time, and finals; a chip per sport filters it. ?d=YYYY-MM-DD picks another day. */
+(function () {
+  "use strict";
+  var E = window.ESPNTeams, view = document.getElementById("view");
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+  var etDay = function (d) { return d.toLocaleDateString("en-CA", { timeZone: "America/New_York" }); };
+  var params = new URLSearchParams(location.search);
+  var day = /^\d{4}-\d{2}-\d{2}$/.test(params.get("d") || "") ? params.get("d") : etDay(new Date());
+  var sport = params.get("s") || "all", games = {}, failed = {}, timer = null, showAll = {};
+
+  function parse(S, e) {
+    var c = e.competitions && e.competitions[0]; if (!c) return null;
+    var side = function (x) {
+      var t = x.team || {}, rk = x.curatedRank && x.curatedRank.current;
+      return { id: String(t.id), abbr: t.abbreviation, name: t.shortDisplayName || t.displayName, logo: t.logo || (t.logos && t.logos[0] && t.logos[0].href), rec: x.records && x.records[0] && x.records[0].summary,
+        score: x.score, rank: rk && rk <= 25 ? rk : null, won: x.winner === true };
+    };
+    var h = null, a = null; (c.competitors || []).forEach(function (x) { if (x.homeAway === "home") h = side(x); else a = side(x); });
+    if (!h || !a) return null;
+    var o = c.odds && c.odds[0], st = c.status && c.status.type || {};
+    return { S: S, id: e.id, at: e.date, week: e.week && e.week.number, st: st.state, detail: st.shortDetail || st.detail || "", neutral: !!c.neutralSite, home: h, away: a,
+      tv: (c.broadcasts || []).map(function (b) { return (b.names || []).join("/") || (b.media && b.media.shortName); }).filter(Boolean).slice(0, 2).join(", "),
+      line: o && o.details && o.details !== "OFF" ? o.details : "", ou: o && o.overUnder, tbd: c.timeValid === false };
+  }
+  function load(S) {
+    return fetch(E.scoreboard(S, day.replace(/-/g, "")), { cache: "no-store" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (j) { games[S.k] = (j.events || []).map(function (e) { return parse(S, e); }).filter(Boolean); delete failed[S.k]; })
+      .catch(function () { failed[S.k] = true; if (!games[S.k]) games[S.k] = []; });
+  }
+  function mine(g) {
+    if (!window.Follow) return false;
+    var ids = Follow.list(g.S.k);
+    return ids.indexOf(E.hubId(g.S, g.home)) >= 0 || ids.indexOf(E.hubId(g.S, g.away)) >= 0;
+  }
+  function whenTxt(g) {
+    if (g.st === "in") return '<span class="live">● ' + esc(g.detail || "Live") + "</span>";
+    if (g.st === "post") return "<b>" + esc(g.detail || "Final") + "</b>";
+    if (g.tbd) return "TBD";
+    return esc(new Date(g.at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).replace(":00", "")) + " ET";
+  }
+  function teamRow(g, t, other) {
+    var showSc = g.st !== "pre" && t.score != null, lost = g.st === "post" && other.won;
+    var fav = window.Follow && Follow.list(g.S.k).indexOf(E.hubId(g.S, t)) >= 0;
+    return '<div class="tg-t' + (lost ? " lost" : "") + '">' + (t.logo ? '<img src="' + esc(t.logo) + '" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' : "<span></span>") +
+      '<span class="nm">' + (t.rank ? '<span class="rk">' + t.rank + "</span>" : "") + esc(t.name) + (fav ? '<span class="fv" title="You follow this team">★</span>' : "") + (t.rec ? "<small>" + esc(t.rec) + "</small>" : "") + "</span>" +
+      (showSc ? '<span class="sc">' + esc(t.score) + "</span>" : "<span></span>") + "</div>";
+  }
+  function card(g) {
+    var pv = g.S.preview(g, g.S), line = g.st === "pre" ? [g.line, g.ou ? "O/U " + g.ou : ""].filter(Boolean).join(" · ") : "";
+    return '<article class="tg' + (mine(g) ? " mine" : "") + '"><div class="tg-hd"><span>' + whenTxt(g) + (g.tv ? " · " + esc(g.tv) : "") + '</span><span class="tg-sp">' + g.S.label + (g.neutral ? " · neutral" : "") + "</span></div>" +
+      teamRow(g, g.away, g.home) + teamRow(g, g.home, g.away) +
+      '<div class="tg-ft"><span>' + (line ? "Line <b>" + esc(line) + "</b>" : g.st === "post" ? "Final" : g.st === "in" ? "In progress" : "No line yet") + "</span>" + (pv ? '<a href="' + g.S.hub + pv + '">' + (g.st === "pre" ? "Preview" : "Game") + " →</a>" : "") + "</div></article>";
+  }
+  function draw() {
+    var all = [];
+    E.SPORTS.forEach(function (S) { (games[S.k] || []).forEach(function (g) { all.push(g); }); });
+    var counts = {}; all.forEach(function (g) { counts[g.S.k] = (counts[g.S.k] || 0) + 1; });
+    var list = all.filter(function (g) { return sport === "all" || g.S.k === sport; });
+    var order = function (a, b) { return a.at.localeCompare(b.at) || a.S.label.localeCompare(b.S.label); };
+    var yours = list.filter(mine).sort(function (a, b) { return (a.st === "in" ? 0 : 1) - (b.st === "in" ? 0 : 1) || order(a, b); });
+    var rest = list.filter(function (g) { return !mine(g); });
+    var live = rest.filter(function (g) { return g.st === "in"; }).sort(order), up = rest.filter(function (g) { return g.st === "pre"; }).sort(order), done = rest.filter(function (g) { return g.st === "post"; }).sort(order);
+    var dt = new Date(day + "T12:00:00"), today = day === etDay(new Date());
+    var shift = function (n) { var d = new Date(dt.getTime() + n * 864e5); return d.toISOString().slice(0, 10); };
+    var label = today ? "Tonight" : dt.toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
+    var chips = '<div class="tn-chips" role="group" aria-label="Sport"><button type="button" data-s="all" aria-pressed="' + (sport === "all") + '">All<small>' + all.length + "</small></button>" +
+      E.SPORTS.filter(function (S) { return counts[S.k]; }).map(function (S) { return '<button type="button" data-s="' + S.k + '" aria-pressed="' + (sport === S.k) + '">' + S.label + "<small>" + counts[S.k] + "</small></button>"; }).join("") + "</div>";
+    var bar = '<div class="tn-bar"><div class="tn-day"><button type="button" data-d="' + shift(-1) + '" aria-label="Previous day">←</button><b>' + esc(label) + (today ? "" : "") + '</b><button type="button" data-d="' + shift(1) + '" aria-label="Next day">→</button>' + (today ? "" : '<button type="button" data-d="' + etDay(new Date()) + '">Today</button>') + "</div>" + chips + "</div>";
+    // a long college slate shows its first 24 games until you ask for the rest
+    var sec = function (key, title, gs) {
+      if (!gs.length) return "";
+      var cap = showAll[key] || gs.length <= 30 ? gs.length : 24;
+      return '<h2 class="tn-sec">' + title + "<small>" + gs.length + '</small></h2><div class="tn-grid">' + gs.slice(0, cap).map(card).join("") + "</div>" + (cap < gs.length ? '<button type="button" class="tn-more" data-more="' + key + '">Show all ' + gs.length + "</button>" : "");
+    };
+    var loading = E.SPORTS.some(function (S) { return !games[S.k]; });
+    var miss = Object.keys(failed).map(function (k) { return E.BY[k].label; });
+    var body = sec("y", "Your teams", yours) + sec("l", "Live now", live) + sec("u", today ? "Still to come" : "Games", up) + sec("f", "Final", done);
+    view.innerHTML = bar + (body || '<p class="tn-empty">' + (loading ? "Loading…" : sport === "all" ? "No games on this day." : "No " + E.BY[sport].label + " games on this day.") + "</p>") +
+      (miss.length ? '<p class="foot">ESPN didn\'t answer for ' + esc(miss.join(", ")) + ". It tries again in a minute.</p>" : "");
+  }
+  view.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.s) { sport = b.dataset.s; setUrl(); draw(); }
+    else if (b.dataset.d) { day = b.dataset.d; games = {}; failed = {}; showAll = {}; setUrl(); draw(); start(); }
+    else if (b.dataset.more) { showAll[b.dataset.more] = true; draw(); }
+  });
+  function setUrl() { var q = new URLSearchParams(); if (day !== etDay(new Date())) q.set("d", day); if (sport !== "all") q.set("s", sport); history.replaceState(null, "", location.pathname + (q.toString() ? "?" + q : "")); }
+  function start() {
+    clearTimeout(timer);
+    var all = E.SPORTS.map(function (S) { return load(S).then(draw); });
+    Promise.all(all).then(function () {
+      var anyLive = E.SPORTS.some(function (S) { return (games[S.k] || []).some(function (g) { return g.st === "in"; }); }) || Object.keys(failed).length;
+      if (anyLive || day === etDay(new Date())) timer = setTimeout(function () { if (!document.hidden) start(); else timer = setTimeout(start, 60000); }, 60000);
+    });
+  }
+  window.addEventListener("ds-follow", draw);
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && day === etDay(new Date())) start(); });
+  draw(); start();
+})();
+</script>
+</body>
+</html>
