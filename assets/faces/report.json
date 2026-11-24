@@ -90,8 +90,8 @@
   },
   "nba": {
    "registry": 1192,
-   "shown": 1239,
-   "found": 1150,
+   "shown": 1243,
+   "found": 1154,
    "missing": [
     "Nikola Milutinov"
    ],
@@ -189,9 +189,9 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7366,
-   "shown": 1162,
-   "found": 1073,
+   "registry": 7368,
+   "shown": 1156,
+   "found": 1067,
    "missing": [
     "Derek M. Smith",
     "Maceo Beard"
