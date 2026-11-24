@@ -2947,6 +2947,9 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .trk .trk-lucky{background:#FBE0E4;color:#A51F37}
 
 /* Shared hub card in Draft Lab's light and dark dialogs. */
+dialog.fk-dlg:has(> .pc){padding:0}
+dialog.fk-dlg:has(> .pc) > .dlg-x{margin:10px 10px -44px 8px}
+@media (max-width:640px){dialog.fk-dlg.sheet:has(> .pc){height:min(88dvh,780px)}}
 .pc{--card:var(--surface);--paper-2:var(--surface-2);--rule:var(--line);--rule-2:var(--line-2);--red:var(--accent);--display:var(--f);--body:var(--f);--cond:var(--f);--faint:var(--dim);--up:var(--win);--down:var(--loss)}
 .pc .pc-face .pav{width:100%;height:100%;border-radius:50%}
 .pc .pc-pane .pc-line:not(.pc-line-s){padding:0;border:0;display:grid;align-items:stretch}

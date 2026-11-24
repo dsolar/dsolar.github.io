@@ -881,7 +881,8 @@
       meta: [S.positions(p).join(" / "), p.school, YR[p.yr], p.age && `Age ${Math.floor(p.age)}`, bodyOf(p).replace(/^, /, "")],
       chips: [[p.inj, "inj"], [bye && `Week ${bye} bye`, ""]], head,
       tabs: [
-        { id: "overview", label: "Overview", html: overview ? `<div class="stack">${overview}</div>` : lines[0] },
+        // nothing card-specific to say: skip Overview rather than repeat the season line Stats opens with
+        { id: "overview", label: "Overview", html: overview ? `<div class="stack">${overview}</div>` : "" },
         { id: "stats", label: "Stats", html: [opts.lines !== false && lines.join(""), pastFold, adv].filter(Boolean).join("") },
         { id: "tracking", label: "Tracking", html: tracking && tracking + '<p class="ps track-state" aria-live="polite">Loading tracking data…</p>' },
         { id: "contract", label: "Contract", html: contractPanel(sport, p) },
