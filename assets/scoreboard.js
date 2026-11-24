@@ -25,6 +25,19 @@
     { name: "Penn State", key: "psu-football", path: "football/college-football", id: "213", tag: "PSU football" },
     { name: "Penn State", key: "psu-hoops", path: "basketball/mens-college-basketball", id: "213", tag: "PSU hoops" }
   ];
+  // Someone who follows teams on the hubs (assets/follow.js) sees theirs instead; names come from ESPN's schedule
+  (function () {
+    var E = window.ESPNTeams; if (!E) return;
+    var mine = [];
+    E.SPORTS.forEach(function (S) {
+      var ids = []; try { ids = JSON.parse(localStorage.getItem("ds-fav:" + S.k)) || []; } catch (e) { ids = []; }
+      ids.forEach(function (id) { mine.push({ name: String(id), key: S.k + "-" + id, path: S.path, id: S.espn(id), tag: S.label, auto: true }); });
+    });
+    if (mine.length) {
+      TEAMS = mine;
+      var bar0 = document.getElementById("scores"); if (bar0) bar0.setAttribute("aria-label", "Scoreboard: the teams you follow, Boston time");
+    }
+  })();
   // The league scoreboards leave most college games out unless asked for the whole division.
   var BOARD_QUERY = { "football/college-football": "&groups=80&limit=300", "basketball/mens-college-basketball": "&groups=50&limit=400" };
   var API = "https://site.api.espn.com/apis/site/v2/sports/";
@@ -164,6 +177,7 @@
     var pick = function (data) {
       var now = Date.now(), today = dayET(now);
       if ((data.events || []).length) played = true;
+      if (team.auto && data.team) team.name = data.team.shortDisplayName || data.team.location || data.team.displayName || team.name;
       var games = (data.events || []).map(function (ev) { return game(team, ev); }).filter(Boolean)
         .sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
       if (!us && games.length) us = games[0].us;
