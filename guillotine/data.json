@@ -4,14 +4,14 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-24T09:20:33Z",
+ "updated": "2026-11-24T20:23:36Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 147.42,
+   "proj": 146.02,
    "scores": [
     132.74,
     120.2,
@@ -28,41 +28,42 @@
    "roster": [
     {
      "slot": "QB",
-     "name": "Bo Nix",
-     "nfl": "DEN",
+     "name": "Tyler Shough",
+     "nfl": "NO",
      "pos": "QB",
      "yahoo_actual": 0.0,
-     "game": "Fri 3:00 pm",
-     "opp": "@ PIT",
+     "game": "Sun 1:00 pm",
+     "opp": "@ CIN",
      "season": {
       "g": 10,
       "wk": [
-       6.4,
-       15.1,
-       25.1,
-       13.6,
-       7.9,
-       4.5,
-       26.2,
-       19.3,
-       16.7,
+       25.2,
+       22.4,
+       24.8,
+       15.9,
+       1.8,
+       27.0,
+       14.8,
        null,
-       12.5
+       19.7,
+       11.0,
+       15.3
       ],
       "tot": {
-       "pass_yd": 1955,
-       "pass_td": 12,
-       "pass_int": 5,
+       "pass_yd": 2395,
+       "pass_td": 16,
+       "pass_int": 8,
        "rush_att": 43,
-       "rush_yd": 121,
-       "fum_lost": 2,
+       "rush_yd": 221,
+       "fum_lost": 4,
        "rush_td": 2
       }
      },
-     "proj": 15.24,
-     "rank": "QB19",
-     "date": "2026-11-27",
-     "next_proj": 18.5
+     "proj": 17.18,
+     "rank": "QB14",
+     "date": "2026-11-29",
+     "next_proj": 14.81,
+     "in_best": true
     },
     {
      "slot": "RB",
@@ -136,7 +137,7 @@
        "rec_yd": 146
       }
      },
-     "proj": 13.18,
+     "proj": 13.19,
      "rank": "RB15",
      "date": "2026-11-27",
      "next_proj": 13.93,
@@ -172,7 +173,7 @@
        "rec_td": 2
       }
      },
-     "proj": 13.15,
+     "proj": 13.14,
      "rank": "WR13",
      "date": "2026-11-29",
      "next_proj": 12.26,
@@ -364,7 +365,7 @@
        "rush_td": 3
       }
      },
-     "proj": 24.44,
+     "proj": 24.43,
      "rank": "QB1",
      "date": "2026-11-29",
      "next_proj": 21.4,
@@ -372,42 +373,41 @@
     },
     {
      "slot": "BN",
-     "name": "Tyler Shough",
-     "nfl": "NO",
+     "name": "Bo Nix",
+     "nfl": "DEN",
      "pos": "QB",
      "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "@ CIN",
+     "game": "Fri 3:00 pm",
+     "opp": "@ PIT",
      "season": {
       "g": 10,
       "wk": [
-       25.2,
-       22.4,
-       24.8,
-       15.9,
-       1.8,
-       27.0,
-       14.8,
+       6.4,
+       15.1,
+       25.1,
+       13.6,
+       7.9,
+       4.5,
+       26.2,
+       19.3,
+       16.7,
        null,
-       19.7,
-       11.0,
-       15.3
+       12.5
       ],
       "tot": {
-       "pass_yd": 2395,
-       "pass_td": 16,
-       "pass_int": 8,
+       "pass_yd": 1955,
+       "pass_td": 12,
+       "pass_int": 5,
        "rush_att": 43,
-       "rush_yd": 221,
-       "fum_lost": 4,
+       "rush_yd": 121,
+       "fum_lost": 2,
        "rush_td": 2
       }
      },
-     "proj": 17.19,
-     "rank": "QB14",
-     "date": "2026-11-29",
-     "next_proj": 14.81,
-     "in_best": true
+     "proj": 15.24,
+     "rank": "QB19",
+     "date": "2026-11-27",
+     "next_proj": 18.5
     },
     {
      "slot": "BN",
@@ -478,8 +478,8 @@
        "fum_lost": 2
       }
      },
-     "proj": 9.81,
-     "rank": "TE7",
+     "proj": 9.48,
+     "rank": "TE8",
      "date": "2026-11-29",
      "next_proj": 9.52
     },
@@ -513,8 +513,8 @@
        "rec_td": 6
       }
      },
-     "proj": 11.06,
-     "rank": "WR23",
+     "proj": 11.25,
+     "rank": "WR22",
      "date": "2026-11-29",
      "next_proj": 11.14
     },
@@ -549,8 +549,8 @@
        "rec_td": 2
       }
      },
-     "proj": 9.61,
-     "rank": "WR28",
+     "proj": 9.62,
+     "rank": "WR27",
      "date": "2026-11-29",
      "next_proj": 10.63
     }
@@ -563,10 +563,423 @@
    "games_final": 0
   },
   {
+   "name": "Drake Mayezini",
+   "manager": "Scott",
+   "faab": 91,
+   "proj": 138.33,
+   "scores": [
+    95.18,
+    94.64,
+    90.74,
+    154.6,
+    145.3,
+    97.58,
+    136.56,
+    125.34,
+    92.86,
+    169.04,
+    164.82
+   ],
+   "roster": [
+    {
+     "slot": "QB",
+     "name": "Dak Prescott",
+     "nfl": "DAL",
+     "pos": "QB",
+     "yahoo_actual": 0.0,
+     "game": "Thu 4:30 pm",
+     "opp": "vs PHI",
+     "season": {
+      "g": 11,
+      "wk": [
+       15.4,
+       29.8,
+       18.9,
+       18.1,
+       14.6,
+       13.0,
+       23.3,
+       19.8,
+       19.5,
+       35.4,
+       35.9
+      ],
+      "tot": {
+       "pass_yd": 3049,
+       "pass_td": 25,
+       "pass_int": 6,
+       "rush_att": 33,
+       "rush_yd": 118,
+       "rush_td": 2,
+       "fum_lost": 1
+      }
+     },
+     "proj": 20.65,
+     "rank": "QB7",
+     "date": "2026-11-26",
+     "next_proj": 16.35,
+     "in_best": true
+    },
+    {
+     "slot": "RB",
+     "name": "Cam Skattebo",
+     "nfl": "NYG",
+     "pos": "RB",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "@ IND",
+     "season": {
+      "g": 9,
+      "wk": [
+       14.1,
+       7.5,
+       11.5,
+       7.1,
+       6.1,
+       0.0,
+       18.6,
+       null,
+       null,
+       25.7,
+       4.3
+      ],
+      "tot": {
+       "rush_att": 130,
+       "rush_yd": 530,
+       "rush_td": 4,
+       "rec": 17,
+       "rec_tgt": 24,
+       "rec_yd": 134,
+       "fum_lost": 2
+      }
+     },
+     "proj": 18.47,
+     "rank": "RB3",
+     "date": "2026-11-29",
+     "next_proj": 11.87,
+     "in_best": true
+    },
+    {
+     "slot": "RB",
+     "name": "Kyren Williams",
+     "nfl": "LAR",
+     "pos": "RB",
+     "yahoo_actual": 0.0,
+     "game": "Wed 8:00 pm",
+     "opp": "vs GB",
+     "season": {
+      "g": 10,
+      "wk": [
+       14.0,
+       14.7,
+       18.8,
+       31.7,
+       16.6,
+       8.2,
+       17.1,
+       12.4,
+       7.6,
+       4.2,
+       null
+      ],
+      "tot": {
+       "rush_att": 139,
+       "rush_yd": 616,
+       "rush_td": 6,
+       "rec": 38,
+       "rec_tgt": 51,
+       "rec_yd": 267,
+       "rec_td": 1,
+       "fum_lost": 2
+      }
+     },
+     "proj": 13.79,
+     "rank": "RB13",
+     "date": "2026-11-25",
+     "next_proj": 12.72,
+     "in_best": true
+    },
+    {
+     "slot": "WR",
+     "name": "Nico Collins",
+     "nfl": "HOU",
+     "pos": "WR",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "vs BAL",
+     "season": {
+      "g": 8,
+      "wk": [
+       17.7,
+       null,
+       null,
+       27.3,
+       8.1,
+       9.4,
+       1.6,
+       null,
+       13.5,
+       19.9,
+       13.3
+      ],
+      "tot": {
+       "rush_att": 2,
+       "rush_yd": 12,
+       "rec": 40,
+       "rec_tgt": 60,
+       "rec_yd": 536,
+       "rec_td": 6
+      }
+     },
+     "proj": 14.61,
+     "rank": "WR7",
+     "date": "2026-11-29",
+     "next_proj": 13.78,
+     "in_best": true
+    },
+    {
+     "slot": "WR",
+     "name": "George Pickens",
+     "nfl": "DAL",
+     "pos": "WR",
+     "yahoo_actual": 0.0,
+     "game": "Thu 4:30 pm",
+     "opp": "vs PHI",
+     "season": {
+      "g": 10,
+      "wk": [
+       4.3,
+       7.0,
+       11.7,
+       8.5,
+       23.5,
+       10.3,
+       13.7,
+       5.8,
+       null,
+       38.0,
+       20.3
+      ],
+      "tot": {
+       "rec": 57,
+       "rec_tgt": 90,
+       "rec_yd": 780,
+       "rec_td": 6,
+       "rush_att": 1,
+       "rush_yd": 6
+      }
+     },
+     "proj": 11.54,
+     "rank": "WR20",
+     "date": "2026-11-26",
+     "next_proj": 10.21,
+     "in_best": true
+    },
+    {
+     "slot": "WR",
+     "name": "Malik Nabers",
+     "nfl": "NYG",
+     "pos": "WR",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "@ IND",
+     "season": {
+      "g": 10,
+      "wk": [
+       9.9,
+       0.6,
+       5.1,
+       20.2,
+       23.6,
+       22.5,
+       14.6,
+       null,
+       6.8,
+       4.9,
+       15.0
+      ],
+      "tot": {
+       "rec": 65,
+       "rec_tgt": 97,
+       "rec_yd": 747,
+       "rec_td": 3,
+       "fum_lost": 1
+      }
+     },
+     "proj": 13.41,
+     "rank": "WR12",
+     "date": "2026-11-29",
+     "next_proj": 12.12,
+     "in_best": true
+    },
+    {
+     "slot": "TE",
+     "name": "Trey McBride",
+     "nfl": "ARI",
+     "pos": "TE",
+     "yahoo_actual": 0.0,
+     "game": "Sun 4:25 pm",
+     "opp": "vs WAS",
+     "season": {
+      "g": 11,
+      "wk": [
+       20.0,
+       14.1,
+       12.0,
+       6.6,
+       17.1,
+       8.8,
+       22.1,
+       16.7,
+       8.9,
+       6.2,
+       10.3
+      ],
+      "tot": {
+       "rec": 87,
+       "rec_tgt": 113,
+       "rec_yd": 689,
+       "rec_td": 5,
+       "rush_att": 1,
+       "rush_yd": 4
+      }
+     },
+     "proj": 12.5,
+     "rank": "TE2",
+     "date": "2026-11-29",
+     "next_proj": 12.88,
+     "in_best": true
+    },
+    {
+     "slot": "W/R/T",
+     "name": "Chuba Hubbard",
+     "nfl": "CAR",
+     "pos": "RB",
+     "yahoo_actual": 0.0,
+     "game": "Mon 8:15 pm",
+     "opp": "@ TB",
+     "season": {
+      "g": 10,
+      "wk": [
+       22.2,
+       13.4,
+       13.0,
+       25.4,
+       null,
+       18.6,
+       8.0,
+       21.4,
+       11.6,
+       31.7,
+       26.0
+      ],
+      "tot": {
+       "rush_att": 188,
+       "rush_yd": 831,
+       "rush_td": 9,
+       "rec": 31,
+       "rec_tgt": 36,
+       "rec_yd": 247,
+       "rec_td": 2
+      }
+     },
+     "proj": 13.35,
+     "rank": "RB14",
+     "date": "2026-11-30",
+     "next_proj": 14.89,
+     "in_best": true
+    },
+    {
+     "slot": "Q/W/R/T",
+     "name": "Jared Goff",
+     "nfl": "DET",
+     "pos": "QB",
+     "yahoo_actual": 0.0,
+     "game": "Thu 1:00 pm",
+     "opp": "vs CHI",
+     "season": {
+      "g": 10,
+      "wk": [
+       16.4,
+       29.8,
+       19.4,
+       20.5,
+       28.9,
+       null,
+       18.0,
+       10.0,
+       6.3,
+       22.4,
+       20.4
+      ],
+      "tot": {
+       "pass_yd": 2716,
+       "pass_td": 20,
+       "rush_att": 25,
+       "rush_yd": 35,
+       "rush_td": 1,
+       "fum_lost": 1,
+       "pass_int": 4
+      }
+     },
+     "proj": 19.92,
+     "rank": "QB8",
+     "date": "2026-11-26",
+     "next_proj": 19.08,
+     "in_best": true
+    },
+    {
+     "slot": "BN",
+     "name": "Breece Hall",
+     "nfl": "NYJ",
+     "pos": "RB",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "@ MIA",
+     "season": {
+      "g": 6,
+      "wk": [
+       18.8,
+       11.7,
+       7.0,
+       null,
+       null,
+       null,
+       null,
+       null,
+       10.2,
+       12.8,
+       17.5
+      ],
+      "tot": {
+       "rush_att": 97,
+       "rush_yd": 351,
+       "rush_td": 1,
+       "rec": 20,
+       "rec_tgt": 21,
+       "rec_yd": 209,
+       "rec_td": 1
+      }
+     },
+     "proj": 10.97,
+     "rank": "RB24",
+     "date": "2026-11-29",
+     "bye_next": true,
+     "next_proj": 0.0
+    }
+   ],
+   "points_final": 0,
+   "best": 138.2,
+   "best_next": 123.9,
+   "locked": 0,
+   "locked_proj": 0,
+   "games_final": 0
+  },
+  {
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 167,
-   "proj": 136.6,
+   "proj": 137.32,
    "scores": [
     135.46,
     161.16,
@@ -613,8 +1026,8 @@
        "rush_td": 2
       }
      },
-     "proj": 16.62,
-     "rank": "QB15",
+     "proj": 16.37,
+     "rank": "QB16",
      "date": "2026-11-29",
      "next_proj": 22.75,
      "in_best": true
@@ -694,7 +1107,7 @@
        "rec_td": 2
       }
      },
-     "proj": 14.03,
+     "proj": 14.04,
      "rank": "RB12",
      "date": "2026-11-29",
      "next_proj": 12.03,
@@ -733,7 +1146,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 16.37,
+     "proj": 16.28,
      "rank": "WR4",
      "date": "2026-11-26",
      "next_proj": 14.43,
@@ -769,7 +1182,7 @@
        "rec_td": 7
       }
      },
-     "proj": 14.66,
+     "proj": 14.64,
      "rank": "WR6",
      "date": "2026-11-29",
      "next_proj": 13.64,
@@ -808,7 +1221,7 @@
        "rush_yd": 29
       }
      },
-     "proj": 20.94,
+     "proj": 20.57,
      "rank": "WR1",
      "date": "2026-11-29",
      "next_proj": 22.67,
@@ -845,8 +1258,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 9.95,
-     "rank": "TE5",
+     "proj": 9.85,
+     "rank": "TE6",
      "date": "2026-11-29",
      "next_proj": 12.26,
      "in_best": true
@@ -924,7 +1337,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 18.13,
+     "proj": 18.01,
      "rank": "QB9",
      "date": "2026-11-26",
      "next_proj": 17.62,
@@ -999,7 +1412,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 12.85,
+     "proj": 12.89,
      "rank": "WR15",
      "date": "2026-11-29",
      "bye_next": true,
@@ -1038,7 +1451,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 15.18,
+     "proj": 15.17,
      "rank": "QB20",
      "date": "2026-11-30",
      "next_proj": 15.62
@@ -1073,8 +1486,8 @@
        "rec_td": 2
       }
      },
-     "proj": 11.27,
-     "rank": "WR22",
+     "proj": 11.23,
+     "rank": "WR23",
      "date": "2026-11-26",
      "next_proj": 11.43
     },
@@ -1154,501 +1567,8 @@
     }
    ],
    "points_final": 0,
-   "best": 139.3,
+   "best": 138.3,
    "best_next": 135.9,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
-  },
-  {
-   "name": "Drake Mayezini",
-   "manager": "Scott",
-   "faab": 91,
-   "proj": 115.26,
-   "scores": [
-    95.18,
-    94.64,
-    90.74,
-    154.6,
-    145.3,
-    97.58,
-    136.56,
-    125.34,
-    92.86,
-    169.04,
-    164.82
-   ],
-   "roster": [
-    {
-     "slot": "QB",
-     "name": "Dak Prescott",
-     "nfl": "DAL",
-     "pos": "QB",
-     "yahoo_actual": 0.0,
-     "game": "Thu 4:30 pm",
-     "opp": "vs PHI",
-     "season": {
-      "g": 11,
-      "wk": [
-       15.4,
-       29.8,
-       18.9,
-       18.1,
-       14.6,
-       13.0,
-       23.3,
-       19.8,
-       19.5,
-       35.4,
-       35.9
-      ],
-      "tot": {
-       "pass_yd": 3049,
-       "pass_td": 25,
-       "pass_int": 6,
-       "rush_att": 33,
-       "rush_yd": 118,
-       "rush_td": 2,
-       "fum_lost": 1
-      }
-     },
-     "proj": 20.69,
-     "rank": "QB7",
-     "date": "2026-11-26",
-     "next_proj": 16.35,
-     "in_best": true
-    },
-    {
-     "slot": "RB",
-     "name": "Chuba Hubbard",
-     "nfl": "CAR",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Mon 8:15 pm",
-     "opp": "@ TB",
-     "season": {
-      "g": 10,
-      "wk": [
-       22.2,
-       13.4,
-       13.0,
-       25.4,
-       null,
-       18.6,
-       8.0,
-       21.4,
-       11.6,
-       31.7,
-       26.0
-      ],
-      "tot": {
-       "rush_att": 188,
-       "rush_yd": 831,
-       "rush_td": 9,
-       "rec": 31,
-       "rec_tgt": 36,
-       "rec_yd": 247,
-       "rec_td": 2
-      }
-     },
-     "proj": 13.41,
-     "rank": "RB14",
-     "date": "2026-11-30",
-     "next_proj": 14.89,
-     "in_best": true
-    },
-    {
-     "slot": "RB",
-     "name": "Cam Skattebo",
-     "nfl": "NYG",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "@ IND",
-     "season": {
-      "g": 9,
-      "wk": [
-       14.1,
-       7.5,
-       11.5,
-       7.1,
-       6.1,
-       0.0,
-       18.6,
-       null,
-       null,
-       25.7,
-       4.3
-      ],
-      "tot": {
-       "rush_att": 130,
-       "rush_yd": 530,
-       "rush_td": 4,
-       "rec": 17,
-       "rec_tgt": 24,
-       "rec_yd": 134,
-       "fum_lost": 2
-      }
-     },
-     "proj": 18.47,
-     "rank": "RB3",
-     "date": "2026-11-29",
-     "next_proj": 11.87,
-     "in_best": true
-    },
-    {
-     "slot": "WR",
-     "name": "Nico Collins",
-     "nfl": "HOU",
-     "pos": "WR",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "vs BAL",
-     "season": {
-      "g": 8,
-      "wk": [
-       17.7,
-       null,
-       null,
-       27.3,
-       8.1,
-       9.4,
-       1.6,
-       null,
-       13.5,
-       19.9,
-       13.3
-      ],
-      "tot": {
-       "rush_att": 2,
-       "rush_yd": 12,
-       "rec": 40,
-       "rec_tgt": 60,
-       "rec_yd": 536,
-       "rec_td": 6
-      }
-     },
-     "proj": 14.61,
-     "rank": "WR7",
-     "date": "2026-11-29",
-     "next_proj": 13.78,
-     "in_best": true
-    },
-    {
-     "slot": "WR",
-     "name": "George Pickens",
-     "nfl": "DAL",
-     "pos": "WR",
-     "yahoo_actual": 0.0,
-     "game": "Thu 4:30 pm",
-     "opp": "vs PHI",
-     "season": {
-      "g": 10,
-      "wk": [
-       4.3,
-       7.0,
-       11.7,
-       8.5,
-       23.5,
-       10.3,
-       13.7,
-       5.8,
-       null,
-       38.0,
-       20.3
-      ],
-      "tot": {
-       "rec": 57,
-       "rec_tgt": 90,
-       "rec_yd": 780,
-       "rec_td": 6,
-       "rush_att": 1,
-       "rush_yd": 6
-      }
-     },
-     "proj": 11.56,
-     "rank": "WR21",
-     "date": "2026-11-26",
-     "next_proj": 10.21
-    },
-    {
-     "slot": "WR",
-     "name": "Malik Nabers",
-     "nfl": "NYG",
-     "pos": "WR",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "@ IND",
-     "season": {
-      "g": 10,
-      "wk": [
-       9.9,
-       0.6,
-       5.1,
-       20.2,
-       23.6,
-       22.5,
-       14.6,
-       null,
-       6.8,
-       4.9,
-       15.0
-      ],
-      "tot": {
-       "rec": 65,
-       "rec_tgt": 97,
-       "rec_yd": 747,
-       "rec_td": 3,
-       "fum_lost": 1
-      }
-     },
-     "proj": 13.41,
-     "rank": "WR12",
-     "date": "2026-11-29",
-     "next_proj": 12.12,
-     "in_best": true
-    },
-    {
-     "slot": "TE",
-     "name": "Trey McBride",
-     "nfl": "ARI",
-     "pos": "TE",
-     "yahoo_actual": 0.0,
-     "game": "Sun 4:25 pm",
-     "opp": "vs WAS",
-     "season": {
-      "g": 11,
-      "wk": [
-       20.0,
-       14.1,
-       12.0,
-       6.6,
-       17.1,
-       8.8,
-       22.1,
-       16.7,
-       8.9,
-       6.2,
-       10.3
-      ],
-      "tot": {
-       "rec": 87,
-       "rec_tgt": 113,
-       "rec_yd": 689,
-       "rec_td": 5,
-       "rush_att": 1,
-       "rush_yd": 4
-      }
-     },
-     "proj": 12.07,
-     "rank": "TE2",
-     "date": "2026-11-29",
-     "next_proj": 12.88,
-     "in_best": true
-    },
-    {
-     "slot": "W/R/T",
-     "name": "Breece Hall",
-     "nfl": "NYJ",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "@ MIA",
-     "season": {
-      "g": 6,
-      "wk": [
-       18.8,
-       11.7,
-       7.0,
-       null,
-       null,
-       null,
-       null,
-       null,
-       10.2,
-       12.8,
-       17.5
-      ],
-      "tot": {
-       "rush_att": 97,
-       "rush_yd": 351,
-       "rush_td": 1,
-       "rec": 20,
-       "rec_tgt": 21,
-       "rec_yd": 209,
-       "rec_td": 1
-      }
-     },
-     "proj": 10.98,
-     "rank": "RB24",
-     "date": "2026-11-29",
-     "bye_next": true,
-     "next_proj": 0.0
-    },
-    {
-     "slot": "Q/W/R/T",
-     "empty": true,
-     "assumed": "Jared Goff"
-    },
-    {
-     "slot": "BN",
-     "name": "Jared Goff",
-     "nfl": "DET",
-     "pos": "QB",
-     "yahoo_actual": 0.0,
-     "game": "Thu 1:00 pm",
-     "opp": "vs CHI",
-     "season": {
-      "g": 10,
-      "wk": [
-       16.4,
-       29.8,
-       19.4,
-       20.5,
-       28.9,
-       null,
-       18.0,
-       10.0,
-       6.3,
-       22.4,
-       20.4
-      ],
-      "tot": {
-       "pass_yd": 2716,
-       "pass_td": 20,
-       "rush_att": 25,
-       "rush_yd": 35,
-       "rush_td": 1,
-       "fum_lost": 1,
-       "pass_int": 4
-      }
-     },
-     "proj": 19.92,
-     "rank": "QB8",
-     "date": "2026-11-26",
-     "next_proj": 19.08,
-     "in_best": true,
-     "assumed_slot": "Q/W/R/T"
-    },
-    {
-     "slot": "BN",
-     "name": "Kyren Williams",
-     "nfl": "LAR",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Wed 8:00 pm",
-     "opp": "vs GB",
-     "season": {
-      "g": 10,
-      "wk": [
-       14.0,
-       14.7,
-       18.8,
-       31.7,
-       16.6,
-       8.2,
-       17.1,
-       12.4,
-       7.6,
-       4.2,
-       null
-      ],
-      "tot": {
-       "rush_att": 139,
-       "rush_yd": 616,
-       "rush_td": 6,
-       "rec": 38,
-       "rec_tgt": 51,
-       "rec_yd": 267,
-       "rec_td": 1,
-       "fum_lost": 2
-      }
-     },
-     "proj": 13.79,
-     "rank": "RB13",
-     "date": "2026-11-25",
-     "next_proj": 12.72,
-     "in_best": true
-    },
-    {
-     "slot": "BN",
-     "name": "Mike Evans",
-     "nfl": "SF",
-     "pos": "WR",
-     "yahoo_actual": 0.0,
-     "game": "Sun 4:25 pm",
-     "opp": "vs SEA",
-     "season": {
-      "g": 7,
-      "wk": [
-       13.9,
-       6.9,
-       10.9,
-       10.1,
-       22.8,
-       10.9,
-       null,
-       null,
-       null,
-       null,
-       19.9
-      ],
-      "tot": {
-       "rec": 33,
-       "rec_tgt": 46,
-       "rec_yd": 529,
-       "rec_td": 4
-      }
-     },
-     "proj": 11.68,
-     "rank": "WR18",
-     "date": "2026-11-29",
-     "next_proj": 14.04,
-     "in_best": true
-    },
-    {
-     "slot": "BN",
-     "name": "Saquon Barkley",
-     "nfl": "PHI",
-     "pos": "RB",
-     "status": "Q",
-     "yahoo_actual": 0.0,
-     "game": "Thu 4:30 pm",
-     "opp": "@ DAL",
-     "season": {
-      "g": 8,
-      "wk": [
-       8.5,
-       2.5,
-       8.5,
-       1.5,
-       null,
-       null,
-       14.1,
-       11.9,
-       8.2,
-       null,
-       13.5
-      ],
-      "tot": {
-       "rush_att": 86,
-       "rush_yd": 371,
-       "rec": 7,
-       "rec_tgt": 11,
-       "rec_yd": 41,
-       "rush_td": 4
-      }
-     },
-     "proj": 12.9,
-     "rank": "RB17",
-     "date": "2026-11-26",
-     "next_proj": 14.48
-    }
-   ],
-   "points_final": 0,
-   "best": 138.1,
-   "best_next": 130.3,
-   "fill": 19.92,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -1657,7 +1577,7 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 38,
-   "proj": 20.61,
+   "proj": 37.75,
    "scores": [
     111.28,
     66.9,
@@ -1711,13 +1631,47 @@
     },
     {
      "slot": "RB",
-     "empty": true,
-     "assumed": "Bucky Irving"
+     "name": "Bijan Robinson",
+     "nfl": "ATL",
+     "pos": "RB",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "@ MIN",
+     "season": {
+      "g": 10,
+      "wk": [
+       27.3,
+       9.6,
+       34.3,
+       27.2,
+       13.8,
+       6.3,
+       14.7,
+       7.6,
+       23.7,
+       15.7,
+       null
+      ],
+      "tot": {
+       "rush_att": 185,
+       "rush_yd": 951,
+       "rec": 35,
+       "rec_tgt": 45,
+       "rec_yd": 256,
+       "rec_td": 1,
+       "rush_td": 6
+      }
+     },
+     "proj": 16.86,
+     "rank": "RB6",
+     "date": "2026-11-29",
+     "next_proj": 19.11,
+     "in_best": true
     },
     {
      "slot": "RB",
      "empty": true,
-     "assumed": "Javonte Williams"
+     "assumed": "Bucky Irving"
     },
     {
      "slot": "WR",
@@ -1742,7 +1696,7 @@
     {
      "slot": "W/R/T",
      "empty": true,
-     "assumed": "Bijan Robinson"
+     "assumed": "Javonte Williams"
     },
     {
      "slot": "Q/W/R/T",
@@ -1781,7 +1735,7 @@
        "rush_yd": 13
       }
      },
-     "proj": 14.08,
+     "proj": 14.02,
      "rank": "WR8",
      "date": "2026-11-29",
      "next_proj": 13.92,
@@ -1862,12 +1816,12 @@
        "rec_td": 2
       }
      },
-     "proj": 17.24,
+     "proj": 17.21,
      "rank": "RB5",
      "date": "2026-11-26",
      "next_proj": 14.65,
      "in_best": true,
-     "assumed_slot": "RB"
+     "assumed_slot": "W/R/T"
     },
     {
      "slot": "BN",
@@ -1980,51 +1934,11 @@
       }
      },
      "proj": 9.91,
-     "rank": "TE6",
+     "rank": "TE5",
      "date": "2026-11-26",
      "next_proj": 8.79,
      "in_best": true,
      "assumed_slot": "TE"
-    },
-    {
-     "slot": "BN",
-     "name": "Bijan Robinson",
-     "nfl": "ATL",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "@ MIN",
-     "season": {
-      "g": 10,
-      "wk": [
-       27.3,
-       9.6,
-       34.3,
-       27.2,
-       13.8,
-       6.3,
-       14.7,
-       7.6,
-       23.7,
-       15.7,
-       null
-      ],
-      "tot": {
-       "rush_att": 185,
-       "rush_yd": 951,
-       "rec": 35,
-       "rec_tgt": 45,
-       "rec_yd": 256,
-       "rec_td": 1,
-       "rush_td": 6
-      }
-     },
-     "proj": 16.86,
-     "rank": "RB6",
-     "date": "2026-11-29",
-     "next_proj": 19.11,
-     "in_best": true,
-     "assumed_slot": "W/R/T"
     },
     {
      "slot": "BN",
@@ -2059,7 +1973,7 @@
        "pass_int": 2
       }
      },
-     "proj": 22.03,
+     "proj": 22.46,
      "rank": "QB3",
      "date": "2026-11-29",
      "next_proj": 21.26,
@@ -2098,7 +2012,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 10.49,
+     "proj": 10.39,
      "rank": "WR25",
      "date": "2026-11-26",
      "next_proj": 12.05
@@ -2137,7 +2051,7 @@
        "rec_td": 3
       }
      },
-     "proj": 16.21,
+     "proj": 15.41,
      "rank": "RB8",
      "date": "2026-11-29",
      "next_proj": 15.09
@@ -2174,7 +2088,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 23.29,
+     "proj": 23.1,
      "rank": "QB2",
      "date": "2026-11-29",
      "next_proj": 23.42,
@@ -2214,8 +2128,8 @@
        "rush_td": 1
       }
      },
-     "proj": 9.58,
-     "rank": "TE8",
+     "proj": 9.48,
+     "rank": "TE7",
      "date": "2026-11-26",
      "next_proj": 9.65
     },
@@ -2258,9 +2172,9 @@
     }
    ],
    "points_final": 0,
-   "best": 150.0,
+   "best": 150.2,
    "best_next": 149.6,
-   "fill": 127.98,
+   "fill": 110.84,
    "locked": 0,
    "locked_proj": 0,
    "games_final": 0
@@ -2620,24 +2534,6 @@
    "from": "waivers",
    "ts": 1794995168,
    "date": "2026-11-18T09:46:08Z"
-  },
-  {
-   "player": "Tyler Allgeier",
-   "pos": "RB",
-   "team": "Drake Mayezini",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1794732191,
-   "date": "2026-11-15T08:43:11Z"
-  },
-  {
-   "player": "Aaron Rodgers",
-   "pos": "QB",
-   "team": "Love a Kittle Lamb & WhiteRice",
-   "bid": 0,
-   "from": "waivers",
-   "ts": 1794732191,
-   "date": "2026-11-15T08:43:11Z"
   }
  ],
  "league_url": "https://football.fantasysports.yahoo.com/f1/157731",
@@ -3291,7 +3187,7 @@
     "name": "Josh Allen",
     "pos": "QB",
     "nfl": "BUF",
-    "proj": 21.2,
+    "proj": 21.09,
     "rank": "QB5",
     "next_proj": 25.73,
     "avg": 24.4,
@@ -3318,13 +3214,13 @@
     "next_proj": 20.79,
     "avg": 20.3,
     "g": 10,
-    "last": 0.0
+    "last": 0
    },
    {
     "name": "Christian McCaffrey",
     "pos": "RB",
     "nfl": "SF",
-    "proj": 16.84,
+    "proj": 16.6,
     "rank": "RB7",
     "next_proj": 21.05,
     "avg": 20.6,
@@ -3335,7 +3231,7 @@
     "name": "Kenneth Walker III",
     "pos": "RB",
     "nfl": "KC",
-    "proj": 17.92,
+    "proj": 17.9,
     "rank": "RB4",
     "next_proj": 17.18,
     "avg": 22.9,
@@ -3346,7 +3242,7 @@
     "name": "James Cook III",
     "pos": "RB",
     "nfl": "BUF",
-    "proj": 15.19,
+    "proj": 15.16,
     "rank": "RB9",
     "next_proj": 17.65,
     "avg": 18.0,
@@ -3357,7 +3253,7 @@
     "name": "Ja'Marr Chase",
     "pos": "WR",
     "nfl": "CIN",
-    "proj": 17.01,
+    "proj": 17.0,
     "rank": "WR3",
     "next_proj": 15.78,
     "avg": 16.7,
@@ -3384,14 +3280,14 @@
     "next_proj": 14.68,
     "avg": 14.7,
     "g": 10,
-    "last": 0.0
+    "last": 0
    },
    {
     "name": "Tony Pollard",
     "pos": "RB",
     "nfl": "TEN",
-    "proj": 12.13,
-    "rank": "RB20",
+    "proj": 12.06,
+    "rank": "RB21",
     "next_proj": 13.34,
     "avg": 14.0,
     "g": 10,
@@ -3401,7 +3297,7 @@
     "name": "Tetairoa McMillan",
     "pos": "WR",
     "nfl": "CAR",
-    "proj": 11.62,
+    "proj": 11.61,
     "rank": "WR19",
     "next_proj": 11.29,
     "avg": 12.3,
@@ -3434,7 +3330,7 @@
     "name": "Brock Bowers",
     "pos": "TE",
     "nfl": "LV",
-    "proj": 14.25,
+    "proj": 13.91,
     "rank": "TE1",
     "next_proj": 0.0,
     "avg": 15.6,
@@ -3462,7 +3358,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-24T09:20:36Z",
+  "updated": "2026-11-24T20:23:43Z",
   "players": 3046,
   "unmatched": []
  }
