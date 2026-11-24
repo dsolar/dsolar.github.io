@@ -53,6 +53,9 @@ jobs:
         run: python3 tools/cbb_dfs.py && python3 tools/fantasykit_teams.py cbb
       - name: March Madness pool teams
         run: python3 tools/cbb_pool_teams.py
+      # the browser's first screen loads hub-lite.json; players.json follows (hub.json stays whole for the scripts above)
+      - name: Split the snapshot for the browser
+        run: python3 tools/cbb_lite.py
       - name: Check JavaScript
         run: |
           node --check cbb/model.js

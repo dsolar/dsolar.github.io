@@ -112,6 +112,8 @@
   window.addEventListener("ds-follow", function (e) { if (e.detail && e.detail.sport === "nfl") yoursSlot(); });
   function render() {
     parse();
+    // only This week can draw before the league is in; anything else waits for it (the full load calls render again)
+    if (W && W.lite && state.route !== "week") { view.innerHTML = '<p class="loading">Loading the league…</p>'; return; }
     var cur = state.route === "team" ? "teams" : state.route === "league" ? "cap" : state.route === "game" ? "week" : state.route, group = GROUP[state.route] || "standings", subs = SUBS[group];
     if (subs.some(function (x) { return x[0] === cur; })) save("sub." + group, cur);
     document.querySelectorAll(".tabs a").forEach(function (a) {
@@ -1322,6 +1324,16 @@
 
   // ---------- start ----------
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
+  // This week (the front page) draws from the small schedule file (games.json) before the league (league.json) is in;
+  // the injury lines on the cards fill in when it is
+  parse();
+  if (state.route === "week") Promise.all([get("data/games.json", true), get("../tools/draft_teams.json", true), loadWeek()]).then(function (r) {
+    if (W || !r[0] || !r[1] || state.route !== "week") return;
+    TEAMS = TEAMS || r[1].nfl;
+    W = { games: r[0].games || [], players: [], byId: {}, lite: true };
+    weekPage();
+    var tb = document.querySelector('.tabs a[data-tab="games"]'); if (tb) tb.setAttribute("aria-current", "page");
+  });
   Promise.all([get("data/league.json"), get("data/teamcap.json", true), get("../tools/draft_teams.json"), get("../draft/nfl.json", true), get("data/rating.json", true)]).then(function (r) {
     TEAMS = r[2].nfl;
     W = P.init(C.newWorld(r[0], r[1], r[4]));

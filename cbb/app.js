@@ -65,7 +65,8 @@ function favLine(l, home, away) { if (!l) return "—"; if (Math.abs(l.spread) <
 function watchIndex(g, l) {
   const a = byId[g.home], b = byId[g.away]; if (!a || !b || !l) return 0;
   const q = ((pctNet[a.id] || 0) + (pctNet[b.id] || 0)) / 2, close = 1 - Math.abs(l.homeProb - 0.5) * 2, pace = ((pctTempo[a.id] || 50) + (pctTempo[b.id] || 50)) / 2;
-  const stars = [...(rosters[a.id] || []), ...(rosters[b.id] || [])], pros = stars.filter(p => fin(p.draftRank) && p.draftRank <= 60).length, nai = stars.filter(p => naiRank[p.id]).length;
+  const stars = [...(rosters[a.id] || []), ...(rosters[b.id] || [])], st = (t, k) => (t.stars && t.stars[k]) || 0;
+  const pros = stars.length ? stars.filter(p => fin(p.draftRank) && p.draftRank <= 60).length : st(a, "pros") + st(b, "pros"), nai = stars.length ? stars.filter(p => naiRank[p.id]).length : st(a, "nai") + st(b, "nai");
   let s = 0.5 * q + 30 * close + 0.05 * pace + Math.min(12, 4 * pros) + Math.min(10, 4 * nai) + (a.conference === b.conference ? 4 : 0) + (g.state === "in" ? 10 : 0);
   return Math.max(0, Math.min(100, Math.round(s)));
 }
@@ -188,7 +189,7 @@ function today(q) {
   const r = X && X.record;
   const playing = new Set(games.flatMap(g => [g.home, g.away]));
   const pros = D.players.filter(p => fin(p.draftRank) && playing.has(p.teamId)).sort((a, b) => a.draftRank - b.draftRank);
-  const nais = (X ? X.naismith.ladder : []).filter(r => playing.has(r.teamId)).slice(0, 8);
+  const nais = (X ? X.naismith.ladder : []).filter(r => playing.has(r.teamId) && byPlayer[r.id]).slice(0, 8);
   const gameOf = tid => games.find(g => g.home === tid || g.away === tid);
   const vs = tid => { const g = gameOf(tid); if (!g) return ""; const o = byId[g.home === tid ? g.away : g.home]; return (g.home === tid ? "vs " : "at ") + esc(o.short); };
   return '<h2 class="sec">' + (day === dayNY() ? "Tonight's games" : "Games · " + dLabel(day, { weekday: "short" })) + "</h2>" +
@@ -736,6 +737,7 @@ function teamShare(p) {
 }
 // the player card, on the shared frame (assets/pcard.js): Overview, Stats, Draft
 function openPlayer(id) {
+  if (!playersReady) { pendingPlayer = id; return; }
   const p = byPlayer[id]; if (!p) return;
   // the Big Board loads on first use: open now, then fill the Draft tab in once it lands (same tab stays open)
   if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { let d = null; try { d = $("#card"); } catch (e) { return; } if (d && d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }).catch(() => {}); } else ensureBoard();
@@ -795,7 +797,8 @@ function render() {
   const st = $("#subtabs");
   st.hidden = !subs;
   if (subs) st.innerHTML = subs.map(x => '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>").join("");
-  view.innerHTML = (page === "today" || page === "teams" ? yours() : "") + fn(r.q);
+  const needsPlayers = { players: 1, naismith: 1, prospects: 1 }[page] || (page === "team" && r.q.get("v") === "roster");
+  view.innerHTML = (page === "today" || page === "teams" ? yours() : "") + (needsPlayers && !playersReady ? '<p class="loading">Loading rosters and stats…</p>' : fn(r.q));
   document.body.dataset.page = page;
 }
 // the teams you follow, with their record and next game, at the top of the main pages (assets/follow.js)
@@ -820,16 +823,37 @@ function index() {
 }
 async function load() {
   try {
-    const [h, x] = await Promise.all([fetch("data/hub.json", { cache: "no-store" }), fetch("data/extras.json", { cache: "no-store" }).catch(() => null)]);
+    // the first screen needs teams and games only (hub-lite.json, tools/cbb_lite.py); rosters and stats follow
+    let [h, x] = await Promise.all([fetch("data/hub-lite.json", { cache: "no-store" }).catch(() => null), fetch("data/extras.json", { cache: "no-store" }).catch(() => null)]);
+    if (!h || !h.ok) h = await fetch("data/hub.json", { cache: "no-store" });
     if (!h.ok) throw Error("Data snapshot unavailable");
     D = await h.json(); X = x && x.ok ? await x.json() : null; if (X && X.spreadSd) M.setSpreadSd(X.spreadSd); if (X && X.mkt) M.setMarket(X.mkt);
+    playersReady = Array.isArray(D.players) && D.players.length > 0; if (!D.players) D.players = [];
     index();
     $("#kicker").textContent = "College basketball · " + (D.seasonLabel || "");
     $("#foot").innerHTML = "Ratings from <a href=\"https://haslametrics.com/\">Haslametrics</a> (" + dLabel(D.sources.haslam && D.sources.haslam.updated) + ") and <a href=\"https://www.espn.com/mens-college-basketball/bpi\">ESPN BPI</a>. Rosters, stats and scores from ESPN. Prospects from the site's <a href=\"../draft/\">NBA Big Board</a>. Updated " + dLabel(D.updated, { hour: "numeric", minute: "2-digit" }) + ". <a href=\"#/method\">How it works</a>.";
     render();
     document.dispatchEvent(new CustomEvent("cbb:ready"));
     if (route().page === "today") refreshLive(false);
-  } catch (e) { view.innerHTML = '<p class="callout">The college basketball snapshot did not load. Try again in a moment.</p>'; }
+    if (!playersReady) loadPlayers();
+  } catch (e) { console.error(e); view.innerHTML = '<p class="callout">The college basketball snapshot did not load. Try again in a moment.</p>'; }
+}
+// rosters and stats, after the first screen is up; pages that show players wait for them
+let playersReady = false, pendingPlayer = null;
+async function loadPlayers() {
+  try {
+    const r = await fetch("data/" + (D.playersFile || "players.json"), { cache: "no-store" });
+    if (!r.ok) throw Error("players");
+    const body = await r.json();
+    D.players = body.players || []; playersReady = true;
+    index();
+    if (window.Search) Search.refresh();
+    // redraw for the players, unless you're typing in a box on the page
+    const typingNow = document.activeElement && view.contains(document.activeElement) && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+    if (!typingNow) render();
+    if (pendingPlayer) { const id = pendingPlayer; pendingPlayer = null; openPlayer(id); }
+    document.dispatchEvent(new CustomEvent("cbb:players"));
+  } catch (e) { const f = $("#foot"); if (f) f.insertAdjacentHTML("afterbegin", "Rosters and stats didn't load; reload the page to try again. "); }
 }
 async function refreshLive(manual) {
   if (!D || document.hidden) return;

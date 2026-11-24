@@ -22,7 +22,7 @@
   function signed(v) { return v == null ? "—" : (v > 0 ? "+" : "") + money(v); }
   function rt(r) { return (r >= 0 ? "+" : "") + r.toFixed(1); }
   function sname(i) { return CBA.seasonName(i); }
-  function team(c) { return H.teams[c] || { code: c, name: c, short: c, color: "#33415c", espn: String(c || "").toLowerCase() }; }
+  function team(c) { return (H && H.teams[c]) || { code: c, name: c, short: c, color: "#33415c", espn: String(c || "").toLowerCase() }; }
   function logo(c, size) {
     var t = team(c); size = size || 22;
     return '<img class="logo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/' + esc(t.espn) + ".png&w=" + size * 2 + "&h=" + size * 2 + '" alt="" width="' + size + '" height="' + size + '" loading="lazy" onerror="this.style.visibility=\'hidden\'">';
@@ -140,13 +140,18 @@
   }
   // ---------- tonight: game cards and previews (assets/tonight.js, data/tonight.json) ----------
   var ESPN2CODE = null;
+  // before the league model is built (Tonight draws from tonight.json alone): ESPN's abbreviations and logos
+  var ESPN_LITE = { GS: "GSW", NO: "NOP", NY: "NYK", SA: "SAS", UTAH: "UTA", WSH: "WAS", BKN: "BRK", CHA: "CHO", PHX: "PHO" };
   function tonightCfg() {
-    if (!ESPN2CODE) { ESPN2CODE = {}; Object.keys(H.teams).forEach(function (c) { ESPN2CODE[String(H.teams[c].espn || c).toUpperCase()] = c; }); }
+    if (!ESPN2CODE && H) { ESPN2CODE = {}; Object.keys(H.teams).forEach(function (c) { ESPN2CODE[String(H.teams[c].espn || c).toUpperCase()] = c; }); }
     var f1 = function (v) { return v == null ? "—" : v.toFixed(1); }, p1 = function (v) { return v == null ? "—" : v.toFixed(1) + "%"; };
     return {
       base: "tonight", preview: "game", word: "on offense", sides: ["offense", "defense"],
       href: href,
-      team: function (ab, name) { var c = ESPN2CODE[ab] || ab, t = team(c); return { code: c, short: t.short || c, name: t.name || name, logo: logo(c, 24), link: href("team/" + c, {}), color: t.color }; },
+      team: function (ab, name) {
+        if (!H) { var c0 = ESPN_LITE[ab] || ab; return { code: c0, short: String(name || ab).split(" ").pop(), name: name || ab, logo: '<img class="logo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/nba/500/' + esc(String(ab).toLowerCase()) + '.png&w=48&h=48" alt="" width="24" height="24" loading="lazy" onerror="this.style.visibility=\'hidden\'">', link: href("team/" + c0, {}) }; }
+        var c = ESPN2CODE[ab] || ab, t = team(c); return { code: c, short: t.short || c, name: t.name || name, logo: logo(c, 24), link: href("team/" + c, {}), color: t.color };
+      },
       rows: [["Points a game", "avgPoints", "d:avgPoints", 1, f1], ["Field goal %", "fieldGoalPct", "d:fieldGoalPct", 1, p1], ["3-point %", "threePointFieldGoalPct", "d:threePointFieldGoalPct", 1, p1],
         ["Threes made", "avgThreePointFieldGoalsMade", "d:avgThreePointFieldGoalsMade", 1, f1], ["Free throw attempts", "avgFreeThrowsAttempted", "d:avgFreeThrowsAttempted", 1, f1],
         ["Offensive rebounds", "avgOffensiveRebounds", "d:avgOffensiveRebounds", 1, f1], ["Assists", "avgAssists", "d:avgAssists", 1, f1], ["Turnovers", "avgTurnovers", "d:avgTurnovers", -1, f1]],
@@ -2105,6 +2110,14 @@
   }
 
   // ---------- start ----------
+  // Tonight (the front page) and game previews only need tonight.json: draw them as soon as it lands, then again
+  // with the full league once it's built
+  parse();
+  if ((state.route === "tonight" || state.route === "game") && window.Tonight) Tonight.load().then(function () {
+    if (H || (state.route !== "tonight" && state.route !== "game")) return;
+    if (state.route === "game") gamePage(); else tonightPage();
+    var tb = document.querySelector('.tabs a[data-tab="tonight"]'); if (tb) tb.setAttribute("aria-current", "page");
+  });
   function get(u, opt) { return fetch(u, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }).catch(function (e) { if (opt) return null; throw e; }); }
   Promise.all([get("../celtics/data.json"), get("../hardcap/stats.json", true), get("../hardcap/contracts.json", true), get("../celtics/live.json", true), get("../draft/nba.json", true), get("data/picks.json"), get("../tools/draft_teams.json", true), get("data/tpes.json", true), get("data/exceptions.json", true), get("data/dead.json", true), get("data/darko.json", true), get("data/taxhist.json", true), get("data/ratings.json", true), get("data/lineups.json", true), get("data/frozen.json", true), get("data/moves.json", true), get("data/trades.json", true), get("../draft/nba2028.json", true), get("data/ringer100.json", true)])
     .then(function (r) {

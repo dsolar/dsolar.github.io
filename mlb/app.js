@@ -1328,15 +1328,12 @@
   }
 
   // ---------- start ----------
+  // park shapes (team pages) and past seasons (player cards) load alongside, without holding up the first screen
   Promise.all([
     fetch("data/hub.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
-    fetch("data/fa.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : { classes: {} }; }).catch(function () { return { classes: {} }; }),
-    fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
-    fetch("data/history.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+    fetch("data/fa.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : { classes: {} }; }).catch(function () { return { classes: {} }; })
   ]).then(function (d) {
-    SHAPES = (d[2] && d[2].parks) || null;
     HUB = d[0];
-    historyData = d[3] && d[3].season === HUB.season ? d[3] : {};
     H = new M.Hub(HUB, d[1]);
     H.set("lens", load("lens", "production") === "market" ? "market" : "production");
     var f = load("fill", true);
@@ -1345,6 +1342,9 @@
     $("#kicker").textContent = "MLB · " + HUB.season + " projections";
     $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
+    // after the first screen: park shapes (team pages), past seasons (player cards), then Statcast
+    fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }).then(function (p) { SHAPES = (p && p.parks) || null; if (state.route === "team") render(); });
+    fetch("data/history.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (h) { historyData = h && h.season === HUB.season ? h : {}; });
     loadSavant().then(function () { if (load("statcast", false)) { applyStatcast(true); render(); } });
   }).catch(function (e) {
     view.innerHTML = '<p class="loading">Couldn\'t load the data. ' + esc(e.message) + "</p>";

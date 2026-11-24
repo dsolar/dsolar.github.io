@@ -643,6 +643,7 @@ function cfbBars(p) {
   return window.PCard.sec("Profile", "percentile vs FBS " + P.name) + window.PCard.bars(rows) + '<p class="note">Among ' + S.n + " FBS " + P.name + " with real playing time." + (P.ok(p) ? "" : " He's short of that volume, so read these as a small sample.") + "</p>";
 }
 function openPlayer(id) {
+  if (!P) { pendingPlayer = id; return; }
   const p = byPlayer[id]; if (!p) return;
   const t = byId[p.teamId], hz = X && X.heisman.ladder.find(x => x.id === id);
   const g = nextGame(p.teamId);
@@ -703,7 +704,8 @@ function render() {
   const st = $("#subtabs");
   st.hidden = !subs;
   if (subs) st.innerHTML = subs.map(x => '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>").join("");
-  view.innerHTML = (page === "week" || page === "teams" ? yours() : "") + fn(r.q);
+  const needsPlayers = { players: 1, prospects: 1 }[page];
+  view.innerHTML = (page === "week" || page === "teams" ? yours() : "") + (needsPlayers && !P ? '<p class="loading">Loading rosters and stats…</p>' : fn(r.q));
   document.body.dataset.page = page;
 }
 // the teams you follow, with their record and next game, at the top of the main pages (assets/follow.js)
@@ -726,9 +728,10 @@ function index() {
 async function load() {
   try {
     const opt = { cache: "no-store" };
-    const [h, x, p, c] = await Promise.all([fetch("data/hub.json", opt), fetch("data/extras.json", opt).catch(() => null), fetch("data/players.json", opt).catch(() => null), fetch("data/cfbd.json", opt).catch(() => null)]);
+    // rosters and stats (players.json) load after the first screen; pages built on them wait for them
+    const [h, x, c] = await Promise.all([fetch("data/hub.json", opt), fetch("data/extras.json", opt).catch(() => null), fetch("data/cfbd.json", opt).catch(() => null)]);
     if (!h.ok) throw Error("Data snapshot unavailable");
-    D = await h.json(); X = x && x.ok ? await x.json() : null; P = p && p.ok ? await p.json() : null;
+    D = await h.json(); X = x && x.ok ? await x.json() : null;
     try { C = c && c.ok ? await c.json() : null; if (C && C.season !== D.season) C = null; } catch (e) { C = null; }
     if (!X) throw Error("Ratings unavailable");
     index();
@@ -737,7 +740,22 @@ async function load() {
     render();
     document.dispatchEvent(new CustomEvent("cfb:ready"));
     if (route().page === "week") refreshLive(false);
-  } catch (e) { view.innerHTML = '<p class="callout">The college football snapshot did not load. Try again in a moment.</p>'; }
+    loadPlayers();
+  } catch (e) { console.error(e); view.innerHTML = '<p class="callout">The college football snapshot did not load. Try again in a moment.</p>'; }
+}
+let pendingPlayer = null;
+async function loadPlayers() {
+  try {
+    const r = await fetch("data/players.json", { cache: "no-store" });
+    P = r.ok ? await r.json() : null;
+  } catch (e) { P = null; }
+  if (!P) return;
+  index();
+  if (window.Search) Search.refresh();
+  const typingNow = document.activeElement && view.contains(document.activeElement) && /INPUT|SELECT|TEXTAREA/.test(document.activeElement.tagName);
+  if (!typingNow) render();
+  if (pendingPlayer) { const id = pendingPlayer; pendingPlayer = null; openPlayer(id); }
+  document.dispatchEvent(new CustomEvent("cfb:players"));
 }
 async function refreshLive(manual) {
   if (!D || document.hidden) return;
