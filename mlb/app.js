@@ -55,7 +55,7 @@
   function faName(x, size) {
     var r = x.r;
     if (x.p) return pname(x.p, size);
-    return '<span class="pl"' + (r.id ? ' data-fa="' + esc(r.id) + '"' : "") + ">" + window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: size }) + '<span class="nm">' + esc(r.n) + "</span></span>";
+    return '<button type="button" class="pl card-link" data-fa="' + esc(faKey(r)) + '">' + window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: size }) + '<span class="nm">' + esc(r.n) + '</span></button>';
   }
   // One line on a signing: the grade and why
   function gradeLine(x) {
@@ -201,7 +201,7 @@
     var p = e.target.closest("[data-p]");
     if (p && !e.target.closest(".results")) { openCard(p.dataset.p); return; }
     var fa = e.target.closest("[data-fa]");
-    if (fa) openFaCard(fa.dataset.fa);
+    if (fa) openFaCard(fa.dataset.fa, fa.dataset.tab);
   });
 
   // ---------- teams ----------
@@ -615,14 +615,24 @@
     if (!card.open) card.showModal();
   }
   // A free agent who isn't on a roster yet: his projection, the crowd's contract, what he's worth year by year
-  function openFaCard(id) {
-    var x = H.faBoard().filter(function (b) { return String(b.r.id) === String(id); })[0];
-    if (!x) return;
-    var r = x.r, from = r.from ? team(r.from) : null;
-    var html = '<div class="card-h">' + window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: 72 }) + "<div><h3>" + esc(r.n) + '</h3><div class="meta">' +
-      (from ? logo(r.from, 18) + " " + esc(from.name) + " · " : "") + esc(r.pos || "") + " · age " + (x.age || "—") + (r.b ? " · B/T " + esc(r.b) + "/" + esc(r.th) : "") + (x.signed && r.to && team(r.to) ? " · signed with the " + esc(team(r.to).name) : " · free agent") + "</div></div></div>";
-    html += '<div class="card-b"><div class="kv">' + kv(f1(x.war), H.season + " WAR" + (x.trust < 1 ? " (adj.)" : " (proj.)")) + kv(r.my ? r.my + " yr" : "—", "Crowd's length") + kv(money(x.crowdAav), "Crowd's AAV") + kv(r.qo ? money(r.qo / 1e6) : "None", "Qualifying offer") + "</div>";
-    html += '<div class="vcs"><div><span>Fair</span><b>' + money(x.spotAav) + '</b><small>per year, at ' + money(H.cfg.dpw) + ' a win</small></div><i>·</i><div><span>Market</span><b>' + money(x.mktAav) +
+  function faKey(r) { return r.id != null ? String(r.id) : "fg:" + r.fg; }
+  function openFaCard(id, tab) {
+    var x = H.faBoard().filter(function (b) { return faKey(b.r) === String(id); })[0];
+    var tracked = SV && (SV.bat[id] || SV.pit[id]);
+    if (!x && !tracked) return;
+    var pc = window.PCard, r = x ? x.r : { id: id, n: tracked.n };
+    var tabs = tracked ? [{ id: "tr", label: "Statcast", html: svPane({ id: id, p: !!SV.pit[id] && !SV.bat[id] }) }] : [];
+    var frame = { name: r.n, face: window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: 60 }), tabs: tabs, tab: tab };
+    if (!x) {
+      cardBody.innerHTML = pc.html(frame);
+      if (!card.open) card.showModal();
+      return;
+    }
+    frame.team = r.to ? esc(team(r.to).name) : "";
+    frame.meta = [r.pos, x.age && "Age " + x.age, r.b && "B/T " + r.b + "/" + r.th, r.from && "From " + team(r.from).name];
+    frame.chips = [[x.signed ? "Signed" : "Free agent", "tag"]];
+    frame.head = [{ v: f1(x.war), l: H.season + " projected WAR" }, { v: r.my ? r.my + " yr" : "—", l: "Crowd's length" }, { v: money(x.crowdAav), l: "Crowd's AAV" }, { v: r.qo ? money(r.qo / 1e6) : "None", l: "Qualifying offer" }];
+    var html = '<div class="vcs"><div><span>Fair</span><b>' + money(x.spotAav) + '</b><small>per year, at ' + money(H.cfg.dpw) + ' a win</small></div><i>·</i><div><span>Market</span><b>' + money(x.mktAav) +
       '</b><small>what deals this long go for</small></div><i>·</i><div class="' + (x.signed ? (x.gap > 0 ? "dn" : "up") : "") + '"><span>' + (x.signed ? "Signed" : "Status") + "</span><b>" + (x.signed ? x.signedAav ? money(x.signedAav) : "Terms pending" : "Unsigned") + "</b><small>" +
       (x.signed ? esc(r.to || "") + " · " + (r.yrs || "?") + " yr" + (x.gap != null ? " · " + (x.gap > 0 ? "+" : "") + pct(x.gap, 0) + " vs market" : "") : "still on the market") + "</small></div></div>";
     var gr = x.grade, aavS = x.signedAav;
@@ -640,8 +650,9 @@
     var cost = totS + (gr && gr.pick ? gr.pick : 0);
     html += '<tr class="tot"><td colspan="2">Total</td><td>' + f1(totW) + "</td><td>" + money(tot) + "</td>" + (aavS ? "<td>" + money(cost) + '</td><td class="' + (tot - cost >= 0 ? "pos" : "neg") + '"><b>' + signed(tot - cost) + "</b></td>" : "") + "</tr></tbody></table></div>";
     if (aavS && gr) html += '<p class="note">Surplus here is production: what his projected WAR is worth at the price of a win, minus what he\'s paid (spread evenly, at his average salary). The grade measures against market price instead, since teams have to pay what free agents get, and ' + x.yrs + "-year deals have gone for " + pct(Math.abs(gr.mkt / tot - 1), 0) + (gr.mkt >= tot ? " more" : " less") + " than the wins they buy.</p>";
-    html += '<p class="note">WAR ages from his projection; a win costs ' + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year. The crowd numbers are FanGraphs readers' median predictions.</p></div>";
-    cardBody.innerHTML = html;
+    html += '<p class="note">WAR ages from his projection; a win costs ' + money(H.cfg.dpw) + " in " + H.season + ", up " + pct(H.cfg.inflation, 0) + " a year. The crowd numbers are FanGraphs readers' median predictions.</p>";
+    tabs.unshift({ id: "ct", label: "Contract", html: html });
+    cardBody.innerHTML = pc.html(frame);
     if (!card.open) card.showModal();
   }
   // The numbers behind the value: the coming season's projection, the last three MLB seasons, the minor league line
@@ -732,7 +743,7 @@
     if (p) return '<td class="tm">' + pname(p, 22) + '</td><td class="tmc hm">' + logo(p.t, 16) + "</td>";
     // not on a hub roster (an unsigned free agent, say): his MLB photo and name, and his Savant team when it has one
     var ph = window.DSFaces ? window.DSFaces.html({ sport: "mlb", id: +id, name: d.n, size: 22 }) : "";
-    return '<td class="tm"><span class="pl nolink">' + ph + '<span class="nm">' + esc(d.n || id) + '</span></span></td><td class="tmc hm">' + (d.t && H.byAbbr[d.t] ? logo(d.t, 16) : "") + "</td>";
+    return '<td class="tm"><button type="button" class="pl card-link" data-tab="tr" data-fa="' + esc(id) + '">' + ph + '<span class="nm">' + esc(d.n || id) + '</span></button></td><td class="tmc hm">' + (d.t && H.byAbbr[d.t] ? logo(d.t, 16) : "") + "</td>";
   }
   // Statcast's luck read on one player: actual against expected (wOBA vs. xwOBA for hitters, ERA vs. xERA for pitchers).
   // "Due" hit better than his results, "Lucky" got more than he hit. About the top and bottom tenth of qualified players
