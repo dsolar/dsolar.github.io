@@ -21,7 +21,7 @@
   "num_keepers": null,
   "keeper_deadline_date": null
  },
- "pulled": "2026-11-19T12:31:25Z",
+ "pulled": "2026-11-24T01:43:47Z",
  "teams": {
   "469.l.30639.t.12": {
    "name": "Newton South Loins",
@@ -942,7 +942,7 @@
    "player": "469.p.10514",
    "name": "Luis Castillo",
    "pos": "SP,RP",
-   "mlb": "CWS"
+   "mlb": "COL"
   },
   {
    "pick": 96,
@@ -1356,7 +1356,7 @@
    "player": "469.p.11763",
    "name": "Tarik Skubal",
    "pos": "SP",
-   "mlb": "LAD"
+   "mlb": "NYM"
   },
   {
    "pick": 142,
@@ -2247,7 +2247,7 @@
    "player": "469.p.10916",
    "name": "Royce Lewis",
    "pos": "1B,2B,3B",
-   "mlb": "MIN"
+   "mlb": "LAD"
   },
   {
    "pick": 241,
@@ -2454,7 +2454,7 @@
    "player": "469.p.11838",
    "name": "Johan Oviedo",
    "pos": "SP",
-   "mlb": "BOS"
+   "mlb": "AZ"
   },
   {
    "pick": 264,
@@ -2562,7 +2562,7 @@
    "player": "469.p.11689",
    "name": "Luis Gil",
    "pos": "SP,RP",
-   "mlb": "NYY"
+   "mlb": "DET"
   },
   {
    "pick": 276,
@@ -3453,7 +3453,7 @@
    "player": "469.p.60099",
    "name": "Carter Baumler",
    "pos": "RP",
-   "mlb": "TEX"
+   "mlb": "BAL"
   },
   {
    "pick": 375,
@@ -3588,7 +3588,7 @@
    "player": "469.p.12337",
    "name": "José Buttó",
    "pos": "SP,RP",
-   "mlb": "TEX"
+   "mlb": "SF"
   },
   {
    "pick": 390,
@@ -5386,7 +5386,7 @@
     "key": "469.p.10916",
     "name": "Royce Lewis",
     "pos": "1B,2B,3B",
-    "mlb": "MIN",
+    "mlb": "LAD",
     "yk": {
      "status": "",
      "cost": "",
@@ -5844,7 +5844,7 @@
     "key": "469.p.11763",
     "name": "Tarik Skubal",
     "pos": "SP",
-    "mlb": "LAD",
+    "mlb": "NYM",
     "yk": {
      "status": "1",
      "cost": "",
@@ -6930,7 +6930,7 @@
     "key": "469.p.11044",
     "name": "Jonathan Loáisiga",
     "pos": "RP",
-    "mlb": "AZ",
+    "mlb": "NYY",
     "yk": {
      "status": "",
      "cost": "",
@@ -7654,7 +7654,7 @@
     "key": "469.p.10514",
     "name": "Luis Castillo",
     "pos": "SP,RP",
-    "mlb": "CWS",
+    "mlb": "COL",
     "yk": {
      "status": "",
      "cost": "",
@@ -8138,7 +8138,7 @@
     "key": "469.p.8967",
     "name": "Paul Goldschmidt",
     "pos": "1B",
-    "mlb": "NYY",
+    "mlb": "NYM",
     "yk": {
      "status": "",
      "cost": "",
