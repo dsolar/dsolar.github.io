@@ -2945,3 +2945,12 @@ td.fbl-c .fbl b{font-weight:600;color:var(--muted);font-size:11px;letter-spacing
 .trk .trk-due,.trk .trk-lucky{font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:0 4px;border-radius:3px}
 .trk .trk-due{background:#DDF0E2;color:#1C6B3A}
 .trk .trk-lucky{background:#FBE0E4;color:#A51F37}
+
+/* Shared hub card in Draft Lab's light and dark dialogs. */
+.pc{--card:var(--surface);--paper-2:var(--surface-2);--rule:var(--line);--rule-2:var(--line-2);--red:var(--accent);--display:var(--f);--body:var(--f);--cond:var(--f);--faint:var(--dim);--up:var(--win);--down:var(--loss)}
+.pc .pc-face .pav{width:100%;height:100%;border-radius:50%}
+.pc .pc-pane .pc-line:not(.pc-line-s){padding:0;border:0;display:grid;align-items:stretch}
+.pc .pc-pane .table-wrap{max-width:100%;overflow-x:auto}
+.pc .pc-pane .stack,.pc .pc-pane .stack>*{min-width:0}
+
+.pc .pc-face .pav-b{display:none}
