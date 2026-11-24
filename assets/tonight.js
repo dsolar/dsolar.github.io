@@ -100,5 +100,17 @@
       (stats ? '<div class="two">' + muSide(cfg, g.a.ab, g.h.ab, A, H, cfg.word) + muSide(cfg, g.h.ab, g.a.ab, H, A, cfg.word) + '</div><p class="note">' + cfg.note + "</p>" : '<p class="note">Team stats aren\'t in yet.</p>') +
       '<div class="two">' + injPanel(A, g.a.n) + injPanel(H, g.h.n) + "</div>";
   }
-  window.Tonight = { load: load, list: list, preview: preview, ready: function () { return !!T.data; } };
+  // a team's next game for the shared player card: {today, when, what, sub, right} or null. code(ab) maps ESPN's abbreviation to the hub's
+  function next(cfg, code, me) {
+    if (!T.data) return null;
+    var now = Date.now() - 3 * 36e5, g = (T.data.games || []).filter(function (x) { return x.st !== "post" && Date.parse(x.at) > now && (code(x.h.ab) === me || code(x.a.ab) === me); }).sort(function (a, b) { return a.at.localeCompare(b.at); })[0];
+    if (!g) return null;
+    var home = code(g.h.ab) === me, o = home ? g.a : g.h, ot = cfg.team(o.ab, o.n), d = new Date(g.at), b = T.bets && T.bets.games[g.id], k = b && b.k;
+    var today = d.toLocaleDateString("en-CA", { timeZone: "America/New_York" }) === new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+    var win = k && k.h != null ? (home ? k.h : k.a) : null;
+    return { today: today, when: [today ? "Today" : d.toLocaleDateString("en-US", { weekday: "short", timeZone: "America/New_York" }), d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).replace(":00", "")],
+      what: (home ? "vs " : "at ") + '<a href="' + cfg.href(cfg.preview + "/" + g.id, {}) + '">' + esc(ot.name || o.n) + "</a>",
+      sub: [g.line ? g.line : "", g.ou ? "O/U " + g.ou : "", win != null ? "Kalshi odds" : ""].filter(Boolean).join(", "), right: win != null ? Math.round(win * 100) + "%" : "" };
+  }
+  window.Tonight = { load: load, list: list, preview: preview, next: next, ready: function () { return !!T.data; } };
 })();

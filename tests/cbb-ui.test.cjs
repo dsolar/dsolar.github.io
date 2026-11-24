@@ -1,6 +1,6 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),{JSDOM}=require("jsdom");
 const ROOT=path.join(__dirname,".."),html=fs.readFileSync(path.join(ROOT,"cbb/index.html"),"utf8").replace(/<script[^>]*src=[^>]*><\/script>/g,"");
-const core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
+const pcard=fs.readFileSync(path.join(ROOT,"assets/pcard.js"),"utf8"),core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
 const data=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/hub.json"),"utf8")),extras=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/extras.json"),"utf8"));
 const board=JSON.parse(fs.readFileSync(path.join(ROOT,"draft/nba.json"),"utf8")),sched=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/schedule.json"),"utf8"));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
@@ -14,7 +14,7 @@ async function boot(hash="#/today",live=null){
  w.fetch=async url=>{url=String(url);if(url.includes("espn.com")){if(!live)throw Error("offline test");return {ok:true,json:async()=>structuredClone(live)};}
   const body=url.includes("draft/nba")?board:url.includes("extras")?extras:url.includes("schedule")?sched:data;return {ok:true,json:async()=>structuredClone(body)};};
  const ready=new Promise(resolve=>w.document.addEventListener("cbb:ready",resolve,{once:true}));
- w.eval(core);w.eval(app);await ready;await pause(0);return w;
+ w.eval(pcard);w.eval(core);w.eval(app);await ready;await pause(0);return w;
 }
 async function go(w,hash){w.location.hash=hash;const page=hash.split("/")[1].split("?")[0];await until(()=>w.document.body.dataset.page===page);await pause(20);}
 const text=w=>w.document.querySelector("#view").textContent;
@@ -62,7 +62,9 @@ test("team pages show the roster with Naismith and Big Board tags, and a player 
  const first=extras.naismith.ladder[0],p=data.players.find(x=>x.id===first.id),w=await boot("#/team?id="+p.teamId);try{
   assert.ok(text(w).includes(p.name));assert.ok(w.document.querySelector(".pill.nai"));
   w.document.querySelector('[data-player="'+p.id+'"]').click();const d=w.document.querySelector("#card");
-  assert.ok(d.open);assert.ok(d.textContent.includes(p.name));assert.ok(d.textContent.includes("Naismith Watch"));
+  assert.ok(d.open);assert.ok(d.textContent.includes(p.name));assert.ok(d.textContent.includes("Naismith ladder #"));
+  // the shared card: tabs switch panes
+  const st=d.querySelector('[data-ctab="st"]');assert.ok(st);st.click();assert.equal(d.querySelector('[data-pane="st"]').hidden,false);assert.equal(d.querySelector('[data-pane="ov"]').hidden,true);
   d.querySelector("[data-close]").click();assert.equal(d.open,false);
  }finally{w.close();}
 });

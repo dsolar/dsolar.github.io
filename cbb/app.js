@@ -677,36 +677,56 @@ function pctOf(sorted, v) {
   return Math.round(100 * (lo + Math.max(0, eq - 1) / 2) / (sorted.length - 1));
 }
 function pctColorC(v) { const t = Math.max(0, Math.min(100, v)) / 100, mx = (a, b, k) => Math.round(a + (b - a) * k); const c = t < 0.5 ? [mx(54, 222, t * 2), mx(97, 222, t * 2), mx(173, 222, t * 2)] : [mx(222, 210, (t - 0.5) * 2), mx(222, 45, (t - 0.5) * 2), mx(222, 73, (t - 0.5) * 2)]; return "rgb(" + c.join(",") + ")"; }
-function pctBars(p) {
-  if ((stat(p, "gp") || 0) < 1) return "";
+// the profile rows for the card: [{label, sub, pct}] against his position group, plus the pool it was measured on
+function pctRows(p) {
+  if ((stat(p, "gp") || 0) < 1) return null;
   const g = posGroup(p), pool = pctPool()[g];
-  const bars = PCT_STATS.map(([k, label, fn]) => {
-    const v = fn(p), pc = pctOf(pool.sorted[k], v);
-    if (pc == null) return "";
-    return '<div class="svb"><span>' + label + ' <small style="font-weight:600;color:var(--faint)">' + f1(v, k === "ato" ? 2 : 1) + '</small></span><i><em style="width:' + Math.max(4, pc) + "%;background:" + pctColorC(pc) + '"></em><b style="left:calc(' + Math.max(4, pc) + "% - 13px);background:" + pctColorC(pc) + ";color:" + (pc >= 80 || pc <= 20 ? "#fff" : "var(--ink)") + '">' + pc + "</b></i></div>";
-  }).join("");
-  if (!bars) return "";
-  const reg = (stat(p, "gp") || 0) >= 3 && (stat(p, "min") || 0) >= 15;
-  return '<p class="card-sec">Against D-I ' + POS_NAME[g] + '</p><div class="svbars">' + bars + '</div><p class="note">Percentile among ' + pool.n + " Division I " + POS_NAME[g] + " with 15+ minutes a game: red is good, blue is bad." + (reg ? "" : " He's short of that playing time, so read these as a small sample.") + "</p>";
+  const rows = PCT_STATS.map(([k, label, fn]) => { const v = fn(p), pc = pctOf(pool.sorted[k], v); return pc == null ? null : { label: label.replace(" (TS%)", "").replace(" (A/TO)", ""), sub: f1(v, k === "ato" ? 2 : 1) + ({ ts: "% TS", tp: "% from 3", ato: " ast/to" }[k] || ""), pct: pc }; }).filter(Boolean);
+  return rows.length ? { rows, g, pool, reg: (stat(p, "gp") || 0) >= 3 && (stat(p, "min") || 0) >= 15 } : null;
 }
 // his share of what his team scores (the roster's points a game, summed)
 function ordinalC(n) { const v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); }
 function teamShare(p) {
   const ros = rosters[p.teamId] || [], tot = ros.reduce((a, q) => a + (stat(q, "pts") || 0), 0), mine = stat(p, "pts") || 0;
-  if (!(tot > 20) || !(mine > 0)) return "";
-  const rank = 1 + ros.filter((q) => (stat(q, "pts") || 0) > mine).length;
-  return '<p class="tldr">Scores <b>' + Math.round(100 * mine / tot) + "%</b> of " + esc(byId[p.teamId].short) + "'s points, " + (rank === 1 ? "the most on the team" : ordinalC(rank) + " on the team") + ".</p>";
+  if (!(tot > 20) || !(mine > 0)) return null;
+  return { pct: Math.round(100 * mine / tot), rank: 1 + ros.filter((q) => (stat(q, "pts") || 0) > mine).length };
 }
+// the player card, on the shared frame (assets/pcard.js): Overview, Stats, Draft
 function openPlayer(id) {
-  const p = byPlayer[id]; if (!p) return; ensureBoard();
-  const t = byId[p.teamId], b = BOARD ? (BOARD.players || []).find(x => M.key(x.n) === M.key(p.name)) : null, n = X && X.naismith.ladder.find(r => r.id === id), g = nextGame(p.teamId);
-  let ng = ""; if (g) { const home = g.home === p.teamId, o = byId[home ? g.away : g.home], l = g.state === "pre" ? lineFor(g) : null; ng = '<p class="tldr"><b>Next:</b> ' + dLabel(g.day, { weekday: "short" }) + " " + (home ? "vs " : "at ") + '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>" + (l ? " · " + favLine(l, byId[g.home], byId[g.away]) + ", " + esc(t.short) + " " + pct(home ? l.homeProb : 1 - l.homeProb) : "") + "</p>"; }
-  $("#cardBody").innerHTML = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.name) + '</h3><div class="meta">' + logo(t) + " " + esc(t.short) + " · " + esc([p.pos, p.year, p.height, p.weight].filter(Boolean).join(" · ")) + (p.jersey ? " · #" + esc(p.jersey) : "") + "</div><div>" + badges(p) + "</div></div></div>" +
-    '<div class="card-b"><div class="kv">' + [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null).map(([k, l, d]) => "<div><b>" + f1(pval(p, k), d === 0 ? 0 : 1) + "</b><span>" + l + "</span></div>").join("") + "</div>" + teamShare(p) + ng + pctBars(p) +
-    (n ? '<p class="card-sec">Naismith Watch</p><p class="tldr">On the watch list. Hub ladder <b>#' + n.rank + "</b> of 50" + (n.prev ? " (" + (n.prev > n.rank ? "up " + (n.prev - n.rank) : n.prev < n.rank ? "down " + (n.rank - n.prev) : "no change") + " since " + dLabel(X.naismith.since) + ")" : "") + '. <a href="#/naismith">Ladder →</a></p>' : "") +
-    (b ? '<p class="card-sec">NBA Big Board</p><div class="kv"><div><b>#' + b.rank + "</b><span>Consensus</span></div><div><b>" + b.hi + "–" + b.lo + "</b><span>Range</span></div><div><b>" + b.on + "</b><span>Boards</span></div>" + (fin(b.age) ? "<div><b>" + f1(b.age) + "</b><span>Age</span></div>" : "") + "</div>" + (b.stats && b.stats.length ? '<p class="tldr">' + b.stats.map(s => esc(s[0]) + " " + esc(s[1])).join(" · ") + '</p>' : "") + '<p class="tldr">' + spark(b.hist) + ' <a href="../draft/">See him on the Big Board →</a></p>' : fin(p.draftRank) ? '<p class="card-sec">NBA Big Board</p><p class="tldr">Consensus #' + p.draftRank + ' · <a href="../draft/">Big Board →</a></p>' : "") +
-    '<p class="note"><a href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN player page ↗</a> · Season line: ' + esc(p.source || "ESPN") + "</p></div>";
-  const dlg = $("#card"); if (!dlg.open) dlg.showModal();
+  const p = byPlayer[id]; if (!p) return;
+  // the Big Board loads on first use: open now, then fill the Draft tab in once it lands (same tab stays open)
+  if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { const d = $("#card"); if (d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }); } else ensureBoard();
+  const P = window.PCard, t = byId[p.teamId], b = BOARD ? (BOARD.players || []).find(x => M.key(x.n) === M.key(p.name)) : null, n = X && X.naismith.ladder.find(r => r.id === id), g = nextGame(p.teamId);
+  const sh = teamShare(p), out = outLast(t).find(o => o.p.id === p.id), pr = pctRows(p), gp = stat(p, "gp") || 0;
+  const chips = [out ? ["Out last game" + (out.note ? " (" + out.note + ")" : ""), "out"] : null, n ? ["Naismith ladder #" + n.rank, "tag"] : null, fin(p.draftRank) ? ["Big Board #" + p.draftRank, "tag"] : null,
+    sh && sh.rank === 1 ? [sh.pct + "% of " + t.short + "'s points", ""] : null];
+  const tsOk = (stat(p, "fga") || 0) >= 3;
+  const head = gp ? [{ v: f1(stat(p, "pts")), l: "Points" }, { v: f1(stat(p, "reb")), l: "Rebounds" }, { v: f1(stat(p, "ast")), l: "Assists" }, tsOk ? { v: f1(stat(p, "ts")) + "%", l: "True shooting" } : { v: f1(stat(p, "min")), l: "Minutes" }] : [];
+  // overview: profile, next game, the context lines
+  let ov = "";
+  if (pr) ov += P.sec("Profile", "percentile vs D-I " + POS_NAME[pr.g]) + P.bars(pr.rows) + '<p class="note">Among ' + pr.pool.n + " Division I " + POS_NAME[pr.g] + " with 15+ minutes a game." + (pr.reg ? "" : " He's short of that playing time, so read these as a small sample.") + "</p>";
+  if (g) {
+    const home = g.home === p.teamId, o = byId[home ? g.away : g.home], l = g.state === "pre" ? lineFor(g) : null;
+    ov += P.sec(g.day === dayNY() ? "Tonight" : "Next game") + P.line({ when: [new Date(g.day + "T12:00:00").toLocaleDateString("en-US", { weekday: "short" }), new Date(g.day + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })],
+      what: (home ? "vs " : g.neutral ? "vs " : "at ") + '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>",
+      sub: l ? "Hub line: " + (Math.abs(l.spread) < 0.5 ? "Pick'em" : (l.spread > 0 ? byId[g.home] : byId[g.away]).short + " \u2212" + half(l.spread)) + (fin(l.total) ? ", O/U " + f1(l.total) : "") : "", right: l ? pct(home ? l.homeProb : 1 - l.homeProb) : "" });
+  }
+  if (sh) ov += '<p class="note">Scores ' + sh.pct + "% of " + esc(t.short) + "'s points, " + (sh.rank === 1 ? "the most on the team" : ordinalC(sh.rank) + " on the team") + "." + (n ? ' On the Naismith watch list: hub ladder #' + n.rank + " of 50" + (n.prev && n.prev !== n.rank ? " (" + (n.prev > n.rank ? "up " + (n.prev - n.rank) : "down " + (n.rank - n.prev)) + " since " + dLabel(X.naismith.since) + ")" : "") + '. <a href="#/naismith">Ladder</a>' : "") + "</p>";
+  if (!ov) ov = '<p class="note">No games yet this season.</p>';
+  // stats: the season line
+  const COLS = [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null);
+  const st = gp ? P.sec("Per game", String(p.year || "")) + P.table(["Season"].concat(COLS.map(c => c[1])), [["2026-27"].concat(COLS.map(([k, , d]) => f1(pval(p, k), d === 0 ? 0 : 1)))], 0) +
+    P.facts([[f1(stat(p, "threeAtt")), "Threes tried a game"], [f1(stat(p, "fga")), "Shots a game"], [fin(stat(p, "tov")) && stat(p, "tov") >= 0.5 ? f1((stat(p, "ast") || 0) / stat(p, "tov"), 2) : "", "Assists per turnover"]]) +
+    '<p class="note">Season line: ' + esc(p.source || "ESPN") + ".</p>" : "";
+  // draft: the NBA Big Board
+  const dr = b ? P.sec("NBA Big Board", "consensus of " + b.on + " boards") + P.facts([["#" + b.rank, "Consensus rank"], [b.hi + "-" + b.lo, "Range"], [b.on, "Boards"], fin(b.age) ? [f1(b.age), "Age on draft night"] : null]) +
+      (b.stats && b.stats.length ? '<p class="note">' + b.stats.map(s2 => esc(s2[0]) + " " + esc(s2[1])).join(", ") + "</p>" : "") + '<p class="note">' + spark(b.hist) + ' <a href="../draft/">See him on the Big Board</a></p>'
+    : fin(p.draftRank) ? P.sec("NBA Big Board") + '<p class="note">Consensus #' + p.draftRank + '. <a href="../draft/">Big Board</a></p>' : "";
+  $("#cardBody").innerHTML = P.html({ face: face(p, 60), name: p.name, color: t.color || "var(--ink)", team: '<a href="#/team?id=' + esc(t.id) + '">' + logo(t) + " " + esc(t.short) + "</a>",
+    meta: [p.pos, p.year, p.height, p.weight, p.jersey ? "#" + p.jersey : ""], chips, head,
+    tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: st }, { id: "dr", label: "Draft", html: dr }],
+    foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN page</a></div>' });
+  const dlg = $("#card"); dlg.dataset.pid = id; if (!dlg.open) dlg.showModal();
 }
 
 /* ---------- render + data ---------- */

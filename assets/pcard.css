@@ -1,0 +1,98 @@
+/* Shared player card (assets/pcard.js). Uses the hub palette variables (--ink, --muted, --rule...) from hub.css. */
+.pc{--pc-pad:16px}
+.pc-hd{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:16px 50px 10px var(--pc-pad)}
+.pc-face{width:60px;height:60px;border-radius:50%;overflow:hidden;background:var(--paper-2);box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--tc);flex:none}
+.pc-face img,.pc-face .hs{width:100%!important;height:100%!important;--s:60px;object-fit:cover;border-radius:0;display:block}
+.pc-hd h3{margin:0;font:800 23px/1.08 var(--display);letter-spacing:-.01em}
+.pc-meta{margin-top:5px;font-size:13.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:2px 11px;align-items:center}
+.pc-tm{display:inline-flex;align-items:center;gap:5px;color:var(--ink);font-weight:600}
+.pc-tm img{width:18px;height:18px}
+.pc-tm a{color:inherit;text-decoration:none}
+.pc-chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 var(--pc-pad) 12px}
+.pc-chip{font:600 12.5px/1 var(--body);padding:6px 9px;border-radius:7px;background:var(--paper-2);color:var(--ink)}
+.pc-chip.inj{background:#FBEBD2;color:#8A5000}
+.pc-chip.out{background:#F9D9D9;color:#A32020}
+.pc-chip.tag{background:#E4ECF7;color:#1452A0}
+@media (prefers-color-scheme:dark){.pc-chip.inj{background:#4A3618;color:#FFD08A}.pc-chip.out{background:#4A1F27;color:#FFB4B4}.pc-chip.tag{background:#153659;color:#A9CDFA}}
+
+/* four headline numbers, one row */
+.pc-head{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));border-top:1px solid var(--rule-2);border-bottom:1px solid var(--rule-2)}
+.pc-head div{padding:11px 6px 10px var(--pc-pad);border-left:1px solid var(--rule-2);min-width:0}
+.pc-head div:first-child{border-left:0}
+.pc-head b{display:block;font:700 23px/1 var(--cond);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-head b.up{color:var(--up)}
+.pc-head b.dn{color:var(--down)}
+.pc-head span{display:block;margin-top:4px;font-size:12px;line-height:1.2;color:var(--muted)}
+
+/* tabs: sticky inside the scrolling dialog */
+.pc .pc-tabs{display:flex;gap:0;margin:0;padding:0 8px;border-bottom:1px solid var(--rule-2);overflow-x:auto;scrollbar-width:none;position:sticky;top:0;z-index:3;background:var(--card)}
+.pc .pc-tabs::-webkit-scrollbar{display:none}
+.pc .pc-tabs button{flex:none;border:0;border-radius:0;background:none;padding:13px 9px 11px;font:600 14.5px/1 var(--body);letter-spacing:0;text-transform:none;color:var(--muted);border-bottom:2.5px solid transparent;margin-bottom:-1px;cursor:pointer}
+.pc .pc-tabs button:hover{background:none;color:var(--ink)}
+.pc .pc-tabs button[aria-selected="true"]{background:none;color:var(--ink);border-bottom-color:var(--red)}
+.pc .pc-pane{padding:12px var(--pc-pad) 14px}
+.pc .pc-pane[hidden]{display:none}
+.pc-pane > :first-child{margin-top:2px}
+.pc-sec{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin:16px 0 8px;font:600 12.5px/1.2 var(--body);color:var(--muted)}
+.pc-sec em{font-style:normal;font-weight:500;color:var(--faint);text-align:right}
+.pc-pane .pc-sec:first-child{margin-top:4px}
+
+/* the shared percentile row */
+.pc-bars{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:0 28px}
+.pc-pr{display:grid;grid-template-columns:7.6em 1fr 2.2em;gap:10px;align-items:center;padding:5px 0}
+.pc-pr .l{font-size:14px;line-height:1.15}
+.pc-pr .l small{display:block;color:var(--faint);font-size:12px;margin-top:1px;font-variant-numeric:tabular-nums}
+.pc-pr .bar{height:10px;border-radius:5px;background:var(--paper-2);position:relative}
+.pc-pr .bar i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}
+.pc-pr .bar::after{content:"";position:absolute;left:50%;top:-3px;bottom:-3px;width:1px;background:var(--rule)}
+.pc-pr .n{font:700 18px/1 var(--cond);text-align:right;font-variant-numeric:tabular-nums}
+
+.pc-line{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--rule-2);border-radius:10px}
+.pc-line .when{font:700 13.5px/1.15 var(--cond);color:var(--muted);min-width:46px}
+.pc-line .what{flex:1;font-size:14.5px;min-width:0}
+.pc-line .what a{color:inherit}
+.pc-line .what small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.pc-line .r{font:700 21px/1 var(--cond);font-variant-numeric:tabular-nums}
+
+.pc-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:0 14px}
+.pc-facts div{padding:8px 0;border-top:1px solid var(--rule-2);min-width:0}
+.pc-facts b{display:block;font:700 18px/1.1 var(--cond);font-variant-numeric:tabular-nums}
+.pc-facts span{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:var(--muted)}
+.pc-facts span a{color:inherit}
+
+.pc-tw{overflow-x:auto;margin:0 calc(-1 * var(--pc-pad));padding:0 var(--pc-pad)}
+.pc-tw table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}
+.pc-tw th,.pc-tw td{padding:7px 9px 7px 0;text-align:right;white-space:nowrap;font-size:13.5px}
+.pc-tw th{font:600 11.5px/1 var(--body);color:var(--muted);border-bottom:1px solid var(--rule)}
+.pc-tw td{border-bottom:1px solid var(--rule-2)}
+.pc-tw th:first-child,.pc-tw td:first-child{text-align:left}
+.pc-tw tr.cur td{font-weight:700}
+
+.pc-pane .note,.pc-pane .tldr{font-size:13px;color:var(--muted);margin:10px 0 0}
+.pc-foot{padding:4px var(--pc-pad) 18px}
+.pc-acts{display:flex;flex-wrap:wrap;gap:8px}
+.pc-acts > *{flex:1 1 140px;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 14px;border-radius:10px;border:1px solid var(--rule);background:var(--card);color:var(--ink);font:600 14.5px/1 var(--body);text-decoration:none;cursor:pointer}
+.pc-acts > :hover{border-color:var(--ink)}
+.pc-acts > .pri{background:var(--ink);border-color:var(--ink);color:var(--card)}
+.pc-foot .note{font-size:12.5px;color:var(--faint);margin:10px 0 0}
+
+dialog#card:has(.pc) .card-b{padding:0}
+/* older pane content keeps its markup but takes the card's look */
+.pc-pane .card-sec,.pc-pane h4.card-sec,.pc-pane h5{display:block;margin:16px 0 8px;font:600 12.5px/1.2 var(--body);letter-spacing:0;text-transform:none;color:var(--muted)}
+.pc-pane > .card-sec:first-child,.pc-pane > h4:first-child{margin-top:4px}
+.pc-pane .kv{grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:0 14px;margin:6px 0 10px}
+.pc-pane .kv div{padding:8px 0}
+.pc-pane .kv b{font-size:18px}
+.pc-pane .kv span{font-size:12px}
+.pc-pane .scroll{margin:0 calc(-1 * var(--pc-pad));padding:0 var(--pc-pad)}
+.pc .pc-pane th{letter-spacing:0;text-transform:none}
+@media (max-width:640px){
+  .pc .pc-tabs button{padding:13px 7px 11px;font-size:14px}
+  .pc .pc-tabs{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);padding-right:24px}
+  dialog#card:has(.pc){height:min(88vh,780px)}
+  .pc{--pc-pad:14px}
+  .pc-hd{padding-top:14px}
+  .pc-hd h3{font-size:21px}
+  .pc-face{width:54px;height:54px}
+  .pc-head b{font-size:21px}
+}

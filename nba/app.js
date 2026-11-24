@@ -560,56 +560,58 @@
   }
 
   // ---------- player card ----------
+  // his team's next game from the Tonight data (loads it the first time; the card fills it in when it lands)
+  function nextGameFor(code, id0) {
+    if (!window.Tonight) return null;
+    if (!Tonight.ready()) { Tonight.load().then(function () { if (card.open && card.dataset.pid === id0 && Tonight.ready()) openCard(id0); }); return null; }
+    var cfg = tonightCfg();
+    return Tonight.next(cfg, function (ab) { return ESPN2CODE[ab] || ab; }, code);
+  }
   var cardTab = "ov";
   function openCard(id) {
     var p = H.W.P[id];
     if (!p) return;
     var s = H.surplus(p), sm = H.surplus(p, H.cfg.mode === "market" ? "prod" : "market"), t = team(p.t), r = H.adv ? p.adv : null;
-    var html = '<div class="card-h">' + face(p, 72) + "<div><h3>" + esc(p.n) + '</h3><div class="meta">' + logo(p.t, 18) + " " + esc(t.name) + ", " + esc(posOf(p)) +
-      ", age " + (r && r.age != null ? Math.floor(r.age) : p.age != null ? p.age : "—") + (p.yos != null && !p.two ? ", " + p.yos + (p.yos === 1 ? " yr" : " yrs") + " in the league" : "") + "</div>" + (r || p.injury ? '<div class="meta2">' + (r ? '<span class="pill new archpill ab-' + ((ARCH[r.arch] || [])[1] || "role") + '">' + archIcon(r.arch, 14) + esc(r.arch) + "</span>" : "") + injTag(p) + "</div>" : "") + (p.injury ? '<p class="note injnote">' + esc(p.injury.note) + (p.injury.date ? " (" + esc(p.injury.date) + ")" : "") + "</p>" : "") + "</div></div>";
+    var P = window.PCard, panes = {};
     var tabs = [["ov", "Overview"]].concat(hasBox(p) ? [["st", "Stats"]] : [], r ? [["sk", "Skills"]] : [], r && r.zones && r.zones.rim ? [["sh", "Shooting"]] : [], p.rook || p.fill ? [] : [["tr", "Tracking"]], [["ct", "Contract"]]);
     if (!tabs.some(function (x) { return x[0] === cardTab; })) cardTab = "ov";
-    html += '<div class="ctabs" role="tablist">' + tabs.map(function (x) { return '<button type="button" role="tab" data-ctab="' + x[0] + '" aria-selected="' + (x[0] === cardTab) + '">' + x[1] + "</button>"; }).join("") + "</div>";
-    html += '<div class="card-b">';
     // overview
-    var ov = '<div class="kv">' + kv(rt(H.rating(p, 0)), "Impact now") + kv(rt(H.rating(p, 2)), "In " + sname(2)) + kv(pct(p.h || 0.85), "Games played (health)");
-    if (p.line) ov += kv(f1(p.line.pts) + " / " + f1(p.line.reb) + " / " + f1(p.line.ast), "Pts / reb / ast (" + p.line.gp + " gp)");
-    if (p.darko != null) ov += kv(rt(p.darko), "DARKO today");
-    if (p.bpm != null) ov += kv(rt(p.bpm), "BPM this season");
-    if (p.oo && p.oo[2] != null && p.oo[4] != null) {
-      var non = p.oo[2] - p.oo[3], noff = p.oo[4] - p.oo[5];
-      ov += kv((non - noff > 0 ? "+" : "") + f1(non - noff), "On/off per 100 (" + p.oo[1] + " poss)");
-    } else if (r && r.s.onoff != null) ov += kv((r.s.onoff > 0 ? "+" : "") + f1(r.s.onoff), "On/off per 100");
-    var vo = !p.rook && H.valRanks()[p.id];
-    if (vo && (vo.gs != null || vo.cR)) ov += kv(rt(vo.val), '<a href="' + href("rank", {}) + '">Value rating</a> (No. ' + vo.vR + ")");
-    if (p.ringer) ov += kv("No. " + p.ringer, "Ringer Top 100");
-    ov += (p.two ? kv("Two-way", "Contract") : kv(signed(H.tradeValue(p)), "Trade value")) + "</div>";
+    var ov = "";
     if (r) {
-      var top = Object.keys(H.adv.cats).filter(function (c) { return CAT_IMP.indexOf(c) < 0 && r.r[c] != null; }).sort(function (a, b) { return r.r[b] - r.r[a]; });
-      ov += '<p class="tldr"><b>Best at:</b> ' + top.slice(0, 3).map(function (c) { return esc(H.adv.cats[c].toLowerCase()) + " (" + r.r[c] + ")"; }).join(", ") + '. <b>Weakest:</b> ' + top.slice(-2).reverse().map(function (c) { return esc(H.adv.cats[c].toLowerCase()) + " (" + r.r[c] + ")"; }).join(", ") + ".</p>";
+      var cats = Object.keys(H.adv.cats).filter(function (c) { return CAT_IMP.indexOf(c) < 0 && r.r[c] != null; }).sort(function (a, b) { return r.r[b] - r.r[a]; });
+      if (cats.length > 6) cats = cats.slice(0, 4).concat(cats.slice(-2));
+      ov += P.sec("Best and worst at", "percentile, then rank among " + GROUP1[r.g]) + P.bars(cats.map(function (c) { return { label: H.adv.cats[c], sub: r.rp[c] == null ? "" : ord(r.rp[c]) + " of " + GROUP1[r.g], pct: r.r[c] }; }));
     }
-    if (contractYears(p, 0).length) ov += '<h4 class="card-sec">Contract</h4>' + contractStrip(p, 0);
-    html += '<div class="cpane" data-pane="ov"' + (cardTab === "ov" ? "" : " hidden") + ">" + ov + "</div>";
+    var ng = nextGameFor(p.t, id);
+    if (ng) ov += P.sec(ng.today ? "Tonight" : "Next game") + P.line(ng);
+    var oof = null;
+    if (p.oo && p.oo[2] != null && p.oo[4] != null) { var non = p.oo[2] - p.oo[3], noff = p.oo[4] - p.oo[5]; oof = [(non - noff > 0 ? "+" : "") + f1(non - noff), "On/off per 100 (" + p.oo[1] + " poss)"]; }
+    else if (r && r.s.onoff != null) oof = [(r.s.onoff > 0 ? "+" : "") + f1(r.s.onoff), "On/off per 100"];
+    var vo = !p.rook && H.valRanks()[p.id];
+    ov += P.sec("Ratings") + P.facts([[rt(H.rating(p, 0)), "Impact now"], [rt(H.rating(p, 2)), "In " + sname(2)], [pct(p.h || 0.85), "Games played (health)"], p.darko != null ? [rt(p.darko), "DARKO today"] : null, p.bpm != null ? [rt(p.bpm), "BPM this season"] : null, oof,
+      vo && (vo.gs != null || vo.cR) ? [rt(vo.val), '<a href="' + href("rank", {}) + '">Value rating</a> (No. ' + vo.vR + ")", true] : null, p.ringer ? ["No. " + p.ringer, "Ringer Top 100"] : null, p.two ? ["Two-way", "Contract"] : [signed(H.tradeValue(p)), "Trade value"]]);
+    if (contractYears(p, 0).length) ov += P.sec("Contract") + contractStrip(p, 0);
+    panes.ov = ov;
     // stats
-    if (hasBox(p)) html += '<div class="cpane" data-pane="st"' + (cardTab === "st" ? "" : " hidden") + ">" + statsPane(p) + "</div>";
+    if (hasBox(p)) panes.st = statsPane(p);
     // skills
     if (r) {
       var st = r.s, pc = function (x) { return x == null ? "—" : (x * 100).toFixed(1) + "%"; };
-      html += '<div class="cpane" data-pane="sk"' + (cardTab === "sk" ? "" : " hidden") + ">" + skillBars(r) +
+      panes.sk = skillBars(r) +
         '<p class="note">Percentiles among players with real minutes (99 is best), then his rank among ' + GROUP1[r.g] + "." + (r.mp ? " Last season counts at half weight while this one is young." : "") + "</p>" +
         '<div class="kv">' + kv(f1(st.pts100), "Points per 100") + kv(pc(st.ts), "True shooting") + kv(f1(st.usg) + "%", "Usage") + kv(f1(st.unast100), "Unassisted pts / 100") + kv(f1(st.ast) + "%", "Assist rate") + kv(f1(st.tov) + "%", "Turnover rate") +
-        kv(f1(st.orb) + " / " + f1(st.drb), "Off / def reb %") + kv(f1(st.stl) + " / " + f1(st.blk), "Steal / block %") + (st.ortg ? kv(f0(st.ortg) + " / " + f0(st.drtg), "Off / def rating") : "") + "</div></div>";
+        kv(f1(st.orb) + " / " + f1(st.drb), "Off / def reb %") + kv(f1(st.stl) + " / " + f1(st.blk), "Steal / block %") + (st.ortg ? kv(f0(st.ortg) + " / " + f0(st.drtg), "Off / def rating") : "") + "</div>";
     }
     // shooting
     if (r && r.zones && r.zones.rim) {
       var st2 = r.s;
-      html += '<div class="cpane" data-pane="sh"' + (cardTab === "sh" ? "" : " hidden") + ">" + shotChart(r.zones) + zoneTable(r.zones) +
+      panes.sh = shotChart(r.zones) + zoneTable(r.zones) +
         '<div class="kv">' + kv(pct(st2.p3, 1), "3P% (regressed)") + kv(f1(st2.fg3a100), "3PA per 100") + kv(pct(st2.pft, 1), "FT% (regressed)") + kv(pct(st2.prim, 1), "Rim FG% (regressed)") + kv(f1(st2.rim100), "Rim attempts / 100") + kv(pct(st2.ast_share), "Of his buckets assisted") + "</div>" +
-        '<p class="note">Regressed percentages are pulled toward the league average by how many shots back them up.</p></div>';
+        '<p class="note">Regressed percentages are pulled toward the league average by how many shots back them up.</p>';
     }
     // tracking (loads the first time a card opens)
     if (!p.rook && !p.fill) {
-      html += '<div class="cpane" data-pane="tr"' + (cardTab === "tr" ? "" : " hidden") + ">" + trackPane(p) + "</div>";
+      panes.tr = trackPane(p);
       if (!TRK) loadTrack().then(function () { var pn = card.querySelector('[data-pane="tr"]'); if (pn) pn.innerHTML = trackPane(p); });
     }
     // contract
@@ -646,13 +648,28 @@
     if (ee.ok) { var el = CBA.extLimit(p, 0); ct += '<p class="note">Extension eligible now (' + esc(ee.kind) + "): up to " + money(el.first) + " in " + sname(el.start) + (el.maxYears ? ", " + el.maxYears + " years" : "") + ".</p>"; }
     var e = H.lastYear(p);
     if (!p.two && e >= 0 && e < Hub.YEARS - 1) ct += '<p class="note">Becomes a' + (H.faKind(p) === "RFA" ? " restricted" : "n unrestricted") + " free agent after " + sname(e) + (p.age != null ? ", at " + (p.age + e + 1) : "") + ". Market estimate then: " + money(Mo.market(p, e + 1, H.W)) + " a year.</p>";
-    html += '<div class="cpane" data-pane="ct"' + (cardTab === "ct" ? "" : " hidden") + ">" + ct + "</div>";
+    panes.ct = ct;
+    var foot = "";
     if (!p.rook && !p.fill) {
       var mine = H.adj[p.id] || 0, steps = [-2, -1.5, -1, -0.75, -0.5, -0.25, 0, 0.25, 0.5, 0.75, 1, 1.5, 2];
-      html += '<p class="myadj"><label>Your read <select data-adj="' + esc(p.id) + '">' + steps.map(function (v) { return '<option value="' + v + '"' + (v === mine ? " selected" : "") + ">" + (v === 0 ? "Model\'s rating" : (v > 0 ? "+" : "") + v + " per 100") + "</option>"; }).join("") + '</select></label> <span class="note">Moves his value rating, contract value and trade value for you only. Win projections stay on the model.</span></p>';
+      foot += '<p class="myadj"><label>Your read <select data-adj="' + esc(p.id) + '">' + steps.map(function (v) { return '<option value="' + v + '"' + (v === mine ? " selected" : "") + ">" + (v === 0 ? "Model\'s rating" : (v > 0 ? "+" : "") + v + " per 100") + "</option>"; }).join("") + '</select></label> <span class="note">Moves his value rating, contract value and trade value for you only. Win projections stay on the model.</span></p>';
     }
-    html += '<p class="cact"><button class="btn" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button> <a class="btn" href="' + href("team/" + p.t) + '">' + esc(t.name) + "</a>" + (p.prospect ? ' <a class="btn" href="' + boardHref("p=" + encodeURIComponent(p.prospect), p.board) + '">On the Big Board</a>' : "") + "</p></div>";
-    cardBody.innerHTML = html;
+    foot = '<div class="pc-acts"><a href="' + href("team/" + p.t) + '">' + esc(t.short || t.name) + " page</a>" + (p.prospect ? '<a href="' + boardHref("p=" + encodeURIComponent(p.prospect), p.board) + '">On the Big Board</a>' : "") + '<button type="button" class="pri" data-add="a" data-id="' + esc(p.id) + '">Add to trade</button></div>' + foot;
+    // chips: injury, archetype, contract type
+    var j = H.injuryTag && H.injuryTag(p), chips = [];
+    if (j) { var jc = j.code || (j.dtd ? "Q" : "O"); chips.push([(j.season ? "Out for the season" : INJ_WORD[jc] + (jc === "O" && j.back && !j.guess && j.back > H.asOf ? ", back around " + fmtShort(j.back) : "")) + (j.note && /\(([^)]{2,24})\)/.test(j.note) ? " (" + j.note.match(/\(([^)]{2,24})\)/)[1] + ")" : ""), jc === "O" || j.season ? "out" : "inj"]); }
+    if (r && r.arch) chips.push([r.arch, "tag"]);
+    if (p.two) chips.push(["Two-way contract", ""]);
+    var big = r ? r.g === "B" : /C/.test(posOf(p)), vo2 = !p.rook && H.valRanks()[p.id];
+    var head = [{ v: rt(H.rating(p, 0)), l: "Impact per 100", tone: H.rating(p, 0) >= 0 ? "up" : "dn" }];
+    if (p.line) head.push({ v: f1(p.line.pts), l: "Points" }, big ? { v: f1(p.line.reb), l: "Rebounds" } : { v: f1(p.line.ast), l: "Assists" });
+    if (vo2 && (vo2.gs != null || vo2.cR)) head.push({ v: "No. " + vo2.vR, l: "Value rating" });
+    else if (!p.two && contractYears(p, 0).length) head.push({ v: money(H.salary(p, 0)), l: "Salary" });
+    var age = r && r.age != null ? Math.floor(r.age) : p.age;
+    card.dataset.pid = id;
+    cardBody.innerHTML = P.html({ face: face(p, 60), name: p.n, color: t.color, team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.short || t.name) + "</a>",
+      meta: [posOf(p), age != null ? "Age " + age : "", p.yos != null && !p.two ? (p.yos === 0 ? "Rookie" : ord(p.yos + 1) + " season") : ""], chips: chips, head: head,
+      tabs: tabs.map(function (x) { return { id: x[0], label: x[1], html: panes[x[0]] || "" }; }), tab: cardTab, foot: foot });
     if (!card.open) card.showModal();
   }
   // ---------- the card's Stats tab: box-score lines from hardcap/stats.json (per game), this season and last, then by week
@@ -1146,11 +1163,12 @@
       return keys.map(function (k) {
         var c = null; Object.keys(TRK_VIEWS).some(function (vk) { c = TRK_VIEWS[vk].cols.filter(function (x) { return x[0] === k; })[0]; return c; });
         var v = (d.pct || {})[k], val = d.x[TRK.ix[k]];
-        if (v == null || !c) return "";
+        if (v == null || !c) return null;
+        return { label: c[1], sub: trkFmt(val, c[2]) + (c[2] === "p" ? "%" : ""), pct: v };
         return '<div class="svb"' + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + "><span>" + c[1] + ' <small style="font-weight:600;color:var(--faint)">' + trkFmt(val, c[2]) + (c[2] === "p" ? "%" : "") + '</small></span><i><em style="width:' + Math.max(4, v) + "%;background:" + trkColor(v) + '"></em><b style="left:calc(' + Math.max(4, v) + "% - 13px);background:" + trkColor(v) + ";color:" + (v >= 80 || v <= 20 ? "#fff" : "var(--ink)") + '">' + v + "</b></i></div>";
-      }).join("");
+      }).filter(Boolean);
     };
-    var sec = function (title, keys) { var b = bars(keys); return b ? '<h4 class="card-sec">' + title + '</h4><div class="svbars">' + b + "</div>" : ""; };
+    var sec = function (title, keys) { var b = bars(keys); return b.length ? window.PCard.sec(title) + window.PCard.bars(b) : ""; };
     return '<p class="note">' + d.gp + " games, " + f1(d.min) + " minutes a game. Percentile among regulars (" + TRK.qual.min + "+ minutes): red is good, blue is bad.</p>" +
       sec("Movement", ["dist", "spd"]) + sec("Creating", ["drv", "drv_pts", "drv_fg", "tch", "pot_ast", "ast_pts"]) + sec("Shooting", ["cs3a", "cs3", "pu_fga", "pu3"]) + sec("Defense & hustle", ["rim_fga", "rim_fg", "contest", "defl", "loose", "boxouts", "reb_con", "scr_pts"]) +
       '<p class="note"><a href="' + href("track", {}) + '">Full tracking leaderboards</a>. From NBA.com, pulled ' + esc(String(TRK.pulled || "").slice(0, 10)) + ".</p>";
@@ -1234,13 +1252,11 @@
       }).join("") + "</tbody></table></div>";
   }
   function skillBars(r) {
-    var A = H.adv;
-    var bar = function (c) {
-      var v = r.r[c];
-      return '<div class="sk"><span class="skn">' + esc(A.cats[c]) + '</span><span class="skb"><i style="width:' + (v == null ? 0 : Math.max(2, v)) + "%;background:" + xl(v) + '"></i></span><b>' + (v == null ? "—" : v) + "</b><small>" + (r.rp[c] == null ? "" : ord(r.rp[c]) + " of " + GROUP1[r.g]) + "</small></div>";
-    };
-    return '<div class="skills"><div><h5>Impact</h5>' + CAT_IMP.map(bar).join("") + "<h5>Defense</h5>" + CAT_DEF.map(bar).join("") + "</div><div><h5>Offense</h5>" + CAT_OFF.map(bar).join("") + "</div></div>";
+    var A = H.adv, P = window.PCard;
+    var rows = function (cs) { return P.bars(cs.map(function (c) { return { label: A.cats[c], sub: r.rp[c] == null ? "" : ord(r.rp[c]) + " of " + GROUP1[r.g], pct: r.r[c] }; })); };
+    return P.sec("Impact", "percentile, then rank among " + GROUP1[r.g]) + rows(CAT_IMP) + P.sec("Offense") + rows(CAT_OFF) + P.sec("Defense") + rows(CAT_DEF);
   }
+
 
 
   // ---------- trade value ----------
