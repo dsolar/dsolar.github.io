@@ -83,7 +83,7 @@
         ${n > 1 ? `<td class="rng"><span${spread >= hotCut && p.on > 1 ? ` class="hot"` : ""}>${p.on > 1 ? `${p.hi}&ndash;${p.lo}` : `${p.hi} only`}</span>
           <div class="bar" aria-hidden="true"><i style="left:${pct(p.hi)}%;right:${(100 - pct(p.lo)).toFixed(1)}%"></i><b style="left:${pct(p.rank)}%"></b></div></td>` : ""}
         ${mk.length ? `<td class="mk hide-s">${mockCell ? `<span class="mk-pick"${mockCell[1] && D.teams[mockCell[1]] ? ` title="No. ${mockCell[0]} to ${esc(D.teams[mockCell[1]].city)}"` : ""}>${mockCell[0]}${mockCell[1] && D.teams[mockCell[1]] ? BB.logo(D, mockCell[1], 20) : mockCell[1] ? ` ${esc(mockCell[1])}` : ""}</span>` : "&ndash;"}</td>` : ""}
-      </tr>${open ? detail(p) : ""}`;
+      </tr>`;
     }).join("");
   }
 
@@ -103,22 +103,25 @@
       <text x="${pad}" y="${H - 4}">${fmtDay(pts[0][0])}</text><text x="${W - pad}" y="${H - 4}" text-anchor="end">${fmtDay(pts[pts.length - 1][0])}</text></svg>`;
   }
 
-  function profile(p) {
-    const bits = [p.ht, p.wt ? `${p.wt} lbs` : "", p.yr, p.age ? `${p.age} yrs` : ""].filter(Boolean);
-    const stats = (p.stats || []).map(([l, v, per]) => `<div class="stat"><b>${BB.num(v)}</b><span>${esc(BB.label(l))}${per ? ` <em>${esc(per)}/g</em>` : ""}</span></div>`).join("");
-    return `${bits.length ? `<p class="bio">${esc(bits.join(" · "))}</p>` : ""}
-      ${stats ? `<div class="stats">${stats}</div>` : `<p class="note">${D.league === "nba" ? "No games yet this season." : "No stats on file."}</p>`}`;
+  // A prospect's card, on the shared frame: Overview (consensus, range, rank over time), Stats, Boards (each board and
+  // mock), Markets (Kalshi, when he's in one)
+  function openCard(p) {
+    const P = window.PCard; if (!P) return;
+    const live = liveBoards(), mk = mocks(), m = move(p);
+    const stats = (p.stats || []).map(([l, v, per]) => [BB.num(v), BB.label(l) + (per ? ", " + per + " a game" : ""), BB.label(l)]);
+    const ov = P.sec("Consensus", `${live.length} board${live.length === 1 ? "" : "s"}`) + P.facts([["#" + p.rank, "Consensus rank"], [p.on > 1 ? `${p.hi}-${p.lo}` : `${p.hi} only`, "Best and worst board"], [p.on + " of " + live.length, "Boards that rank him"], [p.score.toFixed(1), "Consensus score"]]) +
+      P.sec("Consensus rank over time") + spark(p);
+    const st = stats.length ? P.sec(D.league === "nba" ? "This season" : "2026 season") + P.facts(stats) : `<p class="note">${D.league === "nba" ? "No games yet this season." : "No stats on file."}</p>`;
+    const bd = P.table(["Board", "Rank"], live.map((s) => [s.name + (s.analyst ? " (" + s.analyst.split(" ").slice(-1)[0] + ")" : ""), p.ranks[s.id] ?? `not in top ${s.count}`]).concat(mk.map((s) => [s.name, p.mocks[s.id] ? `pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? ", " + p.mocks[s.id][1] : ""}` : "not in mock"])));
+    const mkt = marketLines(p);
+    document.getElementById("cardBody").innerHTML = P.html({ face: BB.who(p, 60), name: p.n, color: "var(--chalk)", team: P.esc(p.school || ""), meta: [p.pos, p.yr, p.ht, p.wt ? p.wt + " lbs" : "", p.age ? "Age " + p.age : ""],
+      chips: [m > 0 ? [`Up ${m} since the last update`, "tag"] : m < 0 ? [`Down ${-m} since the last update`, "inj"] : null, p.lo - p.hi >= 15 && p.on > 1 ? ["Boards split on him", ""] : null],
+      head: [{ v: "#" + p.rank, l: "Consensus" }, { v: p.on > 1 ? `${p.hi}-${p.lo}` : `${p.hi}`, l: "Range" }].concat(stats.slice(0, 2).map(([v, , short]) => ({ v, l: short }))),
+      tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: st }, { id: "bd", label: "Boards", html: bd }, mkt ? { id: "mk", label: "Markets", html: mkt } : null],
+      foot: `<div class="pc-acts"><a href="#${ui.lg}/mock">Mock the draft</a></div>` });
+    const dlg = document.getElementById("card"); if (!dlg.open) dlg.showModal();
   }
-
-  function detail(p) {
-    const live = liveBoards(), mk = mocks();
-    return `<tr class="detail"><td colspan="${cols()}"><div class="det">
-      <div><h4>${D.league === "nba" ? "This season" : "2026 season"}</h4>${profile(p)}<h4>Consensus rank over time</h4>${spark(p)}</div>
-      <div><h4>Board by board</h4><ul>${live.map((s) => `<li class="${p.ranks[s.id] == null ? "miss" : ""}"><span>${esc(s.name)}${s.analyst ? ` <span class="note">(${esc(s.analyst.split(" ").slice(-1)[0])})</span>` : ""}</span><span>${p.ranks[s.id] ?? `not in top ${s.count}`}</span></li>`).join("")}
-        ${mk.map((s) => `<li class="${p.mocks[s.id] ? "" : "miss"}"><span>${esc(s.name)}</span><span>${p.mocks[s.id] ? `pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? `, ${esc(p.mocks[s.id][1])}` : ""}` : "not in mock"}</span></li>`).join("")}</ul>
-        ${marketLines(p)}</div>
-    </div></td></tr>`;
-  }
+  document.addEventListener("click", (e) => { const x = e.target.closest("#card [data-close]"); if (x) document.getElementById("card").close(); });
 
   // Kalshi's player markets that name him, as chances.
   function marketLines(p) {
@@ -144,9 +147,9 @@
       const j = jump; jump = null;
       const tr = j.p ? document.querySelector(`#tbody tr.p[data-id="${CSS.escape(j.p)}"]`) : [...document.querySelectorAll("#tbody tr.p")].find((r) => r.querySelector(".rk").textContent === String(+j.at));
       if (tr) {
-        if (j.at) { ui.open = tr.dataset.id; rows(); }
         const row = document.querySelector(`#tbody tr.p[data-id="${CSS.escape(tr.dataset.id)}"]`);
         row.classList.add("hl"); row.scrollIntoView({ block: "center" }); row.focus({ preventScroll: true });
+        if (j.p) { const p = D.players.find((x) => x.id === j.p); if (p) openCard(p); }
       }
     }
     $("#stamp").textContent = `Built ${new Date(D.updated).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}. Newest board: ${fmtDay(D.asof)}.`;
@@ -159,7 +162,7 @@
     const so = e.target.closest("[data-sort]");
     if (so) { const k = so.dataset.sort; ui.dir = ui.sort === k ? -ui.dir : 1; ui.sort = k; head(); rows(); return; }
     const tr = e.target.closest("tr.p");
-    if (tr && !e.target.closest("a")) { ui.open = ui.open === tr.dataset.id ? null : tr.dataset.id; rows(); }
+    if (tr && !e.target.closest("a")) { const p = D.players.find((x) => x.id === tr.dataset.id); if (p) openCard(p); }
   });
   document.addEventListener("keydown", (e) => {
     const tr = e.target.closest && e.target.closest("#board-view tr.p");

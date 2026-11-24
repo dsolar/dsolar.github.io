@@ -24,6 +24,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=Besley:wght@700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/bar.css">
 <link rel="stylesheet" href="../assets/faces.css?v=20261109c">
+<link rel="stylesheet" href="../assets/pcard.css?v=20261124b">
 <script src="../assets/analytics.js" defer></script>
 <style>
 :root{
@@ -52,6 +53,11 @@ button{cursor:pointer}
 a{color:var(--gold)}
 .wrap{max-width:1080px;margin:0 auto;padding:0 max(16px,env(safe-area-inset-left)) 64px max(16px,env(safe-area-inset-right))}
 [hidden]{display:none!important}
+.pc{--ink:var(--chalk);--muted:var(--dim);--rule:var(--line-strong);--rule-2:var(--line);--card:var(--panel);--paper-2:var(--panel-hi);--red:#C60C30;--down:#C0392B;--display:"Besley",Georgia,serif;--cond:"Barlow Condensed","Arial Narrow",sans-serif}
+dialog#card{border:0;border-radius:16px;padding:0;width:min(560px,calc(100% - 24px));max-height:88vh;background:var(--panel);color:var(--chalk);box-shadow:0 24px 64px rgba(0,0,0,.35)}
+dialog#card::backdrop{background:rgba(5,9,15,.6)}
+dialog#card .x{position:absolute;top:12px;right:12px;z-index:5;width:34px;height:34px;border-radius:50%;border:1px solid var(--line-strong);background:var(--panel);color:var(--chalk);font-size:21px;line-height:1}
+@media (max-width:640px){dialog#card{width:100%;max-width:none;margin:auto 0 0;border-radius:16px 16px 0 0;height:min(88vh,780px)}}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 .mast{padding:30px 0 6px;display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 24px;justify-content:space-between}
@@ -524,8 +530,8 @@ body[data-screen] .hubtabs a{text-decoration:none}
 .subtabs a:hover{color:var(--chalk)!important}
 .subtabs a[aria-current=page]{background:var(--panel);color:var(--chalk)!important;box-shadow:0 1px 2px rgba(0,0,0,.12)}
 .yrrow{display:flex;align-items:center;gap:8px;margin:12px 0 0}
-.subtabs .sl{display:none}
-@media (max-width:760px){ .subtabs .fl{display:none} .subtabs .sl{display:inline} }
+.subtabs .sl,.hubtabs .sl{display:none}
+@media (max-width:760px){ .subtabs .fl,.hubtabs .fl{display:none} .subtabs .sl,.hubtabs .sl{display:inline} }
 .rules{margin:6px 0 4px;color:var(--dim);max-width:44rem}
 .rules summary{cursor:pointer;font-weight:700;color:var(--chalk)}
 .rules p{margin:6px 0 0}
@@ -581,7 +587,7 @@ body[data-screen] .tm.nopick{opacity:1}
 body[data-screen] .tm.nopick .tn{color:var(--dim)}
 body[data-screen] .tm>:first-child{grid-row:1/3}
 @media (max-width:760px){
-  .hubswitch{gap:5px} .hubswitch a{padding:5px 9px;font-size:11px}
+  .hubswitch{gap:4px;justify-content:space-between;flex-wrap:nowrap} .hubswitch a{flex:1 1 0;text-align:center;padding:6px 0;font-size:11.5px;letter-spacing:.02em}
   .subtabs a{padding:7px 9px;font-size:12.5px}
   h2.sec{font-size:22px}
   .srct .hide-s{display:none}
@@ -619,10 +625,8 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
       <button type="button" data-lg="nfl" aria-pressed="false">NFL</button>
     </div>
   </header>
-  <!-- NBA: the NBA Hub's own frame (its six sections, Draft open) with the draft pages as sub-tabs -->
-  <nav class="tabs hubtabs" id="hubtabs" aria-label="Sections" hidden>
-    <a href="../nba/#/standings">Standings</a><a href="../nba/#/teams">Teams</a><a href="../nba/#/ratings">Players</a><a href="../nba/#/trade">Trades</a><a href="../nba/#/fa">Free Agents</a><a href="../nba/#/draft" aria-current="page">Draft</a>
-  </nav>
+  <!-- the NBA or NFL Hub's own frame (its sections, Draft open) with the draft pages as sub-tabs; frame() fills it -->
+  <nav class="tabs hubtabs" id="hubtabs" aria-label="Sections" hidden></nav>
   <nav class="subtabs" id="subtabs" aria-label="Draft pages" hidden></nav>
   <nav class="subtabs moretabs" id="moretabs" aria-label="More draft pages" hidden></nav>
   <div class="yrrow" id="yrrow" hidden><span class="lab">Class</span><div class="seg" role="group" aria-label="Draft class"><button type="button" data-lg="nba">2027</button><button type="button" data-lg="nba2028">2028</button></div></div>
@@ -679,11 +683,13 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
   <div id="challenge-view" hidden></div>
   <div id="markets-view" hidden></div>
 </main>
+<dialog id="card" aria-label="Prospect"><button class="x" type="button" aria-label="Close" data-close>×</button><div class="card-b" id="cardBody"></div></dialog>
 
 <script src="../assets/faces.js?v=20261121b"></script>
+<script src="../assets/pcard.js?v=20261124a"></script>
 <script src="common.js?v=32"></script>
 <script src="engine.js?v=32"></script>
-<script src="board.js?v=36"></script>
+<script src="board.js?v=38"></script>
 <script src="mock.js?v=34"></script>
 <script src="challenge.js?v=32"></script>
 <script src="markets.js?v=30"></script>
@@ -701,36 +707,34 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
     const v = VIEWS.includes(view) ? view : (lg ? "board" : (VIEWS.includes(saved.view) ? saved.view : "board"));
     return { q: Object.fromEntries(new URLSearchParams(qs || "")), lg: L, later, view: later && !["board", "mock"].includes(v) ? "board" : v };
   };
-  // NBA pages wear the NBA Hub's frame: sport pills, its title, its six sections with Draft open, and the draft
-  // pages as Draft's sub-tabs (Lottery odds and Traded picks live in the hub). NFL keeps the Big Board's own header.
-  const HUB_SUB = "Projected standings and lottery odds, every rotation five seasons out, what every contract and pick is really worth, a trade builder that knows the apron rules, and next summer's free agents.";
+  // Both drafts wear their hub's frame: sport pills, the hub's title, its sections with Draft open, and the draft pages
+  // as Draft's sub-tabs (the NBA's Lottery odds and Traded picks live in the NBA Hub)
+  const HUBS = {
+    nba: { kick: "NBA · Projections", title: "NBA", sub: "Projected standings and lottery odds, every rotation five seasons out, what every contract and pick is really worth, a trade builder that knows the apron rules, and next summer's free agents.",
+      tabs: [["tonight", "Tonight"], ["standings", "Standings"], ["teams", "Teams"], ["ratings", "Players"], ["trade", "Trades"], ["fa", "Free Agents", "FA"]] },
+    nfl: { kick: "NFL · Projections and cap planner", title: "NFL", sub: "Every game with the line and a preview, projected standings and playoff odds, a cap planner for every team, player ratings and Next Gen Stats, free agents and trade value.",
+      tabs: [["week", "This week"], ["standings", "Standings"], ["teams", "Teams"], ["players", "Players"], ["fa", "Moves"]] }
+  };
   function frame(lg, view, later) {
-    const nba = lg.startsWith("nba");
-    document.body.classList.toggle("in-hub", nba);
+    const hub = lg.startsWith("nba") ? "nba" : "nfl", H = HUBS[hub];
+    document.body.classList.add("in-hub");
     const title = document.getElementById("title"), kick = document.getElementById("kicker"), sub = document.querySelector(".mast .sub");
-    sub.dataset.text = sub.dataset.text || sub.textContent;
-    document.getElementById("hubswitch").hidden = !nba;
-    document.getElementById("hubtabs").hidden = !nba;
-    document.getElementById("subtabs").hidden = !nba;
-    document.getElementById("viewtabs").hidden = nba;
-    document.querySelector(".seg.big").hidden = nba;
-    document.getElementById("yrrow").hidden = !nba || !["board", "mock"].includes(view);
-    if (!nba) document.getElementById("moretabs").hidden = true;
-    if (nba) {
-      document.getElementById("hubswitch").innerHTML = ["mlb", "nba", "nfl", "nhl", "cbb", "cfb"].map((h) => `<a href="../${h}/"${h === "nba" ? ' aria-current="page"' : ""}>${h.toUpperCase()}</a>`).join("");
-      kick.textContent = "NBA · Projections"; title.innerHTML = "NBA <span>Hub</span>"; sub.textContent = HUB_SUB;
-      const key = later ? "nba2028" : "nba";
-      const tabs = [["../nba/#/draft", "Lottery odds", "", "Lottery"], ["../nba/#/picks", "Traded picks", "", "Picks"], ["#" + key, "Big Board", "board"], ["#" + key + "/mock", "Mock draft", "mock", "Mock"]];
-      // Challenge and Markets sit under "More" so the row fits a phone; on those pages a second row picks between them
-      const more = view === "challenge" || view === "markets";
-      if (!later) tabs.push(["#nba/challenge", "More", more ? view : "more"]);
-      document.getElementById("subtabs").innerHTML = tabs.map((t) => `<a href="${t[0]}"${t[2] === view ? ' aria-current="page"' : ""}>${t[3] ? `<span class="fl">${t[1]}</span><span class="sl">${t[3]}</span>` : t[1]}</a>`).join("");
-      const m2 = document.getElementById("moretabs");
-      m2.hidden = !more;
-      m2.innerHTML = [["challenge", "Challenge"], ["markets", "Markets"]].map(([v, l]) => `<a href="#nba/${v}"${v === view ? ' aria-current="page"' : ""}>${l}</a>`).join("");
-    } else {
-      title.innerHTML = "Big <span>Board</span>"; sub.textContent = sub.dataset.text;
-    }
+    ["hubswitch", "hubtabs", "subtabs"].forEach((id) => { document.getElementById(id).hidden = false; });
+    document.getElementById("viewtabs").hidden = true;
+    document.querySelector(".seg.big").hidden = true;
+    document.getElementById("yrrow").hidden = hub !== "nba" || !["board", "mock"].includes(view);
+    document.getElementById("hubswitch").innerHTML = ["mlb", "nba", "nfl", "nhl", "cbb", "cfb"].map((h) => `<a href="../${h}/"${h === hub ? ' aria-current="page"' : ""}>${{ cbb: "NCAAB", cfb: "NCAAF" }[h] || h.toUpperCase()}</a>`).join("");
+    kick.textContent = H.kick; title.innerHTML = H.title + " <span>Hub</span>"; sub.textContent = H.sub;
+    document.getElementById("hubtabs").innerHTML = H.tabs.map(([r, l, sh]) => `<a href="../${hub}/#/${r}">${sh ? `<span class="fl">${l}</span><span class="sl">${sh}</span>` : l}</a>`).join("") + `<a href="#${hub}" aria-current="page">Draft</a>`;
+    const key = later ? "nba2028" : lg;
+    const tabs = (hub === "nba" ? [["../nba/#/draft", "Lottery odds", "", "Lottery"], ["../nba/#/picks", "Traded picks", "", "Picks"]] : []).concat([["#" + key, "Big Board", "board"], ["#" + key + "/mock", "Mock draft", "mock", "Mock"]]);
+    // Challenge and Markets sit under "More" so the row fits a phone; on those pages a second row picks between them
+    const more = view === "challenge" || view === "markets";
+    if (!later) tabs.push(["#" + hub + "/challenge", "More", more ? view : "more"]);
+    document.getElementById("subtabs").innerHTML = tabs.map((t) => `<a href="${t[0]}"${t[2] === view ? ' aria-current="page"' : ""}>${t[3] ? `<span class="fl">${t[1]}</span><span class="sl">${t[3]}</span>` : t[1]}</a>`).join("");
+    const m2 = document.getElementById("moretabs");
+    m2.hidden = !more;
+    m2.innerHTML = [["challenge", "Challenge"], ["markets", "Markets"]].map(([v, l]) => `<a href="#${hub}/${v}"${v === view ? ' aria-current="page"' : ""}>${l}</a>`).join("");
   }
   async function go() {
     const { lg, view, q, later } = parse();
@@ -741,9 +745,8 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
     document.body.dataset.screen = view;
     BB.store.set("bigboard", { lg, view });
     frame(lg, view, later);
-    try { const D = await BB.data(lg); if (!lg.startsWith("nba")) document.getElementById("kicker").textContent = `${D.year} ${D.league.toUpperCase()} Draft${later ? ", early look" : ""}`; } catch (e) { /* the view says so */ }
     const yr = later ? 2028 : 2027;
-    document.getElementById("sechead").innerHTML = lg === "nfl" ? "" : `<h2 class="sec">${yr} Big Board</h2><p class="lede">${later ? "An early look at the 2028 class, before anyone's eligible. More outlets join as they publish." : "Every board worth reading in one consensus. Tap a player for his stats and line."}</p>`;
+    document.getElementById("sechead").innerHTML = `<h2 class="sec">${yr} ${lg === "nfl" ? "NFL " : ""}Big Board</h2><p class="lede">${later ? "An early look at the 2028 class, before anyone's eligible. More outlets join as they publish." : "Every board worth reading in one consensus. Tap a player for his stats and line."}</p>`;
     if (view !== "mock") Mock.stop();
     if (view === "board") Board.render(lg, q);
     else if (view === "mock") Mock.render(lg);

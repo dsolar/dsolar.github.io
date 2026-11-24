@@ -783,8 +783,8 @@ td.lotm .lsub .nw{white-space:nowrap}
 @media (max-width:760px){ td.lotm .nm{max-width:none} td.lotm .nmf{display:none} td.lotm .nms{display:inline} tr:has(td.lotm)>td:not(.lotm){padding-left:5px;padding-right:5px} td.lotm .nm{min-width:108px;max-width:160px} td.lotm .lsub .nw{white-space:normal} }
 
 /* sub-tab labels shorten on a phone so the row fits */
-.subtabs .sl{display:none}
-@media (max-width:760px){ .subtabs .fl{display:none} .subtabs .sl{display:inline} .subtabs a{padding-left:10px;padding-right:10px} }
+.subtabs .sl,.tabs .sl{display:none}
+@media (max-width:760px){ .subtabs .fl,.tabs .fl{display:none} .subtabs .sl,.tabs .sl{display:inline} .subtabs a{padding-left:10px;padding-right:10px} }
 
 /* wide tables on a phone: keep the columns that matter, so the key number shows without scrolling sideways */
 @media (max-width:760px){
