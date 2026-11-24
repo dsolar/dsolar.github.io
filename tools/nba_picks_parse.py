@@ -218,7 +218,11 @@ def main():
         if o.get("seen") == "auto":
             o["seen"] = now; dirty = True
         elif o.get("seen") != now:
-            print("WARNING: RealGM changed its terms for %s %d round %d; check tools/nba_picks_overrides.json:\n  %s" % (key[0], key[1], key[2], now))
+            msg = "WARNING: RealGM changed its terms for %s %d round %d; check tools/nba_picks_overrides.json:\n  %s" % (key[0], key[1], key[2], now)
+            print(msg)
+            # the workflow turns red on this (and GitHub emails), after the rest of the ledger is saved
+            with open(os.environ.get("NBA_PICKS_WARN", "/tmp/nba_picks_warn.txt"), "a") as w:
+                w.write(msg + "\n")
         rows = [r for r in rows if tuple(r[:3]) != key] + [o["row"]]
     if dirty:
         json.dump(ovr, open(OVR, "w"), indent=1, ensure_ascii=False)
