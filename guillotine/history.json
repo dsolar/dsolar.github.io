@@ -7404,7 +7404,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 2,
-      "next_proj": 14.31
+      "next_proj": 14.01
      },
      {
       "n": "Sam LaPorta",
@@ -7427,7 +7427,7 @@
       "nfl": "PHI",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 12.91
+      "next_proj": 12.9
      },
      {
       "n": "Jordan Love",
@@ -7435,7 +7435,7 @@
       "nfl": "GB",
       "claimed_by": "Holofernes",
       "bid": 0,
-      "next_proj": 17.55
+      "next_proj": 17.41
      },
      {
       "n": "Corey Kiner",
@@ -7447,7 +7447,7 @@
       "n": "Jalen Coker",
       "pos": "WR",
       "nfl": "CAR",
-      "next_proj": 10.29
+      "next_proj": 10.28
      },
      {
       "n": "Zach Charbonnet",
@@ -7606,7 +7606,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 26.52,
+      "proj": 26.57,
       "pts": null
      },
      {
@@ -7638,7 +7638,7 @@
       "pos": "WR",
       "nfl": "WAS",
       "slot": "BN",
-      "proj": 11.27,
+      "proj": 11.25,
       "pts": null
      },
      {
@@ -7680,7 +7680,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 18.72,
+      "proj": 18.8,
       "pts": null
      },
      {
@@ -7810,7 +7810,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.22,
+      "proj": 16.29,
       "pts": null
      },
      {
@@ -7834,7 +7834,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "W/R/T",
-      "proj": 12.8,
+      "proj": 12.94,
       "pts": null
      },
      {
@@ -7964,7 +7964,7 @@
       "pos": "QB",
       "nfl": "WAS",
       "slot": "Q/W/R/T",
-      "proj": 21.9,
+      "proj": 21.88,
       "pts": null
      },
      {
