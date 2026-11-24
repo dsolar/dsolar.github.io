@@ -26,6 +26,19 @@
   }
   const drawing = (D, now) => !!(D.drawn && D.drawn.at && revealed(D, now) < (D.round1 || []).length);
   const readyOf = (D) => D.ready || {};
+  // "Starts in 26 hours", "Starts in 1 hr 12 min", "Starts in 40 sec"
+  function countdown(left) {
+    if (left <= 0) return "Starting now";
+    if (left < 60e3) return `Starts in ${Math.ceil(left / 1000)} sec`;
+    if (left < 3 * 3600e3) { const h = Math.floor(left / 3600e3), m = Math.ceil((left % 3600e3) / 60e3); return `Starts in ${h ? h + " hr " : ""}${m} min`; }
+    if (left < 48 * 3600e3) return `Starts in ${Math.round(left / 3600e3)} hours`;
+    return `Starts in ${Math.round(left / 864e5)} days`;
+  }
+  // the room redraws the lobby every 20-30 seconds; the countdown keeps its own second hand
+  if (typeof document !== "undefined" && typeof setInterval !== "undefined") setInterval(() => {
+    document.querySelectorAll(".lb-cd[data-at]").forEach((el) => { const left = +el.dataset.at - Date.now(), t = countdown(left); if (el.textContent !== t) el.textContent = t; el.classList.toggle("soon", left < 3600e3); });
+  }, 1000);
+  const ordinal = (n) => n + (n % 100 >= 11 && n % 100 <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th");
 
   // who's in: claimed teams (a manager), how many of them are ready, open teams (bots until claimed)
   function counts(D, seats) {
@@ -54,8 +67,10 @@
   function html(o) {
     const { D, now, me } = o, seats = o.seats || {}, ready = readyOf(D), c = counts(D, seats);
     const n = D.round1.length, shown = revealed(D, now), live = drawing(D, now);
+    // the countdown: days and hours while it's far off, minutes inside the last hours, seconds in the last minute
+    const left = D.startAt ? D.startAt - now : null, cd = left == null ? "" : countdown(left);
     const when = D.startAt
-      ? `<b>${esc(new Date(D.startAt).toLocaleString("en-US", { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}</b><span class="ps">It starts on its own. Anyone who isn't here drafts from his queue.</span>`
+      ? `<b>${esc(new Date(D.startAt).toLocaleString("en-US", { weekday: "long", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))}</b><span class="lb-cd${left != null && left < 3600e3 ? " soon" : ""}" role="timer" data-at="${D.startAt - (now - Date.now())}">${esc(cd)}</span><span class="ps">It starts on its own. Anyone who isn't here drafts from his queue.</span>`
       : `<b>When the commissioner starts it</b><span class="ps">No time is set yet${o.commish ? ": set one so everyone gets a reminder an hour before" : ""}.</span>`;
     const cal = D.startAt ? `<div class="lb-cal"><button type="button" class="btn sm" data-live="ics">Add to calendar</button><a class="btn sm ghost" href="${esc(gcal(D, o.name, o.url))}" target="_blank" rel="noopener">Google Calendar</a></div>` : "";
     const mine = me != null && seats[me] != null;
@@ -63,7 +78,7 @@
     const rows = D.round1.map((t, i) => {
       // a live draw fills in from the last pick up
       const hidden = live && i < n - shown;
-      const team = D.teams[t], who = seats[t] != null ? esc(seats[t]) : `<span class="ps">Open: a bot drafts until someone claims it</span>`;
+      const team = D.teams[t], who = seats[t] != null ? esc(seats[t]) : `<span class="ps">Open, a bot until claimed</span>`;
       const tag = seats[t] == null ? "" : ready[t] ? `<span class="tag win">Ready</span>` : `<span class="tag">Not yet</span>`;
       return `<li class="lb-row${t === me && !hidden ? " me" : ""}${hidden ? " hid" : ""}${live && i === n - shown ? " now" : ""}"><span class="lb-n">${D.type === "auction" ? "" : i + 1}</span>${hidden ? `<span class="lb-q">?</span><b class="grow ps">${i === n - shown - 1 ? "Drawing…" : ""}</b>` : `${o.teamAv(team)}<span class="grow lb-t"><b>${esc(team.name)}</b><small>${who}</small></span>${tag}`}</li>`;
     }).join("");
@@ -79,6 +94,7 @@
       <section class="lb-card lb-when"><span class="ps lb-k">The draft</span>${when}${cal}</section>
       <section class="lb-card lb-go">
         <div class="lb-acts">${mineBtns}<button type="button" class="btn${mine && imReady ? " go" : ""}" data-live="practice">${o.resume ? "Resume practice mock" : "Practice mock"}</button>${o.invite && c.open && !o.commish ? `<button type="button" class="btn ghost" data-live="invite">Invite</button>` : ""}</div>
+        ${mine && D.type !== "auction" && !(D.auction && D.auction.dutch) && D.type !== "mystery" && D.round1.indexOf(me) >= 0 && !live ? `<p class="lb-slot">You pick <b>${ordinal(D.round1.indexOf(me) + 1)}</b> of ${n}${D.type === "snake" || D.type === "3rr" ? `, and No. ${2 * n - D.round1.indexOf(me)} overall in round 2` : ""}.</p>` : ""}
         <p class="ps" style="margin:6px 0 0">The practice mock is this draft, these rules and your slot, against bots. Only you see it, and nothing counts.${o.resume ? " Yours is saved where you left off." : ""}</p>
       </section>
       ${commish}

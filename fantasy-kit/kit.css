@@ -3019,3 +3019,8 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 @keyframes resflash{0%{box-shadow:0 0 0 3px var(--accent)}100%{box-shadow:0 0 0 0 transparent}}
 @media (prefers-reduced-motion:reduce){.res-flash{animation:none}}
 @media (max-width:640px){.res-league .hide-sm{display:none}}
+/* lobby: the countdown and your slot */
+.lb-cd{display:block;margin:2px 0 4px;font:800 15px/1.2 var(--f-cond,inherit);letter-spacing:.02em;color:var(--brand)}
+.lb-cd.soon{font-size:22px;color:var(--accent,var(--brand))}
+.lb-slot{margin:10px 0 0;font-size:14px}
+.lb-slot b{font-size:16px}
