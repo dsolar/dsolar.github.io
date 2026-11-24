@@ -73,8 +73,14 @@ def league_average(teams):
 # Haslametrics-only line (the closing line itself: 10.70). Blending in any more than a little Haslametrics made it
 # worse, so the hub's line is 80% market rating and 20% Haslametrics, leaning back toward Haslametrics for a team
 # with fewer than MKT_FULL lined games.
+# Home court is fit separately first, with almost no pull (HOME_LAMBDA): the pull toward zero shrinks the strong teams that
+# host most November games, and the home term soaked up the difference (3.6 points with the ratings' pull, 3.1 without;
+# held out day by day on the season's last 470 games, 3.1 missed results and closing lines by less than 3.6 did).
+# Each team then gets its own home edge from how its home lines ran against that, pulled hard toward the league value
+# (TEAM_HOME_K games' worth of zero) and capped at TEAM_HOME_CAP points either way; it helped against closing lines.
 MKT_LAMBDA, MKT_W, MKT_FULL = 0.1, 0.8, 4
-MKT = {"r": {}, "n": {}, "home": 0.0}
+HOME_LAMBDA, TEAM_HOME_K, TEAM_HOME_CAP = 0.001, 15, 2.0
+MKT = {"r": {}, "n": {}, "home": 0.0, "th": {}}
 
 
 def fit_market():
@@ -102,26 +108,40 @@ def fit_market():
     n = {t: 0 for t in teams}
     for hm, aw, _, _ in rows:
         n[hm] += 1; n[aw] += 1
-    home = 3.0
     by = {t: [] for t in teams}
     for k, row in enumerate(rows):
         by[row[0]].append(k); by[row[1]].append(k)
-    for _ in range(300):                       # coordinate descent on the ridge least-squares problem
-        moved = 0.0
-        for t in teams:
-            num_, den = 0.0, MKT_LAMBDA
-            for k in by[t]:
-                hm, aw, hf, m = rows[k]
-                if hm == t: num_ += m - home * hf + r[aw]
-                else: num_ += r[hm] + home * hf - m
-                den += 1
-            new = num_ / den
-            moved = max(moved, abs(new - r[t])); r[t] = new
-        hs = [rw for rw in rows if rw[2]]
-        home = sum(m - r[hm] + r[aw] for hm, aw, _, m in hs) / len(hs) if hs else 0.0
-        if moved < 1e-5:
-            break
-    MKT.update(r={t: round(v, 2) for t, v in r.items()}, n=n, home=round(home, 2))
+
+    def solve(lam, home_fixed=None):
+        r_ = {t: 0.0 for t in teams}
+        home_ = 3.0 if home_fixed is None else home_fixed
+        for _ in range(300):                   # coordinate descent on the ridge least-squares problem
+            moved = 0.0
+            for t in teams:
+                num_, den = 0.0, lam
+                for k in by[t]:
+                    hm, aw, hf, m = rows[k]
+                    if hm == t: num_ += m - home_ * hf + r_[aw]
+                    else: num_ += r_[hm] + home_ * hf - m
+                    den += 1
+                new = num_ / den
+                moved = max(moved, abs(new - r_[t])); r_[t] = new
+            if home_fixed is None:
+                hs = [rw for rw in rows if rw[2]]
+                home_ = sum(m - r_[hm] + r_[aw] for hm, aw, _, m in hs) / len(hs) if hs else 0.0
+            if moved < 1e-5:
+                break
+        return r_, home_
+
+    _, home = solve(HOME_LAMBDA)
+    r, _ = solve(MKT_LAMBDA, home)
+    res = {}
+    for hm, aw, hf, m in rows:
+        if hf:
+            res.setdefault(hm, []).append(m - (r[hm] - r[aw] + home))
+    th = {t: round(max(-TEAM_HOME_CAP, min(TEAM_HOME_CAP, sum(v) / (len(v) + TEAM_HOME_K))), 2) for t, v in res.items()}
+    MKT.update(r={t: round(v, 2) for t, v in r.items()}, n=n, home=round(home, 2), th={t: v for t, v in th.items() if abs(v) >= 0.05})
+
 
 
 def line(home, away, neutral, avg):
@@ -138,7 +158,7 @@ def line(home, away, neutral, avg):
     margin, mk = hub, None
     rh, ra = MKT["r"].get(str(home.get("id"))), MKT["r"].get(str(away.get("id")))
     if rh is not None and ra is not None:
-        mk = rh - ra + (0 if neutral else MKT["home"])
+        mk = rh - ra + (0 if neutral else MKT["home"] + MKT["th"].get(str(home.get("id")), 0))
         w = MKT_W * min(1.0, min(MKT["n"].get(str(home.get("id")), 0), MKT["n"].get(str(away.get("id")), 0)) / MKT_FULL)
         margin = (1 - w) * hub + w * mk
     total = hp + ap
@@ -553,7 +573,7 @@ def main():
     bh = {d: v for d, v in sorted(bh.items()) if d >= hcut}
     out = {"schema": 1, "updated": stamp, "season": season, "bubbleHist": bh, "today": today.isoformat(), "leagueAvgEff": round(avg, 2) if avg else None,
            "homeEdge": HOME_EDGE, "spreadSd": SPREAD_SD,
-           "mkt": {"r": MKT["r"], "n": MKT["n"], "home": MKT["home"], "w": MKT_W, "full": MKT_FULL}, "naismith": naismith,
+           "mkt": {"r": MKT["r"], "n": MKT["n"], "home": MKT["home"], "th": MKT["th"], "w": MKT_W, "full": MKT_FULL}, "naismith": naismith,
            "lines": {"since": min([v["day"] for v in log.values()], default=None), "games": log}, "record": record}
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(json.dumps({"naismith": len(on), "unmatched": missing, "knocking": len(knocking), "lines": len(log), "graded": record["games"], "sims": season and season.get("sims"), "seconds": season and season.get("seconds")}))
