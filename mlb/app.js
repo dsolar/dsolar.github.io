@@ -622,6 +622,8 @@
     if (!x && !tracked) return;
     var pc = window.PCard, r = x ? x.r : { id: id, n: tracked.n };
     var tabs = tracked ? [{ id: "tr", label: "Statcast", html: svPane({ id: id, p: !!SV.pit[id] && !SV.bat[id] }) }] : [];
+    var hist = (historyData.unrostered || {})[id];
+    if (hist) tabs.unshift({ id: "st", label: "Stats", html: statTables({ id: id, hist: hist, p: !hist.b }) });
     var frame = { name: r.n, face: window.DSFaces.html({ sport: "mlb", id: r.id, name: r.n, size: 60 }), tabs: tabs, tab: tab };
     if (!x) {
       cardBody.innerHTML = pc.html(frame);
@@ -665,10 +667,11 @@
     };
     var bat = !p.p, pit = p.p || p.two;
     var hb = (p.hist && p.hist.b) || [], hp = (p.hist && p.hist.p) || [];
-    if (bat || hb.length) html += tbl("Last seasons", ["Year", "Tm", "G", "PA", "HR", "R", "RBI", "SB", "AVG/OBP/SLG"],
-      hb.slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5], r[6], r[7], d3(r[8]) + "/" + d3(r[9]) + "/" + d3(r[10])]; }));
-    if (pit && hp.length) html += tbl(bat ? "Last seasons pitching" : "Last seasons", ["Year", "Tm", "G", "GS", "IP", "W-L", "SV", "K", "BB", "ERA", "WHIP"],
-      hp.slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5] + "-" + r[6], r[7], r[8], r[9], r[10] != null ? Number(r[10]).toFixed(2) : "—", r[11] != null ? Number(r[11]).toFixed(2) : "—"]; }));
+    var rates = (historyData.rates || {})[p.id] || {};
+    if (bat || hb.length) html += tbl("Last seasons", ["Year", "Tm", "G", "PA", "HR", "R", "RBI", "SB", "AVG/OBP/SLG", "OPS", "BB%", "K%"],
+      hb.slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5], r[6], r[7], d3(r[8]) + "/" + d3(r[9]) + "/" + d3(r[10]), d3((rates[r[0]] || {}).ops), pct((rates[r[0]] || {}).bbRate), pct((rates[r[0]] || {}).kRate)]; }));
+    if (hp.length) html += tbl(bat ? "Last seasons pitching" : "Last seasons", ["Year", "Tm", "G", "GS", "IP", "W-L", "SV", "K", "BB", "ERA", "WHIP", "K−BB%"],
+      hp.slice().sort(function (x, y) { return x[0] - y[0]; }).map(function (r) { return [r[0], esc(r[1] || ""), r[2], r[3], r[4], r[5] + "-" + r[6], r[7], r[8], r[9], r[10] != null ? Number(r[10]).toFixed(2) : "—", r[11] != null ? Number(r[11]).toFixed(2) : "—", pct((rates[r[0]] || {}).kbb)]; }));
     if (p.ml) {
       var m = p.ml;
       html += m.ip != null
@@ -717,7 +720,7 @@
   // 95+ mph %, launch angle], bt [bat speed, swing length, squared up/swing, blast/swing, hard swing rate, whiff/swing],
   // spd [sprint speed, home to first], oaa [pos, OAA, fielding runs], sw [swing/take runs: all, heart, shadow, chase,
   // waste], ars [[type, name, usage %, RV/100, RV, whiff %, put away %, xwOBA, hard hit %, pitches]].
-  var SV = null, svWait = null;
+  var SV = null, svWait = null, historyData = {};
   function loadSavant() {
     if (svWait) return svWait;
     svWait = fetch("data/savant.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) {
@@ -1320,10 +1323,12 @@
   Promise.all([
     fetch("data/hub.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
     fetch("data/fa.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : { classes: {} }; }).catch(function () { return { classes: {} }; }),
-    fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; })
+    fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }),
+    fetch("data/history.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
   ]).then(function (d) {
     SHAPES = (d[2] && d[2].parks) || null;
     HUB = d[0];
+    historyData = d[3] && d[3].season === HUB.season ? d[3] : {};
     H = new M.Hub(HUB, d[1]);
     H.set("lens", load("lens", "production") === "market" ? "market" : "production");
     var f = load("fill", true);
