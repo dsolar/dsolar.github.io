@@ -306,7 +306,7 @@ function teams(q) {
       return '<tr class="go' + (faves.has(t.id) ? " mine" : "") + '" data-href="#/team?id=' + esc(t.id) + '"><td class="tm"><span class="pos">' + n + "</span>" + logo(t) + (t.apRank ? '<span class="ap">' + int(t.apRank) + "</span>" : "") + '<span class="nm">' + esc(t.short) + "</span></td><td><b>" + crec(t) + "</b></td><td>" + rec(t) + '</td><td class="hide-m">' + (fin(pj.confWins) ? Math.round(pj.confWins) + "-" + Math.round(pj.confLosses) : "—") + "</td><td>" + (o ? pct(o.in) : "—") + '</td><td class="hide-m">' + int(t.haslamRank) + "</td><td>" + star(t) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
   return '<h2 class="sec">Standings</h2><p class="lede">Every conference, in order of conference record, then overall record. Make NCAA is from the hub\'s season simulation. Tap ☆ to follow a team: your teams show up first here and at the top of Today, on every device you sign in on.</p>' +
     '<div class="controls"><label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Search 365 teams"></label><label>Conference<select data-param="conf"><option value="">All</option>' + order.map(c => "<option" + (c.name === pick ? " selected" : "") + ">" + esc(c.name) + "</option>").join("") + '</select></label><label class="switch"><input type="checkbox" data-param="follow" value="1"' + (follow ? " checked" : "") + "> <span>Only teams I follow (" + faves.size + ")</span></label></div>" +
-    (shown.length ? shown.map(([c, ts]) => table(c, ts)).join("") : '<p class="callout">No teams match.</p>');
+    (shown.length ? '<div class="st-grid">' + shown.map(([c, ts]) => table(c, ts)).join("") + "</div>" : '<p class="callout">No teams match.</p>');
 }
 
 function teamPage(q) {

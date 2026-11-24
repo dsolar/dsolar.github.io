@@ -218,3 +218,5 @@ table.st tr.mine td.tm .nm{font-weight:700}
 table.st .star{font-size:17px;line-height:1;background:none;border:0;cursor:pointer;color:var(--muted);padding:2px 4px}
 table.st .star[aria-pressed="true"]{color:#d4a514}
 @media (max-width:640px){table.st .hide-m{display:none}table.st td,table.st th{padding-left:6px;padding-right:6px}}
+/* wide screens: two conferences side by side */
+@media (min-width:1000px){.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}.st-grid .st-conf{margin-bottom:14px}}

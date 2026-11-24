@@ -149,3 +149,5 @@ dialog#card:has(.pc) .card-b{padding:0}
 .pg-tabs button:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
 .pg-pane>.two{margin-top:0}
 @media (max-width:640px){.pg-teams{padding:12px 10px 6px}.pg-logo{width:52px;height:52px}.pg-logo img{width:38px!important;height:38px!important}.pg-nm b{font-size:16px}.pg-sc{font-size:30px}.pg-tabs button{padding:13px 8px 11px;font-size:14px}}
+/* wide screens: keep the scoreboard together instead of pinning the teams to the edges */
+@media (min-width:900px){.pg-teams{max-width:640px;margin:0 auto;gap:24px}.pg .pc-head{max-width:760px;margin:0 auto}.pg-prob{max-width:640px;margin:0 auto}}
