@@ -1,5 +1,5 @@
 {
- "built": "2026-11-22",
+ "built": "2026-11-24",
  "sports": {
   "mlb": {
    "registry": 12324,
@@ -90,8 +90,8 @@
   },
   "nba": {
    "registry": 1192,
-   "shown": 1240,
-   "found": 1151,
+   "shown": 1239,
+   "found": 1150,
    "missing": [
     "Nikola Milutinov"
    ],
@@ -189,9 +189,9 @@
    "fixed": 1
   },
   "nfl": {
-   "registry": 7365,
-   "shown": 1161,
-   "found": 1072,
+   "registry": 7366,
+   "shown": 1162,
+   "found": 1073,
    "missing": [
     "Derek M. Smith",
     "Maceo Beard"
@@ -373,7 +373,7 @@
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
-    "Stefan Joksimovic"
+    "Stefan Joksimović"
    ],
    "noPhoto": [
     "A.J. Williams",
@@ -415,6 +415,7 @@
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
+    "Stefan Joksimović",
     "Tony Bryant"
    ]
   },
