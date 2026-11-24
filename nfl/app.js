@@ -795,12 +795,14 @@
     save("team", code);
     var y = +state.q.y || 2027, v = state.q.v || "overview", t = team(code), ms = movesOf(code), o = SIM.teams[code];
     var base = C.teamYears(W, code, [], 2026, 2030), plan = C.teamYears(W, code, ms.map(eng), 2026, 2030), cc = C.creditCard(W, code, 2026);
-    var html = '<div class="thead tband" style="--tc:' + t.color + '">' + logo(code, 64) + "<div><h2>" + esc(t.name) + '</h2><div class="meta">' + esc(S.divOf[code]) + " · " + rec(o.rec) + " · projected " + o.wins.toFixed(1) + "-" + (17 - o.wins).toFixed(1) + " · strength " + (o.rating >= 0 ? "+" : "") + o.rating.toFixed(1) + " pts</div></div>" +
-      '<select class="allteams" data-goteam aria-label="Team">' + codes().map(function (c) { return '<option value="' + c + '"' + (c === code ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select></div>";
-    html += '<div class="stats">' + stat(pctTxt(o.div), "Win the division") + stat(pctTxt(o.playoffs), "Make the playoffs") + stat(pctTxt(o.bye), "No. 1 seed") + stat(pctTxt(o.sb), "Win the Super Bowl") + "</div>";
-    html += '<div class="stats sm">' + stat(m(base[0].space), "2026 cap space") + stat('<i class="' + (plan[1].space >= 0 ? "pos" : "neg") + '">' + m(plan[1].space) + "</i>", "2027 space" + (ms.length ? " (with plan)" : "")) + stat(m(base[0].dead), "2026 dead money") +
-      stat(m(cc.future), "Pushed into later years") + stat(cc.voids > 0.05 ? m(cc.voids) : "None", "In void years") + "</div>";
-    html += '<div class="subtabs">' + [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"], ["ngs", "Next Gen Stats"]].map(function (x) { return '<a href="' + href("team/" + code, Object.assign({}, state.q, { v: x[0] })) + '"' + (v === x[0] ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("") + "</div>";
+    // the shared team header (assets/pcard.js): outlook up top, cap numbers as chips, the team's pages as tabs
+    var TABS = [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"], ["ngs", "Next Gen Stats"]];
+    var html = window.PCard.teamHead({ logo: logo(code, 44), name: t.name, color: t.color,
+      meta: [esc(S.divOf[code]), rec(o.rec) + " now", "strength " + (o.rating >= 0 ? "+" : "") + o.rating.toFixed(1) + " pts"],
+      chips: [[m(base[0].space) + " cap space in 2026", ""], [m(plan[1].space) + " in 2027" + (ms.length ? " with your plan" : ""), plan[1].space >= 0 ? "" : "inj"], base[0].dead > 1 ? [m(base[0].dead) + " dead money", ""] : null, cc.voids > 0.05 ? [m(cc.voids) + " in void years", ""] : null],
+      head: [{ v: Math.round(o.wins) + "-" + (17 - Math.round(o.wins)), l: "Projected" }, { v: pctTxt(o.div), l: "Division" }, { v: pctTxt(o.playoffs), l: "Playoffs" }, { v: pctTxt(o.sb), l: "Super Bowl" }],
+      tabs: TABS.map(function (x) { return { label: x[1], href: href("team/" + code, Object.assign({}, state.q, { v: x[0] })), on: v === x[0] }; }),
+      after: '<select class="allteams pt-pick" data-goteam aria-label="Team">' + codes().map(function (c) { return '<option value="' + c + '"' + (c === code ? " selected" : "") + ">" + esc(team(c).name) + "</option>"; }).join("") + "</select>" });
     if (v === "sheet") html += capSheet(code, ms);
     else if (v === "depth") html += depthChart(code);
     else if (v === "draft") html += draftTab(code);

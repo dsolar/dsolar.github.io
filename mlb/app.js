@@ -226,18 +226,17 @@
     if (!H.byAbbr[abbr]) { teamsPage(); return; }
     var tm = H.team(abbr, y), st = H.standings(y).filter(function (r) { return r.t.abbr === abbr; })[0];
     var w = Math.round(st.wins);
-    var html = '<div class="thead">' + logo(abbr, 54) + "<div><h2>" + esc(t.name) + '</h2><div class="meta">' + t.lg + " " + t.div + " · " + y + " projected " + w + "-" + (162 - w) + "</div></div>" +
-      '<a class="back" href="' + href("standings", { y: y === H.season ? null : y }) + '">← Standings</a></div>';
+    var sub = state.q.view === "money" ? "money" : state.q.view === "farm" ? "farm" : state.q.view === "statcast" ? "statcast" : "depth";
+    var subHref = function (k) { return href("team/" + abbr, { y: y === H.season ? null : y, view: k === "depth" ? null : k }); };
+    // the shared team header (assets/pcard.js), its pages as tabs, then the division picker
+    var html = window.PCard.teamHead({ logo: logo(abbr, 44), name: t.name, color: t.color || "var(--ink)",
+      meta: [t.lg + " " + t.div, y + " projection"],
+      chips: [[money(H.payroll(abbr, y), 0) + " payroll", ""], [f1(tm.war) + " team WAR", ""], ["Hitting " + ordinal(H.rank(y, "bat", tm.bat)) + ", pitching " + ordinal(H.rank(y, "pit", tm.pit)), ""]],
+      head: [{ v: w + "-" + (162 - w), l: "Projected" }, { v: pct(st.playoff), l: "Playoffs" }, { v: pct(st.ws), l: "World Series" }],
+      tabs: [{ label: "Depth chart", href: subHref("depth"), on: sub === "depth" }, { label: "Contracts and cap", href: subHref("money"), on: sub === "money" }, { label: "Farm system", href: subHref("farm"), on: sub === "farm" }, { label: "Statcast", href: subHref("statcast"), on: sub === "statcast" }] });
     html += '<div class="teampick">' + H.teams.filter(function (x) { return x.lg === t.lg && x.div === t.div && x.abbr !== abbr; }).map(function (x) {
       return '<a href="' + href("team/" + x.abbr, { y: y === H.season ? null : y }) + '">' + logo(x.abbr, 18) + esc(x.name) + "</a>";
     }).join("") + "</div>";
-    html += '<div class="stats">' +
-      stat(pct(st.playoff), "Playoffs") + stat(pct(st.ws), "World Series") +
-      stat(ordinal(H.rank(y, "bat", tm.bat)), "Hitting") + stat(ordinal(H.rank(y, "pit", tm.pit)), "Pitching") +
-      stat(f1(tm.war), "Team WAR") + stat(money(H.payroll(abbr, y), 0), "Payroll") + "</div>";
-    var sub = state.q.view === "money" ? "money" : state.q.view === "farm" ? "farm" : state.q.view === "statcast" ? "statcast" : "depth";
-    var subLink = function (k, label) { return '<a href="' + href("team/" + abbr, { y: y === H.season ? null : y, view: k === "depth" ? null : k }) + '"' + (sub === k ? ' aria-current="page"' : "") + ">" + label + "</a>"; };
-    html += '<nav class="subtabs">' + subLink("depth", "Depth chart") + subLink("money", "Contracts &amp; cap") + subLink("farm", "Farm system") + subLink("statcast", "Statcast") + "</nav>";
     if (sub === "money") { view.innerHTML = html + moneyView(abbr, y); return; }
     if (sub === "farm") { view.innerHTML = html + farmPanel(abbr, true); return; }
     if (sub === "statcast") { view.innerHTML = html + teamStatcast(abbr); return; }

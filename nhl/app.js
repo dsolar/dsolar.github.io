@@ -227,20 +227,16 @@
   function teamView(t) {
     var r = t.rec, ps = ROSTER[t.abbr] || [];
     var rank = H.teams.slice().sort(function (a, b) { return b.rating - a.rating; }).indexOf(t) + 1;
-    var h = '<div class="thead">' + logo(t, 54) + "<div><h2>" + esc(t.name) + '</h2><div class="meta">' + rec(t) + " · " + r.points + " points in " + r.gamesPlayed + " games · " +
-      esc(t.div) + " Division · L10 " + r.l10Wins + "-" + r.l10Losses + "-" + r.l10OtLosses + " · " + (r.streakCode ? r.streakCode + r.streakCount + " streak" : "") +
-      '</div></div><a class="back" href="#/teams">All teams</a></div>';
+    // the shared team header (assets/pcard.js), then the team picker
+    var h = window.PCard.teamHead({ logo: logo(t, 44), name: t.name, color: "var(--ink)",
+      meta: [esc(t.div) + " Division", rec(t) + ", " + r.points + " points in " + r.gamesPlayed + " games"],
+      chips: [["Last 10: " + r.l10Wins + "-" + r.l10Losses + "-" + r.l10OtLosses, ""], r.streakCode ? [r.streakCode + r.streakCount + " streak", r.streakCode === "W" ? "tag" : ""] : null, ["Strength " + sgn(t.rating, 2) + ", " + ord(rank), t.rating >= 0 ? "tag" : ""], t.cap ? [m(t.cap.space, 1) + " cap space", t.cap.space >= 0 ? "" : "inj"] : null],
+      head: [{ v: Math.round(t.projPts), l: "Projected points" }, { v: pct(t.odds.po), l: "Playoffs" }, { v: pct(t.odds.div), l: "Division" }, { v: pct(t.odds.cup), l: "Stanley Cup" }],
+      tabs: [{ label: "Lines and odds", href: "#/team/" + t.abbr, on: true }, { label: "Players", href: "#/players?t=" + t.abbr }, t.cap ? { label: "Contracts", href: "#/contracts?t=" + t.abbr } : null].filter(Boolean) });
     h += '<div class="teampick">' + H.teams.slice().sort(function (a, b) { return a.abbr < b.abbr ? -1 : 1; }).map(function (x) {
       return '<a href="#/team/' + x.abbr + '"' + (x === t ? ' style="border-color:var(--ink)"' : "") + ">" + logo(x, 18) + x.abbr + "</a>";
     }).join("") + "</div>";
-    h += '<div class="stats">' +
-      '<div class="stat"><b class="' + (t.rating >= 0 ? "pos" : "neg") + '">' + sgn(t.rating, 2) + "</b><span>Strength · " + ord(rank) + "</span></div>" +
-      '<div class="stat"><b>' + Math.round(t.projPts) + "</b><span>Projected points</span></div>" +
-      '<div class="stat"><b>' + pct(t.odds.po) + "</b><span>Make playoffs</span></div>" +
-      '<div class="stat"><b>' + pct(t.odds.div) + "</b><span>Win division</span></div>" +
-      '<div class="stat"><b>' + pct(t.odds.cf) + "</b><span>Reach conf. final</span></div>" +
-      '<div class="stat"><b>' + pct(t.odds.cup) + "</b><span>Win the Cup</span></div>" +
-      (t.cap ? '<div class="stat"><a href="#/contracts?t=' + t.abbr + '" style="color:inherit;text-decoration:none"><b class="' + (t.cap.space >= 0 ? "" : "neg") + '">' + m(t.cap.space, 1) + "</b><span>Cap space · sheet →</span></a></div>" : "") + "</div>";
+    h += '<p class="note">Reach the conference final: ' + pct(t.odds.cf) + ".</p>";
 
     // lines and pairings
     var lines = '<div class="rink"><h3>Forward lines <small>Most-used 5-on-5 trios this season, among players still here</small></h3>';

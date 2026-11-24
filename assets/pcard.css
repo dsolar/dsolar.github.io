@@ -96,3 +96,21 @@ dialog#card:has(.pc) .card-b{padding:0}
   .pc-face{width:54px;height:54px}
   .pc-head b{font-size:21px}
 }
+
+/* Team page header (PCard.teamHead): the player card's frame laid on the page */
+.pt{--pc-pad:16px;background:var(--card);border:1px solid var(--rule);border-radius:14px;margin:12px 0 12px;overflow:hidden}
+.pt-hd{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:16px 16px 10px}
+.pt-logo{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--tc)}
+.pt-logo img{width:44px!important;height:44px!important;object-fit:contain}
+.pt h2{margin:0;font:800 24px/1.08 var(--display);letter-spacing:-.01em}
+.pt .pc-chips{padding:0 16px 12px}
+.pt .pc-head{border-bottom:0}
+.pt-tabs{display:flex;overflow-x:auto;scrollbar-width:none;padding:0 8px;border-top:1px solid var(--rule-2)}
+.pt-tabs::-webkit-scrollbar{display:none}
+.pt-tabs a{flex:none;padding:13px 10px 11px;font:600 14.5px/1 var(--body);color:var(--muted);text-decoration:none;border-bottom:2.5px solid transparent}
+.pt-tabs a:hover{color:var(--ink)}
+.pt-tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--red)}
+@media (max-width:640px){.pt-hd{padding:14px 14px 10px}.pt h2{font-size:21px}.pt-logo{width:52px;height:52px}.pt-logo img{width:38px!important;height:38px!important}.pt .pc-chips{padding:0 14px 12px}.pt-tabs a{padding:13px 8px 11px;font-size:14px}}
+.pt-ext{margin:-4px 0 10px;text-align:right;font-size:13px}
+.pt-ext a{color:var(--muted)}
+.pt + select.pt-pick{margin:0 0 12px}

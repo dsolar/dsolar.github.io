@@ -467,17 +467,25 @@ function teamPage(q) {
   const pros = (rosters[t.id] || []).filter(p => p.nfl).sort((a, b) => a.nfl.rank - b.nfl.rank);
   const vsOpts = D.teams.filter(x => x.id !== t.id).sort((a, b) => a.short.localeCompare(b.short));
   const steps = o ? [["Title game", o.ccg], ["Win conference", o.champ], ["Make playoff", o.cfp], ["First-round bye", o.bye], ["Quarterfinal", o.r[0]], ["Semifinal", o.r[1]], ["Title game (CFP)", o.r[2]], ["National title", o.r[3]]] : [];
-  return '<div class="thead">' + logo(t) + "<div><h2>" + esc(t.name) + " " + star(t) + '</h2><div class="meta">' + esc(t.conferenceName || t.conference || "") + (t.coach ? " · Coach " + esc(t.coach) : "") + " · " + rec(t) + " (" + crec(t) + " conf)" + (t.polls.cfp ? " · CFP #" + t.polls.cfp.rank : "") + (t.polls.ap ? " · AP #" + t.polls.ap.rank : "") + "</div></div>" +
-    '<a class="back" href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN ↗</a></div>' +
-    tiles([["#" + r.rank, "Hub power " + sg(r.power)], [f1(X.base + r.o) + ' <small>#' + r.oRank + "</small>", "Adj. points scored"], [f1(X.base + r.d) + ' <small>#' + r.dRank + "</small>", "Adj. points allowed"], ["#" + int(t.fpi.rank), "ESPN FPI " + f1(t.fpi.fpi)], ["#" + r.resRank, "Hub résumé"], ["#" + r.sosRank, "Schedule played"], [o ? Math.round(o.w) + "-" + Math.round(o.l) : "—", "Proj record"], [o ? pct(o.cfp) : "—", "Make playoff"]]) +
-    '<p class="callout">' + esc(story(t)) + "</p>" + efficiency(t) +
-    '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(x => '<option value="' + esc(x.id) + '">' + esc(x.short) + "</option>").join("") + "</select></label></div>" +
-    '<div class="panel"><h3>Schedule <small>hub line, book line and win % · result and its résumé value</small></h3><div class="scroll"><table class="t"><thead><tr><th>Week</th><th class=l>Opponent</th><th>Hub</th><th>Book</th><th>Win</th><th>Bets</th><th>Result</th></tr></thead><tbody>' + schedRows + "</tbody></table></div></div>" +
+  // the shared team header (assets/pcard.js); Overview, Schedule and Outlook as tabs (?v=)
+  const v = ["schedule", "outlook"].includes(q.get("v")) ? q.get("v") : "overview", tab = (k) => "#/team?id=" + encodeURIComponent(t.id) + (k === "overview" ? "" : "&v=" + k);
+  const head = window.PCard.teamHead({ logo: logo(t), name: t.name, color: t.color || "var(--ink)",
+    meta: [esc(t.conferenceName || t.conference || ""), rec(t) + " (" + crec(t) + " conf)", t.coach ? "Coach " + esc(t.coach) : ""],
+    chips: [t.polls.cfp ? ["CFP No. " + t.polls.cfp.rank, "tag"] : null, t.polls.ap ? ["AP No. " + t.polls.ap.rank, "tag"] : null, ["ESPN FPI #" + int(t.fpi.rank) + ", hub résumé #" + r.resRank + ", schedule #" + r.sosRank, ""]],
+    head: [{ v: "#" + r.rank, l: "Hub power " + sg(r.power) }, { v: f1(X.base + r.o), l: "Points scored, #" + r.oRank }, { v: f1(X.base + r.d), l: "Points allowed, #" + r.dRank }, { v: o ? pct(o.cfp) : "—", l: "Make the playoff" }],
+    tabs: [["overview", "Overview"], ["schedule", "Schedule"], ["outlook", "Outlook and leaders"]].map(([k, l]) => ({ label: l, href: tab(k), on: v === k })),
+    after: '<p class="pt-ext"><a href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN team page ↗</a></p>' });
+  if (v === "schedule") return head +
+    '<div class="panel"><h3>Schedule <small>hub line, book line and win % · result and its résumé value</small></h3><div class="scroll"><table class="t"><thead><tr><th>Week</th><th class=l>Opponent</th><th>Hub</th><th>Book</th><th>Win</th><th>Bets</th><th>Result</th></tr></thead><tbody>' + schedRows + "</tbody></table></div></div>";
+  if (v === "outlook") return head +
     '<div class="two"><div>' + (o ? '<div class="panel"><h3>Season outlook <small><a href="#/playoff">All playoff odds →</a></small></h3><div class="body"><div class="kv"><div><b>' + Math.round(o.cw) + "-" + Math.round(o.cl) + "</b><span>Proj conf</span></div><div><b>" + pct(o.six) + "</b><span>Bowl eligible</span></div><div><b>" + (o.seed ? f1(o.seed) : "—") + "</b><span>Avg CFP seed</span></div><div><b>" + (fin(t.fpi.playoff) ? Math.round(t.fpi.playoff) + "%" : "—") + "</b><span>FPI playoff</span></div></div>" +
       '<div class="ladder">' + steps.map(([lab, x]) => '<div class="lr"><span>' + lab + '</span><i><b style="width:' + (x * 100).toFixed(1) + '%"></b></i><em>' + pct(x) + "</em></div>").join("") + "</div></div></div>" : "") +
     "</div><div>" + leaders(t.id) +
     (pros.length ? '<div class="panel"><h3>NFL prospects <small><a href="../draft/">Big Board ↗</a></small></h3><ul class="rlist">' + pros.map(p => '<li><span class="pill nfl">#' + p.nfl.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.pos) + (p.year ? " · " + esc(p.year) : "") + "</span></li>").join("") + "</ul></div>" : "") +
     "</div></div>";
+  return head + window.PCard.facts([[o ? Math.round(o.w) + "-" + Math.round(o.l) : "—", "Projected record"]]) +
+    '<p class="callout">' + esc(story(t)) + "</p>" + efficiency(t) +
+    '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(x => '<option value="' + esc(x.id) + '">' + esc(x.short) + "</option>").join("") + "</select></label></div>";
 }
 
 /* ---------- players ---------- */

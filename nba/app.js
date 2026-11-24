@@ -282,8 +282,6 @@
     var pay = H.payroll(code, i), status = CBA.status(pay, i);
     var w = Math.round(st.projW);
     var html = teamHead(code, i, "team") + teamPicker(code, i, "team");
-    html += '<div class="stats">' + stat(ordinal(seed), (t.conf === "E" ? "East" : "West") + " seed") + stat(pct(st.playoffs), "Playoffs") + stat(pct(st.title), "Title") +
-      stat(rt(st.net), "Net rating") + stat('<a href="' + href("contracts/" + code, { y: yq(i) }) + '">' + money(pay, 0) + "</a>", "Payroll") + stat(esc(CBA.STATUS_NAME[status]), "Cap position") + "</div>";
     var lu = H.lineup(code, i), roster = H.rosterAt(code, i);
     html += '<div class="legend">' + ["Fringe", "Weak", "Average", "Strong", "Elite"].map(function (k) { return '<span class="T-' + k + '">' + k + "</span>"; }).join("") + '<span class="note">impact per 100 possessions</span></div>';
     html += court(lu.starters, lu.slots);
@@ -301,10 +299,16 @@
     html += '<p class="note">Cap sheet, exceptions and draft picks are on the <a href="' + href("contracts/" + code, { y: yq(i) }) + '">Contracts tab</a>.</p>';
     view.innerHTML = html;
   }
+  // the shared team header (assets/pcard.js): record and outlook up top, Rotation / Contracts / Style as tabs
   function teamHead(code, i, route) {
-    var t = team(code), st = H.standings(i).filter(function (r) { return r.code === code; })[0], w = Math.round(st.projW);
-    return '<div class="thead">' + logo(code, 54) + "<div><h2>" + esc(t.name) + '</h2><div class="meta">' + (t.conf === "E" ? "East" : "West") + " · " + sname(i) + (i === 0 ? " · " + t.w + "-" + t.l + " now" : "") + " · projected " + w + "-" + (82 - w) + "</div></div>" +
-      '<div class="tlinks"><a class="' + (route === "team" ? "on" : "") + '" href="' + href("team/" + code, { y: yq(i) }) + '">Rotation</a><a class="' + (route === "contracts" ? "on" : "") + '" href="' + href("contracts/" + code, { y: yq(i) }) + '">Contracts</a><a class="' + (route === "style" ? "on" : "") + '" href="' + href("style/" + code) + '">Style</a></div></div>';
+    var t = team(code), all = H.standings(i), st = all.filter(function (r) { return r.code === code; })[0], w = Math.round(st.projW);
+    var conf = all.filter(function (r) { return r.conf === t.conf; }), seed = conf.findIndex(function (r) { return r.code === code; }) + 1;
+    var pay = H.payroll(code, i), status = CBA.status(pay, i);
+    return window.PCard.teamHead({ logo: logo(code, 44), name: t.name, color: t.color,
+      meta: [(t.conf === "E" ? "Eastern" : "Western") + " Conference", sname(i) + (i === 0 ? ", " + t.w + "-" + t.l + " now" : "")],
+      chips: [[CBA.STATUS_NAME[status] + ", " + money(pay, 0) + " payroll", status === "a2" || status === "a1" ? "inj" : ""], st.net != null ? [rt(st.net) + " net rating", st.net >= 0 ? "tag" : ""] : null],
+      head: [{ v: w + "-" + (82 - w), l: "Projected" }, { v: ordinal(seed), l: (t.conf === "E" ? "East" : "West") + " seed" }, { v: pct(st.playoffs), l: "Playoffs" }, { v: pct(st.title), l: "Title" }],
+      tabs: [{ label: "Rotation", href: href("team/" + code, { y: yq(i) }), on: route === "team" }, { label: "Contracts", href: href("contracts/" + code, { y: yq(i) }), on: route === "contracts" }, { label: "Style", href: href("style/" + code), on: route === "style" }] });
   }
   function teamPicker(code, i, route) {
     var t = team(code);

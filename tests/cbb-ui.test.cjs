@@ -59,7 +59,7 @@ test("following a team persists locally and filters the team grid",async()=>{
  }finally{w.close();}
 });
 test("team pages show the roster with Naismith and Big Board tags, and a player card opens",async()=>{
- const first=extras.naismith.ladder[0],p=data.players.find(x=>x.id===first.id),w=await boot("#/team?id="+p.teamId);try{
+ const first=extras.naismith.ladder[0],p=data.players.find(x=>x.id===first.id),w=await boot("#/team?id="+p.teamId+"&v=roster");try{
   assert.ok(text(w).includes(p.name));assert.ok(w.document.querySelector(".pill.nai"));
   w.document.querySelector('[data-player="'+p.id+'"]').click();const d=w.document.querySelector("#card");
   assert.ok(d.open);assert.ok(d.textContent.includes(p.name));assert.ok(d.textContent.includes("Naismith ladder #"));
@@ -108,7 +108,7 @@ test("the hub is registered once and the sport switcher keeps page intent",async
  }finally{w.close();}
 });
 test("team pages show the full season schedule and players have leaderboards",async()=>{
- const t=data.teams[0],n=sched.games.filter(g=>g.home===t.id||g.away===t.id).length,w=await boot("#/team?id="+t.id);try{
+ const t=data.teams[0],n=sched.games.filter(g=>g.home===t.id||g.away===t.id).length,w=await boot("#/team?id="+t.id+"&v=schedule");try{
   await until(()=>w.document.querySelectorAll(".sched tbody tr").length===n);assert.ok(n>20,"a full season");
   await go(w,"#/players");assert.ok(w.document.querySelectorAll(".leaders .panel").length>=8);
   await go(w,"#/players?view=table&sort=gs");assert.ok(w.document.querySelector('th[data-sort="gs"].on'));
