@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-23T22:14:14Z",
+ "updated": "2026-11-24T20:53:47Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -14,50 +14,15 @@
  },
  "events": [
   {
-   "id": "tm-vv1F7ZbS09vyZd227",
-   "date": "2026-11-23",
-   "time": "19:30",
-   "title": "Doja Cat - Tour Ma Vie World Tour",
-   "cat": "music",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/doja-cat-tour-ma-vie-world-boston-massachusetts-11-23-2026/event/0100633917079EE3",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-17769352",
-    "2026-11-23-doja-cat-td-garden"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-Z7r9jZ1AAe_7z",
-   "date": "2026-11-23",
-   "time": "22:00",
-   "title": "Latto - Ages 21+",
-   "cat": "music",
-   "venue": "Roadrunner-Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAe_7z",
-   "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18813573",
+   "id": "sg-18337408",
    "date": "2026-11-24",
-   "time": "12:00",
+   "time": "20:00",
    "title": "Father of Peace",
    "cat": "music",
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/father-of-peace-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-24-12-pm/concert/18813573",
+   "url": "https://seatgeek.com/father-of-peace-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-24-8-pm/concert/18337408",
    "source": "seatgeek",
-   "times": [
-    "12:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18337408"
-   ],
    "score": 0
   },
   {
@@ -130,6 +95,18 @@
     "sg-18404277",
     "2026-11-25-tyla-mgm-music-hall-at-fe"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18867727",
+   "date": "2026-11-25",
+   "time": "21:00",
+   "title": "Konpa On Blast (21+)",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/konpa-on-blast-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-25-9-pm/concert/18867727",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -1029,6 +1006,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18618956"
+   ],
    "score": 0
   },
   {
@@ -2831,6 +2811,18 @@
    "score": 1
   },
   {
+   "id": "tm-vv1AvZk4wGkdoZR-G",
+   "date": "2026-12-19",
+   "time": "20:00",
+   "title": "Emo Night Brooklyn (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/emo-night-brooklyn-18-boston-massachusetts-12-19-2026/event/01006572D102F84C",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
    "id": "tm-Z7r9jZ1AAvU0w",
    "date": "2026-12-19",
    "time": "20:00",
@@ -2841,6 +2833,7 @@
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAvU0w",
    "source": "ticketmaster",
    "aka": [
+    "sg-18702713",
     "sg-18702713"
    ],
    "score": 0
@@ -3425,15 +3418,18 @@
    "score": 0
   },
   {
-   "id": "sg-18851782",
+   "id": "tm-Z7r9jZ1AAA91a",
    "date": "2026-12-31",
    "time": "21:00",
-   "title": "The Glitter Boys",
+   "title": "The Glitter Boys NYE - Ages 21+",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-12-31-9-pm/concert/18851782",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA91a",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18851782"
+   ],
    "score": 0
   },
   {
@@ -4113,15 +4109,30 @@
    "score": 1
   },
   {
-   "id": "sg-18813614",
+   "id": "tm-Z7r9jZ1AAA9vf",
    "date": "2027-01-21",
    "time": "20:00",
    "title": "The Jack Wharff Band",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/the-jack-wharff-band-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-01-21-8-pm/concert/18813614",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA9vf",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18813614"
+   ],
+   "score": 0
+  },
+  {
+   "id": "tm-Z7r9jZ1AAA-Q4",
+   "date": "2027-01-22",
+   "time": "18:00",
+   "title": "Earlybirds Club - Ages 21+",
+   "cat": "music",
+   "venue": "The Sinclair Music Hall",
+   "city": "Cambridge, MA",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA-Q4",
+   "source": "ticketmaster",
    "score": 0
   },
   {
@@ -4653,6 +4664,18 @@
    "venue": "Arts at the Armory",
    "city": "Somerville, MA",
    "url": "https://www.eventbrite.com/e/nurse-georgie-carroll-tickets-2003174281199?aff=oddtdtcreator",
+   "source": "ticketmaster",
+   "score": 0
+  },
+  {
+   "id": "tm-vv1AvZk4wGkdoJLtl",
+   "date": "2027-01-30",
+   "time": "20:00",
+   "title": "Broadway Rave (18+)",
+   "cat": "music",
+   "venue": "Brighton Music Hall presented by Citizens",
+   "city": "Boston, MA",
+   "url": "https://www.ticketmaster.com/broadway-rave-18-boston-massachusetts-01-30-2027/event/01006572D199FA6B",
    "source": "ticketmaster",
    "score": 0
   },
@@ -5445,6 +5468,7 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18639183",
+    "sg-18830722",
     "2027-02-13-chelsea-cutler-roadrunner"
    ],
    "score": 0
@@ -6864,15 +6888,18 @@
    "score": 0
   },
   {
-   "id": "sg-18813588",
+   "id": "tm-Z7r9jZ1AAAK3A",
    "date": "2027-03-10",
    "time": "20:00",
-   "title": "Gang Of Four",
+   "title": "Gang of Four w/ Noun",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/gang-of-four-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-10-8-pm/concert/18813588",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAK3A",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18813588"
+   ],
    "score": 0
   },
   {
@@ -6955,15 +6982,18 @@
    "score": 0
   },
   {
-   "id": "sg-18813592",
+   "id": "tm-Z7r9jZ1AAAKoV",
    "date": "2027-03-11",
    "time": "20:00",
    "title": "Flower Face",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/flower-face-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-11-8-pm/concert/18813592",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAKoV",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18813592"
+   ],
    "score": 0
   },
   {
@@ -8011,15 +8041,18 @@
    "score": 0
   },
   {
-   "id": "sg-18813646",
+   "id": "tm-Z7r9jZ1AAA3Of",
    "date": "2027-03-27",
    "time": "20:00",
-   "title": "Addison Groove Project",
+   "title": "Addison Groove Project - Ages 18+",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/addison-groove-project-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-27-8-pm/concert/18813646",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAA3Of",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18813646"
+   ],
    "score": 0
   },
   {
@@ -10070,15 +10103,18 @@
    "score": 1
   },
   {
-   "id": "sg-18813572",
+   "id": "tm-Z7r9jZ1AAAK3K",
    "date": "2027-05-08",
    "time": "20:00",
-   "title": "Getdown Services",
+   "title": "Getdown Services w/ Antony Szmierek",
    "cat": "music",
-   "venue": "The Sinclair - Cambridge",
+   "venue": "The Sinclair Music Hall",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/getdown-services-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-08-8-pm/concert/18813572",
-   "source": "seatgeek",
+   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAAK3K",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18813572"
+   ],
    "score": 0
   },
   {
@@ -10395,14 +10431,41 @@
    "score": 0
   },
   {
-   "id": "sg-18252179",
+   "id": "tm-vvG17Z_1Qyxhxi",
    "date": "2027-05-22",
    "time": "20:00",
-   "title": "The Airborne Toxic Event",
+   "title": "The Airborne Toxic Event - The Way Home 20 Year Anniversary Tour",
    "cat": "music",
-   "venue": "Orpheum Theatre - Boston",
+   "venue": "Orpheum Theatre presented by Citizens",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/the-airborne-toxic-event-tickets/boston-massachusetts-orpheum-theatre-boston-2027-05-22-8-pm/concert/18252179",
+   "url": "https://www.ticketmaster.com/the-airborne-toxic-event-the-way-boston-massachusetts-05-22-2027/event/010064A6B989B8AC",
+   "source": "ticketmaster",
+   "aka": [
+    "sg-18252179"
+   ],
+   "score": 0
+  },
+  {
+   "id": "sg-18726983",
+   "date": "2027-05-23",
+   "time": "20:00",
+   "title": "Hum",
+   "cat": "music",
+   "venue": "Roadrunner - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/hum-tickets/boston-massachusetts-roadrunner-boston-2027-05-23-8-pm/concert/18726983",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18591764",
+   "date": "2027-05-23",
+   "time": "20:00",
+   "title": "The Warning",
+   "cat": "music",
+   "venue": "MGM Music Hall at Fenway",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/the-warning-tickets/boston-massachusetts-mgm-music-hall-at-fenway-2027-05-23-8-pm/concert/18591764",
    "source": "seatgeek",
    "score": 0
   }
@@ -10483,7 +10546,7 @@
   "picks": 2,
   "venues": 0,
   "espn": 66,
-  "ticketmaster": 477,
-  "seatgeek": 160
+  "ticketmaster": 485,
+  "seatgeek": 156
  }
 }
