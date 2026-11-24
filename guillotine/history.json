@@ -7372,7 +7372,7 @@
       "nfl": "TB",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 32,
-      "next_proj": 19.14
+      "next_proj": 19.15
      },
      {
       "n": "Brock Purdy",
@@ -7396,7 +7396,7 @@
       "nfl": "CAR",
       "claimed_by": "Holofernes",
       "bid": 8,
-      "next_proj": 11.63
+      "next_proj": 11.62
      },
      {
       "n": "Chase Brown",
@@ -7404,7 +7404,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 2,
-      "next_proj": 14.01
+      "next_proj": 14.03
      },
      {
       "n": "Sam LaPorta",
@@ -7427,7 +7427,7 @@
       "nfl": "PHI",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 12.9
+      "next_proj": 12.91
      },
      {
       "n": "Jordan Love",
@@ -7447,7 +7447,7 @@
       "n": "Jalen Coker",
       "pos": "WR",
       "nfl": "CAR",
-      "next_proj": 10.28
+      "next_proj": 10.27
      },
      {
       "n": "Zach Charbonnet",
@@ -7607,7 +7607,7 @@
       "nfl": "CIN",
       "slot": "Q/W/R/T",
       "proj": 26.57,
-      "pts": null
+      "pts": 19.9
      },
      {
       "n": "Tyler Shough",
@@ -7639,7 +7639,7 @@
       "nfl": "WAS",
       "slot": "BN",
       "proj": 11.25,
-      "pts": null
+      "pts": 6.5
      },
      {
       "n": "Carnell Tate",
@@ -7681,7 +7681,7 @@
       "nfl": "CIN",
       "slot": "WR",
       "proj": 18.8,
-      "pts": null
+      "pts": 5.6
      },
      {
       "n": "Zay Flowers",
@@ -7811,7 +7811,7 @@
       "nfl": "CIN",
       "slot": "WR",
       "proj": 16.29,
-      "pts": null
+      "pts": 11.3
      },
      {
       "n": "Garrett Wilson",
@@ -7835,7 +7835,7 @@
       "nfl": "CIN",
       "slot": "W/R/T",
       "proj": 12.94,
-      "pts": null
+      "pts": 6.1
      },
      {
       "n": "Patrick Mahomes",
@@ -7965,7 +7965,7 @@
       "nfl": "WAS",
       "slot": "Q/W/R/T",
       "proj": 21.88,
-      "pts": null
+      "pts": 17.06
      },
      {
       "n": "Trevor Lawrence",
