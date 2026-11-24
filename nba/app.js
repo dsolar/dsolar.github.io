@@ -106,6 +106,14 @@
     players: [["ratings", "Ratings"], ["rank", "Rankings"], ["track", "Tracking"], ["value", "Contracts"], ["lineups", "Lineups"]],
     draft: [["draft", "Lottery odds", "", "Lottery"], ["picks", "Traded picks", "", "Picks"], ["", "Big Board", "../draft/#nba"], ["", "Mock draft", "../draft/#nba/mock", "Mock"], ["", "More", "../draft/#nba/challenge"]]
   };
+  // the teams you follow (assets/follow.js), above the main pages; redrawn when you follow or unfollow
+  function yoursSlot() {
+    var el = document.getElementById("ds-yours-slot");
+    if (!el) { el = document.createElement("div"); el.id = "ds-yours-slot"; view.parentNode.insertBefore(el, view); }
+    var show = window.Follow && H && ["tonight","standings","teams"].indexOf(state.route) >= 0;
+    el.innerHTML = show ? Follow.strip("nba", Object.keys(H.teams).map(function (c) { var t = team(c); return { id: c, href: href("team/" + c, {}), logo: logo(c, 28), name: t.short, sub: t.w != null ? t.w + "-" + t.l : "" }; })) : "";
+  }
+  window.addEventListener("ds-follow", function (e) { if (e.detail && e.detail.sport === "nba") yoursSlot(); });
   function render() {
     parse();
     // Six sections; grouped ones get a sub-tab row
@@ -128,6 +136,7 @@
     if ((state.route === "team" || state.route === "style") && state.arg) save("team", state.arg.toUpperCase());
     var fn = { tonight: tonightPage, game: gamePage, draft: draftPage, standings: standings, team: teamPage, teams: teamsPage, contracts: contractsPage, picks: picksPage, value: valuePage, trade: tradePage, fa: faPage, ratings: ratingsPage, rank: rankPage, track: trackPage, lineups: lineupsPage, style: stylePage, method: methodPage }[state.route] || standings;
     fn();
+    yoursSlot();
   }
   // ---------- tonight: game cards and previews (assets/tonight.js, data/tonight.json) ----------
   var ESPN2CODE = null;
@@ -304,7 +313,7 @@
     var t = team(code), all = H.standings(i), st = all.filter(function (r) { return r.code === code; })[0], w = Math.round(st.projW);
     var conf = all.filter(function (r) { return r.conf === t.conf; }), seed = conf.findIndex(function (r) { return r.code === code; }) + 1;
     var pay = H.payroll(code, i), status = CBA.status(pay, i);
-    return window.PCard.teamHead({ logo: logo(code, 44), name: t.name, color: t.color,
+    return window.PCard.teamHead({ logo: logo(code, 44), name: t.name, follow: { sport: "nba", id: code }, color: t.color,
       meta: [(t.conf === "E" ? "Eastern" : "Western") + " Conference", sname(i) + (i === 0 ? ", " + t.w + "-" + t.l + " now" : "")],
       chips: [[CBA.STATUS_NAME[status] + ", " + money(pay, 0) + " payroll", status === "a2" || status === "a1" ? "inj" : ""], st.net != null ? [rt(st.net) + " net rating", st.net >= 0 ? "tag" : ""] : null],
       head: [{ v: w + "-" + (82 - w), l: "Projected" }, { v: ordinal(seed), l: (t.conf === "E" ? "East" : "West") + " seed" }, { v: pct(st.playoffs), l: "Playoffs" }, { v: pct(st.title), l: "Title" }],

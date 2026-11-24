@@ -102,6 +102,14 @@
     players: [["players", "Players"], ["ngs", "Next Gen Stats"], ["contracts", "Contracts"]],
     moves: [["fa", "Free agents"], ["trade", "Trade value"]]
   };
+  // the teams you follow (assets/follow.js), above the main pages; redrawn when you follow or unfollow
+  function yoursSlot() {
+    var el = document.getElementById("ds-yours-slot");
+    if (!el) { el = document.createElement("div"); el.id = "ds-yours-slot"; view.parentNode.insertBefore(el, view); }
+    var show = window.Follow && TEAMS && ["week","standings","teams","power"].indexOf(state.route) >= 0;
+    el.innerHTML = show ? Follow.strip("nfl", Object.keys(TEAMS).map(function (c) { var o = null; try { o = SIM && SIM.teams[c]; } catch (e) { o = null; } return { id: c, href: href("team/" + c, {}), logo: logo(c, 28), name: team(c).short, sub: o && o.rec ? rec(o.rec) : "" }; })) : "";
+  }
+  window.addEventListener("ds-follow", function (e) { if (e.detail && e.detail.sport === "nfl") yoursSlot(); });
   function render() {
     parse();
     var cur = state.route === "team" ? "teams" : state.route === "league" ? "cap" : state.route === "game" ? "week" : state.route, group = GROUP[state.route] || "standings", subs = SUBS[group];
@@ -115,6 +123,7 @@
     st.hidden = false;
     st.innerHTML = subs.map(function (x) { return '<a href="' + href(x[0], {}) + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
     ({ week: weekPage, game: gamePage, standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    yoursSlot();
   }
   window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
 
@@ -797,7 +806,7 @@
     var base = C.teamYears(W, code, [], 2026, 2030), plan = C.teamYears(W, code, ms.map(eng), 2026, 2030), cc = C.creditCard(W, code, 2026);
     // the shared team header (assets/pcard.js): outlook up top, cap numbers as chips, the team's pages as tabs
     var TABS = [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"], ["ngs", "Next Gen Stats"]];
-    var html = window.PCard.teamHead({ logo: logo(code, 44), name: t.name, color: t.color,
+    var html = window.PCard.teamHead({ logo: logo(code, 44), name: t.name, follow: { sport: "nfl", id: code }, color: t.color,
       meta: [esc(S.divOf[code]), rec(o.rec) + " now", "strength " + (o.rating >= 0 ? "+" : "") + o.rating.toFixed(1) + " pts"],
       chips: [[m(base[0].space) + " cap space in 2026", ""], [m(plan[1].space) + " in 2027" + (ms.length ? " with your plan" : ""), plan[1].space >= 0 ? "" : "inj"], base[0].dead > 1 ? [m(base[0].dead) + " dead money", ""] : null, cc.voids > 0.05 ? [m(cc.voids) + " in void years", ""] : null],
       head: [{ v: Math.round(o.wins) + "-" + (17 - Math.round(o.wins)), l: "Projected" }, { v: pctTxt(o.div), l: "Division" }, { v: pctTxt(o.playoffs), l: "Playoffs" }, { v: pctTxt(o.sb), l: "Super Bowl" }],

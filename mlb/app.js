@@ -127,6 +127,14 @@
   }
   // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
   var GROUP = { standings: "standings", teams: "teams", team: "teams", statcast: "players", luck: "players", arsenal: "players", value: "trades", trade: "trades", fa: "fa" };
+  // the teams you follow (assets/follow.js), above the main pages; redrawn when you follow or unfollow
+  function yoursSlot() {
+    var el = document.getElementById("ds-yours-slot");
+    if (!el) { el = document.createElement("div"); el.id = "ds-yours-slot"; view.parentNode.insertBefore(el, view); }
+    var show = window.Follow && H && ["standings","teams"].indexOf(state.route) >= 0;
+    el.innerHTML = show ? Follow.strip("mlb", Object.keys(H.byAbbr).map(function (a) { var t = team(a); return { id: a, href: href("team/" + a, {}), logo: logo(a, 28), name: t.short || t.name, sub: "" }; })) : "";
+  }
+  window.addEventListener("ds-follow", function (e) { if (e.detail && e.detail.sport === "mlb") yoursSlot(); });
   function render() {
     parse();
     var money = state.route === "team" && state.q.view === "money", group = GROUP[state.route] || "standings";
@@ -148,6 +156,7 @@
     if (withYears) drawYears();
     var fn = { standings: standings, team: teamPage, teams: teamsPage, statcast: statcastPage, luck: luckPage, arsenal: arsenalPage, value: valuePage, trade: tradePage, fa: faPage, method: methodPage }[state.route] || standings;
     fn();
+    yoursSlot();
   }
   function drawYears() {
     years.innerHTML = yearsList().map(function (y) {
@@ -229,7 +238,7 @@
     var sub = state.q.view === "money" ? "money" : state.q.view === "farm" ? "farm" : state.q.view === "statcast" ? "statcast" : "depth";
     var subHref = function (k) { return href("team/" + abbr, { y: y === H.season ? null : y, view: k === "depth" ? null : k }); };
     // the shared team header (assets/pcard.js), its pages as tabs, then the division picker
-    var html = window.PCard.teamHead({ logo: logo(abbr, 44), name: t.name, color: t.color || "var(--ink)",
+    var html = window.PCard.teamHead({ logo: logo(abbr, 44), name: t.name, follow: { sport: "mlb", id: abbr }, color: t.color || "var(--ink)",
       meta: [t.lg + " " + t.div, y + " projection"],
       chips: [[money(H.payroll(abbr, y), 0) + " payroll", ""], [f1(tm.war) + " team WAR", ""], ["Hitting " + ordinal(H.rank(y, "bat", tm.bat)) + ", pitching " + ordinal(H.rank(y, "pit", tm.pit)), ""]],
       head: [{ v: w + "-" + (162 - w), l: "Projected" }, { v: pct(st.playoff), l: "Playoffs" }, { v: pct(st.ws), l: "World Series" }],

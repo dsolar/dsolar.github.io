@@ -82,6 +82,14 @@
   }
   function setQ(patch) { var q = Object.assign({}, state.q, patch); go(state.route, state.arg, q); }
 
+  // the teams you follow (assets/follow.js), above the main pages; redrawn when you follow or unfollow
+  function yoursSlot() {
+    var el = document.getElementById("ds-yours-slot");
+    if (!el) { el = document.createElement("div"); el.id = "ds-yours-slot"; view.parentNode.insertBefore(el, view); }
+    var show = window.Follow && H && ["tonight","standings","teams",""].indexOf((state.route || "")) >= 0;
+    el.innerHTML = show ? Follow.strip("nhl", H.teams.map(function (t) { return { id: t.abbr, href: "#/team/" + t.abbr, logo: logo(t, 28), name: t.common || t.name, sub: rec(t) }; })) : "";
+  }
+  window.addEventListener("ds-follow", function (e) { if (e.detail && e.detail.sport === "nhl") yoursSlot(); });
   function render() {
     parse();
     // Three sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
@@ -108,6 +116,7 @@
     else view.innerHTML = standingsView();
     var k = { tonight: "Tonight", game: "Game preview", standings: "Standings", teams: "Teams", team: TEAMS[state.arg] ? TEAMS[state.arg].name : "Teams", players: "Player Ratings", stats: "Stats", edge: "Edge tracking", contracts: "Contracts", method: "How it works" }[r] || "Standings";
     document.title = k + " · NHL Hub | David Solar";
+    yoursSlot();
   }
 
   // ---------- tonight: game cards and previews (assets/tonight.js, data/tonight.json) ----------
@@ -228,7 +237,7 @@
     var r = t.rec, ps = ROSTER[t.abbr] || [];
     var rank = H.teams.slice().sort(function (a, b) { return b.rating - a.rating; }).indexOf(t) + 1;
     // the shared team header (assets/pcard.js), then the team picker
-    var h = window.PCard.teamHead({ logo: logo(t, 44), name: t.name, color: "var(--ink)",
+    var h = window.PCard.teamHead({ logo: logo(t, 44), name: t.name, follow: { sport: "nhl", id: t.abbr }, color: "var(--ink)",
       meta: [esc(t.div) + " Division", rec(t) + ", " + r.points + " points in " + r.gamesPlayed + " games"],
       chips: [["Last 10: " + r.l10Wins + "-" + r.l10Losses + "-" + r.l10OtLosses, ""], r.streakCode ? [r.streakCode + r.streakCount + " streak", r.streakCode === "W" ? "tag" : ""] : null, ["Strength " + sgn(t.rating, 2) + ", " + ord(rank), t.rating >= 0 ? "tag" : ""], t.cap ? [m(t.cap.space, 1) + " cap space", t.cap.space >= 0 ? "" : "inj"] : null],
       head: [{ v: Math.round(t.projPts), l: "Projected points" }, { v: pct(t.odds.po), l: "Playoffs" }, { v: pct(t.odds.div), l: "Division" }, { v: pct(t.odds.cup), l: "Stanley Cup" }],

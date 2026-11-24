@@ -78,7 +78,9 @@
     var head = (o.head || []).filter(function (x) { return x && x.v != null && x.v !== ""; }).slice(0, 4);
     var chips = (o.chips || []).filter(function (c) { return c && c[0]; });
     return '<section class="pt" style="--tc:' + esc(o.color || "var(--ink)") + '"><div class="pt-hd">' + (o.logo ? '<div class="pt-logo">' + o.logo + "</div>" : "") + "<div><h2>" + esc(o.name) + "</h2>" +
-      '<div class="pc-meta">' + (o.meta || []).filter(Boolean).map(function (m) { return "<span>" + m + "</span>"; }).join("") + "</div></div></div>" +
+      '<div class="pc-meta">' + (o.meta || []).filter(Boolean).map(function (m) { return "<span>" + m + "</span>"; }).join("") + "</div></div>" +
+      // follow: {sport, id} puts the shared Follow star (assets/follow.js) in the corner
+      (o.follow && window.Follow ? '<div class="pt-fol">' + window.Follow.star(o.follow.sport, o.follow.id, o.follow.name || o.name) + "</div>" : "") + "</div>" +
       (chips.length ? '<div class="pc-chips">' + chips.map(function (c) { return '<span class="pc-chip' + (c[1] ? " " + c[1] : "") + '">' + esc(c[0]) + "</span>"; }).join("") + "</div>" : "") +
       (head.length ? '<div class="pc-head" style="--n:' + head.length + '">' + head.map(function (x) { return "<div><b" + (x.tone ? ' class="' + x.tone + '"' : "") + ">" + (x.html ? x.v : esc(x.v)) + "</b><span>" + esc(x.l) + "</span></div>"; }).join("") + "</div>" : "") +
       ((o.tabs || []).length > 1 ? '<nav class="pt-tabs" aria-label="Team pages">' + o.tabs.map(function (t) { return '<a href="' + t.href + '"' + (t.on ? ' aria-current="page"' : "") + ">" + esc(t.label) + "</a>"; }).join("") + "</nav>" : "") +

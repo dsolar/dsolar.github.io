@@ -99,7 +99,9 @@ dialog#card:has(.pc) .card-b{padding:0}
 
 /* Team page header (PCard.teamHead): the player card's frame laid on the page */
 .pt{--pc-pad:16px;background:var(--card);border:1px solid var(--rule);border-radius:14px;margin:12px 0 12px;overflow:hidden}
-.pt-hd{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;padding:16px 16px 10px}
+.pt-hd{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:16px 16px 10px}
+.pt-hd>div:nth-child(2):last-child{grid-column:2/4}
+.pt-fol{align-self:start}
 .pt-logo{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--card);box-shadow:0 0 0 3px var(--card),0 0 0 5px var(--tc)}
 .pt-logo img{width:44px!important;height:44px!important;object-fit:contain}
 .pt h2{margin:0;font:800 24px/1.08 var(--display);letter-spacing:-.01em}
@@ -114,3 +116,4 @@ dialog#card:has(.pc) .card-b{padding:0}
 .pt-ext{margin:-4px 0 10px;text-align:right;font-size:13px}
 .pt-ext a{color:var(--muted)}
 .pt + select.pt-pick{margin:0 0 12px}
+@media (max-width:640px){.pt-hd{gap:12px}.pt-fol .ds-follow{padding:7px 9px}.pt-fol .ds-follow span:last-child{display:none}.pt-fol .ds-follow span:first-child{font-size:18px}}

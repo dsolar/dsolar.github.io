@@ -1,6 +1,6 @@
 const test=require("node:test"),assert=require("node:assert/strict"),fs=require("node:fs"),path=require("node:path"),{JSDOM}=require("jsdom");
 const ROOT=path.join(__dirname,".."),html=fs.readFileSync(path.join(ROOT,"cbb/index.html"),"utf8").replace(/<script[^>]*src=[^>]*><\/script>/g,"");
-const pcard=fs.readFileSync(path.join(ROOT,"assets/pcard.js"),"utf8"),core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
+const follow=fs.readFileSync(path.join(ROOT,"assets/follow.js"),"utf8"),pcard=fs.readFileSync(path.join(ROOT,"assets/pcard.js"),"utf8"),core=fs.readFileSync(path.join(ROOT,"cbb/model.js"),"utf8"),app=fs.readFileSync(path.join(ROOT,"cbb/app.js"),"utf8");
 const data=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/hub.json"),"utf8")),extras=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/extras.json"),"utf8"));
 const board=JSON.parse(fs.readFileSync(path.join(ROOT,"draft/nba.json"),"utf8")),sched=JSON.parse(fs.readFileSync(path.join(ROOT,"cbb/data/schedule.json"),"utf8"));
 const pause=ms=>new Promise(r=>setTimeout(r,ms));
@@ -14,7 +14,7 @@ async function boot(hash="#/today",live=null){
  w.fetch=async url=>{url=String(url);if(url.includes("espn.com")){if(!live)throw Error("offline test");return {ok:true,json:async()=>structuredClone(live)};}
   const body=url.includes("draft/nba")?board:url.includes("extras")?extras:url.includes("schedule")?sched:data;return {ok:true,json:async()=>structuredClone(body)};};
  const ready=new Promise(resolve=>w.document.addEventListener("cbb:ready",resolve,{once:true}));
- w.eval(pcard);w.eval(core);w.eval(app);await ready;await pause(0);return w;
+ w.eval(follow);w.eval(pcard);w.eval(core);w.eval(app);await ready;await pause(0);return w;
 }
 async function go(w,hash){w.location.hash=hash;const page=hash.split("/")[1].split("?")[0];await until(()=>w.document.body.dataset.page===page);await pause(20);}
 const text=w=>w.document.querySelector("#view").textContent;
@@ -51,11 +51,16 @@ test("ratings search and conference filters narrow the team pool",async()=>{
   w.document.querySelector('[data-sort="adjD"]').click();assert.ok(w.location.hash.includes("sort=adjD"));
  }finally{w.close();}
 });
-test("following a team persists locally and filters the team grid",async()=>{
+test("following a team saves to the shared (synced) list, carries over the old one, and filters the standings",async()=>{
  const w=await boot("#/teams");try{
-  const star=w.document.querySelector("[data-fav]"),id=star.dataset.fav;star.click();
-  assert.ok(JSON.parse(w.localStorage.getItem("ds-cbb:favorites")).includes(id));
-  await go(w,"#/teams?follow=1");assert.equal(w.document.querySelectorAll(".tg").length,1);
+  assert.ok(w.document.querySelectorAll("table.st").length>=30,"a standings table for every conference");
+  const star=w.document.querySelector("[data-follow]"),id=star.dataset.follow.split(":")[1];star.click();
+  assert.ok(JSON.parse(w.localStorage.getItem("ds-fav:ncaab")).includes(id));
+  await go(w,"#/teams?follow=1");assert.equal(w.document.querySelectorAll("table.st tbody tr").length,1);
+  assert.ok(w.document.querySelector("table.st tr.mine"));
+  await go(w,"#/today");assert.ok(w.document.querySelector(".ds-yours"),"your teams on Today");
+  w.localStorage.removeItem("ds-fav:ncaab");w.localStorage.setItem("ds-cbb:favorites",JSON.stringify([id]));
+  assert.equal(JSON.stringify(w.Follow.list("ncaab")),JSON.stringify([id]),"the old list carries over");
  }finally{w.close();}
 });
 test("team pages show the roster with Naismith and Big Board tags, and a player card opens",async()=>{

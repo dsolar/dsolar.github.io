@@ -15,7 +15,7 @@
     var queued = false;
     new MutationObserver(function () { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; own(); }); }).observe(document.body, { childList: true, subtree: true });
     if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
-      var a0 = document.createElement("script"); a0.src = new URL("../", script.src).pathname + "assets/account.js?v=20261117-dl3"; a0.defer = true;
+      var a0 = document.createElement("script"); a0.src = new URL("../", script.src).pathname + "assets/account.js?v=20261124-fav"; a0.defer = true;
       a0.onload = own; document.head.appendChild(a0);
     } else own();
     return;
@@ -136,7 +136,7 @@
   }
   // the site's account: sign in from any page, and the daily games' saves follow you (assets/account.js)
   if (!window.DSAccount && !document.querySelector('script[src*="assets/account.js"]')) {
-    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261117-dl3"); acct.defer = true; document.head.appendChild(acct);
+    var acct = document.createElement("script"); acct.src = at("assets/account.js?v=20261124-fav"); acct.defer = true; document.head.appendChild(acct);
   }
   bar.addEventListener("click", function (event) {
     var button = event.target.closest("button");

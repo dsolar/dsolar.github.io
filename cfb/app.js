@@ -18,7 +18,7 @@ function read(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } c
 function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } }
 
 let D = null, X = null, P = null, C = null, byId = {}, byPlayer = {}, rosters = {}, liveStamp = null, heisRank = {};
-let faves = new Set(read("ds-cfb:favorites", []));
+let faves = new Set(window.Follow ? Follow.list("ncaaf") : read("ds-cfb:favorites", []));
 
 /* ---------- small pieces ---------- */
 function route() { const [p, q] = (location.hash.replace(/^#\/?/, "") || "week").split("?"); return { page: p || "week", q: new URLSearchParams(q || "") }; }
@@ -47,7 +47,7 @@ function seg(param, options, value) { return '<div class="seg" role="group">' + 
 function confSelect(value, label = "Conference") { return '<label>' + label + '<select data-param="conf"><option value="">All</option>' + D.conferences.map(c => '<option value="' + esc(c.short) + '"' + (c.short === value ? " selected" : "") + ">" + esc(c.short) + "</option>").join("") + "</select></label>"; }
 function teamSelect(param, value, label) { return '<label>' + label + '<select data-param="' + param + '"><option value="">Choose a team</option>' + D.teams.slice().sort((a, b) => a.short.localeCompare(b.short)).map(t => '<option value="' + esc(t.id) + '"' + (t.id === value ? " selected" : "") + ">" + esc(t.short) + "</option>").join("") + "</select></label>"; }
 function sortTh(key, label, cur, title) { return '<th class="sort' + (cur === key ? " on" : "") + '" data-sort="' + key + '"' + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + (cur === key ? " ▾" : "") + "</th>"; }
-function star(t) { const on = faves.has(t.id); return '<button class="star" type="button" data-fav="' + esc(t.id) + '" aria-pressed="' + on + '" title="' + (on ? "Following" : "Follow") + '">' + (on ? "★" : "☆") + "</button>"; }
+function star(t) { const on = faves.has(t.id); return '<button class="star" type="button" data-follow="ncaaf:' + esc(t.id) + '" data-name="' + esc(t.short) + '" aria-pressed="' + on + '" title="' + (on ? "Following" : "Follow") + '">' + (on ? "★" : "☆") + "</button>"; }
 function tiles(items) { return '<div class="stats">' + items.map(([v, l]) => '<div class="stat"><b>' + v + "</b><span>" + l + "</span></div>").join("") + "</div>"; }
 function mv(x) { return fin(x) && x ? '<span class="mv ' + (x > 0 ? "up" : "dn") + '">' + (x > 0 ? "▲" : "▼") + Math.abs(x) + "</span>" : '<span class="mv">–</span>'; }
 
@@ -373,12 +373,19 @@ function conferences(q) {
 }
 
 /* ---------- teams ---------- */
+// Standings: every conference's current table (ESPN's order, with each league's tiebreakers), the conferences of teams you follow on top
 function teams(q) {
-  const s = (q.get("q") || "").toLowerCase(), follow = q.get("follow") === "1";
-  const list = D.conferences.map(c => [c.short, c.teams.map(id => byId[id]).filter(t => t && (!s || (t.name + " " + t.short).toLowerCase().includes(s)) && (!follow || faves.has(t.id))).sort((a, b) => R(a.id).rank - R(b.id).rank)]).filter(x => x[1].length);
-  return '<h2 class="sec">Teams</h2><p class="lede">Every FBS team by conference. Follow teams with ☆ to filter the week\'s games to them.</p>' +
-    '<div class="controls"><label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Search ' + D.teams.length + ' teams"></label><label class="switch"><input type="checkbox" data-param="follow" value="1"' + (follow ? " checked" : "") + "> <span>Only teams I follow (" + faves.size + ")</span></label></div>" +
-    (list.length ? list.map(([c, ts]) => '<h3 class="ch">' + esc(c) + '</h3><div class="teamgrid">' + ts.map(t => '<div class="tg"><a href="#/team?id=' + esc(t.id) + '">' + logo(t) + "<div><b>" + (pollRank(t) ? '<span class="rk">' + pollRank(t) + "</span> " : "") + esc(t.short) + "</b><span>" + rec(t) + " · Hub #" + R(t.id).rank + "</span></div></a>" + star(t) + "</div>").join("") + "</div>").join("") : '<p class="callout">No teams match.</p>');
+  const s = (q.get("q") || "").toLowerCase(), follow = q.get("follow") === "1", pick = q.get("conf") || "";
+  const cs = D.conferences.map(c => ({ name: c.short, ind: c.independent, teams: c.teams.map(id => byId[id]).filter(Boolean) }));
+  const mine = c => c.teams.some(t => faves.has(t.id));
+  const order = cs.filter(mine).concat(cs.filter(c => !mine(c)));
+  const shown = order.filter(c => !pick || c.name === pick).map(c => [c, c.teams.filter(t => (!s || (t.name + " " + t.short).toLowerCase().includes(s)) && (!follow || faves.has(t.id)))]).filter(x => x[1].length);
+  const table = (c, ts) => '<div class="panel st-conf"><h3>' + esc(c.name) + (mine(c) ? ' <small>you follow a team here</small>' : "") + '</h3><div class="scroll"><table class="t st"><thead><tr><th class=l>Team</th>' + (c.ind ? "" : "<th>Conf</th>") + '<th>Overall</th><th class="hide-m">Proj</th><th title="Chance to make the College Football Playoff">CFP</th><th class="hide-m">Hub rank</th><th></th></tr></thead><tbody>' +
+    ts.map(t => { const o = odds(t.id), r = R(t.id) || {}, n = c.teams.indexOf(t) + 1;
+      return '<tr class="go' + (faves.has(t.id) ? " mine" : "") + '" data-href="#/team?id=' + esc(t.id) + '"><td class="tm"><span class="pos">' + n + "</span>" + logo(t) + (pollRank(t) ? '<span class="ap">' + pollRank(t) + "</span>" : "") + '<span class="nm">' + esc(t.short) + "</span></td>" + (c.ind ? "" : "<td><b>" + crec(t) + "</b></td>") + "<td>" + (c.ind ? "<b>" + rec(t) + "</b>" : rec(t)) + '</td><td class="hide-m">' + (o ? Math.round(o.w) + "-" + Math.round(o.l) : "—") + "</td><td>" + (o ? pct(o.cfp) : "—") + '</td><td class="hide-m">' + (r.rank || "—") + "</td><td>" + star(t) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
+  return '<h2 class="sec">Standings</h2><p class="lede">Every FBS conference in ESPN\'s standings order, with each league\'s tiebreakers. Make CFP is from the hub\'s season simulation. Tap ☆ to follow a team: your teams show up first here and at the top of This week, on every device you sign in on.</p>' +
+    '<div class="controls"><label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Search ' + D.teams.length + ' teams"></label><label>Conference<select data-param="conf"><option value="">All</option>' + order.map(c => '<option value="' + esc(c.name) + '"' + (c.name === pick ? " selected" : "") + ">" + esc(c.name) + "</option>").join("") + '</select></label><label class="switch"><input type="checkbox" data-param="follow" value="1"' + (follow ? " checked" : "") + "> <span>Only teams I follow (" + faves.size + ")</span></label></div>" +
+    (shown.length ? shown.map(([c, ts]) => table(c, ts)).join("") : '<p class="callout">No teams match.</p>');
 }
 function story(t) {
   const r = R(t.id), n = D.teams.length, o = odds(t.id), parts = [];
@@ -469,7 +476,7 @@ function teamPage(q) {
   const steps = o ? [["Title game", o.ccg], ["Win conference", o.champ], ["Make playoff", o.cfp], ["First-round bye", o.bye], ["Quarterfinal", o.r[0]], ["Semifinal", o.r[1]], ["Title game (CFP)", o.r[2]], ["National title", o.r[3]]] : [];
   // the shared team header (assets/pcard.js); Overview, Schedule and Outlook as tabs (?v=)
   const v = ["schedule", "outlook"].includes(q.get("v")) ? q.get("v") : "overview", tab = (k) => "#/team?id=" + encodeURIComponent(t.id) + (k === "overview" ? "" : "&v=" + k);
-  const head = window.PCard.teamHead({ logo: logo(t), name: t.name, color: t.color || "var(--ink)",
+  const head = window.PCard.teamHead({ logo: logo(t), name: t.name, color: t.color || "var(--ink)", follow: { sport: "ncaaf", id: t.id, name: t.short },
     meta: [esc(t.conferenceName || t.conference || ""), rec(t) + " (" + crec(t) + " conf)", t.coach ? "Coach " + esc(t.coach) : ""],
     chips: [t.polls.cfp ? ["CFP No. " + t.polls.cfp.rank, "tag"] : null, t.polls.ap ? ["AP No. " + t.polls.ap.rank, "tag"] : null, ["ESPN FPI #" + int(t.fpi.rank) + ", hub résumé #" + r.resRank + ", schedule #" + r.sosRank, ""]],
     head: [{ v: "#" + r.rank, l: "Hub power " + sg(r.power) }, { v: f1(X.base + r.o), l: "Points scored, #" + r.oRank }, { v: f1(X.base + r.d), l: "Points allowed, #" + r.dRank }, { v: o ? pct(o.cfp) : "—", l: "Make the playoff" }],
@@ -665,7 +672,7 @@ const PAGES = { week, playoff, ratings, matchup, conferences, teams, team: teamP
 // used in it
 const GROUP = { week: "week", playoff: "playoff", ratings: "teams", teams: "teams", team: "teams", conferences: "teams", matchup: "teams", players: "players", heisman: "players", prospects: "players" };
 const SUBS = {
-  teams: [["ratings", "Ratings"], ["teams", "Teams"], ["conferences", "Conferences"], ["matchup", "Matchup"]],
+  teams: [["teams", "Standings"], ["ratings", "Ratings"], ["conferences", "Conferences"], ["matchup", "Matchup"]],
   players: [["players", "Players"], ["heisman", "Heisman"], ["prospects", "Prospects"]],
 };
 const lastSub = (g, v) => { try { if (v) localStorage.setItem("cfb.sub." + g, v); return localStorage.getItem("cfb.sub." + g); } catch (e) { return null; } };
@@ -682,8 +689,18 @@ function render() {
   const st = $("#subtabs");
   st.hidden = !subs;
   if (subs) st.innerHTML = subs.map(x => '<a href="#/' + x[0] + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>").join("");
-  view.innerHTML = fn(r.q);
+  view.innerHTML = (page === "week" || page === "teams" ? yours() : "") + fn(r.q);
   document.body.dataset.page = page;
+}
+// the teams you follow, with their record and next game, at the top of the main pages (assets/follow.js)
+function yours() {
+  if (!window.Follow) return "";
+  return Follow.strip("ncaaf", [...faves].map(id => byId[id]).filter(Boolean).map(t => {
+    const g = D.games.filter(x => (x.home === t.id || x.away === t.id) && x.state !== "post").sort((a, b) => (a.at || a.day).localeCompare(b.at || b.day))[0];
+    const o = g && byId[g.home === t.id ? g.away : g.home];
+    const nx = !g ? "" : g.state === "in" ? " · Live" : " · " + dLabel(g.day, { weekday: "short" }) + (g.neutral ? " vs " : g.home === t.id ? " vs " : " at ") + esc(o ? o.short : "TBD");
+    return { id: t.id, href: "#/team?id=" + encodeURIComponent(t.id), logo: logo(t), name: t.short, sub: rec(t) + nx };
+  }));
 }
 function index() {
   byId = Object.fromEntries(D.teams.map(t => [t.id, t]));
@@ -742,7 +759,6 @@ document.addEventListener("click", e => {
   if (el.matches("a") || (e.target.closest("a") && !el.matches("[data-player]"))) return;
   if (el.hasAttribute("data-player")) { e.preventDefault(); openPlayer(el.dataset.player); return; }
   if (el.hasAttribute("data-close")) { $("#card").close(); return; }
-  if (el.hasAttribute("data-fav")) { const id = el.dataset.fav; faves.has(id) ? faves.delete(id) : faves.add(id); save("ds-cfb:favorites", [...faves]); render(); return; }
   if (el.hasAttribute("data-seg")) { const extra = el.dataset.seg === "cat" ? { sort: null, pos: null } : {}; setParams({ [el.dataset.seg]: el.dataset.v, n: null, ...extra }); return; }
   if (el.hasAttribute("data-sort")) { setParams({ sort: el.dataset.sort }); return; }
   if (el.hasAttribute("data-asort")) { setParams({ asort: el.dataset.asort }); return; }
@@ -755,5 +771,7 @@ document.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === 
 window.addEventListener("hashchange", () => { const d = $("#card"); if (d.open) d.close(); render(); window.scrollTo({ top: Math.min(window.scrollY, view.offsetTop - 70) }); if (route().page === "week") refreshLive(false); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && route().page === "week") refreshLive(false); });
 setInterval(() => { if (!document.hidden && route().page === "week" && D && D.games.some(g => g.state === "in")) refreshLive(false); }, 90000);
+// followed teams live in assets/follow.js (synced to your account); redraw when they change here or on another device
+window.addEventListener("ds-follow", (e) => { if (e.detail && e.detail.sport === "ncaaf") { faves = new Set(Follow.list("ncaaf")); render(); } });
 load();
 })();

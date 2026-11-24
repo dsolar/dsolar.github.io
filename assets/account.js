@@ -13,7 +13,7 @@
   if (window.DSAccount) return;
   var script = document.currentScript;
   var root = script ? new URL("../", script.src).pathname : "/";
-  var SYNC = /^(mtc\.v2\.|gtp-|jm-|sr-|tempo-)/;
+  var SYNC = /^(mtc\.v2\.|gtp-|jm-|sr-|tempo-|ds-fav:)/;   // ds-fav: the teams you follow (assets/follow.js)
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
   var read = function (k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
   var write = function (k, v) { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private mode */ } };

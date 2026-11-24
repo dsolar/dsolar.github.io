@@ -219,3 +219,15 @@ details.more-sw summary{cursor:pointer;font-weight:700;font-size:13px;color:var(
   .tabs{gap:0;justify-content:space-between}
   .tabs a{padding:9px 6px 8px;font-size:13px;letter-spacing:0;text-transform:none}
 }
+
+/* Standings (Teams tab): one table per conference */
+.st-conf{margin-bottom:14px}
+.st-conf h3 small{font-weight:500;color:var(--muted);text-transform:none;letter-spacing:0;margin-left:6px}
+table.st td.tm{display:flex;align-items:center;gap:8px;white-space:nowrap}
+table.st td.tm .pos{width:18px;text-align:right;color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+table.st td.tm .ap{font-size:11px;color:var(--muted);font-weight:600}
+table.st tr.mine td{background:rgba(212,165,20,.09)}
+table.st tr.mine td.tm .nm{font-weight:700}
+table.st .star{font-size:17px;line-height:1;background:none;border:0;cursor:pointer;color:var(--muted);padding:2px 4px}
+table.st .star[aria-pressed="true"]{color:#d4a514}
+@media (max-width:640px){table.st .hide-m{display:none}table.st td,table.st th{padding-left:6px;padding-right:6px}}
