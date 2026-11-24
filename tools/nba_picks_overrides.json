@@ -1,0 +1,83 @@
+{
+ "_about": "Hand-modeled NBA picks the RealGM parser (tools/nba_picks_parse.py) can't read or RealGM doesn't list. Each row replaces the parsed row for that pick: [original team, year, round, goes to, kind, note, team that keeps it if protected]. 'seen' is RealGM's text for the pick when the row was written; when RealGM's text changes, the build prints a warning so the row gets another look.",
+ "rows": [
+  {
+   "row": [
+    "LAC",
+    2029,
+    1,
+    "OUT",
+    "forfeit",
+    "Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+   ],
+   "seen": "Philadelphia has the right to swap its 2029 1st round pick for the L.A. Clippers' 2029 1st round pick protected for selections 1-3 (if this pick falls within its protected range and is therefore not conveyable, then the L.A. Clippers' obligation to Philadelphia will be extinguished)"
+  },
+  {
+   "row": [
+    "LAC",
+    2030,
+    1,
+    "OUT",
+    "forfeit",
+    "Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+   ],
+   "seen": null
+  },
+  {
+   "row": [
+    "LAC",
+    2031,
+    1,
+    "OUT",
+    "forfeit",
+    "Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+   ],
+   "seen": null
+  },
+  {
+   "row": [
+    "LAC",
+    2032,
+    1,
+    "OUT",
+    "forfeit",
+    "Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+   ],
+   "seen": null
+  },
+  {
+   "row": [
+    "LAC",
+    2033,
+    1,
+    "OUT",
+    "forfeit",
+    "Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+   ],
+   "seen": null
+  },
+  {
+   "row": [
+    "HOU",
+    2031,
+    2,
+    "BOS",
+    "31-55",
+    "Boston gets it at 56-60. At 31-55, Oklahoma City gets the better of it and Atlanta's 2nd, and Houston the other",
+    "OKC"
+   ],
+   "seen": "Oklahoma City will receive the more favorable of Atlanta's 2031 2nd round pick and Houston's 2031 2nd round pick protected for selections 56-60 and Houston will receive the less favorable of the two; if this pick falls within its protected range and is therefore not conveyable, then Oklahoma City will instead receive the Atlanta pick | Houston's 2031 2nd round pick to Boston protected for selections 31-55 (if this pick falls within its protected range and is therefore not conveyed, then Houston's obligation to Boston will be extinguished)"
+  },
+  {
+   "row": [
+    "PHI",
+    2028,
+    1,
+    "BKN",
+    "1-8",
+    "If protected: Philadelphia sends its 2028 2nd to Brooklyn instead. Brooklyn's four-pick group with Phoenix and New York decides who ends up with it, and Boston can swap into it if the Clippers' pick lands 1-16"
+   ],
+   "seen": "L.A. Clippers' 2028 1st round pick to Boston protected for selections 1-16; if this pick falls within its protected range, then Boston will instead have the right to swap the less favorable of its 2028 1st round pick and San Antonio's 2028 1st round pick for the more favorable of the L.A. Clippers' pick and Philadelphia's 2028 1st round pick protected for selections 9-30; if the Philadelphia pick also falls within its protected range and is therefore not conveyable, then Boston will instead have the right to swap the less favorable of the Boston pick and the San Antonio pick for the L.A. Clippers' pick"
+  }
+ ]
+}

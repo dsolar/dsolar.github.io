@@ -1,1262 +1,1526 @@
 {
- "_about": "Future picks already owed, for mock draft trades. Every team owns its own picks in each future year unless a line here says otherwise. Each line: [original team, year, round, goes to, protection or kind]. goes to: one team, or several separated by '/' when it depends on where picks land. kind: '' unprotected, 'forfeit' taken away by the league (the Clippers' 2029-33 firsts, after the Kawhi Leonard ruling on Sept. 2, 2026), 'cond' conditional or unclear (goes to '?' when RealGM's line didn't name a team), 'a-b' protected for those picks, 'swap' (the original team keeps it but someone can swap with it), 'fav' (more/less favorable of several picks). A pick owed with '/' or 'fav' can't be traded by anyone in the mock; a swap pick stays with its team but can't be traded. NBA from RealGM's detailed future draft list, read Nov 3, 2026 (https://basketball.realgm.com/nba/draft/future_drafts/detailed). NFL from Wikipedia's 2028 NFL draft page, read Nov 3, 2026 (https://en.wikipedia.org/wiki/2028_NFL_draft), plus the Nov 2026 trade-deadline deals from team and NFL.com reports (read Nov 16, 2026). Nov 16, 2026: Utah's 2028 second moved from OKC to SAC in the Nique Clifford trade.",
- "nba": {
-  "years": [
-   2028,
-   2029,
-   2030,
-   2031,
-   2032,
-   2033
-  ],
-  "owed": [
-   [
-    "ATL",
-    2028,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "ATL",
-    2029,
-    2,
-    "CHA/OKC",
-    "fav"
-   ],
-   [
-    "ATL",
-    2030,
-    2,
-    "OKC",
-    ""
-   ],
-   [
-    "ATL",
-    2031,
-    2,
-    "OKC/HOU",
-    "56-60"
-   ],
-   [
-    "ATL",
-    2032,
-    2,
-    "OKC",
-    ""
-   ],
-   [
-    "BOS",
-    2028,
-    1,
-    "SAS",
-    ""
-   ],
-   [
-    "BOS",
-    2028,
-    2,
-    "NYK",
-    "31-45"
-   ],
-   [
-    "BOS",
-    2029,
-    1,
-    "POR/WAS",
-    "fav"
-   ],
-   [
-    "BOS",
-    2029,
-    2,
-    "OKC",
-    ""
-   ],
-   [
-    "BOS",
-    2030,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "BOS",
-    2031,
-    2,
-    "UTA",
-    "swap"
-   ],
-   [
-    "CHA",
-    2030,
-    2,
-    "BOS",
-    "31-55"
-   ],
-   [
-    "CLE",
-    2028,
-    1,
-    "UTA/LAL/ATL",
-    "swap"
-   ],
-   [
-    "CLE",
-    2028,
-    2,
-    "UTA",
-    ""
-   ],
-   [
-    "CLE",
-    2029,
-    1,
-    "UTA/CHA",
-    "1-5"
-   ],
-   [
-    "CLE",
-    2029,
-    2,
-    "ATL",
-    ""
-   ],
-   [
-    "CLE",
-    2030,
-    2,
-    "SAS",
-    ""
-   ],
-   [
-    "CLE",
-    2031,
-    1,
-    "DEN",
-    ""
-   ],
-   [
-    "CLE",
-    2031,
-    2,
-    "UTA/BOS",
-    "fav"
-   ],
-   [
-    "CLE",
-    2032,
-    2,
-    "UTA",
-    ""
-   ],
-   [
-    "DAL",
-    2028,
-    1,
-    "OKC",
-    "swap"
-   ],
-   [
-    "DAL",
-    2028,
-    2,
-    "LAC",
-    ""
-   ],
-   [
-    "DAL",
-    2029,
-    1,
-    "HOU/BKN",
-    "swap"
-   ],
-   [
-    "DAL",
-    2029,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "DAL",
-    2030,
-    1,
-    "SAS/MIN",
-    "swap"
-   ],
-   [
-    "DAL",
-    2030,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "DAL",
-    2031,
-    2,
-    "DET",
-    ""
-   ],
-   [
-    "DAL",
-    2032,
-    2,
-    "NYK",
-    ""
-   ],
-   [
-    "DAL",
-    2033,
-    2,
-    "WAS",
-    ""
-   ],
-   [
-    "DEN",
-    2028,
-    2,
-    "WAS",
-    "31-33"
-   ],
-   [
-    "DEN",
-    2029,
-    1,
-    "OKC",
-    "1-5"
-   ],
-   [
-    "DEN",
-    2029,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "DEN",
-    2030,
-    2,
-    "MEM/OKC",
-    "fav"
-   ],
-   [
-    "DEN",
-    2031,
-    2,
-    "CHI",
-    ""
-   ],
-   [
-    "DEN",
-    2032,
-    1,
-    "BKN",
-    ""
-   ],
-   [
-    "DEN",
-    2032,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "DET",
-    2028,
-    2,
-    "PHI/UTA",
-    "fav"
-   ],
-   [
-    "DET",
-    2031,
-    2,
-    "OKC",
-    ""
-   ],
-   [
-    "GSW",
-    2028,
-    2,
-    "BOS/PHI",
-    "fav"
-   ],
-   [
-    "GSW",
-    2029,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "GSW",
-    2030,
-    1,
-    "MEM",
-    "1-20"
-   ],
-   [
-    "GSW",
-    2031,
-    2,
-    "CHI/DET",
-    "swap"
-   ],
-   [
-    "GSW",
-    2032,
-    2,
-    "MEM",
-    "31-50"
-   ],
-   [
-    "HOU",
-    2028,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "HOU",
-    2029,
-    2,
-    "MEM",
-    ""
-   ],
-   [
-    "HOU",
-    2030,
-    2,
-    "MEM/OKC",
-    "fav"
-   ],
-   [
-    "HOU",
-    2031,
-    2,
-    "BOS/OKC",
-    "fav"
-   ],
-   [
-    "HOU",
-    2032,
-    2,
-    "MIN/PHX",
-    "fav"
-   ],
-   [
-    "HOU",
-    2033,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "IND",
-    2029,
-    1,
-    "LAC",
-    ""
-   ],
-   [
-    "IND",
-    2030,
-    2,
-    "CHI",
-    "swap"
-   ],
-   [
-    "IND",
-    2031,
-    2,
-    "WAS/MEM",
-    "swap"
-   ],
-   [
-    "LAC",
-    2028,
-    1,
-    "BOS/PHI",
-    "fav"
-   ],
-   [
-    "LAC",
-    2028,
-    2,
-    "CHA/DET",
-    "fav"
-   ],
-   [
-    "LAC",
-    2029,
-    1,
-    "-",
-    "forfeit"
-   ],
-   [
-    "LAC",
-    2029,
-    2,
-    "SAS",
-    ""
-   ],
-   [
-    "LAC",
-    2030,
-    1,
-    "-",
-    "forfeit"
-   ],
-   [
-    "LAC",
-    2030,
-    2,
-    "CHA/UTA",
-    "fav"
-   ],
-   [
-    "LAC",
-    2031,
-    1,
-    "-",
-    "forfeit"
-   ],
-   [
-    "LAC",
-    2032,
-    1,
-    "-",
-    "forfeit"
-   ],
-   [
-    "LAC",
-    2033,
-    1,
-    "-",
-    "forfeit"
-   ],
-   [
-    "LAL",
-    2028,
-    1,
-    "UTA",
-    "swap"
-   ],
-   [
-    "LAL",
-    2028,
-    2,
-    "ORL/WAS",
-    "fav"
-   ],
-   [
-    "LAL",
-    2029,
-    1,
-    "DAL",
-    ""
-   ],
-   [
-    "LAL",
-    2029,
-    2,
-    "MEM",
-    ""
-   ],
-   [
-    "LAL",
-    2030,
-    1,
-    "UTA",
-    "swap"
-   ],
-   [
-    "LAL",
-    2030,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "LAL",
-    2031,
-    1,
-    "UTA",
-    ""
-   ],
-   [
-    "LAL",
-    2031,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "LAL",
-    2032,
-    2,
-    "OKC",
-    ""
-   ],
-   [
-    "LAL",
-    2033,
-    1,
-    "UTA",
-    ""
-   ],
-   [
-    "MEM",
-    2028,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "MEM",
-    2029,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "MEM",
-    2030,
-    2,
-    "MIN",
-    "31-50"
-   ],
-   [
-    "MIA",
-    2028,
-    2,
-    "DET",
-    ""
-   ],
-   [
-    "MIA",
-    2029,
-    2,
-    "CHA/OKC",
-    "fav"
-   ],
-   [
-    "MIA",
-    2030,
-    1,
-    "MIL",
-    "swap"
-   ],
-   [
-    "MIA",
-    2030,
-    2,
-    "MEM/OKC",
-    "fav"
-   ],
-   [
-    "MIA",
-    2031,
-    1,
-    "MIL",
-    ""
-   ],
-   [
-    "MIA",
-    2031,
-    2,
-    "WAS/MEM/IND",
-    "swap"
-   ],
-   [
-    "MIA",
-    2032,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "MIA",
-    2033,
-    1,
-    "MIL",
-    ""
-   ],
-   [
-    "MIA",
-    2033,
-    2,
-    "MIL",
-    ""
-   ],
-   [
-    "MIL",
-    2028,
-    1,
-    "POR/WAS",
-    "1-8"
-   ],
-   [
-    "MIL",
-    2028,
-    2,
-    "BOS/PHI",
-    "fav"
-   ],
-   [
-    "MIL",
-    2029,
-    1,
-    "POR/WAS",
-    "fav"
-   ],
-   [
-    "MIL",
-    2029,
-    2,
-    "DET/CHI",
-    "fav"
-   ],
-   [
-    "MIL",
-    2030,
-    2,
-    "ORL",
-    ""
-   ],
-   [
-    "MIL",
-    2031,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "MIL",
-    2032,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "MIN",
-    2028,
-    1,
-    "CHA",
-    "swap"
-   ],
-   [
-    "MIN",
-    2028,
-    2,
-    "DEN",
-    ""
-   ],
-   [
-    "MIN",
-    2029,
-    1,
-    "UTA/CHA/PHX",
-    "fav"
-   ],
-   [
-    "MIN",
-    2029,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "MIN",
-    2030,
-    1,
-    "CHA",
-    "swap"
-   ],
-   [
-    "MIN",
-    2030,
-    2,
-    "DET",
-    ""
-   ],
-   [
-    "MIN",
-    2031,
-    1,
-    "SAC",
-    ""
-   ],
-   [
-    "MIN",
-    2031,
-    2,
-    "CHI/DET",
-    "swap"
-   ],
-   [
-    "MIN",
-    2032,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "MIN",
-    2033,
-    1,
-    "CHA",
-    ""
-   ],
-   [
-    "MIN",
-    2033,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "NOP",
-    2028,
-    2,
-    "SAS",
-    ""
-   ],
-   [
-    "NOP",
-    2029,
-    2,
-    "SAS",
-    ""
-   ],
-   [
-    "NOP",
-    2030,
-    2,
-    "ORL",
-    "swap"
-   ],
-   [
-    "NOP",
-    2031,
-    2,
-    "ORL/OKC",
-    "swap"
-   ],
-   [
-    "NYK",
-    2028,
-    1,
-    "BKN",
-    "1-8"
-   ],
-   [
-    "NYK",
-    2028,
-    2,
-    "DET",
-    ""
-   ],
-   [
-    "NYK",
-    2029,
-    1,
-    "BKN",
-    ""
-   ],
-   [
-    "NYK",
-    2029,
-    2,
-    "DET/CHI",
-    "fav"
-   ],
-   [
-    "NYK",
-    2030,
-    2,
-    "ATL",
-    ""
-   ],
-   [
-    "NYK",
-    2031,
-    1,
-    "BKN",
-    ""
-   ],
-   [
-    "NYK",
-    2031,
-    2,
-    "CHI",
-    ""
-   ],
-   [
-    "OKC",
-    2028,
-    2,
-    "BOS/PHI",
-    "fav"
-   ],
-   [
-    "OKC",
-    2033,
-    2,
-    "MEM",
-    ""
-   ],
-   [
-    "ORL",
-    2028,
-    1,
-    "POR",
-    ""
-   ],
-   [
-    "ORL",
-    2028,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "ORL",
-    2029,
-    1,
-    "MEM",
-    "1-2"
-   ],
-   [
-    "ORL",
-    2030,
-    1,
-    "MEM",
-    ""
-   ],
-   [
-    "PHI",
-    2028,
-    1,
-    "BOS/BKN",
-    "fav"
-   ],
-   [
-    "PHI",
-    2030,
-    2,
-    "NYK",
-    ""
-   ],
-   [
-    "PHI",
-    2031,
-    1,
-    "BOS",
-    ""
-   ],
-   [
-    "PHI",
-    2032,
-    2,
-    "MEM/WAS",
-    "swap"
-   ],
-   [
-    "PHX",
-    2028,
-    1,
-    "BKN/NYK/WAS",
-    "fav"
-   ],
-   [
-    "PHX",
-    2028,
-    2,
-    "CHI/IND/NYK",
-    "swap"
-   ],
-   [
-    "PHX",
-    2029,
-    1,
-    "HOU/BKN",
-    "swap"
-   ],
-   [
-    "PHX",
-    2029,
-    2,
-    "NYK",
-    ""
-   ],
-   [
-    "PHX",
-    2030,
-    1,
-    "WAS/MEM",
-    "swap"
-   ],
-   [
-    "PHX",
-    2030,
-    2,
-    "BOS/PHI/WAS",
-    "fav"
-   ],
-   [
-    "PHX",
-    2031,
-    1,
-    "MEM",
-    ""
-   ],
-   [
-    "PHX",
-    2031,
-    2,
-    "CHA",
-    ""
-   ],
-   [
-    "PHX",
-    2032,
-    2,
-    "MIN",
-    "swap"
-   ],
-   [
-    "PHX",
-    2033,
-    1,
-    "CHA",
-    ""
-   ],
-   [
-    "PHX",
-    2033,
-    2,
-    "NYK",
-    ""
-   ],
-   [
-    "POR",
-    2029,
-    2,
-    "MEM",
-    ""
-   ],
-   [
-    "POR",
-    2030,
-    2,
-    "BOS/PHI/WAS",
-    "fav"
-   ],
-   [
-    "SAC",
-    2028,
-    2,
-    "POR",
-    ""
-   ],
-   [
-    "SAC",
-    2029,
-    2,
-    "NYK",
-    ""
-   ],
-   [
-    "SAC",
-    2030,
-    2,
-    "SAS",
-    ""
-   ],
-   [
-    "SAC",
-    2031,
-    1,
-    "SAS",
-    "swap"
-   ],
-   [
-    "SAC",
-    2031,
-    2,
-    "DEN",
-    ""
-   ],
-   [
-    "SAC",
-    2032,
-    2,
-    "DEN",
-    ""
-   ],
-   [
-    "SAC",
-    2033,
-    2,
-    "ATL",
-    ""
-   ],
-   [
-    "TOR",
-    2030,
-    2,
-    "LAC",
-    ""
-   ],
-   [
-    "TOR",
-    2031,
-    1,
-    "LAC",
-    ""
-   ],
-   [
-    "TOR",
-    2031,
-    2,
-    "NOP",
-    ""
-   ],
-   [
-    "TOR",
-    2032,
-    2,
-    "BKN",
-    ""
-   ],
-   [
-    "TOR",
-    2033,
-    1,
-    "LAC",
-    ""
-   ],
-   [
-    "TOR",
-    2033,
-    2,
-    "LAC",
-    ""
-   ],
-   [
-    "UTA",
-    2028,
-    2,
-    "SAC",
-    ""
-   ],
-   [
-    "UTA",
-    2030,
-    2,
-    "CHA",
-    "swap"
-   ],
-   [
-    "UTA",
-    2032,
-    2,
-    "MEM/WAS",
-    "swap"
-   ],
-   [
-    "WAS",
-    2028,
-    2,
-    "ORL",
-    "swap"
-   ],
-   [
-    "WAS",
-    2029,
-    2,
-    "IND/POR",
-    "fav"
-   ],
-   [
-    "WAS",
-    2030,
-    2,
-    "PHI",
-    ""
-   ],
-   [
-    "WAS",
-    2031,
-    2,
-    "LAL",
-    ""
-   ],
-   [
-    "WAS",
-    2032,
-    2,
-    "LAL",
-    ""
-   ],
-   [
-    "WAS",
-    2033,
-    2,
-    "MEM",
-    ""
-   ]
-  ]
- },
- "nfl": {
-  "years": [
-   2028,
-   2029
-  ],
-  "owed": [
-   [
-    "NE",
-    2028,
-    1,
-    "PHI",
-    ""
-   ],
-   [
-    "CHI",
-    2028,
-    1,
-    "TEN",
-    ""
-   ],
-   [
-    "LAR",
-    2028,
-    2,
-    "CLE",
-    ""
-   ],
-   [
-    "DAL",
-    2028,
-    2,
-    "PIT",
-    ""
-   ],
-   [
-    "BAL",
-    2028,
-    2,
-    "PHI",
-    ""
-   ],
-   [
-    "SEA",
-    2028,
-    5,
-    "IND",
-    ""
-   ],
-   [
-    "TEN",
-    2028,
-    5,
-    "CHI",
-    ""
-   ],
-   [
-    "JAX",
-    2028,
-    5,
-    "ATL",
-    ""
-   ],
-   [
-    "NO",
-    2028,
-    6,
-    "DAL",
-    ""
-   ],
-   [
-    "JAX",
-    2028,
-    6,
-    "MIA",
-    ""
-   ],
-   [
-    "DET",
-    2028,
-    6,
-    "NYJ",
-    ""
-   ],
-   [
-    "BAL",
-    2028,
-    6,
-    "ATL",
-    ""
-   ],
-   [
-    "NE",
-    2028,
-    7,
-    "NO",
-    ""
-   ],
-   [
-    "CLE",
-    2028,
-    7,
-    "LAR",
-    ""
-   ],
-   [
-    "NYJ",
-    2028,
-    7,
-    "LAC",
-    "cond"
-   ],
-   [
-    "SEA",
-    2028,
-    7,
-    "NYJ",
-    "cond"
-   ],
-   [
-    "HOU",
-    2028,
-    7,
-    "NE",
-    ""
-   ],
-   [
-    "BAL",
-    2028,
-    7,
-    "ARI",
-    ""
-   ],
-   [
-    "JAX",
-    2029,
-    2,
-    "PHI",
-    ""
-   ],
-   [
-    "LAR",
-    2029,
-    3,
-    "CLE",
-    ""
-   ]
-  ]
- }
+"_about": "Future picks already owed, for mock draft trades. Every team owns its own picks in each future year unless a line here says otherwise. Each line: [original team, year, round, goes to, protection or kind]. goes to: one team, or several separated by '/' when it depends on where picks land. kind: '' unprotected, 'forfeit' taken away by the league (the Clippers' 2029-33 firsts, after the Kawhi Leonard ruling on Sept. 2, 2026), 'cond' conditional or unclear (goes to '?' when RealGM's line didn't name a team), 'a-b' protected for those picks, 'swap' (the original team keeps it but someone can swap with it), 'fav' (more/less favorable of several picks). A pick owed with '/' or 'fav' can't be traded by anyone in the mock; a swap pick stays with its team but can't be traded. NBA from RealGM's detailed future draft list, read Nov 3, 2026 (https://basketball.realgm.com/nba/draft/future_drafts/detailed). NFL from Wikipedia's 2028 NFL draft page, read Nov 3, 2026 (https://en.wikipedia.org/wiki/2028_NFL_draft), plus the Nov 2026 trade-deadline deals from team and NFL.com reports (read Nov 16, 2026). Nov 16, 2026: Utah's 2028 second moved from OKC to SAC in the Nique Clifford trade. NBA rebuilt by tools/nba_picks_parse.py from RealGM's detailed future draft list (https://basketball.realgm.com/nba/draft/future_drafts/detailed), pulled 2026-11-24T20:26Z.",
+"nba": {
+"years": [
+2028,
+2029,
+2030,
+2031,
+2032,
+2033
+],
+"owed": [
+[
+"ATL",
+2028,
+2,
+"BKN",
+"",
+""
+],
+[
+"ATL",
+2029,
+2,
+"CHA/OKC",
+"fav",
+""
+],
+[
+"ATL",
+2030,
+2,
+"OKC",
+"",
+""
+],
+[
+"ATL",
+2031,
+2,
+"OKC/HOU",
+"fav",
+"Oklahoma City will receive the more favorable of Atlanta's 2031 2nd round pick and Houston's 2031 2nd round pick protected for selections 56-60 and Houston will receive the less favorable of the two; if this pick falls within its protected range and is therefore not conveyable, then Oklahoma City will instead receive the Atlanta pick"
+],
+[
+"ATL",
+2032,
+2,
+"OKC",
+"",
+""
+],
+[
+"BOS",
+2028,
+1,
+"SAS",
+"swap",
+"No swap if Boston's pick is No. 1"
+],
+[
+"BOS",
+2028,
+2,
+"NYK",
+"31-45",
+""
+],
+[
+"BOS",
+2029,
+1,
+"POR/WAS",
+"cond",
+"Portland will receive the most and least favorable of its 2029 1st round pick, Boston's 2029 1st round pick and Milwaukee's 2029 1st round pick and Washington will receive the second most favorable of the three"
+],
+[
+"BOS",
+2029,
+2,
+"OKC",
+"",
+""
+],
+[
+"BOS",
+2030,
+2,
+"BKN",
+"",
+""
+],
+[
+"BOS",
+2031,
+2,
+"UTA/BOS",
+"fav",
+""
+],
+[
+"CHA",
+2028,
+2,
+"?",
+"cond",
+"Utah will receive the least / less favorable of (i) Detroit's 2028 2nd round pick protected for selections 56-60, (ii) the less favorable of Charlotte's 2028 2nd round pick and the L.A. Clippers' 2028 2nd round pick, (iii) Miami's 2028 2nd round pick round pick, conveyable if Dallas conveys a 1st round pick to Charlotte in 2027, and (iv) New York's 2028 2nd round pick"
+],
+[
+"CHA",
+2030,
+2,
+"BOS",
+"31-55",
+""
+],
+[
+"CHI",
+2028,
+2,
+"CHI/IND",
+"fav",
+"Chicago will receive the most favorable of its 2028 2nd round pick, Indiana's 2028 2nd round pick and Phoenix's 2028 2nd round pick; Indiana will receive the less favorable of (i) the more favorable of its pick and and the Phoenix pick and (ii) the Chicago pick; New York will receive the less favorable of the Indiana pick and the Phoenix pick"
+],
+[
+"CLE",
+2028,
+1,
+"UTA/ATL",
+"fav",
+"Utah will receive the most favorable of its 2028 1st round pick, Cleveland's 2028 1st round pick and the L.A. Lakers' 2028 1st round pick; the L.A. Lakers will receive the less favorable of (i) its pick and (ii) the more favorable of the Utah pick and the Cleveland pick; Atlanta will receive the more favorable of (i) its 2028 1st round pick and (ii) the less favorable of the Utah pick and the Cleveland pick and Cleveland will receive the least favorable of the three"
+],
+[
+"CLE",
+2028,
+2,
+"UTA",
+"",
+""
+],
+[
+"CLE",
+2029,
+1,
+"UTA/CHA",
+"fav",
+"Utah will receive the most / two most favorable of its 2029 1st round pick, Cleveland's 2029 1st round pick and Minnesota's 2029 1st round pick protected for selections 1-5 and Charlotte will receive the least / less favorable of these; if the Minnesota pick falls within the protected range of 1-5 and is therefore not conveyable as part of this conveyance, then Minnesota will instead convey its 2029 2nd round pick to Utah; Charlotte may convey the pick it receives to Minnesota or Phoenix (see Charlotte Incoming)"
+],
+[
+"CLE",
+2029,
+2,
+"ATL",
+"",
+""
+],
+[
+"CLE",
+2030,
+2,
+"SAS",
+"",
+""
+],
+[
+"CLE",
+2031,
+1,
+"DEN",
+"",
+""
+],
+[
+"CLE",
+2031,
+2,
+"UTA/BOS",
+"fav",
+""
+],
+[
+"CLE",
+2032,
+2,
+"UTA",
+"",
+""
+],
+[
+"DAL",
+2028,
+1,
+"OKC",
+"swap",
+""
+],
+[
+"DAL",
+2028,
+2,
+"LAC",
+"",
+""
+],
+[
+"DAL",
+2029,
+1,
+"HOU/BKN",
+"fav",
+"Houston will receive the two most favorable of its 2029 1st round pick, Dallas' 2029 1st round pick and Phoenix's 2029 1st round pick and Brooklyn will receive the least favorable of the three"
+],
+[
+"DAL",
+2029,
+2,
+"BKN",
+"",
+""
+],
+[
+"DAL",
+2030,
+1,
+"SAS/DAL",
+"fav",
+"San Antonio will receive the most / more favorable of its 2030 1st round pick, Dallas' 2030 1st round pick and Minnesota's 2030 1st round pick protected for selection 1; Dallas will receive the less favorable of its pick and the San Antonio pick; Minnesota will receive the less favorable of (i) its pick and (ii) the more favorable of the San Antonio pick and the Dallas pick [or its pick if not conveyable]; if the Minnesota pick falls on the protected selection of 1 and is therefore not conveyable, then Minnesota's obligation to San Antonio will be extinguished and San Antonio will instead have the right to swap its pick for the Dallas pick; Minnesota may convey the pick it receives to Charlotte via a complex swap right"
+],
+[
+"DAL",
+2030,
+2,
+"BKN",
+"",
+""
+],
+[
+"DAL",
+2031,
+2,
+"DET",
+"",
+""
+],
+[
+"DAL",
+2032,
+2,
+"NYK",
+"",
+""
+],
+[
+"DAL",
+2033,
+2,
+"WAS",
+"",
+""
+],
+[
+"DEN",
+2028,
+2,
+"WAS",
+"31-33",
+""
+],
+[
+"DEN",
+2029,
+1,
+"OKC",
+"cond",
+"Only if and at least two years after Denver conveys a first potential 1st round pick to Oklahoma City, then Denver's next potential 1st round pick to Oklahoma City protected for selections 1-5 in 2029 and 1-5 in 2030; if Denver has not conveyed this next potential 1st round pick to Oklahoma City by 2030, then Denver will instead convey its 2030 2nd round pick to Oklahoma City (if the 1st round pick is conveyed, then Oklahoma City will still receive the 2nd round pick via Charlotte); Oklahoma City may convey the 2nd round pick to Memphis (see Oklahoma City Incoming)"
+],
+[
+"DEN",
+2029,
+2,
+"OKC",
+"cond",
+"If Denver has conveyed a first potential 1st round pick to Oklahoma City by 2029, then Denver's 2029 2nd round pick to Charlotte; if Denver has not conveyed a first potential 1st round pick to Oklahoma City by 2029, then the obligation to Charlotte will be extinguished and instead Oklahoma City will receive this 2nd round pick"
+],
+[
+"DEN",
+2030,
+2,
+"MEM/OKC",
+"fav",
+""
+],
+[
+"DEN",
+2031,
+2,
+"CHI",
+"",
+""
+],
+[
+"DEN",
+2032,
+1,
+"BKN",
+"",
+""
+],
+[
+"DEN",
+2032,
+2,
+"BKN",
+"",
+""
+],
+[
+"DET",
+2028,
+2,
+"PHI/CHA",
+"cond",
+"Detroit's 2028 2nd round pick to Philadelphia protected for selections 31-55 (if this pick falls within its protected range and is therefore not conveyed, then Detroit's obligation to Philadelphia will be extinguished) | Utah will receive the least / less favorable of (i) Detroit's 2028 2nd round pick protected for selections 56-60, (ii) the less favorable of Charlotte's 2028 2nd round pick and the L.A. Clippers' 2028 2nd round pick, (iii) Miami's 2028 2nd round pick round pick, conveyable if Dallas conveys a 1st round pick to Charlotte in 2027, and (iv) New York's 2028 2nd round pick"
+],
+[
+"DET",
+2029,
+2,
+"DET/CHI",
+"fav",
+"Detroit will receive the two most favorable of its 2029 2nd round pick, Milwaukee's 2029 2nd round pick and New York's 2029 2nd round pick and Chicago will receive the least favorable of the three"
+],
+[
+"DET",
+2031,
+2,
+"OKC",
+"",
+""
+],
+[
+"GSW",
+2028,
+2,
+"BOS/PHI",
+"fav",
+""
+],
+[
+"GSW",
+2029,
+2,
+"BKN",
+"",
+""
+],
+[
+"GSW",
+2030,
+1,
+"MEM",
+"1-20",
+"If protected: Golden State will instead convey its 2030 2nd round pick to Memphis"
+],
+[
+"GSW",
+2031,
+2,
+"CHI/DET",
+"fav",
+""
+],
+[
+"GSW",
+2032,
+2,
+"MEM",
+"31-50",
+""
+],
+[
+"HOU",
+2028,
+2,
+"CHA",
+"",
+""
+],
+[
+"HOU",
+2029,
+1,
+"HOU/BKN",
+"fav",
+"Houston will receive the two most favorable of its 2029 1st round pick, Dallas' 2029 1st round pick and Phoenix's 2029 1st round pick and Brooklyn will receive the least favorable of the three"
+],
+[
+"HOU",
+2029,
+2,
+"MEM",
+"",
+""
+],
+[
+"HOU",
+2030,
+2,
+"MEM/OKC",
+"fav",
+""
+],
+[
+"HOU",
+2031,
+2,
+"BOS",
+"31-55",
+"Boston gets it at 56-60. At 31-55, Oklahoma City gets the better of it and Atlanta's 2nd, and Houston the other",
+"OKC"
+],
+[
+"HOU",
+2032,
+2,
+"CHI/PHX",
+"fav",
+""
+],
+[
+"HOU",
+2033,
+2,
+"CHA",
+"",
+""
+],
+[
+"IND",
+2028,
+2,
+"CHI/IND",
+"fav",
+"Chicago will receive the most favorable of its 2028 2nd round pick, Indiana's 2028 2nd round pick and Phoenix's 2028 2nd round pick; Indiana will receive the less favorable of (i) the more favorable of its pick and and the Phoenix pick and (ii) the Chicago pick; New York will receive the less favorable of the Indiana pick and the Phoenix pick"
+],
+[
+"IND",
+2029,
+2,
+"IND/POR",
+"fav",
+""
+],
+[
+"IND",
+2030,
+2,
+"CHI",
+"swap",
+""
+],
+[
+"IND",
+2031,
+2,
+"WAS/MEM",
+"fav",
+"Washington will receive the more favorable of Indiana's 2031 2nd round pick and Miami's 2031 2nd round pick; Memphis will receive the more favorable of (i) its 2031 2nd round pick and (ii) the less favorable of the Indiana pick and the Miami pick and Indiana will receive the least favorable of the three"
+],
+[
+"LAC",
+2028,
+1,
+"BOS",
+"1-16",
+"If protected: Boston will instead have the right to swap the less favorable of its 2028 1st round pick and San Antonio's 2028 1st round pick for the more favorable of the L.A. Clippers' pick and Philadelphia's 2028 1st round pick protected for selections 9-30; if the Philadelphia pick also falls within its protected range and is therefore not conveyable, then Boston will instead have the right to swap the less favorable of the Boston pick and the San Antonio pick for the L.A. Clippers' pick",
+"PHI"
+],
+[
+"LAC",
+2028,
+2,
+"CHA",
+"cond",
+"Utah will receive the least / less favorable of (i) Detroit's 2028 2nd round pick protected for selections 56-60, (ii) the less favorable of Charlotte's 2028 2nd round pick and the L.A. Clippers' 2028 2nd round pick, (iii) Miami's 2028 2nd round pick round pick, conveyable if Dallas conveys a 1st round pick to Charlotte in 2027, and (iv) New York's 2028 2nd round pick"
+],
+[
+"LAC",
+2029,
+1,
+"OUT",
+"forfeit",
+"Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+],
+[
+"LAC",
+2029,
+2,
+"SAS",
+"",
+""
+],
+[
+"LAC",
+2030,
+1,
+"OUT",
+"forfeit",
+"Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+],
+[
+"LAC",
+2030,
+2,
+"CHA/UTA",
+"fav",
+""
+],
+[
+"LAC",
+2031,
+1,
+"OUT",
+"forfeit",
+"Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+],
+[
+"LAC",
+2032,
+1,
+"OUT",
+"forfeit",
+"Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+],
+[
+"LAC",
+2033,
+1,
+"OUT",
+"forfeit",
+"Forfeited by the league (Kawhi Leonard ruling, Sept. 2, 2026)"
+],
+[
+"LAL",
+2028,
+1,
+"UTA/ATL",
+"fav",
+"Utah will receive the most favorable of its 2028 1st round pick, Cleveland's 2028 1st round pick and the L.A. Lakers' 2028 1st round pick; the L.A. Lakers will receive the less favorable of (i) its pick and (ii) the more favorable of the Utah pick and the Cleveland pick; Atlanta will receive the more favorable of (i) its 2028 1st round pick and (ii) the less favorable of the Utah pick and the Cleveland pick and Cleveland will receive the least favorable of the three"
+],
+[
+"LAL",
+2028,
+2,
+"ORL/WAS",
+"fav",
+""
+],
+[
+"LAL",
+2029,
+1,
+"DAL",
+"",
+""
+],
+[
+"LAL",
+2029,
+2,
+"MEM",
+"",
+""
+],
+[
+"LAL",
+2030,
+1,
+"UTA",
+"swap",
+""
+],
+[
+"LAL",
+2030,
+2,
+"BKN",
+"",
+""
+],
+[
+"LAL",
+2031,
+1,
+"UTA",
+"",
+""
+],
+[
+"LAL",
+2031,
+2,
+"BKN",
+"",
+""
+],
+[
+"LAL",
+2032,
+2,
+"OKC",
+"",
+""
+],
+[
+"LAL",
+2033,
+1,
+"UTA",
+"",
+""
+],
+[
+"MEM",
+2028,
+2,
+"BKN",
+"",
+""
+],
+[
+"MEM",
+2029,
+2,
+"BKN",
+"",
+""
+],
+[
+"MEM",
+2030,
+2,
+"MIN",
+"31-50",
+""
+],
+[
+"MEM",
+2032,
+2,
+"MEM/WAS",
+"fav",
+""
+],
+[
+"MIA",
+2028,
+2,
+"CHA",
+"cond",
+"Utah will receive the least / less favorable of (i) Detroit's 2028 2nd round pick protected for selections 56-60, (ii) the less favorable of Charlotte's 2028 2nd round pick and the L.A. Clippers' 2028 2nd round pick, (iii) Miami's 2028 2nd round pick round pick, conveyable if Dallas conveys a 1st round pick to Charlotte in 2027, and (iv) New York's 2028 2nd round pick"
+],
+[
+"MIA",
+2029,
+2,
+"CHA/OKC",
+"fav",
+""
+],
+[
+"MIA",
+2030,
+1,
+"MIL",
+"swap",
+"Portland has the right to swap its 2030 1st round pick for Milwaukee's 2030 1st round pick; Milwaukee then has the right to swap the less favorable of its pick and the Portland pick for Miami's 2030 1st round pick"
+],
+[
+"MIA",
+2030,
+2,
+"MEM/OKC",
+"fav",
+""
+],
+[
+"MIA",
+2031,
+1,
+"MIL",
+"",
+""
+],
+[
+"MIA",
+2031,
+2,
+"WAS/MEM",
+"fav",
+"Washington will receive the more favorable of Indiana's 2031 2nd round pick and Miami's 2031 2nd round pick; Memphis will receive the more favorable of (i) its 2031 2nd round pick and (ii) the less favorable of the Indiana pick and the Miami pick and Indiana will receive the least favorable of the three"
+],
+[
+"MIA",
+2032,
+2,
+"BKN",
+"",
+""
+],
+[
+"MIA",
+2033,
+1,
+"MIL",
+"",
+""
+],
+[
+"MIA",
+2033,
+2,
+"MIL",
+"",
+""
+],
+[
+"MIL",
+2028,
+1,
+"POR/WAS",
+"fav",
+"Portland will receive the more favorable of its 2028 1st round pick and Milwaukee's 2028 1st round pick; Washington will receive the more favorable of (i) the more favorable of (a) its 2028 1st round pick and (b) the least / less favorable of Brooklyn's 2028 1st round pick, Philadelphia's 2028 1st round pick protected for selections 1-8 and Phoenix's 2028 1st round pick and (ii) the less favorable of the Milwaukee pick and the Portland pick and Milwaukee will receive the less favorable of (i) and (ii)"
+],
+[
+"MIL",
+2028,
+2,
+"BOS/PHI",
+"fav",
+""
+],
+[
+"MIL",
+2029,
+1,
+"POR/WAS",
+"cond",
+"Portland will receive the most and least favorable of its 2029 1st round pick, Boston's 2029 1st round pick and Milwaukee's 2029 1st round pick and Washington will receive the second most favorable of the three"
+],
+[
+"MIL",
+2029,
+2,
+"DET/CHI",
+"fav",
+"Detroit will receive the two most favorable of its 2029 2nd round pick, Milwaukee's 2029 2nd round pick and New York's 2029 2nd round pick and Chicago will receive the least favorable of the three"
+],
+[
+"MIL",
+2030,
+1,
+"POR",
+"swap",
+""
+],
+[
+"MIL",
+2030,
+2,
+"ORL",
+"",
+""
+],
+[
+"MIL",
+2031,
+2,
+"CHA",
+"",
+""
+],
+[
+"MIL",
+2032,
+2,
+"CHA",
+"",
+""
+],
+[
+"MIN",
+2028,
+1,
+"CHA",
+"swap",
+""
+],
+[
+"MIN",
+2028,
+2,
+"DEN",
+"",
+""
+],
+[
+"MIN",
+2029,
+1,
+"UTA/CHA",
+"cond",
+"Utah will receive the most / two most favorable of its 2029 1st round pick, Cleveland's 2029 1st round pick and Minnesota's 2029 1st round pick protected for selections 1-5 and Charlotte will receive the least / less favorable of these; if the Minnesota pick falls within the protected range of 1-5 and is therefore not conveyable as part of this conveyance, then Minnesota will instead convey its 2029 2nd round pick to Utah; Charlotte may convey the pick it receives to Minnesota or Phoenix (see Charlotte Incoming) | Charlotte has the right to swap the least favorable of its 2029 1st round pick, Cleveland's 2029 1st round pick and Utah's 2029 1st round pick for Minnesota's 2029 1st round pick protected for selections 6-30 (if the Minnesota pick falls within the protected range of 6-30 and is therefore not conveyable as part of this conveyance, then this obligation of Minnesota's to Charlotte and this swap right of Charlotte's will be extinguished); Charlotte may convey the pick it receives to Phoenix"
+],
+[
+"MIN",
+2029,
+2,
+"UTA",
+"cond",
+"If Minnesota conveys a 1st round pick to Utah in 2029, then Minnesota's 2029 2nd round pick to Charlotte; if Minnesota does not convey a 1st round pick to Utah in 2029, then the obligation to Charlotte will be extinguished and instead Utah will receive this 2nd round pick (see Utah Incoming)"
+],
+[
+"MIN",
+2030,
+1,
+"CHA",
+"swap",
+"Charlotte has the right to swap its 2030 1st round pick for a 1st round pick held by Minnesota, including the Minnesota pick, the San Antonio pick and the Dallas pick, in accordance with complex conditions"
+],
+[
+"MIN",
+2030,
+2,
+"SAC",
+"",
+""
+],
+[
+"MIN",
+2031,
+1,
+"SAC",
+"",
+""
+],
+[
+"MIN",
+2031,
+2,
+"CHI/DET",
+"fav",
+""
+],
+[
+"MIN",
+2032,
+2,
+"CHA",
+"",
+""
+],
+[
+"MIN",
+2033,
+1,
+"CHA",
+"",
+""
+],
+[
+"MIN",
+2033,
+2,
+"CHA",
+"",
+""
+],
+[
+"NOP",
+2028,
+2,
+"SAS",
+"",
+""
+],
+[
+"NOP",
+2029,
+2,
+"SAS",
+"",
+""
+],
+[
+"NOP",
+2031,
+2,
+"ORL/OKC",
+"fav",
+""
+],
+[
+"NYK",
+2028,
+1,
+"BKN",
+"cond",
+"If (i) Philadelphia's 2028 1st round pick protected for selections 1-8 is conveyed to Brooklyn and is the third most favorable of Philadelphia, Brooklyn's 2028 1st round pick, Phoenix's 2028 1st round pick and New York's 2028 1st round pick and (ii) New York is the most or second most favorable of the four, then Brooklyn will receive the most and third most favorable of the four; in all other scenarios, Brooklyn will receive the most / two most favorable of these; if Philadelphia if conveyed and / or New York is less favorable than Brooklyn and Phoenix, then New York will receive the least favorable of New York, Brooklyn and Phoenix; in all other scenarios, New York will receive the second most favorable of the three; Washington will receive the more favorable of (i) its 2028 1st round pick and (ii) the least / less favorable of Philadelphia if conveyed, Brooklyn and Phoenix and Phoenix will receive the less favorable of (i) and (ii); Washington may swap the pick it receives for Milwaukee or Portland (see Washington Incoming)"
+],
+[
+"NYK",
+2028,
+2,
+"CHA",
+"cond",
+"Utah will receive the least / less favorable of (i) Detroit's 2028 2nd round pick protected for selections 56-60, (ii) the less favorable of Charlotte's 2028 2nd round pick and the L.A. Clippers' 2028 2nd round pick, (iii) Miami's 2028 2nd round pick round pick, conveyable if Dallas conveys a 1st round pick to Charlotte in 2027, and (iv) New York's 2028 2nd round pick"
+],
+[
+"NYK",
+2029,
+1,
+"BKN",
+"",
+""
+],
+[
+"NYK",
+2029,
+2,
+"DET/CHI",
+"fav",
+"Detroit will receive the two most favorable of its 2029 2nd round pick, Milwaukee's 2029 2nd round pick and New York's 2029 2nd round pick and Chicago will receive the least favorable of the three"
+],
+[
+"NYK",
+2030,
+2,
+"ATL",
+"",
+""
+],
+[
+"NYK",
+2031,
+1,
+"BKN",
+"",
+""
+],
+[
+"NYK",
+2031,
+2,
+"CHI",
+"",
+""
+],
+[
+"OKC",
+2028,
+2,
+"BOS/PHI",
+"fav",
+""
+],
+[
+"OKC",
+2033,
+2,
+"MEM",
+"",
+""
+],
+[
+"ORL",
+2028,
+1,
+"POR",
+"",
+""
+],
+[
+"ORL",
+2028,
+2,
+"CHA",
+"",
+""
+],
+[
+"ORL",
+2029,
+1,
+"MEM",
+"swap",
+"No swap if it lands 1-2"
+],
+[
+"ORL",
+2030,
+1,
+"MEM",
+"",
+""
+],
+[
+"ORL",
+2031,
+2,
+"ORL/OKC",
+"fav",
+""
+],
+[
+"PHI",
+2028,
+1,
+"BKN",
+"1-8",
+"If protected: Philadelphia sends its 2028 2nd to Brooklyn instead. Brooklyn's four-pick group with Phoenix and New York decides who ends up with it, and Boston can swap into it if the Clippers' pick lands 1-16"
+],
+[
+"PHI",
+2030,
+2,
+"NYK",
+"",
+""
+],
+[
+"PHI",
+2031,
+1,
+"BOS",
+"",
+""
+],
+[
+"PHI",
+2032,
+2,
+"MEM/WAS",
+"fav",
+""
+],
+[
+"PHX",
+2028,
+1,
+"BKN",
+"cond",
+"If (i) Philadelphia's 2028 1st round pick protected for selections 1-8 is conveyed to Brooklyn and is the third most favorable of Philadelphia, Brooklyn's 2028 1st round pick, Phoenix's 2028 1st round pick and New York's 2028 1st round pick and (ii) New York is the most or second most favorable of the four, then Brooklyn will receive the most and third most favorable of the four; in all other scenarios, Brooklyn will receive the most / two most favorable of these; if Philadelphia if conveyed and / or New York is less favorable than Brooklyn and Phoenix, then New York will receive the least favorable of New York, Brooklyn and Phoenix; in all other scenarios, New York will receive the second most favorable of the three; Washington will receive the more favorable of (i) its 2028 1st round pick and (ii) the least / less favorable of Philadelphia if conveyed, Brooklyn and Phoenix and Phoenix will receive the less favorable of (i) and (ii); Washington may swap the pick it receives for Milwaukee or Portland (see Washington Incoming)"
+],
+[
+"PHX",
+2028,
+2,
+"CHI/IND",
+"fav",
+"Chicago will receive the most favorable of its 2028 2nd round pick, Indiana's 2028 2nd round pick and Phoenix's 2028 2nd round pick; Indiana will receive the less favorable of (i) the more favorable of its pick and and the Phoenix pick and (ii) the Chicago pick; New York will receive the less favorable of the Indiana pick and the Phoenix pick"
+],
+[
+"PHX",
+2029,
+1,
+"HOU/BKN",
+"fav",
+"Houston will receive the two most favorable of its 2029 1st round pick, Dallas' 2029 1st round pick and Phoenix's 2029 1st round pick and Brooklyn will receive the least favorable of the three"
+],
+[
+"PHX",
+2029,
+2,
+"NYK",
+"",
+""
+],
+[
+"PHX",
+2030,
+1,
+"WAS/MEM",
+"fav",
+"Washington will receive the more favorable of its 2030 1st round pick and Phoenix's 2030 1st round pick; Memphis will receive the more favorable of (i) its 2030 1st round pick and (ii) the less favorable of the Washington pick and the Phoenix pick and Phoenix will receive the least favorable of the three"
+],
+[
+"PHX",
+2030,
+2,
+"BOS/PHI",
+"fav",
+"Boston will receive the most favorable of Phoenix's 2030 2nd round pick, Portland's 2030 2nd round pick and Washington's 2030 2nd round pick; Philadelphia will receive the less favorable of (i) the more favorable of the Phoenix pick and the Portland pick and (ii) the Washington pick; Washington will receive the less favorable of the Phoenix pick and the Portland pick"
+],
+[
+"PHX",
+2031,
+1,
+"MEM",
+"",
+""
+],
+[
+"PHX",
+2031,
+2,
+"CHA",
+"",
+""
+],
+[
+"PHX",
+2032,
+2,
+"CHI/PHX",
+"fav",
+""
+],
+[
+"PHX",
+2033,
+1,
+"CHA",
+"",
+""
+],
+[
+"PHX",
+2033,
+2,
+"NYK",
+"",
+""
+],
+[
+"POR",
+2028,
+1,
+"POR/WAS",
+"fav",
+"Portland will receive the more favorable of its 2028 1st round pick and Milwaukee's 2028 1st round pick; Washington will receive the more favorable of (i) the more favorable of (a) its 2028 1st round pick and (b) the least / less favorable of Brooklyn's 2028 1st round pick, Philadelphia's 2028 1st round pick protected for selections 1-8 and Phoenix's 2028 1st round pick and (ii) the less favorable of the Milwaukee pick and the Portland pick and Milwaukee will receive the less favorable of (i) and (ii)"
+],
+[
+"POR",
+2029,
+1,
+"POR/WAS",
+"cond",
+"Portland will receive the most and least favorable of its 2029 1st round pick, Boston's 2029 1st round pick and Milwaukee's 2029 1st round pick and Washington will receive the second most favorable of the three"
+],
+[
+"POR",
+2029,
+2,
+"MEM",
+"",
+""
+],
+[
+"POR",
+2030,
+2,
+"BOS/PHI",
+"fav",
+"Boston will receive the most favorable of Phoenix's 2030 2nd round pick, Portland's 2030 2nd round pick and Washington's 2030 2nd round pick; Philadelphia will receive the less favorable of (i) the more favorable of the Phoenix pick and the Portland pick and (ii) the Washington pick; Washington will receive the less favorable of the Phoenix pick and the Portland pick"
+],
+[
+"SAC",
+2028,
+2,
+"POR",
+"",
+""
+],
+[
+"SAC",
+2029,
+2,
+"NYK",
+"",
+""
+],
+[
+"SAC",
+2030,
+2,
+"SAS",
+"",
+""
+],
+[
+"SAC",
+2031,
+1,
+"SAS",
+"swap",
+""
+],
+[
+"SAC",
+2031,
+2,
+"DEN",
+"",
+""
+],
+[
+"SAC",
+2032,
+2,
+"DEN",
+"",
+""
+],
+[
+"SAC",
+2033,
+2,
+"ATL",
+"",
+""
+],
+[
+"SAS",
+2030,
+1,
+"SAS/DAL",
+"fav",
+"San Antonio will receive the most / more favorable of its 2030 1st round pick, Dallas' 2030 1st round pick and Minnesota's 2030 1st round pick protected for selection 1; Dallas will receive the less favorable of its pick and the San Antonio pick; Minnesota will receive the less favorable of (i) its pick and (ii) the more favorable of the San Antonio pick and the Dallas pick [or its pick if not conveyable]; if the Minnesota pick falls on the protected selection of 1 and is therefore not conveyable, then Minnesota's obligation to San Antonio will be extinguished and San Antonio will instead have the right to swap its pick for the Dallas pick; Minnesota may convey the pick it receives to Charlotte via a complex swap right"
+],
+[
+"TOR",
+2030,
+2,
+"LAC",
+"",
+""
+],
+[
+"TOR",
+2031,
+1,
+"LAC",
+"",
+""
+],
+[
+"TOR",
+2031,
+2,
+"NOP",
+"",
+""
+],
+[
+"TOR",
+2032,
+2,
+"BKN",
+"",
+""
+],
+[
+"TOR",
+2033,
+1,
+"LAC",
+"",
+""
+],
+[
+"TOR",
+2033,
+2,
+"LAC",
+"",
+""
+],
+[
+"UTA",
+2028,
+1,
+"UTA/ATL",
+"fav",
+"Utah will receive the most favorable of its 2028 1st round pick, Cleveland's 2028 1st round pick and the L.A. Lakers' 2028 1st round pick; the L.A. Lakers will receive the less favorable of (i) its pick and (ii) the more favorable of the Utah pick and the Cleveland pick; Atlanta will receive the more favorable of (i) its 2028 1st round pick and (ii) the less favorable of the Utah pick and the Cleveland pick and Cleveland will receive the least favorable of the three"
+],
+[
+"UTA",
+2028,
+2,
+"SAC",
+"",
+""
+],
+[
+"UTA",
+2029,
+1,
+"UTA/CHA",
+"fav",
+"Utah will receive the most / two most favorable of its 2029 1st round pick, Cleveland's 2029 1st round pick and Minnesota's 2029 1st round pick protected for selections 1-5 and Charlotte will receive the least / less favorable of these; if the Minnesota pick falls within the protected range of 1-5 and is therefore not conveyable as part of this conveyance, then Minnesota will instead convey its 2029 2nd round pick to Utah; Charlotte may convey the pick it receives to Minnesota or Phoenix (see Charlotte Incoming)"
+],
+[
+"UTA",
+2030,
+2,
+"CHA/UTA",
+"fav",
+""
+],
+[
+"UTA",
+2032,
+2,
+"MEM/WAS",
+"fav",
+""
+],
+[
+"WAS",
+2028,
+2,
+"ORL/WAS",
+"fav",
+""
+],
+[
+"WAS",
+2029,
+2,
+"IND/POR",
+"fav",
+""
+],
+[
+"WAS",
+2030,
+1,
+"WAS/MEM",
+"fav",
+"Washington will receive the more favorable of its 2030 1st round pick and Phoenix's 2030 1st round pick; Memphis will receive the more favorable of (i) its 2030 1st round pick and (ii) the less favorable of the Washington pick and the Phoenix pick and Phoenix will receive the least favorable of the three"
+],
+[
+"WAS",
+2030,
+2,
+"BOS/PHI",
+"fav",
+"Boston will receive the most favorable of Phoenix's 2030 2nd round pick, Portland's 2030 2nd round pick and Washington's 2030 2nd round pick; Philadelphia will receive the less favorable of (i) the more favorable of the Phoenix pick and the Portland pick and (ii) the Washington pick; Washington will receive the less favorable of the Phoenix pick and the Portland pick"
+],
+[
+"WAS",
+2031,
+2,
+"LAL",
+"",
+""
+],
+[
+"WAS",
+2032,
+2,
+"LAL",
+"",
+""
+],
+[
+"WAS",
+2033,
+2,
+"MEM",
+"",
+""
+]
+],
+"pulled": "2026-11-24T20:26Z"
+},
+"nfl": {
+"years": [
+2028,
+2029
+],
+"owed": [
+[
+"NE",
+2028,
+1,
+"PHI",
+""
+],
+[
+"CHI",
+2028,
+1,
+"TEN",
+""
+],
+[
+"LAR",
+2028,
+2,
+"CLE",
+""
+],
+[
+"DAL",
+2028,
+2,
+"PIT",
+""
+],
+[
+"BAL",
+2028,
+2,
+"PHI",
+""
+],
+[
+"SEA",
+2028,
+5,
+"IND",
+""
+],
+[
+"TEN",
+2028,
+5,
+"CHI",
+""
+],
+[
+"JAX",
+2028,
+5,
+"ATL",
+""
+],
+[
+"NO",
+2028,
+6,
+"DAL",
+""
+],
+[
+"JAX",
+2028,
+6,
+"MIA",
+""
+],
+[
+"DET",
+2028,
+6,
+"NYJ",
+""
+],
+[
+"BAL",
+2028,
+6,
+"ATL",
+""
+],
+[
+"NE",
+2028,
+7,
+"NO",
+""
+],
+[
+"CLE",
+2028,
+7,
+"LAR",
+""
+],
+[
+"NYJ",
+2028,
+7,
+"LAC",
+"cond"
+],
+[
+"SEA",
+2028,
+7,
+"NYJ",
+"cond"
+],
+[
+"HOU",
+2028,
+7,
+"NE",
+""
+],
+[
+"BAL",
+2028,
+7,
+"ARI",
+""
+],
+[
+"JAX",
+2029,
+2,
+"PHI",
+""
+],
+[
+"LAR",
+2029,
+3,
+"CLE",
+""
+]
+]
+}
 }

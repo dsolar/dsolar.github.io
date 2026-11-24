@@ -557,10 +557,25 @@
       return "<tr><td>" + logo(pk.from, 16) + " " + esc(H.pickName(pk)) + "</td><td>" + (mine ? "" : logo(pk.owner === "OUT" ? pk.from : pk.owner, 16) + " " + esc(pk.owner === "OUT" ? "Forfeited" : team(pk.owner).short)) + "</td><td>" + f1(info.avg) + "</td><td>" + (pk.prot ? pct(info.conveys) : "") +
         "</td><td>" + money(H.pickValue(pk, "prod")) + "</td><td>" + money(H.pickValue(pk, "market")) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(pk.note || "") + "</td></tr>";
     };
+    // a more/less favorable group is one pick for this team, whichever pick it turns out to be: one row, with this
+    // team's share of the group's value (groups where it only gets the leftover pick count too)
+    var groups = H.W.pickGroups.filter(function (g) {
+      return g.picks.some(function (id) { var pk = H.pickById(id); return pk.owner === code; }) || (g.to || []).indexOf(code) >= 0 || Object.keys(g.alt || {}).some(function (id) { return g.alt[id] === code; });
+    });
+    var inGroup = {}; groups.forEach(function (g) { g.picks.forEach(function (id) { inGroup[id] = g; }); });
+    var grow = groups.map(function (g) {
+      var pks = g.picks.map(function (id) { return H.pickById(id); }), y = pks[0].y, r = pks[0].r;
+      var best = (g.to || [])[0] === code, froms = pks.map(function (pk) { return team(pk.from).short; });
+      var label = y + " " + (r === 1 ? "1st" : "2nd") + (pks.length < 2 ? "" : best ? ", best of " + froms.join(", ") : pks.length === 2 ? ", worse of " + froms.join(", ") : ", from " + froms.join(", "));
+      var avg = pks.reduce(function (a, pk) { return a + H.pickInfo(pk).avg; }, 0) / pks.length;
+      return { y: y, r: r, html: "<tr><td>" + pks.map(function (pk) { return logo(pk.from, 16); }).join("") + " " + esc(label) + "</td><td></td><td>" + f1(avg) + "</td><td></td><td>" + money((H.groupValues(g, "prod")[code]) || 0) + "</td><td>" + money((H.groupValues(g, "market")[code]) || 0) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(g.note || "") + "</td></tr>" };
+    });
     var head = "<th>Pick</th><th>To</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Market</th><th>Notes</th>";
-    var sw = swaps.map(function (s) { return "<tr><td>" + logo(s.from, 16) + " " + s.y + " " + (s.r === 1 ? "1st" : "2nd") + " swap with " + esc(team(s.from).short) + "</td><td></td><td></td><td></td><td>" + money(H.swapValue(s, "prod")) + "</td><td>" + money(H.swapValue(s, "market")) + '</td><td class="note" style="text-align:left">' + esc(s.note || "Can swap its own pick for theirs if theirs lands higher") + "</td></tr>"; }).join("");
-    return '<div>' + tablePanel("Draft picks owned", head, own.filter(function (pk) { return pk.r === 1 || pk.y <= 2029; }).map(function (pk) { return row(pk, true); }).join("") + sw, "Value: what that slot has produced. Market: what teams pay for it") +
-      tablePanel("Own picks owed away", head, owed.map(function (pk) { return row(pk, false); }).join(""), "") + '<p class="note"><a href="#/picks">Every traded pick in the league, with protections</a></p></div>';
+    var sw = swaps.map(function (s) { return { y: s.y, r: s.r, html: "<tr><td>" + logo(s.from, 16) + " " + s.y + " " + (s.r === 1 ? "1st" : "2nd") + " swap with " + esc(team(s.from).short) + "</td><td></td><td></td><td></td><td>" + money(H.swapValue(s, "prod")) + "</td><td>" + money(H.swapValue(s, "market")) + '</td><td class="note" style="text-align:left;white-space:normal">' + esc(s.note || "Can swap its own pick for theirs if theirs lands higher") + "</td></tr>" }; });
+    var mine = own.filter(function (pk) { return !inGroup[pk.id]; }).map(function (pk) { return { y: pk.y, r: pk.r, html: row(pk, true) }; }).concat(grow, sw)
+      .sort(function (a, b) { return a.y - b.y || a.r - b.r; }).map(function (x) { return x.html; }).join("");
+    return '<div>' + tablePanel("Draft picks owned", head, mine, "Value: what that slot has produced. Market: what teams pay for it") +
+      tablePanel("Own picks owed away", head, owed.filter(function (pk) { return !inGroup[pk.id]; }).map(function (pk) { return row(pk, false); }).join(""), "") + '<p class="note"><a href="#/picks">Every traded pick in the league, with protections</a></p></div>';
   }
 
   // ---------- player card ----------
@@ -1340,12 +1355,12 @@
       (kind === "players" ? '<label>Sort<select data-q="sort">' + opt("", "Best trade value", q.sort || "") + opt("tv-asc", "Worst trade value", q.sort || "") + opt("sur", "Most surplus", q.sort || "") + opt("sur-asc", "Worst surplus", q.sort || "") + "</select></label>" +
         '<label>Search<input type="search" data-q="s" value="' + esc(q.s || "") + '" placeholder="Player"></label>' : ""));
     if (kind === "picks") {
-      var picks = H.W.picks.filter(function (pk) { return pk.owner !== "OUT" && (!tm || pk.owner === tm) && (pk.r === 1 || pk.y <= 2028); })
+      var picks = H.W.picks.filter(function (pk) { return pk.owner !== "OUT" && (!tm || pk.owner === tm) && (tm || pk.r === 1 || pk.y <= 2028); })
         .map(function (pk) { return { pk: pk, v: H.pickValue(pk) }; }).sort(function (a, b) { return b.v - a.v; }).slice(0, 150);
       html += tablePanel("Draft picks", "<th>Pick</th><th>Owner</th><th>Proj. slot</th><th>Conveys</th><th>Value</th><th>Notes</th>", picks.map(function (x, k) {
         var info = H.pickInfo(x.pk);
         return "<tr><td>" + (k + 1) + ". " + logo(x.pk.from, 16) + " " + esc(H.pickName(x.pk)) + "</td><td>" + logo(x.pk.owner, 16) + " " + esc(team(x.pk.owner).short) + "</td><td>" + f1(info.avg) + "</td><td>" + (x.pk.prot ? pct(info.conveys) : "") + "</td><td><b>" + money(x.v) + '</b></td><td class="note" style="text-align:left;white-space:normal">' + esc(x.pk.note || "") + "</td></tr>";
-      }).join(""), "Second-rounders after 2028 left off");
+      }).join(""), tm ? "" : "Second-rounders after 2028 left off; pick a team to see all of its picks");
       view.innerHTML = html;
       return;
     }

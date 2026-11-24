@@ -1665,32 +1665,33 @@
       }
     }
     for (const row of ((board.future || {}).owed || [])) {
-      const [from0, y, r, to0, kind] = row;
+      const [from0, y, r, to0, kind, rnote, back0] = row;   // rnote: RealGM's terms for tangled picks; back0: who keeps a protected pick
       const p = pk(`${y}-${r}-${fix(from0)}`);
       if (!p) continue;
       const tos = String(to0).split("/").map(fix);
       if (kind === "forfeit") { p.owner = "OUT"; p.note = "Forfeited by the league"; continue; }
       if (kind === "swap") {
-        p.note = (p.note ? p.note + "; " : "") + tos.join(" or ") + " can swap";
+        p.note = (p.note ? p.note + "; " : "") + (rnote && rnote.length > 60 ? rnote : tos.join(" or ") + " can swap" + (rnote ? " (" + rnote.charAt(0).toLowerCase() + rnote.slice(1) + ")" : ""));
         if (W.T[tos[0]]) { p.swapBy = tos[0]; W.swaps.push({ id: `swap-${y}-${r}-${p.from}-${tos[0]}`, y, r, from: p.from, holder: tos[0], note: tos.length > 1 ? "Swap rights shared with " + tos.slice(1).join(", ") : "" }); }
         continue;
       }
       if (kind === "fav" && W.T[tos[0]]) {
         // the first team takes the most favorable pick of the group; each other pick goes to its own second team
         const key = `${y}-${r}-${tos[0]}`;
-        (favRows[key] = favRows[key] || { y, r, best: tos[0], picks: [] }).picks.push({ id: p.id, alt: tos[1] && W.T[tos[1]] ? tos[1] : null, tos });
+        (favRows[key] = favRows[key] || { y, r, best: tos[0], picks: [] }).picks.push({ id: p.id, alt: tos[1] && W.T[tos[1]] ? tos[1] : null, tos, rnote });
         p.owner = tos[0];
         continue;
       }
       const to = tos[0];
-      if (to === "?" || !W.T[to]) { p.note = "Conditional"; p.locked = true; continue; }
+      if (to === "?" || !W.T[to]) { p.note = rnote || "Conditional"; p.locked = true; continue; }
       p.owner = to;
-      if (tos.length > 1 || kind === "fav" || kind === "cond") { p.note = kind === "fav" ? "Goes to " + tos.join(" or ") + " (more/less favorable)" : "Goes to " + tos.join(" or ") + " depending on where picks land"; p.locked = true; }
+      if (tos.length > 1 || kind === "fav" || kind === "cond") { p.note = rnote || (kind === "fav" ? "Goes to " + tos.join(" or ") + " (more/less favorable)" : "Goes to " + tos.join(" or ") + " depending on where picks land"); p.locked = true; }
       const m = /^(\d+)-(\d+)$/.exec(kind || "");
       if (m) {
         const lo = +m[1] - (r === 2 ? 30 : 0), hi = +m[2] - (r === 2 ? 30 : 0);
-        p.prot = { lo: Math.max(1, lo), hi: Math.min(30, hi), back: p.from };
-        p.note = p.note || (r === 1 ? (+m[1] === 1 ? "Top-" + m[2] + " protected" : "Protected " + m[1] + "-" + m[2]) : "Protected " + m[1] + "-" + m[2]);
+        const back = back0 && W.T[fix(back0)] ? fix(back0) : p.from;
+        p.prot = { lo: Math.max(1, lo), hi: Math.min(30, hi), back };
+        p.note = p.note || ((r === 1 ? (+m[1] === 1 ? "Top-" + m[2] + " protected" : "Protected " + m[1] + "-" + m[2]) : "Protected " + m[1] + "-" + m[2]) + (back !== p.from ? " (" + back + " gets it there)" : "") + (rnote ? ". " + rnote : ""));
       }
     }
     for (const g of Object.values(favRows)) {
@@ -1698,7 +1699,9 @@
       for (const x of g.picks) { alt[x.id] = x.alt; pk(x.id).group = id; }
       const froms = g.picks.map(x => x.id.split("-")[2]);
       const others = [...new Set(g.picks.map(x => x.alt || x.id.split("-")[2]))];
-      const note = g.picks.length > 1 ? (g.best + " gets the best of " + froms.join(", ") + "; " + (g.picks.length > 2 ? "the others go to " : "the other goes to ") + others.join(" or ")) : "Goes to " + g.picks[0].tos.join(" or ") + " (more/less favorable)";
+      const rn = g.picks.map(x => x.rnote).find(Boolean);
+      const nm = c => (W.T[c] && W.T[c].name ? W.T[c].name.split(" ").pop() : c);
+      const note = rn ? rn : g.picks.length > 1 ? (nm(g.best) + " get the best of the " + froms.map(nm).join(", ") + " picks; " + (g.picks.length > 2 ? "the others go to " : "the other goes to ") + others.map(nm).join(" or ")) : "Goes to " + g.picks[0].tos.map(nm).join(" or ") + " (more/less favorable)";
       for (const x of g.picks) pk(x.id).note = note;
       W.pickGroups.push({ id, picks: g.picks.map(x => x.id), to: [g.best], bar: {}, lastKeep: null, fallback: null, alt, note });
     }
