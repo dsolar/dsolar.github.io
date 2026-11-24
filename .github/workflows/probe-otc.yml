@@ -1,0 +1,17 @@
+name: probe otc
+on: workflow_dispatch
+jobs:
+  p:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for y in 2026 2027; do
+            curl -sL -A "Mozilla/5.0" -o otc$y.html -w "$y %{http_code} %{size_download}\n" https://overthecap.com/salary-cap-space/$y
+          done
+          python3 - <<'PY'
+          import re
+          h=open('otc2027.html').read()
+          i=h.find('<table'); print(h[i:i+3000])
+          print('ROWS', h.count('<tr'))
+          j=h.find('Colts'); print(h[j-1500:j+800])
+          PY
