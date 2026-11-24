@@ -208,6 +208,8 @@ function today(q) {
 // Bart Torvik's T-Rank (data/torvik.json, pulled daily through a browser; tools/torvik_pull.js and tools/torvik.py)
 let TV = null;
 fetch("data/torvik.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((v) => { TV = v && v.teams && !Array.isArray(v.teams) ? v : null; if (TV && D && ["ratings", "matchup"].includes(route().page)) render(); }).catch(() => {});
+// "" while fresh; " (last pulled Nov 23)" once the daily browser pull has missed for a day and a half
+const tvAge = () => { const t = TV && Date.parse(TV.pulled); return t && Date.now() - t > 36 * 36e5 ? " (last pulled " + new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ")" : ""; };
 const tvRank = (t) => (TV && TV.teams[t.id] ? TV.teams[t.id][0] : null);
 function tvLine(home, away, neutral) {   // Torvik's projected margin for the home team: his offenses against his defenses at the shared pace
   const h = TV && TV.teams[home.id], a = TV && TV.teams[away.id]; if (!h || !a) return null;
@@ -250,7 +252,7 @@ function ratings(q) {
   }).join("");
   return head + '<div class="panel"><div class="scroll"><table class="t rt"><thead>' + th + "</thead><tbody>" + body + "</tbody></table></div></div>" +
     (show.length < ts.length ? '<p><button class="btn" data-more="all">Show all ' + ts.length + " teams</button></p>" : "") +
-    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). Mkt: market rating rank, from team ratings fit to every closing point spread this season (teams with 2+ lined games). Torvik: Bart Torvik\'s T-Rank, pulled daily. BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
+    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). Mkt: market rating rank, from team ratings fit to every closing point spread this season (teams with 2+ lined games). Torvik: Bart Torvik\'s T-Rank, pulled daily" + tvAge() + ". BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => fin(t.metrics.adjO) && fin(t.metrics.adjD));

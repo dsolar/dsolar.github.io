@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - tools/nba_tracking.py
+      - tools/stale_check.py
       - .github/workflows/nba-tracking.yml
   workflow_dispatch:
 
@@ -36,7 +37,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Build the tracking file from the latest drop
-        run: python3 tools/nba_tracking.py
+        run: python3 tools/nba_tracking.py ${{ github.event_name != 'schedule' && '--force' || '' }}
 
       # card-sized copies of the tracking files for Draft Lab's player cards
       - name: Card-sized tracking files
@@ -52,3 +53,8 @@ jobs:
           fi
           git commit -m "Update NBA tracking"
           for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
+
+      # red run (and GitHub's failure email) when the weekly browser pull has missed by more than two days
+      - name: Check the pull is fresh
+        if: github.event_name == 'schedule'
+        run: python3 tools/stale_check.py nba/data/tracking.json 216

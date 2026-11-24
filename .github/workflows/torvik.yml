@@ -11,6 +11,7 @@ on:
     branches: [main]
     paths:
       - tools/torvik.py
+      - tools/stale_check.py
       - .github/workflows/torvik.yml
   workflow_dispatch:
 
@@ -34,10 +35,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Publish the latest Torvik drop
-        run: python3 tools/torvik.py
+        run: python3 tools/torvik.py ${{ github.event_name != 'schedule' && '--force' || '' }}
       - name: Commit it
         run: |
           git add cbb/data/torvik.json cbb/data/torvik_hist.json
           if git diff --cached --quiet; then echo "Nothing changed."; exit 0; fi
           git commit -m "Update Torvik ratings"
           for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
+      # red run (and GitHub's failure email) when the daily browser pull has missed for 1.5 days
+      - name: Check the pull is fresh
+        if: github.event_name == 'schedule'
+        run: python3 tools/stale_check.py cbb/data/torvik.json 36

@@ -55,6 +55,15 @@ def main():
     if not got or not got.get("body"):
         sys.exit("no drop yet")
     b = got["body"]
+    # a scheduled run with no new drop changes nothing (the build stamp alone used to make a commit); --force rebuilds anyway
+    if "--force" not in sys.argv:
+        try:
+            with open(OUT) as f:
+                if json.load(f).get("pulled") == b.get("pulled"):
+                    print(f"no new drop since {b.get('pulled')}; nothing to publish")
+                    return
+        except Exception:
+            pass
     cols, raw = b.get("cols") or [], b.get("p") or {}
     if len(raw) < 300:
         sys.exit(f"only {len(raw)} players in the drop; keeping the last file")

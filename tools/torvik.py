@@ -70,6 +70,14 @@ def main():
     if not drop or not drop.get("body"):
         sys.exit("No Torvik drop in Supabase yet.")
     body = drop["body"]
+    # a scheduled run with no new drop changes nothing (the stamp alone used to make a commit); --force rebuilds anyway
+    if "--force" not in sys.argv:
+        try:
+            if json.loads(OUT.read_text()).get("pulled") == body.get("pulled"):
+                print("No new drop since %s; nothing to publish." % body.get("pulled"))
+                return
+        except Exception:
+            pass
     hub = json.loads((ROOT / "cbb/data/hub.json").read_text())
     by_key = {}
     for t in hub["teams"]:
