@@ -94,12 +94,12 @@
     state.route = parts[0] || "week"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
   }
   // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
-  var GROUP = { week: "games", game: "games", standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", contracts: "players", fa: "moves", trade: "moves" };
+  var GROUP = { week: "games", game: "games", standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", adv: "players", contracts: "players", fa: "moves", trade: "moves" };
   var SUBS = {
     games: [["week", "This week"]],
     standings: [["standings", "Standings"], ["power", "Power rankings"]],
     teams: [["teams", "Teams"], ["offseason", "Offseason"], ["cap", "League cap"]],
-    players: [["players", "Players"], ["ngs", "Next Gen Stats"], ["contracts", "Contracts"]],
+    players: [["players", "Players"], ["ngs", "Next Gen Stats"], ["adv", "Advanced"], ["contracts", "Contracts"]],
     moves: [["fa", "Free agents"], ["trade", "Trade value"]]
   };
   // the teams you follow (assets/follow.js), above the main pages; redrawn when you follow or unfollow
@@ -124,7 +124,7 @@
     var st = $("#subtabs");
     st.hidden = false;
     st.innerHTML = subs.map(function (x) { return '<a href="' + href(x[0], {}) + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
-    ({ week: weekPage, game: gamePage, standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
+    ({ week: weekPage, game: gamePage, standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, adv: advPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
     yoursSlot();
   }
   window.addEventListener("hashchange", function () { if (card && card.open) card.close(); render(); });
@@ -824,7 +824,7 @@
     var y = +state.q.y || 2027, v = state.q.v || "overview", t = team(code), ms = movesOf(code), o = SIM.teams[code];
     var base = C.teamYears(W, code, [], 2026, 2030), plan = C.teamYears(W, code, ms.map(eng), 2026, 2030), cc = C.creditCard(W, code, 2026);
     // the shared team header (assets/pcard.js): outlook up top, cap numbers as chips, the team's pages as tabs
-    var TABS = [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"], ["ngs", "Next Gen Stats"]];
+    var TABS = [["overview", "Overview"], ["depth", "Depth chart"], ["draft", "Draft"], ["plan", "Offseason planner"], ["gm", "Play GM"], ["sheet", "Cap sheet"], ["ngs", "Next Gen Stats"], ["adv", "Advanced"]];
     var html = window.PCard.teamHead({ logo: logo(code, 44), name: t.name, follow: { sport: "nfl", id: code }, color: t.color,
       meta: [esc(S.divOf[code]), rec(o.rec) + " now", "strength " + (o.rating >= 0 ? "+" : "") + o.rating.toFixed(1) + " pts"],
       chips: [[m(base[0].space) + " cap space in 2026", ""], [m(plan[1].space) + " in 2027" + (ms.length ? " with your plan" : ""), plan[1].space >= 0 ? "" : "inj"], base[0].dead > 1 ? [m(base[0].dead) + " dead money", ""] : null, cc.voids > 0.05 ? [m(cc.voids) + " in void years", ""] : null],
@@ -837,6 +837,7 @@
     else if (v === "gm") html += gmTab(code, ms);
     else if (v === "plan") html += planner(code, y, ms, base, plan);
     else if (v === "ngs") html += teamNgs(code);
+    else if (v === "adv") html += teamAdv(code);
     else html += overview(code);
     view.innerHTML = html;
   }
@@ -1072,11 +1073,12 @@
     card.dataset.pid = id;
     cardBody.innerHTML = PC.html({ face: face(p, 60), name: p.n, color: t.color, team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.name) + "</a>",
       meta: [posOf(p), p.age ? "Age " + Math.floor(p.age) : "", p.exp === 0 ? "Rookie" : p.exp + " yrs exp", p.draft && p.exp > 1 ? p.draft[0] + " pick " + p.draft[1] : ""], chips: chips, head: head,
-      tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, hasNgs ? { id: "tr", label: "Next Gen", html: '<div id="ngsc"><p class="note">Loading Next Gen Stats…</p></div>' } : null, { id: "ct", label: "Contract", html: ct }],
+      tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, hasNgs ? { id: "tr", label: "Next Gen", html: '<div id="ngsc"><p class="note">Loading Next Gen Stats…</p></div>' } : null, /^(QB|RB|WR|TE|EDGE|IDL|LB|CB|S)$/.test(g) ? { id: "ad", label: "Advanced", html: '<div id="advc"><p class="note">Loading advanced stats…</p></div>' } : null, { id: "ct", label: "Contract", html: ct }],
       foot: foot, follow: { sport: "nfl-p", id: p.id, name: p.n, info: { t: t.short, espn: p.espn || "", href: "/nfl/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
     gameLog(p);
     ngsCard(p);
+    advCard(p);
   }
   // ---------- Next Gen Stats ----------
   // nfl/data/ngs.json from tools/nfl_ngs.py: NGS's qualified season totals by GSIS id, in three pools (qb, rb, rec),
@@ -1166,6 +1168,108 @@
         PC.facts(plain.map(function (c) { return [ngFmt(d.x[idx[c[1]]], c[2]), c[0]]; })) + '<p class="note"><a href="' + href("ngs", { g: P.group(p) }) + '">Full Next Gen leaderboards</a>. From NFL Next Gen Stats.</p>';
     };
     if (NG) draw(); else loadNgs().then(draw);
+  }
+  // ---------- Advanced: ESPN QBR, Pro Football Reference's charting and FTN Data's (nfl/data/adv.json, tools/nfl_adv.py) ----------
+  // five pools (qb, rb, rec, rush, cov), each player's numbers in x (order in AD.cols[pool]) and his percentile within his
+  // position group in pct; teams: each team's style and defense, with ranks
+  var AD = null, adWait = null;
+  function loadAdv() {
+    if (!adWait) adWait = fetch("data/adv.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; })
+      .then(function (j) { AD = j || { cols: {}, tcols: [], teams: {}, trank: {}, none: true }; return AD; });
+    return adWait;
+  }
+  // label, key, decimals, tooltip
+  var ADCOLS = {
+    qb: [["Dropbacks", "db", 0], ["QBR", "qbr", 1, "ESPN's Total QBR: every play he's part of (passes, runs, sacks, penalties), 0 to 100, 50 is average"], ["EPA/db", "epa", 2, "Expected points added per dropback, sacks and scrambles included"], ["Success%", "sr", 1, "Share of dropbacks with positive EPA"], ["Pressured%", "prs", 1, "Share of dropbacks under pressure (as much his line as him)"], ["Pressure to sack%", "p2s", 1, "Share of his pressures that became sacks: lower is better"], ["Bad throw%", "bad", 1, "Poor throws per attempt, by PFR's charting"], ["INT-worthy%", "iw", 1, "Throws that should have been intercepted, per attempt, by FTN's charting"], ["Throwaway%", "ta", 1], ["Play-action%", "pa", 1, "Share of dropbacks with a play fake"], ["Out of pocket%", "oop", 1, "Share of dropbacks that left the pocket"], ["Blitzed%", "blz", 1, "Share of dropbacks against an extra rusher"]],
+    rb: [["Carries", "att", 0], ["EPA/carry", "epa", 2], ["Success%", "sr", 1], ["Before contact", "ybc", 2, "Yards before first contact per carry: mostly the blocking"], ["After contact", "yac", 2, "Yards after first contact per carry: mostly him"], ["Broken tackle%", "bt", 1, "Broken tackles per carry"], ["Stuffed%", "stuff", 1, "Carries for no gain or a loss"]],
+    rec: [["Targets", "tgt", 0], ["EPA/tgt", "epa", 2], ["Success%", "sr", 1], ["aDOT", "adot", 1, "Average depth of target"], ["Contested%", "ctc", 1, "Share of targets thrown into tight coverage"], ["Contested catch%", "cc", 1, "Catches on contested targets"], ["Created", "crt", 0, "Catches he made on a poor or difficult throw, by FTN's charting"], ["Drop%", "drop", 1, "Drops per catchable target"], ["Broken tackle%", "bt", 1, "Broken tackles per catch"]],
+    rush: [["Games", "g", 0], ["Pressures", "prs", 0, "Sacks, QB hits and hurries"], ["Per game", "ppg", 2], ["Sacks", "sk", 1], ["Hits", "hit", 0], ["Hurries", "hry", 0], ["Tackles", "comb", 0], ["Missed tackle%", "mtk", 1]],
+    cov: [["Targets", "tgt", 0, "Passes thrown at the man he covered"], ["Cmp%", "cmp", 1, "Completion rate allowed"], ["Yds/tgt", "ypt", 1, "Yards allowed per target"], ["TD", "td", 0, "Touchdowns allowed"], ["INT", "int", 0], ["Rating", "rat", 1, "Passer rating allowed when targeted"], ["aDOT", "adot", 1, "Air yards per completion allowed"], ["Missed tackle%", "mtk", 1]]
+  };
+  var ADTEAM = [["Pass rate over exp.", "proe", 1, "How much more (or less) a team passes than an average team would in the same spots, on early downs with the game close"], ["Motion%", "motion", 1, "Plays with pre-snap motion"], ["Play-action%", "pa", 1, "Dropbacks with a play fake"], ["RPO%", "rpo", 1, "Run-pass options"], ["Screen%", "screen", 1, "Screen passes per attempt"], ["No-huddle%", "nohud", 1], ["Shotgun%", "gun", 1], ["Box faced", "box", 2, "Average defenders in the box against its offense"], ["Blitz%", "blitz", 1, "Its defense: dropbacks it sent an extra rusher"], ["Rushers", "rushers", 2, "Its defense: average pass rushers"], ["Box", "dbox", 2, "Its defense: average defenders in the box"], ["Pressure%", "dprs", 1, "Its defense: pressures per opponent dropback"]];
+  var ADG = { QB: ["qb", "Quarterbacks"], RB: ["rb", "Running backs"], WR: ["rec", "Wide receivers"], TE: ["rec", "Tight ends"], EDGE: ["rush", "Edge rushers"], IDL: ["rush", "Interior linemen"], CB: ["cov", "Cornerbacks"], S: ["cov", "Safeties"], LB: ["cov", "Linebackers in coverage"] };
+  var ADSORT = { qb: "epa", rb: "epa", rec: "epa", rush: "prs", cov: "rat" };
+  var ADDIR = { rat: 1, cmp: 1, ypt: 1, stuff: 1, p2s: 1, bad: 1, iw: 1, drop: 1, mtk: 1 };
+  var adCredit = function () { return '<p class="note">QBR from <a href="https://www.espn.com/nfl/qbr" rel="noopener">ESPN</a>; advanced stats from <a href="https://www.pro-football-reference.com/" rel="noopener">Pro Football Reference</a>; charting from <a href="https://www.ftndata.com/" rel="noopener">FTN Data</a> (CC BY-SA 4.0); EPA from play-by-play; all via <a href="https://github.com/nflverse/nflverse-data" rel="noopener">nflverse</a>. ' + (AD && AD.season ? AD.season + " regular season through week " + (AD.week || "—") + ", pulled " + esc((AD.pulled || "").slice(0, 10)) + ". " : "") + "EPA and success rate leave out garbage time.</p>"; };
+  function adIdx(pool) { var idx = {}; ((AD && AD.cols[pool]) || []).forEach(function (k, i) { idx[k] = i; }); return idx; }
+  function adCell(v, c, pc) { return pc == null ? "<td>" + ngFmt(v, c[2]) + "</td>" : '<td class="ngc" style="background:' + ngColor(pc) + ";color:" + ngInk(pc) + '" title="' + ngOrd(pc) + ' percentile">' + ngFmt(v, c[2]) + "</td>"; }
+  function adRows(pool, g) { return Object.keys((AD && AD[pool]) || {}).map(function (id) { return { id: id, d: AD[pool][id] }; }).filter(function (r) { return pool === "qb" || pool === "rb" || r.d.pos === g; }); }
+  function advPage() {
+    if (!AD) { view.innerHTML = '<p class="loading">Loading advanced stats…</p>'; loadAdv().then(function () { if (state.route === "adv") render(); }); return; }
+    var g = ADG[state.q.g] || state.q.g === "TEAM" ? state.q.g : "QB";
+    var html = '<h2 class="sec">Advanced stats</h2><p class="lede">What the box score misses: ESPN\'s QBR, expected points added, and two sets of hand charting, Pro Football Reference\'s (pressures, contact, coverage) and FTN\'s (play-action, contested balls, throws that should have been picked). Shaded cells are percentiles within the position: red is good, blue is bad. Click a column to sort, a player for his card.</p>';
+    html += '<div class="controls"><label>Show<select data-q="g">' + Object.keys(ADG).map(function (k) { return '<option value="' + k + '"' + (k === g ? " selected" : "") + ">" + ADG[k][1] + "</option>"; }).join("") + '<option value="TEAM"' + (g === "TEAM" ? " selected" : "") + '>Team style</option></select></label>' + (g === "TEAM" ? "" : '<label>Search<input type="search" data-q="q" value="' + esc(state.q.q || "") + '" placeholder="Player"></label>') + "</div>";
+    if (g === "TEAM") { view.innerHTML = html + adTeamTable() + adCredit(); return; }
+    var pool = ADG[g][0], cols = ADCOLS[pool], idx = adIdx(pool), sq = (state.q.q || "").toLowerCase();
+    var sort = idx[state.q.s] != null ? state.q.s : ADSORT[pool], dir = state.q.d === "asc" ? 1 : state.q.d === "desc" ? -1 : ADDIR[sort] ? 1 : -1;
+    var rows = adRows(pool, g).filter(function (r) { return !sq || String(r.d.n).toLowerCase().indexOf(sq) >= 0; });
+    var val = function (r) { var v = r.d.x[idx[sort]]; return v == null ? -dir * 1e9 : v; };
+    rows.sort(function (a, b) { return dir * (val(a) - val(b)); });
+    var th = function (c) {
+      var on = c[1] === sort, nd = on ? (dir < 0 ? "asc" : "desc") : null;
+      return '<th><a href="' + href("adv", Object.assign({}, state.q, { s: c[1], d: nd })) + '"' + (on ? ' class="on"' : "") + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[0] + (on ? (dir < 0 ? " ↓" : " ↑") : "") + "</a></th>";
+    };
+    html += tablePanel(ADG[g][1] + " · " + rows.length, "<th>Player</th><th class=\"hm\">Team</th>" + cols.map(th).join(""),
+      rows.map(function (r) {
+        var p = W.byId[r.id], P2 = r.d.pct || {};
+        return "<tr><td>" + (p ? pname(p, 24) : esc(r.d.n || "")) + '</td><td class="tm hm">' + (r.d.t ? logo(r.d.t, 18) + '<span class="nm">' + esc(r.d.t) + "</span>" : "") + "</td>" + cols.map(function (c) { return adCell(r.d.x[idx[c[1]]], c, P2[c[1]]); }).join("") + "</tr>";
+      }).join(""), "qualified players", "trkt");
+    html += '<p class="note">Qualified: 12 dropbacks a team game for quarterbacks, 6 carries for backs, 3 targets for receivers, 8 pressures for pass rushers, 15 targets in coverage.</p>' + adCredit();
+    view.innerHTML = html;
+  }
+  // every team's style: each number with its rank (1st = the most)
+  function adTeamTable(only) {
+    var tc = AD.tcols || [], idx = {}; tc.forEach(function (k, i) { idx[k] = i; });
+    var sort = idx[state.q.s] != null ? state.q.s : "proe", dir = state.q.d === "asc" ? 1 : -1;
+    var list = Object.keys(AD.teams || {}).filter(function (t) { return !only || t === only; });
+    list.sort(function (a, b) { return dir * ((AD.teams[a][idx[sort]] || 0) - (AD.teams[b][idx[sort]] || 0)); });
+    var th = function (c) { var on = c[1] === sort; return '<th><a href="' + href("adv", Object.assign({}, state.q, { s: c[1], d: on && dir < 0 ? "asc" : null })) + '"' + (on ? ' class="on"' : "") + ' title="' + esc(c[3] || "") + '">' + c[0] + (on ? (dir < 0 ? " ↓" : " ↑") : "") + "</a></th>"; };
+    return tablePanel("Team style", '<th>Team</th>' + ADTEAM.map(th).join(""), list.map(function (t) {
+      var v = AD.teams[t], rk = (AD.trank || {})[t] || [];
+      return '<tr><td class="tm">' + logo(t, 18) + '<a href="' + href("team/" + t, { v: "adv" }) + '"><span class="nm">' + esc(team(t).short || t) + "</span></a></td>" + ADTEAM.map(function (c) { var i = idx[c[1]], r = rk[i]; return '<td title="' + (r ? ngOrd(r) + " of 32" : "") + '">' + ngFmt(v[i], c[2]) + (r ? ' <small class="ad-rk">' + r + "</small>" : "") + "</td>"; }).join("") + "</tr>";
+    }).join(""), "offense on the left, defense on the right; small numbers are ranks (1 = the most)", "trkt");
+  }
+  // a team's page: its style as facts, then its qualified players in each pool
+  function teamAdv(code) {
+    if (!AD) { loadAdv().then(function () { if (state.route === "team" && state.q.v === "adv") render(); }); return '<p class="loading">Loading advanced stats…</p>'; }
+    var tc = AD.tcols || [], v = (AD.teams || {})[code], rk = (AD.trank || {})[code] || [], PC = window.PCard;
+    var html = '<p class="lede">How this team plays, from FTN\'s charting and play-by-play, and its players\' advanced numbers, shaded by percentile at the position: red is good, blue is bad. <a href="' + href("adv", { g: "TEAM" }) + '">Every team</a>.</p>';
+    if (v) html += '<div class="panel ad-style">' + PC.sec("Offense", "rank among 32") + PC.facts(ADTEAM.slice(0, 8).map(function (c) { var i = tc.indexOf(c[1]); return [ngFmt(v[i], c[2]) + (rk[i] ? " · " + ngOrd(rk[i]) : ""), c[0]]; })) +
+      PC.sec("Defense", "rank among 32") + PC.facts(ADTEAM.slice(8).map(function (c) { var i = tc.indexOf(c[1]); return [ngFmt(v[i], c[2]) + (rk[i] ? " · " + ngOrd(rk[i]) : ""), c[0]]; })) + "</div>";
+    [["qb", "Quarterbacks"], ["rb", "Running backs"], ["rec", "Receivers"], ["rush", "Pass rushers"], ["cov", "Coverage"]].forEach(function (pg) {
+      var pool = pg[0], idx = adIdx(pool), cols = ADCOLS[pool];
+      var ids = Object.keys(AD[pool] || {}).filter(function (id) { var p = W.byId[id]; return (p ? p.t : AD[pool][id].t) === code; });
+      if (!ids.length) return;
+      ids.sort(function (a, b) { return (AD[pool][b].x[0] || 0) - (AD[pool][a].x[0] || 0); });
+      html += tablePanel(pg[1], "<th>Player</th>" + (pool !== "qb" && pool !== "rb" ? "<th>Pos</th>" : "") + cols.map(function (c) { return "<th" + (c[3] ? ' title="' + esc(c[3]) + '"' : "") + ">" + c[0] + "</th>"; }).join(""),
+        ids.map(function (id) {
+          var d = AD[pool][id], p = W.byId[id], P2 = d.pct || {};
+          return "<tr><td>" + (p ? pname(p, 22) : esc(d.n || "")) + "</td>" + (pool !== "qb" && pool !== "rb" ? "<td>" + esc(d.pos) + "</td>" : "") + cols.map(function (c) { return adCell(d.x[idx[c[1]]], c, P2[c[1]]); }).join("") + "</tr>";
+        }).join(""), "", "trkt");
+    });
+    return html + adCredit();
+  }
+  // the player card's Advanced tab: his percentiles in each pool he qualifies for
+  function advCard(p) {
+    var el = document.getElementById("advc");
+    if (!el) return;
+    var draw = function () {
+      var PC = window.PCard, out = "", grp = P.group(p);
+      ["qb", "rb", "rec", "rush", "cov"].forEach(function (pool) {
+        var d = AD && AD[pool] && AD[pool][p.id];
+        if (!d) return;
+        var idx = adIdx(pool), cols = ADCOLS[pool];
+        var bars = cols.filter(function (c) { return d.pct && d.pct[c[1]] != null; });
+        var plain = cols.filter(function (c) { return !(d.pct && d.pct[c[1]] != null); });
+        var who = { qb: "QBs", rb: "RBs", rec: d.pos + "s", rush: d.pos === "EDGE" ? "edge rushers" : d.pos === "IDL" ? "interior linemen" : "LBs", cov: d.pos === "CB" ? "cornerbacks" : d.pos === "S" ? "safeties" : "LBs" }[pool];
+        out += PC.sec({ qb: "Passing", rb: "Running", rec: "Receiving", rush: "Pass rush", cov: "Coverage" }[pool], "percentile among " + who) +
+          PC.bars(bars.map(function (c) { return { label: c[0], sub: ngFmt(d.x[idx[c[1]]], c[2]), pct: d.pct[c[1]] }; })) +
+          PC.facts(plain.map(function (c) { return [ngFmt(d.x[idx[c[1]]], c[2]), c[0]]; }));
+      });
+      el.innerHTML = out ? out + '<p class="note"><a href="' + href("adv", { g: ADG[grp] ? grp : "QB" }) + '">Full advanced leaderboards</a>. QBR from ESPN; charting from Pro Football Reference and FTN Data via nflverse.</p>'
+        : '<p class="note">No advanced numbers for him yet: they list players with enough volume (see the qualifying lines on the <a href="' + href("adv", { g: ADG[grp] ? grp : "QB" }) + '">Advanced page</a>).</p>';
+    };
+    if (AD) draw(); else loadAdv().then(draw);
   }
   // this season's cap hit as the year-by-year table shows it
   function nowHit(p, c) { var r = c && c.rows && c.rows[W.season]; return r ? r[5] : C.capHit(p, W.season); }
