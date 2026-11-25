@@ -9,7 +9,7 @@ import urllib.request
 W = "https://site.web.api.espn.com/apis"
 C = "https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba"
 URLS = [
-    ("nfl_fpi", f"{W}/fitt/v3/sports/football/nfl/powerindex?region=us&lang=en&limit=40&season=2026"),
+    ("nfl_fpi_2026", f"{W}/fitt/v3/sports/football/nfl/powerindex?region=us&lang=en&limit=40&season=2026"),
     ("nfl_fpi_plain", f"{W}/fitt/v3/sports/football/nfl/powerindex"),
     ("nba_powerindex", f"{W}/fitt/v3/sports/basketball/nba/powerindex?region=us&lang=en&limit=40"),
     ("nba_byathlete_general", f"{W}/common/v3/sports/basketball/nba/statistics/byathlete?region=us&lang=en&contentorigin=espn&isqualified=true&limit=5&category=general&sort=general.avgPoints:desc"),
@@ -50,6 +50,9 @@ for name, url in URLS:
             j = json.loads(body)
             rec["keys"] = list(j.keys())[:30] if isinstance(j, dict) else f"list of {len(j)}"
             rec["sample"] = sample(j)
+            if isinstance(j, dict) and "categories" in j and "teams" in j:
+                rec["catsFull"] = [{"name": c.get("name"), "names": c.get("names"), "labels": c.get("labels")} for c in j["categories"]]
+                rec["firstTeam"] = {"team": {k: j["teams"][0]["team"].get(k) for k in ("id", "abbreviation", "displayName")}, "cats": [{"name": c.get("name"), "values": c.get("values")} for c in j["teams"][0].get("categories", [])]}
         except ValueError:
             rec["text"] = re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", body))[:600]
         out[name] = rec
