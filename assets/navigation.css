@@ -75,3 +75,10 @@ main[tabindex="-1"]:focus,#ds-content:focus{outline:none}
 .ds-navigation .ds-prod a[aria-current="page"]{background:#fff;color:#002244}
 @media(max-width:520px){.ds-navigation .ds-prod a{padding:7px 9px;font-size:12.5px}}
 @media(max-width:430px){.ds-navigation:has(.ds-prod) .ds-brand span{display:none}}
+/* The hubs' bar and Draft Lab's are one frame (fantasy-kit/kit.css .fk-mast): the same height, mark, name and link
+   type, with each product's own accent underneath (red for the hubs, amber for Draft Lab) */
+.ds-navigation:has(.ds-prod){border-bottom-width:3px}
+.ds-navigation:has(.ds-prod) .ds-nav-inner,.ds-navigation[data-layout="hub"]:has(.ds-prod) .ds-nav-inner{min-height:58px}
+.ds-navigation:has(.ds-prod) .ds-brand{font-size:18px;letter-spacing:-.3px}
+.ds-navigation:has(.ds-prod) .ds-brand img{width:26px;height:26px}
+.ds-navigation:has(.ds-prod) .ds-section-link{font:750 14px/1.25 "Barlow","Libre Franklin","Helvetica Neue",Arial,sans-serif}

@@ -537,10 +537,6 @@ body[data-screen] .rc-title b,body[data-screen] .rc-grade b{font-family:var(--di
 body[data-screen] .wrap{max-width:1180px}
 body.in-hub .mast{display:block;padding:28px 0 8px}
 @media (max-width:640px){ body.in-hub .mast{padding:14px 0 0} body.in-hub .kicker{margin-bottom:6px;font-size:11px} body.in-hub .mast h1{font-size:34px} body.in-hub .mast .sub{display:none} body.in-hub .hubtabs{margin-top:10px} }
-.hubswitch{display:flex;gap:6px;margin:0 0 12px;flex-wrap:wrap}
-.hubswitch a{font:700 12px/1 var(--body);letter-spacing:.08em;padding:6px 11px;border-radius:999px;text-decoration:none;color:var(--dim)!important;border:1px solid var(--line-strong)}
-.hubswitch a:hover{color:var(--chalk)!important;border-color:var(--chalk)}
-.hubswitch a[aria-current=page]{color:#fff!important;background:#002244;border-color:#002244}
 body[data-screen] .hubtabs{margin-top:18px}
 body[data-screen] .hubtabs a{text-decoration:none}
 .subtabs{display:flex;gap:2px;width:max-content;max-width:100%;overflow-x:auto;background:var(--panel-hi);border-radius:10px;padding:3px;margin:10px 0 2px}
@@ -606,7 +602,6 @@ body[data-screen] .tm.nopick{opacity:1}
 body[data-screen] .tm.nopick .tn{color:var(--dim)}
 body[data-screen] .tm>:first-child{grid-row:1/3}
 @media (max-width:760px){
-  .hubswitch{gap:4px;justify-content:space-between;flex-wrap:nowrap} .hubswitch a{flex:1 1 0;text-align:center;padding:6px 0;font-size:11.5px;letter-spacing:.02em}
   .subtabs a{padding:7px 9px;font-size:12.5px}
   h2.sec{font-size:22px}
   .srct .hide-s{display:none}
@@ -620,9 +615,10 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
 @media (max-width:370px){ body.in-hub .hubtabs a{font-size:11.5px;padding:9px 4px 8px} }
 </style>
 
-<link rel="stylesheet" href="../assets/navigation.css?v=20261124-sw2">
+<link rel="stylesheet" href="../assets/navigation.css?v=20261125sb">
 <script src="../assets/projects.js?v=20261124-bb" defer></script>
 <script src="../assets/navigation.js?v=20261124-fav" defer></script>
+<script src="../assets/hubswitch.js?v=20261125s2" defer></script>
 </head>
 <body>
 <nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
@@ -633,7 +629,6 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
 <main class="wrap">
   <header class="mast">
     <div>
-      <nav class="hubswitch" id="hubswitch" aria-label="Switch sport" hidden></nav>
       <p class="kicker" id="kicker">2027 Draft</p>
       <h1 id="title">Big <span>Board</span></h1>
       <p class="sub">Every board worth reading in one consensus, plus a mock draft that runs off it.</p>
@@ -739,11 +734,11 @@ body[data-screen] .tm>:first-child{grid-row:1/3}
     const hub = lg.startsWith("nba") ? "nba" : "nfl", H = HUBS[hub];
     document.body.classList.add("in-hub");
     const title = document.getElementById("title"), kick = document.getElementById("kicker"), sub = document.querySelector(".mast .sub");
-    ["hubswitch", "hubtabs", "subtabs"].forEach((id) => { document.getElementById(id).hidden = false; });
+    // the sport bar under the site header comes from assets/hubswitch.js, the same as on the hubs
+    ["hubtabs", "subtabs"].forEach((id) => { document.getElementById(id).hidden = false; });
     document.getElementById("viewtabs").hidden = true;
     document.querySelector(".seg.big").hidden = true;
     document.getElementById("yrrow").hidden = hub !== "nba" || !["board", "mock"].includes(view);
-    document.getElementById("hubswitch").innerHTML = ["mlb", "nba", "nfl", "nhl", "cbb", "cfb"].map((h) => `<a href="../${h}/"${h === hub ? ' aria-current="page"' : ""}>${{ cbb: "NCAAB", cfb: "NCAAF" }[h] || h.toUpperCase()}</a>`).join("");
     kick.textContent = H.kick; title.innerHTML = H.title + " <span>Hub</span>"; sub.textContent = H.sub;
     document.getElementById("hubtabs").innerHTML = H.tabs.map(([r, l, sh]) => `<a href="../${hub}/#/${r}">${sh ? `<span class="fl">${l}</span><span class="sl">${sh}</span>` : l}</a>`).join("") + `<a href="#${hub}" aria-current="page">Draft</a>`;
     const key = later ? "nba2028" : lg;
