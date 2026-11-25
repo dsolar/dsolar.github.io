@@ -5,14 +5,14 @@ Writes cfb/data/cfbd.json with what ESPN doesn't give the hub:
   - advanced team stats (EPA per play, success rate, explosiveness, havoc, field position; garbage time excluded)
   - SP+ ratings
   - player EPA (season, garbage time excluded)
-  - opponent-adjusted EPA (CFBD's WEPA): every team's offense and defense, and each passer's and rusher's
   - Elo and SRS ratings, and player usage (share of his team's plays)
+  - opponent-adjusted EPA (CFBD's WEPA) for teams, passers and rushers, only with CFBD_ADJUSTED=1 and a paid-tier key
   - betting lines with opening and closing numbers, for this week and last week (closing-line grading)
   - recruiting class rankings, returning production and the transfer portal once they apply (next season)
 
 The key comes from the CFBD_API_KEY environment variable (a GitHub Actions secret). It is never written anywhere.
 Without a key the script does nothing. The free tier is 1,000 calls a month, shared with CFBD's basketball API,
-so the script pulls at most once a day (about 13 calls), keeps a monthly call log, and stops at a safety cap.
+so the script pulls at most once a day (about 10 calls), keeps a monthly call log, and stops at a safety cap.
 CFBD team and game ids are ESPN's, so everything joins to hub.json directly.
 """
 import datetime as dt, json, os, pathlib, sys, urllib.error, urllib.parse, urllib.request
@@ -267,9 +267,14 @@ def main():
         if len(u) < 300:
             raise ValueError(f"only {len(u)} players")
         out["usageP"] = u
-    for name, fn in (("advanced", advanced), ("sp", sp), ("players", players), ("lines", lines), ("adjusted", adjusted), ("wepa", wepa),
+    # the opponent-adjusted (WEPA) endpoints refuse the free key (401): they're for CFBD's Patreon tiers, so they run only
+    # when CFBD_ADJUSTED=1 is set alongside a key that has them
+    adj_on = os.environ.get("CFBD_ADJUSTED") == "1"
+    for name, fn in (("advanced", advanced), ("sp", sp), ("players", players), ("lines", lines)) + ((("adjusted", adjusted), ("wepa", wepa)) if adj_on else ()) + (
                      ("elo", elo), ("srs", srs), ("playerUsage", usage_players)):
         step(name, fn)
+    if not adj_on:
+        out.pop("adj", None); out.pop("wepa", None)
 
     # Next season's building blocks, weekly once they exist (recruiting all year; returning production and the portal from December)
     nxt = year + 1
