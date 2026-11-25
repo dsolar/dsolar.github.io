@@ -2310,7 +2310,14 @@
         else if (b.dataset.qup) { const q = team(me()).queue, i = q.indexOf(b.dataset.qup); if (i > 0) { [q[i - 1], q[i]] = [q[i], q[i - 1]]; save(); render(); } }
         else {
           const a = b.dataset.act;
-          if (a === "start") act(() => F.start(d, n, ctx));
+          if (a === "start") {
+            // a real league's draft starts for everyone, so one stray click shouldn't do it; mocks and practice stay one click
+            if (opts.solo) act(() => F.start(d, n, ctx));
+            else {
+              const bots = d.teams.filter((t, i) => i !== me() && F.isBot(t)).length;
+              confirm("Start the draft?", `It starts for everyone, and the first pick is on the clock right away.${bots ? ` ${bots} team${bots > 1 ? "s have" : " has"} no manager and will be drafted by bots.` : ""} You can pause it, but you can't undo the start.`, "Start the draft", () => { const d2 = D(); if (d2.phase === "setup") act(() => F.start(d2, now(), ctx)); });
+            }
+          }
           else if (a === "pause") act(() => F.pause(d, n, !d.paused));
           else if (a === "undo") act(() => F.undo(d, ctx, n));
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
