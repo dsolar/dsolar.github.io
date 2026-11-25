@@ -310,3 +310,8 @@ td.ngc{font-variant-numeric:tabular-nums;font-weight:700}
 /* Advanced: a team-style rank beside its number */
 .ad-rk{font-size:10.5px;font-weight:700;color:var(--muted,#6b7280);margin-left:2px}
 .ad-style{padding:12px 16px}
+/* game preview: what could decide it */
+.edges .edge-l{list-style:none;margin:0;padding:6px 16px 4px;display:grid;gap:10px}
+.edges .edge-l li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45}
+.edges .edge-l li img{flex:none;margin-top:2px}
+.edges .note{padding:0 16px 12px}

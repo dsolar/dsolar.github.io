@@ -135,7 +135,7 @@
   var TS = null, BETN = null, wkWait = null;
   function loadWeek() {
     var get = function (u) { return fetch(u, { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); };
-    if (!wkWait) wkWait = Promise.all([get("data/teamstats.json"), get("data/betting.json"), loadNgs()]).then(function (r) { TS = r[0] || { teams: {} }; BETN = r[1] || { games: {} }; });
+    if (!wkWait) wkWait = Promise.all([get("data/teamstats.json"), get("data/betting.json"), loadNgs(), loadAdv()]).then(function (r) { TS = r[0] || { teams: {} }; BETN = r[1] || { games: {} }; });
     return wkWait;
   }
   function regGames() { return W.games.filter(function (g) { return g[0] === "REG"; }); }
@@ -240,6 +240,57 @@
     return '<div class="panel"><h3>' + logo(code, 18) + " " + esc(team(code).short) + " injuries <small>" + (list.length ? "this week's report" : out ? "none listed" : "this week's report isn't out yet (it starts Wednesday)") + "</small></h3>" +
       (list.length ? '<ul class="rlist">' + list.map(function (p) { return "<li>" + pname(p, 22) + '<span class="grow sub">' + esc(posOf(p)) + (p.inj[1] ? " · " + esc(p.inj[1]) : "") + '</span><span class="num">' + esc(p.inj[0]) + "</span></li>"; }).join("") + "</ul>" : "") + "</div>";
   }
+  // ---------- what could decide it: the matchups worth watching, from team play-by-play, the hub's advanced numbers
+  // (ESPN QBR, PFR and FTN charting) and each team's style. Each note carries a strength; the game shows the top four.
+  function adTop(pool, code, key) {
+    if (!AD || !AD[pool]) return null;
+    var idx = adIdx(pool), best = null;
+    Object.keys(AD[pool]).forEach(function (id) { var d = AD[pool][id], p = W.byId[id]; if ((p ? p.t : d.t) !== code) return; if (!best || (d.x[idx[key]] || 0) > (best.d.x[idx[key]] || 0)) best = { id: id, d: d }; });
+    return best && { id: best.id, d: best.d, v: function (k) { return best.d.x[idx[k]]; }, pc: function (k) { return (best.d.pct || {})[k]; } };
+  }
+  function adRank(code, k) { var i = AD && AD.tcols ? AD.tcols.indexOf(k) : -1; return i >= 0 && AD.trank[code] ? AD.trank[code][i] : null; }
+  function adVal(code, k) { var i = AD && AD.tcols ? AD.tcols.indexOf(k) : -1; return i >= 0 && AD.teams[code] ? AD.teams[code][i] : null; }
+  function lastN(n) { var w = String(n || "").split(" ").filter(function (x) { return !/^(Jr\.?|Sr\.?|II|III|IV|V)$/.test(x); }); return w.length > 1 ? w.slice(1).join(" ") : n; }
+  function poss(n) { n = String(n || ""); return esc(n) + (/s$/.test(n) ? "\u2019" : "\u2019s"); }
+  function edgesFor(off, def) {
+    var o = TS.teams[off], d = TS.teams[def], out = [], O = esc(team(off).short), D = esc(team(def).short), Os = poss(team(off).short), Ds = poss(team(def).short);
+    if (!o || !d) return out;
+    var op = function (k, dir) { return tsPct("off", k, o.off[k], dir); }, dp = function (k, dir) { return tsPct("def", k, d.def[k], -dir); };
+    var qb = adTop("qb", off, "db"), rb = adTop("rb", off, "att"), wr = adTop("rec", off, "tgt"), rusher = adTop("rush", def, "prs");
+    var prsR = adRank(def, "dprs"), prsV = adVal(def, "dprs");
+    // the pass rush against the quarterback's habit of taking sacks
+    if (qb && prsR && qb.pc("p2s") != null) {
+      var p2 = qb.pc("p2s");
+      if (prsR <= 10 && p2 <= 45) out.push({ s: (11 - prsR) / 10 + (45 - p2) / 45, off: off, h: "<b>Pressure problem.</b> " + D + " pressure the quarterback on " + prsV.toFixed(1) + "% of dropbacks (" + ngOrd(prsR) + " in the league)" + (rusher ? ", led by " + esc(lastN(rusher.d.n)) + " (" + rusher.v("prs") + " pressures)" : "") + ", and " + esc(lastN(qb.d.n)) + " turns " + qb.v("p2s").toFixed(0) + "% of pressures into sacks, more than most starters." });
+      else if (prsR >= 23 && p2 >= 55) out.push({ s: (prsR - 22) / 10 + (p2 - 55) / 45, off: off, h: "<b>Clean pocket.</b> " + D + " rank " + ngOrd(prsR) + " in pressure rate (" + prsV.toFixed(1) + "%), and " + esc(lastN(qb.d.n)) + " rarely lets pressure become a sack (" + qb.v("p2s").toFixed(0) + "%)." });
+    }
+    // passing against the pass defense, running against the run defense
+    [["pass", "passing", "pass defense", "EPA per dropback"], ["rush", "run game", "run defense", "EPA per run"]].forEach(function (x) {
+      var a = op(x[0], 1), b = dp(x[0], 1); if (a == null || b == null) return;
+      if (a >= 70 && b <= 35) out.push({ s: (a - b) / 50, off: off, h: "<b>" + Os + " " + x[1] + " has the edge.</b> " + ngOrd(a) + " percentile in " + x[3] + " against a " + x[2] + " in the " + ngOrd(b) + " percentile." + (x[0] === "rush" && rb && rb.pc("yac") >= 70 ? " " + esc(lastN(rb.d.n)) + " averages " + rb.v("yac").toFixed(1) + " yards after contact." : "") });
+      else if (a <= 30 && b >= 65) out.push({ s: (b - a) / 50, off: off, h: "<b>" + Ds + " " + x[2] + " has the edge.</b> " + Os + " " + x[1] + " is " + ngOrd(a) + " percentile in " + x[3] + "; " + D + " defend it better than " + b + "% of the league." });
+    });
+    // a team's lean against what the defense does best
+    var proe = adRank(off, "proe"), pv = adVal(off, "proe"), passD = dp("pass", 1), runD = dp("rush", 1);
+    if (proe && proe <= 6 && passD >= 75) out.push({ s: 0.9 + (passD - 75) / 50, off: off, h: "<b>Strength on strength.</b> " + O + " throw more than almost anyone (" + (pv >= 0 ? "+" : "") + pv.toFixed(1) + " points of pass rate over expected, " + ngOrd(proe) + "), into a pass defense in the " + ngOrd(passD) + " percentile." });
+    if (proe && proe >= 27 && runD >= 75) out.push({ s: 0.9 + (runD - 75) / 50, off: off, h: "<b>Strength on strength.</b> " + O + " lean on the run more than almost anyone (" + ngOrd(33 - proe) + " in run rate over expected), into a run defense in the " + ngOrd(runD) + " percentile." });
+    // big plays
+    var xo = op("xpl", 1), xd = dp("xpl", 1);
+    if (xo != null && xd != null && xo >= 75 && xd <= 30) out.push({ s: (xo - xd) / 55, off: off, h: "<b>Big-play chances.</b> " + Os + " offense is in the " + ngOrd(xo) + " percentile for explosive plays (20-yard passes, 10-yard runs), and " + Ds + " defense allows them more than most (" + ngOrd(xd) + " percentile)." });
+    // turnover-worthy throws against a ball-hawking defense
+    var to = dp("to", 1);
+    if (qb && qb.pc("iw") != null && qb.pc("iw") <= 30 && to != null && to >= 65) out.push({ s: (30 - qb.pc("iw")) / 30 + (to - 65) / 35, off: off, h: "<b>Turnover watch.</b> " + esc(lastN(qb.d.n)) + " throws an interception-worthy ball on " + qb.v("iw").toFixed(1) + "% of attempts (FTN's charting), and " + D + " force more turnovers than " + to + "% of the league." });
+    // the receiver who wins in traffic
+    if (wr && wr.pc("cc") >= 85 && wr.v("ctc") >= 20) out.push({ s: 0.55 + (wr.pc("cc") - 85) / 40, off: off, h: "<b>Jump-ball option.</b> " + esc(lastN(wr.d.n)) + " catches " + wr.v("cc").toFixed(0) + "% of his contested targets (" + ngOrd(wr.pc("cc")) + " percentile), and " + wr.v("ctc").toFixed(0) + "% of his looks are contested." });
+    return out;
+  }
+  function edgesPanel(a, h) {
+    if (!AD || AD.none || !TS) return "";
+    var list = edgesFor(a, h).concat(edgesFor(h, a)).sort(function (x, y) { return y.s - x.s; }).slice(0, 4);
+    if (!list.length) return "";
+    return '<div class="panel edges"><h3>What could decide it <small>from play-by-play and charting</small></h3><ul class="edge-l">' +
+      list.map(function (e) { return "<li>" + logo(e.off, 20) + "<span>" + e.h + "</span></li>"; }).join("") + '</ul><p class="note">Each note sets one side\'s offense against the other\'s defense. Percentiles are among all 32 teams (or starters at the position), this regular season; the <a href="' + href("adv", { g: "TEAM" }) + '">Advanced page</a> has every number.</p></div>';
+  }
   function gamePage() {
     if (!TS) { view.innerHTML = '<p class="loading">Loading the preview…</p>'; loadWeek().then(function () { if (state.route === "game") render(); }); return; }
     var pr = String(state.arg || "").split("-"), a = pr[0], h = pr[1], wk = +state.q.w || upcomingWeek();
@@ -264,7 +315,7 @@
       ],
       prob: kOk ? { away: k.a / (k.a + k.h), src: "Kalshi prices" } : null,
       tabs: [
-        { id: "matchup", label: "Matchup", html: ts ? '<div class="two">' + muSide(a, h) + muSide(h, a) + '</div><p class="note">Percentiles against all 32 teams this season, each side\'s offense next to the other\'s defense: red is good, blue is bad, and the bigger number wins the row. EPA per play, success rate, passing, running and explosive plays leave out garbage time. From nflverse play-by-play through week ' + TS.week + ".</p>" : '<p class="note">Team stats aren\'t in yet.</p>' },
+        { id: "matchup", label: "Matchup", html: ts ? edgesPanel(a, h) + '<div class="two">' + muSide(a, h) + muSide(h, a) + '</div><p class="note">Percentiles against all 32 teams this season, each side\'s offense next to the other\'s defense: red is good, blue is bad, and the bigger number wins the row. EPA per play, success rate, passing, running and explosive plays leave out garbage time. From nflverse play-by-play through week ' + TS.week + ".</p>" : '<p class="note">Team stats aren\'t in yet.</p>' },
         { id: "players", label: "Key players", html: '<div class="two"><div>' + keyPlayers(a) + "</div><div>" + keyPlayers(h) + "</div></div>" },
         { id: "injuries", label: "Injuries" + (nInj ? " (" + nInj + ")" : ""), html: '<div class="two"><div>' + injPanel(a, wk) + "</div><div>" + injPanel(h, wk) + "</div></div>" },
         { id: "betting", label: "Betting", html: (betLine(g, true) || '<p class="note">No betting numbers for this game yet.</p>') + '<p class="note">Line: nflverse, else the betting feed\'s consensus. Bets: share of bets across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks. Kalshi: the price of each team\'s win contract at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, shown once 500+ contracts have traded; a 56¢ price is about a 56% chance.</p>' }
