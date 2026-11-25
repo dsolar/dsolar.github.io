@@ -1749,8 +1749,37 @@
       return { team: t, score, starters, bench: ps.filter((p) => !starters.includes(p)), cats, spent };
     });
     const sorted = rows.slice().sort((a, b) => b.score - a.score);
-    sorted.forEach((r, i) => { r.rank = i + 1; r.grade = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D"][Math.min(9, Math.floor((i / Math.max(1, rows.length - 1)) * 9.99))]; });
+    sorted.forEach((r, i) => { r.rank = i + 1; });
+    grades(D, ctx, rows, (S.SHOWDOWN && S.SHOWDOWN.mult) || {}, tg);
     return rows;
+  }
+  /* Grades are earned, not curved: each team's starters against the league's, measured above what the waiver wire
+     would start (the best lineup from the players nobody drafted). A team 12% above the league average there is an
+     A+; a league that drafted evenly is mostly B's. edge is that share; why names the position where a team is
+     furthest above and below the league's average starter. */
+  const GRADE_AT = [[12, "A+"], [8, "A"], [5, "A-"], [2, "B+"], [-2, "B"], [-5, "B-"], [-8, "C+"], [-12, "C"], [-16, "C-"]];
+  const gradeFor = (edge) => { for (const [t, g] of GRADE_AT) if (edge >= t) return g; return "D"; };
+  function grades(D, ctx, rows, mult, tg) {
+    if (!rows.length) return;
+    const taken = new Set(rows.flatMap((r) => r.starters.concat(r.bench).filter(Boolean).map((p) => p.id)));
+    const pool = ctx.players.filter((p) => !taken.has(p.id) && !p.gone).sort((a, b) => (b.v || 0) - (a.v || 0)).slice(0, Math.max(40, D.lineup.length * 4));
+    const wire = assign(ctx.sport, pool, D.lineup);
+    const repl = sum(wire.map((p, i) => (p ? (p.v || 0) * (mult[D.lineup[i]] || 1) : 0)));
+    const avg = sum(rows.map((r) => r.score)) / rows.length, above = avg - repl;
+    // by position: each team's starters at a position against the league's average there
+    const posOf = (p) => S.positions(p)[0];
+    const byPos = rows.map((r) => { const o = {}; r.starters.forEach((p, i) => { if (p) o[posOf(p)] = (o[posOf(p)] || 0) + (p.v || 0) * (mult[D.lineup[i]] || 1) * (tg[p.id] || 1); }); return o; });
+    const allPos = [...new Set(byPos.flatMap((o) => Object.keys(o)))].filter((k) => !((ctx.sport.late || []).includes(k)));
+    const posAvg = Object.fromEntries(allPos.map((k) => [k, sum(byPos.map((o) => o[k] || 0)) / rows.length]));
+    rows.forEach((r, t) => {
+      r.edge = above > 1e-9 && rows.length > 1 ? Math.round((1000 * (r.score - avg)) / above) / 10 : 0;
+      r.grade = rows.length > 1 && above > 1e-9 ? gradeFor(r.edge) : "B";
+      const gaps = allPos.map((k) => ({ k, d: (byPos[t][k] || 0) - posAvg[k] })).sort((a, b) => b.d - a.d);
+      const big = Math.max(1e-9, above / D.lineup.length) * 0.35;   // a third of an average starter's edge, or it's noise
+      r.strong = gaps.length && gaps[0].d > big ? gaps[0].k : null;
+      r.thin = gaps.length && gaps[gaps.length - 1].d < -big ? gaps[gaps.length - 1].k : null;
+      if (r.strong === r.thin) r.thin = null;
+    });
   }
 
   // The draft in a few headlines: the best values and biggest reaches against the rankings (a pick's slot against
@@ -1759,13 +1788,15 @@
   function recap(D, ctx) {
     const sp = ctx.sport, auc = D.type === "auction";
     const made = made_(D).filter((pk) => pk && pk.pid && !pk.keeper && ctx.byId[pk.pid]);
-    // a snake pick's worth: what the player at that slot in the rankings is worth, so a value at 1.08 counts for
-    // more than one in round 14
-    const curve = ctx.players.map((p) => Math.max(0, p.$ || 0)).sort((a, b) => b - a);
+    // a snake pick: how far he went from his rank, against how deep in the draft it was. A player who slides half a
+    // round or more counts (falling from 55th to 85th is a steal; 1st going 2nd isn't news), and the same slide counts
+    // for more early than late. An auction pick: his value against his price.
+    const nT = D.teams.length, near = Math.max(3, Math.ceil(nT / 2));
     const rows = made.map((pk, i) => {
-      const p = ctx.byId[pk.pid], at = auc ? i + 1 : pk.n, slot = auc ? pk.price : curve[at - 1] || 0;
-      return { team: pk.team, pid: pk.pid, at, rank: p.rank, price: auc ? pk.price : null, $: p.$ || 0, slot,
-        diff: Math.round((p.$ || 0) - slot), late: !!(sp.late && sp.late.length && S.isLate(sp, p)), pos: S.positions(p)[0] };
+      const p = ctx.byId[pk.pid], at = auc ? i + 1 : pk.n, gap = at - p.rank;
+      const diff = auc ? Math.round((p.$ || 0) - pk.price) : Math.abs(gap) >= near ? Math.round((100 * gap) / (at + nT)) : 0;
+      return { team: pk.team, pid: pk.pid, at, rank: p.rank, price: auc ? pk.price : null, $: p.$ || 0, slot: auc ? pk.price : null,
+        diff, late: !!(sp.late && sp.late.length && S.isLate(sp, p)), pos: S.positions(p)[0] };
     });
     const real = rows.filter((r) => !r.late);
     const steals = real.slice().sort((a, b) => b.diff - a.diff).filter((r) => r.diff > 0).slice(0, 5);
