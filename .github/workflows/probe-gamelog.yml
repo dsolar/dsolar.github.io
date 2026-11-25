@@ -1,0 +1,24 @@
+name: probe gamelog (temporary)
+on: workflow_dispatch
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          for u in basketball/nba/athletes/3112335 hockey/nhl/athletes/3895074 baseball/mlb/athletes/33192 basketball/mens-college-basketball/athletes/5106016 football/nfl/athletes/3918298 football/college-football/athletes/4870601; do
+            echo "=== $u"
+            curl -s -D h.txt -o b.json -H "Origin: https://davidsolar.dev" "https://site.web.api.espn.com/apis/common/v3/sports/$u/gamelog"
+            grep -i "^HTTP\|access-control" h.txt
+            python3 - <<'PY'
+          import json
+          d = json.load(open("b.json"))
+          print("keys", list(d.keys()))
+          print("labels", d.get("labels")); print("names", d.get("names"))
+          ev = d.get("events", {}); k = list(ev)[:1]
+          if k: print("event", json.dumps(ev[k[0]])[:700])
+          for st in d.get("seasonTypes", [])[:2]:
+              print("seasonType", st.get("displayName"), [ (c.get("type"), c.get("displayName"), len(c.get("events", []))) for c in st.get("categories", [])][:6])
+              for c in st.get("categories", [])[:1]:
+                  if c.get("events"): print("catEvent", json.dumps(c["events"][0])[:400])
+          PY
+          done
