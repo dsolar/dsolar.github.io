@@ -655,7 +655,7 @@
     if (pros) for (const k of keepers) if (k.round != null) k.round = Math.min(k.round, mainR);
     // a keeper whose round is taken slides to the team's next open pick, so place the earliest rounds first
     keepers.sort((a, b) => (a.round || 0) - (b.round || 0));
-    const D = F.create({ sport, type: F.formatOf(D0) || "snake", dutch: D0.auction && D0.auction.dutch ? { size: D0.auction.dutch.size, fall: D0.auction.dutch.fall, gap: D0.auction.dutch.gap, mult: D0.auction.dutch.mult } : undefined, teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
+    const D = F.create({ sport, type: F.formatOf(D0) || "snake", dutch: D0.auction && D0.auction.dutch ? { size: D0.auction.dutch.size, fall: D0.auction.dutch.fall, pace: D0.auction.dutch.pace, gap: D0.auction.dutch.gap, mult: D0.auction.dutch.mult } : undefined, teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
       nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers: [],
       rounds: D0.rounds, curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal,

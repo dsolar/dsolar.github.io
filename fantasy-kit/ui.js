@@ -1330,7 +1330,7 @@
       let mid = "";
       if (d.phase === "heist") mid = `<div class="otc me"><span class="ring" id="fk-ring"><span id="fk-timer"></span></span><span class="who"><small>The draft is done</small><b>The heist</b><span>Shield yours, strike at theirs</span></span></div>`;
       else if (d.phase === "setup" && d.startAt) mid = `<div class="otc"><span class="ring" style="--p:1"><span id="fk-startin" data-at="${d.startAt}">${esc(startIn(d.startAt))}</span></span><span class="who"><small>The draft starts</small><b>${esc(new Date(d.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }))}</b><span>On its own. Set your queue: if you're not here, your picks come from it.</span></span></div>`;
-      else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (dutch() ? d.auction.dutch.fall : auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : dutch() ? "Scout the board" : "Build your queue"}</b><span>${dutch() ? `$${d.auction.budget} budgets. ${d.auction.dutch.size} players a wave, prices fall for ${d.auction.dutch.fall} seconds` : auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
+      else if (d.phase === "setup") mid = `<div class="otc"><span class="ring" style="--p:1"><span>${d.bank ? fmtLeft(bankFull()) : d.clock || d.auction ? (dutch() ? (d.auction.dutch.pace ? "$" : d.auction.dutch.fall) : auction() ? d.auction.bidClock : d.clock) : "-"}</span></span><span class="who"><small>Draft room is open</small><b>${mystery() && !seenK(0) ? "Packages are sealed" : dutch() ? "Scout the board" : "Build your queue"}</b><span>${dutch() ? `$${d.auction.budget} budgets. ${d.auction.dutch.size} players a wave, ${d.auction.dutch.pace ? `${F.DUTCH_PACES[d.auction.dutch.pace].label.toLowerCase()} pace: longer waves for the stars` : `prices fall for ${d.auction.dutch.fall} seconds`}` : auction() ? `$${d.auction.budget} budgets, ${d.auction.bidClock} seconds a bid` : d.bank ? `${fmtLeft(bankFull())} bank each. What's left becomes FAAB` : d.clock ? `${d.clock} seconds a pick` : "No pick clock"}</span></span></div>`;
       else if (d.phase === "done") mid = `<div class="otc"><span class="who"><small>Draft complete</small><b>${F.made(d).length} ${auction() ? "players bought" : "picks"}</b><span>See the Results tab</span></span></div>`;
       else if (dutch()) {
         const st = F.auctionState(d, n), mineUp = me() != null && F.spotsLeft(d, me()) > 0;
@@ -1485,8 +1485,17 @@
           ${mine != null ? `<button class="btn sm go" data-claim="${esc(l.pid)}"${can ? "" : " disabled"} title="${esc(why || "Take him at the price showing")}">Claim</button><small class="wv-w" data-wwhy="${esc(l.pid)}">${esc(why)}</small>` : ""}
           <span class="wv-bar"><i data-wbar="${esc(l.pid)}" style="width:${Math.round(100 * (l.price - 1) / Math.max(1, l.start - 1))}%"></i></span></div>`;
       }).join("");
+      // what you still need, where you're looking while prices fall: open starting spots, then bench spots
+      let need = "";
+      if (mine != null) {
+        const ros = F.rosters(d)[mine].map((id) => ctx.byId[id]).filter(Boolean), got = F.assign(sport, ros, d.lineup);
+        const open = d.lineup.filter((sl, i) => !got[i]), by = {};
+        for (const sl of open) by[sl] = (by[sl] || 0) + 1;
+        const bench = Math.max(0, spots - open.length);
+        need = `<div class="wv-need" aria-label="Spots you still need"><b>Need</b>${Object.entries(by).map(([sl, k]) => `<span class="slot">${esc(sl)}${k > 1 ? ` <i>&times;${k}</i>` : ""}</span>`).join("") || `<span class="ps">Starters set</span>`}${bench ? `<span class="ps">+ ${bench} bench</span>` : ""}<span class="ps wv-max">Up to ${money(max)} on one player</span></div>`;
+      }
       const head = !st.wave ? "The next wave is being set." : st.open ? (st.unsold ? "Every price falls until someone claims him. First claim wins." : "All claimed. The next wave is coming.") : "Look them over. Prices start falling in a moment.";
-      return `<div><div class="wave${st.open ? " open" : ""}"><div class="wv-h"><b class="disp">Wave ${st.n}</b><span class="ps">${head}</span>${mine != null ? `<span class="bid-limit">Most you can spend on one player: ${money(max)} · ${spots} spot${spots === 1 ? "" : "s"} left</span>` : ""}</div><div class="wv-g">${cards || `<p class="ps" style="margin:0">Everyone in this wave is sold.</p>`}</div></div><div class="budgets">${budgetChips()}</div></div>`;
+      return `<div><div class="wave${st.open ? " open" : ""}"><div class="wv-h"><b class="disp">Wave ${st.n}</b><span class="ps">${head}</span></div>${need}<div class="wv-g">${cards || `<p class="ps" style="margin:0">Everyone in this wave is sold.</p>`}</div></div><div class="budgets">${budgetChips()}</div></div>`;
     }
     // the falling prices, between renders: the number, its bar, and whether you can claim yet
     function drawWave() {

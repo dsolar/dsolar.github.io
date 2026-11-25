@@ -18,7 +18,7 @@ function room(o = {}) {
   const scoring = Object.keys(sport.scorings)[0];
   V.evaluate(sport, players, { teams, lineup: sport.lineup, scoring });
   const list = [...Array(teams).keys()].map((i) => ({ name: `T${i}`, abbr: `T${i}`, owner: (o.humans || []).includes(i) ? `u${i}` : null }));
-  const D = F.create({ sport, type: 'dutch', teams: list, seed: o.seed || 11, now: T0, scoring, botDelay: 0, budget: 200, dutch: o.dutch === undefined ? { size: 8, gap: 6 } : o.dutch });
+  const D = F.create({ sport, type: 'dutch', teams: list, seed: o.seed || 11, now: T0, scoring, botDelay: 0, budget: 200, dutch: o.dutch === undefined ? { size: 8, gap: 6, fall: 30 } : o.dutch && !o.dutch.pace ? { fall: 30, ...o.dutch } : o.dutch });
   const ctx = F.context(D, players, sport);
   return { D, ctx, sport, players };
 }
@@ -33,7 +33,7 @@ test('a Dutch draft is an auction underneath, with its own rules', () => {
   assert.equal(D.type, 'auction');
   assert.equal(F.formatOf(D), 'dutch');
   assert.ok(F.dutchOn(D));
-  assert.deepEqual([D.auction.dutch.size, D.auction.dutch.fall, D.auction.dutch.gap], [4, 30, 10]);
+  assert.deepEqual([D.auction.dutch.size, D.auction.dutch.pace, D.auction.dutch.gap], [4, 'std', 10]);
   assert.deepEqual([4, 8, 10, 12, 14, 20].map(F.dutchSize), [4, 4, 5, 6, 7, 8], 'about one player for every two teams');
   assert.equal(room({ dutch: { size: 3 } }).D.auction.dutch.size, 3);
   assert.equal(F.FORMATS.dutch, 'Dutch auction');
@@ -181,4 +181,32 @@ test('undo puts a claimed player back on sale in his wave, and a pause keeps the
   assert.ok(D.auction.wave.ends >= t + 61000 + 4000, 'time to claim him again');
   assert.equal(D.teams[2].budget, 200);
   assert.ok(F.claim(D, ctx, 3, w.lots[2].pid, t + 61500).ok);
+});
+
+test('with a pace, a wave of stars gets a long clock and a cheap wave a short one', () => {
+  const { D, ctx } = room({ teams: 10, seed: 6, dutch: { pace: 'std' } });
+  assert.equal(room({ dutch: { fall: 45 } }).D.auction.dutch.pace, undefined, 'a fixed fall stays fixed');
+  assert.equal(room({ dutch: { pace: 'nope' } }).D.auction.dutch.pace, 'std');
+  F.start(D, T0, ctx);
+  const lens = [];
+  let t = T0, seen = 0;
+  for (let i = 0; i < 400000 && D.phase === 'live'; i++) {
+    t += 500; F.tick(D, ctx, t);
+    const w = D.auction.wave;
+    if (w && w.n !== seen) {
+      seen = w.n;
+      const top = Math.max(...w.lots.map((l) => l.start));
+      lens.push([top, w.len / 1000]);
+      // around his value the top player moves about two dollars a second, inside the pace's limits
+      const want = Math.max(15, Math.min(60, Math.round((0.3 * (top - 1)) / (0.55 * 2))));
+      assert.equal(w.len / 1000, want);
+      assert.equal(w.ends - w.at, w.len);
+    }
+  }
+  assert.equal(D.phase, 'done');
+  assert.ok(lens[0][1] > lens[lens.length - 1][1], `first wave ${lens[0][1]}s, last ${lens[lens.length - 1][1]}s`);
+  assert.equal(lens[lens.length - 1][1], 15, 'the cheap waves take the minimum');
+  const fast = room({ teams: 10, seed: 6, dutch: { pace: 'fast' } }), slow = room({ teams: 10, seed: 6, dutch: { pace: 'slow' } });
+  for (const r of [fast, slow]) { F.start(r.D, T0, r.ctx); F.tick(r.D, r.ctx, T0 + 1); }
+  assert.ok(fast.D.auction.wave.len < D.auction.dutch.fall * 1000 + 60000 && fast.D.auction.wave.len < slow.D.auction.wave.len);
 });

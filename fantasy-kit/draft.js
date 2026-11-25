@@ -1181,7 +1181,7 @@
      price showing; waiting saves money and risks losing him. Budgets, the $1-a-spot guard (maxBid), keepers and the
      results are the auction's.
 
-     auction.dutch = { size (players a wave: about one for every two teams unless set), fall (seconds a wave's prices take
+     auction.dutch = { pace ("fast", "std" or "slow": each wave's clock is sized to its priciest player, dutchLen), size (players a wave: about one for every two teams unless set), fall (seconds a wave's prices take
        to reach the floor), gap (seconds a wave shows before its prices move: 10), mult (the opening price, as a multiple of his value), passed: { pid: times unsold } }
      auction.wave  = { n, at (when prices start to fall), ends, len, wait, lots: [{ pid, start, sold: { team, price, at } }], sold }
      A claimed player stays in his wave, marked sold, until it ends; when the last one goes it ends three seconds later.
@@ -1189,13 +1189,27 @@
      A player nobody claims comes back in a later wave at a lower opening price. A wave that sells no one is a dead
      wave: every team with an open spot is handed its best fit at the minimum, so the draft always ends. */
   const DUTCH_LINGER = 3000;
+  /* A wave's length by pace. One clock for every wave is wrong at both ends: a $170 star loses $7 a second, too fast
+     to time, and a $6 player takes as long to lose $5. So the clock is sized to the wave's priciest player: long
+     enough that around his value (the slow stretch of the curve, 30% of the fall in 55% of the time) his price moves
+     about `rate` dollars a second, between `min` and `max` seconds. */
+  const DUTCH_PACES = { fast: { label: "Fast", rate: 3, min: 12, max: 45 }, std: { label: "Standard", rate: 2, min: 15, max: 60 }, slow: { label: "Slow", rate: 1.3, min: 20, max: 80 } };
+  function dutchLen(R, lots, floor) {
+    const P = DUTCH_PACES[R.pace];
+    if (!P) return R.fall * 1000;
+    const top = Math.max(...lots.map((l) => l.start));
+    return Math.round(Math.max(P.min, Math.min(P.max, (0.3 * (top - floor)) / (0.55 * P.rate)))) * 1000;
+  }
   const DUTCH_CURVE = [[0, 1], [0.2, 0.75], [0.75, 0.45], [1, 0]];     // [share of the clock gone, share of (start - floor) left]
   const dclamp = (x, d, lo, hi) => { const v = Number(x); return x == null || !Number.isFinite(v) ? d : Math.max(lo, Math.min(hi, v)); };
   // players a wave when the commissioner hasn't said: about one for every two teams, so a wave fits on a phone
   const dutchSize = (teams) => Math.max(4, Math.min(8, Math.ceil((teams || 8) / 2)));
   function dutchRules(o, teams) {
     o = o || {};
-    return { size: Math.round(dclamp(o.size, dutchSize(teams), 3, 20)), fall: Math.round(dclamp(o.fall, 30, 10, 120)),
+    // pace: each wave's clock is set from its priciest player (dutchLen). A draft made with a fixed `fall` and no
+    // pace keeps one length for every wave.
+    const pace = DUTCH_PACES[o.pace] ? o.pace : o.fall != null ? undefined : "std";
+    return { size: Math.round(dclamp(o.size, dutchSize(teams), 3, 20)), fall: Math.round(dclamp(o.fall, 30, 10, 120)), pace,
       gap: Math.round(dclamp(o.gap, 10, 0, 30)), mult: Math.round(dclamp(o.mult, 1.6, 1.2, 2.5) * 100) / 100, passed: {} };
   }
   const dutchOn = (D) => !!(D && D.auction && D.auction.dutch);
@@ -1241,7 +1255,7 @@
       lots.push({ pid: p.id, start: Math.max(A.minBid + 2, Math.ceil(Math.max(1, p.$ || 0) * R.mult * cut)) });
     }
     if (!lots.length) return null;
-    const len = R.fall * 1000, wait = R.gap * 1000;
+    const len = dutchLen(R, lots, A.minBid), wait = R.gap * 1000;
     A.wave = { n: (A.waves || 0) + 1, at: at + wait, ends: at + wait + len, len, wait, lots, sold: 0 };
     A.waves = A.wave.n;
     return A.wave;
@@ -1918,7 +1932,7 @@
     return true;
   }
   return { payroll, capRoom, triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
-    start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, claim, dutchOn, formatOf, dutchPrice, dutchRules, dutchSize, botMax, standings, sizeOf,
+    start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, claim, dutchOn, formatOf, dutchPrice, dutchRules, dutchSize, DUTCH_PACES, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, prospectRound, prospectPicks, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };
 });
