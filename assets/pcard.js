@@ -11,7 +11,7 @@
      o.tab      the tab to open (falls back to the first; the last tab picked is remembered across cards)
      o.foot     markup under the tabs (buttons, notes)
      o.follow   {sport: "nba-p", id, name, info} the Follow button for this player (assets/follow.js)
-   Pieces for the panes: PCard.sec, PCard.bars, PCard.line, PCard.facts, PCard.table.
+   Pieces for the panes: PCard.sec, PCard.bars, PCard.line, PCard.facts, PCard.spec, PCard.table.
    Tabs use [data-ctab] buttons and [data-pane] panes (the NBA Hub's existing contract); clicks are handled here. */
 (function () {
   var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
@@ -58,6 +58,10 @@
   // small facts, three across: [[value, label], ...]
   function facts(list) {
     return '<div class="pc-facts">' + list.filter(function (x) { return x && x[0] != null && x[0] !== ""; }).map(function (x) { return "<div><b>" + esc(x[0]) + "</b><span>" + (x[2] ? x[1] : esc(x[1])) + "</span></div>"; }).join("") + "</div>";
+  }
+  // a spec sheet: label on the left, value on the right, one per line: [[label, value], ...] (value may be markup when x[2])
+  function spec(list) {
+    return '<dl class="pc-spec">' + list.filter(function (x) { return x && x[1] != null && x[1] !== ""; }).map(function (x) { return "<div><dt>" + esc(x[0]) + "</dt><dd>" + (x[2] ? x[1] : esc(x[1])) + "</dd></div>"; }).join("") + "</dl>";
   }
   // a compact table that scrolls sideways: head [labels], rows [[cells]] (cells are text), cur = index of the row to bold
   function table(head, rows, cur) {
@@ -126,5 +130,5 @@
       "</section>" + (o.after || "");
   }
 
-  window.PCard = { html: html, sec: sec, bars: bars, line: line, facts: facts, table: table, color: color, esc: esc, teamHead: teamHead, game: game };
+  window.PCard = { html: html, sec: sec, bars: bars, line: line, facts: facts, spec: spec, table: table, color: color, esc: esc, teamHead: teamHead, game: game };
 })();

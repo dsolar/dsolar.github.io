@@ -89,39 +89,138 @@
     }).join("");
   }
 
+  // His rank over time: a step line over the update dates, labels only where it says something (first, last, best,
+  // worst). A rank that never moved gets a sentence instead of a flat line.
   function spark(p) {
     const pts = D.dates.map((d, i) => [d, p.hist[i]]).filter((x) => x[1] != null);
-    if (pts.length < 2) return `<p class="note">One reading so far. The line fills in as boards update.</p>`;
-    const W = 420, H = 96, pad = 22;
-    const lo = Math.max(...pts.map((x) => x[1])), hi = Math.min(...pts.map((x) => x[1]));
-    const top = Math.max(1, hi - 2), bot = lo + 2;
+    if (pts.length < 2) return "";
+    const ranks = pts.map((x) => x[1]), best = Math.min(...ranks), worst = Math.max(...ranks);
+    if (best === worst) return `<p class="note">No. ${best} on every update since ${fmtDay(pts[0][0])}.</p>`;
+    const W = 420, H = 100, padX = 16, top = 18, bot = 30;
     const t0 = Date.parse(pts[0][0]), t1 = Date.parse(pts[pts.length - 1][0]);
-    const X = (d) => pad + (W - 2 * pad) * (t1 === t0 ? 0 : (Date.parse(d) - t0) / (t1 - t0));
-    const Y = (r) => 20 + (H - 46) * (r - top) / Math.max(1, bot - top);
-    const path = pts.map((x, i) => `${i ? "L" : "M"}${X(x[0]).toFixed(1)},${Y(x[1]).toFixed(1)}`).join("");
-    return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Consensus rank over time">
-      <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2.5" vector-effect="non-scaling-stroke"/>
-      ${pts.map((x) => `<circle cx="${X(x[0]).toFixed(1)}" cy="${Y(x[1]).toFixed(1)}" r="3.5" fill="var(--stage)" stroke="var(--gold)" stroke-width="2"/><text x="${X(x[0]).toFixed(1)}" y="${(Y(x[1]) - 8).toFixed(1)}" text-anchor="middle">${x[1]}</text>`).join("")}
-      <text x="${pad}" y="${H - 4}">${fmtDay(pts[0][0])}</text><text x="${W - pad}" y="${H - 4}" text-anchor="end">${fmtDay(pts[pts.length - 1][0])}</text></svg>`;
+    const X = (d) => padX + (W - 2 * padX) * ((Date.parse(d) - t0) / Math.max(1, t1 - t0));
+    const Y = (r) => top + (H - top - bot) * (r - best) / Math.max(1, worst - best);
+    let path = "";
+    pts.forEach((x, i) => { path += i ? `H${X(x[0]).toFixed(1)}V${Y(x[1]).toFixed(1)}` : `M${X(x[0]).toFixed(1)},${Y(x[1]).toFixed(1)}`; });
+    const want = [...new Set([0, ranks.indexOf(best), ranks.lastIndexOf(worst), pts.length - 1])].sort((a, b) => a - b);
+    // skip a label that repeats the one just before it a short way off (a rank held through the last few updates)
+    const keep = want.filter((i, k) => k === 0 || !(ranks[i] === ranks[want[k - 1]] && X(pts[i][0]) - X(pts[want[k - 1]][0]) < 70) || i === pts.length - 1)
+      .filter((i, k, a) => !(k < a.length - 1 && ranks[i] === ranks[a[k + 1]] && X(pts[a[k + 1]][0]) - X(pts[i][0]) < 70));
+    const marks = keep.map((i) => { const x = X(pts[i][0]), y = Y(pts[i][1]), anchor = i === 0 ? "start" : i === pts.length - 1 ? "end" : "middle";
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="var(--panel)" stroke="var(--gold)" stroke-width="2"/><text x="${x.toFixed(1)}" y="${(pts[i][1] === worst && i !== 0 && i !== pts.length - 1 ? y + 15 : y - 7).toFixed(1)}" text-anchor="${anchor}">${pts[i][1]}</text>`; }).join("");
+    return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="Consensus rank over time: ${ranks[0]} on ${fmtDay(pts[0][0])}, ${ranks[ranks.length - 1]} now, best ${best}, worst ${worst}">
+      <path d="${path}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round"/>${marks}
+      <text x="${padX}" y="${H - 4}">${fmtDay(pts[0][0])}</text><text x="${W - padX}" y="${H - 4}" text-anchor="end">${fmtDay(pts[pts.length - 1][0])}</text></svg>`;
   }
 
-  // A prospect's card, on the shared frame: Overview (consensus, range, rank over time), Stats, Boards (each board and
-  // mock), Markets (Kalshi, when he's in one)
+  // College numbers for the cards (draft/prospects.json, built by tools/draft_college.py): loaded on the first card
+  let PROS = null, prosWait = null;
+  function pros() {
+    if (PROS) return Promise.resolve(PROS);
+    if (!prosWait) prosWait = fetch("prospects.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : {})).catch(() => ({})).then((j) => (PROS = j || {}));
+    return prosWait;
+  }
+  const colOf = (p) => (PROS && PROS[D.league === "nfl" ? "nfl" : "nba"] || {})[p.id] || null;
+  const ord = (n) => { const v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); };
+  const teamName = (ab) => { const t = (D.teams || {})[ab]; return t ? t.city + " " + t.name : ab; };
+
+  // Where he's ranked: every board as a dot on one line from No. 1 down, the consensus as a bar, mocks as diamonds
+  function rankStrip(p) {
+    const live = liveBoards(), mk = mocks();
+    const dots = live.filter((s) => p.ranks[s.id] != null).map((s) => ({ r: +p.ranks[s.id], s }));
+    const picks = mk.filter((s) => p.mocks[s.id]).map((s) => ({ r: +p.mocks[s.id][0], s, t: p.mocks[s.id][1] }));
+    const all = dots.map((d) => d.r).concat(picks.map((d) => d.r), [+p.rank]);
+    const maxR = Math.max(10, Math.ceil((Math.max(...all) + 2) / 5) * 5);
+    const x = (r) => (100 * (r - 1) / (maxR - 1)).toFixed(2);
+    // one dot per rank; when boards agree, the dot says how many
+    const by = {}; dots.forEach((d) => { (by[d.r] = by[d.r] || []).push(d.s.name); });
+    const dotHtml = Object.keys(by).map((r) => `<span class="rs-dot" style="left:${x(+r)}%" title="No. ${r}: ${esc(by[r].join(", "))}">${by[r].length > 1 ? `<i>${by[r].length}</i>` : ""}</span>`).join("");
+    const mkHtml = picks.map((d) => `<span class="rs-mock" style="left:${x(d.r)}%" title="${esc(d.s.name)}: pick ${d.r}${d.t ? ", " + esc(teamName(d.t)) : ""}"></span>`).join("");
+    const strip = `<div class="rs" role="img" aria-label="Board ranks from ${p.hi} to ${p.lo}, consensus ${p.rank}"><div class="rs-line"></div>${mkHtml}${dotHtml}<span class="rs-con" style="left:${x(+p.rank)}%"><b>${p.rank}</b></span><span class="rs-end">No. ${maxR}</span></div>`;
+    // the sentence under it
+    const n = dots.length, of = live.length;
+    let say = n === 0 ? "No board ranks him yet." : p.hi === p.lo ? `No. ${p.hi} on ${n === of ? (n === 1 ? "the one board" : "all " + n + " boards") : n + " of " + of + " boards"}.`
+      : `Ranked ${ord(p.hi)} to ${ord(p.lo)} across ${n} of ${of} boards; the consensus puts him ${ord(+p.rank)}.`;
+    if (picks.length) {
+      const by = {}; picks.forEach((d) => { if (d.t) by[d.t] = (by[d.t] || 0) + 1; });
+      const top = Object.keys(by).sort((a, b) => by[b] - by[a])[0];
+      const lo = Math.min(...picks.map((d) => d.r)), hi = Math.max(...picks.map((d) => d.r));
+      say += picks.length === 1 ? ` ${picks[0].s.name} (${fmtDay(picks[0].s.date)}) has him going ${ord(lo)}${top ? " to " + teamName(top) : ""}.`
+        : ` Mocks have him going ${lo === hi ? ord(lo) : ord(lo) + " to " + ord(hi)}${top ? ", most often to " + teamName(top) : ""}.`;
+    }
+    return strip + `<p class="rs-say">${esc(say)}</p>` + (picks.length || dots.length ? `<p class="rs-key"><span class="k-dot"></span>A board <span class="k-con"></span>Consensus${picks.length ? ' <span class="k-mock"></span>A mock' : ""}</p>` : "");
+  }
+
+  // the draft's date, for his age on draft night
+  const DRAFT_DAY = { nba: "06-24", nfl: "04-22" };
+  function measurables(p, c) {
+    const lg = D.league === "nfl" ? "nfl" : "nba";
+    const day = Date.parse((D.year || 2027) + "-" + DRAFT_DAY[lg] + "T12:00:00");
+    const asof = Date.parse(D.asof || D.updated || Date.now()) || Date.now();
+    const age = p.age ? +p.age : null, draftAge = age != null ? age + (day - asof) / (365.25 * 864e5) : null;
+    return P().spec([
+      ["Height", p.ht || ""], ["Weight", p.wt ? p.wt + " lbs" : ""],
+      ["Age", age != null ? `${age.toFixed(1)} <small>(${draftAge.toFixed(1)} on draft night)</small>` : "", true],
+      ["Class", p.yr || ""], ["School", (p.school || c && c.team || "") + (c && c.conf ? ` (${c.conf})` : "")],
+      ["Hometown", c && c.home || ""], ["Position", p.pos || ""]]);
+  }
+  const P = () => window.PCard;
+  const f1 = (v, d = 1) => (v == null || !isFinite(v) ? "–" : (+v).toFixed(d));
+
+  // the season tables (Stats tab)
+  function seasonTables(p, c) {
+    if (!c) return (p.stats || []).length ? P().spec(p.stats.map(([l, v, pg]) => [BB.label(l), BB.num(v) + (pg ? ` <small>(${pg} a game)</small>` : ""), true])) : `<p class="note">No college stats on file.</p>`;
+    if (c.line) {
+      const L = c.line;
+      const main = P().sec("Per game", `${c.gp} game${c.gp === 1 ? "" : "s"}, ${esc(c.team || "")}`) + P().table(["MIN", "PTS", "REB", "AST", "STL", "BLK", "TOV", "PF"], [[f1(L.min), f1(L.pts), f1(L.reb), f1(L.ast), f1(L.stl), f1(L.blk), f1(L.tov), f1(L.pf)]], 0);
+      const shoot = P().sec("Shooting") + P().table(["", "Made-Att", "Pct"], [["Field goals", f1(L.fgm) + "-" + f1(L.fga), f1(L.fgPct) + "%"], ["Threes", f1(L.tpm) + "-" + f1(L.threeAtt), f1(L.threePct) + "%"], ["Free throws", f1(L.ftm) + "-" + f1(L.fta), f1(L.ftPct) + "%"]]) +
+        P().spec([["True shooting", L.ts != null ? f1(L.ts) + "%" : ""], ["Effective FG", L.efg != null ? f1(L.efg) + "%" : ""], ["Game Score", L.gs != null ? f1(L.gs) : ""]]);
+      return main + shoot + `<p class="note">${esc(D.year - 1)}-${String(D.year).slice(2)} season from ESPN, through ${fmtDay((PROS.sources || {}).nba || D.asof)}.</p>`;
+    }
+    if (c.groups) return c.groups.map(([g, cols]) => P().sec(g, g === c.groups[0][0] ? `${c.gp} game${c.gp === 1 ? "" : "s"}, ${esc(c.team || "")}` : "") + P().table(cols.map((x) => x[0]), [cols.map((x) => String(x[1]))], 0)).join("") +
+      `<p class="note">${esc(D.year - 1)} season from ESPN, through ${fmtDay((PROS.sources || {}).nfl || D.asof)}.</p>`;
+    return `<p class="note">No college stats on file.</p>`;
+  }
+  // the four numbers under his name
+  function headline(p, c) {
+    const out = [{ v: "#" + p.rank, l: "Consensus" }, { v: p.on > 1 && p.hi !== p.lo ? `${p.hi}-${p.lo}` : `${p.hi}`, l: p.on > 1 ? "Board range" : "Only board" }];
+    if (c && c.line) return out.concat([{ v: f1(c.line.pts), l: "Points" }, { v: f1(c.line.reb), l: "Rebounds" }]);
+    if (c && c.groups) {
+      const g = c.groups[0], pick = { Passing: ["Yds", "TD"], Rushing: ["Yds", "TD"], Receiving: ["Yds", "TD"], Defense: ["Tkl", "Sacks"] }[g[0]] || [];
+      const lab = { Passing: ["Pass yards", "Pass TD"], Rushing: ["Rush yards", "Rush TD"], Receiving: ["Rec yards", "Rec TD"], Defense: ["Tackles", "Sacks"] }[g[0]] || [];
+      return out.concat(pick.map((k, i) => { const x = g[1].find((y) => y[0] === k); return x ? { v: String(x[1]), l: lab[i] } : null; }).filter(Boolean));
+    }
+    return out.concat((p.stats || []).slice(0, 2).map(([l, v]) => ({ v: BB.num(v), l: BB.label(l) })));
+  }
+
+  // A prospect's card: Overview (where he's ranked, his profile against his position, recent games, measurables, rank
+  // over time), Stats (the season), Boards (each board and mock), Markets (Kalshi, when he's in one)
   function openCard(p) {
-    const P = window.PCard; if (!P) return;
-    const live = liveBoards(), mk = mocks(), m = move(p);
-    const stats = (p.stats || []).map(([l, v, per]) => [BB.num(v), BB.label(l) + (per ? ", " + per + " a game" : ""), BB.label(l)]);
-    const ov = P.sec("Consensus", `${live.length} board${live.length === 1 ? "" : "s"}`) + P.facts([["#" + p.rank, "Consensus rank"], [p.on > 1 ? `${p.hi}-${p.lo}` : `${p.hi} only`, "Best and worst board"], [p.on + " of " + live.length, "Boards that rank him"], [p.score.toFixed(1), "Consensus score"]]) +
-      P.sec("Consensus rank over time") + spark(p);
-    const st = stats.length ? P.sec(D.league === "nba" ? "This season" : "2026 season") + P.facts(stats) : `<p class="note">${D.league === "nba" ? "No games yet this season." : "No stats on file."}</p>`;
-    const bd = P.table(["Board", "Rank"], live.map((s) => [s.name + (s.analyst ? " (" + s.analyst.split(" ").slice(-1)[0] + ")" : ""), p.ranks[s.id] ?? `not in top ${s.count}`]).concat(mk.map((s) => [s.name, p.mocks[s.id] ? `pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? ", " + p.mocks[s.id][1] : ""}` : "not in mock"])));
+    if (!P()) return;
+    const dlg = document.getElementById("card");
+    if (!PROS) pros().then(() => { if (dlg.open && dlg.dataset.pid === p.id) { const cur = dlg.querySelector('[data-ctab][aria-selected="true"]'); draw(p, cur && cur.dataset.ctab); } });
+    draw(p);
+    dlg.dataset.pid = p.id;
+    if (!dlg.open) dlg.showModal();
+  }
+  function draw(p, tab) {
+    const live = liveBoards(), mk = mocks(), m = move(p), c = colOf(p), lg = D.league === "nfl" ? "ncaaf" : "ncaab";
+    let ov = P().sec("Where he's ranked", `${live.length} board${live.length === 1 ? "" : "s"}${mk.length ? ", " + mk.length + " mock" + (mk.length === 1 ? "" : "s") : ""}`) + rankStrip(p);
+    if (c && c.prof) ov += P().sec("Profile", "percentile vs " + c.pool) + P().bars(c.prof.map(([label, sub, pct]) => ({ label, sub, pct }))) +
+      `<p class="note">Among ${c.poolN} ${esc(c.pool)} with real playing time.${c.small ? " He's short of that so far, so read these as a small sample." : ""}</p>`;
+    if (c && c.espn && window.GameLog) ov += GameLog.slot({ league: lg, espn: c.espn, name: p.n, rows: 0 });
+    ov += P().sec("Measurables") + measurables(p, c);
+    ov += P().sec("Consensus rank over time") + spark(p);
+    if (!PROS) ov += `<p class="note">Loading his college numbers…</p>`;
+    const st = seasonTables(p, c) + (c && c.espn && window.GameLog ? GameLog.slot({ league: lg, espn: c.espn, name: p.n, n: 15, rows: 15 }) : "");
+    const bd = P().table(["Board", "Rank", "As of"], live.map((s) => [s.name + (s.analyst ? " (" + s.analyst.split(" ").slice(-1)[0] + ")" : ""), p.ranks[s.id] != null ? "No. " + p.ranks[s.id] : `Not in his top ${s.count}`, fmtDay(s.date)])
+      .concat(mk.map((s) => [s.name, p.mocks[s.id] ? `Pick ${p.mocks[s.id][0]}${p.mocks[s.id][1] ? ", " + teamName(p.mocks[s.id][1]) : ""}` : "Not in the mock", fmtDay(s.date)])));
     const mkt = marketLines(p);
-    document.getElementById("cardBody").innerHTML = P.html({ face: BB.who(p, 60), name: p.n, color: "var(--chalk)", team: P.esc(p.school || ""), meta: [p.pos, p.yr, p.ht, p.wt ? p.wt + " lbs" : "", p.age ? "Age " + p.age : ""],
+    document.getElementById("cardBody").innerHTML = P().html({ face: BB.who(p, 60), name: p.n, color: "var(--chalk)", team: P().esc(p.school || ""), meta: [p.pos, p.yr, p.ht, p.wt ? p.wt + " lbs" : "", p.age ? "Age " + p.age : ""],
       chips: [m > 0 ? [`Up ${m} since the last update`, "tag"] : m < 0 ? [`Down ${-m} since the last update`, "inj"] : null, p.lo - p.hi >= 15 && p.on > 1 ? ["Boards split on him", ""] : null],
-      head: [{ v: "#" + p.rank, l: "Consensus" }, { v: p.on > 1 ? `${p.hi}-${p.lo}` : `${p.hi}`, l: "Range" }].concat(stats.slice(0, 2).map(([v, , short]) => ({ v, l: short }))),
+      head: headline(p, c),
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: st }, { id: "bd", label: "Boards", html: bd }, mkt ? { id: "mk", label: "Markets", html: mkt } : null],
-      foot: `<div class="pc-acts"><a href="#${ui.lg}/mock">Mock the draft</a></div>` });
-    const dlg = document.getElementById("card"); if (!dlg.open) dlg.showModal();
+      tab: tab, foot: `<div class="pc-acts"><a href="#${ui.lg}/mock">Mock the draft</a>${c && c.espn ? `<a href="https://www.espn.com/${D.league === "nfl" ? "college-football" : "mens-college-basketball"}/player/_/id/${encodeURIComponent(c.espn)}" target="_blank" rel="noopener">ESPN page</a>` : ""}</div>` });
   }
   document.addEventListener("click", (e) => { const x = e.target.closest("#card [data-close]"); if (x) document.getElementById("card").close(); });
 

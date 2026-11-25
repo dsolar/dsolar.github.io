@@ -16,9 +16,8 @@
 @media (prefers-color-scheme:dark){.pc-chip.inj{background:#4A3618;color:#FFD08A}.pc-chip.out{background:#4A1F27;color:#FFB4B4}.pc-chip.tag{background:#153659;color:#A9CDFA}}
 
 /* four headline numbers, one row */
-.pc-head{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));border-top:1px solid var(--rule-2);border-bottom:1px solid var(--rule-2)}
-.pc-head div{padding:11px 6px 10px var(--pc-pad);border-left:1px solid var(--rule-2);min-width:0}
-.pc-head div:first-child{border-left:0}
+.pc-head{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:0 12px;padding:4px var(--pc-pad) 12px}
+.pc-head div{padding:0;min-width:0}
 .pc-head b{display:block;font:700 23px/1 var(--cond);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pc-head b.up{color:var(--up)}
 .pc-head b.dn{color:var(--down)}
@@ -54,8 +53,8 @@
 .pc-line .what small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
 .pc-line .r{font:700 21px/1 var(--cond);font-variant-numeric:tabular-nums}
 
-.pc-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:0 14px}
-.pc-facts div{padding:8px 0;border-top:1px solid var(--rule-2);min-width:0}
+.pc-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(98px,1fr));gap:12px 14px;margin:2px 0 4px}
+.pc-facts div{padding:0;min-width:0}
 .pc-facts b{display:block;font:700 18px/1.1 var(--cond);font-variant-numeric:tabular-nums}
 .pc-facts span{display:block;margin-top:2px;font-size:12px;line-height:1.25;color:var(--muted)}
 .pc-facts span a{color:inherit}
@@ -165,12 +164,12 @@ dialog#card:has(.pc) .card-b{padding:0}
 .gl-plot{position:relative;display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:4px;height:118px;align-items:end;border-bottom:1px solid var(--rule-2)}
 .gl-c{position:relative;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;min-width:0}
 .gl-b{display:block;width:100%;max-width:30px;border-radius:3px 3px 0 0;background:color-mix(in srgb,var(--ink) 22%,transparent)}
-.gl-b.hot{background:var(--ink)}
+.gl-plot .gl-b.gl-hot{background:var(--ink)}
 .gl-v{font:700 12.5px/1 var(--cond);font-variant-numeric:tabular-nums;color:var(--ink);margin-bottom:3px;white-space:nowrap}
 .gl-o{position:absolute;top:100%;margin-top:5px;font:600 11px/1 var(--cond);color:var(--muted);white-space:nowrap;letter-spacing:-.01em}
 .gl-r{position:absolute;top:100%;margin-top:19px;font:700 10.5px/1 var(--cond);color:var(--faint,var(--muted))}
-.gl-r.w{color:var(--up)}
-.gl-r.l{color:var(--down)}
+.gl-r.gl-w{color:var(--up)}
+.gl-r.gl-l{color:var(--down)}
 .gl-avg{position:absolute;left:0;right:0;border-top:1.5px dashed color-mix(in srgb,var(--red) 75%,transparent);pointer-events:none;z-index:1}
 .gl-tw{overflow-x:auto;margin:0 calc(-1 * var(--pc-pad,16px));padding:0 var(--pc-pad,16px)}
 .gl-t{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -178,12 +177,19 @@ dialog#card:has(.pc) .card-b{padding:0}
 .gl-t td{text-align:right;padding:7px 0 7px 10px;border-bottom:1px solid var(--rule-2)}
 .gl-t th:nth-child(-n+3),.gl-t td:nth-child(-n+3){text-align:left}
 .gl-t th:first-child,.gl-t td:first-child{padding-left:0}
-.gl-t td.w a,.gl-t td.l a{color:inherit;text-decoration:none}
-.gl-t td.w{color:var(--up)}
-.gl-t td.l{color:var(--down)}
+.gl-t td.gl-w a,.gl-t td.gl-l a{color:inherit;text-decoration:none}
+.gl-t td.gl-w{color:var(--up)}
+.gl-t td.gl-l{color:var(--down)}
 .gl-t td a:hover{text-decoration:underline}
 @media (min-width:700px){.gl-plot{height:132px}}
 @media (prefers-reduced-motion:no-preference){.gl-b{transition:height .25s ease}}
 .pc-fol{margin-top:8px}
 .pc-fol .ds-follow{padding:3px 10px 3px 8px;font-size:12.5px}
 .gl-t th{text-decoration:none}
+
+.pc-spec{margin:0}
+.pc-spec div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:7px 0;border-bottom:1px solid var(--rule-2)}
+.pc-spec div:last-child{border-bottom:0}
+.pc-spec dt{font-size:14px;color:var(--muted)}
+.pc-spec dd{margin:0;font-size:14.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.pc-spec dd small{font-weight:500;color:var(--muted)}

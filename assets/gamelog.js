@@ -144,8 +144,8 @@
     var cols = list.map(function (g, i) {
       var v = vals[i], h = v == null ? 0 : Math.max(v > 0 ? 4 : 1.5, v / max * 100), hot = v != null && v >= avg && v > 0;
       return '<div class="gl-c" title="' + esc(day(g.date) + " " + (g.at ? "at " : "vs ") + g.opp + ", " + g.res + " " + g.score + ": " + fmt(v, nm) + " " + label.toLowerCase()) + '">' +
-        '<span class="gl-v">' + esc(fmt(v, nm)) + '</span><span class="gl-b' + (hot ? " hot" : "") + '" style="height:' + h.toFixed(1) + '%"></span>' +
-        '<span class="gl-o">' + (g.at ? "@" : "") + esc(g.opp) + '</span><span class="gl-r ' + (g.res === "W" ? "w" : g.res === "L" ? "l" : "") + '">' + esc(g.res || "") + "</span></div>";
+        '<span class="gl-v">' + esc(fmt(v, nm)) + '</span><span class="gl-b' + (hot ? " gl-hot" : "") + '" style="height:' + h.toFixed(1) + '%"></span>' +
+        '<span class="gl-o">' + (g.at ? "@" : "") + esc(g.opp) + '</span><span class="gl-r' + (g.res === "W" ? " gl-w" : g.res === "L" ? " gl-l" : "") + '">' + esc(g.res || "") + "</span></div>";
     }).join("");
     var line = '<span class="gl-avg" style="bottom:' + (avg / max * 100).toFixed(1) + '%"></span>';
     var aside = "Avg " + fmt(Math.round(avg * 10) / 10, nm === "savePct" ? nm : "") + (list.length < d.games.length ? ", " + fmt(Math.round(sAvg * 10) / 10, nm === "savePct" ? nm : "") + " on the season" : "");
@@ -159,7 +159,7 @@
     var lab = function (nm) { return LABEL[nm] || d.labels[d.names.indexOf(nm)] || nm; };
     return '<div class="gl-tw"><table class="gl-t"><thead><tr><th>Date</th><th>Opp</th><th>Result</th>' + want.map(function (nm) { return "<th>" + esc(lab(nm)) + "</th>"; }).join("") + "</tr></thead><tbody>" +
       d.games.slice(0, rows).map(function (g) {
-        return "<tr><td>" + esc(day(g.date)) + "</td><td>" + (g.at ? "@ " : "") + esc(g.opp) + '</td><td class="' + (g.res === "W" ? "w" : g.res === "L" ? "l" : "") + '">' +
+        return "<tr><td>" + esc(day(g.date)) + "</td><td>" + (g.at ? "@ " : "") + esc(g.opp) + '</td><td class="' + (g.res === "W" ? "gl-w" : g.res === "L" ? "gl-l" : "") + '">' +
           (g.link ? '<a href="' + esc(g.link) + '" target="_blank" rel="noopener">' : "") + esc((g.res ? g.res + " " : "") + g.score) + (g.link ? "</a>" : "") + "</td>" +
           want.map(function (nm) { return "<td>" + esc(g.raw[nm] == null ? "–" : g.raw[nm]) + "</td>"; }).join("") + "</tr>";
       }).join("") + "</tbody></table></div>";
