@@ -1686,3 +1686,15 @@ revoke all on function public.nba_picks_put(jsonb) from public;
 revoke all on function public.nba_picks_get() from public;
 grant execute on function public.nba_picks_put(jsonb) to anon, authenticated;
 grant execute on function public.nba_picks_get() to anon, authenticated;
+
+-- Bowl pools: reminders start on. The playoff games fill in weeks after people make their bowl picks, so without a
+-- nudge most entries miss them. Anyone can turn them off in Settings. (Applied as migration mm_bowls_remind_default.)
+create or replace function public.mm_members_remind_default() returns trigger
+language plpgsql security definer set search_path to 'public' as $$
+begin
+  if exists (select 1 from mm_pools p where p.id = new.pool and p.kind = 'bowls') then new.remind := true; end if;
+  return new;
+end $$;
+drop trigger if exists mm_members_remind_default on public.mm_members;
+create trigger mm_members_remind_default before insert on public.mm_members for each row execute function public.mm_members_remind_default();
+revoke all on function public.mm_members_remind_default() from public, anon, authenticated;
