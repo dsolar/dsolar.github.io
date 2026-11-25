@@ -27,7 +27,8 @@
   });
 
   // ---------- pieces ----------
-  const ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M30 130h160M50 130V92h28v38M96 130V62h28v68M142 130V34h28v96"/><path d="m46 70 30-22 26 12 44-36"/><path d="M132 24h14v14"/></g></svg>`;
+  const tl = (x, n) => Array.from({ length: n }, (_, k) => `<path d="M${x + k * 13} ${44 + (k % 2) * 2}l${k % 2 ? 1 : -1} 64"/>`).join("") + (n === 4 ? `<path d="M${x - 8} 96L${x + 49} 54"/>` : "");
+  const ART = `<svg class="pl-art tally-art" viewBox="0 0 240 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="5" stroke-linecap="round">${tl(20, 4)}${tl(92, 4)}${tl(164, 3)}</g></svg>`;
   const band = (title, sub, extra = "", kick = "Pools") => `<section class="pl-band"><div class="pl-band-in"><p class="pl-kick">${kick}</p><h1 class="disp">${title}</h1>${sub ? `<p class="pl-sub">${sub}</p>` : ""}${extra}</div>${ART}</section>`;
   const logo = (sport, t, px = 28) => `<img class="pl-logo" src="${esc(W.logo(sport, t, px))}" alt="" width="${px}" height="${px}" loading="lazy" onerror="this.style.visibility='hidden'">`;
   const rec = (r) => (r ? `${r.w}-${r.l}` : "");
@@ -76,7 +77,7 @@
         <button type="button" class="btn sm${panel === "make" ? " on" : ""}" data-panel="make" aria-expanded="${panel === "make"}">+ Make a pool</button><button type="button" class="btn sm${panel === "join" ? " on" : ""}" data-panel="join" aria-expanded="${panel === "join"}">Join with a code</button></div></div>
       ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
       ${(mine || []).length ? `<ul class="pl-list">${mine.map(row).join("")}</ul>` : `<div class="pl-empty"><b>No wins pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : signinCard("Sign in to make or join a wins pool");
-    app.innerHTML = `<div class="wrap page pl">${band("Wins pool", "Draft real teams with your friends. Most combined wins from draft day forward takes it.", `<div class="pl-share"><a class="btn sm ghost" href="/pools/">All pools</a></div>`)}
+    app.innerHTML = `<div class="wrap page pl g-wins">${band("Wins pool", "Draft real teams with your friends. Most combined wins from draft day forward takes it.", `<div class="pl-share"><a class="btn sm ghost" href="/pools/">All pools</a></div>`)}
       ${yours}<div class="card"><div class="mod-h"><h2>How it works</h2></div><div class="bd">${RULES()}</div></div></div>`;
   }
   const logoMark = () => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 20v-5h3v5M10.5 20V10h3v10M15 20V5h3v15"/></svg>`;
@@ -167,14 +168,14 @@
       if (j && j.error) st.msg = j.error; else b = await C.rpc("wn_board", { p_pool: st.code }).catch((e) => ({ error: e.message }));
     }
     st.board = b;
-    if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Wins pool", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="${HERE}">Back to your wins pools</a></p></div></div></div>`; return; }
+    if (!b || b.error) { app.innerHTML = `<div class="wrap page pl g-wins">${band("Wins pool", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="${HERE}">Back to your wins pools</a></p></div></div></div>`; return; }
     const p = b.pool, R = await records(p.sport);
     const phase = !p.draft ? "lobby" : !p.done ? "draft" : "live";
     const tabs = phase === "lobby" ? [] : phase === "draft" ? [["draft", "Draft"], ["standings", "Entries"], ["settings", "Settings"]] : [["standings", "Standings"], ["teams", "Teams"], ["draft", "Draft board"], ["settings", "Settings"]];
     if (!tabs.some((t) => t[0] === st.tab)) st.tab = tabs.length ? tabs[0][0] : null;
     const guest = !st.user ? signinCard(p.draft ? "Sign in to see your entry" : `Sign in to join ${p.name}`) : !meId(b) && !p.draft ? `<form class="card" id="wp-join"><div class="mod-h"><h2>Join this pool</h2></div><div class="bd pl-form"><input type="hidden" name="code" value="${esc(p.id)}"><label>Your entry's name <small class="ps">(optional)</small><input name="entry" maxlength="28"></label><button class="btn go">Join ${esc(p.name)}</button></div></form>` : "";
     const body = phase === "lobby" ? lobby(b, R) : st.tab === "draft" ? draftView(b, R) : st.tab === "teams" ? teamsTab(b, R) : st.tab === "settings" ? settings(b) : standings(b, R);
-    app.innerHTML = `<div class="wrap page pl wp">${head(b)}${st.invite && !p.draft ? invitePanel(b) : ""}${guest}
+    app.innerHTML = `<div class="wrap page pl wp g-wins">${head(b)}${st.invite && !p.draft ? invitePanel(b) : ""}${guest}
       ${tabs.length ? `<div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>` : ""}
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${phase === "lobby" && p.mine ? settings(b, false) : ""}</div>`;
     // before and during the draft: look for new entries and picks every few seconds while the page is showing
@@ -196,7 +197,7 @@
     if (rendering) { again = true; return; }
     rendering = true;
     try { themeBtn(); if (st.code) await pool(); else await home(); }
-    catch (e) { app.innerHTML = `<div class="wrap page pl">${band("Wins pool", "")}<div class="card"><div class="bd"><p style="margin:0"><b>Something went wrong loading this page.</b></p><p class="ps">${esc(e && e.message)}</p></div></div></div>`; }
+    catch (e) { app.innerHTML = `<div class="wrap page pl g-wins">${band("Wins pool", "")}<div class="card"><div class="bd"><p style="margin:0"><b>Something went wrong loading this page.</b></p><p class="ps">${esc(e && e.message)}</p></div></div></div>`; }
     rendering = false;
     if (again) { again = false; render(); }
   }

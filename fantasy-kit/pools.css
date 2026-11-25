@@ -1233,3 +1233,27 @@ body{overflow-x:clip}
 .g-nflff.pl .pl-rtabs button[aria-selected="true"]{background:var(--ff-night);color:#fff;box-shadow:inset 0 -3px 0 var(--ff-ice)}
 .g-nflff .pl-save .btn.go:not(:disabled),.g-nflff .btn.go[data-ffsave]:not(:disabled){background:var(--ff-night);border-color:var(--ff-night);color:#fff}
 [data-theme=dark] .g-nflff .btn.go[data-ffsave]:not(:disabled){background:var(--ff-ice);border-color:var(--ff-ice);color:var(--ff-night)}
+
+/* Wins pool: a chalkboard of tally marks; every win is another stroke */
+.g-wins{--wn-slate:#22282B;--wn-chalk:#F2EFE6;--wn-yel:#F3E37C;--brand-soft:#FBF4C8}
+[data-theme=dark] .g-wins{--brand-soft:rgba(243,227,124,.14)}
+.g-wins .pl-band{background:radial-gradient(40% 60% at 25% 30%,rgba(255,255,255,.05),transparent 70%),radial-gradient(35% 50% at 70% 80%,rgba(255,255,255,.04),transparent 70%),linear-gradient(170deg,#1A1F21 0%,var(--wn-slate) 60%,#2E3538 130%);color:var(--wn-chalk)}
+.g-wins .pl-band::before{background:repeating-linear-gradient(-12deg,transparent 0 60px,rgba(255,255,255,.025) 60px 140px)}
+.g-wins .pl-band::after{height:6px;background:linear-gradient(90deg,#8A6A45,#B38B5C 40%,#8A6A45)}
+.g-wins .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;letter-spacing:.005em;font-size:clamp(50px,7.5vw,96px);line-height:.92;color:var(--wn-chalk);text-shadow:0 0 1px rgba(242,239,230,.6)}
+.g-wins .pl-kick{color:var(--wn-yel)}
+.g-wins .pl-sub{color:#C9C6BC}
+.g-wins .pl-band .pl-code{background:rgba(243,227,124,.14);color:var(--wn-yel)}
+.g-wins .tally-art{color:var(--wn-chalk);opacity:.55;filter:drop-shadow(0 0 1px rgba(242,239,230,.5))}
+.g-wins .tally-art path:last-child{stroke:var(--wn-yel)}
+.g-wins .wp-team{border-radius:6px}
+.g-wins .wp-team:not(:disabled):hover,.g-wins .wp-team:not(:disabled):focus-visible{border-color:#C9B42F;background:color-mix(in srgb,var(--wn-yel) 22%,var(--surface))}
+.g-wins .wp-board td.me{background:color-mix(in srgb,var(--wn-yel) 26%,var(--surface))}
+.g-wins .wp-board td.open.now{box-shadow:inset 0 0 0 2px var(--wn-slate)}
+.g-wins .wp-clock.me{border-left-color:#C9B42F;background:color-mix(in srgb,var(--wn-yel) 16%,var(--surface))}
+.g-wins .wp-st td.num b,.g-wins .wp-st td.r b{font:800 20px/1 var(--f-cond,"Barlow Condensed",sans-serif)}
+.g-wins.pl .seg button[aria-selected="true"],.g-wins.pl .seg button[aria-pressed="true"]{background:var(--wn-slate);color:var(--wn-chalk)}
+.g-wins .btn.go:not(:disabled){background:var(--wn-yel);border-color:#D9C64F;color:#22282B}
+[data-theme=dark] .g-wins.pl .seg button[aria-selected="true"],[data-theme=dark] .g-wins.pl .seg button[aria-pressed="true"]{background:var(--wn-chalk);color:var(--wn-slate)}
+.g-wins .wp-chip{border-radius:4px}
+@media (max-width:640px){.g-wins .tally-art{opacity:.18}}
