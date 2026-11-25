@@ -1215,3 +1215,21 @@ body{overflow-x:clip}
 .g-five .pl-meter.ok i{background:linear-gradient(90deg,#8DBA10 var(--w),var(--surface-3) var(--w))}
 .g-five .pl-save .btn.go:not(:disabled),.g-five .btn.go[data-save5]:not(:disabled){background:var(--fv-lime);border-color:#A9D41F;color:var(--fv-ink)}
 [data-theme=dark] .g-five .pl-chip{border-color:var(--fv-lime)}
+
+/* NFL playoff fantasy: January cold, a stack of player cards, positions in their fantasy colors */
+.g-nflff{--ff-night:#0E1A2B;--ff-steel:#22344F;--ff-ice:#8FD3FF;--accent:#3E86C6}
+.g-nflff .pl-band{background:linear-gradient(165deg,#070D17 0%,var(--ff-night) 55%,var(--ff-steel) 135%)}
+.g-nflff .pl-band::before{background:radial-gradient(1.5px 1.5px at 20% 30%,rgba(255,255,255,.5),transparent),radial-gradient(1.5px 1.5px at 55% 70%,rgba(255,255,255,.35),transparent),radial-gradient(1px 1px at 75% 20%,rgba(255,255,255,.45),transparent),radial-gradient(1px 1px at 40% 85%,rgba(255,255,255,.3),transparent),radial-gradient(60% 120% at 85% 50%,rgba(143,211,255,.14),transparent 62%);background-size:180px 120px,220px 140px,160px 110px,200px 130px,100% 100%}
+.g-nflff .pl-band::after{background:linear-gradient(90deg,#E5484D,#12A594 33%,#3E63DD 66%,#F76B15)}
+.g-nflff .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;letter-spacing:-.005em;font-size:clamp(50px,7.5vw,96px);line-height:.92}
+.g-nflff .pl-kick{color:var(--ff-ice)}
+.g-nflff .pl-band .pl-code{background:rgba(143,211,255,.14);color:var(--ff-ice)}
+.g-nflff .cards-art{opacity:.9}
+.g-nflff .pl-ffpos,.g-nflff .pl-pchip[data-pos]{--pc:#6F6E77}
+.g-nflff [data-pos=QB]{--pc:#E5484D}.g-nflff [data-pos=RB]{--pc:#12A594}.g-nflff [data-pos=WR]{--pc:#3E63DD}.g-nflff [data-pos=TE]{--pc:#F76B15}.g-nflff [data-pos=FLEX]{--pc:#8E4EC6}
+.g-nflff .pl-ffpos,.g-nflff .pl-ffs.empty .pl-ffpos{background:var(--pc);color:#fff;font:800 13px/1 var(--f-cond,"Barlow Condensed",sans-serif);letter-spacing:.04em;padding:6px 0}
+.g-nflff .pl-pchip[data-pos]{box-shadow:inset 3px 0 0 var(--pc)}
+.g-nflff .pl-ffs.on{background:color-mix(in srgb,var(--accent) 10%,var(--surface));box-shadow:inset 3px 0 0 var(--accent)}
+.g-nflff.pl .pl-rtabs button[aria-selected="true"]{background:var(--ff-night);color:#fff;box-shadow:inset 0 -3px 0 var(--ff-ice)}
+.g-nflff .pl-save .btn.go:not(:disabled),.g-nflff .btn.go[data-ffsave]:not(:disabled){background:var(--ff-night);border-color:var(--ff-night);color:#fff}
+[data-theme=dark] .g-nflff .btn.go[data-ffsave]:not(:disabled){background:var(--ff-ice);border-color:var(--ff-ice);color:var(--ff-night)}

@@ -23,7 +23,7 @@
   const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
   // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
-  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff", bracket: " g-bracket", survivor: " g-surv", nfl: " g-surv", five: " g-five" })[kind] || "";
+  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff", bracket: " g-bracket", nflff: " g-nflff", survivor: " g-surv", nfl: " g-surv", five: " g-five" })[kind] || "";
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
   const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
@@ -94,7 +94,8 @@
     <rect x="20" y="18" width="150" height="14" rx="3" opacity=".35"/><rect x="20" y="46" width="120" height="14" rx="3" opacity=".35"/><rect x="20" y="74" width="165" height="14" rx="3" opacity=".35"/><rect x="20" y="102" width="135" height="14" rx="3" opacity=".35"/><rect x="20" y="130" width="155" height="14" rx="3" opacity=".35"/><rect x="20" y="158" width="110" height="14" rx="3"/></g>
     <g stroke="var(--sv-red,#E03A2F)" stroke-width="4" stroke-linecap="round"><path d="M10 26h172M10 54h142M10 82h186M10 110h156M10 138h176"/></g></svg>`;
   const CHIP_ART = `<svg class="pl-art chip-art" viewBox="0 0 240 180" aria-hidden="true"><g stroke-width="3">${[[32, 98], [74, 86], [118, 80], [162, 86], [204, 98]].map(([x, y], i) => `<g transform="translate(${x} ${y})"><circle r="25" fill="${i % 2 ? "var(--fv-lime,#C6F432)" : "#fff"}" fill-opacity=".9"/><circle r="25" fill="none" stroke="#1E1238" stroke-dasharray="8 7" opacity=".55"/><circle r="16" fill="none" stroke="#1E1238" opacity=".5"/><text y="7" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="21" fill="#1E1238">${[1, 4, 6, 11, 3][i]}</text></g>`).join("")}</g></svg>`;
-  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "mmff" ? COURT_ART : k === "survivor" || k === "nfl" ? STRIKE_ART : k === "five" ? CHIP_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  const CARDS_ART = `<svg class="pl-art cards-art" viewBox="0 0 240 180" aria-hidden="true">${[["QB", "#E5484D", -10, 52], ["RB", "#12A594", 0, 122], ["WR", "#3E63DD", 10, 192]].map(([t, c, r, x]) => `<g transform="translate(${x} 92) rotate(${r})"><rect x="-34" y="-48" width="68" height="96" rx="7" fill="#0E1A2B" stroke="#8FD3FF" stroke-opacity=".55" stroke-width="2"/><rect x="-26" y="-40" width="52" height="54" rx="4" fill="${c}" fill-opacity=".85"/><circle cx="0" cy="-18" r="11" fill="#0E1A2B" fill-opacity=".45"/><path d="M-17 14a17 13 0 0 1 34 0" fill="#0E1A2B" fill-opacity=".45"/><text y="36" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="17" fill="#fff">${t}</text></g>`).join("")}</svg>`;
+  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "mmff" ? COURT_ART : k === "survivor" || k === "nfl" ? STRIKE_ART : k === "five" ? CHIP_ART : k === "nflff" ? CARDS_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
       <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>
@@ -1209,7 +1210,7 @@
       const id = st.ffl[sl], p = id ? pl(id) : null, pts = row.rounds[r] && row.rounds[r].each ? row.rounds[r].each[sl] : null;
       const lockedHere = locked || (p && saved[sl] === id && started(p.t));
       const pg = p && p.g != null ? ffVal(p, b, "pg") : 0;
-      return `<div class="pl-ffi"><button type="button" class="pl-ffs${st.ffslot === sl ? " on" : ""}${p ? "" : " empty"}${lockedHere ? " lk" : ""}" data-ffslot="${sl}"${lockedHere ? ` disabled title="Locked: his game has started"` : ""}><span class="pl-ffpos">${SLOT_NAME[sl]}</span>
+      return `<div class="pl-ffi"><button type="button" class="pl-ffs${st.ffslot === sl ? " on" : ""}${p ? "" : " empty"}${lockedHere ? " lk" : ""}" data-ffslot="${sl}"${lockedHere ? ` disabled title="Locked: his game has started"` : ""}><span class="pl-ffpos" data-pos="${SLOT_NAME[sl]}">${SLOT_NAME[sl]}</span>
         ${p ? `${ffPhoto(p, 30)}<span class="pl-tn"><b>${esc(p.n)}</b><small>${esc(p.t)}${teams[p.t] ? ` vs ${esc(teams[p.t])}` : ""}${!lockedHere && pg ? ` &middot; ${pg.toFixed(1)} a game` : ""}${lockedHere ? ` &middot; locked${ownR[id] != null ? `, ${ownR[id]}% started` : ""}` : teams[p.t] && ffKick(b, r, p.t) ? ` &middot; ${tipTime(ffKick(b, r, p.t))}` : ""}</small></span>` : `<span class="pl-tn"><b class="ps">${locked ? "Empty" : "Pick a player"}</b></span>`}
         ${pts != null ? `<span class="pl-ffpts">${pts}</span>` : ""}</button>${p && st.ffraw && st.ffraw[id] ? `<button type="button" class="pl-ffinfo" data-ffcard="${esc(id)}" aria-label="${esc(p.n)}: player card" title="Player card">i</button>` : ""}</div>`;
     };
@@ -1270,7 +1271,7 @@
     const hint = (t) => t.now <= 0 ? `<span class="pl-hint later">Plays later</span>` : going(t.f.team) ? `<span class="pl-hint later">Kicked off</span>` : t.later < 0.45 ? `<span class="pl-hint now">Use now</span>` : t.later > 1.4 ? `<span class="pl-hint save">Worth saving</span>` : "";
     const chips = (t) => (byTeam[t] || []).sort((a, c) => c.ppg - a.ppg).slice(0, 4).map((p) => {
       const u = used.has(p.id) && !cur.has(p.id), on = cur.has(p.id);
-      return `<span class="pl-pchip${u ? " used" : ""}${on ? " on" : ""}" title="${u ? "Already used" : on ? `In your ${RNAME[r]} lineup` : `${p.ppg.toFixed(1)} a game`}">${esc(p.pos)} ${esc(p.pos === "DEF" ? p.t : p.n.replace(/ (Jr\.?|Sr\.?|II|III|IV|V)$/, "").split(" ").slice(-1)[0])}</span>`;
+      return `<span class="pl-pchip${u ? " used" : ""}${on ? " on" : ""}" data-pos="${esc(p.pos)}" title="${u ? "Already used" : on ? `In your ${RNAME[r]} lineup` : `${p.ppg.toFixed(1)} a game`}">${esc(p.pos)} ${esc(p.pos === "DEF" ? p.t : p.n.replace(/ (Jr\.?|Sr\.?|II|III|IV|V)$/, "").split(" ").slice(-1)[0])}</span>`;
     }).join("");
     return `<div class="card pl-plan"><div class="mod-h"><h2>Plan ahead</h2><span class="grow"></span><span class="ps">Chance each team plays in each round, and wins it all</span></div>
       <div class="table-wrap"><table class="t pl-pt"><thead><tr><th>Team</th>${cols.map((x) => `<th class="r${x === r ? " cur" : ""}">${SHORT[x]}</th>`).join("")}<th class="pl-pch">Your best players left</th></tr></thead><tbody>
@@ -1417,7 +1418,7 @@
       const p = pl(id), g = gameOf(r, p.t), opp = g ? (g.a === p.t ? g.b : g.a) : ffTeams(b, r)[p.t];
       const on = g && Date.parse(g.kickoff) <= now, fin = g && g.final, pts = R.each && R.each[sl];
       const stt = fin ? "Final" : on ? "Live" : g && !(r === 1 && ffProj(b)) ? tipTime(g.kickoff) : "";
-      return `<li class="${fin ? "fin" : on ? "live" : "todo"}"><span class="pl-ffpos">${SLOT_NAME[sl]}</span>${ffPhoto(p, 28)}
+      return `<li class="${fin ? "fin" : on ? "live" : "todo"}"><span class="pl-ffpos" data-pos="${SLOT_NAME[sl]}">${SLOT_NAME[sl]}</span>${ffPhoto(p, 28)}
         <span class="pl-lun">${st.ffraw && st.ffraw[id] ? `<button type="button" class="pl-lunb" data-ffcard="${esc(id)}">${esc(p.n)}</button>` : esc(p.n)}
           <small class="pl-lut">${p.t ? nflLogo(p.t, 14) : ""}<b>${esc(p.t)}</b>${opp ? ` ${g && g.b === p.t ? "vs" : "at"} ${esc(opp)}` : ""}${stt ? ` &middot; <span class="st">${esc(stt)}</span>` : ""}${own != null ? ` &middot; ${own}% started` : ""}</small></span>
         <span class="num pl-lup">${pts != null ? pts : ""}</span></li>`;
@@ -1442,7 +1443,7 @@
     if (vs) {
       const A = meRow.rounds[cur] || { lineup: {}, each: {} }, B = vs.rounds[cur] || { lineup: {}, each: {} };
       const Bids = new Set(Object.values(B.lineup)), Aids = new Set(Object.values(A.lineup));
-      const side = (R, other) => P.FF_SLOTS.map((sl) => R.lineup[sl] ? ply(cur, sl, R.lineup[sl], R, own[R.lineup[sl]]).replace("<li class=\"", `<li class="${other.has(R.lineup[sl]) ? "both " : "only "}`) : `<li class="emp"><span class="pl-ffpos">${SLOT_NAME[sl]}</span><span class="ps">${R === A || !(b.games || []).some((g) => g.round === cur && g.a && Date.parse(g.kickoff) > now) ? "Empty" : "Hidden until kickoff"}</span></li>`).join("");
+      const side = (R, other) => P.FF_SLOTS.map((sl) => R.lineup[sl] ? ply(cur, sl, R.lineup[sl], R, own[R.lineup[sl]]).replace("<li class=\"", `<li class="${other.has(R.lineup[sl]) ? "both " : "only "}`) : `<li class="emp"><span class="pl-ffpos" data-pos="${SLOT_NAME[sl]}">${SLOT_NAME[sl]}</span><span class="ps">${R === A || !(b.games || []).some((g) => g.round === cur && g.a && Date.parse(g.kickoff) > now) ? "Empty" : "Hidden until kickoff"}</span></li>`).join("");
       const shared = [...Aids].filter((x) => Bids.has(x)).length, diff = Math.round(((A.pts || 0) - (B.pts || 0)) * 100) / 100;
       body = `<p class="pl-gsum">${shared} ${shared === 1 ? "player" : "players"} in common.${A.pts != null || B.pts != null ? ` You're ${diff >= 0 ? "up" : "down"} ${Math.abs(diff)}.` : ""} Shared players are faded, so the difference stands out.</p>
         <div class="pl-luc"><article class="pl-lu me"><div class="pl-luh"><b>${esc(meRow.name)}</b><span class="num">${A.pts != null ? A.pts + " pts" : ""}</span></div><ul>${side(A, Bids)}</ul></article>
