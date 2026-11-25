@@ -1039,6 +1039,8 @@
     var ov = ratingBlock(p);
     var ng = nextGameOf(p.t);
     if (ng) ov += PC.sec("Next game") + PC.line(ng);
+    // recent games as a chart (the full game log is on the Stats tab)
+    if (window.GameLog) ov += GameLog.slot({ league: "nfl", espn: p.espn || (window.DSFaces && DSFaces.find && DSFaces.find("nfl", p.n)) || "", name: p.n, rows: 0 });
     ov += PC.sec("Value") + PC.facts([[p.snaps ? Math.round(P.share(W, p) * 100) + "%" : "—", "Snap share" + (p.snaps ? " (" + p.snaps[3] + " g)" : "")], [m(P.value(W, p, W.season)), "Value this season"], [m(P.value(W, p, W.season + 1)), "Value next season"]]);
     // stats: season line and game log (the log loads into #glog)
     var stp = statBlock(p) + '<div id="glog"></div>';
@@ -1071,7 +1073,7 @@
     cardBody.innerHTML = PC.html({ face: face(p, 60), name: p.n, color: t.color, team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.name) + "</a>",
       meta: [posOf(p), p.age ? "Age " + Math.floor(p.age) : "", p.exp === 0 ? "Rookie" : p.exp + " yrs exp", p.draft && p.exp > 1 ? p.draft[0] + " pick " + p.draft[1] : ""], chips: chips, head: head,
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, hasNgs ? { id: "tr", label: "Next Gen", html: '<div id="ngsc"><p class="note">Loading Next Gen Stats…</p></div>' } : null, { id: "ct", label: "Contract", html: ct }],
-      foot: foot });
+      foot: foot, follow: { sport: "nfl-p", id: p.id, name: p.n, info: { t: t.short, espn: p.espn || "", href: "/nfl/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
     gameLog(p);
     ngsCard(p);
@@ -1354,6 +1356,8 @@
     W.sim = SIM;
     $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts." + ' <a href="#/method">How it works</a>.';
     render();
+    // a link straight to a player's card (My teams uses it): /nfl/?card=<id>
+    var dl = new URLSearchParams(location.search).get("card"); if (dl && W.byId[dl]) openCard(dl);
     setTimeout(warmTrade, 1200);
   }).catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
   // find any player or team (assets/search.js)

@@ -10,6 +10,7 @@
      o.tabs     [{id, label, html}]  in the shared order: Overview, Stats, Skills, Shooting, Tracking, Contract, Draft
      o.tab      the tab to open (falls back to the first; the last tab picked is remembered across cards)
      o.foot     markup under the tabs (buttons, notes)
+     o.follow   {sport: "nba-p", id, name, info} the Follow button for this player (assets/follow.js)
    Pieces for the panes: PCard.sec, PCard.bars, PCard.line, PCard.facts, PCard.table.
    Tabs use [data-ctab] buttons and [data-pane] panes (the NBA Hub's existing contract); clicks are handled here. */
 (function () {
@@ -21,7 +22,9 @@
     var tabs = (o.tabs || []).filter(function (t) { return t && t.html; });
     var want = o.tab || last, cur = tabs.some(function (t) { return t.id === want; }) ? want : tabs.length ? tabs[0].id : null;
     var h = '<div class="pc"><div class="pc-hd" style="--tc:' + esc(o.color || "var(--ink)") + '"><div class="pc-face">' + (o.face || "") + "</div><div><h3>" + esc(o.name) + "</h3>" +
-      '<div class="pc-meta">' + (o.team ? '<span class="pc-tm">' + o.team + "</span>" : "") + (o.meta || []).filter(Boolean).map(function (m) { return "<span>" + esc(m) + "</span>"; }).join("") + "</div></div></div>";
+      '<div class="pc-meta">' + (o.team ? '<span class="pc-tm">' + o.team + "</span>" : "") + (o.meta || []).filter(Boolean).map(function (m) { return "<span>" + esc(m) + "</span>"; }).join("") + "</div>" +
+      // follow: {sport: "nba-p", id, name, info: {t, espn, href}} adds the shared Follow button (assets/follow.js)
+      (o.follow && window.Follow ? '<div class="pc-fol">' + window.Follow.star(o.follow.sport, o.follow.id, o.follow.name || o.name, "", o.follow.info) + "</div>" : "") + "</div></div>";
     var chips = (o.chips || []).filter(function (c) { return c && c[0]; });
     if (chips.length) h += '<div class="pc-chips">' + chips.map(function (c) { return '<span class="pc-chip' + (c[1] ? " " + c[1] : "") + '">' + esc(c[0]) + "</span>"; }).join("") + "</div>";
     var head = (o.head || []).filter(function (x) { return x && x.v != null && x.v !== ""; }).slice(0, 4);

@@ -19,24 +19,39 @@
   }
   function write(sport, ids) { try { localStorage.setItem(KEY(sport), JSON.stringify(ids)); } catch (e) { /* private mode */ } }
   function has(sport, id) { return read(sport).indexOf(String(id)) >= 0; }
+  // players: sport "<league>-p" (nba-p, ncaab-p...), with a name, team and hub link kept beside the ids so My teams can
+  // list them without loading every hub: ds-fav:pinfo = {"nba-p:3112335": {n, t, espn, href}}
+  var PINFO = "ds-fav:pinfo";
+  var isP = function (sport) { return /-p$/.test(sport); };
+  function pinfo() { try { return JSON.parse(localStorage.getItem(PINFO)) || {}; } catch (e) { return {}; } }
+  function setInfo(key, info) { var m = pinfo(); if (info) m[key] = info; else delete m[key]; try { localStorage.setItem(PINFO, JSON.stringify(m)); } catch (e) { /* private mode */ } }
+  // every player you follow, newest first: [{league, id, n, t, espn, href}]
+  function players() {
+    var m = pinfo(), out = [];
+    ["nba", "nfl", "nhl", "mlb", "ncaab", "ncaaf"].forEach(function (lg) {
+      read(lg + "-p").forEach(function (id) { var x = m[lg + "-p:" + id] || {}; out.push({ league: lg, id: id, n: x.n || "", t: x.t || "", espn: x.espn || "", href: x.href || "", at: x.at || 0 }); });
+    });
+    return out.sort(function (a, b) { return b.at - a.at; });
+  }
   function fire(sport) { window.dispatchEvent(new CustomEvent("ds-follow", { detail: { sport: sport } })); }
   var nudged = false;
-  function toggle(sport, id, name) {
+  function toggle(sport, id, name, info) {
     var ids = read(sport), k = ids.indexOf(String(id)), on = k < 0;
     if (on) ids.push(String(id)); else ids.splice(k, 1);
+    if (isP(sport)) setInfo(sport + ":" + id, on ? Object.assign({ n: name || "" }, info || {}, { at: Date.now() }) : null);
     write(sport, ids);
     fire(sport);
     var A = window.DSAccount;
     if (on && A && A.toast) {
-      if (!A.me() && !nudged) { nudged = true; A.toast("Following " + (name || "this team") + ". Sign in to keep your teams on all your devices.", { label: "Sign in", run: function () { A.openSignIn(); } }); }
+      if (!A.me() && !nudged) { nudged = true; A.toast("Following " + (name || "this team") + ". Sign in to keep " + (isP(sport) ? "them" : "your teams") + " on all your devices.", { label: "Sign in", run: function () { A.openSignIn(); } }); }
       else A.toast("Following " + (name || "this team") + ".");
     }
     return on;
   }
   // the star: pass the sport, the team id and its name
-  function star(sport, id, name, cls) {
-    var on = has(sport, id);
-    return '<button type="button" class="ds-follow' + (on ? " on" : "") + (cls ? " " + cls : "") + '" data-follow="' + esc(sport + ":" + id) + '" data-name="' + esc(name || "") + '" aria-pressed="' + on + '" title="' + (on ? "Following. Tap to stop" : "Follow this team") + '">' +
+  function star(sport, id, name, cls, info) {
+    var on = has(sport, id), who = isP(sport) ? "player" : "team";
+    return '<button type="button" class="ds-follow' + (on ? " on" : "") + (cls ? " " + cls : "") + '" data-follow="' + esc(sport + ":" + id) + '" data-name="' + esc(name || "") + '"' + (info ? ' data-info="' + esc(JSON.stringify(info)) + '"' : "") + ' aria-pressed="' + on + '" title="' + (on ? "Following. Tap to stop" : "Follow this " + who) + '">' +
       '<span aria-hidden="true">' + (on ? "★" : "☆") + "</span><span>" + (on ? "Following" : "Follow") + "</span></button>";
   }
   document.addEventListener("click", function (e) {
@@ -44,10 +59,12 @@
     if (!b) return;
     e.preventDefault(); e.stopPropagation();
     var v = b.getAttribute("data-follow"), i = v.indexOf(":");
-    var on = toggle(v.slice(0, i), v.slice(i + 1), b.getAttribute("data-name"));
+    var info = null;
+    try { info = b.getAttribute("data-info") ? JSON.parse(b.getAttribute("data-info")) : null; } catch (x) { info = null; }
+    var on = toggle(v.slice(0, i), v.slice(i + 1), b.getAttribute("data-name"), info), who = isP(v.slice(0, i)) ? "player" : "team";
     // redraw every star for this team right away, even if the page doesn't redraw
     document.querySelectorAll('[data-follow="' + v.replace(/"/g, '\\"') + '"]').forEach(function (x) {
-      x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); x.title = on ? "Following. Tap to stop" : "Follow this team";
+      x.classList.toggle("on", on); x.setAttribute("aria-pressed", on); x.title = on ? "Following. Tap to stop" : "Follow this " + who;
       // the full button says Following; a bare star (a hub's own compact one) just fills in
       x.innerHTML = x.classList.contains("ds-follow") ? '<span aria-hidden="true">' + (on ? "★" : "☆") + "</span><span>" + (on ? "Following" : "Follow") + "</span>" : (on ? "★" : "☆");
     });
@@ -55,7 +72,7 @@
   // your teams arriving from another device
   window.addEventListener("dsolar:sync", function (e) {
     var keys = (e.detail && e.detail.keys) || [];
-    keys.forEach(function (k) { if (k.indexOf("ds-fav:") === 0) fire(k.slice(7)); });
+    keys.forEach(function (k) { if (k.indexOf("ds-fav:") === 0 && k !== PINFO) fire(k.slice(7)); });
   });
   if (!document.getElementById("ds-follow-css")) {
     var st = document.createElement("style"); st.id = "ds-follow-css";
@@ -78,5 +95,5 @@
       return '<a href="' + esc(x.href) + '">' + (x.logo || "") + "<span><b>" + esc(x.name) + "</b>" + (x.sub ? "<small>" + x.sub + "</small>" : "") + "</span></a>";
     }).join("") + '<a class="ds-all" href="/my-teams/"><span><b>All my teams</b><small>Every sport, one page</small></span></a></nav>';
   }
-  window.Follow = { list: read, has: has, toggle: toggle, star: star, strip: strip };
+  window.Follow = { list: read, has: has, toggle: toggle, star: star, strip: strip, players: players, pinfo: pinfo };
 })();

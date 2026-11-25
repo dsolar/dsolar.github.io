@@ -664,6 +664,7 @@ function openPlayer(id) {
       what: (home ? "vs " : "at ") + (o.fcs ? esc(o.short) : '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>"),
       sub: l ? "Hub line: " + favText(l.spread, team(g.home), team(g.away)).replace(/<[^>]+>/g, "").replace(/&amp;/g, "&") : "", right: l ? pct(home ? l.prob : 1 - l.prob) : "" });
   }
+  if (window.GameLog) ov += GameLog.slot({ league: "ncaaf", espn: p.id, name: p.name, rows: 5 });
   if (hz) ov += '<p class="note">Heisman ladder No. ' + hz.rank + ", ladder score " + f1(hz.score) + ", " + f1(hz.prod) + ' production per game. <a href="#/heisman">Ladder</a></p>';
   if (!ov) ov = '<p class="note">' + int(st(p, "gp")) + " games, not enough volume for a profile yet.</p>";
   const pe = PEPA(p.id);
@@ -677,7 +678,8 @@ function openPlayer(id) {
   $("#cardBody").innerHTML = PC.html({ face: face(p, 60), name: p.name, color: t.color || "var(--ink)", team: '<a href="#/team?id=' + esc(t.id) + '">' + logo(t) + " " + esc(t.short) + "</a>",
     meta: [p.pos, p.year, p.ht, p.wt, p.jersey ? "#" + p.jersey : ""], chips, head,
     tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, { id: "dr", label: "Draft", html: dr }],
-    foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN page</a></div>' });
+    foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN page</a></div>',
+    follow: { sport: "ncaaf-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cfb/?card=" + encodeURIComponent(p.id) } } });
   const dlg = $("#card"); if (!dlg.open) dlg.showModal();
 }
 
@@ -740,6 +742,8 @@ async function load() {
     render();
     document.dispatchEvent(new CustomEvent("cfb:ready"));
     if (route().page === "week") refreshLive(false);
+    // a link straight to a player's card (My teams uses it): /cfb/?card=<id>; it waits for the rosters
+    { const dl = new URLSearchParams(location.search).get("card"); if (dl) openPlayer(dl); }
     loadPlayers();
   } catch (e) { console.error(e); view.innerHTML = '<p class="callout">The college football snapshot did not load. Try again in a moment.</p>'; }
 }

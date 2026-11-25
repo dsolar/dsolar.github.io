@@ -615,11 +615,13 @@
     if (lk2 && lk2.tag) chips.push([lk2.tag === "due" ? "Statcast: buy low" : "Statcast: sell high", lk2.tag === "due" ? "tag" : "inj"]);
     if (p.fv) chips.push(["Prospect, FV " + p.fv, "tag"]);
     if (!ov) ov = '<p class="note">' + esc(p.n) + " projects for " + f1(H.warAt(p, H.season) * fth) + " WAR in " + H.season + ". The Contract tab has his value year by year.</p>";
+    if (window.GameLog && p.g !== "min") ov += GameLog.slot({ league: "mlb", name: p.n }); // found by name: the hub keeps MLB ids, not ESPN's
     ov += PC.sec("Value") + PC.facts([[money(sumV), "What he should produce" + (nS ? ", " + nS : "")], [money(sumC), "What he'll be paid"], [signed(s.total), "Surplus"]]);
     cardBody.innerHTML = PC.html({ face: face(p, 60), name: p.n, color: t.color || "var(--ink)", team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.name) + "</a>",
       meta: [(p.el || [p.pos]).join("/"), p.age != null ? "Age " + Math.floor(p.age) : "", p.b ? "B/T " + p.b + "/" + p.th : ""], chips: chips, head: head,
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stats }, hasSv ? { id: "tr", label: "Statcast", html: svp } : null, { id: "ct", label: "Contract", html: ct }],
-      foot: '<div class="pc-acts"><button type="button" data-add="a" data-id="' + esc(p.id) + '">Trade: side A</button><button type="button" data-add="b" data-id="' + esc(p.id) + '">Side B</button><a href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth</a></div>" });
+      foot: '<div class="pc-acts"><button type="button" data-add="a" data-id="' + esc(p.id) + '">Trade: side A</button><button type="button" data-add="b" data-id="' + esc(p.id) + '">Side B</button><a href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth</a></div>",
+      follow: { sport: "mlb-p", id: p.id, name: p.n, info: { t: t.name, href: "/mlb/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
   }
   // A free agent who isn't on a roster yet: his projection, the crowd's contract, what he's worth year by year
@@ -1342,6 +1344,8 @@
     $("#kicker").textContent = "MLB · " + HUB.season + " projections";
     $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
+    // a link straight to a player's card (My teams uses it): /mlb/?card=<id>
+    var dl = new URLSearchParams(location.search).get("card"); if (dl && (H.byId[dl] || H.byId[+dl])) openCard(dl);
     // after the first screen: park shapes (team pages), past seasons (player cards), then Statcast
     fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }).then(function (p) { SHAPES = (p && p.parks) || null; if (state.route === "team") render(); });
     fetch("data/history.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (h) { historyData = h && h.season === HUB.season ? h : {}; });

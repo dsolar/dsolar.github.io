@@ -17,8 +17,11 @@
 <link rel="stylesheet" href="../assets/navigation.css?v=20261124-sw2">
 <script src="../assets/projects.js?v=20261124-bb" defer></script>
 <script src="../assets/navigation.js?v=20261124-fav" defer></script>
-<script src="../assets/follow.js?v=20261124b" defer></script>
+<script src="../assets/follow.js?v=20261124pl" defer></script>
 <script src="../assets/espn-teams.js?v=20261124"></script>
+<link rel="stylesheet" href="../assets/faces.css?v=20261109k">
+<script src="../assets/faces.js?v=20261121b" defer></script>
+<script src="../assets/gamelog.js?v=20261124pl" defer></script>
 <style>
   #view{margin-top:14px}
   .mt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;margin:6px 0 24px}
@@ -56,6 +59,21 @@
   .mt-hubs a:hover{border-color:var(--ink)}
   .mt-sign{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:12px 14px;margin:0 0 16px;font-size:14px}
   .mt-sign button{border:0;border-radius:9px;background:var(--ink);color:var(--paper);padding:9px 14px;font:600 14px/1 var(--body)}
+  /* your players: one row each, his latest game under the name */
+  .mt-h{margin:8px 0 10px;font:800 22px/1.15 var(--display);letter-spacing:-.01em}
+  .mt-plist{background:var(--card);border:1px solid var(--rule);border-radius:14px;margin:0 0 24px}
+  .mt-p{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--rule-2)}
+  .mt-p:first-child{border-top:0}
+  .mt-p .face{flex:none}
+  .mt-pn{min-width:0}
+  .mt-pn a{color:inherit;text-decoration:none;font:700 16px/1.2 var(--body)}
+  .mt-pn a:hover{text-decoration:underline}
+  .mt-pn small{display:block;margin-top:3px;color:var(--muted);font-size:13px}
+  .mt-pg{display:block;margin-top:5px;font-size:14px;line-height:1.35;color:var(--ink);font-variant-numeric:tabular-nums}
+  .mt-pg.wait{color:var(--faint,var(--muted))}
+  .mt-p .ds-follow span:last-child{display:none}
+  .mt-p .ds-follow{padding:6px 8px}
+  .mt-p .ds-follow span:first-child{font-size:17px}
   @media (max-width:640px){.mt-grid{grid-template-columns:1fr}.mt-nm a{font-size:18px}}
 </style>
 </head>
@@ -70,12 +88,12 @@
     <div>
       <p class="kicker">Your teams, every sport</p>
       <h1>My <span>teams</span></h1>
-      <p class="sub">Every team you follow on the hubs: who they play next, when and where to watch, the record and where they stand.</p>
+      <p class="sub">Every team and player you follow on the hubs: who they play next, when and where to watch, where they stand and how your players did last time out.</p>
     </div>
   </header>
   <nav class="tabs" aria-label="Your sports"><a href="/my-teams/" aria-current="page">My teams</a><a href="/tonight/">Tonight</a></nav>
   <section id="view" aria-live="polite"><p class="loading">Loading your teams…</p></section>
-  <p class="foot">Schedules, records and standings from ESPN. Follow a team with the ☆ on its team page in any hub.</p>
+  <p class="foot">Schedules, records and standings from ESPN. Follow a team or a player with the ☆ on its page or card in any hub.</p>
 </main>
 
 <script src="../assets/hubswitch.js?v=20261124tn" defer></script>
@@ -159,24 +177,47 @@
     var rank = function (f) { var v = data[f.key], g = v && v.next; if (!v) return 2e15; if (!g) return 3e15; return g.st === "in" ? 0 : Date.parse(g.at); };
     return fs.slice().sort(function (a, b) { return rank(a) - rank(b); });
   }
+  // the players you follow (a star on any hub's player card): name, team, and his latest game from ESPN's game log
+  var FACE = { nba: "nba", nfl: "nfl", mlb: "mlb", ncaab: "ncaab", ncaaf: "ncaaf" }, PLAST = {};
+  function players() { return window.Follow && Follow.players ? Follow.players() : []; }
+  function prow(x) {
+    var key = x.league + "-p:" + x.id, s = BY[x.league] || { label: x.league.toUpperCase() };
+    var faceId = x.league === "mlb" ? x.id : x.espn || null;
+    var face = window.DSFaces ? DSFaces.html(FACE[x.league] ? { sport: FACE[x.league], id: faceId, name: x.n, size: 44 } : { sport: "nba", name: x.n, size: 44, hide: true }) : "";
+    var lg = PLAST[key];
+    var line = lg === undefined ? '<span class="mt-pg wait">Loading his last game…</span>' : lg ? '<span class="mt-pg">Last: ' + esc(lg) + "</span>" : "";
+    return '<div class="mt-p">' + face + '<div class="mt-pn"><a href="' + esc(x.href || s.hub || "#") + '">' + esc(x.n || x.id) + '</a><small><span class="mt-sp">' + esc(s.label) + "</span>" + esc(x.t || "") + "</small>" + line + "</div>" +
+      (window.Follow ? Follow.star(x.league + "-p", x.id, x.n, "", { t: x.t, espn: x.espn, href: x.href }) : "") + "</div>";
+  }
+  function loadPlayers() {
+    if (!window.GameLog) return;
+    players().forEach(function (x) {
+      var key = x.league + "-p:" + x.id;
+      if (key in PLAST) return;
+      PLAST[key] = undefined;
+      GameLog.load(x.league, { espn: x.espn || (x.league === "ncaab" || x.league === "ncaaf" ? x.id : ""), name: x.n }).then(function (d) { PLAST[key] = d ? GameLog.last(d) : ""; draw(); });
+    });
+  }
   function draw() {
-    var fs = follows(), A = window.DSAccount, signedOut = A && A.me && !A.me();
-    var sign = signedOut ? '<div class="mt-sign"><span>' + (fs.length ? "Sign in to keep these teams on every device you use." : "Following teams on another device? Sign in to bring them here.") + '</span><button type="button" data-sign>Sign in</button></div>' : "";
+    var fs = follows(), ps = players(), A = window.DSAccount, signedOut = A && A.me && !A.me();
+    var sign = signedOut ? '<div class="mt-sign"><span>' + (fs.length || ps.length ? "Sign in to keep these on every device you use." : "Following teams on another device? Sign in to bring them here.") + '</span><button type="button" data-sign>Sign in</button></div>' : "";
+    var pl = ps.length ? '<section aria-labelledby="mt-ph"><h2 class="mt-h" id="mt-ph">Your players</h2><div class="mt-plist">' + ps.map(prow).join("") + "</div></section>" : "";
     if (!fs.length) {
-      view.innerHTML = sign + '<div class="mt-empty"><h2>You aren\'t following any teams yet.</h2><p>Open a team page in any hub and tap ☆ Follow. Your teams show up here, at the top of each hub, and on every device you sign in on.</p><div class="mt-hubs">' +
-        SPORTS.map(function (s) { return '<a href="' + s.hub + (s.k === "mlb" ? "#teams" : "#/teams") + '">' + s.label + " teams</a>"; }).join("") + "</div></div>";
+      view.innerHTML = sign + '<div class="mt-empty"><h2>You aren\'t following any teams yet.</h2><p>Open a team page or a player card in any hub and tap ☆ Follow. Your teams show up here, at the top of each hub, and on every device you sign in on.</p><div class="mt-hubs">' +
+        SPORTS.map(function (s) { return '<a href="' + s.hub + (s.k === "mlb" ? "#teams" : "#/teams") + '">' + s.label + " teams</a>"; }).join("") + "</div></div>" + pl;
       return;
     }
-    view.innerHTML = sign + '<div class="mt-grid">' + order(fs).map(card).join("") + "</div>";
+    view.innerHTML = sign + '<div class="mt-grid">' + order(fs).map(card).join("") + "</div>" + pl;
   }
   view.addEventListener("click", function (e) { if (e.target.closest("[data-sign]") && window.DSAccount) DSAccount.openSignIn(); });
   function start() {
     draw();
+    loadPlayers();
     var fs = follows(), left = fs.length;
     fs.forEach(function (f) { load(f).then(function () { left--; draw(); }); });
   }
   // a team followed or unfollowed here, or arriving from another device
-  window.addEventListener("ds-follow", function () { var fs = follows(); fs.filter(function (f) { return !data[f.key]; }).forEach(function (f) { load(f).then(draw); }); draw(); });
+  window.addEventListener("ds-follow", function () { loadPlayers(); var fs = follows(); fs.filter(function (f) { return !data[f.key]; }).forEach(function (f) { load(f).then(draw); }); draw(); });
   window.addEventListener("dsolar:auth", draw);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();

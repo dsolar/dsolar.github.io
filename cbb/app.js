@@ -756,6 +756,7 @@ function openPlayer(id) {
       what: (home ? "vs " : g.neutral ? "vs " : "at ") + '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>",
       sub: l ? "Hub line: " + (Math.abs(l.spread) < 0.5 ? "Pick'em" : (l.spread > 0 ? byId[g.home] : byId[g.away]).short + " \u2212" + half(l.spread)) + (fin(l.total) ? ", O/U " + f1(l.total) : "") : "", right: l ? pct(home ? l.homeProb : 1 - l.homeProb) : "" });
   }
+  if (window.GameLog && gp) ov += GameLog.slot({ league: "ncaab", espn: p.id, name: p.name });
   if (sh) ov += '<p class="note">Scores ' + sh.pct + "% of " + esc(t.short) + "'s points, " + (sh.rank === 1 ? "the most on the team" : ordinalC(sh.rank) + " on the team") + "." + (n ? ' On the Naismith watch list: hub ladder #' + n.rank + " of 50" + (n.prev && n.prev !== n.rank ? " (" + (n.prev > n.rank ? "up " + (n.prev - n.rank) : "down " + (n.rank - n.prev)) + " since " + dLabel(X.naismith.since) + ")" : "") + '. <a href="#/naismith">Ladder</a>' : "") + "</p>";
   if (!ov) ov = '<p class="note">No games yet this season.</p>';
   // stats: the season line
@@ -770,7 +771,8 @@ function openPlayer(id) {
   $("#cardBody").innerHTML = P.html({ face: face(p, 60), name: p.name, color: t.color || "var(--ink)", team: '<a href="#/team?id=' + esc(t.id) + '">' + logo(t) + " " + esc(t.short) + "</a>",
     meta: [p.pos, p.year, p.height, p.weight, p.jersey ? "#" + p.jersey : ""], chips, head,
     tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: st }, { id: "dr", label: "Draft", html: dr }],
-    foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN page</a></div>' });
+    foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN page</a></div>',
+    follow: { sport: "ncaab-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cbb/?card=" + encodeURIComponent(p.id) } } });
   const dlg = $("#card"); dlg.dataset.pid = id; if (!dlg.open) dlg.showModal();
 }
 
@@ -836,6 +838,8 @@ async function load() {
     document.dispatchEvent(new CustomEvent("cbb:ready"));
     if (route().page === "today") refreshLive(false);
     if (!playersReady) loadPlayers();
+    // a link straight to a player's card (My teams uses it): /cbb/?card=<id>; it waits for the rosters if they're still loading
+    { const dl = new URLSearchParams(location.search).get("card"); if (dl) openPlayer(dl); }
   } catch (e) { console.error(e); view.innerHTML = '<p class="callout">The college basketball snapshot did not load. Try again in a moment.</p>'; }
 }
 // rosters and stats, after the first screen is up; pages that show players wait for them
