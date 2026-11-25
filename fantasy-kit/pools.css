@@ -698,3 +698,21 @@ button.pl-chip{cursor:pointer}
 .wp-chip small{color:var(--muted);font-size:12px}
 @media (max-width:600px){.wp-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px 12px 12px}.wp-st th:nth-child(4),.wp-st td:nth-child(4){display:none}}
 .wp-chip i{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+/* bowl pick'em: before the matchups, hints, the played-games fold */
+.pl-bwait h2{margin:0 0 6px;font-size:19px}
+.pl-bwait p{margin:0 0 12px;line-height:1.5}
+.pl-bschw summary{cursor:pointer;padding:12px 16px;font-weight:700}
+.pl-bschw .bd{padding-top:0}
+.pl-bsch{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.pl-bsch span{color:var(--muted);white-space:nowrap}
+.pl-bsch.cfp b::after{content:"Playoff";margin-left:8px;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 7px;vertical-align:1px}
+.pl-bhint{margin:8px 0 0;font-size:13.5px;line-height:1.45;color:var(--muted)}
+.pl-bhint a{color:inherit;font-weight:700}
+.pl-bdone{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin:10px 0 0}
+.pl-bdone>summary{display:flex;align-items:center;gap:10px;cursor:pointer;padding:12px 14px;list-style:none}
+.pl-bdone>summary::-webkit-details-marker{display:none}
+.pl-bdone>summary span{color:var(--muted);font-size:14px}
+.pl-bdone>summary em{margin-left:auto;font-style:normal;font-size:13px;font-weight:700;color:var(--muted)}
+.pl-bdone[open]>summary em{font-size:0}
+.pl-bdone[open]>summary em::after{content:"Hide";font-size:13px}
+.pl-bdone[open]{padding:0 10px 10px}

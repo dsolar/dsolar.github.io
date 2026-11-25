@@ -296,12 +296,15 @@
     return { ok: true, why: "" };
   }
   // give the open games' numbers out again, the surest pick getting the biggest: locked games keep theirs
-  function autoRank(games, picks, prob, now) {
+  // keep: {gameId: true} for games numbered by hand, which keep their numbers too. pickedOnly: number just the games
+  // with a pick (a tap as you go), leaving the rest blank
+  function autoRank(games, picks, prob, now, keep, pickedOnly) {
     now = now == null ? Date.now() : ms(now);
+    keep = keep || {};
     var locked = {}, open = [];
     games.forEach(function (g) {
       var k = picks[g.id];
-      if (ms(g.kickoff) <= now) { if (k && k.pts) locked[k.pts] = 1; return; }
+      if (ms(g.kickoff) <= now || (keep[g.id] && k && k.pts)) { if (k && k.pts) locked[k.pts] = 1; return; }
       var p = k && k.team ? prob(g, k.team) : null;
       open.push({ id: g.id, sure: p == null ? 0.5 : p, picked: !!(k && k.team), kick: ms(g.kickoff) });
     });
@@ -311,6 +314,7 @@
     open.sort(function (a, b) { return (b.picked - a.picked) || (b.sure - a.sure) || (a.kick - b.kick); });
     var out = {};
     Object.keys(picks).forEach(function (id) { out[id] = Object.assign({}, picks[id]); });
+    if (pickedOnly) open = open.filter(function (o) { if (!o.picked && out[o.id]) out[o.id].pts = null; return o.picked; });
     open.forEach(function (o, i) { out[o.id] = Object.assign({}, out[o.id] || {}, { pts: free[i] }); });
     return out;
   }
@@ -651,7 +655,10 @@
       var open = set.filter(function (g) { return ms(g.kickoff) > now && !mine["g" + g.id]; });
       var started = games.some(function (g) { return ms(g.kickoff) <= now; });
       var where = started ? standing(B.rows, function (r) { return r.points + " pts"; }) : "";
-      if (open.length) return { text: open.length + (open.length === 1 ? " pick" : " picks") + " to make" + (where ? ". " + where : ""), tone: "todo", due: nextAfter(open.map(function (g) { return ms(g.kickoff); }), now) };
+      // the due time drives the reminder emails (supabase/functions/fk-clock): someone who hasn't made a single pick
+      // gets one before the first bowl and then no more, rather than one before every game
+      var any = Object.keys(mine).some(function (k) { return k[0] === "g" && mine[k]; });
+      if (open.length) return { text: open.length + (open.length === 1 ? " pick" : " picks") + " to make" + (where ? ". " + where : ""), tone: "todo", due: any || !started ? nextAfter(open.map(function (g) { return ms(g.kickoff); }), now) : null };
       return { text: where || "All picks in", tone: "ok" };
     }
     if (kind === "nflpo") {

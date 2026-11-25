@@ -16,7 +16,9 @@
   const kindName = (k) => k === "squares" ? "Super Bowl squares" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
-  const tipTime = (t) => new Date(t).toLocaleString("en-US", Object.assign({ weekday: "short", hour: "numeric", minute: "2-digit" }, ET)).replace(":00 ", " ");
+  // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
+  const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
+  const tipTime = (t) => tbaTime(t) ? new Date(t).toLocaleDateString("en-US", Object.assign({ weekday: "short" }, ET)) + ", time TBA" : new Date(t).toLocaleString("en-US", Object.assign({ weekday: "short", hour: "numeric", minute: "2-digit" }, ET)).replace(":00 ", " ");
   const st = { user: C.user(), code: (params.get("p") || params.get("join") || "").toUpperCase(), make: params.get("make"), board: null, teams: {}, tab: "picks", sel: null, mine: null, msg: "", busy: false, open: {} };
 
   // ---------- theme (the masthead's Dark/Light button) ----------
@@ -367,6 +369,8 @@
     app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${st.tab === "standings" ? potAndChamps(b) : ""}</div>`;
+    // 6: a day strip that runs past the screen opens on the day it's showing
+    app.querySelectorAll(".pl-gsel").forEach((strip) => { const on = strip.querySelector('[aria-selected="true"]'); if (on && strip.scrollWidth > strip.clientWidth) strip.scrollLeft = Math.max(0, on.offsetLeft - strip.offsetLeft - (strip.clientWidth - on.offsetWidth) / 2); });
   }
 
   // ---------- survivor ----------
@@ -500,24 +504,43 @@
   const myPicks = (b) => { const uid = me(b), out = {}; (b.picks || []).forEach((k) => { if (k.user === uid && k.slot[0] === "g") out[k.slot.slice(1)] = { team: k.team || "", pts: k.pts }; }); return out; };
   const myTb = (b) => { const k = (b.picks || []).find((x) => x.user === me(b) && x.slot === "tb"); return k ? k.team : ""; };
   const dayOf = (t) => new Date(t).toLocaleDateString("en-US", Object.assign({ weekday: "short", month: "short", day: "numeric" }, ET));
+  const ord = (n) => { const v = n % 100; return n + (v >= 11 && v <= 13 ? "th" : ["th", "st", "nd", "rd"][n % 10] || "th"); };
   function bowlPicks(b) {
     const games = b.games || [], n = games.length, now = Date.now();
     if (!n) return `<div class="card"><div class="bd ps">The bowl schedule isn't out yet.</div></div>`;
-    if (!st.bd) { st.bd = myPicks(b); st.btb = myTb(b); }
+    // 1: before the matchups: when they come, the schedule, and getting people in now
+    if (!games.some((g) => g.a && g.b)) {
+      const first = games[0], cfp = games.filter((g) => g.round > 0).length;
+      let lastD = "";
+      const list = games.map((g) => { const d = dayOf(g.kickoff), h = d !== lastD ? `<h3 class="pl-bday">${esc(d)}</h3>` : ""; lastD = d;
+        return `${h}<div class="pl-bsch${g.round ? " cfp" : ""}"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}</b><span>${esc(tipTime(g.kickoff).replace(/^\w+, /, ""))}</span></div>`; }).join("");
+      const setBy = Date.parse(CAL.bowlsSet + "T23:59:00-05:00"), head = now < setBy ? `Matchups are set ${new Date(day0(CAL.bowlsSet) + 12 * 3600e3).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", timeZone: "America/New_York" })}` : "Matchups are on the way";
+      return `<div class="card pl-bwait"><div class="bd"><h2>${esc(head)}</h2>
+        <p>Picks open as soon as they're out. There are ${n} games: ${n - cfp} bowls and ${cfp} College Football Playoff games, starting ${esc(dayOf(first.kickoff))}. Get your group in now so everyone's ready.</p>
+        <div class="pl-row"><button type="button" class="btn go" data-invite>Invite people</button></div></div></div>
+        <details class="card pl-bschw"><summary>The schedule</summary><div class="bd">${list}</div></details>`;
+    }
+    if (!st.bd) { st.bd = myPicks(b); st.btb = myTb(b); st.bhand = {}; }
     const norm = (o) => JSON.stringify(Object.entries(o).filter(([, k]) => k.team || k.pts).map(([id, k]) => [id, k.team || "", k.pts || null]).sort());
     const dirty = norm(st.bd) !== norm(myPicks(b)) || String(st.btb || "") !== String(myTb(b) || "");
     const chk = P.bowlsCheck(st.bd, n), B = P.bowls(b, now), row = B.rows.find((r) => r.me);
     const used = {}; Object.values(st.bd).forEach((k) => { if (k.pts) used[k.pts] = true; });
     const picked = Object.values(st.bd).filter((k) => k.team).length, numbered = Object.values(st.bd).filter((k) => k.pts).length;
     const tbLocked = b.lock && now >= Date.parse(b.lock);
+    const isOpen = (g) => now < Date.parse(g.kickoff);
+    const toPick = games.filter((g) => isOpen(g) && g.a && g.b && !(st.bd[g.id] || {}).team).length, later = games.filter((g) => isOpen(g) && !(g.a && g.b)).length;
+    // 5: what the line next to Save says
+    const say = !chk.ok ? esc(chk.why) : dirty ? "Not saved yet." : !picked && !numbered ? "Tap a team to pick it." : "Saved.";
+    const place = row && (row.right || row.wrong) ? `<span><b>${row.points}</b> points, ${row.right}-${row.wrong}, ${ord(row.place)} of ${B.rows.length}</span>` : "";
     const bar = `<div class="card pl-bar pl-bbar"><div class="bd">
-      <div class="pl-bstat"><span><b>${picked}</b> of ${n} picked</span><span><b>${numbered}</b> of ${n} numbered</span>${row && (row.right || row.wrong) ? `<span><b>${row.points}</b> points, ${row.right}-${row.wrong}</span>` : ""}</div>
+      <div class="pl-bstat"><span><b>${picked}</b> of ${n} picked</span><span><b>${numbered}</b> of ${n} numbered</span>${place}</div>
+      ${toPick ? `<p class="pl-bhint">Tap the team you think wins. Each pick gets a number right away, the biggest going to your surest picks; change any number with its menu.</p>` : ""}
+      ${later ? `<p class="pl-bhint">${later} playoff ${later === 1 ? "game fills" : "games fill"} in as teams advance. Come back to pick ${later === 1 ? "it" : "them"} then; ${st.remind ? "you'll get an email about 3 hours before each one is due" : `<a href="#" data-bremind>email me before they're due</a>`}.</p>` : ""}
       <label class="pl-tb">Title game total points<input type="number" inputmode="numeric" min="0" max="200" data-btb value="${esc(st.btb || "")}" placeholder="e.g. 48"${tbLocked ? " disabled" : ""}></label>
-      <div class="pl-save"><button type="button" class="btn sm" data-bauto title="Give the biggest numbers to your surest picks">Number by confidence</button><span class="ps">${chk.ok ? (dirty ? "Not saved yet." : "Saved.") : esc(chk.why)}</span><button type="button" class="btn go" data-bsave${chk.ok && dirty ? "" : " disabled"}>Save picks</button></div></div></div>`;
-    let lastDay = "";
-    const rows = games.map((g) => {
-      const k = st.bd[g.id] || {}, locked = now >= Date.parse(g.kickoff), d = dayOf(g.kickoff);
-      const head = d !== lastDay ? `<h3 class="pl-bday">${esc(d)}</h3>` : ""; lastDay = d;
+      <div class="pl-save">${toPick ? `<button type="button" class="btn sm" data-bfav title="Pick the team the college hub favors in every game you haven't picked">Pick the favorites</button>` : ""}<button type="button" class="btn sm" data-bauto title="Give the biggest numbers to your surest picks">Number by confidence</button><span class="ps">${say}</span><button type="button" class="btn go" data-bsave${chk.ok && dirty ? "" : " disabled"}>Save picks</button></div></div></div>`;
+    const card = (g, lastDay) => {
+      const k = st.bd[g.id] || {}, locked = !isOpen(g), d = dayOf(g.kickoff);
+      const head = d !== lastDay.v ? `<h3 class="pl-bday">${esc(d)}</h3>` : ""; lastDay.v = d;
       const side = (t, full) => {
         const p = cfbProb(g, t), on = k.team && k.team === t, won = g.final && g.w === t, lost = g.final && g.w && g.w !== t;
         return `<button type="button" class="pl-bt${on ? " on" : ""}${won ? " won" : ""}${lost ? " lost" : ""}" data-bteam="${esc(g.id)}|${esc(t || "")}"${!t || locked ? " disabled" : ""}>
@@ -525,12 +548,17 @@
       };
       const res = g.final && k.team ? (g.w === k.team ? `<span class="pl-pick win">+${k.pts || 0}</span>` : `<span class="pl-pick loss">0</span>`) : "";
       const sel = locked ? `<span class="pl-bpts">${k.pts ? `<b>${k.pts}</b>` : "&ndash;"}</span>` : `<select class="pl-bsel" data-bpts="${esc(g.id)}" aria-label="Confidence for the ${esc(g.label)}"><option value="">&ndash;</option>${Array.from({ length: n }, (_, i) => n - i).map((v) => `<option value="${v}"${k.pts === v ? " selected" : ""}>${v}${used[v] && k.pts !== v ? " (used)" : ""}</option>`).join("")}</select>`;
-      return `${head}<div class="pl-bowl${locked ? " locked" : ""}${g.round ? " cfp" : ""}"><div class="pl-bowl-h"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}</b><span>${locked ? (g.final ? "Final" : "Playing") : tipTime(g.kickoff)}</span>${res}</div>
+      return `${head}<div class="pl-bowl${locked ? " locked" : ""}${g.round ? " cfp" : ""}"><div class="pl-bowl-h"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}</b><span>${locked ? (g.final ? "Final" : "Playing") : esc(tipTime(g.kickoff).replace(/^\w+, (?=time)/, ""))}</span>${res}</div>
         <div class="pl-bowl-b"><div class="pl-bts">${side(g.a, g.an)}${side(g.b, g.bn)}</div><label class="pl-conf"><span>Points</span>${sel}</label></div></div>`;
-    }).join("");
+    };
+    // 3: games that have kicked off fold into one line, so the list starts at the next game you can still pick
+    const done = games.filter((g) => !isOpen(g)), open = games.filter(isOpen);
+    const dd = { v: "" }, od = { v: "" };
+    const doneRows = done.map((g) => card(g, dd)).join(""), openRows = open.map((g) => card(g, od)).join("");
+    const fold = done.length && open.length ? `<details class="pl-bdone"${st.bshowDone ? " open" : ""}><summary><b>${done.length} ${done.length === 1 ? "game" : "games"} played</b>${row ? `<span>${row.right}-${row.wrong}, ${row.points} points</span>` : ""}<em>Show</em></summary>${doneRows}</details>` : doneRows;
     // with 40-odd games to go through, a save button follows you down the list once there's something to save
     const float = chk.ok && dirty ? `<div class="pl-float"><span>${picked} picked, ${numbered} numbered</span><button type="button" class="btn go" data-bsave>Save picks</button></div>` : "";
-    return bar + `<div class="pl-bowls">${rows}</div><p class="ps">Chances come from the college football hub's ratings. Picking a number that's taken swaps it with that game.</p>` + float;
+    return bar + `<div class="pl-bowls">${fold}${openRows}</div><p class="ps">Chances come from the college football hub's ratings. Picking a number that's taken swaps it with that game.</p>` + float;
   }
   function bowlTable(b) {
     const B = P.bowls(b, Date.now()), tbOpen = b.lock && Date.now() >= Date.parse(b.lock);
@@ -1014,7 +1042,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -1045,8 +1073,31 @@
     if (t.hasAttribute("data-invite")) { st.invite = !st.invite; return render(); }
     if (t.dataset.copy && (t.hasAttribute("data-sheet") || (canShare() && !t.hasAttribute("data-nosheet")))) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
-    if (t.dataset.bteam) { const [gid, tm] = t.dataset.bteam.split("|"); const k = st.bd[gid] = st.bd[gid] || {}; k.team = k.team === tm ? "" : tm; return render(); }
-    if (t.hasAttribute("data-bauto")) { st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return render(); }
+    if (t.dataset.bteam) {
+      // 2: a tap picks the team and numbers it at once: every number not set by hand is given out again by confidence
+      const [gid, tm] = t.dataset.bteam.split("|"); const k = st.bd[gid] = st.bd[gid] || {}; k.team = k.team === tm ? "" : tm;
+      st.bd = P.autoRank(st.board.games, st.bd, cfbProb, Date.now(), st.bhand || {}, true);
+      return render();
+    }
+    if (t.hasAttribute("data-bfav")) {
+      // the college hub's favorite in every open game you haven't picked, then the numbers by confidence
+      let n = 0;
+      (st.board.games || []).forEach((g) => {
+        const k = st.bd[g.id] = st.bd[g.id] || {};
+        if (k.team || !g.a || !g.b || Date.now() >= Date.parse(g.kickoff)) return;
+        const pa = cfbProb(g, g.a); if (pa == null) return;
+        k.team = pa >= 0.5 ? g.a : g.b; n++;
+      });
+      st.bd = P.autoRank(st.board.games, st.bd, cfbProb, Date.now(), st.bhand || {}, true);
+      st.msg = n ? `Picked the favorite in ${n} ${n === 1 ? "game" : "games"} and numbered them. Change any you like, then save.` : "No open games left to fill in.";
+      return render();
+    }
+    if (t.hasAttribute("data-bremind")) {
+      e.preventDefault();
+      C.rpc("mm_remind_set", { p_pool: st.code, p_on: true }).then(ok).then(() => { st.remind = true; st.msg = "Reminders on. You'll get an email about 3 hours before a pick is due."; render(); }).catch((x) => { st.msg = x.message; render(); });
+      return;
+    }
+    if (t.hasAttribute("data-bauto")) { st.bhand = {}; st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return render(); }
     if (t.dataset.ffr) { st.ffr = +t.dataset.ffr; st.ffl = null; return render(); }
     if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return render(); }
     if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]);
@@ -1116,9 +1167,10 @@
       // a number already on another open game trades places with this one
       const gid = t.dataset.bpts, v = t.value ? +t.value : null, k = st.bd[gid] = st.bd[gid] || {}, old = k.pts || null;
       if (v) Object.entries(st.bd).forEach(([id, o]) => { if (id !== gid && o.pts === v) { const g = (st.board.games || []).find((x) => x.id === id); if (g && Date.now() < Date.parse(g.kickoff)) o.pts = old; } });
-      k.pts = v; st.msg = ""; render();
+      k.pts = v; st.msg = ""; (st.bhand = st.bhand || {})[gid] = !!v; render();
     }
   });
+  app.addEventListener("toggle", (e) => { if (e.target.classList && e.target.classList.contains("pl-bdone")) st.bshowDone = e.target.open; }, true);
   app.addEventListener("input", (e) => {
     const t = e.target;
     if (t.hasAttribute("data-btb")) { st.btb = t.value; const b = document.querySelector("[data-bsave]"); if (b) b.disabled = !P.bowlsCheck(st.bd, (st.board.games || []).length).ok; }
