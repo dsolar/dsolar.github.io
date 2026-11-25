@@ -333,8 +333,11 @@ async function loadPoolRules() {
   poolRules = { at: Date.now(), P: g.FK.pools };
   return g.FK.pools;
 }
-const POOL_KIND: Record<string, string> = { nfl: "NFL survivor", survivor: "March Madness survivor", five: "5 teams", bowls: "bowl pick'em", nflpo: "NFL playoff bracket", nflff: "NFL playoff fantasy", bracket: "March Madness bracket", props: "Super Bowl prop sheet", oscars: "Oscars ballot" };
-const POOL_WHAT: Record<string, string> = { nfl: "this week's survivor pick", survivor: "today's survivor pick", five: "your five teams", bowls: "some bowl picks", nflpo: "your playoff bracket", nflff: "this round's lineup", bracket: "your bracket", props: "your prop sheet", oscars: "your Oscars ballot" };
+const POOL_KIND: Record<string, string> = { nfl: "NFL survivor", survivor: "March Madness survivor", five: "5 teams", bowls: "bowl pick'em", nflpo: "NFL playoff bracket", nflff: "NFL playoff fantasy", bracket: "March Madness bracket", props: "Super Bowl prop sheet", oscars: "Oscars ballot", mmff: "March Madness fantasy" };
+const POOL_WHAT: Record<string, string> = { nfl: "this week's survivor pick", survivor: "today's survivor pick", five: "your five teams", bowls: "some bowl picks", nflpo: "your playoff bracket", nflff: "this round's lineup", bracket: "your bracket", props: "your prop sheet", oscars: "your Oscars ballot", mmff: "this round's lineup" };
+// each game's own page (fantasy-kit/pools.js SLUG), so a reminder opens the pool where it's played
+const POOL_SLUG: Record<string, string> = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor", mmff: "march-madness-fantasy" };
+const poolLink = (pool: string, kind: string) => `https://davidsolar.dev/pools/${POOL_SLUG[kind] ? POOL_SLUG[kind] + "/" : ""}?p=${encodeURIComponent(pool)}`;
 const etTime = (t: number) => new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).replace(":00 ", " ") + " ET";
 async function poolReminders(token: string) {
   const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
@@ -355,7 +358,7 @@ async function poolReminders(token: string) {
   let sent = 0, failed = 0;
   for (const x of due) {
     if (!claimed.has(`${x.pool}|${x.user}|${Math.round(x.due)}`)) continue;
-    const url = `https://davidsolar.dev/fantasy/pools/?p=${encodeURIComponent(x.pool)}`, when = etTime(x.due);
+    const url = poolLink(x.pool, x.kind), when = etTime(x.due);
     const subject = `${x.pool_name}: ${POOL_WHAT[x.kind] || "a pick"} is due ${when}`;
     const lead = `You haven't made ${POOL_WHAT[x.kind] || "your pick"} in ${x.pool_name} yet. It's due ${when}.`;
     const where = x.status.text ? `Where you stand: ${x.status.text}.` : "";
@@ -402,7 +405,7 @@ async function poolRecaps(token: string) {
   let sent = 0, failed = 0;
   for (const x of due) {
     if (!claimed.has(`${x.pool}|${x.user}`)) continue;
-    const url = `https://davidsolar.dev/fantasy/pools/?p=${encodeURIComponent(x.pool)}`;
+    const url = poolLink(x.pool, x.kind);
     const next = x.recap.due ? `Your next pick is due ${etTime(x.recap.due)}.` : "";
     const subject = `${x.pool_name}: your week in review`;
     const foot = "You get this because you turned on the weekly recap for this pool. Turn it off on the pool's Settings tab.";
