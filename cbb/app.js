@@ -214,6 +214,10 @@ function today(q) {
 
 // Bart Torvik's T-Rank (data/torvik.json, pulled daily through a browser; tools/torvik_pull.js and tools/torvik.py)
 let TV = null;
+// the NCAA's official NET and quadrant records (data/net.json, tools/cbb_net.py), from its first release about December 1
+let NETD = null;
+const netOf = t => NETD && NETD.teams && t ? NETD.teams[t.id] || null : null;
+fetch("data/net.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((v) => { NETD = v && v.status === "ok" && v.teams && Object.keys(v.teams).length ? v : null; if (NETD && D && ["ratings", "team", "bubble"].includes(route().page)) render(); }).catch(() => {});
 fetch("data/torvik.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((v) => { TV = v && v.teams && !Array.isArray(v.teams) ? v : null; if (TV && D && ["ratings", "matchup"].includes(route().page)) render(); }).catch(() => {});
 // "" while fresh; " (last pulled Nov 23)" once the daily browser pull has missed for a day and a half
 const tvAge = () => { const t = TV && Date.parse(TV.pulled); return t && Date.now() - t > 36 * 36e5 ? " (last pulled " + new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ")" : ""; };
@@ -231,8 +235,8 @@ function mktRank(t) {
   return MKT_RANK[t.id] || null;
 }
 const RCOLS = [
-  ["haslam", "Rk", t => t.haslamRank, true], ["mkt", "Mkt", t => mktRank(t), true], ["tv", "Torvik", t => tvRank(t), true], ["bpi", "BPI", t => t.bpiRank, true], ["sor", "SOR", t => t.sorRank, true],
-  ["net", "Net", t => M.em(t)], ["adjO", "Off", t => M.num(t.metrics.adjO)], ["adjD", "Def", t => M.num(t.metrics.adjD), true],
+  ["haslam", "Rk", t => t.haslamRank, true], ["mkt", "Mkt", t => mktRank(t), true], ["tv", "Torvik", t => tvRank(t), true], ["bpi", "BPI", t => t.bpiRank, true], ["sor", "SOR", t => t.sorRank, true], ["netr", "NET", t => netOf(t) ? netOf(t).rank : null, true, () => !!NETD],
+  ["net", "Margin", t => M.em(t)], ["adjO", "Off", t => M.num(t.metrics.adjO)], ["adjD", "Def", t => M.num(t.metrics.adjD), true],
   ["tempo", "Pace", t => M.num(t.metrics.tempo)], ["three", "3PA%", t => M.num(t.metrics.threeShare)], ["rim", "Rim%", t => M.num(t.metrics.rimShare)],
   ["tp", "3P%", t => M.num(t.metrics.threePct)], ["otp", "Opp 3P%", t => M.num(t.metrics.oppThreePct), true],
   ["projw", "Proj", t => t.projection && M.num(t.projection.wins)], ["conf", "Conf %", t => M.num(t.metrics.confTitle)], ["ncaa", "NCAA", t => odds(t.id) ? odds(t.id).in : null], ["move", "7-day", t => M.num(t.change7)]
@@ -242,15 +246,15 @@ function ratings(q) {
   let ts = D.teams.filter(t => (!conf || t.conference === conf) && (!s || (t.name + " " + t.short + " " + t.abbr).toLowerCase().includes(s)));
   const col = RCOLS.find(c => c[0] === sort) || RCOLS[0];
   ts.sort((a, b) => { const x = col[2](a), y = col[2](b); return (x == null) - (y == null) || (x == null ? 0 : col[3] ? x - y : y - x) || (a.haslamRank || 999) - (b.haslamRank || 999); });
-  const head = '<h2 class="sec">Team ratings</h2><p class="lede">All 365 teams by adjusted efficiency: points scored and allowed per 100 possessions against an average opponent (Haslametrics), with ESPN BPI and Strength of Record beside it. Net is offense minus defense. Colors show where a team ranks nationally.</p>' +
+  const head = '<h2 class="sec">Team ratings</h2><p class="lede">All 365 teams by adjusted efficiency: points scored and allowed per 100 possessions against an average opponent (Haslametrics), with ESPN BPI and Strength of Record beside it. Margin is offense minus defense. Colors show where a team ranks nationally.</p>' +
     '<div class="controls">' + confSelect(conf) + '<label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Duke, Gonzaga…"></label>' + seg("view", [["table", "Table"], ["chart", "Offense vs defense"]], mode) + "</div>";
   if (mode === "chart") return head + scatter(ts, conf || s);
   const show = q.get("all") === "1" || conf || s ? ts : ts.slice(0, 100);
-  const th = "<tr><th class=l>Team</th>" + RCOLS.map(c => sortTh(c[0], c[1], sort)).join("") + "</tr>";
+  const th = "<tr><th class=l>Team</th>" + RCOLS.filter(c => !c[4] || c[4]()).map(c => sortTh(c[0], c[1], sort, c[0] === "netr" ? "The NCAA's official NET, the selection committee's sorting tool" : undefined)).join("") + "</tr>";
   const body = show.map(t => {
     const m = t.metrics, mv = M.num(t.change7);
     return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference || "") + " · " + rec(t) + "</small></td>" +
-      "<td><b>" + int(t.haslamRank) + "</b></td><td>" + (mktRank(t) || "—") + "</td><td>" + (tvRank(t) || "—") + "</td><td>" + int(t.bpiRank) + "</td><td>" + int(t.sorRank) + "</td>" +
+      "<td><b>" + int(t.haslamRank) + "</b></td><td>" + (mktRank(t) || "—") + "</td><td>" + (tvRank(t) || "—") + "</td><td>" + int(t.bpiRank) + "</td><td>" + int(t.sorRank) + "</td>" + (NETD ? "<td>" + (netOf(t) ? "<b>" + netOf(t).rank + "</b>" : "—") + "</td>" : "") +
       '<td class="' + (M.em(t) > 0 ? "pos" : "neg") + '"><b>' + sg(M.em(t)) + "</b></td>" +
       '<td><span class="chip ' + tier(M.percentile(D.teams, t, "adjO")) + '">' + f1(m.adjO) + '</span> <small class="rr">' + (rankO[t.id] || "") + "</small></td>" +
       '<td><span class="chip ' + tier(M.percentile(D.teams, t, "adjD", true)) + '">' + f1(m.adjD) + '</span> <small class="rr">' + (rankD[t.id] || "") + "</small></td>" +
@@ -259,7 +263,7 @@ function ratings(q) {
   }).join("");
   return head + '<div class="panel"><div class="scroll"><table class="t rt"><thead>' + th + "</thead><tbody>" + body + "</tbody></table></div></div>" +
     (show.length < ts.length ? '<p><button class="btn" data-more="all">Show all ' + ts.length + " teams</button></p>" : "") +
-    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). Mkt: market rating rank, from team ratings fit to every closing point spread this season (teams with 2+ lined games). Torvik: Bart Torvik\'s T-Rank, pulled daily" + tvAge() + ". BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank. 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
+    '<p class="note">Rk: Haslametrics rank (' + dLabel(D.sources.haslam && D.sources.haslam.updated) + "). Mkt: market rating rank, from team ratings fit to every closing point spread this season (teams with 2+ lined games). Torvik: Bart Torvik\'s T-Rank, pulled daily" + tvAge() + ". BPI: ESPN Basketball Power Index rank. SOR: ESPN Strength of Record (résumé) rank." + (NETD ? " NET: the NCAA\'s official NET rank" + (NETD.through ? " through games " + dLabel(NETD.through) : "") + "." : "") + " 3PA% and Rim%: share of shots from three and at the rim. Proj: BPI projected record. Conf %: BPI chance to win the regular-season conference title. NCAA: the hub's chance to make the tournament. 7-day: Haslametrics rank change this week.</p>";
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => fin(t.metrics.adjO) && fin(t.metrics.adjD));
@@ -320,7 +324,7 @@ function teamPage(q) {
   ensureSched();
   const liveById = Object.fromEntries(D.games.map(g => [g.id, g]));
   const sched = (SCHED && SCHED.games.length ? SCHED.games.filter(g => g.home === t.id || g.away === t.id).map(g => { const x = liveById[g.id]; return x ? { ...g, ...x, conf: g.conf } : { ...g, homeScore: g.hs, awayScore: g.as }; }) : D.games.filter(g => g.home === t.id || g.away === t.id)).sort((a, b) => (a.at || a.day + "T23").localeCompare(b.at || b.day + "T23"));
-  const hl = t.highlights || {}, quads = t.haslamQuads || {};
+  const hl = t.highlights || {}, nt = netOf(t), quads = nt ? { 1: nt.q[0], 2: nt.q[1], 3: nt.q[2], 4: nt.q[3] } : t.haslamQuads || {};
   const vsOpts = D.teams.filter(x => x.id !== t.id).sort((a, b) => a.short.localeCompare(b.short));
   const schedRows = sched.map(g => {
     const home = g.home === t.id, oid = home ? g.away : g.home, o = byId[oid], l = o ? (g.state === "pre" ? lineFor(g) : loggedLine(g)) : null;
@@ -334,7 +338,7 @@ function teamPage(q) {
   const v = ["schedule", "roster"].includes(q.get("v")) ? q.get("v") : "overview", od = odds(t.id), tab = (k) => "#/team?id=" + encodeURIComponent(t.id) + (k === "overview" ? "" : "&v=" + k);
   const head = window.PCard.teamHead({ logo: logo(t), name: t.name, color: t.color || "var(--ink)", follow: { sport: "ncaab", id: t.id, name: t.short },
     meta: [esc(t.conferenceName || t.conference || ""), rec(t) + " (" + crec(t) + " conf)", t.coach ? "Coach " + esc(t.coach) : ""],
-    chips: [t.rank ? ["AP No. " + t.rank, "tag"] : null, ["Haslametrics #" + int(t.haslamRank) + ", BPI #" + int(t.bpiRank) + ", SOR #" + int(t.sorRank), ""]],
+    chips: [t.rank ? ["AP No. " + t.rank, "tag"] : null, ["Haslametrics #" + int(t.haslamRank) + ", BPI #" + int(t.bpiRank) + ", SOR #" + int(t.sorRank) + (netOf(t) ? ", NET #" + netOf(t).rank : ""), ""]],
     head: [{ v: sg(M.em(t)), l: "Net rating" }, { v: f1(m.adjO), l: "Offense, #" + (rankO[t.id] || "—") }, { v: f1(m.adjD), l: "Defense, #" + (rankD[t.id] || "—") }, { v: od ? pct(od.in) : "—", l: "Make the NCAA" + (od && od.mode ? ", " + od.mode + " seed" : "") }],
     tabs: [["overview", "Overview"], ["schedule", "Schedule"], ["roster", "Roster"]].map(([k, l]) => ({ label: l, href: tab(k), on: v === k })),
     after: '<p class="pt-ext"><a href="' + safe(t.links && t.links.clubhouse) + '" target="_blank" rel="noopener">ESPN team page ↗</a></p>' });
@@ -347,9 +351,11 @@ function teamPage(q) {
     '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" + teamBars(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
 '<div class="two">' +
-    '<div><div class="panel"><h3>Résumé so far</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
+    '<div><div class="panel"><h3>Résumé so far' + (nt ? " <small>NCAA NET #" + nt.rank + (nt.prev && nt.prev !== nt.rank ? " (was " + nt.prev + ")" : "") + "</small>" : "") + '</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
     ["best", "worst", "latest"].filter(k => hl[k]).map(k => { const h = hl[k]; return '<p class="tldr"><b>' + { best: "Best game", worst: "Worst game", latest: "Latest" }[k] + ":</b> " + (h.us > h.them ? "W " : "L ") + int(h.us) + "-" + int(h.them) + " " + (h.venue === "H" ? "vs" : h.venue === "A" ? "at" : "vs") + " " + esc(h.opponent) + " (" + esc(h.date) + ")</p>"; }).join("") +
-    '<p class="note">Quadrants are Haslametrics\' own hNET quadrants, not the NCAA\'s official NET.</p></div></div>' + outlook(t) + '</div></div>';
+    (nt ? '<p class="tldr"><b>By site:</b> ' + esc(nt.home || "—") + " home, " + esc(nt.road || "—") + " road, " + esc(nt.neutral || "—") + " neutral</p>" : "") +
+    (nt ? '<p class="note">Quadrants are the NCAA\'s official NET quadrants' + (NETD.through ? ", through games " + dLabel(NETD.through) : "") + ". Q1 is the toughest: home games against the NET top 30, neutral against the top 50, road against the top 75.</p></div></div>"
+      : '<p class="note">Quadrants are Haslametrics\' own hNET quadrants until the NCAA releases its official NET (about December 1).</p></div></div>') + outlook(t) + '</div></div>';
 }
 
 function tbarsHtml(groups, sortedOf, color, pctFn) {
@@ -622,7 +628,7 @@ function nextFor(id) {
 function bubbleRow(id, o, hb, tag) {
   const t = byId[id];
   return '<li class="br"><a class="tl" href="#/team?id=' + esc(id) + '">' + logo(t) + rk(t) + '<span class="nm">' + esc(t.short) + "</span></a>" + (tag || "") +
-    '<span class="sub">' + rec(t) + " · WAB " + sg(o.wab) + (o.mode ? " · " + o.mode + " seed" : "") + "</span>" +
+    '<span class="sub">' + rec(t) + (netOf(t) ? " · NET " + netOf(t).rank + (netOf(t).q[0] ? " · Q1 " + esc(netOf(t).q[0]) : "") : "") + " · WAB " + sg(o.wab) + (o.mode ? " · " + o.mode + " seed" : "") + "</span>" +
     '<span class="odd"><b>' + pct(o.in) + "</b>" + moveChip(id, hb) + "</span>" + nextFor(id) + "</li>";
 }
 function bubble(q) {

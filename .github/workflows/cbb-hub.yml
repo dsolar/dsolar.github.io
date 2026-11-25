@@ -13,6 +13,7 @@ on:
       - tools/cbb_dfs.py
       - tools/cbb_pool_teams.py
       - tools/cbb_avail.py
+      - tools/cbb_net.py
       - cbb/data/naismith-watch.json
       - tests/cbb*.cjs
       - tests/cbb*.py
@@ -49,6 +50,12 @@ jobs:
         continue-on-error: true
         timeout-minutes: 6
         run: python3 tools/cbb_avail.py
+      # the NCAA's official NET and quadrants (cbb/data/net.json) once it's released; a miss keeps the last file
+      - name: NCAA NET
+        continue-on-error: true
+        timeout-minutes: 3
+        run: python3 tools/cbb_net.py
+
       - name: Draft Lab college pool and featured slates
         run: python3 tools/cbb_dfs.py && python3 tools/fantasykit_teams.py cbb
       - name: March Madness pool teams
