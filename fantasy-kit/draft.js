@@ -844,7 +844,25 @@
     };
     // before the prospect rounds, their spots aren't the bench's to fill
     const proLeft = D.prospects && !D.carry && !prospectRound(D, nextIndex(D)) ? D.prospects.rounds - prospectPicks(D, teamId).length : 0;
-    return { left: sizeOf(D, teamId) - ids.length - proLeft, openStarters: D.lineup.length - filled, lateOpen, fills, urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
+    // for a football bench: how many of each position he has, the lineup spots only that position fills, and the teams
+    // his running backs play for (a backup behind his own starter is a handcuff)
+    const have = {}, ded = {}, rbTeams = new Set();
+    for (const p of mine) { const k = S.positions(p)[0]; have[k] = (have[k] || 0) + 1; if (k === "RB" && p.t) rbTeams.add(p.t); }
+    for (const sl of D.lineup) { const v = ctx.sport.slots[sl]; if (v !== "*" && v && v.length === 1) ded[v[0]] = (ded[v[0]] || 0) + 1; }
+    return { left: sizeOf(D, teamId) - ids.length - proLeft, openStarters: D.lineup.length - filled, lateOpen, fills, have, ded, rbTeams,
+      urgency: D.packs && D.phase === "live" ? packUrgency(D, ctx, teamId, mine) : null };
+  }
+  /* A football bench the way real drafters fill one: one backup at a position with a single lineup spot (a second
+     quarterback or tight end) is fine, a third is wasted; running backs and receivers are where the depth goes, and a
+     backup running back behind one of your own starters (a handcuff) is worth a little more. */
+  const FOOTBALL = new Set(["nfl", "cfb"]);
+  function benchDepth(ctx, p, need) {
+    if (!FOOTBALL.has(ctx.sport.key) || !need.have) return 1;
+    const k = S.positions(p)[0], d = need.ded[k] || 0, extra = (need.have[k] || 0) - d;
+    if (!d || extra < 0 || S.isLate(ctx.sport, p)) return 1;
+    let m = d === 1 ? (extra === 0 ? 0.6 : 0.12) : extra < d ? 1 : Math.pow(0.7, extra - d + 1);
+    if (k === "RB" && p.t && need.rbTeams.has(p.t)) m *= 1.15;
+    return m;
   }
   // In a pack draft a position can run out. For a team's open spots that only one position can fill (its TE, its QB):
   // how short that position is, as the teams still needing one against the players left at it in the packs to come.
@@ -869,7 +887,7 @@
     return (pos) => (mineOpen[pos] ? Math.min(3, (demand[pos] || 0) / Math.max(1, supply[pos] || 0)) + (late && single[pos] === 1 ? 2 : 0) : 0);
   }
   function worth(D, ctx, teamId, p, r, need) {
-    const { left, openStarters, lateOpen, fills, urgency } = need || needs(D, ctx, teamId);
+    const N = need || needs(D, ctx, teamId), { left, openStarters, lateOpen, fills, urgency } = N;
     const fillsStarter = fills(p);
     // a mystery card is worth what its tier and position go for: nobody, bots included, knows who it is
     const myst = D.packs && D.packs.mystery && D.packs.mystery[p.id] && D.phase === "live";
@@ -878,6 +896,9 @@
       if (left > lateOpen + 1) w *= 0.05;
     }
     if (!fillsStarter && openStarters > 0) w *= left <= openStarters + 1 ? 0.1 : 0.75;
+    // late in a draft values bottom out at a dollar or less (or go negative): the penalty also takes a flat amount off,
+    // so a third tight end at $1 still loses to a $0 receiver, and a negative value only gets pushed further down
+    if (!fillsStarter && !D.packs) { const m = benchDepth(ctx, p, N); if (m !== 1) w = (w >= 0 ? w * m : w / Math.max(0.05, m)) - (1 - m) * 1.5; }
     // a pack draft can't count on a position coming back around: fill the lineup first
     // the scarcer a position he alone can fill, the sooner a bot takes one while it's there
     // kickers and defenses still wait for the last rounds: there are plenty to go around

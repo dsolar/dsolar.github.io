@@ -1590,7 +1590,11 @@
     function draftCoach() {
       const a = draftCoachAdvice(); if (!a) return "";
       const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button>${injTag(p)}<span>${why}</span></div>`;
-      return `<div class="lab-coach" aria-label="Draft guidance">${item("Best available", a.best, `#${a.best.rank} for this scoring`)}${item("Roster fit", a.fit, auction() ? "Values your open slots and budget" : "Values your open slots")}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
+      // one suggestion: the best player left when he's also what your roster needs, and only when they differ, both
+      const same = a.fit.id === a.best.id, pos = S.positions(a.fit)[0];
+      const pick = same ? item("Suggested pick", a.fit, `#${a.best.rank}, the best player left, and he fits your roster`)
+        : item("Suggested pick", a.fit, auction() ? `Fits your open spots and your budget. #${a.fit.rank} overall` : `Fills a spot you still need (${esc(pos)}). #${a.fit.rank} overall`) + item("Best player left", a.best, `#${a.best.rank} for this scoring`);
+      return `<div class="lab-coach${same ? " one" : ""}" aria-label="Draft guidance">${pick}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `${a.wait} picks until yours. Rank-based estimate.`) : ""}</div>`;
     }
     function players() {
       const d = D(), n = now(), mine = me();
