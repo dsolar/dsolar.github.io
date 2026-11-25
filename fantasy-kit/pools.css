@@ -1151,3 +1151,67 @@ body{overflow-x:clip}
 .g-mmff.pl .pl-mfr button[aria-selected="true"]{background:var(--mf-or);border-color:var(--mf-or);color:#1E0E02}
 .g-mmff .pl-save .btn.go:not(:disabled){background:var(--mf-or);border-color:var(--mf-or);color:#1E0E02}
 .g-mmff .pl-save .btn.go:disabled{background:color-mix(in srgb,var(--mf-or) 30%,var(--surface));border-color:transparent;color:#7a4a22}
+
+/* March Madness bracket: the printed office sheet, ink lines and a highlighter */
+.g-bracket{--bk-ink:#13234A;--bk-blue:#1C4FB8;--bk-hl:#FFE94D;--bk-red:#D7263D}
+.g-bracket .pl-band{background:linear-gradient(160deg,#0A1A3D 0%,#13306E 60%,#1C4FB8 135%)}
+.g-bracket .pl-band::before{background:repeating-linear-gradient(0deg,transparent 0 27px,rgba(255,255,255,.05) 27px 28px)}
+.g-bracket .pl-band::after{background:var(--bk-hl)}
+.g-bracket .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;letter-spacing:-.005em;font-size:clamp(50px,7.5vw,96px);line-height:.92}
+.g-bracket .pl-kick{color:var(--bk-hl)}
+.g-bracket .pl-band .pl-code{background:rgba(255,233,77,.16);color:var(--bk-hl)}
+.g-bracket .pl-art{color:#fff;opacity:.4}
+.g-bracket .pl-bkm{border:0;border-radius:2px;background:var(--surface);box-shadow:inset 0 0 0 1.5px var(--bk-ink);gap:0;padding:0}
+.g-bracket .pl-bkm .pl-bkt+.pl-bkt{border-top:1px solid color-mix(in srgb,var(--bk-ink) 22%,transparent)}
+.g-bracket .pl-bkt{border-radius:0;border:0;min-height:40px}
+.g-bracket .pl-bkt.on,.g-bracket .pl-bkt.won{background:transparent;border:0}
+.g-bracket .pl-bkt.on .pl-tn b{background:linear-gradient(transparent 12%,var(--bk-hl) 12%,var(--bk-hl) 88%,transparent 88%);box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:0 3px;margin:0 -3px;justify-self:start}
+.g-bracket .pl-bkt.won .pl-tn b{background:linear-gradient(transparent 12%,#B9F0C9 12%,#B9F0C9 88%,transparent 88%);padding:0 3px;margin:0 -3px;justify-self:start}
+.g-bracket .pl-bkt.on.won .pl-tn b::after{content:" \2713";color:#14803C}
+.g-bracket .pl-bkt.lost{border:0}
+.g-bracket .pl-bkt.lost .pl-tn b{text-decoration-color:var(--bk-red);text-decoration-thickness:2px}
+.g-bracket .pl-bkt .pl-seed{color:var(--bk-blue)}
+.g-bracket .pl-bkm-pts{right:6px;top:-9px;color:var(--bk-red);background:var(--bg,#F3F5F8);font-weight:800}
+.g-bracket .pl-bkrd{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-size:16px;letter-spacing:.02em;color:var(--bk-ink);border-bottom:2px solid var(--bk-ink);padding-bottom:4px}
+@media (min-width:900px){.g-bracket .pl-bkcol:not(:last-child) .pl-bkm::after{content:"";position:absolute;left:100%;top:50%;width:12px;border-top:1.5px solid var(--bk-ink)}}
+.g-bracket.pl .seg button[aria-selected="true"],.g-bracket .pl-bkregs button[aria-pressed="true"]{background:var(--bk-ink);color:#fff}
+.g-bracket .pl-save .btn.go:not(:disabled){background:var(--bk-hl);border-color:#E3CC1F;color:var(--bk-ink)}
+[data-theme=dark] .g-bracket{--bk-ink:#C9D6F2}
+[data-theme=dark] .g-bracket .pl-bkt.on .pl-tn b,[data-theme=dark] .g-bracket .pl-bkt.won .pl-tn b{color:#13234A}
+
+/* Survivor: one and done; the field gets crossed off in red */
+.g-surv{--sv-red:#E03A2F;--sv-coal:#16171B;--sv-bone:#F4F1EA}
+.g-surv .pl-band{background:linear-gradient(165deg,#0D0E11 0%,var(--sv-coal) 60%,#2A1513 135%)}
+.g-surv .pl-band::before{background:radial-gradient(50% 120% at 85% 50%,rgba(224,58,47,.18),transparent 62%)}
+.g-surv .pl-band::after{background:var(--sv-red)}
+.g-surv .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;letter-spacing:-.005em;font-size:clamp(50px,7.5vw,96px);line-height:.92}
+.g-surv .pl-kick{color:#FF8A80}
+.g-surv .pl-band .pl-code{background:rgba(224,58,47,.18);color:#FF8A80}
+.g-surv .strike-art{color:#fff;opacity:.5}
+.g-surv .pl-day-h>b{font:800 22px/1 var(--f-cond,"Barlow Condensed",sans-serif);letter-spacing:.01em}
+.g-surv .pl-team{border-radius:4px}
+.g-surv .pl-team.on{border-color:var(--sv-red);box-shadow:0 0 0 2px var(--sv-red);background:color-mix(in srgb,var(--sv-red) 7%,var(--surface))}
+.g-surv .pl-team:disabled .pl-tn b{text-decoration:line-through;text-decoration-color:var(--sv-red)}
+.g-surv .pl-wp i{background:linear-gradient(90deg,var(--ink) var(--w),var(--surface-3) var(--w))}
+.g-surv .pl-pick.loss{background:var(--sv-red);color:#fff}
+.g-surv .pl-save .btn.go:not(:disabled){background:var(--sv-red);border-color:var(--sv-red);color:#fff}
+
+/* 5 teams: five chips on the table, seeds stacked to 25 */
+.g-five{--fv-ink:#1E1238;--fv-vi:#3B1F6E;--fv-lime:#C6F432}
+.g-five .pl-band{background:linear-gradient(160deg,#120A24 0%,var(--fv-ink) 50%,var(--fv-vi) 130%)}
+.g-five .pl-band::before{background:radial-gradient(55% 120% at 82% 55%,rgba(198,244,50,.16),transparent 62%)}
+.g-five .pl-band::after{background:var(--fv-lime)}
+.g-five .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;letter-spacing:-.005em;font-size:clamp(50px,7.5vw,96px);line-height:.92}
+.g-five .pl-kick{color:var(--fv-lime)}
+.g-five .pl-band .pl-code{background:rgba(198,244,50,.14);color:var(--fv-lime)}
+.g-five .chip-art{opacity:.85}
+.g-five .pl-team .pl-tn .pl-seed{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-right:6px;border-radius:50%;background:var(--fv-ink);color:#fff;font:800 12px/1 var(--f-cond,"Barlow Condensed",sans-serif);box-shadow:0 0 0 2px var(--surface),0 0 0 3px color-mix(in srgb,var(--fv-ink) 35%,transparent);vertical-align:1px}
+.g-five .pl-team.on{border-color:var(--fv-vi);box-shadow:0 0 0 2px var(--fv-vi);background:color-mix(in srgb,var(--fv-lime) 18%,var(--surface))}
+.g-five .pl-xp{font:800 19px/1 var(--f-cond,"Barlow Condensed",sans-serif)}
+.g-five .pl-chip{border-radius:999px;padding:6px 12px 6px 6px;background:var(--surface);border:2px solid var(--fv-ink)}
+.g-five .pl-chip.empty{width:46px;height:46px;padding:0;justify-content:center;font-size:0;border:2px dashed color-mix(in srgb,var(--fv-ink) 40%,transparent);background:repeating-conic-gradient(color-mix(in srgb,var(--fv-ink) 6%,transparent) 0 15deg,transparent 15deg 30deg)}
+.g-five .pl-chip.empty::before{content:attr(data-n);font:800 16px/1 var(--f-cond,"Barlow Condensed",sans-serif);color:var(--muted)}
+.g-five .pl-meter i{height:10px;border-radius:5px;background:linear-gradient(90deg,var(--fv-vi) var(--w),var(--surface-3) var(--w))}
+.g-five .pl-meter.ok i{background:linear-gradient(90deg,#8DBA10 var(--w),var(--surface-3) var(--w))}
+.g-five .pl-save .btn.go:not(:disabled),.g-five .btn.go[data-save5]:not(:disabled){background:var(--fv-lime);border-color:#A9D41F;color:var(--fv-ink)}
+[data-theme=dark] .g-five .pl-chip{border-color:var(--fv-lime)}

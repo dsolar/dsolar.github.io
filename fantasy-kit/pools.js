@@ -23,7 +23,7 @@
   const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
   // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
-  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff" })[kind] || "";
+  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff", bracket: " g-bracket", survivor: " g-surv", nfl: " g-surv", five: " g-five" })[kind] || "";
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
   const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
@@ -90,7 +90,11 @@
   const COURT_ART = `<svg class="pl-art court-art" viewBox="0 0 240 180" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4">
     <path d="M10 170H230M10 170V10H230V170"/><rect x="88" y="10" width="64" height="76"/><path d="M88 86a32 32 0 0 0 64 0"/><path d="M88 86a32 32 0 0 1 64 0" stroke-dasharray="5 6" opacity=".6"/>
     <path d="M28 10v34a92 92 0 0 0 184 0V10"/><path d="M106 22h28"/><circle cx="120" cy="28" r="6"/><path d="M98 170a22 22 0 0 1 44 0"/></g></svg>`;
-  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "mmff" ? COURT_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  const STRIKE_ART = `<svg class="pl-art strike-art" viewBox="0 0 220 180" aria-hidden="true"><g fill="currentColor">
+    <rect x="20" y="18" width="150" height="14" rx="3" opacity=".35"/><rect x="20" y="46" width="120" height="14" rx="3" opacity=".35"/><rect x="20" y="74" width="165" height="14" rx="3" opacity=".35"/><rect x="20" y="102" width="135" height="14" rx="3" opacity=".35"/><rect x="20" y="130" width="155" height="14" rx="3" opacity=".35"/><rect x="20" y="158" width="110" height="14" rx="3"/></g>
+    <g stroke="var(--sv-red,#E03A2F)" stroke-width="4" stroke-linecap="round"><path d="M10 26h172M10 54h142M10 82h186M10 110h156M10 138h176"/></g></svg>`;
+  const CHIP_ART = `<svg class="pl-art chip-art" viewBox="0 0 240 180" aria-hidden="true"><g stroke-width="3">${[[32, 98], [74, 86], [118, 80], [162, 86], [204, 98]].map(([x, y], i) => `<g transform="translate(${x} ${y})"><circle r="25" fill="${i % 2 ? "var(--fv-lime,#C6F432)" : "#fff"}" fill-opacity=".9"/><circle r="25" fill="none" stroke="#1E1238" stroke-dasharray="8 7" opacity=".55"/><circle r="16" fill="none" stroke="#1E1238" opacity=".5"/><text y="7" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-weight="800" font-size="21" fill="#1E1238">${[1, 4, 6, 11, 3][i]}</text></g>`).join("")}</g></svg>`;
+  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "mmff" ? COURT_ART : k === "survivor" || k === "nfl" ? STRIKE_ART : k === "five" ? CHIP_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
       <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>
@@ -1296,7 +1300,7 @@
     b.games.filter((g) => g.round <= 1).forEach((g) => [[g.a, g.as], [g.b, g.bs]].forEach(([t, s]) => { if (t && s != null) (byRegion[g.region || "Field"] = byRegion[g.region || "Field"] || {})[t] = s; }));
     const regions = Object.keys(byRegion);
     return `<div class="pl-five">
-      <div class="card pl-bar"><div class="bd"><div class="pl-chips">${Array.from({ length: 5 }, (_, i) => st.sel[i] ? `<button type="button" class="pl-chip" data-five="${esc(st.sel[i])}" title="Take off">${logo(st.sel[i], 20)}${seedTag(field[st.sel[i]])}${name(st.sel[i])}<i aria-hidden="true">&times;</i></button>` : `<span class="pl-chip empty">Team ${i + 1}</span>`).join("")}</div>
+      <div class="card pl-bar"><div class="bd"><div class="pl-chips">${Array.from({ length: 5 }, (_, i) => st.sel[i] ? `<button type="button" class="pl-chip" data-five="${esc(st.sel[i])}" title="Take off">${logo(st.sel[i], 20)}${seedTag(field[st.sel[i]])}${name(st.sel[i])}<i aria-hidden="true">&times;</i></button>` : `<span class="pl-chip empty" data-n="${i + 1}">Team ${i + 1}</span>`).join("")}</div>
         <div class="pl-meter ${chk.seeds >= P.MIN_SEEDS ? "ok" : ""}"><span>Seeds <b>${chk.seeds}</b> of ${P.MIN_SEEDS}</span><i style="--w:${Math.min(100, Math.round((chk.seeds / P.MIN_SEEDS) * 100))}%"></i></div>
         <div class="pl-save"><span class="ps">${chk.ok ? (dirty ? "Ready to save." : "Saved. You can change them until the first tip-off.") : esc(chk.why)} Locks ${tipTime(F.lock)}.</span><button type="button" class="btn go" data-save5${chk.ok && dirty ? "" : " disabled"}>Save my teams</button></div></div></div>
       <div class="pl-regions">${regions.map((rg) => `<div class="card"><div class="mod-h"><h2>${esc(rg)}</h2></div><div class="pl-field">${Object.entries(byRegion[rg]).sort((x, y) => x[1] - y[1] || String(team(x[0]).n).localeCompare(String(team(y[0]).n))).map(([t, s]) => {
