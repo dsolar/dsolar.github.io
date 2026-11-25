@@ -82,3 +82,5 @@ main[tabindex="-1"]:focus,#ds-content:focus{outline:none}
 .ds-navigation:has(.ds-prod) .ds-brand{font-size:18px;letter-spacing:-.3px}
 .ds-navigation:has(.ds-prod) .ds-brand img{width:26px;height:26px}
 .ds-navigation:has(.ds-prod) .ds-section-link{font:750 14px/1.25 "Barlow","Libre Franklin","Helvetica Neue",Arial,sans-serif}
+/* Pools' accent: green under the bar (the hubs are red, Draft Lab amber) */
+.ds-navigation[data-prod="pools"]{border-bottom-color:#2FB67C}

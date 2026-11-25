@@ -1,4 +1,4 @@
-/* Draft Lab's pools page (fantasy/pools/): every competition to play with friends in one place. Pick'em (its own page,
+/* Pools (fantasy/pools/), its own product beside the Hubs and Draft Lab: every competition to play with friends in one place. Pick'em (its own page,
    pickem/) and its groups, season-long NFL survivor, and March Madness survivor and 5 teams: sign in, make or join a
    pool, pick, and the standings. The rules are pools-core.js (FK.pools); the games, picks and locks live on the server
    (tools/fantasykit_pools.sql, through FK.cloud.rpc). College team names, logos and ratings come from the college hub
@@ -47,7 +47,7 @@
   const name = (id) => esc(team(id).n || "TBD");
 
   // ---------- pieces ----------
-  const band = (title, sub, extra = "", kick = "Draft Lab", art = BRACKET_ART) => `<section class="pl-band"><div class="pl-band-in"><p class="pl-kick">${kick}</p><h1 class="disp">${title}</h1>${sub ? `<p class="pl-sub">${sub}</p>` : ""}${extra}</div>${art}</section>`;
+  const band = (title, sub, extra = "", kick = "Pools", art = BRACKET_ART) => `<section class="pl-band"><div class="pl-band-in"><p class="pl-kick">${kick}</p><h1 class="disp">${title}</h1>${sub ? `<p class="pl-sub">${sub}</p>` : ""}${extra}</div>${art}</section>`;
   const BRACKET_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
     <path d="M10 14h36v20H10M10 54h36v-20M46 24h34v40H46M10 94h36v20H10M10 134h36v-20M46 104h34v-40M80 44h34v40H80M114 64h40"/>
     <path d="M210 14h-36v20h36M210 54h-36v-20M174 24h-34v40h34M210 94h-36v20h36M210 134h-36v-20M174 104h-34v-40M140 44h-26v40h26" opacity=".55"/></g></svg>`;
@@ -329,7 +329,7 @@
     const has = items.length > 0;
     const haveK = new Set((mine || []).map((p) => p.kind));
     const next = upNext(haveK, st.sport);
-    app.innerHTML = `<div class="wrap page pl">${bar}${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
+    app.innerHTML = `<div class="wrap page pl">${bar}${band("Pools", "Pick'em, survivor, brackets and more to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`, "With friends")}
       ${has ? yours + next : next + yours}${catalog}${signin}</div>`;
     pinBar();
   }
@@ -360,7 +360,7 @@
   const loadQr = () => qrLoad || (qrLoad = new Promise((res) => { const s = document.createElement("script"); s.src = "/fantasy-kit/vendor/qrcode.min.js"; s.onload = () => res(window.qrcode); s.onerror = () => res(null); document.head.appendChild(s); }));
   function invitePanel(b) {
     const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
-    const text = `Join my ${kindName(p.kind)} pool, ${p.name}, on Draft Lab: ${url}`;
+    const text = `Join my ${kindName(p.kind)} pool, ${p.name}: ${url}`;
     let qr = "";
     if (window.qrcode) { try { const q = window.qrcode(0, "M"); q.addData(url); q.make(); qr = q.createSvgTag({ cellSize: 5, margin: 2, scalable: true }); } catch (e) { qr = ""; } }
     else loadQr().then((ok) => { if (ok && st.invite) render(); });

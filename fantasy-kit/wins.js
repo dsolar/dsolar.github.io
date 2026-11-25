@@ -1,4 +1,4 @@
-/* Draft Lab's wins pool page (fantasy/pools/wins/): friends draft real NBA or NFL teams in a snake, and the most
+/* The wins pool page (fantasy/pools/wins/, part of Pools): friends draft real NBA or NFL teams in a snake, and the most
    combined wins from draft day forward takes it. The rules are wins-core.js (FK.wins); the pool, its entries and its
    picks live on the server (tools/fantasykit_wins.sql, through FK.cloud.rpc). Records come from the site's own
    standings files: celtics/live.json (NBA, every morning) and nfl/data/games.json (NFL, every day).
@@ -28,7 +28,7 @@
 
   // ---------- pieces ----------
   const ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M30 130h160M50 130V92h28v38M96 130V62h28v68M142 130V34h28v96"/><path d="m46 70 30-22 26 12 44-36"/><path d="M132 24h14v14"/></g></svg>`;
-  const band = (title, sub, extra = "", kick = "Draft Lab") => `<section class="pl-band"><div class="pl-band-in"><p class="pl-kick">${kick}</p><h1 class="disp">${title}</h1>${sub ? `<p class="pl-sub">${sub}</p>` : ""}${extra}</div>${ART}</section>`;
+  const band = (title, sub, extra = "", kick = "Pools") => `<section class="pl-band"><div class="pl-band-in"><p class="pl-kick">${kick}</p><h1 class="disp">${title}</h1>${sub ? `<p class="pl-sub">${sub}</p>` : ""}${extra}</div>${ART}</section>`;
   const logo = (sport, t, px = 28) => `<img class="pl-logo" src="${esc(W.logo(sport, t, px))}" alt="" width="${px}" height="${px}" loading="lazy" onerror="this.style.visibility='hidden'">`;
   const rec = (r) => (r ? `${r.w}-${r.l}` : "");
   const ok = (r) => { if (r && r.error) throw new Error(r.error); return r; };
@@ -86,7 +86,7 @@
   const loadQr = () => qrLoad || (qrLoad = new Promise((res) => { const s = document.createElement("script"); s.src = "/fantasy-kit/vendor/qrcode.min.js"; s.onload = () => res(window.qrcode); s.onerror = () => res(null); document.head.appendChild(s); }));
   function invitePanel(b) {
     const p = b.pool, url = `${location.origin}${HERE}?join=${p.id}`;
-    const text = `Join my ${W.SPORTS[p.sport].name} wins pool, ${p.name}, on Draft Lab: ${url}`;
+    const text = `Join my ${W.SPORTS[p.sport].name} wins pool, ${p.name}: ${url}`;
     let qr = "";
     if (window.qrcode) { try { const q = window.qrcode(0, "M"); q.addData(url); q.make(); qr = q.createSvgTag({ cellSize: 5, margin: 2, scalable: true }); } catch (e) { qr = ""; } }
     else loadQr().then((good) => { if (good && st.invite) render(); });

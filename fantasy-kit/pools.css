@@ -963,3 +963,7 @@ body{overflow-x:clip}
   .pl-band h1{font-size:44px}
   .pl-sub{font-size:15px}
 }
+
+/* Pools is its own product (the Hubs / Draft Lab / Pools switch): its own green accent under the bar */
+.fk-top .fk-mast.pools-mast{border-bottom-color:#2FB67C}
+.fk-mast.inline.pools-mast .mast-nav a[aria-current="page"]{border-bottom-color:#2FB67C}
