@@ -53,9 +53,13 @@
     <path d="M210 14h-36v20h36M210 54h-36v-20M174 24h-34v40h34M210 94h-36v20h36M210 134h-36v-20M174 104h-34v-40M140 44h-26v40h26" opacity=".55"/></g></svg>`;
   const GOAL_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
     <path d="M110 150V96M60 96h100M60 96V14M160 96V14"/><path d="M14 150h192M30 132h160M46 114h128" opacity=".55"/></g></svg>`;
-  const OSC_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="110" cy="24" r="9"/><path d="M103 36h14l-3 12 4 5-3 43h-10l-3-43 4-5z"/><path d="M95 96h30v13H95zM88 109h44v12H88zM81 121h58v14H81z"/>
-    <path d="M24 150 70 14M196 150 150 14M14 150h192" opacity=".55"/></g></svg>`;
+  const OSC_ART = `<svg class="pl-art osc-art" viewBox="0 0 240 180" aria-hidden="true"><defs>
+    <linearGradient id="osc-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F6E3A8"/><stop offset=".45" stop-color="#D4AC52"/><stop offset="1" stop-color="#8E6A24"/></linearGradient>
+    <radialGradient id="osc-r" cx=".5" cy="1" r=".9"><stop offset="0" stop-color="#E8C976" stop-opacity=".55"/><stop offset="1" stop-color="#E8C976" stop-opacity="0"/></radialGradient></defs>
+    <g stroke="#D9B867" stroke-width="1.2" opacity=".55">${Array.from({ length: 13 }, (_, k) => { const a = Math.PI * (0.08 + (0.84 * k) / 12); return `<path d="M120 176 L${(120 - 190 * Math.cos(a)).toFixed(1)} ${(176 - 190 * Math.sin(a)).toFixed(1)}"/>`; }).join("")}</g>
+    <ellipse cx="120" cy="176" rx="110" ry="70" fill="url(#osc-r)"/>
+    <g fill="url(#osc-g)"><circle cx="120" cy="30" r="10"/><path d="M112 42h16l-3 14 5 6-4 50h-12l-4-50 5-6z"/><path d="M104 112h32v10h-32z"/><path d="M98 124h44v11H98z"/><path d="M92 137h56v14H92z"/></g>
+    <path d="M70 160h100M84 168h72" stroke="#D9B867" stroke-width="1.5" opacity=".7"/></svg>`;
   const artOf = (k) => (k === "oscars" ? OSC_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
@@ -176,11 +180,11 @@
   /* The page is organized by sport, like the fantasy home: a sport bar, then one panel per sport with its games. k is
      the fantasy pages' key (its colors and its court or field drawing, fantasy-kit/sport-art.js). */
   const SPORTS_P = [
-    { k: "nfl", sport: "NFL", name: "NFL", blurb: "Every week of the season, then the playoffs and the Super Bowl.", dates: [[CAL.nflField, "Playoff field set"], [CAL.wildCard, "Wild Card weekend"], [CAL.superBowl, "Super Bowl"]] },
-    { k: "cfb", sport: "College football", name: "College football", blurb: "Bowl season and the College Football Playoff, every game.", dates: [[CAL.bowlsSet, "Matchups set"], [CAL.bowls, "Bowls start"], [CAL.cfpTitle, "Title game"]] },
-    { k: "nba", sport: "NBA", name: "NBA", blurb: "Draft real teams and ride their wins all season.", dates: [[CAL.nbaEnd, "Regular season ends"]] },
-    { k: "cbb", sport: "March Madness", name: "March Madness", blurb: "Survivor and 5 teams, from Selection Sunday to the title game.", dates: [[CAL.selection, "Selection Sunday"], [CAL.mmTitle, "Title game"]] },
-    { k: "osc", sport: "Oscars", name: "The Oscars", blurb: "A ballot for every category on Hollywood's big night.", dates: [[CAL.oscarNoms, "Nominations"], [CAL.oscars, "The show"]] },
+    { k: "nfl", sport: "NFL", name: "NFL", bar: "NFL", blurb: "Every week of the season, then the playoffs and the Super Bowl.", dates: [[CAL.nflField, "Playoff field set"], [CAL.wildCard, "Wild Card weekend"], [CAL.superBowl, "Super Bowl"]] },
+    { k: "cfb", sport: "College football", name: "College football", bar: "NCAAF", blurb: "Bowl season and the College Football Playoff, every game.", dates: [[CAL.bowlsSet, "Matchups set"], [CAL.bowls, "Bowls start"], [CAL.cfpTitle, "Title game"]] },
+    { k: "nba", sport: "NBA", name: "NBA", bar: "NBA", blurb: "Draft real teams and ride their wins all season.", dates: [[CAL.nbaEnd, "Regular season ends"]] },
+    { k: "cbb", sport: "March Madness", name: "March Madness", bar: "NCAAB", blurb: "Survivor and 5 teams, from Selection Sunday to the title game.", dates: [[CAL.selection, "Selection Sunday"], [CAL.mmTitle, "Title game"]] },
+    { k: "osc", sport: "Oscars", name: "The Oscars", bar: "Oscars", blurb: "A ballot for every category on Hollywood's big night.", dates: [[CAL.oscarNoms, "Nominations"], [CAL.oscars, "The show"]] },
   ];
   const sportKeyOf = (kind) => (SPORTS_P.find((x) => x.sport === SPORT[kind]) || SPORTS_P[0]).k;
   /* Up next: the one game to set up now, by the calendar (from the day shown up to, not including, the day it ends).
@@ -287,7 +291,7 @@
         <ul class="pl-door-games">${sp.gs.map(gameRow).join("")}</ul>
         ${dates.length ? `<ol class="pl-door-dates">${dates.map(([d, t]) => `<li><time datetime="${d}">${shortDate(d)}</time>${esc(t)}</li>`).join("")}</ol>` : ""}</section>`;
     };
-    const bar = `<nav class="pl-sbar" aria-label="Sports"><button type="button" data-sport=""${!st.sport ? ' aria-current="true"' : ""}>${art ? art.ic("home") : ""}All</button><span class="pl-sbar-sep" aria-hidden="true"></span>${sports.map((sp) => `<button type="button" class="${sp.k}" data-sport="${sp.k}"${st.sport === sp.k ? ' aria-current="true"' : ""}>${art ? art.ic(sp.k) : ""}${esc(sp.name)}</button>`).join("")}</nav>`;
+    const bar = `<nav class="pl-sbar" aria-label="Sports"><button type="button" data-sport=""${!st.sport ? ' aria-current="true"' : ""}>${art ? art.ic("home") : ""}All sports</button><span class="pl-sbar-sep" aria-hidden="true"></span>${sports.map((sp) => `<button type="button" class="${sp.k}" data-sport="${sp.k}"${st.sport === sp.k ? ' aria-current="true"' : ""}>${art ? art.ic(sp.k) : ""}${esc(sp.bar || sp.name)}</button>`).join("")}</nav>`;
     const catalog = `<section class="pl-sports" aria-label="Games by sport"><div class="pl-doors${shown.length === 1 ? " one" : ""}">${shown.map(door).join("")}</div></section>`;
     const pill = (x) => !x ? "" : x.tone === "todo" ? `<span class="pl-due">${x.due ? `Due ${esc(dueText(x.due))}` : "To do"}</span>` : x.tone === "won" ? `<span class="pl-due won">Won</span>` : x.tone === "out" ? `<span class="pl-due out">Out</span>` : "";
     const row = (href, key, sc, name, sub, x) => `<li class="${x ? "t-" + x.tone : ""}"><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
@@ -325,8 +329,8 @@
     const has = items.length > 0;
     const haveK = new Set((mine || []).map((p) => p.kind));
     const next = upNext(haveK, st.sport);
-    app.innerHTML = `<div class="wrap page pl">${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
-      ${bar}${has ? yours + next : next + yours}${catalog}${signin}</div>`;
+    app.innerHTML = `<div class="wrap page pl">${bar}${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
+      ${has ? yours + next : next + yours}${catalog}${signin}</div>`;
     pinBar();
   }
 
@@ -441,7 +445,7 @@
     await load();
     const b = st.board;
     if (b && b.error === "join") {
-      app.innerHTML = `<div class="wrap page pl">${band(esc(b.pool.name), `${KIND[b.pool.kind]}${b.pool.kind === "nfl" ? ` from week ${b.pool.startWeek}` : ""} &middot; ${b.pool.members} ${b.pool.members === 1 ? "entry" : "entries"}`, "", SPORT[b.pool.kind], artOf(b.pool.kind))}
+      app.innerHTML = `<div class="wrap page pl${b.pool.kind === "oscars" ? " osc-night" : ""}">${band(esc(b.pool.name), `${KIND[b.pool.kind]}${b.pool.kind === "nfl" ? ` from week ${b.pool.startWeek}` : ""} &middot; ${b.pool.members} ${b.pool.members === 1 ? "entry" : "entries"}`, "", SPORT[b.pool.kind], artOf(b.pool.kind))}
         ${st.user ? `<form class="card" id="pl-join"><div class="mod-h"><h2>Join this pool</h2></div><div class="bd pl-form"><input type="hidden" name="code" value="${esc(b.pool.id)}"><label>Your entry's name <small class="ps">(optional)</small><input name="entry" maxlength="28"></label><button class="btn go">Join ${esc(b.pool.name)}</button><p class="pl-msg" role="status">${esc(st.msg)}</p></div></form>` : signinCard(`Sign in to join ${b.pool.name}`)}
         <div class="card"><div class="bd">${rulesHtml(b.pool.kind)}</div></div></div>`;
       return;
@@ -465,7 +469,7 @@
     const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
     const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
     const asBar = st.as && b.as ? `<div class="pl-asbar" role="status"><span><b>You're making picks for ${esc(b.as.name)}.</b> Every lock still applies, and each pick is logged where the whole pool can see it.</span><button type="button" class="btn sm" data-asdone>Done</button></div>` : "";
-    app.innerHTML = `<div class="wrap page pl">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
+    app.innerHTML = `<div class="wrap page pl${b.pool.kind === "oscars" ? " osc-night" : ""}">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${st.tab === "standings" ? potAndChamps(b) : ""}</div>`;
     // 6: a day strip that runs past the screen opens on the day it's showing
@@ -776,13 +780,14 @@
       : missed ? `<div class="pl-note"><b>${missed === 1 ? "One of your practice picks wasn't" : `${missed} of your practice picks weren't`} nominated.</b> Pick again where it says so below.</div>` : "";
     const bar = `<div class="card pl-bar pl-bbar"><div class="bd">
       <div class="pl-bstat"><span><b>${n}</b> of ${O.cats.length} picked</span>${lock ? `<span><b>${row.points || 0}</b> points, ${row.right || 0} right</span>` : `<span>${O.total} points up for grabs</span>`}</div>
+      <div class="osc-meter" aria-hidden="true">${O.cats.map((c) => `<i class="${ok1(c) ? "on" : ""}${O.answers[c.id] != null && ok1(c) ? (st.osc[c.id] === O.answers[c.id] ? " won" : " lost") : ""}" title="${esc(c.name)}"></i>`).join("")}</div>
       <p class="pl-bhint">${lock ? "Ballots locked when the show started. Winners show here as they're marked." : `Ballots lock when the show starts, ${esc(showTime(lk || CAL.oscars + "T23:00:00Z"))}. Everyone's picks show then.`}</p>
       <label class="pl-tb">How long the show runs, in minutes<input type="number" inputmode="numeric" min="60" max="400" data-osctb value="${esc(st.osctb || "")}" placeholder="e.g. 215"${lock ? " disabled" : ""}></label>
       ${lock ? "" : `<div class="pl-save">${n < O.cats.length ? `<button type="button" class="btn sm" data-oscfav title="Pick the pundits' favorite in every category you haven't picked">Pick the favorites</button>` : ""}<span class="ps">${dirty ? "Not saved yet." : n ? "Saved." : "Tap a nominee to pick it."}</span><button type="button" class="btn go" data-oscsave${dirty ? "" : " disabled"}>Save ballot</button></div>`}</div></div>`;
     const list = O.cats.map((c) => {
       const mine = st.osc[c.id], ans = O.answers[c.id], pts = +c.pts || 1;
       const res = ans != null && ok1(c) ? (mine === ans ? `<span class="pl-pick win">+${pts}</span>` : `<span class="pl-pick loss">0</span>`) : "";
-      return `<section class="pl-oc"><header class="pl-oc-h"><h3>${esc(c.name)}</h3><small>${pts} ${pts === 1 ? "point" : "points"}</small>${res}</header>
+      return `<section class="pl-oc${c.noms.length > 6 ? " wide" : ""}${pts >= 3 ? " big" : ""}"><header class="pl-oc-h"><h3>${esc(c.name)}</h3><small>${pts} ${pts === 1 ? "point" : "points"}</small>${res}</header>
         ${mine && !ok1(c) ? `<p class="pl-oc-miss">Your practice pick wasn't nominated. Pick again.</p>` : ""}
         <div class="pl-oc-n">${c.noms.map((x) => `<button type="button" class="pl-on${mine === x.id ? " on" : ""}${ans === x.id ? " right" : ans != null && mine === x.id ? " wrong" : ""}" data-osc="${esc(c.id)}|${esc(x.id)}" aria-pressed="${mine === x.id}"${lock ? " disabled" : ""}><b>${esc(x.t)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ""}</button>`).join("")}</div></section>`;
     }).join("");
@@ -801,8 +806,8 @@
     return `<p class="pl-gsum">${O.graded} of ${O.cats.length} announced.${owner ? " Tap the winner to mark it; tap it again to clear." : ""}</p>${run}<div class="pl-ocs">` + O.cats.map((c) => {
       const by = {}; (b.picks || []).forEach((k) => { if (k.slot === "p:" + c.id && k.team != null) (by[k.team] = by[k.team] || []).push(k.user); });
       const tot = c.noms.reduce((x, nm) => x + (by[nm.id] || []).length, 0) || 1, ans = O.answers[c.id];
-      return `<section class="pl-oc"><header class="pl-oc-h"><h3>${esc(c.name)}</h3><small>${+c.pts || 1} ${(+c.pts || 1) === 1 ? "point" : "points"}</small></header>
-        <div class="pl-oc-n">${c.noms.map((x) => { const ids = by[x.id] || []; return `<button type="button" class="pl-on stat${ans === x.id ? " right" : ""}"${owner ? ` data-oscans="${esc(c.id)}|${esc(x.id)}"` : " disabled"}><b>${esc(x.t)}</b><em>${Math.round((100 * ids.length) / tot)}%</em>${x.s ? `<small>${esc(x.s)}</small>` : ""}${ids.length ? `<small class="pl-on-who">${ids.map((id) => esc(nameOf(b, id))).join(", ")}</small>` : ""}</button>`; }).join("")}</div></section>`;
+      return `<section class="pl-oc${c.noms.length > 6 ? " wide" : ""}${(+c.pts || 1) >= 3 ? " big" : ""}"><header class="pl-oc-h"><h3>${esc(c.name)}</h3><small>${+c.pts || 1} ${(+c.pts || 1) === 1 ? "point" : "points"}</small></header>
+        <div class="pl-oc-n">${c.noms.map((x) => { const ids = by[x.id] || []; const pc = Math.round((100 * ids.length) / tot); return `<button type="button" class="pl-on stat${ans === x.id ? " right" : ""}" style="--w:${pc}%"${owner ? ` data-oscans="${esc(c.id)}|${esc(x.id)}"` : " disabled"}><b>${esc(x.t)}</b><em>${pc}%</em>${x.s ? `<small>${esc(x.s)}</small>` : ""}${ids.length ? `<small class="pl-on-who">${ids.map((id) => esc(nameOf(b, id))).join(", ")}</small>` : ""}</button>`; }).join("")}</div></section>`;
     }).join("") + `</div>`;
   }
   function oscTable(b) {

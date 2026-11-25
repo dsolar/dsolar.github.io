@@ -870,32 +870,96 @@ button.pl-chip{cursor:pointer}
 .pl-ped-s input{width:90px}
 @media (max-width:640px){.pl-prop-o{padding-left:0}.pl-po{flex:1 1 auto;justify-content:center}}
 
-/* ---------- Oscars ballot: a category a block, its nominees as two-line choices (the name, then the film) ---------- */
-.pl-ocs{display:grid;gap:12px;margin-top:12px}
-.pl-oc{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:14px 16px}
-.pl-oc-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
-.pl-oc-h h3{flex:1;margin:0;font:800 17px/1.25 var(--f-disp,inherit);letter-spacing:-.01em}
-.pl-oc-h small{font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap}
-.pl-oc-n{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px}
-.pl-on{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-height:52px;padding:9px 12px 9px 34px;position:relative;border:1px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
-.pl-on::before{content:"";position:absolute;left:12px;top:50%;margin-top:-7px;width:14px;height:14px;border-radius:50%;border:2px solid var(--line)}
-.pl-on b{font-size:14.5px;font-weight:700;line-height:1.25}
+/* ---------- Oscars ballot: Oscar night. The pool's page goes black tie (warm stage black, statuette gold,
+   champagne type in the site's serif), and the ballot reads like a printed one: each category a framed card,
+   nominees as ballot lines with a diamond to mark. Best Picture's ten run two columns across the full width; the
+   rest sit two categories to a row, so no row ends with one stray nominee. ---------- */
+.osc-night{--bg:#0D0A07;--surface:#16110B;--surface-2:#1C160E;--surface-3:#251D12;--line:rgba(201,160,74,.2);--line-2:rgba(201,160,74,.34);--field:#110D08;
+  --ink:#F2EADB;--muted:#A89A82;--dim:#93866F;--brand:#D4AC52;--accent:#E8C976;--gold:#D4AC52;--osc:#D4AC52;--osc-hi:#F1DC9C;--shadow:none;color-scheme:dark;color:var(--ink)}
+body:has(.osc-night){background:#0D0A07}
+.osc-night .pl-band{background:linear-gradient(180deg,#120D08 0%,#1E1209 55%,#3B0D12 130%);color:var(--ink)}
+.osc-night .pl-band::before{background:radial-gradient(55% 120% at 82% 100%,rgba(212,172,82,.26),transparent 62%),radial-gradient(40% 80% at 0% 0%,rgba(59,13,18,.55),transparent 70%)}
+.osc-night .pl-band h1{background:linear-gradient(180deg,#FBF0CF 10%,#D4AC52 70%,#9A7429);-webkit-background-clip:text;background-clip:text;color:transparent}
+.osc-night .pl-kick{color:var(--osc)}
+.osc-night .pl-sub{color:#C9BBA0}
+.osc-night .pl-band .btn{border-color:rgba(212,172,82,.4)}
+.osc-night .pl-band .pl-code{background:rgba(212,172,82,.16);color:var(--osc-hi)}
+.osc-art{opacity:1;width:min(36%,300px);top:auto;bottom:0;transform:none}
+.osc-night .pl-tabs button[aria-selected="true"]{background:var(--osc);color:#1A1206}
+.osc-night .btn.go{background:linear-gradient(180deg,#F1DC9C,#C9A04A);border-color:#C9A04A;color:#1A1206}
+.osc-night .pl-note{background:var(--surface);border-left-color:var(--osc)}
+
+.pl-ocs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:14px;align-items:start}
+.pl-oc{position:relative;border:1px solid var(--line-2);border-radius:4px;background:var(--surface);padding:18px 18px 14px}
+.pl-oc.wide{grid-column:1/-1}
+/* the deco frame: a second hairline just inside the card, and a small diamond over the top rule */
+.osc-night .pl-oc::before{content:"";position:absolute;inset:5px;border:1px solid var(--line);border-radius:2px;pointer-events:none}
+.osc-night .pl-oc::after{content:"";position:absolute;left:50%;top:-5px;width:9px;height:9px;margin-left:-4.5px;transform:rotate(45deg);background:var(--bg);border:1px solid var(--line-2)}
+.pl-oc-h{position:relative;display:flex;align-items:baseline;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.pl-oc-h h3{flex:1;margin:0;font:800 19px/1.2 var(--f-disp,"Besley",Georgia,serif);letter-spacing:0;color:var(--osc-hi,var(--ink))}
+.pl-oc.big .pl-oc-h h3{font-size:22px}
+.pl-oc.wide .pl-oc-h h3{font-size:clamp(24px,3vw,32px)}
+.pl-oc-h small{font:700 13px/1 var(--f-cond,"Barlow Condensed",inherit);letter-spacing:.04em;color:var(--osc,var(--muted));white-space:nowrap}
+.pl-oc-n{position:relative;display:grid;grid-template-columns:1fr;gap:2px}
+.pl-oc.wide .pl-oc-n{grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:column;grid-template-rows:repeat(5,auto);column-gap:18px}
+.pl-on{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:1px;min-height:50px;padding:7px 12px 7px 38px;position:relative;
+  border:1px solid transparent;border-radius:3px;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer;transition:background .12s,border-color .12s}
+.pl-on::before{content:"";position:absolute;left:14px;top:50%;width:10px;height:10px;margin-top:-5px;transform:rotate(45deg);border:1.5px solid var(--line-2);background:transparent;transition:background .12s,border-color .12s,box-shadow .12s}
+.pl-on b{font-size:15px;font-weight:700;line-height:1.25}
 .pl-on small{font-size:12.5px;color:var(--muted);line-height:1.3}
-.pl-on:hover:not(:disabled){border-color:var(--muted)}
+.pl-on:hover:not(:disabled){background:var(--surface-3)}
+.pl-on:hover:not(:disabled)::before{border-color:var(--osc,var(--muted))}
 .pl-on:disabled{cursor:default}
-.pl-on:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-.pl-on.on{border-color:#B8892B;background:color-mix(in srgb,#B8892B 12%,var(--surface))}
-.pl-on.on::before{border-color:#B8892B;background:#B8892B;box-shadow:inset 0 0 0 2px var(--surface)}
-.pl-on.right{border-color:var(--up,#1a8a4a);background:color-mix(in srgb,var(--up,#1a8a4a) 14%,var(--surface))}
-.pl-on.right::before{border-color:var(--up,#1a8a4a);background:var(--up,#1a8a4a)}
-.pl-on.wrong b{text-decoration:line-through;color:var(--muted)}
-.pl-on.stat{display:grid;grid-template-columns:1fr auto;align-content:start;column-gap:10px;row-gap:2px;padding-left:12px}
-.pl-on.stat::before{display:none}
-.pl-on.stat em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums}
+.pl-on:focus-visible{outline:2px solid var(--osc,var(--ink));outline-offset:1px}
+.pl-on.on{background:linear-gradient(90deg,rgba(212,172,82,.2),rgba(212,172,82,.04));border-color:rgba(212,172,82,.45)}
+.pl-on.on b{color:var(--osc-hi,var(--ink))}
+.pl-on.on::before{background:var(--osc,#B8892B);border-color:var(--osc,#B8892B);box-shadow:0 0 10px rgba(212,172,82,.7)}
+.pl-on.right{background:linear-gradient(90deg,rgba(212,172,82,.34),rgba(212,172,82,.08));border-color:var(--osc,var(--up))}
+.pl-on.right::before{background:var(--osc-hi,var(--up));border-color:var(--osc-hi,var(--up));box-shadow:0 0 14px rgba(241,220,156,.9)}
+.pl-on.wrong b{text-decoration:line-through;text-decoration-color:rgba(255,107,120,.7);color:var(--muted)}
+.pl-on.stat{display:grid;grid-template-columns:1fr auto;align-content:center;column-gap:10px;row-gap:1px;padding-bottom:11px}
+.pl-on.stat em{font-style:normal;font-weight:800;font-variant-numeric:tabular-nums;color:var(--osc,var(--ink))}
 .pl-on.stat small{grid-column:1/-1}
+.pl-on.stat::after{content:"";position:absolute;left:38px;right:12px;bottom:5px;height:2px;border-radius:2px;background:linear-gradient(90deg,var(--osc,#B8892B) var(--w,0%),var(--line) var(--w,0%))}
 .pl-on-who{color:var(--ink) !important;opacity:.75}
-.pl-oc-miss{margin:-4px 0 10px;font-size:13px;font-weight:700;color:var(--down,#c0392b)}
+.pl-oc-miss{margin:0 0 8px;font-size:13px;font-weight:700;color:var(--loss,#c0392b)}
 .pl-oc-later{margin-top:12px}
 .pl-oc-run{margin:0 0 12px;align-items:flex-end;justify-content:flex-start}
-.pl-oc-run label{flex:0 1 300px}
-@media (max-width:640px){.pl-oc{padding:12px}.pl-oc-n{grid-template-columns:1fr}}
+.pl-oc-run label{flex:0 1 400px}
+/* the ballot's progress: a diamond for every category, gold once it's picked */
+.osc-meter{display:flex;flex-wrap:wrap;gap:7px;margin:12px 0 4px}
+.osc-meter i{width:10px;height:10px;transform:rotate(45deg);border:1.5px solid var(--line-2);transition:background .2s,border-color .2s}
+.osc-meter i.on{background:var(--osc,#B8892B);border-color:var(--osc,#B8892B)}
+.osc-meter i.won{background:var(--osc-hi,#F1DC9C);box-shadow:0 0 8px rgba(241,220,156,.8)}
+.osc-meter i.lost{background:transparent;border-color:var(--loss,#c0392b)}
+@media (max-width:860px){.pl-ocs{grid-template-columns:1fr}}
+@media (max-width:640px){.pl-oc{padding:14px 12px 10px}.pl-oc.wide .pl-oc-n{grid-template-columns:1fr;grid-auto-flow:row;grid-template-rows:none}.pl-oc-h h3{font-size:18px}.pl-oc.big .pl-oc-h h3,.pl-oc.wide .pl-oc-h h3{font-size:21px}}
+@media (prefers-reduced-motion:reduce){.pl-on,.pl-on::before,.osc-meter i{transition:none}}
+
+/* ---------- Draft Lab's frame (fantasy/hub.css): the site's full width, the white sport bar right under the header,
+   and a full-bleed navy hero with the eyebrow, the same as Draft Lab's home and its sport pages ---------- */
+body{overflow-x:clip}
+.pl{max-width:none}
+.wrap.page.pl{padding-top:0}
+.pl-band{border-radius:0;margin:0 calc(50% - 50vw);padding:40px calc(50vw - 50%) 34px;isolation:isolate;
+  background:var(--band,#13233A);color:#EEF2F7}
+.pl-band::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 120% at 100% 0%,rgba(246,196,69,.16),transparent 60%),radial-gradient(50% 90% at 0% 100%,rgba(59,111,240,.14),transparent 60%)}
+.pl-band::after{display:none}
+.pl-band-in{max-width:720px}
+.pl-kick{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:800;letter-spacing:.12em}
+.pl-kick::before{content:"";width:18px;height:2px;background:currentColor}
+.pl-band h1{margin:10px 0 0;font-size:clamp(44px,6.5vw,84px);--disp-wdth:70;line-height:.98}
+.pl-sub{margin-top:12px;max-width:58ch;color:#B9C5D4;font-size:17px}
+.pl-art{right:calc(50vw - 50%);width:min(34%,260px);opacity:.28}
+.pl-sbar{margin:0 calc(50% - 50vw);padding:0 calc(50vw - 50%);min-height:58px;gap:4px;
+  background:var(--surface);border-bottom:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:none}
+.pl-sbar button{color:var(--muted);padding:8px 15px;font-family:inherit;font-weight:800;font-size:14.5px;line-height:1}
+.pl-sbar button:hover{background:var(--surface-3);color:var(--ink)}
+.pl-sbar button[aria-current="true"]{box-shadow:0 4px 14px -6px var(--sp,transparent)}
+.pl-sbar-sep{height:24px;margin:0 8px}
+.pl-sbar+.pl-band{margin-top:-18px}
+@media (max-width:640px){
+  .pl-band{padding-top:28px;padding-bottom:24px}
+  .pl-band h1{font-size:44px}
+  .pl-sub{font-size:15px}
+}

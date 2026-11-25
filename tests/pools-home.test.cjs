@@ -28,7 +28,7 @@ test("signed out in late November: organized by sport, in-season sports first; U
   try {
     const nx = app.querySelector(".pl-next");
     assert.ok(nx, "an Up next spot"); assert.match(nx.textContent, /Bowl pick'em/); assert.match(nx.textContent, /Dec 6/);
-    assert.deepEqual([...app.querySelectorAll(".pl-sbar button")].map((b) => b.textContent.trim()), ["All", "NFL", "NBA", "College football", "The Oscars", "March Madness"]);
+    assert.deepEqual([...app.querySelectorAll(".pl-sbar button")].map((b) => b.textContent.trim()), ["All sports", "NFL", "NBA", "NCAAF", "Oscars", "NCAAB"]);
     assert.deepEqual([...app.querySelectorAll(".pl-door")].map((d) => d.id), ["sp-nfl", "sp-nba", "sp-cfb", "sp-osc", "sp-cbb"], "what's in season first, then by what opens soonest");
     const nfl = app.querySelector("#sp-nfl").textContent;
     assert.match(nfl, /Super Bowl squares\s*Fill it now/, "squares says Fill it now, not Live now");
