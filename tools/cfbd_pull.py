@@ -5,12 +5,14 @@ Writes cfb/data/cfbd.json with what ESPN doesn't give the hub:
   - advanced team stats (EPA per play, success rate, explosiveness, havoc, field position; garbage time excluded)
   - SP+ ratings
   - player EPA (season, garbage time excluded)
+  - opponent-adjusted EPA (CFBD's WEPA): every team's offense and defense, and each passer's and rusher's
+  - Elo and SRS ratings, and player usage (share of his team's plays)
   - betting lines with opening and closing numbers, for this week and last week (closing-line grading)
   - recruiting class rankings, returning production and the transfer portal once they apply (next season)
 
 The key comes from the CFBD_API_KEY environment variable (a GitHub Actions secret). It is never written anywhere.
 Without a key the script does nothing. The free tier is 1,000 calls a month, shared with CFBD's basketball API,
-so the script pulls at most once a day (about 7 calls), keeps a monthly call log, and stops at a safety cap.
+so the script pulls at most once a day (about 13 calls), keeps a monthly call log, and stops at a safety cap.
 CFBD team and game ids are ESPN's, so everything joins to hub.json directly.
 """
 import datetime as dt, json, os, pathlib, sys, urllib.error, urllib.parse, urllib.request
@@ -107,6 +109,53 @@ def parse_player_epa(rows, ids):
     return out
 
 
+def parse_adjusted(rows, ids):
+    """CFBD's opponent-adjusted team metrics (WEPA): offense, and what the defense allowed (lower is better there)."""
+    out = {}
+    for row in rows or []:
+        tid = ids.get(row.get("team")) or (str(row["teamId"]) if row.get("teamId") and str(row["teamId"]) in ids.values() else None)
+        if not tid:
+            continue
+        e, ea = row.get("epa") or {}, row.get("epaAllowed") or {}
+        s, sa = row.get("successRate") or {}, row.get("successRateAllowed") or {}
+        ru, rua = row.get("rushing") or {}, row.get("rushingAllowed") or {}
+        out[tid] = {"epa": r(e.get("total")), "epaA": r(ea.get("total")), "pass": r(e.get("passing")), "passA": r(ea.get("passing")),
+                    "rush": r(e.get("rushing")), "rushA": r(ea.get("rushing")), "sr": r(s.get("total")), "srA": r(sa.get("total")),
+                    "sd": r(s.get("standardDowns")), "pd": r(s.get("passingDowns")), "line": r(ru.get("lineYards"), 2), "lineA": r(rua.get("lineYards"), 2),
+                    "xpl": r(row.get("explosiveness")), "xplA": r(row.get("explosivenessAllowed"))}
+    return out
+
+
+def parse_wepa_players(rows, ids, kind, out):
+    """Each FBS passer's or rusher's opponent-adjusted EPA per play and his qualifying plays."""
+    for row in rows or []:
+        pid = str(row.get("athleteId") or "")
+        if not pid or row.get("team") not in ids:
+            continue
+        out.setdefault(pid, {})[kind] = [r(row.get("wepa")), num(row.get("plays"))]
+    return out
+
+
+def parse_team_values(rows, ids, key):
+    out = {}
+    for row in rows or []:
+        tid = ids.get(row.get("team"))
+        if tid and num(row.get(key)) is not None:
+            out[tid] = [r(row.get(key), 1), row.get("ranking")] if key == "rating" else r(row.get(key), 0)
+    return out
+
+
+def parse_usage(rows, ids):
+    """Share of his team's plays: overall, passes, runs, passing downs, third downs (players with 3%+ of plays overall)."""
+    out = {}
+    for row in rows or []:
+        pid, u = str(row.get("id") or ""), row.get("usage") or {}
+        if not pid or row.get("team") not in ids or (num(u.get("overall")) or 0) < 0.03:
+            continue
+        out[pid] = [r(u.get("overall")), r(u.get("pass")), r(u.get("rush")), r(u.get("passingDowns")), r(u.get("thirdDown"))]
+    return out
+
+
 def parse_lines(rows):
     """Opening and closing numbers per game, home-team margin (positive = home favored), from each book."""
     out = {}
@@ -191,7 +240,35 @@ def main():
         for w in sorted({w for w in (wk, (wk or 0) - 1) if w and w > 0}):
             got.update(parse_lines(c.get("/lines", year=year, week=w, seasonType=stype)))
         out["lines"] = got
-    for name, fn in (("advanced", advanced), ("sp", sp), ("players", players), ("lines", lines)):
+    def adjusted():
+        a = parse_adjusted(c.get("/wepa/team/season", year=year), ids)
+        if len(a) < 100:
+            raise ValueError(f"only {len(a)} teams")
+        out["adj"] = a
+    def wepa():
+        got = {}
+        parse_wepa_players(c.get("/wepa/players/passing", year=year), ids, "pass", got)
+        parse_wepa_players(c.get("/wepa/players/rushing", year=year), ids, "rush", got)
+        if len(got) < 100:
+            raise ValueError(f"only {len(got)} players")
+        out["wepa"] = got
+    def elo():
+        e = parse_team_values(c.get("/ratings/elo", year=year), ids, "elo")
+        if len(e) < 100:
+            raise ValueError(f"only {len(e)} teams")
+        out["elo"] = e
+    def srs():
+        e = parse_team_values(c.get("/ratings/srs", year=year), ids, "rating")
+        if len(e) < 100:
+            raise ValueError(f"only {len(e)} teams")
+        out["srs"] = e
+    def usage_players():
+        u = parse_usage(c.get("/player/usage", year=year, excludeGarbageTime=True), ids)
+        if len(u) < 300:
+            raise ValueError(f"only {len(u)} players")
+        out["usageP"] = u
+    for name, fn in (("advanced", advanced), ("sp", sp), ("players", players), ("lines", lines), ("adjusted", adjusted), ("wepa", wepa),
+                     ("elo", elo), ("srs", srs), ("playerUsage", usage_players)):
         step(name, fn)
 
     # Next season's building blocks, weekly once they exist (recruiting all year; returning production and the portal from December)
@@ -227,7 +304,8 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")) + "\n")
     print(json.dumps({"cfbd": "ok", "advanced": len(out.get("advanced") or {}), "sp": len(out.get("sp") or {}), "playerEpa": len(out.get("playerEpa") or {}),
-                      "lines": len(out.get("lines") or {}), "recruiting": len((out.get("recruiting") or {}).get("teams") or {}), "usage": out.get("usage"), "callsThisMonth": c.log, "errors": errors}))
+                      "lines": len(out.get("lines") or {}), "adj": len(out.get("adj") or {}), "wepa": len(out.get("wepa") or {}),
+                      "elo": len(out.get("elo") or {}), "srs": len(out.get("srs") or {}), "usageP": len(out.get("usageP") or {}), "recruiting": len((out.get("recruiting") or {}).get("teams") or {}), "usage": out.get("usage"), "callsThisMonth": c.log, "errors": errors}))
 
 
 if __name__ == "__main__":

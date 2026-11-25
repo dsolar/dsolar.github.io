@@ -37,7 +37,7 @@ jobs:
       - name: CollegeFootballData (EPA, SP+, opening and closing lines; once a day, skipped without the key)
         env:
           CFBD_API_KEY: ${{ secrets.CFBD_API_KEY }}
-        run: python3 tools/cfbd_pull.py
+        run: python3 tools/cfbd_pull.py ${{ github.event_name != 'schedule' && '--force' || '' }}
       - name: Ratings, lines, Heisman ladder and the season simulation
         if: hashFiles('tools/cfb_extras.py') != ''
         run: python3 tools/cfb_extras.py

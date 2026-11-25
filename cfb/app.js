@@ -56,6 +56,12 @@ function mv(x) { return fin(x) && x ? '<span class="mv ' + (x > 0 ? "up" : "dn")
 const ADV = id => C && C.advanced ? C.advanced[id] : null;
 const SPR = id => C && C.sp ? C.sp[id] : null;
 const PEPA = id => C && C.playerEpa ? C.playerEpa[id] : null;
+const ADJ = id => C && C.adj ? C.adj[id] : null; // CFBD's opponent-adjusted EPA (WEPA): epa (offense), epaA (allowed by the defense)
+const ELO = id => C && C.elo && fin(C.elo[id]) ? C.elo[id] : null;
+const SRS = id => C && C.srs && C.srs[id] ? C.srs[id] : null; // [rating, rank]
+const WEPA = id => C && C.wepa ? C.wepa[id] : null; // {pass: [per play, plays], rush: [...]}
+const USE = id => C && C.usageP ? C.usageP[id] : null; // [overall, pass, rush, passing downs, third down] shares
+const hasAdj = () => !!(C && C.adj && Object.keys(C.adj).length);
 const BOOK = id => C && C.lines ? C.lines[id] : null;
 const hasAdv = () => !!(C && C.advanced && Object.keys(C.advanced).length);
 const hasSP = () => !!(C && C.sp && Object.keys(C.sp).length);
@@ -64,10 +70,12 @@ const p1 = x => fin(x) ? (x * 100).toFixed(1) + "%" : "—";
 const ownLine = x => fin(x) ? (x > 50 ? 100 - x : x) : null; // snapshots before the fix stored yards to goal
 let advRank = {};
 function rankAdv() {
-  advRank = {}; if (!hasAdv()) return;
+  advRank = {}; if (!hasAdv() && !hasAdj()) return;
   const ids = D.teams.map(t => t.id).filter(id => ADV(id));
   const by = (k, f, asc) => ids.filter(id => fin(f(ADV(id)))).sort((a, b) => asc ? f(ADV(a)) - f(ADV(b)) : f(ADV(b)) - f(ADV(a))).forEach((id, i) => ((advRank[id] = advRank[id] || {})[k] = i + 1));
   by("oEpa", a => a.off.epa); by("dEpa", a => a.def.epa, true); by("net", a => a.off.epa - a.def.epa); by("oSr", a => a.off.sr); by("dSr", a => a.def.sr, true);
+  if (hasAdj()) { const ji = D.teams.map(t => t.id).filter(id => ADJ(id)); const jb = (k, f, asc) => ji.filter(id => fin(f(ADJ(id)))).sort((a, b) => asc ? f(ADJ(a)) - f(ADJ(b)) : f(ADJ(b)) - f(ADJ(a))).forEach((id, i) => ((advRank[id] = advRank[id] || {})[k] = i + 1)); jb("aOff", j => j.epa); jb("aDef", j => j.epaA, true); jb("aNet", j => j.epa - j.epaA); }
+  if (!hasAdv()) return;
   by("oXpl", a => a.off.xpl); by("dHav", a => a.def.havoc); by("oPass", a => a.off.passEpa); by("oRush", a => a.off.rushEpa); by("dPass", a => a.def.passEpa, true); by("dRush", a => a.def.rushEpa, true);
 }
 
@@ -279,7 +287,7 @@ function playoff(q) {
 /* ---------- ratings ---------- */
 const RCOLS = [
   ["rank", "Rk", t => R(t.id).rank, true], ["power", "Power", t => R(t.id).power], ["off", "Off", t => R(t.id).o], ["def", "Def", t => R(t.id).d, true],
-  ["fpi", "FPI", t => t.fpi.fpi], ["sp", "SP+", t => SPR(t.id) ? SPR(t.id).rating : null], ["res", "Résumé", t => R(t.id).resRank, true], ["sor", "ESPN SOR", t => t.fpi.sorRank, true], ["sos", "SOS", t => R(t.id).sosRank, true],
+  ["fpi", "FPI", t => t.fpi.fpi], ["sp", "SP+", t => SPR(t.id) ? SPR(t.id).rating : null], ["adj", "Adj EPA", t => ADJ(t.id) && fin(ADJ(t.id).epa) ? ADJ(t.id).epa - ADJ(t.id).epaA : null, false, hasAdj], ["elo", "Elo", t => ELO(t.id), false, () => !!(C && C.elo)], ["srs", "SRS", t => SRS(t.id) ? SRS(t.id)[0] : null, false, () => !!(C && C.srs)], ["res", "Résumé", t => R(t.id).resRank, true], ["sor", "ESPN SOR", t => t.fpi.sorRank, true], ["sos", "SOS", t => R(t.id).sosRank, true],
   ["proj", "Proj", t => odds(t.id) ? odds(t.id).w : null], ["champ", "Win conf", t => odds(t.id) ? odds(t.id).champ : null], ["cfp", "Make CFP", t => odds(t.id) ? odds(t.id).cfp : null], ["move", "7-day", t => R(t.id).move]
 ];
 function ratings(q) {
@@ -292,20 +300,25 @@ function ratings(q) {
     '<div class="controls">' + confSelect(conf) + '<label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Georgia, Boise…"></label>' + seg("view", [["table", "Table"]].concat(hasAdv() ? [["adv", "Efficiency"]] : []).concat([["chart", "Offense vs defense"]]), mode) + "</div>";
   if (mode === "chart") return head + scatter(ts, conf || s);
   if (mode === "adv" && hasAdv()) return head + advTable(ts, q.get("asort") || "net");
-  const th = "<tr><th class=l>Team</th><th>Poll</th>" + RCOLS.map(c => sortTh(c[0], c[1], sort)).join("") + "</tr>";
+  const RC = RCOLS.filter(c => !c[4] || c[4]());
+  const th = "<tr><th class=l>Team</th><th>Poll</th>" + RC.map(c => sortTh(c[0], c[1], sort, { adj: "CollegeFootballData's opponent-adjusted EPA per play: offense minus what the defense allowed", elo: "CollegeFootballData's Elo rating (1500 is average for all of college football)", srs: "Simple Rating System: points better than average, from margins and schedule" }[c[0]])).join("") + "</tr>";
   const body = ts.map(t => {
     const r = R(t.id), o = odds(t.id);
     return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference || "") + " · " + rec(t) + "</small></td>" +
       "<td>" + (pollRank(t) || "") + "</td><td><b>" + r.rank + '</b></td><td class="' + (r.power > 0 ? "pos" : "neg") + '"><b>' + sg(r.power) + "</b></td>" +
       '<td><span class="chip ' + tier(pctRank(r.oRank, n)) + '">' + f1(base + r.o) + '</span> <small class="rr">' + r.oRank + "</small></td>" +
       '<td><span class="chip ' + tier(pctRank(r.dRank, n)) + '">' + f1(base + r.d) + '</span> <small class="rr">' + r.dRank + "</small></td>" +
-      "<td>" + f1(t.fpi.fpi) + ' <small class="rr">' + int(t.fpi.rank) + "</small></td><td>" + (SPR(t.id) ? f1(SPR(t.id).rating) + ' <small class="rr">' + int(SPR(t.id).rank) + "</small>" : "—") + "</td><td>" + r.resRank + "</td><td>" + int(t.fpi.sorRank) + "</td><td>" + r.sosRank + "</td>" +
+      "<td>" + f1(t.fpi.fpi) + ' <small class="rr">' + int(t.fpi.rank) + "</small></td><td>" + (SPR(t.id) ? f1(SPR(t.id).rating) + ' <small class="rr">' + int(SPR(t.id).rank) + "</small>" : "—") + "</td>" +
+      (hasAdj() ? "<td>" + (ADJ(t.id) && fin(ADJ(t.id).epa) ? '<span class="chip ' + tier(pctRank((advRank[t.id] || {}).aNet, n)) + '">' + e3(ADJ(t.id).epa - ADJ(t.id).epaA) + '</span> <small class="rr">' + int((advRank[t.id] || {}).aNet) + "</small>" : "—") + "</td>" : "") +
+      (C && C.elo ? "<td>" + (ELO(t.id) != null ? int(ELO(t.id)) : "—") + "</td>" : "") + (C && C.srs ? "<td>" + (SRS(t.id) ? f1(SRS(t.id)[0]) + ' <small class="rr">' + int(SRS(t.id)[1]) + "</small>" : "—") + "</td>" : "") +
+      "<td>" + r.resRank + "</td><td>" + int(t.fpi.sorRank) + "</td><td>" + r.sosRank + "</td>" +
       "<td>" + (o ? Math.round(o.w) + "-" + Math.round(o.l) : "—") + "</td><td>" + (o ? pct(o.champ) : "—") + "</td><td>" + (o ? pct(o.cfp) : "—") + "</td><td>" + mv(r.move) + "</td></tr>";
   }).join("");
   return head + '<div class="panel"><div class="scroll"><table class="t rt"><thead>' + th + "</thead><tbody>" + body + "</tbody></table></div></div>" +
-    '<p class="note">Poll: CFP ranking (AP before the committee\'s first release). FPI: ESPN Football Power Index and its rank. SP+: Bill Connelly\'s SP+ via CollegeFootballData. ESPN SOR: ESPN Strength of Record rank. SOS: average power of opponents played. Proj: the hub\'s projected record including a conference title game. 7-day: change in the hub\'s rank over the last week.</p>';
+    '<p class="note">Poll: CFP ranking (AP before the committee\'s first release). FPI: ESPN Football Power Index and its rank. SP+: Bill Connelly\'s SP+ via CollegeFootballData. Adj EPA: CollegeFootballData\'s opponent-adjusted EPA per play, offense minus what the defense allowed. Elo and SRS: CollegeFootballData\'s Elo rating and Simple Rating System (points better than average). ESPN SOR: ESPN Strength of Record rank. SOS: average power of opponents played. Proj: the hub\'s projected record including a conference title game. 7-day: change in the hub\'s rank over the last week.</p>';
 }
 const ACOLS = [
+  ["aNet", "Adj net", a => a.adj && fin(a.adj.epa) ? a.adj.epa - a.adj.epaA : null, false, e3], ["aOff", "Adj off", a => a.adj ? a.adj.epa : null, false, e3], ["aDef", "Adj def", a => a.adj ? a.adj.epaA : null, true, e3],
   ["net", "Net EPA", a => a.off.epa - a.def.epa, false, e3], ["oEpa", "Off EPA", a => a.off.epa, false, e3], ["dEpa", "Def EPA", a => a.def.epa, true, e3],
   ["oSr", "Off SR", a => a.off.sr, false, p1], ["dSr", "Def SR", a => a.def.sr, true, p1], ["oPass", "Pass EPA", a => a.off.passEpa, false, e3], ["oRush", "Rush EPA", a => a.off.rushEpa, false, e3],
   ["oXpl", "Explosive", a => a.off.xpl, false, x => f1(x, 2)], ["dHav", "Havoc", a => a.def.havoc, false, p1], ["start", "Field pos", a => ownLine(a.off.start), false, x => f1(x)], ["ppo", "Pts/trip", a => a.off.ppo, false, x => f1(x, 2)]
@@ -315,8 +328,8 @@ function advTable(ts, sort) {
   ts = ts.filter(t => ADV(t.id)).sort((x, y) => { const a = col[2](ADV(x.id)), b = col[2](ADV(y.id)); return (a == null) - (b == null) || (col[3] ? a - b : b - a); });
   const chip = (id, k, v, f) => '<span class="chip ' + tier(pctRank(advRank[id] && advRank[id][k], n)) + '">' + f(v) + "</span>";
   return '<div class="panel"><div class="scroll"><table class="t rt"><thead><tr><th class=l>Team</th><th>Hub</th>' + ACOLS.map(c => '<th class="sort' + (c[0] === col[0] ? " on" : "") + '" data-asort="' + c[0] + '">' + c[1] + (c[0] === col[0] ? " ▾" : "") + "</th>").join("") + "</tr></thead><tbody>" +
-    ts.map(t => { const a = ADV(t.id); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference) + " · " + rec(t) + "</small></td><td>" + R(t.id).rank + "</td>" + ACOLS.map(c => "<td>" + (["net", "oEpa", "dEpa", "oSr", "dSr", "oPass", "oRush", "oXpl", "dHav"].includes(c[0]) ? chip(t.id, c[0], c[2](a), c[4]) : c[4](c[2](a))) + "</td>").join("") + "</tr>"; }).join("") +
-    "</tbody></table></div></div>" + '<p class="note">From CollegeFootballData, garbage time excluded. EPA: expected points added per play (offense: higher is better; defense: lower is better). SR: success rate. Explosive: average EPA on successful plays. Havoc: share of defensive plays with a tackle for loss, forced fumble, interception or pass breakup. Field pos: average starting yard line on offense (own territory). Pts/trip: points per trip inside the 40.</p>';
+    ts.map(t => { const a = ADV(t.id); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + '</span><small class="cf">' + esc(t.conference) + " · " + rec(t) + "</small></td><td>" + R(t.id).rank + "</td>" + ACOLS.map(c => "<td>" + (["aNet", "aOff", "aDef", "net", "oEpa", "dEpa", "oSr", "dSr", "oPass", "oRush", "oXpl", "dHav"].includes(c[0]) ? chip(t.id, c[0], c[2](a), c[4]) : c[4](c[2](a))) + "</td>").join("") + "</tr>"; }).join("") +
+    "</tbody></table></div></div>" + '<p class="note">From CollegeFootballData, garbage time excluded. Adj: CollegeFootballData\'s opponent-adjusted EPA per play (WEPA), which credits a team for who it played. EPA: expected points added per play (offense: higher is better; defense: lower is better). SR: success rate. Explosive: average EPA on successful plays. Havoc: share of defensive plays with a tackle for loss, forced fumble, interception or pass breakup. Field pos: average starting yard line on offense (own territory). Pts/trip: points per trip inside the 40.</p>';
 }
 function scatter(ts, focus) {
   const all = D.teams.filter(t => R(t.id)), base = X.base;
@@ -471,9 +484,11 @@ const muSide = (o, d) => muPanel(o, d, MU_LABELS.map((lab, i) => [lab, aPct(o, 0
 
 function efficiency(t) {
   const a = ADV(t.id), sp = SPR(t.id), rr = advRank[t.id] || {}, n = D.teams.length, rc = C && C.recruiting && C.recruiting.teams && C.recruiting.teams[t.id], rp = C && C.returning && C.returning.teams && C.returning.teams[t.id];
-  if (!a && !sp) return "";
+  if (!a && !sp && !ADJ(t.id)) return "";
   const cell = (v, lab, k) => "<div><b>" + v + (k && rr[k] ? ' <small>#' + rr[k] + "</small>" : "") + "</b><span>" + lab + "</span></div>";
   return '<div class="panel"><h3>Efficiency against FBS <small>CollegeFootballData · garbage time excluded</small></h3><div class="body">' + advBars(t) + '<div class="kv">' +
+    (ADJ(t.id) ? cell(e3(ADJ(t.id).epa), "Adj off EPA", "aOff") + cell(e3(ADJ(t.id).epaA), "Adj def EPA", "aDef") : "") +
+    (ELO(t.id) != null ? cell(int(ELO(t.id)), "Elo") : "") + (SRS(t.id) ? cell(f1(SRS(t.id)[0]), "SRS" + (fin(SRS(t.id)[1]) ? " #" + SRS(t.id)[1] : "")) : "") +
     (sp ? cell(f1(sp.rating), "SP+" + (fin(sp.rank) ? " #" + sp.rank : "")) + cell(f1(sp.off), "SP+ off" + (fin(sp.offRank) ? " #" + sp.offRank : "")) + cell(f1(sp.def), "SP+ def" + (fin(sp.defRank) ? " #" + sp.defRank : "")) + (fin(sp.sow) ? cell(f1(sp.sow), "2nd-order wins") : "") : "") +
     (rc ? cell("#" + rc.rank, (C.recruiting.year) + " recruiting") : "") + (rp && fin(rp.pct) ? cell(p1(rp.pct), "Returning production") : "") +
     "</div></div></div>";
@@ -526,6 +541,8 @@ function pv(p, k) {
   const g = x => st(p, x);
   if (k === "epa") return PEPA(p.id) ? PEPA(p.id).epa : null;
   if (k === "epaPlay") return PEPA(p.id) ? PEPA(p.id).perPlay : null;
+  if (k === "wepaP" || k === "wepaR") { const w = WEPA(p.id), x = w && w[k === "wepaP" ? "pass" : "rush"]; return x ? x[0] : null; }
+  if (k === "use") return USE(p.id) ? USE(p.id)[0] * 100 : null;
   if (k === "cpct") return g("att") ? 100 * g("cmp") / g("att") : null;
   if (k === "ypc") return g("car") ? g("ryd") / g("car") : null;
   if (k === "ypr") return g("rec") ? g("wyd") / g("rec") : null;
@@ -537,7 +554,9 @@ function players(q) {
   if (!P) return '<p class="loading">Loading players…</p>';
   const cat = CATS[q.get("cat")] ? q.get("cat") : "pass", CT = CATS[cat], conf = q.get("conf") || "", s = M.key(q.get("q") || ""), sort = q.get("sort") || CT.def, more = +(q.get("n") || 100);
   const pos = q.get("pos") || "";
-  const cols = C && C.playerEpa && cat !== "def" ? CT.cols.concat([["epa", "EPA", 1], ["epaPlay", "EPA/play", 2]]) : CT.cols;
+  let cols = C && C.playerEpa && cat !== "def" ? CT.cols.concat([["epa", "EPA", 1], ["epaPlay", "EPA/play", 2]]) : CT.cols;
+  if (C && C.wepa && (cat === "pass" || cat === "rush")) cols = cols.concat([[cat === "pass" ? "wepaP" : "wepaR", "Adj EPA/play", 2]]);
+  if (C && C.usageP && cat !== "def") cols = cols.concat([["use", "Usage%", 1]]);
   let ps = P.players.filter(p => CT.min(p) && (!conf || (byId[p.teamId] && byId[p.teamId].conference === conf)) && (!pos || p.pos === pos) && (!s || M.key(p.name + " " + p.team).includes(s)));
   const asc = sort === "int" || sort === "fuml";
   ps.sort((a, b) => { const x = pv(a, sort), y = pv(b, sort); return (x == null) - (y == null) || (asc ? x - y : y - x); });
@@ -596,7 +615,7 @@ function method() {
     "<p>The committee is modeled with a score that mixes the final résumé, the team's power rating and where the committee ranks it today (the committee's view is sticky), with a small bonus for conference champions. The field follows the 2026 rules: the SEC, Big Ten, Big 12 and ACC champions are in, plus the highest-ranked champion from the other six conferences; Notre Dame is in if it ranks in the top 12; seven at-large teams fill the rest. Teams are seeded straight by ranking. Seeds 1-4 get byes; 5-8 host first-round games. The quarterfinals, semifinals and title game are played at neutral sites. Next season the field grows to 24 teams and conference championship games go away; this hub models this season's 12.</p>" +
     "<h3>Heisman ladder</h3><p>Production per game: for passers, yards, touchdowns, interceptions and yards per attempt, plus rushing; for runners and receivers, yards and touchdowns; for defenders, sacks, tackles for loss, takeaways and passes defended; return touchdowns for anyone. That is multiplied by a team factor built from winning percentage, the team's power and whether it is in the CFP top 12, then scaled so the leader is 100.</p>" +
     "<h3>Closing-line grading</h3><p>Beating the closing line is the real test of a betting model: the close is the market's sharpest number. With CollegeFootballData's opening and closing lines, every game is also graded against the close, and the hub tracks closing-line value: when the hub disagreed with the opening line, did the market move toward the hub's number?" + (r && r.clv && r.clv[2] ? " So far the market moved the hub's way in " + r.clv[0] + " of " + r.clv[2] + " games (average " + sg(r.clvAvg, 2) + " points)." : "") + "</p>" +
-    "<h3>Sources</h3><ul><li>ESPN: FPI and Strength of Record, the AP, Coaches and CFP rankings, standings, every team's schedule and scores, the sportsbook lines ESPN displays, rosters and season stats. Updated daily.</li><li><a href=\"https://collegefootballdata.com/\">CollegeFootballData.com</a>: EPA and success rates (garbage time excluded), SP+, player EPA, opening and closing lines, recruiting, returning production and the transfer portal. Pulled once a day on the free tier.</li><li>The site's own <a href=\"../draft/\">NFL Big Board</a> for prospect ranks.</li><li>For deeper team analytics, explore <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a>, <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a> and <a href=\"https://www.sports-reference.com/cfb/\">Sports Reference</a>.</li></ul></div>";
+    "<h3>Sources</h3><ul><li>ESPN: FPI and Strength of Record, the AP, Coaches and CFP rankings, standings, every team's schedule and scores, the sportsbook lines ESPN displays, rosters and season stats. Updated daily.</li><li><a href=\"https://collegefootballdata.com/\">CollegeFootballData.com</a>: EPA and success rates (garbage time excluded), opponent-adjusted EPA for teams, passers and rushers, SP+, Elo, SRS, player EPA and usage, opening and closing lines, recruiting, returning production and the transfer portal. Pulled once a day on the free tier.</li><li>The site's own <a href=\"../draft/\">NFL Big Board</a> for prospect ranks.</li><li>For deeper team analytics, explore <a href=\"https://www.espn.com/college-football/fpi\">ESPN FPI</a>, <a href=\"https://collegefootballdata.com/\">CollegeFootballData</a> and <a href=\"https://www.sports-reference.com/cfb/\">Sports Reference</a>.</li></ul></div>";
 }
 
 /* ---------- player card ---------- */
@@ -677,6 +696,8 @@ function openPlayer(id) {
   const stp = '<p class="note" style="margin-top:2px">' + int(st(p, "gp")) + " games" + (p.home ? ". From " + esc(p.home) : "") + ".</p>" +
     live.map(([lab, ks]) => { const kk = ks.filter(([k2]) => pv(p, k2) !== null); return PC.sec(lab) + PC.table(kk.map(x => x[1]), [kk.map(([k2]) => dec(k2) ? f1(pv(p, k2)) : num0(pv(p, k2)))]); }).join("") +
     (pe ? PC.sec("Efficiency", "CollegeFootballData") + PC.facts([[f1(pe.epa), "EPA added"], [e3(pe.perPlay), "EPA per play"], fin(pe.pass) ? [f1(pe.pass), "Passing EPA"] : null, fin(pe.rush) ? [f1(pe.rush), "Rushing EPA"] : null]) : "") +
+    (WEPA(p.id) || USE(p.id) ? PC.sec("Adjusted for opponents", "CollegeFootballData") + PC.facts([WEPA(p.id) && WEPA(p.id).pass ? [e3(WEPA(p.id).pass[0]), "Adj EPA per pass"] : null, WEPA(p.id) && WEPA(p.id).rush ? [e3(WEPA(p.id).rush[0]), "Adj EPA per rush"] : null,
+      USE(p.id) ? [p1(USE(p.id)[0]), "Usage (share of plays)"] : null, USE(p.id) && fin(USE(p.id)[3]) ? [p1(USE(p.id)[3]), "Usage on passing downs"] : null, USE(p.id) && fin(USE(p.id)[4]) ? [p1(USE(p.id)[4]), "Usage on third down"] : null]) : "") +
     '<p class="note">Season stats from ESPN.</p>';
   const dr = p.nfl ? PC.sec("NFL Big Board", "consensus of " + p.nfl.on + " boards") + PC.facts([["#" + p.nfl.rank, "Consensus rank"], [p.nfl.hi + "-" + p.nfl.lo, "Range"], [p.nfl.on, "Boards"], [p.nfl.pos, "Position"]]) +
     '<p class="note">' + spark(p.nfl.hist) + ' <a href="../draft/">See him on the Big Board</a></p>' : "";
