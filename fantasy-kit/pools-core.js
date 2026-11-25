@@ -640,6 +640,22 @@
       if (board.projected || !games.some(function (g) { return g.round >= 1; })) return { text: "Field set on Selection Sunday", tone: "wait" };
       return surv(survivor(board, now), "day", function (g) { return ms(g.tip); });
     }
+    if (kind === "mmff") {
+      // the reminder job has no box scores: the lineup still due, and the standings once there are scores
+      var M = mmff(board, stats), meM2 = M.rows.filter(function (r) { return r.me; })[0] || { rounds: {} };
+      if (M.done) return meM2.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(M.rows), tone: "done" };
+      if (board.projected) { var s1m = (meM2.rounds[1] || {}).set || 0; return { text: s1m ? "Practice lineup: " + s1m + " of 5" : "Practice on the projected field", tone: "wait" }; }
+      for (var rr = 1; rr <= 6; rr++) {
+        var rgm = games.filter(function (g) { return g.round === rr && g.a && g.b; });
+        var futm = rgm.map(function (g) { return ms(g.tip); }).filter(function (t) { return t > now; });
+        if (!rgm.length || !futm.length) continue;
+        var setM = (meM2.rounds[rr] || {}).set || 0;
+        if (setM < MMFF_SLOTS.length) return { text: MMFF_ROUND[rr] + ": " + (setM ? MMFF_SLOTS.length - setM + " spots open" : "set your lineup"), tone: "todo", due: Math.min.apply(null, futm) };
+        return { text: MMFF_ROUND[rr] + " lineup set", tone: "ok" };
+      }
+      if (!games.some(function (g) { return g.round >= 1; })) return { text: "Field set on Selection Sunday", tone: "wait" };
+      return { text: standing(M.rows, function (r) { return r.total + " pts"; }), tone: "ok" };
+    }
     if (kind === "oscars") {
       // the reminder job scores without the ballot file: then it counts the picks it can see
       var lkO = board.lock ? ms(board.lock) : null, O = oscars(board, now), meO = O.rows.filter(function (r) { return r.me; })[0] || {}, nc = O.cats.length;
@@ -926,11 +942,48 @@
       winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
   }
 
+  /* March Madness fantasy ('mmff'): a five-man lineup each tournament round (two guards, two forwards, one of anyone),
+     each player once all tournament, each locking at his own game's tip. A pick is "playerId@teamId" in slot
+     "r<round>:<spot>". Points from the box scores, daily-fantasy style (MMFF_PTS).
+     stats: { round: { players: { id: points } } }, and a round counts once any of its games has a box score. */
+  var MMFF_SLOTS = ["G1", "G2", "F1", "F2", "UTIL"];
+  var mmffSlots = function (slot) { return slot === "UTIL" ? ["G", "F", "C"] : slot.charAt(0) === "G" ? ["G"] : ["F", "C"]; };
+  var MMFF_PTS = { pts: 1, reb: 1.2, ast: 1.5, stl: 3, blk: 3, tov: -1 };
+  var MMFF_ROUND = ["", "Round of 64", "Round of 32", "Sweet 16", "Elite 8", "Final Four", "Title game"];
+  function mmffPoints(line) { var t = 0; Object.keys(MMFF_PTS).forEach(function (k) { t += (+line[k] || 0) * MMFF_PTS[k]; }); return Math.round(t * 10) / 10; }
+  function mmff(board, stats) {
+    stats = stats || {};
+    var by = {};
+    (board.picks || []).forEach(function (p) { var m = /^r([1-6]):(\w+)$/.exec(p.slot); if (!m || !p.team) return; ((by[p.user] = by[p.user] || {})[m[1]] = by[p.user][m[1]] || {})[m[2]] = String(p.team); });
+    var rows = (board.members || []).map(function (mb) {
+      var mine = by[mb.id] || {}, rounds = {}, total = 0, used = {};
+      for (var r = 1; r <= 6; r++) {
+        var lu = mine[r] || {}, pts = 0, scored = !!(stats[r] && stats[r].players), each = {};
+        MMFF_SLOTS.forEach(function (sl) {
+          var v = lu[sl]; if (!v) return;
+          var id = v.split("@")[0]; used[id] = r;
+          var x = scored ? stats[r].players[id] : null;
+          each[sl] = scored ? (x == null ? null : x) : null; pts += x || 0;
+        });
+        pts = Math.round(pts * 10) / 10;
+        rounds[r] = { lineup: lu, pts: scored ? pts : null, each: each, set: Object.keys(lu).length };
+        if (scored) total += pts;
+      }
+      return { id: mb.id, name: mb.name, me: !!mb.me, rounds: rounds, total: Math.round(total * 10) / 10, used: used };
+    });
+    rows.sort(function (a, b) { return (b.total - a.total) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || rows[i - 1].total !== r.total) place = i + 1; r.place = place; });
+    var title = (board.games || []).filter(function (g) { return g.round === 6; })[0];
+    return { rows: rows, done: !!(title && title.final) };
+  }
+
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
     bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap,
     MM_PTS: MM_PTS, MM_FF: MM_FF, mmField: mmField, mmSlot: mmSlot, mmFeed: mmFeed, mmSlots: mmSlots, mmPick: mmPick, mmFill: mmFill, mmBracket: mmBracket,
     props: props, propsAnswer: propsAnswer, propsAuto: propsAuto, propsGame: propsGame, propsConf: propsConf,
-    OSC_NOMS: OSC_NOMS, oscars: oscars, oscarsWin: oscarsWin };
+    OSC_NOMS: OSC_NOMS, oscars: oscars, oscarsWin: oscarsWin,
+    MMFF_SLOTS: MMFF_SLOTS, mmffSlots: mmffSlots, MMFF_PTS: MMFF_PTS, MMFF_ROUND: MMFF_ROUND, mmffPoints: mmffPoints, mmff: mmff };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

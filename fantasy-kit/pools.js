@@ -11,14 +11,14 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket", props: "Prop sheet", oscars: "Oscars ballot" };
-  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness", oscars: "Oscars" };
-  const kindName = (k) => k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : k === "oscars" ? "Oscars ballot" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
+  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket", props: "Prop sheet", oscars: "Oscars ballot", mmff: "Tournament fantasy" };
+  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness", oscars: "Oscars", mmff: "March Madness" };
+  const kindName = (k) => k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : k === "oscars" ? "Oscars ballot" : k === "mmff" ? "March Madness fantasy" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   /* Each game has its own address, /pools/<slug>/ (pages written by tools/pools_pages.py, each a copy of this page with
      <html data-game="kind">): the game's front page, and its pools' links (/pools/bowls/?p=CODE). Old /fantasy/pools/
      links still work and move to the game's address once the pool loads. */
-  const SLUG = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor" };
+  const SLUG = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor", mmff: "march-madness-fantasy" };
   const GAME = SLUG[document.documentElement.dataset.game] ? document.documentElement.dataset.game : null;
   const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
@@ -129,6 +129,12 @@
       <li>Ballots lock when the show starts, and everyone's picks show then. The owner marks each winner as it's announced.</li>
       <li>Most points wins. Ties go to the closest guess at <b>how long the show runs</b>, in minutes.</li>
       <li>Until the nominations come out ${shortDate(CAL.oscarNoms)}, it's a practice ballot on the pundits' predicted nominees. Picks on anyone who gets nominated carry over.</li></ul>`
+    : kind === "mmff" ? `<ul class="pl-rules">
+      <li>Set a <b>five-man lineup every round</b> of the tournament, from the Round of 64 to the title game: two guards, two forwards (centers count as forwards) and one of anyone, from the teams playing that round.</li>
+      <li>Each player can play for you <b>only once</b> all tournament. Use a star early, or save him for a team you think goes deep.</li>
+      <li>Each player <b>locks at his own game's tip</b> and shows to everyone then. Until then you can swap him out.</li>
+      <li>Points from the box score: <b>1 a point, 1.2 a rebound, 1.5 an assist, 3 a steal or block, minus 1 a turnover</b>. Most points over the six rounds wins.</li>
+      <li>Until Selection Sunday you can practice a Round of 64 lineup on the college hub's projected field. Practice picks clear when the real field comes out.</li></ul>`
     : kind === "bracket" ? `<ul class="pl-rules">
       <li>Pick the winner of <b>all 63 games</b>, from the Round of 64 to the title game.</li>
       <li>A right pick scores by its round: <b>10, 20, 40, 80, 160, 320</b> points.</li>
@@ -147,7 +153,7 @@
       <li>The last one standing wins. If everyone left loses on the same day, or more than one survives the title game, the <b>higher combined seeds of their winning picks</b> wins. Still tied, they split it.</li></ul>`;
   const fail = (e) => { st.msg = e && e.message ? e.message : String(e || "Something went wrong."); st.busy = false; render(); };
   // picks the owner makes for a member go through mm_as, which runs the member's own save as them (and logs it)
-  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_nflff", "mm_save_bracket", "mm_save_props"]);
+  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_nflff", "mm_save_bracket", "mm_save_props", "mm_save_mmff"]);
   const srpc = (fn, args) => (st.as && SAVES.has(fn) ? C.rpc("mm_as", { p_pool: st.code, p_user: st.as, p_fn: fn, p_args: args }) : C.rpc(fn, args));
   const ok = (r) => { if (r && r.error) throw new Error(r.error); return r; };
 
@@ -171,6 +177,7 @@
     nfl: ico('<path d="M12 3 4 6v6c0 4.4 3.4 7.8 8 9 4.6-1.2 8-4.6 8-9V6z"/><path d="M12 8v5M12 16h.01"/>'),
     nflpo: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h4v10H8M12 12h4"/><path d="M16 9h5v6h-5z"/>'),
     nflff: ico('<path d="M8 3h8l1 3 4 2-2 5h-2v8H7v-8H5L3 8l4-2z"/><path d="M10 11h4"/>'),
+    mmff: ico('<path d="M8 3h8l1 3 4 2-2 5h-2v8H7v-8H5L3 8l4-2z"/><path d="M12 9v5M10 11.5h4"/>'),
     bowls: ico('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3M12 13v4M8 20h8M9 17h6"/>'),
     survivor: ico('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-2.5 2.4-3.6 5.2-3.6 8.5s1.1 6.1 3.6 8.5M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5"/>'),
     squares: ico('<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/>'),
@@ -200,6 +207,7 @@
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
     { sport: "Oscars", key: "oscars", name: "Oscars ballot", tag: "Pick the winner in every category. Best Picture counts most.", facts: ["24 categories", "Locks at the show", "Runtime tiebreak"], soon: "Practice now", open: CAL.oscarNoms, end: CAL.oscars },
     { sport: "March Madness", key: "bracket", name: "Bracket", tag: "All 63 games, the classic way. Points double every round.", facts: ["63 games", "10-20-40-80-160-320", "Title game tiebreak"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
+    { sport: "March Madness", key: "mmff", name: "Tournament fantasy", tag: "A five-man lineup every round, and each player only once.", facts: ["5-man lineups", "Each player once", "6 rounds"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
   ];
@@ -398,6 +406,7 @@
     if (st.as && st.board && st.board.error) { st.msg = st.board.error; st.as = null; st.board = await C.rpc("mm_board", { p_pool: st.code }).catch((e) => ({ error: e.message })); }
     if (st.board && st.board.ok && st.remind == null) { try { const g = await C.rpc("mm_remind_get", { p_pool: st.code }); st.remind = !!g.remind; st.recap = !!g.recap; } catch (e) { st.remind = false; st.recap = false; } }
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
+    if (st.board && st.board.ok && st.board.pool.kind === "mmff") await mfLoad(st.board);
     if (st.board && st.board.ok && st.board.pool.kind === "oscars") st.board.ballot = await loadBallot(st.board.pool.season);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
@@ -439,7 +448,7 @@
       `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="${gameUrl(p.kind)}" title="This game's page: how it works, and your other pools">${esc(kindName(p.kind))}</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
   function projectedNote(b) {
-    if (!b.projected || b.pool.kind === "bracket") return ""; // the bracket says it in its own words
+    if (!b.projected || b.pool.kind === "bracket" || b.pool.kind === "mmff") return ""; // these say it in their own words
     return `<div class="pl-note"><b>Practice bracket.</b> These are the college hub's projected first-round games on this season's real dates. The real field comes out Selection Sunday, March 14, and replaces them; practice picks are cleared then.</div>`;
   }
   // the pot (from the buy-in and the members), each payout, who's paid, and past champions, under the standings
@@ -510,7 +519,7 @@
     }
     if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Pools", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="/pools/">Back to your pools</a></p></div></div></div>`; return; }
     const tabs = b.pool.kind === "squares" ? [["picks", "Board"], ["standings", "Winners"], ["settings", "Settings"]]
-      : [["picks", "Picks"], ["games", b.pool.kind === "nflff" ? "Lineups" : b.pool.kind === "props" ? "Answers" : b.pool.kind === "oscars" ? "Winners" : "Scores"], ["standings", "Standings"], ["settings", "Settings"]];
+      : [["picks", "Picks"], ["games", b.pool.kind === "nflff" || b.pool.kind === "mmff" ? "Lineups" : b.pool.kind === "props" ? "Answers" : b.pool.kind === "oscars" ? "Winners" : "Scores"], ["standings", "Standings"], ["settings", "Settings"]];
     if (st.tab === "rules") st.tab = "settings";
     if (st.as) { const i = tabs.findIndex((t) => t[0] === "settings"); if (i >= 0) tabs.splice(i, 1); if (st.tab === "settings") st.tab = "picks"; }
     const body = st.tab === "settings" ? settingsTab(b)
@@ -519,6 +528,7 @@
       : b.pool.kind === "bowls" ? (st.tab === "picks" ? bowlPicks(b) : bowlTable(b))
       : b.pool.kind === "nflpo" ? (st.tab === "picks" ? brPicks(b) : brTable(b))
       : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
+      : b.pool.kind === "mmff" ? (st.tab === "picks" ? mfPicks(b) : mfTable(b))
       : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
       : b.pool.kind === "props" ? (st.tab === "picks" ? propsPicks(b) : st.tab === "games" ? propsAnswers(b) : propsTable(b))
       : b.pool.kind === "bracket" ? (st.tab === "picks" ? bkPicks(b) : bkTable(b))
@@ -876,6 +886,99 @@
     return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r">Right</th><th class="r" title="Points still possible">Max</th><th class="r pl-hide-s" title="Show length guess, in minutes">TB</th></tr></thead><tbody>
       ${O.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b>${!lock && r.picked < O.cats.length && (r.me || r.picked) ? `<small class="ps"> ${r.picked} of ${O.cats.length} picked</small>` : ""}</td><td class="r num"><b>${r.points}</b></td><td class="r num ps">${r.right}</td><td class="r num ps">${lock ? r.max : ""}</td><td class="r num ps pl-hide-s">${lock && r.tb != null ? r.tb : ""}</td></tr>`).join("")}
       </tbody></table></div></div><p class="ps">${O.graded} of ${O.cats.length} categories announced. Ties go to the closest guess at how long the show runs${O.runtime != null ? `; it ran ${O.runtime} minutes` : ""}.</p>`;
+  }
+
+  // ---------- March Madness fantasy ----------
+  /* Players come from the college hub (/cbb/data/players.json: ESPN ids, positions, season averages); each round's
+     points from ESPN's box score of every game that has tipped, fetched here and kept a minute while a game is live. */
+  const MF_BOX = "https://site.web.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/summary?event=";
+  const MF_LABEL = { PTS: "pts", REB: "reb", AST: "ast", STL: "stl", BLK: "blk", TO: "tov" };
+  const mfAvg = (p) => (p && p.stats ? P.mmffPoints({ pts: p.stats.pts, reb: p.stats.reb, ast: p.stats.ast, stl: p.stats.stl, blk: p.stats.blk, tov: p.stats.tov }) : 0);
+  async function mfLoad(b) {
+    if (!st.mfP) {
+      try { const j = await fetch("/cbb/data/players.json", { cache: "no-cache" }).then((r) => r.json()); st.mfP = {}; (j.players || []).forEach((p) => { st.mfP[p.id] = p; }); } catch (e) { st.mfP = {}; }
+    }
+    st.mfBox = st.mfBox || {};
+    const now = Date.now(), want = (b.games || []).filter((g) => g.round >= 1 && !String(g.id).startsWith("proj") && Date.parse(g.tip) <= now);
+    await Promise.all(want.map(async (g) => {
+      const have = st.mfBox[g.id];
+      if (have && (have.final || now - have.at < 60e3)) return;
+      try {
+        const j = await fetch(MF_BOX + encodeURIComponent(g.id)).then((r) => (r.ok ? r.json() : null));
+        const pts = {};
+        ((j && j.boxscore && j.boxscore.players) || []).forEach((tm) => (tm.statistics || []).forEach((sec) => {
+          const names = sec.names || sec.labels || [];
+          (sec.athletes || []).forEach((a) => {
+            if (!a.athlete || !a.stats || !a.stats.length) return;
+            const line = {}; names.forEach((n, i) => { if (MF_LABEL[n]) line[MF_LABEL[n]] = +a.stats[i] || 0; });
+            pts[a.athlete.id] = P.mmffPoints(line);
+          });
+        }));
+        st.mfBox[g.id] = { at: now, final: !!g.final, round: g.round, pts };
+      } catch (e) { /* the round shows what it has */ }
+    }));
+  }
+  function mfStats(b) {
+    const out = {};
+    (b.games || []).forEach((g) => { const x = (st.mfBox || {})[g.id]; if (!x) return; const r = (out[g.round] = out[g.round] || { players: {} }); Object.assign(r.players, x.pts); });
+    return out;
+  }
+  const mfMine = (b, uid, r) => { const o = {}; (b.picks || []).forEach((k) => { const m = /^r([1-6]):(\w+)$/.exec(k.slot); if (m && +m[1] === r && k.user === uid && k.team) o[m[2]] = k.team; }); return o; };
+  const mfRoundGames = (b, r) => (b.games || []).filter((g) => g.round === r && g.a && g.b);
+  function mfRoundNow(b) {
+    const now = Date.now();
+    for (let r = 1; r <= 6; r++) { const gs = mfRoundGames(b, r); if (gs.length && gs.some((g) => Date.parse(g.tip) > now)) return r; }
+    for (let r = 6; r >= 1; r--) if (mfRoundGames(b, r).length) return r;
+    return 1;
+  }
+  const mfTip = (b, r, tid) => { const g = mfRoundGames(b, r).find((x) => x.a === tid || x.b === tid); return g ? Date.parse(g.tip) : null; };
+  const mfSeed = (b, tid) => { const g = (b.games || []).find((x) => x.a === tid || x.b === tid); return g ? (g.a === tid ? g.as : g.bs) : null; };
+  const mfSlotName = { G1: "G", G2: "G", F1: "F", F2: "F", UTIL: "Any" };
+  function mfRoundBar(b, r) {
+    return `<div class="seg pl-mfr" role="tablist">${[1, 2, 3, 4, 5, 6].map((k) => { const has = mfRoundGames(b, k).length; return `<button type="button" role="tab" data-mfr="${k}" aria-selected="${k === r}"${has ? "" : " disabled"}>${esc(P.MMFF_ROUND[k].replace("Round of ", "R"))}</button>`; }).join("")}</div>`;
+  }
+  function mfPicks(b) {
+    if (!(b.games || []).some((g) => g.round >= 1)) return `<div class="pl-note">The field comes out on Selection Sunday, ${shortDate(CAL.selection)}. You can practice a Round of 64 lineup once the college hub posts its projected field.</div>`;
+    const uid = meId(b), now = Date.now(), r = st.mfr || mfRoundNow(b), P_ = st.mfP || {};
+    if (!st.mfl || st.mflr !== r) { st.mfl = mfMine(b, uid, r); st.mflr = r; }
+    const X = P.mmff(b, mfStats(b)), me = X.rows.find((x) => x.me) || { used: {}, rounds: {} };
+    const usedElse = {}; Object.entries(me.used).forEach(([id, rr]) => { if (rr !== r) usedElse[id] = rr; });
+    const lockedSlot = (sl) => { const v = st.mfl[sl]; if (!v) return false; const t = mfTip(b, r, v.split("@")[1]); return t != null && t <= now; };
+    const dirty = JSON.stringify(Object.entries(st.mfl).sort()) !== JSON.stringify(Object.entries(mfMine(b, uid, r)).sort());
+    const inLineup = new Set(Object.values(st.mfl).map((v) => v.split("@")[0]));
+    const slots = P.MMFF_SLOTS.map((sl) => {
+      const v = st.mfl[sl], pid = v && v.split("@")[0], pl = pid && P_[pid], lk = lockedSlot(sl), pts = me.rounds[r] && me.rounds[r].each ? me.rounds[r].each[sl] : null;
+      return `<button type="button" class="pl-mfs${st.mfslot === sl ? " on" : ""}${lk ? " locked" : ""}" data-mfslot="${sl}"${lk ? " disabled" : ""}><span class="pl-mfpos">${mfSlotName[sl]}</span>${pl ? `<span class="pl-mfn"><b>${esc(pl.name)}</b><small>${esc(pl.pos || "")} · ${esc(team(v.split("@")[1]).n)}</small></span>${pts != null ? `<em class="num">${pts}</em>` : lk ? `<em>Locked</em>` : `<span class="pl-mfx" data-mfclear="${sl}" title="Take him out">&times;</span>`}` : `<span class="pl-mfn ps">${sl === "UTIL" ? "Add anyone" : sl.startsWith("G") ? "Add a guard" : "Add a forward"}</span>`}</button>`;
+    }).join("");
+    // who you can add: on a team playing this round whose game hasn't tipped, eligible for the spot you're filling
+    const open = new Set(); mfRoundGames(b, r).forEach((g) => { if (Date.parse(g.tip) > now) { open.add(g.a); open.add(g.b); } });
+    const elig = st.mfslot ? P.mmffSlots(st.mfslot) : ["G", "F", "C"], q = (st.mfq || "").toLowerCase();
+    const cands = Object.values(P_).filter((p) => open.has(p.teamId) && elig.includes((p.pos || "F").charAt(0)) && (!q || p.name.toLowerCase().includes(q) || String(p.team || "").toLowerCase().includes(q)))
+      .map((p) => ({ p, v: mfAvg(p) })).sort((x, y) => y.v - x.v).slice(0, 80);
+    const list = cands.map(({ p, v }) => { const used = usedElse[p.id], inl = inLineup.has(p.id), sd = mfSeed(b, p.teamId);
+      return `<li${used ? ' class="used"' : ""}><button type="button" data-mfadd="${esc(p.id)}@${esc(p.teamId)}"${used || inl ? " disabled" : ""}>${logo(p.teamId, 22)}<span class="pl-mfn"><b>${esc(p.name)}</b><small>${esc(p.pos || "")} · ${sd ? sd + " " : ""}${esc(team(p.teamId).n)}${p.stats ? ` · ${(+p.stats.pts).toFixed(1)} pts, ${(+p.stats.reb).toFixed(1)} reb, ${(+p.stats.ast).toFixed(1)} ast` : ""}</small></span><em class="num" title="Fantasy points a game this season">${v.toFixed(1)}</em>${used ? `<small class="pl-mfu">Used, ${esc(P.MMFF_ROUND[used].replace("Round of ", "R"))}</small>` : inl ? `<small class="pl-mfu">In lineup</small>` : ""}</button></li>`; }).join("");
+    const note = b.projected ? `<div class="pl-note"><b>Practice lineup.</b> These are the college hub's projected Round of 64 games. The real field comes out Selection Sunday, ${shortDate(CAL.selection)}, and practice picks clear then.</div>` : "";
+    const n = Object.keys(st.mfl).length;
+    return note + mfRoundBar(b, r) + `<div class="pl-mfwrap"><section class="card pl-mflu"><div class="mod-h"><h2>${esc(P.MMFF_ROUND[r])} lineup</h2><span class="grow"></span><span class="ps">${me.rounds[r] && me.rounds[r].pts != null ? `<b>${me.rounds[r].pts}</b> pts` : `${n} of 5`}</span></div><div class="bd">
+        <div class="pl-mfss">${slots}</div>
+        <p class="ps">Each player once all tournament. ${Object.keys(usedElse).length ? `You've used ${Object.keys(usedElse).length} already.` : ""} Each locks at his game's tip.</p>
+        <div class="pl-save"><span class="ps">${dirty ? "Not saved yet." : n ? "Saved." : "Tap a spot, then a player."}</span><button type="button" class="btn go" data-mfsave${dirty ? "" : " disabled"}>Save lineup</button></div></div></section>
+      <section class="card pl-mfpool"><div class="mod-h"><h2>${st.mfslot ? (st.mfslot === "UTIL" ? "Anyone" : st.mfslot.startsWith("G") ? "Guards" : "Forwards") : "Players"}</h2><span class="grow"></span><span class="ps">${open.size / 2 | 0} games left this round</span></div><div class="bd">
+        <label class="sr" for="pl-mfq">Find a player or team</label><input id="pl-mfq" type="search" data-mfq placeholder="Find a player or team" value="${esc(st.mfq || "")}" autocomplete="off">
+        ${list ? `<ul class="pl-mfl">${list}</ul>` : `<p class="ps">${open.size ? "Nobody matches." : "Every game this round has tipped."}</p>`}</div></section></div>`;
+  }
+  function mfLineups(b) {
+    const r = st.mfr || mfRoundNow(b), X = P.mmff(b, mfStats(b)), P_ = st.mfP || {};
+    const rows = X.rows.map((x) => { const R_ = x.rounds[r] || {}, lu = R_.lineup || {};
+      const cells = P.MMFF_SLOTS.map((sl) => { const v = lu[sl], pl = v && P_[v.split("@")[0]]; return `<li><span class="pl-mfpos">${mfSlotName[sl]}</span>${pl ? `<span class="pl-mfn"><b>${esc(pl.name)}</b><small>${esc(team(v.split("@")[1]).n)}</small></span>${R_.each && R_.each[sl] != null ? `<em class="num">${R_.each[sl]}</em>` : ""}` : `<span class="ps">${x.me ? "Open" : "Shows at tip"}</span>`}</li>`; }).join("");
+      return `<section class="card pl-mflr${x.me ? " me" : ""}"><div class="mod-h"><h2>${esc(x.name)}</h2><span class="grow"></span><span class="ps">${R_.pts != null ? `<b>${R_.pts}</b> pts` : ""}</span></div><ul class="pl-mflus">${cells}</ul></section>`; }).join("");
+    return mfRoundBar(b, r) + `<div class="pl-mflrs">${rows}</div><p class="ps">Everyone's players show at their game's tip. Points update while games are on.</p>`;
+  }
+  function mfTable(b) {
+    const X = P.mmff(b, mfStats(b)), rs = [1, 2, 3, 4, 5, 6].filter((r) => mfRoundGames(b, r).length);
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th>${rs.map((r) => `<th class="r pl-hide-s">${esc(P.MMFF_ROUND[r].replace("Round of ", "R"))}</th>`).join("")}<th class="r" title="Players used">Used</th></tr></thead><tbody>
+      ${X.rows.map((x) => `<tr class="${x.me ? "me" : ""}"><td class="r num">${x.place}</td><td class="nm"><b>${esc(x.name)}</b></td><td class="r num"><b>${x.total}</b></td>${rs.map((r) => `<td class="r num ps pl-hide-s">${x.rounds[r] && x.rounds[r].pts != null ? x.rounds[r].pts : ""}</td>`).join("")}<td class="r num ps">${Object.keys(x.used).length}</td></tr>`).join("")}
+      </tbody></table></div></div><p class="ps">Points: 1 a point, 1.2 a rebound, 1.5 an assist, 3 a steal or block, minus 1 a turnover, from ESPN's box scores.</p>`;
   }
 
   // ---------- March Madness bracket ----------
@@ -1292,6 +1395,7 @@
       return segPick("r", rounds.map((r) => [r, RNAME[r]]), cur) + `<p class="pl-gsum">${lk ? "Under each team: who has it winning this round." : "Everyone's brackets show once the Wild Card round kicks off. For now you see your own."}</p>` + gameList(blocks, "This round's games aren't set yet.");
     }
     if (k === "nflff") return ffLineups(b);
+    if (k === "mmff") return mfLineups(b);
     return "";
   }
   // everyone's playoff fantasy lineup for a round, with each player's points; others' players show at their kickoff
@@ -1415,7 +1519,7 @@
     if (st.code) await pool(); else if (GAME) await gameHome(GAME); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-mfr],[data-mfslot],[data-mfadd],[data-mfclear],[data-mfsave],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -1442,8 +1546,8 @@
     if (t.dataset.ffcol) { if (st.ffsortcol === t.dataset.ffcol) st.ffsortdir = -(st.ffsortdir || -1); else { st.ffsortcol = t.dataset.ffcol; st.ffsortdir = t.dataset.ffcol === "pass_int" || t.dataset.ffcol === "pts_allow" ? 1 : -1; } return render(); }
     if (t.hasAttribute("data-ffback")) { st.ffslot = null; return render(); }
     if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return render(); }
-    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
-    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc"].forEach((k) => { st[k] = null; }); await load(); return render(); }
+    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc", "mfl"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
+    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc", "mfl"].forEach((k) => { st[k] = null; }); await load(); return render(); }
     if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }
     if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
     if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
@@ -1453,6 +1557,17 @@
     if (t.dataset.copy && (t.hasAttribute("data-sheet") || (canShare() && !t.hasAttribute("data-nosheet")))) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
     if (t.dataset.pp) { const [q, k] = t.dataset.pp.split("|"); st.pp = st.pp || {}; if (st.pp[q] === +k) delete st.pp[q]; else st.pp[q] = +k; return render(); }
+    if (t.dataset.mfr) { st.mfr = +t.dataset.mfr; st.mfslot = null; return render(); }
+    if (t.dataset.mfclear) { e.stopPropagation(); delete st.mfl[t.dataset.mfclear]; return render(); }
+    if (t.dataset.mfslot) { st.mfslot = st.mfslot === t.dataset.mfslot ? null : t.dataset.mfslot; return render(); }
+    if (t.dataset.mfadd) {
+      const [pid] = t.dataset.mfadd.split("@"), p = (st.mfP || {})[pid], pos = ((p && p.pos) || "F").charAt(0);
+      // the spot you picked, or the first open spot he fits
+      const fits = (sl) => P.mmffSlots(sl).includes(pos);
+      const sl = st.mfslot && fits(st.mfslot) ? st.mfslot : P.MMFF_SLOTS.find((x) => !st.mfl[x] && fits(x));
+      if (!sl) { st.msg = "No open spot he fits. Tap a spot to swap him in."; return render(); }
+      st.mfl[sl] = t.dataset.mfadd; st.mfslot = null; return render();
+    }
     if (t.dataset.osc) { const [c, x] = t.dataset.osc.split("|"); st.osc = st.osc || {}; if (st.osc[c] === x) delete st.osc[c]; else st.osc[c] = x; return render(); }
     if (t.hasAttribute("data-oscfav")) {
       let k = 0; (st.board.ballot.cats || []).forEach((c) => { if (c.noms.length && !c.noms.some((x) => x.id === st.osc[c.id])) { st.osc[c.id] = oscFav(c); k++; } });
@@ -1529,6 +1644,11 @@
         const r = ok(await srpc("mm_save_props", { p_pool: st.code, p_picks: Object.fromEntries(Object.entries(st.pp || {}).map(([q, k]) => [q, String(k)])), p_tb: st.pptb === "" || st.pptb == null ? null : +st.pptb }));
         st.msg = `Saved: ${r.saved} answered.`; st.pp = null;
       }
+      else if (t.hasAttribute("data-mfsave")) {
+        const r = st.mfr || mfRoundNow(st.board);
+        ok(await srpc("mm_save_mmff", { p_pool: st.code, p_round: r, p_lineup: st.mfl || {} }));
+        st.msg = `${P.MMFF_ROUND[r]} lineup saved.`; st.mfl = null;
+      }
       else if (t.hasAttribute("data-oscsave")) {
         // only picks on someone actually on the ballot (a practice pick that missed the nominations drops off)
         const cats = (st.board.ballot || {}).cats || [], picks = {};
@@ -1595,6 +1715,12 @@
   app.addEventListener("toggle", (e) => { const c = e.target.classList; if (!c) return; if (c.contains("pl-bdone")) st.bshowDone = e.target.open; if (c.contains("pl-more")) st.moreOpen = e.target.open; }, true);
   app.addEventListener("input", (e) => {
     const t = e.target;
+    if (t.hasAttribute("data-mfq")) {
+      // filter the list in place, so typing keeps the keyboard up
+      st.mfq = t.value; const q = t.value.toLowerCase();
+      document.querySelectorAll(".pl-mfl li").forEach((li) => { li.hidden = !!q && !li.textContent.toLowerCase().includes(q); });
+      return;
+    }
     if (t.hasAttribute("data-osctb")) { st.osctb = t.value; const b = document.querySelector("[data-oscsave]"); if (b) b.disabled = false; return; }
     if (t.hasAttribute("data-pptb")) { st.pptb = t.value; const b = document.querySelector("[data-ppsave]"); if (b) b.disabled = false; return; }
     if (t.dataset.pedq != null) { st.ped[+t.dataset.pedq].q = t.value; return; }

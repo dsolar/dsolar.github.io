@@ -15,6 +15,7 @@ GAMES = [
     ("bracket", "march-madness", "March Madness bracket", "All 63 games, the classic way, with points doubling every round. Make a pool, send the link, and the site keeps score."),
     ("survivor", "march-madness-survivor", "March Madness survivor", "One team a day through the tournament. Lose and you're out."),
     ("five", "five-teams", "March Madness 5 teams", "Five teams whose seeds add up to 25, with wins paying double every round."),
+    ("mmff", "march-madness-fantasy", "March Madness fantasy", "A five-man lineup every round of the tournament, and each player only once. Make a pool, send the link, and the site keeps score."),
     ("nfl", "nfl-survivor", "NFL survivor", "One NFL team a week to win, each team once. Lose and you're out."),
 ]
 

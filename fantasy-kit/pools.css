@@ -1101,3 +1101,34 @@ body{overflow-x:clip}
 .g-props .pl-po.stat{border:1px solid var(--pp-rule);border-radius:6px;padding-left:12px}
 .g-props .pl-po.stat::before,.g-props .pl-po.stat::after{display:none}
 @media (max-width:640px){.g-props .pl-prop{padding:12px 14px}.g-props .pl-po{flex:1 1 100%;justify-content:flex-start}}
+
+/* ---------- March Madness fantasy: the round tabs, five lineup spots and the player list beside them ---------- */
+.pl-mfr{margin:2px 0 12px;overflow-x:auto;max-width:100%}
+.pl-mfr button:disabled{opacity:.4;cursor:default}
+.pl-mfwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:14px;align-items:start}
+.pl-mfss{display:grid;gap:6px}
+.pl-mfs{display:flex;align-items:center;gap:10px;min-height:52px;padding:7px 10px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.pl-mfs:hover:not(:disabled){border-color:var(--ink)}
+.pl-mfs.on{border-color:#7C4DDB;box-shadow:inset 0 0 0 1px #7C4DDB;background:color-mix(in srgb,#7C4DDB 8%,var(--surface))}
+.pl-mfs.locked{background:var(--surface-2);cursor:default}
+.pl-mfs em{margin-left:auto;font-style:normal;font-weight:800;color:var(--muted)}
+.pl-mfpos{flex:none;display:grid;place-items:center;width:38px;height:26px;border-radius:6px;background:#7C4DDB;color:#fff;font:800 12px/1 var(--f-cond,"Barlow Condensed",sans-serif);letter-spacing:.04em}
+.pl-mfn{display:flex;flex-direction:column;min-width:0;flex:1}
+.pl-mfn b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-mfn small{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-mfx{margin-left:auto;padding:2px 8px;font-size:20px;line-height:1;color:var(--muted);border-radius:6px}
+.pl-mfx:hover{background:var(--surface-3);color:var(--ink)}
+.pl-mfpool input[type=search]{width:100%;margin-bottom:8px}
+.pl-mfl{list-style:none;margin:0;padding:0;display:grid;max-height:560px;overflow:auto;border-top:1px solid var(--line)}
+.pl-mfl li{border-bottom:1px solid var(--line)}
+.pl-mfl button{display:flex;align-items:center;gap:10px;width:100%;padding:8px 4px;border:0;background:none;color:var(--ink);font:inherit;text-align:left;cursor:pointer;flex-wrap:wrap}
+.pl-mfl button:hover:not(:disabled){background:var(--surface-2)}
+.pl-mfl button:disabled{cursor:default;opacity:.55}
+.pl-mfl em{font-style:normal;font-weight:800;color:#7C4DDB;margin-left:auto}
+.pl-mfu{flex-basis:100%;padding-left:32px;font-size:11.5px;color:var(--muted);font-weight:700}
+.pl-mflrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.pl-mflr.me{border-color:#7C4DDB}
+.pl-mflus{list-style:none;margin:0;padding:6px 12px 10px;display:grid;gap:6px}
+.pl-mflus li{display:flex;align-items:center;gap:8px}
+.pl-mflus em{margin-left:auto;font-style:normal;font-weight:800}
+@media (max-width:860px){.pl-mfwrap{grid-template-columns:1fr}}
