@@ -697,7 +697,11 @@
   // ---------- power rankings ----------
   var RATINGS = null;
   function ratings() { if (!RATINGS) { RATINGS = {}; Object.keys(SIM.teams).forEach(function (t) { RATINGS[t] = SIM.teams[t].rating; }); } return RATINGS; }
+  // ESPN's FPI beside the hub's rating (data/fpi.json, tools/nfl_fpi.py)
+  var FPI = null, fpiWait = null;
+  function loadFpi() { if (!fpiWait) fpiWait = fetch("data/fpi.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) { FPI = j && j.teams ? j : { teams: {} }; return FPI; }); return fpiWait; }
   function powerPage() {
+    if (!FPI) { loadFpi().then(function () { if (state.route === "power") render(); }); }
     var y = +state.q.y || W.season, now = y === W.season, pw = P.power(W, ratings(), y), base = now ? null : P.power(W, ratings(), W.season), r0 = {};
     if (base) base.forEach(function (x) { r0[x.code] = x.rank; });
     var html = '<h2 class="sec">Power rankings</h2><p class="lede">' + (now ? "This season: every team's strength in points against an average team, from the betting market's spreads and this season's scoring margins." :
@@ -707,13 +711,14 @@
     var tick = Math.max(1, Math.round(max / 2));
     html += '<div class="panel"><div class="pr-scale"><span></span><span class="pr-axis"><i style="left:' + (50 - tick / max * 50) + '%">-' + tick + '</i><i style="left:50%">0</i><i style="left:' + (50 + tick / max * 50) + '%">+' + tick + '</i></span><span class="note">pts</span></div><ol class="power">' + pw.map(function (x) {
       var c = x.code, o = SIM.teams[c], res = x.res, mv = base ? r0[c] - x.rank : 0;
-      var side = now ? '<span class="pr-meta">' + rec(o.rec) + " · proj. " + o.wins.toFixed(1) + " wins · " + pctTxt(o.playoffs) + " playoffs · " + pctTxt(o.sb) + " title</span>"
+      var fp = now && FPI && FPI.teams[c];
+      var side = now ? '<span class="pr-meta">' + rec(o.rec) + " · proj. " + o.wins.toFixed(1) + " wins · " + pctTxt(o.playoffs) + " playoffs · " + pctTxt(o.sb) + " title" + (fp ? ' · <span title="ESPN Football Power Index: points better than an average team">ESPN FPI ' + (fp.fpi >= 0 ? "+" : "") + fp.fpi.toFixed(1) + " (" + ngOrd(fp.rank) + ")</span>" : "") + "</span>"
         : '<span class="pr-meta">' + m(res.roster, 0) + " under contract · " + (res.qb ? "QB " + esc(lastName(res.qb.p.n)) : '<b class="neg">no QB under contract</b>') + " · " + m(res.space, 0) + " cap space · " + m(res.draft, 0) + " draft value</span>";
       return '<li><a href="' + href("team/" + c) + '" style="--tc:' + team(c).color + '"><span class="pr-rank">' + x.rank + "</span>" + logo(c, 30) + '<span class="pr-name"><b>' + esc(team(c).name) + "</b>" + side + "</span>" +
         '<span class="pr-move ' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (!base ? "" : mv > 0 ? "▲" + mv : mv < 0 ? "▼" + (-mv) : "–") + "</span>" +
         '<span class="pr-bar"><i class="' + (x.rating >= 0 ? "up" : "dn") + '" style="width:' + (Math.abs(x.rating) / max * 50).toFixed(1) + '%"></i></span><span class="pr-r">' + (x.rating >= 0 ? "+" : "") + x.rating.toFixed(1) + "</span></a></li>";
     }).join("") + "</ol></div>";
-    html += '<p class="note">' + (now ? "Points against an average team on a neutral field." : "Projected points against an average team. The arrows compare with this season's ranking. Value under contract is each player's value that year, aging included.") + "</p>";
+    html += '<p class="note">' + (now ? "Points against an average team on a neutral field." + (FPI && FPI.updated ? " ESPN FPI is ESPN's own Football Power Index on the same scale, for comparison (updated " + esc(String(FPI.updated).slice(0, 10)) + ")." : "") : "Projected points against an average team. The arrows compare with this season's ranking. Value under contract is each player's value that year, aging included.") + "</p>";
     view.innerHTML = html;
   }
 
