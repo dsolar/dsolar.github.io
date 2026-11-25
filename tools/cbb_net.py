@@ -36,7 +36,7 @@ FILE = sys.argv[sys.argv.index("--file") + 1] if "--file" in sys.argv else None
 
 # NCAA spellings the rules below can't reach, to the hub's short name
 ALIAS = {"uconn": "UConn", "olemiss": "Ole Miss", "lsu": "LSU", "byu": "BYU", "tcu": "TCU", "smu": "SMU", "ucf": "UCF", "unlv": "UNLV",
-         "vcu": "VCU", "utep": "UTEP", "utsa": "UTSA", "uab": "UAB", "fiu": "FIU", "fgcu": "FGCU", "etsu": "ETSU", "uni": "UNI",
+         "vcu": "VCU", "utep": "UTEP", "utsa": "UTSA", "uab": "UAB", "fiu": "FIU", "fgcu": "FGCU", "etsu": "ETSU", "uni": "Northern Iowa", "uncw": "UNC Wilmington", "mississippival": "Miss Valley St",
          "niu": "N Illinois", "siue": "SIUE", "utrgv": "UTRGV", "uic": "UIC", "umkc": "Kansas City", "uiw": "Incarnate Word", "sfa": "SF Austin",
          "stephenfaustin": "SF Austin", "lmuca": "LMU", "loyolamarymount": "LMU", "appstate": "App State", "appalachianstate": "App State",
          "southerncalifornia": "USC", "usc": "USC", "ncstate": "NC State", "northcarolinastate": "NC State", "pittsburgh": "Pitt",
