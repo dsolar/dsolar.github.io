@@ -18,7 +18,7 @@ function room(o = {}) {
   const scoring = Object.keys(sport.scorings)[0];
   V.evaluate(sport, players, { teams, lineup: sport.lineup, scoring });
   const list = [...Array(teams).keys()].map((i) => ({ name: `T${i}`, abbr: `T${i}`, owner: (o.humans || []).includes(i) ? `u${i}` : null }));
-  const D = F.create({ sport, type: 'dutch', teams: list, seed: o.seed || 11, now: T0, scoring, botDelay: 0, budget: 200, dutch: o.dutch });
+  const D = F.create({ sport, type: 'dutch', teams: list, seed: o.seed || 11, now: T0, scoring, botDelay: 0, budget: 200, dutch: o.dutch === undefined ? { size: 8, gap: 6 } : o.dutch });
   const ctx = F.context(D, players, sport);
   return { D, ctx, sport, players };
 }
@@ -29,11 +29,13 @@ function run(D, ctx, from, step = 1000, cap = 200000) {
 }
 
 test('a Dutch draft is an auction underneath, with its own rules', () => {
-  const { D } = room();
+  const { D } = room({ dutch: null });
   assert.equal(D.type, 'auction');
   assert.equal(F.formatOf(D), 'dutch');
   assert.ok(F.dutchOn(D));
-  assert.deepEqual([D.auction.dutch.size, D.auction.dutch.fall, D.auction.dutch.gap], [8, 30, 6]);
+  assert.deepEqual([D.auction.dutch.size, D.auction.dutch.fall, D.auction.dutch.gap], [4, 30, 10]);
+  assert.deepEqual([4, 8, 10, 12, 14, 20].map(F.dutchSize), [4, 4, 5, 6, 7, 8], 'about one player for every two teams');
+  assert.equal(room({ dutch: { size: 3 } }).D.auction.dutch.size, 3);
   assert.equal(F.FORMATS.dutch, 'Dutch auction');
 });
 
@@ -78,7 +80,13 @@ test('the first claim wins at the price showing, and the budget guard holds', ()
   const again = F.claim(D, ctx, 2, lot.pid, t + 5);
   assert.equal(again.ok, false);
   assert.match(again.why, /got there first/);
-  assert.equal(D.auction.wave.lots.length, 7);
+  // he stays on the board, marked sold, until the wave is over
+  assert.equal(D.auction.wave.lots.length, 8);
+  assert.deepEqual(D.auction.wave.lots[0].sold, { team: 1, price, at: t });
+  const st = F.auctionState(D, t + 10);
+  assert.equal(st.unsold, 7);
+  assert.deepEqual([st.lots[0].price, st.lots[0].sold.team], [price, 1]);
+  assert.equal(F.auctionState(D, t + 5000).lots[0].price, price, 'a sold price stops falling');
 });
 
 test('a pause stops the fall and a resume picks it up at the same price', () => {
@@ -139,4 +147,38 @@ test('an unsold player comes back cheaper, and undo puts the last sale back in t
   const r = F.undo(D, ctx, w2.at);
   assert.ok(r.ok); assert.equal(r.sale.pid, sold.pid);
   assert.equal(D.teams[3].budget, 200);
+});
+
+test('when the last player in a wave is claimed it lingers three seconds, then the next wave gets its look', () => {
+  const { D, ctx } = room({ humans: [0, 1, 2, 3, 4, 5, 6, 7], dutch: { size: 3, gap: 10 } });
+  F.start(D, T0, ctx); F.tick(D, ctx, T0 + 1);
+  const w = D.auction.wave, t = w.at + 12000;
+  assert.equal(w.at, T0 + 10000, 'ten seconds to look before prices move');
+  w.lots.forEach((l, i) => assert.ok(F.claim(D, ctx, i, l.pid, t + i).ok));
+  assert.equal(D.auction.wave.n, 1, 'still showing');
+  assert.equal(D.auction.wave.ends, t + 2 + 3000);
+  assert.equal(F.auctionState(D, t + 1000).unsold, 0);
+  F.tick(D, ctx, t + 2999);
+  assert.equal(D.auction.wave.n, 1);
+  F.tick(D, ctx, t + 3003);
+  assert.equal(D.auction.wave.n, 2);
+  assert.equal(D.auction.wave.at, t + 2 + 3000 + 10000);
+  assert.ok(D.auction.wave.lots.every((l) => !l.sold));
+  assert.ok(!D.auction.dutch.passed[w.lots[0].pid], 'a sold player is not marked unsold');
+});
+
+test('undo puts a claimed player back on sale in his wave, and a pause keeps the prices where they were', () => {
+  const { D, ctx } = room({ humans: [0, 1, 2, 3, 4, 5, 6, 7], dutch: { size: 3, gap: 5 } });
+  F.start(D, T0, ctx); F.tick(D, ctx, T0 + 1);
+  const w = D.auction.wave, t = w.at + 8000;
+  w.lots.forEach((l, i) => assert.ok(F.claim(D, ctx, i, l.pid, t + i).ok));
+  assert.equal(w.ends, t + 3002);
+  const p = F.dutchPrice(D, { start: w.lots[2].start }, t + 500);
+  F.pause(D, t + 500, true); F.pause(D, t + 60500, false);
+  assert.equal(F.dutchPrice(D, { start: w.lots[2].start }, t + 60500), p, 'the clock picks up where it stopped');
+  assert.ok(F.undo(D, ctx, t + 61000).ok);
+  assert.ok(!w.lots[2].sold); assert.ok(w.lots[0].sold && w.lots[1].sold);
+  assert.ok(D.auction.wave.ends >= t + 61000 + 4000, 'time to claim him again');
+  assert.equal(D.teams[2].budget, 200);
+  assert.ok(F.claim(D, ctx, 3, w.lots[2].pid, t + 61500).ok);
 });

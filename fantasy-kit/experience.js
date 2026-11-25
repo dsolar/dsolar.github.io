@@ -20,7 +20,7 @@
     const n = slate && Number(slate.week) > 0 ? Number(slate.week) : sportWeek(sport, at);
     return n ? `NCAAF Week ${n}` : `League week ${week}`;
   }
-  const RULE_FIELDS = ("sport teams type clock aBudget season weeks trades scoring lineup bench playoffs deadline review faab waiverDays gameLock weights cats waivers ir maxAdds posMax keepers keeperCost legs cons median bestball divs rookie fpicks taxi ohold tep ptd b100r b100c b300p reviewHours vetoShare waiverOrder minBid waiverPrice maxAddsSeason dealOn dealMax ladOn ladSeed ladReach splitAfter halfOn halfAfter halfKeep pyrOn pyrTeams pyrMode pyrK pyrTop pyrBot capBudget capBonus hcOn hcScale confOn reseed confs cbbEnd cfbEnd tvOn pyoOn robinOn robinP conqOn conqP conqLike crownOn crownStep crownKeep hangOn tbOn tbAmt reveal kind rlOn rlRound respins hzOn hzShields hzSteals hzJinxes hzClock keepN tepOn tepAmt b100rOn b100rAmt b100cOn b100cAmt b300pOn b300pAmt vampOn vampWho poolOnly proRounds proRule nhlDaily minGoalieGames chaseOn chaseWeeks elSteals elFreeze elTax elGold sx slKind slWeek slOne slGames").split(" ");
+  const RULE_FIELDS = ("sport teams type clock aBudget season weeks trades scoring lineup bench playoffs deadline review faab waiverDays gameLock weights cats waivers ir maxAdds posMax keepers keeperCost legs cons median bestball divs rookie fpicks taxi ohold tep ptd b100r b100c b300p reviewHours vetoShare waiverOrder minBid waiverPrice maxAddsSeason dealOn dealMax ladOn ladSeed ladReach splitAfter halfOn halfAfter halfKeep dWave pyrOn pyrTeams pyrMode pyrK pyrTop pyrBot capBudget capBonus hcOn hcScale confOn reseed confs cbbEnd cfbEnd tvOn pyoOn robinOn robinP conqOn conqP conqLike crownOn crownStep crownKeep hangOn tbOn tbAmt reveal kind rlOn rlRound respins hzOn hzShields hzSteals hzJinxes hzClock keepN tepOn tepAmt b100rOn b100rAmt b100cOn b100cAmt b300pOn b300pAmt vampOn vampWho poolOnly proRounds proRule nhlDaily minGoalieGames chaseOn chaseWeeks elSteals elFreeze elTax elGold sx slKind slWeek slOne slGames").split(" ");
   RULE_FIELDS.push("slPeriod");
   const BAD = new Set(["__proto__", "constructor", "prototype"]);
   function safe(value, depth = 0) {
@@ -95,6 +95,7 @@
     if (D.cap) { r.capBudget = D.cap.budget; r.capBonus = D.cap.bonus ? 1 : 0; }
     if (D.steals) Object.assign(r, { elSteals: D.steals.perTeam, elFreeze: D.steals.freeze, elTax: Math.round(D.steals.tax * 100), elGold: Math.round(D.steals.golden * 100) });
     if (D.roulette) Object.assign(r, { rlOn: 1, rlRound: D.roulette.each === "round" ? 1 : 0, respins: D.roulette.respins });
+    if (D.auction && D.auction.dutch) r.dWave = D.auction.dutch.size;
     if (D.trivia) r.tvOn = 1;
     if (s.dynasty) { r.rookie = s.dynasty.rounds; r.fpicks = s.dynasty.picks === false ? 0 : 1; }
     if (s.robin) Object.assign(r, { robinOn: 1, robinP: s.robin.protect });

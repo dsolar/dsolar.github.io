@@ -249,7 +249,7 @@
     const dutch = c.type === "dutch", auction = c.type === "auction" || dutch, mystery = c.type === "mystery", elephant = c.type === "elephant";
     const tradesOk = !auction && !elephant && c.type !== "pack";
     const clock = (dutch ? FALL_CLOCKS : auction ? BID_CLOCKS : CLOCKS).find(([v]) => v === c.clock) || (auction ? (dutch ? FALL_CLOCKS : BID_CLOCKS)[1] : CLOCKS[1]);
-    const waves = [...new Set([6, 8, 10, 12, 15, c.wave || Math.max(6, Math.min(12, c.teams))])].sort((a, b) => a - b);
+    const waveN = c.wave || F.dutchSize(c.teams), waves = [...new Set([3, 4, 5, 6, 8, 10, 12, waveN])].sort((a, b) => a - b);
     const sc = (sport.scorings[scoring] || {}).label || "";
     const twHtml = twists(c);
     const dsl = dayOn(c) ? daySlate(c) : null;
@@ -271,7 +271,7 @@
         <section class="nl-sec"><h2 class="nl-h">Format</h2>${formats}</section>
         <section class="nl-sec nl-ess">
           <div class="g2">${K.fld("Teams", K.stepper("teams", teamVals(c), c.teams, (x) => `${x} teams`, "Teams"))}
-            ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : dutch ? K.fld("Players a wave", K.stepper("wave", waves, c.wave || Math.max(6, Math.min(12, c.teams)), (x) => `${x} players`, "Players a wave")) : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
+            ${mystery ? K.fld("Packages open", K.seg("reveal", Object.entries(F.REVEALS).map(([k, l]) => [k, l.replace(", the rest as they come up", ", then as picks come up")]), c.reveal, "Packages open", { wrap: true })) : dutch ? K.fld("Players a wave", K.stepper("wave", waves, waveN, (x) => `${x} players`, "Players a wave"), "How many come up at once. Fewer is easier to follow and makes a longer draft.") : K.fld(auction ? "Your nomination turn" : "Your pick", K.stepper("slot", Array.from({ length: c.teams + 1 }, (_, i) => i), Math.min(c.slot, c.teams), (x) => (x ? U.ord(x) : "Random"), auction ? "Your nomination turn" : "Your pick"))}</div>
           ${K.fld("Scoring", K.cards("scoring", presets, scoring, "Scoring", presets.length > 3 ? 3 : presets.length))}
           <div class="g2">${K.fld(dutch ? "Prices fall for" : auction ? "Bid clock" : "Pick clock", K.seg("clock", dutch ? FALL_CLOCKS : auction ? BID_CLOCKS : PICK_CLOCKS.concat([[c.clock < 0 ? c.clock : -200, "Time bank"]]), clock[0], dutch ? "Prices fall for" : auction ? "Bid clock" : "Pick clock", { wrap: true }),
               dutch ? "Nobody bids. Every player in a wave opens high and falls to $1 on this clock. The first claim wins at the price showing." : auction ? "Every bid resets the clock." : c.clock < 0 ? `One clock for your whole draft: ${fmtBank(-c.clock)} for all your picks, about ${Math.round(-c.clock / Math.max(1, (dsl ? dsl.lineup.lineup.length + dsl.lineup.bench : sdOn(c) ? 6 : hzOn(c) ? 8 : lu.length + bench)))} seconds each. Run it out and every pick gets 10 seconds. The bots finish with about half of theirs left. What's left becomes FAAB for the season.` : c.clock ? "When your clock runs out, your first queued player who fits is taken, then the best fit." : "Take as long as you like.")}
