@@ -96,6 +96,7 @@
   function closeNavigation() {
     closeDropdowns();
     var toggle = bar.querySelector(".ds-menu-toggle");
+    if (!toggle) return; // Pools pages have no menu
     if (!desktop.matches) bar.querySelector(".ds-primary").hidden = true;
     toggle.setAttribute("aria-expanded", "false");
   }
@@ -106,7 +107,9 @@
       // the hubs carry the same switch as Draft Lab's bar: Hubs / Draft Lab
       + (sportHub || poolsPage ? '<nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="' + esc(at("simulations/")) + '"' + (sportHub ? ' aria-current="page"' : '') + '>Hubs</a><a href="' + esc(at("fantasy/")) + '">Draft Lab</a><a href="' + esc(at("pools/")) + '"' + (poolsPage ? ' aria-current="page"' : '') + '>Pools</a></nav>'
         : !isHub && parent ? '<a class="ds-parent" href="' + esc(at(parent.url)) + '"><span aria-hidden="true">←</span> ' + esc(parent.label) + '</a>' : '')
-      + '<button class="ds-menu-toggle" type="button" aria-expanded="false" aria-controls="ds-primary"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="1.6"/></svg><span>Menu</span></button>'
+      // Pools pages carry Pools' own sections (as the pool pages' masthead does), not the site menu
+      + (poolsPage ? '<nav class="ds-poolnav" aria-label="Sections"><a href="' + esc(at("pools/")) + '">All pools</a><a href="' + esc(at("pickem/")) + '"' + (folder === "pickem" ? ' aria-current="page"' : '') + '>NFL pick\'em</a><a href="' + esc(at("pools/wins/")) + '">Wins pools</a></nav><div class="ds-account" id="ds-account"></div></div>' : '')
+      + (poolsPage ? '' : '<button class="ds-menu-toggle" type="button" aria-expanded="false" aria-controls="ds-primary"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="1.6"/></svg><span>Menu</span></button>'
       + '<div class="ds-primary" id="ds-primary"' + (!desktop.matches ? ' hidden' : '') + '>' + sections.map(function (s) {
         var contents = menu(s.id, visible);
         var active = section === s.id;
@@ -115,7 +118,7 @@
           + (contents ? '<div class="ds-dropdown ds-dropdown-' + s.id + '" id="ds-menu-' + s.id + '" aria-labelledby="ds-toggle-' + s.id + '" hidden>' + contents + '<a class="ds-view-all" href="' + esc(at(s.url)) + '">Explore ' + esc(s.label) + ' <span aria-hidden="true">→</span></a></div>' : '') + '</div>';
       }).join("") + '<a class="ds-all-projects" href="' + esc(at("#projects")) + '">Explore all projects <span aria-hidden="true">→</span></a></div>'
       // Sign in, or your account (assets/account.js fills it)
-      + '<div class="ds-account" id="ds-account"></div></div>';
+      + '<div class="ds-account" id="ds-account"></div></div>');
     // The same category destinations in every full-size footer.
     document.querySelectorAll(".foot-nav").forEach(function (footer) {
       var email = footer.querySelector("[data-user]");
@@ -160,7 +163,7 @@
     if (event.key !== "Escape" || !bar.contains(document.activeElement)) return;
     var open = bar.querySelector('.ds-disclosure[aria-expanded="true"]');
     if (open) { closeDropdowns(); open.focus(); event.preventDefault(); event.stopPropagation(); }
-    else if (!desktop.matches && bar.querySelector(".ds-menu-toggle").getAttribute("aria-expanded") === "true") {
+    else if (!desktop.matches && bar.querySelector(".ds-menu-toggle") && bar.querySelector(".ds-menu-toggle").getAttribute("aria-expanded") === "true") {
       closeNavigation(); bar.querySelector(".ds-menu-toggle").focus(); event.preventDefault(); event.stopPropagation();
     }
   });
@@ -171,7 +174,7 @@
       if (item && !item.contains(event.relatedTarget)) closeDropdowns();
     }
   });
-  desktop.addEventListener("change", function () { closeDropdowns(); bar.querySelector(".ds-primary").hidden = !desktop.matches; bar.querySelector(".ds-menu-toggle").setAttribute("aria-expanded", "false"); });
+  desktop.addEventListener("change", function () { closeDropdowns(); if (!bar.querySelector(".ds-primary")) return; bar.querySelector(".ds-primary").hidden = !desktop.matches; bar.querySelector(".ds-menu-toggle").setAttribute("aria-expanded", "false"); });
   window.addEventListener("dsolar:projects-change", function () { render(); window.dispatchEvent(new Event("dsolar:nav-render")); });
   if (window.ResizeObserver) new ResizeObserver(function () {
     document.documentElement.style.setProperty("--ds-navigation-height", bar.getBoundingClientRect().height + "px");

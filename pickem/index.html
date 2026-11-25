@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>The Number | David Solar</title>
+<title>The Number | Pools</title>
 <meta name="description" content="NFL pick'em against the spread. One line per game, frozen each week. Pick every game, climb the board, and run a private group with your friends.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://davidsolar.dev/pickem/">
@@ -21,9 +21,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="../assets/navigation.css?v=20261125pr">
+<link rel="stylesheet" href="../assets/navigation.css?v=20261125pk">
 <script src="../assets/projects.js?v=20261124-bb" defer></script>
-<script src="../assets/navigation.js?v=20261125pm" defer></script>
+<script src="../assets/navigation.js?v=20261125pk" defer></script>
 <script src="../assets/analytics.js" defer></script>
 <style>
 /* The Number: a sportsbook parlay card. Green card stock, black condensed type, red ink for the lines, and a pick that
@@ -43,11 +43,20 @@ button{font:inherit;color:inherit}
 .wrap{max-width:760px;margin:0 auto;padding:0 16px}
 
 /* masthead: the card's printed top */
-.mast{padding:26px 0 14px;border-bottom:3px solid var(--ink)}
-.mast-row{display:flex;align-items:flex-end;gap:16px;justify-content:space-between;flex-wrap:wrap}
-.mast h1{margin:0;font:800 clamp(3rem,13vw,5.2rem)/.82 var(--cond);letter-spacing:-.01em;text-transform:uppercase}
-.mast h1 span{color:var(--red)}
-.mast p{margin:8px 0 0;font:600 1.05rem/1.3 var(--cond);letter-spacing:.02em;color:var(--ink-2)}
+/* the Pools band (same frame as every pool page), in the card's own colors: black stock, red lines */
+.mast{padding:16px 0 14px}
+.band{position:relative;overflow:hidden;border-radius:14px;padding:26px 24px 24px;background:linear-gradient(165deg,#0A0C0D 0%,var(--ink) 60%,#2A1518 140%);color:#F2F5EF}
+.band::after{content:"";position:absolute;inset:auto 0 0 0;height:5px;background:var(--red)}
+.band-in{position:relative;z-index:1;display:flex;align-items:flex-end;gap:16px;justify-content:space-between;flex-wrap:wrap}
+.kick{display:flex;align-items:center;gap:8px;margin:0;font:800 .8rem/1 var(--body);letter-spacing:.12em;text-transform:uppercase;color:#B9D3AE}
+.kick::before{content:"";width:18px;height:2px;background:currentColor}
+.mast h1{margin:10px 0 0;font:800 clamp(3rem,12vw,5.2rem)/.85 var(--cond);letter-spacing:-.01em;text-transform:uppercase;color:#fff}
+.mast h1 span{color:#FF4A57}
+.mast .sub{margin:10px 0 0;font:600 1.05rem/1.3 var(--cond);letter-spacing:.02em;color:#C7D0CA}
+.band-art{position:absolute;right:28px;top:50%;transform:translateY(-50%) rotate(-6deg);width:min(24%,140px);opacity:.26;color:#E4ECDF}
+.band .rec b{color:#fff}
+.band .rec small{color:#C7D0CA}
+@media (max-width:560px){.band{padding:20px 16px}.band-art{opacity:.12;width:38%;right:10px}}
 .rec{display:grid;justify-items:end;gap:2px;font-family:var(--cond)}
 .rec b{font-size:2rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .rec small{font-size:.85rem;font-weight:600;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em}
@@ -165,7 +174,7 @@ table.gp .w{color:var(--win);font-weight:700}.gp .l{color:var(--loss)}.gp .p{col
 </nav>
 <main id="pk">
   <div class="wrap">
-    <header class="mast"><div class="mast-row"><div><h1>The <span>Number</span></h1><p>NFL pick'em against the spread</p></div><div class="rec" id="pk-rec" hidden></div></div>
+    <header class="mast"><section class="band"><svg class="band-art" viewBox="0 0 200 220" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="3"><path d="M20 10h160v200l-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8-10-8-10 8z"/><path d="M40 40h120M40 52h80" stroke-width="2"/><rect x="40" y="72" width="18" height="18"/><path d="M70 81h50" stroke-width="2"/><rect x="142" y="72" width="18" height="18"/><rect x="40" y="104" width="18" height="18"/><path d="M70 113h60" stroke-width="2"/><rect x="142" y="104" width="18" height="18"/><rect x="40" y="136" width="18" height="18"/><path d="M70 145h44" stroke-width="2"/><rect x="142" y="136" width="18" height="18"/><rect x="40" y="168" width="18" height="18"/><path d="M70 177h56" stroke-width="2"/><rect x="142" y="168" width="18" height="18"/></g><g fill="#FF4A57"><rect x="44" y="76" width="10" height="10"/><rect x="146" y="108" width="10" height="10"/><rect x="44" y="140" width="10" height="10"/><rect x="146" y="172" width="10" height="10"/></g></svg><div class="band-in"><div><p class="kick">NFL</p><h1>The <span>Number</span></h1><p class="sub">Pick'em against the spread. One line per game, frozen each week.</p></div><div class="rec" id="pk-rec" hidden></div></div></section>
       <div class="tabs" role="tablist" aria-label="The Number">
         <button role="tab" id="t-picks" aria-selected="true" aria-controls="pk-body" data-tab="picks">Picks</button>
         <button role="tab" id="t-board" aria-selected="false" aria-controls="pk-body" data-tab="board">Standings</button>

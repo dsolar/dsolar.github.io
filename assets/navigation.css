@@ -84,3 +84,13 @@ main[tabindex="-1"]:focus,#ds-content:focus{outline:none}
 .ds-navigation:has(.ds-prod) .ds-section-link{font:750 14px/1.25 "Barlow","Libre Franklin","Helvetica Neue",Arial,sans-serif}
 /* Pools' accent: green under the bar (the hubs are red, Draft Lab amber) */
 .ds-navigation[data-prod="pools"]{border-bottom-color:#2FB67C}
+/* Pools pages outside the pool app (the pick'em): Pools' own sections in the bar, as the pool pages' masthead has */
+.ds-poolnav{display:flex;align-self:stretch;gap:2px;flex:1;min-width:0}
+.ds-poolnav a{display:flex;align-items:center;padding:4px 12px 0;color:rgba(255,255,255,.72);text-decoration:none;font:750 14px/1.25 "Barlow","Libre Franklin","Helvetica Neue",Arial,sans-serif;white-space:nowrap;border-bottom:3px solid transparent}
+.ds-poolnav a:hover{color:#fff}
+.ds-poolnav a[aria-current="page"]{color:#fff;border-bottom-color:#2FB67C}
+.ds-navigation:has(.ds-poolnav) .ds-account{margin-left:auto}
+@media (max-width:720px){
+  .ds-navigation:has(.ds-poolnav) .ds-nav-inner{flex-wrap:wrap;row-gap:0}
+  .ds-poolnav{order:3;flex-basis:100%;min-height:44px;margin:0 -12px;overflow-x:auto;scrollbar-width:none}
+}
