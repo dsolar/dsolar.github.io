@@ -23,7 +23,7 @@
   const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
   // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
-  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props" })[kind] || "";
+  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff" })[kind] || "";
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
   const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
@@ -87,7 +87,10 @@
     <g fill="none" stroke="#1D1A14" stroke-opacity=".55" stroke-width="1.4">${[0, 1, 2, 3, 4, 5].map((r) => `<path d="M72 ${36 + r * 20}h34"/><circle cx="122" cy="${36 + r * 20}" r="5"/><circle cx="140" cy="${36 + r * 20}" r="5"/>`).join("")}</g>
     <g fill="#1D1A14">${[[0, 0], [1, 1], [2, 0], [3, 1], [4, 1], [5, 0]].map(([r, c]) => `<circle cx="${122 + 18 * c}" cy="${36 + r * 20}" r="4"/>`).join("")}</g>
     <path d="M70 24h80" stroke="#C8102E" stroke-width="3"/></svg>`;
-  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  const COURT_ART = `<svg class="pl-art court-art" viewBox="0 0 240 180" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.4">
+    <path d="M10 170H230M10 170V10H230V170"/><rect x="88" y="10" width="64" height="76"/><path d="M88 86a32 32 0 0 0 64 0"/><path d="M88 86a32 32 0 0 1 64 0" stroke-dasharray="5 6" opacity=".6"/>
+    <path d="M28 10v34a92 92 0 0 0 184 0V10"/><path d="M106 22h28"/><circle cx="120" cy="28" r="6"/><path d="M98 170a22 22 0 0 1 44 0"/></g></svg>`;
+  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "mmff" ? COURT_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
       <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>
