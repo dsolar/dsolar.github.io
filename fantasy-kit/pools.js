@@ -111,7 +111,8 @@
   // in season first: NFL from September through January, March Madness the rest of the year
   const nflSeason = () => { const m = new Date().getMonth(); return m >= 8 || m === 0; };
   // each sport's color, and a small drawn icon for each game
-  const SPORT_C = { NFL: "#C8102E", NBA: "#1D5FBF", "College football": "#1F7A4D", "March Madness": "#E0702A" };
+  // the same colors as the fantasy pages (fantasy/hub.css): NFL green, NBA orange, college football red, college hoops purple
+  const SPORT_C = { NFL: "#10A36B", NBA: "#C2410C", "College football": "#C8102E", "March Madness": "#7C4DDB" };
   const ico = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   const ICON = {
     pickem: ico('<path d="M4 6h10M4 12h10M4 18h7"/><path d="m15 17 2.5 2.5L22 15"/>'),
@@ -130,14 +131,6 @@
     nflWeek1: "2026-09-10", nbaTip: "2026-10-20", nbaEnd: "2027-04-11", bowlsSet: "2026-12-06", bowls: "2026-12-12", nflField: "2027-01-10", wildCard: "2027-01-16",
     cfpTitle: "2027-01-25", superBowl: "2027-02-14", selection: "2027-03-14", mmTitle: "2027-04-05",
   };
-  const MILESTONES = [
-    { d: CAL.bowlsSet, sport: "College football", t: "Bowl matchups set" },
-    { d: CAL.bowls, sport: "College football", t: "Bowl games start" },
-    { d: CAL.nflField, sport: "NFL", t: "Playoff field set" },
-    { d: CAL.wildCard, sport: "NFL", t: "Wild Card weekend" },
-    { d: CAL.superBowl, sport: "NFL", t: "Super Bowl" },
-    { d: CAL.selection, sport: "March Madness", t: "Selection Sunday" },
-  ];
   const day0 = (d) => Date.parse(d + "T05:00:00Z");
   const shortDate = (d) => new Date(day0(d) + 12 * 3600e3).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
   const GAMES = [
@@ -153,6 +146,15 @@
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
   ];
   const sportC = (k) => SPORT_C[SPORT[k]] || SPORT_C.NFL;
+  /* The page is organized by sport, like the fantasy home: a sport bar, then one panel per sport with its games. k is
+     the fantasy pages' key (its colors and its court or field drawing, fantasy-kit/sport-art.js). */
+  const SPORTS_P = [
+    { k: "nfl", sport: "NFL", name: "NFL", blurb: "Every week of the season, then the playoffs and the Super Bowl.", dates: [[CAL.nflField, "Playoff field set"], [CAL.wildCard, "Wild Card weekend"], [CAL.superBowl, "Super Bowl"]] },
+    { k: "cfb", sport: "College football", name: "College football", blurb: "Bowl season and the College Football Playoff, every game.", dates: [[CAL.bowlsSet, "Matchups set"], [CAL.bowls, "Bowls start"], [CAL.cfpTitle, "Title game"]] },
+    { k: "nba", sport: "NBA", name: "NBA", blurb: "Draft real teams and ride their wins all season.", dates: [[CAL.nbaEnd, "Regular season ends"]] },
+    { k: "cbb", sport: "March Madness", name: "March Madness", blurb: "Survivor and 5 teams, from Selection Sunday to the title game.", dates: [[CAL.selection, "Selection Sunday"], [CAL.mmTitle, "Title game"]] },
+  ];
+  const sportKeyOf = (kind) => (SPORTS_P.find((x) => x.sport === SPORT[kind]) || SPORTS_P[0]).k;
   /* Up next: the one game to set up now, by the calendar (from the day shown up to, not including, the day it ends).
      Each is a game in GAMES; the text says why now. Roll forward with CAL each summer. */
   const UP_NEXT = [
@@ -163,6 +165,13 @@
     { key: "squares", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl squares", text: `Fill the board before the Super Bowl on ${shortDate(CAL.superBowl)}. The numbers are drawn once it's full.` },
     { key: "five", from: "2027-02-15", until: CAL.selection, title: "March Madness", text: `The field comes out ${shortDate(CAL.selection)}. Set up survivor or 5 teams now and practice on the projected bracket.` },
   ];
+  // the sport bar sticks just under the site's own sticky header, however tall that is on this screen
+  function pinBar() {
+    const top = document.querySelector(".fk-top"), h = top ? Math.max(0, Math.round(top.getBoundingClientRect().height + Math.min(0, top.getBoundingClientRect().top))) : 0;
+    document.documentElement.style.setProperty("--pl-top", h + "px");
+  }
+  window.addEventListener("resize", () => { if (document.querySelector(".pl-sbar")) pinBar(); });
+  const upNextIn = (k) => { const now = Date.now(), u = UP_NEXT.find((x) => now >= day0(x.from) && now < day0(x.until)); return !!u && sportKeyOf(u.key) === k; };
   function upNext(have) {
     const now = Date.now(), u = UP_NEXT.find((x) => now >= day0(x.from) && now < day0(x.until));
     if (u && have && have.has(u.key)) return ""; // already in one
@@ -172,12 +181,7 @@
     return `<section class="pl-next" style="--sc:${SPORT_C[gm.sport]}" aria-label="Up next"><span class="pl-gc-ic">${ICON[gm.key]}</span><div class="pl-next-t"><small>Up next, ${esc(gm.sport)}</small><h2>${esc(u.title)}</h2><p>${esc(u.text)}</p>
       <div class="pl-act">${act}<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details></div></div></section>`;
   }
-  function gameCard(gm) {
-    const act = gm.href ? `<a class="btn go" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go" data-make="${gm.key}">Make a pool</button>`;
-    return `<article class="pl-gc" style="--sc:${SPORT_C[gm.sport]}"><div class="pl-gc-top"><span class="pl-gc-ic">${ICON[gm.key]}</span><span class="pl-gc-sp">${esc(gm.sport)}</span><span class="pl-gc-st${gm.isLive ? " live" : ""}">${esc(gm.isLive ? "Live now" : gm.soon || `Opens ${shortDate(gm.open)}`)}</span></div>
-      <h3><small class="pl-gc-lg">${esc(gm.sport)}</small>${esc(gm.name)}</h3><p class="pl-tag">${esc(gm.tag)}</p><ul class="pl-gc-facts">${gm.facts.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
-      <div class="pl-act">${act}${gm.href ? "" : `<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details>`}</div></article>`;
-  }
+
   // where you stand in each of your pools: every board, scored the same way its own page does. Kept a minute, since
   // opening a form re-renders the page.
   async function statuses(mine) {
@@ -225,25 +229,53 @@
     GAMES.forEach((g) => { g.isLive = now >= day0(g.open) && now < day0(g.end) + 864e5; });
     const live = GAMES.filter((g) => g.isLive), later = GAMES.filter((g) => !g.isLive && day0(g.open) > now).sort((a, c) => day0(a.open) - day0(c.open));
     const soon = later.filter((g) => day0(g.open) - now < 75 * 864e5), far = later.filter((g) => day0(g.open) - now >= 75 * 864e5);
-    const miles = MILESTONES.filter((m) => day0(m.d) + 864e5 > now).slice(0, 5);
-    const timeline = miles.length ? `<ol class="pl-tl" aria-label="Coming up">${miles.map((m) => `<li style="--sc:${SPORT_C[m.sport]}"><time datetime="${m.d}">${shortDate(m.d)}</time><span>${esc(m.t)}</span></li>`).join("")}</ol>` : "";
-    const group = (title, gs) => gs.length ? `<div class="pl-sec"><h3 class="pl-grp">${title}</h3><div class="pl-games">${gs.map(gameCard).join("")}</div></div>` : "";
-    const catBody = `${timeline}${group("Playing now", live)}${group("Coming up", soon)}
-      ${far.length ? `<details class="pl-later"><summary>Later: ${esc([...new Set(far.map((g) => g.sport))].join(", "))} <small>(${far.length} ${far.length === 1 ? "game" : "games"})</small></summary><div class="pl-games">${far.map(gameCard).join("")}</div></details>` : ""}`;
+    // one panel per sport: what's on now first, then by what opens soonest
+    const art = window.FK.art;
+    const stateOf = (gm) => gm.isLive ? "Live now" : gm.soon || `Opens ${shortDate(gm.open)}`;
+    const sports = SPORTS_P.map((sp) => {
+      const gs = GAMES.filter((g) => g.sport === sp.sport).sort((a, c) => (c.isLive - a.isLive) || (day0(a.open) - day0(c.open)));
+      const on = gs.some((g) => g.isLive), nextG = gs.filter((g) => !g.isLive).sort((a, c) => day0(a.open) - day0(c.open))[0];
+      return Object.assign({}, sp, { gs, on, at: on ? 0 : nextG ? day0(nextG.open) : Infinity, status: on ? "In season" : nextG ? nextG.soon || `Opens ${shortDate(nextG.open)}` : "" });
+    }).filter((sp) => sp.gs.length).sort((a, c) => a.at - c.at);
+    const pick0 = (location.hash || "").slice(1);
+    if (st.sport == null) st.sport = sports.some((sp) => sp.k === pick0) ? pick0 : "";
+    const shown = st.sport ? sports.filter((sp) => sp.k === st.sport) : sports;
+    const gameRow = (gm) => {
+      const act = gm.href ? `<a class="btn go sm" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go sm" data-make="${gm.key}">Make a pool</button>`;
+      return `<li><span class="pl-dg-ic">${ICON[gm.key]}</span><div class="pl-dg-t"><div class="pl-dg-h"><b>${esc(gm.name)}</b><span class="pl-dg-st${gm.isLive ? " on" : ""}">${esc(stateOf(gm))}</span></div><p>${esc(gm.tag)}</p>
+        <div class="pl-dg-act">${act}${gm.href ? "" : `<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details>`}</div></div></li>`;
+    };
+    // on wide screens a sport with four or more games runs the full width with its games side by side, and so does a
+    // panel left alone at the end of the grid
+    const big = (sp) => shown.length > 1 && sp.gs.length >= 4, rest = shown.filter((sp) => !big(sp));
+    const lone = rest.length % 2 ? rest[rest.length - 1] : null;
+    const door = (sp) => {
+      const dates = sp.dates.filter(([d]) => day0(d) + 864e5 > now);
+      return `<section class="pl-door ${sp.k}${big(sp) || sp === lone || shown.length === 1 ? " wide" : ""}" id="sp-${sp.k}" aria-labelledby="sp-${sp.k}-h">${art ? art.field(sp.k) : ""}
+        <div class="pl-door-top"><div class="pl-door-row"><span class="pl-door-ic">${art ? art.ic(sp.k) : ICON[sp.gs[0].key]}</span>${sp.status ? `<span class="pl-door-st${sp.on ? " on" : ""}">${esc(sp.status)}</span>` : ""}</div>
+        <h3 class="disp" id="sp-${sp.k}-h">${esc(sp.name)}</h3><p>${esc(sp.blurb)}</p></div>
+        <ul class="pl-door-games">${sp.gs.map(gameRow).join("")}</ul>
+        ${dates.length ? `<ol class="pl-door-dates">${dates.map(([d, t]) => `<li><time datetime="${d}">${shortDate(d)}</time>${esc(t)}</li>`).join("")}</ol>` : ""}</section>`;
+    };
+    const bar = `<nav class="pl-sbar" aria-label="Sports"><button type="button" data-sport=""${!st.sport ? ' aria-current="true"' : ""}>${art ? art.ic("home") : ""}All sports</button><span class="pl-sbar-sep" aria-hidden="true"></span>${sports.map((sp) => `<button type="button" class="${sp.k}" data-sport="${sp.k}"${st.sport === sp.k ? ' aria-current="true"' : ""}>${art ? art.ic(sp.k) : ""}${esc(sp.name)}</button>`).join("")}</nav>`;
+    const catalog = `<section class="pl-sports" aria-label="Games by sport"><div class="pl-doors${shown.length === 1 ? " one" : ""}">${shown.map(door).join("")}</div></section>`;
     const pill = (x) => !x ? "" : x.tone === "todo" ? `<span class="pl-due">${x.due ? `Due ${esc(dueText(x.due))}` : "To do"}</span>` : x.tone === "won" ? `<span class="pl-due won">Won</span>` : x.tone === "out" ? `<span class="pl-due out">Out</span>` : "";
     const row = (href, key, sc, name, sub, x) => `<li class="${x ? "t-" + x.tone : ""}"><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
     const sorted = (mine || []).slice().sort((a, c) => { const x = stat[a.id] || { tone: "ok" }, y = stat[c.id] || { tone: "ok" }; return (TONE_ORDER[x.tone] - TONE_ORDER[y.tone]) || ((x.due || 0) - (y.due || 0)); });
+    // a sport picked in the bar narrows your pools too
+    const inSport = (k) => !st.sport || k === st.sport;
     // every kind of pool in one list, what's due soonest first
     const winStat = wins.map((p) => (window.FK.wins ? window.FK.wins.status(p) : null));
-    const rows = sorted.map((p) => { const x = stat[p.id]; return { x, html: row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x) }; })
-      .concat((groups || []).map((g) => ({ x: st.pkStat, html: row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat) })))
-      .concat(wins.map((p, i) => ({ x: winStat[i], html: row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i]) })));
+    const rows = sorted.filter((p) => inSport(sportKeyOf(p.kind))).map((p) => { const x = stat[p.id]; return { x, html: row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x) }; })
+      .concat((groups || []).filter(() => inSport("nfl")).map((g) => ({ x: st.pkStat, html: row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat) })))
+      .concat(wins.map((p, i) => ({ sk: p.sport === "nba" ? "nba" : "nfl", p, i })).filter((w) => inSport(w.sk)).map(({ p, i }) => ({ x: winStat[i], html: row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i]) })));
     const rank = (x) => TONE_ORDER[(x && x.tone) || "ok"];
+
     const items = rows.map((r, i) => Object.assign(r, { i })).sort((a, c) => (rank(a.x) - rank(c.x)) || (((a.x && a.x.due) || Infinity) - ((c.x && c.x.due) || Infinity)) || (a.i - c.i)).map((r) => r.html);
     const todo = Object.values(stat).concat(st.pkStat && (groups || []).length ? [st.pkStat] : [], winStat.filter(Boolean)).filter((x) => x.tone === "todo").sort((a, c) => (a.due || Infinity) - (c.due || Infinity));
     const summary = !items.length ? "" : todo.length ? `<p class="pl-todo"><b>${todo.length === 1 ? "1 pool needs" : `${todo.length} pools need`} your picks.</b>${todo[0].due ? ` ${todo.length === 1 ? "Due" : "The first is due"} ${esc(dueText(todo[0].due))}.` : ""}</p>` : mine.length ? `<p class="pl-todo ok">You're all set. Nothing due right now.</p>` : "";
     // the make-a-pool choices in the same order as the games below: playing now, then soonest
-    const kinds = live.concat(soon, far).map((g) => g.key).filter((k) => k !== "pickem" && k !== "wins");
+    const kinds = sports.flatMap((sp) => sp.gs).map((g) => g.key).filter((k) => k !== "pickem" && k !== "wins");
     const pick = st.make && kinds.includes(st.make) ? st.make : kinds[0];
     const panel = st.panel || (st.make ? "make" : st.code ? "join" : null);
     const makeForm = `<form class="pl-panel" id="pl-new"><div class="pl-form">
@@ -261,11 +293,10 @@
       ${summary}${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="pl-empty"><b>No pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : "";
     const signin = st.user ? "" : signinCard("Sign in to make or join a pool");
     const has = items.length > 0;
-    const catalog = has ? `<details class="pl-more"${st.moreOpen ? " open" : ""}><summary><h2 class="pl-sec-h">Start another pool</h2><small>Every game, what's on now and what's coming</small></summary><section class="pl-cat">${catBody}</section></details>`
-      : `<section class="pl-cat"><h2 class="pl-sec-h">Games</h2>${catBody}</section>`;
-    const next = upNext(new Set((mine || []).map((p) => p.kind)));
+    const next = st.sport && !upNextIn(st.sport) ? "" : upNext(new Set((mine || []).map((p) => p.kind)));
     app.innerHTML = `<div class="wrap page pl">${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
-      ${has ? yours + next : next + yours}${catalog}${signin}</div>`;
+      ${bar}${has ? yours + next : next + yours}${catalog}${signin}</div>`;
+    pinBar();
   }
 
   // ---------- a pool ----------
@@ -1099,13 +1130,19 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-panel],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
     if (t.dataset.day) { const n = +t.dataset.day; st.open[n] = t.getAttribute("aria-expanded") !== "true"; return render(); }
     if (t.dataset.week) { st.open["w" + t.dataset.week] = t.getAttribute("aria-expanded") !== "true"; return render(); }
     if (t.dataset.panel) { st.panel = st.panel === t.dataset.panel ? "" : t.dataset.panel; return render(); }
+    if (t.dataset.sport != null) {
+      st.sport = t.dataset.sport;
+      try { history.replaceState(null, "", location.pathname + location.search + (st.sport ? "#" + st.sport : "")); } catch (x) { /* fine */ }
+      await render(); const bar = document.querySelector(".pl-sbar"); if (bar && bar.getBoundingClientRect().top < 0) bar.scrollIntoView({ block: "start" });
+      return;
+    }
     if (t.dataset.make) {
       st.make = t.dataset.make;
       if (!st.user) { const f = document.querySelector(".pl-signin"); if (f) f.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
