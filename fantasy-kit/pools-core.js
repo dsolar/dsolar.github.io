@@ -260,17 +260,22 @@
     var games = board.games || [], by = {}, n = games.length;
     (board.picks || []).forEach(function (p) { (by[p.user] = by[p.user] || {})[p.slot] = p; });
     var title = games.filter(function (g) { return g.round === 4; })[0], total = title && title.final ? (title.ap || 0) + (title.bp || 0) : null;
+    // someone else's picks stay hidden until each game kicks off, so for them the games still to come are unknown:
+    // their max counts every number they haven't played yet (an upper bound), and nothing says their picks are missing
+    var future = games.some(function (g) { return ms(g.kickoff) > now; }), all = n * (n + 1) / 2;
     var rows = (board.members || []).map(function (m) {
-      var mine = by[m.id] || {}, pts = 0, right = 0, wrong = 0, left = 0, picked = 0;
+      var mine = by[m.id] || {}, pts = 0, right = 0, wrong = 0, left = 0, picked = 0, played = 0;
       games.forEach(function (g) {
         var k = mine["g" + g.id];
         if (!k || !k.team) return;
         picked++;
         var v = k.pts || 0;
+        if (ms(g.kickoff) <= now) played += v;
         if (g.final && g.w) { if (g.w === k.team) { pts += v; right++; } else wrong++; } else left += v;
       });
+      var hidden = !m.me && future, max = hidden ? pts + left + Math.max(0, all - played - left) : pts + left;
       var tb = mine.tb && mine.tb.team != null && mine.tb.team !== "" ? Number(mine.tb.team) : null;
-      return { id: m.id, name: m.name, me: !!m.me, points: pts, right: right, wrong: wrong, picked: picked, max: pts + left, tb: tb, off: tbOff(tb, total) };
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, right: right, wrong: wrong, picked: picked, hidden: hidden, max: max, tb: tb, off: tbOff(tb, total) };
     });
     var cmp = function (a, b) { return (b.points - a.points) || (b.right - a.right) || (a.off - b.off); };
     rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
