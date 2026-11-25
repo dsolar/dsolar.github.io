@@ -8125,7 +8125,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 57,
-      "next_proj": 15.75
+      "next_proj": 15.5
      },
      {
       "n": "Christian McCaffrey",
@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 19.19
+      "next_proj": 19.12
      },
      {
       "n": "James Cook III",
@@ -8141,7 +8141,7 @@
       "nfl": "BUF",
       "claimed_by": "Drake Mayezini",
       "bid": 39,
-      "next_proj": 17.24
+      "next_proj": 17.61
      },
      {
       "n": "Josh Allen",
@@ -8149,7 +8149,7 @@
       "nfl": "BUF",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 35,
-      "next_proj": 23.24
+      "next_proj": 23.31
      },
      {
       "n": "Brock Bowers",
@@ -8165,7 +8165,7 @@
       "nfl": "KC",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 15,
-      "next_proj": 17.71
+      "next_proj": 17.18
      },
      {
       "n": "Matthew Golden",
@@ -8181,7 +8181,7 @@
       "nfl": "CAR",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 2,
-      "next_proj": 10.8
+      "next_proj": 10.76
      },
      {
       "n": "C.J. Stroud",
@@ -8189,7 +8189,7 @@
       "nfl": "HOU",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 18.61
+      "next_proj": 18.8
      },
      {
       "n": "D'Andre Swift",
@@ -8201,7 +8201,7 @@
       "n": "DK Metcalf",
       "pos": "WR",
       "nfl": "PIT",
-      "next_proj": 7.6
+      "next_proj": 7.75
      },
      {
       "n": "Jordan Love",
@@ -8219,7 +8219,7 @@
       "n": "Tony Pollard",
       "pos": "RB",
       "nfl": "TEN",
-      "next_proj": 13.38
+      "next_proj": 13.33
      },
      {
       "n": "Zay Flowers",
@@ -8297,7 +8297,7 @@
       "pos": "QB",
       "nfl": "CLE",
       "slot": "QB",
-      "proj": 16.7,
+      "proj": 16.31,
       "pts": null
      },
      {
@@ -8313,7 +8313,7 @@
       "pos": "RB",
       "nfl": "DEN",
       "slot": "RB",
-      "proj": 15.65,
+      "proj": 16.28,
       "pts": null
      },
      {
@@ -8321,7 +8321,7 @@
       "pos": "WR",
       "nfl": "NO",
       "slot": "WR",
-      "proj": 13,
+      "proj": 12.93,
       "pts": null
      },
      {
@@ -8345,7 +8345,7 @@
       "pos": "TE",
       "nfl": "NYG",
       "slot": "TE",
-      "proj": 12.04,
+      "proj": 12.11,
       "pts": null
      },
      {
@@ -8353,7 +8353,7 @@
       "pos": "RB",
       "nfl": "CLE",
       "slot": "W/R/T",
-      "proj": 11.99,
+      "proj": 12.09,
       "pts": null
      },
      {
@@ -8361,7 +8361,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 23.99,
+      "proj": 23.59,
       "pts": null
      },
      {
@@ -8377,7 +8377,7 @@
       "pos": "QB",
       "nfl": "NO",
       "slot": "BN",
-      "proj": 16.91,
+      "proj": 16.75,
       "pts": null
      },
      {
@@ -8385,7 +8385,7 @@
       "pos": "TE",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 9.55,
+      "proj": 9.28,
       "pts": null
      },
      {
@@ -8411,7 +8411,7 @@
       "pos": "QB",
       "nfl": "BUF",
       "slot": "QB",
-      "proj": 19.95,
+      "proj": 20.24,
       "pts": null
      },
      {
@@ -8419,15 +8419,15 @@
       "pos": "RB",
       "nfl": "BAL",
       "slot": "RB",
-      "proj": 13.05,
+      "proj": 13.17,
       "pts": null
      },
      {
-      "n": "Chase Brown",
+      "n": "Emmett Johnson",
       "pos": "RB",
-      "nfl": "CIN",
+      "nfl": "KC",
       "slot": "RB",
-      "proj": 12.27,
+      "proj": 17.56,
       "pts": null
      },
      {
@@ -8435,7 +8435,7 @@
       "pos": "WR",
       "nfl": "DAL",
       "slot": "WR",
-      "proj": 16.78,
+      "proj": 16.38,
       "pts": null
      },
      {
@@ -8443,7 +8443,7 @@
       "pos": "WR",
       "nfl": "SEA",
       "slot": "WR",
-      "proj": 20.59,
+      "proj": 20.46,
       "pts": null
      },
      {
@@ -8451,7 +8451,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.73,
+      "proj": 16.32,
       "pts": null
      },
      {
@@ -8459,7 +8459,7 @@
       "pos": "TE",
       "nfl": "SF",
       "slot": "TE",
-      "proj": 9.87,
+      "proj": 9.77,
       "pts": null
      },
      {
@@ -8475,7 +8475,15 @@
       "pos": "QB",
       "nfl": "KC",
       "slot": "Q/W/R/T",
-      "proj": 18.13,
+      "proj": 16.95,
+      "pts": null
+     },
+     {
+      "n": "Chase Brown",
+      "pos": "RB",
+      "nfl": "CIN",
+      "slot": "BN",
+      "proj": 12.36,
       "pts": null
      },
      {
@@ -8483,7 +8491,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 14.45,
+      "proj": 14.05,
       "pts": null
      },
      {
@@ -8491,15 +8499,7 @@
       "pos": "QB",
       "nfl": "SF",
       "slot": "BN",
-      "proj": 16.38,
-      "pts": null
-     },
-     {
-      "n": "Emmett Johnson",
-      "pos": "RB",
-      "nfl": "KC",
-      "slot": "BN",
-      "proj": 17,
+      "proj": 16.11,
       "pts": null
      },
      {
@@ -8533,7 +8533,7 @@
       "pos": "QB",
       "nfl": "DAL",
       "slot": "QB",
-      "proj": 20.41,
+      "proj": 19.93,
       "pts": null
      },
      {
@@ -8541,7 +8541,7 @@
       "pos": "RB",
       "nfl": "SF",
       "slot": "RB",
-      "proj": 16.6,
+      "proj": 16.48,
       "pts": null
      },
      {
@@ -8549,7 +8549,7 @@
       "pos": "RB",
       "nfl": "BUF",
       "slot": "RB",
-      "proj": 16.29,
+      "proj": 16.74,
       "pts": null
      },
      {
@@ -8557,7 +8557,7 @@
       "pos": "WR",
       "nfl": "HOU",
       "slot": "WR",
-      "proj": 14.93,
+      "proj": 14.99,
       "pts": null
      },
      {
@@ -8565,7 +8565,7 @@
       "pos": "WR",
       "nfl": "DAL",
       "slot": "WR",
-      "proj": 12.36,
+      "proj": 12.07,
       "pts": null
      },
      {
@@ -8581,7 +8581,7 @@
       "pos": "TE",
       "nfl": "ARI",
       "slot": "TE",
-      "proj": 12.39,
+      "proj": 11.95,
       "pts": null
      },
      {
@@ -8589,7 +8589,7 @@
       "pos": "RB",
       "nfl": "CAR",
       "slot": "W/R/T",
-      "proj": 14.06,
+      "proj": 14.2,
       "pts": null
      },
      {
@@ -8597,7 +8597,7 @@
       "pos": "QB",
       "nfl": "HOU",
       "slot": "Q/W/R/T",
-      "proj": 21.48,
+      "proj": 21.4,
       "pts": null
      },
      {
@@ -8605,7 +8605,7 @@
       "pos": "RB",
       "nfl": "NYG",
       "slot": "BN",
-      "proj": 18.47,
+      "proj": 18.53,
       "pts": null
      },
      {
@@ -8637,7 +8637,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 10.9,
+      "proj": 10.97,
       "pts": null
      }
     ],
@@ -8647,7 +8647,7 @@
       "pos": "QB",
       "nfl": "CHI",
       "slot": "QB",
-      "proj": 21.17,
+      "proj": 20.8,
       "pts": null
      },
      {
@@ -8655,7 +8655,7 @@
       "pos": "RB",
       "nfl": "DAL",
       "slot": "RB",
-      "proj": 16.97,
+      "proj": 17.71,
       "pts": null
      },
      {
@@ -8663,7 +8663,7 @@
       "pos": "QB",
       "nfl": "JAX",
       "slot": "Q/W/R/T",
-      "proj": 23.59,
+      "proj": 22.75,
       "pts": null
      },
      {
@@ -8671,7 +8671,7 @@
       "pos": "WR",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 11.77,
+      "proj": 11.58,
       "pts": null
      },
      {
@@ -8695,7 +8695,7 @@
       "pos": "RB",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 19.08,
+      "proj": 19.18,
       "pts": null
      },
      {
@@ -8703,7 +8703,7 @@
       "pos": "WR",
       "nfl": "JAX",
       "slot": "BN",
-      "proj": 14.22,
+      "proj": 14.24,
       "pts": null
      },
      {
@@ -8711,7 +8711,7 @@
       "pos": "TE",
       "nfl": "LV",
       "slot": "BN",
-      "proj": 13.43,
+      "proj": 12.35,
       "pts": null
      },
      {
@@ -8743,7 +8743,7 @@
       "pos": "RB",
       "nfl": "JAX",
       "slot": "BN",
-      "proj": 15.73,
+      "proj": 13.86,
       "pts": null
      },
      {
@@ -8751,7 +8751,7 @@
       "pos": "TE",
       "nfl": "KC",
       "slot": "BN",
-      "proj": 8.74,
+      "proj": 7.97,
       "pts": null
      }
     ]
