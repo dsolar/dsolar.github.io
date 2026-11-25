@@ -23,7 +23,7 @@
   const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/fantasy/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
   // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
-  const themeOf = (kind) => (kind === "oscars" ? " osc-night" : kind === "bowls" ? " g-bowls" : "");
+  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props" })[kind] || "";
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
   const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
@@ -76,7 +76,18 @@
     <g fill="url(#bowl-g)"><path d="M84 30h72v10c0 30-14 50-36 54-22-4-36-24-36-54z"/><path d="M84 38c-14 0-22 6-22 16s9 18 24 20l2-6c-11-2-18-7-18-14 0-6 5-9 14-9zM156 38c14 0 22 6 22 16s-9 18-24 20l-2-6c11-2 18-7 18-14 0-6-5-9-14-9z"/>
     <path d="M114 94h12v22h-12z"/><path d="M100 116h40l6 14H94z"/><path d="M88 130h64v16H88z"/></g>
     <g fill="#FFF6D6" opacity=".9"><path d="m120 48 3 7 7 .6-5.4 4.6 1.7 7-6.3-3.9-6.3 3.9 1.7-7-5.4-4.6 7-.6z"/></g></svg>`;
-  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  // Super Bowl squares: the board itself, ten by ten, a few squares taken
+  const GRID_ART = `<svg class="pl-art sq-art" viewBox="0 0 220 180" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.6">
+    <rect x="40" y="20" width="150" height="150" rx="3"/>${Array.from({ length: 9 }, (_, k) => `<path d="M${55 + 15 * k} 20v150M40 ${35 + 15 * k}h150"/>`).join("")}</g>
+    <g fill="currentColor">${[[2, 3], [5, 1], [7, 6], [1, 8], [4, 5], [8, 2], [6, 9]].map(([c, r]) => `<rect x="${41 + 15 * c}" y="${21 + 15 * r}" width="13" height="13" rx="1.5" opacity=".55"/>`).join("")}
+    ${Array.from({ length: 10 }, (_, k) => `<text x="${47 + 15 * k}" y="14" font-size="9" font-weight="800" font-family="Barlow Condensed,Arial" opacity=".8">${(k * 7) % 10}</text><text x="28" y="${31 + 15 * k}" font-size="9" font-weight="800" font-family="Barlow Condensed,Arial" opacity=".8">${(k * 3) % 10}</text>`).join("")}</g></svg>`;
+  // the prop sheet: a betting slip, bubbles filled in
+  const SLIP_ART = `<svg class="pl-art slip-art" viewBox="0 0 220 180" aria-hidden="true">
+    <path d="M60 14h100v150l-8-6-8 6-8-6-8 6-8-6-8 6-8-6-8 6-8-6-8 6-8-6-8 6z" fill="#FFFDF6" opacity=".95"/>
+    <g fill="none" stroke="#1D1A14" stroke-opacity=".55" stroke-width="1.4">${[0, 1, 2, 3, 4, 5].map((r) => `<path d="M72 ${36 + r * 20}h34"/><circle cx="122" cy="${36 + r * 20}" r="5"/><circle cx="140" cy="${36 + r * 20}" r="5"/>`).join("")}</g>
+    <g fill="#1D1A14">${[[0, 0], [1, 1], [2, 0], [3, 1], [4, 1], [5, 0]].map(([r, c]) => `<circle cx="${122 + 18 * c}" cy="${36 + r * 20}" r="4"/>`).join("")}</g>
+    <path d="M70 24h80" stroke="#C8102E" stroke-width="3"/></svg>`;
+  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "squares" ? GRID_ART : k === "props" ? SLIP_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
       <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>

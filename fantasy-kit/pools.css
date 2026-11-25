@@ -1031,3 +1031,73 @@ body{overflow-x:clip}
   .g-bowls .pl-bowl-b{grid-column:1;grid-row:3;padding:12px 12px 12px;border-left:0;border-top:2px dashed rgba(58,12,19,.22)}
   .g-bowls .pl-bowl::before,.g-bowls .pl-bowl::after{display:none}
 }
+
+/* ---------- NFL playoff bracket: game-day turf. A green field banner with the yard numbers and the bracket tree in
+   chalk; the AFC side flies red, the NFC side blue, and the Super Bowl sits on a dark field of its own. ---------- */
+.g-nflpo{--nf-turf:#0B3B28;--nf-deep:#05190F;--nf-afc:#C8102E;--nf-nfc:#0B4DA2;--nf-green:#10A36B}
+.g-nflpo .pl-band{background:linear-gradient(170deg,var(--nf-deep) 0%,var(--nf-turf) 70%,#11553A 130%)}
+.g-nflpo .pl-band::before{background:repeating-linear-gradient(90deg,transparent 0 118px,rgba(255,255,255,.08) 118px 121px),radial-gradient(50% 100% at 80% 100%,rgba(16,163,107,.35),transparent 65%)}
+.g-nflpo .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;letter-spacing:-.005em;font-size:clamp(50px,7.5vw,96px);line-height:.92}
+.g-nflpo .pl-kick{color:#7CE3B4}
+.g-nflpo .pl-art{color:#fff;opacity:.5;width:min(38%,300px)}
+.g-nflpo .pl-band .pl-code{background:rgba(124,227,180,.16);color:#7CE3B4}
+.g-nflpo .pl-kconf{border:0;border-top:5px solid var(--nf-afc);overflow:hidden}
+.g-nflpo .pl-kconf+.pl-kconf{border-top-color:var(--nf-nfc)}
+.g-nflpo .pl-kconf .mod-h h2{font:800 30px/1 var(--f-cond,"Barlow Condensed",sans-serif);color:var(--nf-afc)}
+.g-nflpo .pl-kconf+.pl-kconf .mod-h h2{color:var(--nf-nfc)}
+.g-nflpo .pl-kr h4{font:800 13px/1 var(--f-cond,"Barlow Condensed",sans-serif);letter-spacing:.06em;color:var(--muted)}
+.g-nflpo .pl-kt.on{border-color:var(--nf-green);box-shadow:inset 0 0 0 1px var(--nf-green);background:color-mix(in srgb,var(--nf-green) 12%,var(--surface))}
+.g-nflpo .pl-ksb{background:linear-gradient(170deg,var(--nf-deep),var(--nf-turf));color:#F2F5F8;border:0;--ink:#F2F5F8;--muted:#B6D3C4;--line-2:rgba(255,255,255,.22);--surface:rgba(255,255,255,.06)}
+.g-nflpo .pl-ksb .mod-h{border-bottom-color:rgba(255,255,255,.12)}
+.g-nflpo .pl-ksb .mod-h h2{font:800 34px/1 var(--f-cond,"Barlow Condensed",sans-serif);color:#fff}
+.g-nflpo .pl-ksb .pl-kt{color:#fff}
+.g-nflpo .pl-ksb .pl-kt.on{background:rgba(124,227,180,.18);border-color:#7CE3B4;box-shadow:inset 0 0 0 1px #7CE3B4}
+.g-nflpo .pl-ksb input{background:rgba(0,0,0,.25);color:#fff;border-color:rgba(255,255,255,.25)}
+
+/* ---------- Super Bowl squares: Super Bowl night. Navy and gold, the banner drawn as the board itself, and the board a
+   printed pool sheet: cream squares on navy lines, the digits on each team's color, your squares in gold. ---------- */
+.g-squares{--sq-navy:#0B1F3A;--sq-deep:#060F1E;--sq-gold:#E5B54A;--sq-paper:#FFFBF0}
+.g-squares .pl-band{background:linear-gradient(165deg,var(--sq-deep) 0%,var(--sq-navy) 60%,#1B3666 130%)}
+.g-squares .pl-band::before{background:radial-gradient(55% 120% at 82% 50%,rgba(229,181,74,.2),transparent 62%)}
+.g-squares .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;font-size:clamp(50px,7.5vw,96px);line-height:.92;color:#fff}
+.g-squares .pl-kick{color:var(--sq-gold)}
+.sq-art{color:var(--sq-gold);opacity:.9;width:min(32%,250px)}
+.g-squares .pl-band .pl-code{background:rgba(229,181,74,.16);color:var(--sq-gold)}
+.g-squares .pl-sqcard{background:var(--sq-navy);border:0;color:#fff;--ink:#fff;--muted:#B9C6DA;--line:rgba(255,255,255,.14);--surface-2:rgba(255,255,255,.06)}
+.g-squares .pl-sqcells{gap:2px;padding:3px;background:var(--sq-navy);border-radius:6px}
+.g-squares .pl-sq{border:0;border-radius:2px;background:var(--sq-paper);color:#1B2433}
+.g-squares .pl-sq.taken,.g-squares .pl-sq.guest{background:#EFE6D2}
+.g-squares .pl-sq.mine{background:var(--sq-gold);color:#1F1600;box-shadow:none}
+.g-squares .pl-sq.won{background:#3DD68C;color:#062312}
+.g-squares .pl-sq.empty .plus{color:#C9BFA8}
+.g-squares .pl-sqc{font:800 18px/1 var(--f-cond,"Barlow Condensed",sans-serif);color:#fff}
+.g-squares .pl-sqc.hd{background:rgba(229,181,74,.14);color:var(--sq-gold);border-radius:2px}
+
+/* ---------- Super Bowl prop sheet: a betting slip. The questions print on one cream slip with a torn edge top and
+   bottom, numbered like a sheet, and each answer is a bubble you fill in; right answers come back stamped. ---------- */
+.g-props{--pp-paper:#FFFDF6;--pp-ink:#1D1A14;--pp-rule:#D9CFB8;--pp-red:#C8102E}
+.g-props .pl-band{background:linear-gradient(165deg,#0E0C0A 0%,#22201C 65%,#3a1a14 130%)}
+.g-props .pl-band::before{background:radial-gradient(50% 120% at 82% 50%,rgba(200,16,46,.22),transparent 62%)}
+.g-props .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;font-size:clamp(50px,7.5vw,96px);line-height:.92}
+.g-props .pl-kick{color:#F2C4B6}
+.slip-art{opacity:1;width:min(30%,230px)}
+.g-props .pl-props{position:relative;gap:0;margin-top:22px;padding:14px 0;background:var(--pp-paper);color:var(--pp-ink);border-radius:2px;box-shadow:0 10px 30px -18px rgba(0,0,0,.45);--ink:var(--pp-ink);--muted:#6E6656;--surface:transparent}
+.g-props .pl-props::before,.g-props .pl-props::after{content:"";position:absolute;left:0;right:0;height:10px;background:linear-gradient(135deg,var(--bg,#F1F3F6) 5px,transparent 0) 0 0/14px 10px repeat-x,linear-gradient(225deg,var(--bg,#F1F3F6) 5px,transparent 0) 0 0/14px 10px repeat-x}
+.g-props .pl-props::before{top:0}
+.g-props .pl-props::after{bottom:0;transform:rotate(180deg)}
+.g-props .pl-prop{border:0;border-bottom:1px dashed var(--pp-rule);border-radius:0;background:transparent;padding:14px 22px}
+.g-props .pl-prop:last-child{border-bottom:0}
+.g-props .pl-prop-n{font:700 13px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--pp-red);width:28px}
+.g-props .pl-prop-n::before{content:"#"}
+.g-props .pl-prop-h b{font-size:16px}
+.g-props .pl-po{border:0;border-radius:0;padding:6px 10px 6px 30px;min-height:34px;position:relative;background:transparent;color:var(--pp-ink)}
+.g-props .pl-po::before{content:"";position:absolute;left:6px;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;border:1.6px solid #6E6656;background:transparent}
+.g-props .pl-po:hover:not(:disabled){background:rgba(0,0,0,.04)}
+.g-props .pl-po.on{background:transparent;font-weight:800}
+.g-props .pl-po.on::before{background:var(--pp-ink);border-color:var(--pp-ink);box-shadow:inset 0 0 0 2px var(--pp-paper)}
+.g-props .pl-po.right{background:transparent;color:#11643a}
+.g-props .pl-po.right::before{border-color:#11643a;background:#11643a;box-shadow:inset 0 0 0 2px var(--pp-paper)}
+.g-props .pl-po.right::after{content:"Right";position:absolute;right:-6px;top:-8px;transform:rotate(-8deg);font:800 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#11643a;border:1.5px solid #11643a;border-radius:3px;padding:2px 4px;background:var(--pp-paper)}
+.g-props .pl-po.stat{border:1px solid var(--pp-rule);border-radius:6px;padding-left:12px}
+.g-props .pl-po.stat::before,.g-props .pl-po.stat::after{display:none}
+@media (max-width:640px){.g-props .pl-prop{padding:12px 14px}.g-props .pl-po{flex:1 1 100%;justify-content:flex-start}}
