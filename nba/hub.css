@@ -879,3 +879,4 @@ table.tfeed tr.stale td{color:var(--red)}
 .injd.inj-o.sea{background:#B42525;color:#fff}
 .injd[data-tip]:hover::after,.injd[data-tip]:focus-visible::after{content:attr(data-tip);position:absolute;left:50%;bottom:calc(100% + 7px);transform:translateX(-50%);width:max-content;max-width:280px;white-space:normal;text-align:left;background:var(--ink,#14213d);color:#fff;font:500 12px/1.35 var(--body);letter-spacing:0;padding:7px 9px;border-radius:7px;box-shadow:0 3px 12px rgba(0,0,0,.2);z-index:40;pointer-events:none}
 .injd[data-tip]:hover::before,.injd[data-tip]:focus-visible::before{content:"";position:absolute;left:50%;bottom:calc(100% + 2px);transform:translateX(-50%);border:5px solid transparent;border-top-color:var(--ink,#14213d);z-index:40}
+.tstand .bpw{font-size:11px;color:var(--muted,#6b7280);font-weight:600;margin-left:3px}

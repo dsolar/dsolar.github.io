@@ -180,9 +180,14 @@
   fillBox.addEventListener("change", function () { H.set("fill", fillBox.checked); save("fill", fillBox.checked); render(); });
   window.addEventListener("hashchange", function () { closeCard(); render(); window.scrollTo({ top: Math.min(window.scrollY, 200) }); });
 
+  // ESPN's BPI beside the hub's projections (data/bpi.json, tools/nba_bpi.py)
+  var BPI = null, bpiWait = null;
+  function loadBpi() { if (!bpiWait) bpiWait = fetch("data/bpi.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (j) { BPI = j && j.teams ? j : { teams: {} }; return BPI; }); return bpiWait; }
   // ---------- standings ----------
   function standings() {
     var i = state.year, rows = H.standings(i), first = i === 0;
+    if (!BPI) loadBpi().then(function () { if (state.route === "standings" && BPI && Object.keys(BPI.teams).length) render(); });
+    var bp = first && BPI && Object.keys(BPI.teams).length ? BPI.teams : null;
     var html = '<h2 class="sec">' + sname(i) + (first ? " Projected Standings" : " Projection") + "</h2>" +
       '<p class="lede">' + (first
         ? "Real records, then the rest of the season simulated " + H.cfg.sims.toLocaleString() + " times from today's rosters."
@@ -190,11 +195,12 @@
     html += '<div class="leagues stack">';
     ["E", "W"].forEach(function (conf) {
       var d = rows.filter(function (r) { return r.conf === conf; });
-      html += '<div class="div"><h3>' + (conf === "E" ? "Eastern" : "Western") + ' Conference</h3><div class="scroll"><table class="t tstand' + (first ? " now" : "") + '"><thead><tr><th>Team</th>' + (first ? "<th>Now</th>" : "") + "<th>Proj</th><th>Net</th><th>Playoffs</th><th>Play-in</th><th>Conf</th><th>Title</th>" + (first ? "<th>Avg pick</th>" : "") + "</tr></thead><tbody>";
+      html += '<div class="div"><h3>' + (conf === "E" ? "Eastern" : "Western") + ' Conference</h3><div class="scroll"><table class="t tstand' + (first ? " now" : "") + '"><thead><tr><th>Team</th>' + (first ? "<th>Now</th>" : "") + "<th>Proj</th><th>Net</th>" + (bp ? '<th title="ESPN Basketball Power Index: points per game better than an average team, and ESPN\'s projected record">ESPN BPI</th>' : "") + "<th>Playoffs</th><th>Play-in</th><th>Conf</th><th>Title</th>" + (first ? "<th>Avg pick</th>" : "") + "</tr></thead><tbody>";
       d.forEach(function (r, k) {
         var w = Math.round(r.projW);
         html += '<tr class="go' + (k === 6 || k === 10 ? " cut" : "") + '" data-team="' + r.code + '"><td class="tm"><span class="srk">' + (k + 1) + ".</span>" + logo(r.code) + '<span class="nm"><span class="nmf">' + esc(r.name) + '</span><span class="nms">' + esc(team(r.code).short) + "</span></span></td>" +
           (first ? "<td>" + r.w + "-" + r.l + "</td>" : "") + "<td><b>" + w + "-" + (82 - w) + '</b></td><td class="' + (r.net >= 0 ? "pos" : "neg") + '">' + rt(r.net) + "</td>" +
+          (bp ? (bp[r.code] ? '<td title="BPI rank ' + bp[r.code].rank + "; ESPN title odds " + (bp[r.code].title != null ? bp[r.code].title.toFixed(1) + "%" : "—") + '">' + (bp[r.code].bpi >= 0 ? "+" : "") + bp[r.code].bpi.toFixed(1) + ' <small class="bpw">' + Math.round(bp[r.code].projW) + "-" + Math.round(bp[r.code].projL) + "</small></td>" : "<td>—</td>") : "") +
           '<td><span class="bar">' + pct(r.playoffs) + '<i><b style="width:' + (r.playoffs * 100).toFixed(0) + '%"></b></i></span></td>' +
           "<td>" + pct(r.playin) + "</td><td>" + pct(r.confW) + "</td><td><b>" + pct(r.title) + "</b></td>" +
           (first ? '<td title="Chance of a top-4 pick: ' + pct(r.top4) + '">' + (r.avgPick <= 16 ? f1(r.avgPick) : "—") + "</td>" : "") + "</tr>";
@@ -203,7 +209,7 @@
     });
     html += "</div>";
     if (first) html += '<p class="note">Lottery odds for every team are under <a href="' + href("draft", {}) + '">Draft</a>.</p>';
-    html += '<p class="note">Seeds 1-6 make the playoffs; 7-10 go to the play-in (lines mark the cuts). Net is projected points per 100 possessions better than an average team.</p>';
+    html += '<p class="note">Seeds 1-6 make the playoffs; 7-10 go to the play-in (lines mark the cuts). Net is projected points per 100 possessions better than an average team.' + (bp ? " ESPN BPI is ESPN\'s own Basketball Power Index (points per game better than average) and its projected record, for comparison" + (BPI.updated ? " (updated " + esc(String(BPI.updated).slice(0, 10)) + ")" : "") + "." : "") + "</p>";
     view.innerHTML = html;
   }
   function draftPage() {
