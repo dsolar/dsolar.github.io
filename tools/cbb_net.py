@@ -277,9 +277,11 @@ def main():
         fresh = n >= 200 and agree / n >= 0.8
     if not fresh:
         out["status"] = f"the table is last season's (through {through or 'an unknown date'}); waiting for this season's first release"
+        out["lastCheck"] = {"rows": len(rows), "matched": len(got), "unmatched": unmatched}
         OUT.write_text(json.dumps(out, separators=(",", ":")) + "\n")
-        print(out["status"])
+        print(out["status"], f"({len(got)} of {len(rows)} schools matched; missed {unmatched})")
         return
+    out.pop("lastCheck", None)
     out.update({"season": season, "through": through.isoformat() if through else None, "pulled": now.strftime("%Y-%m-%dT%H:%MZ"),
                 "status": "ok", "source": src, "teams": got, "unmatched": unmatched})
     OUT.write_text(json.dumps(out, separators=(",", ":")) + "\n")
