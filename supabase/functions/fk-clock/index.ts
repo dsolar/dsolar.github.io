@@ -333,8 +333,8 @@ async function loadPoolRules() {
   poolRules = { at: Date.now(), P: g.FK.pools };
   return g.FK.pools;
 }
-const POOL_KIND: Record<string, string> = { nfl: "NFL survivor", survivor: "March Madness survivor", five: "5 teams", bowls: "bowl pick'em", nflpo: "NFL playoff bracket", nflff: "NFL playoff fantasy" };
-const POOL_WHAT: Record<string, string> = { nfl: "this week's survivor pick", survivor: "today's survivor pick", five: "your five teams", bowls: "some bowl picks", nflpo: "your playoff bracket", nflff: "this round's lineup" };
+const POOL_KIND: Record<string, string> = { nfl: "NFL survivor", survivor: "March Madness survivor", five: "5 teams", bowls: "bowl pick'em", nflpo: "NFL playoff bracket", nflff: "NFL playoff fantasy", bracket: "March Madness bracket", props: "Super Bowl prop sheet", oscars: "Oscars ballot" };
+const POOL_WHAT: Record<string, string> = { nfl: "this week's survivor pick", survivor: "today's survivor pick", five: "your five teams", bowls: "some bowl picks", nflpo: "your playoff bracket", nflff: "this round's lineup", bracket: "your bracket", props: "your prop sheet", oscars: "your Oscars ballot" };
 const etTime = (t: number) => new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).replace(":00 ", " ") + " ET";
 async function poolReminders(token: string) {
   const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");

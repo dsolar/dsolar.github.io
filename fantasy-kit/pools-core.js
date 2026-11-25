@@ -640,6 +640,14 @@
       if (board.projected || !games.some(function (g) { return g.round >= 1; })) return { text: "Field set on Selection Sunday", tone: "wait" };
       return surv(survivor(board, now), "day", function (g) { return ms(g.tip); });
     }
+    if (kind === "oscars") {
+      // the reminder job scores without the ballot file: then it counts the picks it can see
+      var lkO = board.lock ? ms(board.lock) : null, O = oscars(board, now), meO = O.rows.filter(function (r) { return r.me; })[0] || {}, nc = O.cats.length;
+      if (O.projected) return { text: meO.picked ? "Practice ballot: " + meO.picked + (nc ? " of " + nc : "") + " picked" : "Practice on the predicted nominees", tone: "wait" };
+      if (O.done) return meO.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(O.rows), tone: "done" };
+      if (!lkO || now < lkO) return nc && meO.picked >= nc ? { text: "Ballot in", tone: "ok" } : { text: meO.picked ? meO.picked + (nc ? " of " + nc : "") + " picked" : "Fill out your ballot", tone: "todo", due: lkO };
+      return { text: standing(O.rows, function (r) { return r.points + " pts"; }) + (nc && O.graded < nc ? ", " + O.graded + " of " + nc + " announced" : ""), tone: "ok" };
+    }
     if (kind === "props") {
       var lkP = board.lock ? ms(board.lock) : null, PR = props(board, now), meP2 = PR.rows.filter(function (r) { return r.me; })[0] || {}, nq = PR.sheet.length;
       if (PR.done) return meP2.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(PR.rows), tone: "done" };
@@ -876,10 +884,53 @@
     return { rows: rows, sheet: sheet, answers: ans, graded: graded, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
   }
 
+  /* Oscars ballot ('oscars'). The ballot is the site's file, one for every pool (board.ballot, from
+     fantasy/pools/oscars-<year>.json): each category's points and nominees, and the official winners as they're
+     announced. Picks are p:<category> = a nominee's id. The owner can mark winners (extra.answers) and the show's
+     length in minutes (extra.tbAnswer) ahead of the file. A pick on someone who isn't on the ballot (a predicted
+     nominee who missed) doesn't count. Most points wins; ties go to the closest guess at the show's length. Before the
+     nominations (OSC_NOMS) the ballot is the pundits' predicted nominees, for practice. */
+  var OSC_NOMS = { 2027: "2027-01-21T13:30:00Z", 2028: "2028-01-20T13:30:00Z" };
+  function oscarsWin(c, board) {
+    var a = ((board.pool && board.pool.extra) || {}).answers || {};
+    return a[c.id] != null ? String(a[c.id]) : c.win != null ? String(c.win) : null;
+  }
+  function oscars(board, now) {
+    var bal = board.ballot || {}, ex = (board.pool && board.pool.extra) || {}, by = {};
+    var cats = (bal.cats || []).filter(function (c) { return c.noms && c.noms.length; });
+    (board.picks || []).forEach(function (p) { if (p.team != null) (by[p.user] = by[p.user] || {})[p.slot] = String(p.team); });
+    var ans = {}; cats.forEach(function (c) { ans[c.id] = oscarsWin(c, board); });
+    var run = ex.tbAnswer != null ? Number(ex.tbAnswer) : bal.runtime != null ? Number(bal.runtime) : null;
+    var season = (board.pool && board.pool.season) || bal.season, nomsAt = OSC_NOMS[season] ? ms(OSC_NOMS[season]) : null;
+    var projected = bal.cats ? !!bal.projected : nomsAt != null && now < nomsAt;
+    var rows = (board.members || []).map(function (m) {
+      var mine = by[m.id] || {}, pts = 0, right = 0, left = 0, picked = 0, raw = 0;
+      Object.keys(mine).forEach(function (k) { if (k.indexOf("p:") === 0) raw++; });
+      cats.forEach(function (c) {
+        var v = mine["p:" + c.id], w = +c.pts || 1;
+        if (v == null || !c.noms.some(function (n) { return n.id === v; })) return;
+        picked++;
+        if (ans[c.id] == null) left += w;
+        else if (v === ans[c.id]) { pts += w; right++; }
+      });
+      var tb = mine.tb != null && mine.tb !== "" ? Number(mine.tb) : null;
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, right: right, picked: bal.cats ? picked : raw, max: pts + left, tb: tb, off: tbOff(tb, run) };
+    });
+    var cmp = function (a, b) { return (b.points - a.points) || (a.off - b.off); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
+    var graded = cats.filter(function (c) { return ans[c.id] != null; }).length, done = !!cats.length && !projected && graded === cats.length;
+    var total = cats.reduce(function (t, c) { return t + (+c.pts || 1); }, 0);
+    return { rows: rows, cats: cats, answers: ans, graded: graded, runtime: run, total: total, projected: projected, done: done,
+      winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
+  }
+
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
     bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap,
     MM_PTS: MM_PTS, MM_FF: MM_FF, mmField: mmField, mmSlot: mmSlot, mmFeed: mmFeed, mmSlots: mmSlots, mmPick: mmPick, mmFill: mmFill, mmBracket: mmBracket,
-    props: props, propsAnswer: propsAnswer, propsAuto: propsAuto, propsGame: propsGame, propsConf: propsConf };
+    props: props, propsAnswer: propsAnswer, propsAuto: propsAuto, propsGame: propsGame, propsConf: propsConf,
+    OSC_NOMS: OSC_NOMS, oscars: oscars, oscarsWin: oscarsWin };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

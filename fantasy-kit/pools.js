@@ -11,9 +11,9 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket", props: "Prop sheet" };
-  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness" };
-  const kindName = (k) => k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
+  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket", props: "Prop sheet", oscars: "Oscars ballot" };
+  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness", oscars: "Oscars" };
+  const kindName = (k) => k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : k === "oscars" ? "Oscars ballot" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
@@ -53,7 +53,10 @@
     <path d="M210 14h-36v20h36M210 54h-36v-20M174 24h-34v40h34M210 94h-36v20h36M210 134h-36v-20M174 104h-34v-40M140 44h-26v40h26" opacity=".55"/></g></svg>`;
   const GOAL_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
     <path d="M110 150V96M60 96h100M60 96V14M160 96V14"/><path d="M14 150h192M30 132h160M46 114h128" opacity=".55"/></g></svg>`;
-  const artOf = (k) => (k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  const OSC_ART = `<svg class="pl-art" viewBox="0 0 220 160" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="110" cy="24" r="9"/><path d="M103 36h14l-3 12 4 5-3 43h-10l-3-43 4-5z"/><path d="M95 96h30v13H95zM88 109h44v12H88zM81 121h58v14H81z"/>
+    <path d="M24 150 70 14M196 150 150 14M14 150h192" opacity=".55"/></g></svg>`;
+  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
       <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>
@@ -89,6 +92,12 @@
       <li>Everything locks at <b>kickoff</b>, and everyone's answers show then.</li>
       <li>The owner marks the answers after the game; who wins, the total and the margin mark themselves from the final score.</li>
       <li>Most points wins. Ties go to the closest guess at the game's <b>total points</b>. The owner can edit the sheet until kickoff.</li></ul>`
+    : kind === "oscars" ? `<ul class="pl-rules">
+      <li>Pick the winner in <b>every category</b> at the Oscars, ${shortDate(CAL.oscars)}.</li>
+      <li>A right pick scores <b>5 for Best Picture, 3 for directing and the four acting awards, 2 for the screenplays and the animated, international and documentary features</b>, and 1 for everything else.</li>
+      <li>Ballots lock when the show starts, and everyone's picks show then. The owner marks each winner as it's announced.</li>
+      <li>Most points wins. Ties go to the closest guess at <b>how long the show runs</b>, in minutes.</li>
+      <li>Until the nominations come out ${shortDate(CAL.oscarNoms)}, it's a practice ballot on the pundits' predicted nominees. Picks on anyone who gets nominated carry over.</li></ul>`
     : kind === "bracket" ? `<ul class="pl-rules">
       <li>Pick the winner of <b>all 63 games</b>, from the Round of 64 to the title game.</li>
       <li>A right pick scores by its round: <b>10, 20, 40, 80, 160, 320</b> points.</li>
@@ -124,7 +133,7 @@
   const nflSeason = () => { const m = new Date().getMonth(); return m >= 8 || m === 0; };
   // each sport's color, and a small drawn icon for each game
   // the same colors as the fantasy pages (fantasy/hub.css): NFL green, NBA orange, college football red, college hoops purple
-  const SPORT_C = { NFL: "#10A36B", NBA: "#C2410C", "College football": "#C8102E", "March Madness": "#7C4DDB" };
+  const SPORT_C = { NFL: "#10A36B", NBA: "#C2410C", "College football": "#C8102E", "March Madness": "#7C4DDB", Oscars: "#B8892B" };
   const ico = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   const ICON = {
     pickem: ico('<path d="M4 6h10M4 12h10M4 18h7"/><path d="m15 17 2.5 2.5L22 15"/>'),
@@ -137,13 +146,14 @@
     wins: ico('<path d="M4 20h16M6 20v-5h3v5M10.5 20V10h3v10M15 20V5h3v15"/>'),
     props: ico('<path d="M9 5h11M9 12h11M9 19h11"/><path d="m3 5 1.5 1.5L7 4M3 12l1.5 1.5L7 11M3 19l1.5 1.5L7 18"/>'),
     bracket: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h3v10H8M11 12h4M16 9h5v6h-5z"/>'),
+    oscars: ico('<circle cx="12" cy="4.5" r="2.2"/><path d="M10.4 7.2h3.2l-.6 3.2 1 1.1-.6 5.5h-2.8l-.6-5.5 1-1.1z"/><path d="M8.5 17h7v2.4h-7zM7 19.4h10V22H7z"/>'),
     five: ico('<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>'),
   };
   /* The season's dates, Eastern. Each game is "live" from open to end, and the list puts live games first, then the
      rest by when they open. Roll these forward each summer. */
   const CAL = {
     nflWeek1: "2026-09-10", nbaTip: "2026-10-20", nbaEnd: "2027-04-11", bowlsSet: "2026-12-06", bowls: "2026-12-12", nflField: "2027-01-10", wildCard: "2027-01-16",
-    cfpTitle: "2027-01-25", superBowl: "2027-02-14", selection: "2027-03-14", mmTitle: "2027-04-05",
+    cfpTitle: "2027-01-25", oscarNoms: "2027-01-21", superBowl: "2027-02-14", selection: "2027-03-14", oscars: "2027-03-14", mmTitle: "2027-04-05",
   };
   const day0 = (d) => Date.parse(d + "T05:00:00Z");
   const shortDate = (d) => new Date(day0(d) + 12 * 3600e3).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" });
@@ -157,6 +167,7 @@
     { sport: "NFL", key: "props", name: "Super Bowl prop sheet", tag: "Twenty questions on the big game, from the coin toss to the Gatorade.", facts: ["20 questions", "Locks at kickoff", "Edit the sheet"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
+    { sport: "Oscars", key: "oscars", name: "Oscars ballot", tag: "Pick the winner in every category. Best Picture counts most.", facts: ["24 categories", "Locks at the show", "Runtime tiebreak"], soon: "Practice now", open: CAL.oscarNoms, end: CAL.oscars },
     { sport: "March Madness", key: "bracket", name: "Bracket", tag: "All 63 games, the classic way. Points double every round.", facts: ["63 games", "10-20-40-80-160-320", "Title game tiebreak"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
@@ -169,6 +180,7 @@
     { k: "cfb", sport: "College football", name: "College football", blurb: "Bowl season and the College Football Playoff, every game.", dates: [[CAL.bowlsSet, "Matchups set"], [CAL.bowls, "Bowls start"], [CAL.cfpTitle, "Title game"]] },
     { k: "nba", sport: "NBA", name: "NBA", blurb: "Draft real teams and ride their wins all season.", dates: [[CAL.nbaEnd, "Regular season ends"]] },
     { k: "cbb", sport: "March Madness", name: "March Madness", blurb: "Survivor and 5 teams, from Selection Sunday to the title game.", dates: [[CAL.selection, "Selection Sunday"], [CAL.mmTitle, "Title game"]] },
+    { k: "osc", sport: "Oscars", name: "The Oscars", blurb: "A ballot for every category on Hollywood's big night.", dates: [[CAL.oscarNoms, "Nominations"], [CAL.oscars, "The show"]] },
   ];
   const sportKeyOf = (kind) => (SPORTS_P.find((x) => x.sport === SPORT[kind]) || SPORTS_P[0]).k;
   /* Up next: the one game to set up now, by the calendar (from the day shown up to, not including, the day it ends).
@@ -180,6 +192,7 @@
     { key: "nflpo", from: CAL.nflField, until: CAL.wildCard, title: "NFL playoff bracket", text: `The field is set. Brackets lock at the first Wild Card kickoff, ${shortDate(CAL.wildCard)} weekend.` },
     { key: "props", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl prop sheet", text: `Twenty questions on the Super Bowl, ${shortDate(CAL.superBowl)}: the coin toss to the Gatorade. Make a sheet for your party; it locks at kickoff.` },
     { key: "bracket", from: "2027-02-15", until: CAL.selection, title: "March Madness bracket", text: `The field comes out ${shortDate(CAL.selection)}. Start your pool now and practice on the projected bracket; brackets lock at the first Round of 64 tip.` },
+    { key: "oscars", from: "2027-02-15", until: "2027-03-15", title: "Oscars ballot", text: `The Oscars are ${shortDate(CAL.oscars)}. Make a ballot pool for your watch party: every category, and it locks when the show starts.` },
   ];
   // the sport bar sticks just under the site's own sticky header, however tall that is on this screen
   function pinBar() {
@@ -187,10 +200,10 @@
     document.documentElement.style.setProperty("--pl-top", h + "px");
   }
   window.addEventListener("resize", () => { if (document.querySelector(".pl-sbar")) pinBar(); });
-  const upNextIn = (k) => { const now = Date.now(), u = UP_NEXT.find((x) => now >= day0(x.from) && now < day0(x.until)); return !!u && sportKeyOf(u.key) === k; };
-  function upNext(have) {
-    const now = Date.now(), u = UP_NEXT.find((x) => now >= day0(x.from) && now < day0(x.until));
-    if (u && have && have.has(u.key)) return ""; // already in one
+  // windows can overlap: the first one you aren't already in a pool for (in the sport picked in the bar, if one is)
+  const upNextOf = (have, k) => { const now = Date.now(); return UP_NEXT.find((x) => now >= day0(x.from) && now < day0(x.until) && !(have && have.has(x.key)) && (!k || sportKeyOf(x.key) === k)); };
+  function upNext(have, k) {
+    const u = upNextOf(have, k);
     const gm = u && GAMES.find((g) => g.key === u.key);
     if (!gm) return "";
     const act = gm.href ? `<a class="btn go" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go" data-make="${gm.key}">Make a pool</button>`;
@@ -208,6 +221,7 @@
       try {
         const b = await C.rpc("mm_board", { p_pool: p.id });
         if (!b || !b.ok) return;
+        if (b.pool.kind === "oscars") b.ballot = await loadBallot(b.pool.season);
         let stats = null;
         if (b.pool.kind === "nflff") {
           stats = {};
@@ -273,7 +287,7 @@
         <ul class="pl-door-games">${sp.gs.map(gameRow).join("")}</ul>
         ${dates.length ? `<ol class="pl-door-dates">${dates.map(([d, t]) => `<li><time datetime="${d}">${shortDate(d)}</time>${esc(t)}</li>`).join("")}</ol>` : ""}</section>`;
     };
-    const bar = `<nav class="pl-sbar" aria-label="Sports"><button type="button" data-sport=""${!st.sport ? ' aria-current="true"' : ""}>${art ? art.ic("home") : ""}All sports</button><span class="pl-sbar-sep" aria-hidden="true"></span>${sports.map((sp) => `<button type="button" class="${sp.k}" data-sport="${sp.k}"${st.sport === sp.k ? ' aria-current="true"' : ""}>${art ? art.ic(sp.k) : ""}${esc(sp.name)}</button>`).join("")}</nav>`;
+    const bar = `<nav class="pl-sbar" aria-label="Sports"><button type="button" data-sport=""${!st.sport ? ' aria-current="true"' : ""}>${art ? art.ic("home") : ""}All</button><span class="pl-sbar-sep" aria-hidden="true"></span>${sports.map((sp) => `<button type="button" class="${sp.k}" data-sport="${sp.k}"${st.sport === sp.k ? ' aria-current="true"' : ""}>${art ? art.ic(sp.k) : ""}${esc(sp.name)}</button>`).join("")}</nav>`;
     const catalog = `<section class="pl-sports" aria-label="Games by sport"><div class="pl-doors${shown.length === 1 ? " one" : ""}">${shown.map(door).join("")}</div></section>`;
     const pill = (x) => !x ? "" : x.tone === "todo" ? `<span class="pl-due">${x.due ? `Due ${esc(dueText(x.due))}` : "To do"}</span>` : x.tone === "won" ? `<span class="pl-due won">Won</span>` : x.tone === "out" ? `<span class="pl-due out">Out</span>` : "";
     const row = (href, key, sc, name, sub, x) => `<li class="${x ? "t-" + x.tone : ""}"><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
@@ -309,7 +323,8 @@
       ${summary}${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="pl-empty"><b>No pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : "";
     const signin = st.user ? "" : signinCard("Sign in to make or join a pool");
     const has = items.length > 0;
-    const next = st.sport && !upNextIn(st.sport) ? "" : upNext(new Set((mine || []).map((p) => p.kind)));
+    const haveK = new Set((mine || []).map((p) => p.kind));
+    const next = upNext(haveK, st.sport);
     app.innerHTML = `<div class="wrap page pl">${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
       ${bar}${has ? yours + next : next + yours}${catalog}${signin}</div>`;
     pinBar();
@@ -321,6 +336,7 @@
     if (st.as && st.board && st.board.error) { st.msg = st.board.error; st.as = null; st.board = await C.rpc("mm_board", { p_pool: st.code }).catch((e) => ({ error: e.message })); }
     if (st.board && st.board.ok && st.remind == null) { try { const g = await C.rpc("mm_remind_get", { p_pool: st.code }); st.remind = !!g.remind; st.recap = !!g.recap; } catch (e) { st.remind = false; st.recap = false; } }
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
+    if (st.board && st.board.ok && st.board.pool.kind === "oscars") st.board.ballot = await loadBallot(st.board.pool.season);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
       // the college football hub's teams (rank, record, conference) and games (stadium, city, TV, the sportsbook line):
@@ -356,7 +372,7 @@
   }
   function poolHead(b) {
     const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
-    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" || p.kind === "props" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : `${p.season} tournament`;
+    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" || p.kind === "props" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : p.kind === "oscars" ? `The Oscars, ${shortDate(CAL.oscars)}` : `${p.season} tournament`;
     return band(esc(p.name), `${KIND[p.kind]} &middot; ${when} &middot; ${b.members.length} ${b.members.length === 1 ? "entry" : "entries"}`,
       `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
@@ -432,7 +448,7 @@
     }
     if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Pools", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="/fantasy/pools/">Back to your pools</a></p></div></div></div>`; return; }
     const tabs = b.pool.kind === "squares" ? [["picks", "Board"], ["standings", "Winners"], ["settings", "Settings"]]
-      : [["picks", "Picks"], ["games", b.pool.kind === "nflff" ? "Lineups" : b.pool.kind === "props" ? "Answers" : "Scores"], ["standings", "Standings"], ["settings", "Settings"]];
+      : [["picks", "Picks"], ["games", b.pool.kind === "nflff" ? "Lineups" : b.pool.kind === "props" ? "Answers" : b.pool.kind === "oscars" ? "Winners" : "Scores"], ["standings", "Standings"], ["settings", "Settings"]];
     if (st.tab === "rules") st.tab = "settings";
     if (st.as) { const i = tabs.findIndex((t) => t[0] === "settings"); if (i >= 0) tabs.splice(i, 1); if (st.tab === "settings") st.tab = "picks"; }
     const body = st.tab === "settings" ? settingsTab(b)
@@ -444,6 +460,7 @@
       : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
       : b.pool.kind === "props" ? (st.tab === "picks" ? propsPicks(b) : st.tab === "games" ? propsAnswers(b) : propsTable(b))
       : b.pool.kind === "bracket" ? (st.tab === "picks" ? bkPicks(b) : bkTable(b))
+      : b.pool.kind === "oscars" ? (st.tab === "picks" ? oscPicks(b) : oscTable(b))
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
     const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
     const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
@@ -736,6 +753,64 @@
     return `<section class="card pl-set pl-own"><div class="mod-h"><h2>The sheet</h2><span class="grow"></span><span class="ps">${st.ped.length} questions, until kickoff</span></div><div class="bd pl-setb">
       <p class="ps">Change any question, its choices, its points or its line. Picks people already made on a changed question stay, so fix questions before people fill it out if you can.</p>
       ${rows}<div class="pl-row"><button type="button" class="btn sm" data-pedadd>Add a question</button><button type="button" class="btn go sm" data-pedsave>Save the sheet</button></div></div></section>`;
+  }
+
+  // ---------- Oscars ballot ----------
+  // one ballot file for every pool: categories, points, nominees (in the pundits' order, the favorite first) and winners
+  const ballots = {};
+  const loadBallot = (season) => ballots[season] || (ballots[season] = fetch(`/fantasy/pools/oscars-${season}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null));
+  const oscMine = (b, uid) => { const o = {}; (b.picks || []).forEach((k) => { if (k.user === uid && k.slot.startsWith("p:") && k.team != null) o[k.slot.slice(2)] = String(k.team); }); return o; };
+  const showTime = (t) => new Date(t).toLocaleString("en-US", Object.assign({ weekday: "short", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }, ET)).replace(":00", "") + " ET";
+  const oscLock = (b) => b.lock || (b.ballot && b.ballot.start);
+  const oscFav = (c) => c.fav || (c.noms[0] || {}).id;
+  function oscPicks(b) {
+    const bal = b.ballot;
+    if (!bal) return `<div class="pl-note">The ballot didn't load. Reload the page to try again.</div>`;
+    const O = P.oscars(b, Date.now()), uid = meId(b), lk = oscLock(b), lock = lk && Date.now() >= Date.parse(lk);
+    if (!st.osc) { st.osc = oscMine(b, uid); st.osctb = myTb(b); }
+    const ok1 = (c) => c.noms.some((x) => x.id === st.osc[c.id]);
+    const n = O.cats.filter(ok1).length, missed = O.cats.filter((c) => st.osc[c.id] && !ok1(c)).length;
+    const dirty = JSON.stringify(Object.entries(st.osc).sort()) !== JSON.stringify(Object.entries(oscMine(b, uid)).sort()) || String(st.osctb || "") !== String(myTb(b) || "");
+    const row = O.rows.find((r) => r.me) || {}, later = bal.cats.filter((c) => !c.noms.length);
+    const note = O.projected ? `<div class="pl-note"><b>Practice ballot.</b> These are the pundits' predicted nominees, not the real ones. The nominations come out ${shortDate(CAL.oscarNoms)}; a pick on anyone who gets nominated carries over, and you pick again where yours missed.</div>`
+      : missed ? `<div class="pl-note"><b>${missed === 1 ? "One of your practice picks wasn't" : `${missed} of your practice picks weren't`} nominated.</b> Pick again where it says so below.</div>` : "";
+    const bar = `<div class="card pl-bar pl-bbar"><div class="bd">
+      <div class="pl-bstat"><span><b>${n}</b> of ${O.cats.length} picked</span>${lock ? `<span><b>${row.points || 0}</b> points, ${row.right || 0} right</span>` : `<span>${O.total} points up for grabs</span>`}</div>
+      <p class="pl-bhint">${lock ? "Ballots locked when the show started. Winners show here as they're marked." : `Ballots lock when the show starts, ${esc(showTime(lk || CAL.oscars + "T23:00:00Z"))}. Everyone's picks show then.`}</p>
+      <label class="pl-tb">How long the show runs, in minutes<input type="number" inputmode="numeric" min="60" max="400" data-osctb value="${esc(st.osctb || "")}" placeholder="e.g. 215"${lock ? " disabled" : ""}></label>
+      ${lock ? "" : `<div class="pl-save">${n < O.cats.length ? `<button type="button" class="btn sm" data-oscfav title="Pick the pundits' favorite in every category you haven't picked">Pick the favorites</button>` : ""}<span class="ps">${dirty ? "Not saved yet." : n ? "Saved." : "Tap a nominee to pick it."}</span><button type="button" class="btn go" data-oscsave${dirty ? "" : " disabled"}>Save ballot</button></div>`}</div></div>`;
+    const list = O.cats.map((c) => {
+      const mine = st.osc[c.id], ans = O.answers[c.id], pts = +c.pts || 1;
+      const res = ans != null && ok1(c) ? (mine === ans ? `<span class="pl-pick win">+${pts}</span>` : `<span class="pl-pick loss">0</span>`) : "";
+      return `<section class="pl-oc"><header class="pl-oc-h"><h3>${esc(c.name)}</h3><small>${pts} ${pts === 1 ? "point" : "points"}</small>${res}</header>
+        ${mine && !ok1(c) ? `<p class="pl-oc-miss">Your practice pick wasn't nominated. Pick again.</p>` : ""}
+        <div class="pl-oc-n">${c.noms.map((x) => `<button type="button" class="pl-on${mine === x.id ? " on" : ""}${ans === x.id ? " right" : ans != null && mine === x.id ? " wrong" : ""}" data-osc="${esc(c.id)}|${esc(x.id)}" aria-pressed="${mine === x.id}"${lock ? " disabled" : ""}><b>${esc(x.t)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ""}</button>`).join("")}</div></section>`;
+    }).join("");
+    const tail = later.length ? `<p class="ps pl-oc-later">${esc(later.map((c) => c.name).join(", "))}: the nominees come out ${shortDate(CAL.oscarNoms)}.</p>` : "";
+    const float = dirty ? `<div class="pl-float"><span>${n} of ${O.cats.length} picked</span><button type="button" class="btn go" data-oscsave>Save ballot</button></div>` : "";
+    return note + bar + `<div class="pl-ocs">${list}</div>` + tail + float;
+  }
+  // the Winners tab: how the pool split in each category, the winner, and (for the owner, once the show starts) marking it
+  function oscResults(b) {
+    const bal = b.ballot;
+    if (!bal) return `<div class="pl-note">The ballot didn't load. Reload the page to try again.</div>`;
+    const O = P.oscars(b, Date.now()), lk = oscLock(b), lock = lk && Date.now() >= Date.parse(lk), owner = b.pool.owner, ex = b.pool.extra || {};
+    if (!lock) return `<div class="pl-note">Everyone's picks show when the show starts${lk ? `, ${esc(showTime(lk))}` : ""}.${owner ? " Then you mark each winner here as it's announced." : " The owner marks each winner as it's announced."}</div>`;
+    const run = owner ? `<form class="pl-row pl-oc-run" id="pl-oscrun"><label>How long the show ran, in minutes <small class="ps">breaks ties</small><input name="run" type="number" min="60" max="400" value="${esc(ex.tbAnswer != null ? ex.tbAnswer : bal.runtime != null ? bal.runtime : "")}" placeholder="e.g. 215"></label><button class="btn sm">Save</button></form>`
+      : O.runtime != null ? `<p class="ps">The show ran ${O.runtime} minutes.</p>` : "";
+    return `<p class="pl-gsum">${O.graded} of ${O.cats.length} announced.${owner ? " Tap the winner to mark it; tap it again to clear." : ""}</p>${run}<div class="pl-ocs">` + O.cats.map((c) => {
+      const by = {}; (b.picks || []).forEach((k) => { if (k.slot === "p:" + c.id && k.team != null) (by[k.team] = by[k.team] || []).push(k.user); });
+      const tot = c.noms.reduce((x, nm) => x + (by[nm.id] || []).length, 0) || 1, ans = O.answers[c.id];
+      return `<section class="pl-oc"><header class="pl-oc-h"><h3>${esc(c.name)}</h3><small>${+c.pts || 1} ${(+c.pts || 1) === 1 ? "point" : "points"}</small></header>
+        <div class="pl-oc-n">${c.noms.map((x) => { const ids = by[x.id] || []; return `<button type="button" class="pl-on stat${ans === x.id ? " right" : ""}"${owner ? ` data-oscans="${esc(c.id)}|${esc(x.id)}"` : " disabled"}><b>${esc(x.t)}</b><em>${Math.round((100 * ids.length) / tot)}%</em>${x.s ? `<small>${esc(x.s)}</small>` : ""}${ids.length ? `<small class="pl-on-who">${ids.map((id) => esc(nameOf(b, id))).join(", ")}</small>` : ""}</button>`; }).join("")}</div></section>`;
+    }).join("") + `</div>`;
+  }
+  function oscTable(b) {
+    if (!b.ballot) return `<div class="pl-note">The ballot didn't load. Reload the page to try again.</div>`;
+    const O = P.oscars(b, Date.now()), lk = oscLock(b), lock = lk && Date.now() >= Date.parse(lk);
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r">Right</th><th class="r" title="Points still possible">Max</th><th class="r pl-hide-s" title="Show length guess, in minutes">TB</th></tr></thead><tbody>
+      ${O.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b>${!lock && r.picked < O.cats.length && (r.me || r.picked) ? `<small class="ps"> ${r.picked} of ${O.cats.length} picked</small>` : ""}</td><td class="r num"><b>${r.points}</b></td><td class="r num ps">${r.right}</td><td class="r num ps">${lock ? r.max : ""}</td><td class="r num ps pl-hide-s">${lock && r.tb != null ? r.tb : ""}</td></tr>`).join("")}
+      </tbody></table></div></div><p class="ps">${O.graded} of ${O.cats.length} categories announced. Ties go to the closest guess at how long the show runs${O.runtime != null ? `; it ran ${O.runtime} minutes` : ""}.</p>`;
   }
 
   // ---------- March Madness bracket ----------
@@ -1082,6 +1157,7 @@
   function scoreboard(b) {
     const k = b.pool.kind, now = Date.now(), uid = meId(b);
     if (k === "props") return propsAnswers(b);
+    if (k === "oscars") return oscResults(b);
     const who = (ids) => ids.map((x) => (typeof x === "string" ? { name: nameOf(b, x), me: x === uid } : { name: nameOf(b, x.id), me: x.id === uid, note: x.note }));
     // a side's share of the pool, once everyone's picks show (only your own before that, so no share yet)
     const pct = (ids, shown) => (shown && ids && ids.length ? Math.round((100 * ids.length) / Math.max(1, b.members.length)) : 0);
@@ -1274,7 +1350,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -1301,8 +1377,8 @@
     if (t.dataset.ffcol) { if (st.ffsortcol === t.dataset.ffcol) st.ffsortdir = -(st.ffsortdir || -1); else { st.ffsortcol = t.dataset.ffcol; st.ffsortdir = t.dataset.ffcol === "pass_int" || t.dataset.ffcol === "pts_allow" ? 1 : -1; } return render(); }
     if (t.hasAttribute("data-ffback")) { st.ffslot = null; return render(); }
     if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return render(); }
-    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
-    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp"].forEach((k) => { st[k] = null; }); await load(); return render(); }
+    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
+    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc"].forEach((k) => { st[k] = null; }); await load(); return render(); }
     if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }
     if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
     if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
@@ -1312,6 +1388,16 @@
     if (t.dataset.copy && (t.hasAttribute("data-sheet") || (canShare() && !t.hasAttribute("data-nosheet")))) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
     if (t.dataset.pp) { const [q, k] = t.dataset.pp.split("|"); st.pp = st.pp || {}; if (st.pp[q] === +k) delete st.pp[q]; else st.pp[q] = +k; return render(); }
+    if (t.dataset.osc) { const [c, x] = t.dataset.osc.split("|"); st.osc = st.osc || {}; if (st.osc[c] === x) delete st.osc[c]; else st.osc[c] = x; return render(); }
+    if (t.hasAttribute("data-oscfav")) {
+      let k = 0; (st.board.ballot.cats || []).forEach((c) => { if (c.noms.length && !c.noms.some((x) => x.id === st.osc[c.id])) { st.osc[c.id] = oscFav(c); k++; } });
+      st.msg = `Filled in ${k} ${k === 1 ? "category" : "categories"} with the pundits' favorites. Change any you like, then save.`; return render();
+    }
+    if (t.dataset.oscans) {
+      const [c, x] = t.dataset.oscans.split("|"), cur = ((st.board.pool.extra || {}).answers || {})[c];
+      try { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { answers: { [c]: cur === x ? null : x } } })); } catch (y) { st.msg = y.message; }
+      await load(); return render();
+    }
     if (t.dataset.ppans) {
       const [q, k] = t.dataset.ppans.split("|"), cur = ((st.board.pool.extra || {}).answers || {})[q];
       try { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { answers: { [q]: cur === +k ? null : +k } } })); } catch (x) { st.msg = x.message; }
@@ -1378,6 +1464,13 @@
         const r = ok(await srpc("mm_save_props", { p_pool: st.code, p_picks: Object.fromEntries(Object.entries(st.pp || {}).map(([q, k]) => [q, String(k)])), p_tb: st.pptb === "" || st.pptb == null ? null : +st.pptb }));
         st.msg = `Saved: ${r.saved} answered.`; st.pp = null;
       }
+      else if (t.hasAttribute("data-oscsave")) {
+        // only picks on someone actually on the ballot (a practice pick that missed the nominations drops off)
+        const cats = (st.board.ballot || {}).cats || [], picks = {};
+        cats.forEach((c) => { const v = (st.osc || {})[c.id]; if (v && c.noms.some((x) => x.id === v)) picks[c.id] = v; });
+        const r = ok(await srpc("mm_save_props", { p_pool: st.code, p_picks: picks, p_tb: st.osctb === "" || st.osctb == null ? null : +st.osctb }));
+        st.msg = `Saved: ${r.saved} of ${cats.filter((c) => c.noms.length).length} picked.`; st.osc = null;
+      }
       else if (t.hasAttribute("data-bksave")) {
         const r = ok(await srpc("mm_save_bracket", { p_pool: st.code, p_picks: st.bk || {}, p_tb: st.bktb === "" || st.bktb == null ? null : +st.bktb }));
         st.msg = `Saved: ${r.saved} of 63 picked.`; st.bk = null;
@@ -1437,6 +1530,7 @@
   app.addEventListener("toggle", (e) => { const c = e.target.classList; if (!c) return; if (c.contains("pl-bdone")) st.bshowDone = e.target.open; if (c.contains("pl-more")) st.moreOpen = e.target.open; }, true);
   app.addEventListener("input", (e) => {
     const t = e.target;
+    if (t.hasAttribute("data-osctb")) { st.osctb = t.value; const b = document.querySelector("[data-oscsave]"); if (b) b.disabled = false; return; }
     if (t.hasAttribute("data-pptb")) { st.pptb = t.value; const b = document.querySelector("[data-ppsave]"); if (b) b.disabled = false; return; }
     if (t.dataset.pedq != null) { st.ped[+t.dataset.pedq].q = t.value; return; }
     if (t.dataset.pedo != null) { st.ped[+t.dataset.pedo].opts = t.value.split("\n"); return; }
@@ -1466,6 +1560,7 @@
       }
       if (f.id === "pl-notef") { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { note: f.elements.note.value } })); st.msg = f.elements.note.value.trim() ? "Message pinned." : "Message cleared."; await load(); return render(); }
       if (f.id === "pl-money") { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { buyin: v("buyin") === "" ? null : +v("buyin"), payouts: [0, 1, 2].map((i) => +v("pay" + i) || 0) } })); st.msg = "Saved."; await load(); return render(); }
+      if (f.id === "pl-oscrun") { const n = f.elements.run.value; ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { tbAnswer: n === "" ? null : +n } })); st.msg = n === "" ? "Cleared." : `Saved: ${n} minutes.`; await load(); return render(); }
       if (f.id === "pl-champ") { if (!v("name")) return; const c = ((st.board.pool.extra || {}).champs || []).concat([{ year: v("year"), name: v("name") }]); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); return render(); }
       if (f.id === "pl-del") { ok(await C.rpc("mm_pool_delete", { p_pool: st.code, p_confirm: v("code") })); location.href = "/fantasy/pools/"; return; }
       if (f.id === "pl-sqset") {

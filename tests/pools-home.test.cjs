@@ -28,8 +28,8 @@ test("signed out in late November: organized by sport, in-season sports first; U
   try {
     const nx = app.querySelector(".pl-next");
     assert.ok(nx, "an Up next spot"); assert.match(nx.textContent, /Bowl pick'em/); assert.match(nx.textContent, /Dec 6/);
-    assert.deepEqual([...app.querySelectorAll(".pl-sbar button")].map((b) => b.textContent.trim()), ["All sports", "NFL", "NBA", "College football", "March Madness"]);
-    assert.deepEqual([...app.querySelectorAll(".pl-door")].map((d) => d.id), ["sp-nfl", "sp-nba", "sp-cfb", "sp-cbb"], "what's in season first, then by what opens soonest");
+    assert.deepEqual([...app.querySelectorAll(".pl-sbar button")].map((b) => b.textContent.trim()), ["All", "NFL", "NBA", "College football", "The Oscars", "March Madness"]);
+    assert.deepEqual([...app.querySelectorAll(".pl-door")].map((d) => d.id), ["sp-nfl", "sp-nba", "sp-cfb", "sp-osc", "sp-cbb"], "what's in season first, then by what opens soonest");
     const nfl = app.querySelector("#sp-nfl").textContent;
     assert.match(nfl, /Super Bowl squares\s*Fill it now/, "squares says Fill it now, not Live now");
     assert.match(app.querySelector("#sp-cfb .pl-door-st").textContent, /Matchups Dec 6/);
@@ -50,7 +50,7 @@ test("signed in: one list by what's due, Up next skips a game you're already in,
     assert.deepEqual([...app.querySelectorAll(".pl-door")].map((d) => d.id), ["sp-cfb"]);
     assert.equal(w.location.hash, "#cfb");
     app.querySelector('.pl-sbar [data-sport=""]').click(); await pause(60);
-    assert.equal(app.querySelectorAll(".pl-door").length, 4);
+    assert.equal(app.querySelectorAll(".pl-door").length, 5);
     assert.deepEqual(errs, []);
   } finally { w.close(); }
 });
@@ -59,4 +59,14 @@ test("January: Up next moves to the NFL playoff bracket, and says the field is s
   try { assert.match(a.app.querySelector(".pl-next").textContent, /NFL playoff bracket[\s\S]*Practice on the projected field/); } finally { a.w.close(); }
   const b = await boot(Date.parse("2027-01-12T15:00:00Z"), false);
   try { assert.match(b.app.querySelector(".pl-next").textContent, /The field is set\. Brackets lock/); } finally { b.w.close(); }
+});
+test("February: Up next is the bracket, or the Oscars ballot for someone already in a bracket pool; the Oscars filter shows the ballot", async () => {
+  const a = await boot(Date.parse("2027-02-20T15:00:00Z"), false);
+  try {
+    assert.match(a.app.querySelector(".pl-next").textContent, /March Madness bracket/);
+    a.app.querySelector('.pl-sbar [data-sport="osc"]').click(); await pause(60);
+    assert.match(a.app.querySelector(".pl-next").textContent, /Oscars ballot/);
+  } finally { a.w.close(); }
+  const b = await boot(Date.parse("2027-02-20T15:00:00Z"), true, [{ id: "BR27", name: "Office bracket", kind: "bracket", members: 8 }]);
+  try { assert.match(b.app.querySelector(".pl-next").textContent, /Oscars ballot/); } finally { b.w.close(); }
 });

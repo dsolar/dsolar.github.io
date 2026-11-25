@@ -1,0 +1,750 @@
+{
+ "season": 2027,
+ "show": "The 99th Oscars",
+ "start": "2027-03-14T23:00:00Z",
+ "noms": "2027-01-21T13:30:00Z",
+ "projected": true,
+ "note": "Predicted nominees from the awards pundits, as of late November 2026. The real nominees come out January 21.",
+ "runtime": null,
+ "cats": [
+  {
+   "id": "pic",
+   "name": "Best Picture",
+   "pts": 5,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": ""
+    },
+    {
+     "id": "wild-horse-nine",
+     "t": "Wild Horse Nine",
+     "s": ""
+    },
+    {
+     "id": "you-can-see-everything",
+     "t": "You Can See Everything",
+     "s": ""
+    },
+    {
+     "id": "artificial",
+     "t": "Artificial",
+     "s": ""
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": ""
+    },
+    {
+     "id": "elsinore",
+     "t": "Elsinore",
+     "s": ""
+    },
+    {
+     "id": "invite",
+     "t": "The Invite",
+     "s": ""
+    },
+    {
+     "id": "dune-part-three",
+     "t": "Dune: Part Three",
+     "s": ""
+    },
+    {
+     "id": "obsession",
+     "t": "Obsession",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "dir",
+   "name": "Best Director",
+   "pts": 3,
+   "noms": [
+    {
+     "id": "christopher-nolan",
+     "t": "Christopher Nolan",
+     "s": "The Odyssey"
+    },
+    {
+     "id": "martin-mcdonagh",
+     "t": "Martin McDonagh",
+     "s": "Wild Horse Nine"
+    },
+    {
+     "id": "ambrossi-calvo",
+     "t": "Javier Ambrossi and Javier Calvo",
+     "s": "La Bola Negra"
+    },
+    {
+     "id": "fielder-oppenheim",
+     "t": "Nathan Fielder and Lance Oppenheim",
+     "s": "You Can See Everything"
+    },
+    {
+     "id": "curry-barker",
+     "t": "Curry Barker",
+     "s": "Obsession"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "actor",
+   "name": "Best Actor",
+   "pts": 3,
+   "noms": [
+    {
+     "id": "andrew-scott",
+     "t": "Andrew Scott",
+     "s": "Elsinore"
+    },
+    {
+     "id": "john-malkovich",
+     "t": "John Malkovich",
+     "s": "Wild Horse Nine"
+    },
+    {
+     "id": "matt-damon",
+     "t": "Matt Damon",
+     "s": "The Odyssey"
+    },
+    {
+     "id": "ryan-gosling",
+     "t": "Ryan Gosling",
+     "s": "Project Hail Mary"
+    },
+    {
+     "id": "john-turturro",
+     "t": "John Turturro",
+     "s": "The Only Living Pickpocket in New York"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "actress",
+   "name": "Best Actress",
+   "pts": 3,
+   "noms": [
+    {
+     "id": "julianne-moore",
+     "t": "Julianne Moore",
+     "s": "The Debut"
+    },
+    {
+     "id": "inde-navarrette",
+     "t": "Inde Navarrette",
+     "s": "Obsession"
+    },
+    {
+     "id": "sandra-huller",
+     "t": "Sandra Hüller",
+     "s": "Rose"
+    },
+    {
+     "id": "olivia-wilde",
+     "t": "Olivia Wilde",
+     "s": "The Invite"
+    },
+    {
+     "id": "virginie-efira",
+     "t": "Virginie Efira",
+     "s": "All of a Sudden"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "supactor",
+   "name": "Best Supporting Actor",
+   "pts": 3,
+   "noms": [
+    {
+     "id": "andrew-garfield",
+     "t": "Andrew Garfield",
+     "s": "Artificial"
+    },
+    {
+     "id": "paul-giamatti",
+     "t": "Paul Giamatti",
+     "s": "The Debut"
+    },
+    {
+     "id": "sam-rockwell",
+     "t": "Sam Rockwell",
+     "s": "Wild Horse Nine"
+    },
+    {
+     "id": "guitarricadelafuente",
+     "t": "Guitarricadelafuente",
+     "s": "La Bola Negra"
+    },
+    {
+     "id": "edward-norton",
+     "t": "Edward Norton",
+     "s": "The Invite"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "supactress",
+   "name": "Best Supporting Actress",
+   "pts": 3,
+   "noms": [
+    {
+     "id": "amanda-seyfried",
+     "t": "Amanda Seyfried",
+     "s": "You Can See Everything"
+    },
+    {
+     "id": "anne-hathaway",
+     "t": "Anne Hathaway",
+     "s": "The Odyssey"
+    },
+    {
+     "id": "sandra-huller",
+     "t": "Sandra Hüller",
+     "s": "Project Hail Mary"
+    },
+    {
+     "id": "cruz-invite",
+     "t": "Penélope Cruz",
+     "s": "The Invite"
+    },
+    {
+     "id": "cruz-bola",
+     "t": "Penélope Cruz",
+     "s": "La Bola Negra"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "origscreen",
+   "name": "Original Screenplay",
+   "pts": 2,
+   "noms": [
+    {
+     "id": "wild-horse-nine",
+     "t": "Wild Horse Nine",
+     "s": "Martin McDonagh"
+    },
+    {
+     "id": "elsinore",
+     "t": "Elsinore",
+     "s": "Stephen Beresford"
+    },
+    {
+     "id": "club-kid",
+     "t": "Club Kid",
+     "s": "Jordan Firstman"
+    },
+    {
+     "id": "artificial",
+     "t": "Artificial",
+     "s": "Simon Rich"
+    },
+    {
+     "id": "tender-loving-care",
+     "t": "Tender Loving Care",
+     "s": "Mike Leigh"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "adaptscreen",
+   "name": "Adapted Screenplay",
+   "pts": 2,
+   "noms": [
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": "Javier Ambrossi, Javier Calvo, Alberto Conejero"
+    },
+    {
+     "id": "invite",
+     "t": "The Invite",
+     "s": "Rashida Jones, Will McCormack"
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": "Drew Goddard"
+    },
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": "Christopher Nolan"
+    },
+    {
+     "id": "all-of-a-sudden",
+     "t": "All of a Sudden",
+     "s": "Ryusuke Hamaguchi, Léa Le Dimna"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "animated",
+   "name": "Animated Feature",
+   "pts": 2,
+   "noms": [
+    {
+     "id": "wildwood",
+     "t": "Wildwood",
+     "s": ""
+    },
+    {
+     "id": "toy-story-5",
+     "t": "Toy Story 5",
+     "s": ""
+    },
+    {
+     "id": "iron-boy",
+     "t": "Iron Boy",
+     "s": ""
+    },
+    {
+     "id": "ray-gunn",
+     "t": "Ray Gunn",
+     "s": ""
+    },
+    {
+     "id": "in-waves",
+     "t": "In Waves",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "intl",
+   "name": "International Feature",
+   "pts": 2,
+   "noms": [
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": "Spain"
+    },
+    {
+     "id": "fjord",
+     "t": "Fjord",
+     "s": "Romania"
+    },
+    {
+     "id": "possible-love",
+     "t": "Possible Love",
+     "s": "South Korea"
+    },
+    {
+     "id": "all-of-a-sudden",
+     "t": "All of a Sudden",
+     "s": "Japan"
+    },
+    {
+     "id": "minotaur",
+     "t": "Minotaur",
+     "s": "France"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "doc",
+   "name": "Documentary Feature",
+   "pts": 2,
+   "noms": [
+    {
+     "id": "naza",
+     "t": "NAZA",
+     "s": ""
+    },
+    {
+     "id": "once-upon-a-time-in-harlem",
+     "t": "Once Upon a Time in Harlem",
+     "s": ""
+    },
+    {
+     "id": "rehearsals-for-a-revolution",
+     "t": "Rehearsals for a Revolution",
+     "s": ""
+    },
+    {
+     "id": "one-in-a-million",
+     "t": "One in a Million",
+     "s": ""
+    },
+    {
+     "id": "you-can-see-everything",
+     "t": "You Can See Everything",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "casting",
+   "name": "Casting",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": ""
+    },
+    {
+     "id": "wild-horse-nine",
+     "t": "Wild Horse Nine",
+     "s": ""
+    },
+    {
+     "id": "being-heumann",
+     "t": "Being Heumann",
+     "s": ""
+    },
+    {
+     "id": "club-kid",
+     "t": "Club Kid",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "cine",
+   "name": "Cinematography",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": "Hoyte van Hoytema"
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": "Greig Fraser"
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": "Gris Jordana"
+    },
+    {
+     "id": "wildwood",
+     "t": "Wildwood",
+     "s": "Caleb Deschanel"
+    },
+    {
+     "id": "werwulf",
+     "t": "Werwulf",
+     "s": "Jarin Blaschke"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "costume",
+   "name": "Costume Design",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": ""
+    },
+    {
+     "id": "wild-horse-nine",
+     "t": "Wild Horse Nine",
+     "s": ""
+    },
+    {
+     "id": "sense-and-sensibility",
+     "t": "Sense and Sensibility",
+     "s": ""
+    },
+    {
+     "id": "wildwood",
+     "t": "Wildwood",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "editing",
+   "name": "Film Editing",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": ""
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": ""
+    },
+    {
+     "id": "wild-horse-nine",
+     "t": "Wild Horse Nine",
+     "s": ""
+    },
+    {
+     "id": "you-can-see-everything",
+     "t": "You Can See Everything",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "makeup",
+   "name": "Makeup and Hairstyling",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "digger",
+     "t": "Digger",
+     "s": ""
+    },
+    {
+     "id": "werwulf",
+     "t": "Werwulf",
+     "s": ""
+    },
+    {
+     "id": "clayface",
+     "t": "Clayface",
+     "s": ""
+    },
+    {
+     "id": "wicker",
+     "t": "Wicker",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "score",
+   "name": "Original Score",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": "Ludwig Göransson"
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": "Daniel Pemberton"
+    },
+    {
+     "id": "wild-horse-nine",
+     "t": "Wild Horse Nine",
+     "s": "Carter Burwell"
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": "Raül Refree"
+    },
+    {
+     "id": "you-can-see-everything",
+     "t": "You Can See Everything",
+     "s": "Ari Balouzian"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "song",
+   "name": "Original Song",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "i-knew-it",
+     "t": "“I Knew It, I Knew You”",
+     "s": "Toy Story 5"
+    },
+    {
+     "id": "la-nieve",
+     "t": "“La Nieve”",
+     "s": "La Bola Negra"
+    },
+    {
+     "id": "this-city",
+     "t": "“This City May Have Chewed Me Up (But It Hasn't Spit Me Out)”",
+     "s": "The Debut"
+    },
+    {
+     "id": "sell-you-a-dream",
+     "t": "“Let Me Sell You a Dream”",
+     "s": "Musk"
+    },
+    {
+     "id": "saddest-song",
+     "t": "“The Saddest Song”",
+     "s": "Artificial"
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "prod",
+   "name": "Production Design",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "dune-part-three",
+     "t": "Dune: Part Three",
+     "s": ""
+    },
+    {
+     "id": "further-mis-adventures-of-cliff-booth",
+     "t": "The Further Mis-Adventures of Cliff Booth",
+     "s": ""
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": ""
+    },
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "sound",
+   "name": "Sound",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": ""
+    },
+    {
+     "id": "la-bola-negra",
+     "t": "La Bola Negra",
+     "s": ""
+    },
+    {
+     "id": "michael",
+     "t": "Michael",
+     "s": ""
+    },
+    {
+     "id": "tuner",
+     "t": "Tuner",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "vfx",
+   "name": "Visual Effects",
+   "pts": 1,
+   "noms": [
+    {
+     "id": "godzilla-minus-zero",
+     "t": "Godzilla Minus Zero",
+     "s": ""
+    },
+    {
+     "id": "project-hail-mary",
+     "t": "Project Hail Mary",
+     "s": ""
+    },
+    {
+     "id": "odyssey",
+     "t": "The Odyssey",
+     "s": ""
+    },
+    {
+     "id": "wildwood",
+     "t": "Wildwood",
+     "s": ""
+    },
+    {
+     "id": "werwulf",
+     "t": "Werwulf",
+     "s": ""
+    }
+   ],
+   "win": null
+  },
+  {
+   "id": "animshort",
+   "name": "Animated Short",
+   "pts": 1,
+   "noms": [],
+   "win": null
+  },
+  {
+   "id": "liveshort",
+   "name": "Live Action Short",
+   "pts": 1,
+   "noms": [],
+   "win": null
+  },
+  {
+   "id": "docshort",
+   "name": "Documentary Short",
+   "pts": 1,
+   "noms": [],
+   "win": null
+  }
+ ]
+}
