@@ -12,6 +12,7 @@ on:
     paths:
       - tools/nba_ratings.py
       - tools/nba_moves.py
+      - tools/nba_bpi.py
       - .github/workflows/nba-ratings.yml
   workflow_dispatch:
 
@@ -42,9 +43,14 @@ jobs:
       - name: Track team changes (for the two-month trade rule)
         run: python3 tools/nba_moves.py
 
+      # ESPN's BPI beside the hub's projections; a miss keeps the last file
+      - name: ESPN BPI
+        continue-on-error: true
+        run: python3 tools/nba_bpi.py
+
       - name: Commit the ratings
         run: |
-          git add nba/data/ratings.json nba/data/moves.json; git add nba/data/pbp_prev.json 2>/dev/null || true
+          git add nba/data/ratings.json nba/data/moves.json; git add nba/data/bpi.json 2>/dev/null || true; git add nba/data/pbp_prev.json 2>/dev/null || true
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
