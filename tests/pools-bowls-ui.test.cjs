@@ -20,7 +20,9 @@ async function boot(now, tab, noMine) {
   const w = dom.window, RealDate = w.Date, off = now - RealDate.now();
   w.Date = class extends RealDate { constructor(...a) { if (a.length) super(...a); else super(RealDate.now() + off); } static now() { return RealDate.now() + off; } };
   w.scrollTo = () => {}; w.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
-  w.fetch = async () => ({ ok: true, json: async () => ({}) });
+  w.fetch = async (u) => ({ ok: true, json: async () => (/hub\.json/.test(String(u)) ? {
+    teams: [{ id: "A3", polls: { cfp: { rank: 7 } }, record: { w: 10, l: 2 }, conference: "SEC" }, { id: "B3", polls: {}, record: { w: 8, l: 4 }, conference: "Big Ten" }],
+    games: [{ id: "g3", venue: "Camping World Stadium", city: "Orlando, FL", tv: "ABC", home: "B3", away: "A3", market: { details: "A3 -6.5", total: 54.5 } }] } : {}) });
   const errs = []; w.addEventListener("error", (e) => errs.push(e.message)); w.addEventListener("unhandledrejection", (e) => errs.push(String(e.reason && e.reason.message)));
   w.FK = { cloud: { user: () => ({ id: "me", email: "d@x.com" }), lastEmail: () => "", fromLink: async () => null, map: {}, NFL: {}, nflPost: async () => ({}),
     rpc: async (fn) => (fn === "mm_board" ? (noMine ? Object.assign(board(now), { picks: board(now).picks.filter((k) => k.user !== "me") }) : board(now)) : fn === "mm_remind_get" ? { remind: false, recap: false } : []) } };
@@ -97,4 +99,16 @@ test("reminders: no pick at all means one before the first bowl, then none; a ki
     assert.ok(P.status(mine, Date.parse("2026-12-23T12:00:00Z"), "me").due, "someone who's picking still gets them");
   } finally { w.close(); }
   assert.ok(/time TBA/.test(src("fantasy-kit/pools.js")));
+});
+
+test("a bowl card shows each team's rank, record and conference, and where, on what channel and the line", async () => {
+  const { w, errs } = await boot(Date.parse("2026-12-10T12:00:00Z"));
+  try {
+    const t = w.document.getElementById("app").textContent;
+    assert.match(t, /No\. 7, 10-2, SEC/); assert.match(t, /8-4, Big Ten/);
+    const meta = [...w.document.querySelectorAll(".pl-bmeta")].map((x) => x.textContent).find((x) => /Orlando/.test(x)) || "";
+    assert.match(meta, /Camping World Stadium, Orlando, FL/); assert.match(meta, /ABC/); assert.match(meta, /Line A3 -6\.5, total 54\.5/);
+    assert.ok(w.document.querySelector('.pl-bmeta a[href="/cfb/#/matchup?a=A3&b=B3&site=n"]'), "a preview link to the hub's matchup page");
+    assert.deepEqual(errs, []);
+  } finally { w.close(); }
 });

@@ -716,3 +716,9 @@ button.pl-chip{cursor:pointer}
 .pl-bdone[open]>summary em{font-size:0}
 .pl-bdone[open]>summary em::after{content:"Hide";font-size:13px}
 .pl-bdone[open]{padding:0 10px 10px}
+.pl-bt .pl-bpct{margin-left:auto;padding-left:8px;font-style:normal;font-weight:700;font-size:14px;color:var(--muted)}
+.pl-bt.on .pl-bpct{color:var(--ink)}
+.pl-bmeta{margin:-2px 0 0;font-size:12.5px;line-height:1.45;color:var(--muted)}
+.pl-bmeta span{color:var(--line)}
+.pl-bmeta a{color:inherit;font-weight:700}
+.pl-bsch b small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:1px}

@@ -250,6 +250,13 @@
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
     if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
+      // the college football hub's teams (rank, record, conference) and games (stadium, city, TV, the sportsbook line):
+      // it picks up every team's bowl and playoff games from late November, under the same ESPN game ids as the pool
+      try {
+        const h = await fetch("/cfb/data/hub.json", { cache: "no-cache" }).then((r) => r.json());
+        st.cfbT = {}; (h.teams || []).forEach((t) => { st.cfbT[t.id] = t; });
+        st.cfbG = {}; (h.games || []).forEach((g) => { st.cfbG[g.id] = g; });
+      } catch (e) { st.cfbT = {}; st.cfbG = {}; }
     }
   }
   // phones get the share sheet (Messages, WhatsApp...); desktops copy the link
@@ -495,6 +502,29 @@
   const cfbName = (id, full) => esc((st.teams[id] && st.teams[id].n) || full || "TBD");
   const cfbLogo = (id, px = 28) => id ? `<img class="pl-logo" src="https://a.espncdn.com/combiner/i?img=/i/teamlogos/ncaa/500/${esc(id)}.png&w=${px * 2}&h=${px * 2}" alt="" width="${px}" height="${px}" loading="lazy" onerror="this.style.visibility='hidden'">` : `<span class="pl-logo pl-nologo" style="width:${px}px;height:${px}px"></span>`;
   // a team's chance in a bowl: the college football hub's power ratings on a neutral field
+  // "No. 7, 10-2, SEC": the CFP ranking (the AP poll when the committee hasn't ranked him), record and conference
+  const cfbRank = (id) => { const t = (st.cfbT || {})[id], p = t && t.polls; return (p && ((p.cfp && p.cfp.rank) || (p.ap && p.ap.rank))) || null; };
+  const cfbTag = (id) => {
+    const t = (st.cfbT || {})[id]; if (!t) return "";
+    const r = cfbRank(id), rec = t.record && t.record.w != null ? `${t.record.w}-${t.record.l}` : "";
+    return [r ? "No. " + r : "", rec, t.conference].filter(Boolean).join(", ");
+  };
+  // where it's played, on what channel, and the line: the sportsbook's when there is one, else the hub's own
+  function bowlMeta(g) {
+    const h = (st.cfbG || {})[g.id] || {}, bits = [];
+    const where = [h.venue, h.city].filter(Boolean).join(", ");
+    if (where) bits.push(esc(where)); if (h.tv) bits.push(esc(h.tv));
+    if (g.a && g.b) {
+      const m = h.market, R = st.cfb && st.cfb.ratings;
+      if (m && m.details) bits.push(`Line ${esc(m.details)}${m.total ? `, total ${esc(m.total)}` : ""}`);
+      else if (R && R[g.a] && R[g.b]) {
+        const d = R[g.a].power - R[g.b].power, by = Math.round(Math.abs(d) * 2) / 2, fav = d > 0 ? g.a : g.b;
+        bits.push(by < 0.5 ? "Hub line: pick'em" : `Hub line: ${cfbName(fav, fav === g.a ? g.an : g.bn)} by ${by}`);
+      }
+      bits.push(`<a href="/cfb/#/matchup?a=${encodeURIComponent(h.away || g.a)}&b=${encodeURIComponent(h.home || g.b)}&site=n" target="_blank" rel="noopener">Preview</a>`);
+    }
+    return bits.length ? `<p class="pl-bmeta">${bits.join('<span aria-hidden="true"> / </span>')}</p>` : "";
+  }
   const cfbProb = (g, t) => {
     const R = st.cfb && st.cfb.ratings, sd = (st.cfb && Number(st.cfb.sd)) || 14;
     if (!R || !g.a || !g.b || !R[g.a] || !R[g.b]) return null;
@@ -513,7 +543,8 @@
       const first = games[0], cfp = games.filter((g) => g.round > 0).length;
       let lastD = "";
       const list = games.map((g) => { const d = dayOf(g.kickoff), h = d !== lastD ? `<h3 class="pl-bday">${esc(d)}</h3>` : ""; lastD = d;
-        return `${h}<div class="pl-bsch${g.round ? " cfp" : ""}"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}</b><span>${esc(tipTime(g.kickoff).replace(/^\w+, /, ""))}</span></div>`; }).join("");
+        const hg = (st.cfbG || {})[g.id] || {}, where = [hg.city, hg.tv].filter(Boolean).join(", ");
+        return `${h}<div class="pl-bsch${g.round ? " cfp" : ""}"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}${where ? `<small>${esc(where)}</small>` : ""}</b><span>${esc(tipTime(g.kickoff).replace(/^\w+, /, ""))}</span></div>`; }).join("");
       const setBy = Date.parse(CAL.bowlsSet + "T23:59:00-05:00"), head = now < setBy ? `Matchups are set ${new Date(day0(CAL.bowlsSet) + 12 * 3600e3).toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric", timeZone: "America/New_York" })}` : "Matchups are on the way";
       return `<div class="card pl-bwait"><div class="bd"><h2>${esc(head)}</h2>
         <p>Picks open as soon as they're out. There are ${n} games: ${n - cfp} bowls and ${cfp} College Football Playoff games, starting ${esc(dayOf(first.kickoff))}. Get your group in now so everyone's ready.</p>
@@ -544,11 +575,11 @@
       const side = (t, full) => {
         const p = cfbProb(g, t), on = k.team && k.team === t, won = g.final && g.w === t, lost = g.final && g.w && g.w !== t;
         return `<button type="button" class="pl-bt${on ? " on" : ""}${won ? " won" : ""}${lost ? " lost" : ""}" data-bteam="${esc(g.id)}|${esc(t || "")}"${!t || locked ? " disabled" : ""}>
-          ${cfbLogo(t, 24)}<span class="pl-tn"><b>${cfbName(t, full)}</b>${g.final ? `<small>${t === g.a ? g.ap : g.bp}</small>` : p != null ? `<small>${Math.round(p * 100)}%</small>` : ""}</span></button>`;
+          ${cfbLogo(t, 24)}<span class="pl-tn"><b>${cfbName(t, full)}</b>${t && cfbTag(t) ? `<small>${esc(cfbTag(t))}</small>` : ""}</span>${g.final ? `<em class="pl-bpct num">${t === g.a ? g.ap : g.bp}</em>` : p != null ? `<em class="pl-bpct num" title="Chance to win, from the college football hub">${Math.round(p * 100)}%</em>` : ""}</button>`;
       };
       const res = g.final && k.team ? (g.w === k.team ? `<span class="pl-pick win">+${k.pts || 0}</span>` : `<span class="pl-pick loss">0</span>`) : "";
       const sel = locked ? `<span class="pl-bpts">${k.pts ? `<b>${k.pts}</b>` : "&ndash;"}</span>` : `<select class="pl-bsel" data-bpts="${esc(g.id)}" aria-label="Confidence for the ${esc(g.label)}"><option value="">&ndash;</option>${Array.from({ length: n }, (_, i) => n - i).map((v) => `<option value="${v}"${k.pts === v ? " selected" : ""}>${v}${used[v] && k.pts !== v ? " (used)" : ""}</option>`).join("")}</select>`;
-      return `${head}<div class="pl-bowl${locked ? " locked" : ""}${g.round ? " cfp" : ""}"><div class="pl-bowl-h"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}</b><span>${locked ? (g.final ? "Final" : "Playing") : esc(tipTime(g.kickoff).replace(/^\w+, (?=time)/, ""))}</span>${res}</div>
+      return `${head}<div class="pl-bowl${locked ? " locked" : ""}${g.round ? " cfp" : ""}"><div class="pl-bowl-h"><b>${esc(g.label.replace(/ Presented by .*| Game$/, ""))}</b><span>${locked ? (g.final ? "Final" : "Playing") : esc(tipTime(g.kickoff).replace(/^\w+, (?=time)/, ""))}</span>${res}</div>${locked ? "" : bowlMeta(g)}
         <div class="pl-bowl-b"><div class="pl-bts">${side(g.a, g.an)}${side(g.b, g.bn)}</div><label class="pl-conf"><span>Points</span>${sel}</label></div></div>`;
     };
     // 3: games that have kicked off fold into one line, so the list starts at the next game you can still pick
@@ -901,7 +932,7 @@
         (b.picks || []).forEach((pk) => { if (pk.slot !== "g" + g.id || !pk.team) return; (by[pk.team] = by[pk.team] || []).push({ id: pk.user, note: pk.pts }); });
         return gameBlock({ x: "a", y: "b", when: g.kickoff, final: g.final, label: g.label, hidden: Date.parse(g.kickoff) > now && b.members.length > 1 ? "Everyone else's picks show at kickoff" : "" }, (sd) => {
           const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.kickoff) <= now;
-          return { logo: cfbLogo(t, 22), name: cfbName(t, sd === "a" ? g.an : g.bn), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []), pct: pct(by[t], on) };
+          return { logo: cfbLogo(t, 22), name: cfbName(t, sd === "a" ? g.an : g.bn), seed: t ? cfbRank(t) : null, score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []), pct: pct(by[t], on) };
         });
       });
       return segPick("b", days.map((d) => [d, d.replace(/^\w+, /, ""), d.split(",")[0]]), cur) + `<p class="pl-gsum">Each name shows its confidence number. Picks show at each game's kickoff.</p>` + gameList(blocks, "No games that day.");
