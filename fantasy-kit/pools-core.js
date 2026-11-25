@@ -640,6 +640,12 @@
       if (board.projected || !games.some(function (g) { return g.round >= 1; })) return { text: "Field set on Selection Sunday", tone: "wait" };
       return surv(survivor(board, now), "day", function (g) { return ms(g.tip); });
     }
+    if (kind === "props") {
+      var lkP = board.lock ? ms(board.lock) : null, PR = props(board, now), meP2 = PR.rows.filter(function (r) { return r.me; })[0] || {}, nq = PR.sheet.length;
+      if (PR.done) return meP2.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(PR.rows), tone: "done" };
+      if (!lkP || now < lkP) return meP2.picked >= nq ? { text: "Sheet in", tone: "ok" } : { text: meP2.picked ? meP2.picked + " of " + nq + " answered" : "Fill out your sheet", tone: "todo", due: lkP };
+      return { text: standing(PR.rows, function (r) { return r.points + " pts"; }) + (PR.graded < nq ? ", " + PR.graded + " of " + nq + " graded" : ""), tone: "ok" };
+    }
     if (kind === "bracket") {
       var lkB = board.fiveLock ? ms(board.fiveLock) : null, MB = mmBracket(board, now), meM = MB.rows.filter(function (r) { return r.me; })[0] || {};
       if (!MB.field.ready) return { text: "Field set on Selection Sunday", tone: "wait" };
@@ -827,9 +833,53 @@
     return { rows: rows, field: F, won: won, out: out, total: total, done: fin, n: slots.length, winners: fin ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
   }
 
+
+  /* Super Bowl prop sheet ('props'). The sheet is the pool's (board.pool.extra.props): each question has choices, points
+     and maybe a line ({line} in its text). {AFC} and {NFC} in a choice are the two teams. A right answer scores its
+     points; the owner marks answers (extra.answers), and winner, total and margin grade themselves from the final.
+     Ties go to the closest guess at the game's total points. */
+  function propsGame(board) { return (board.games || []).filter(function (g) { return g.round === 4; })[0] || null; }
+  function propsConf(board) { var c = {}; (board.field || []).forEach(function (f) { c[f.team] = f.conf; }); return c; }
+  function propsAuto(q, board) {
+    var g = propsGame(board); if (!q.auto || !g || !g.final || g.ap == null || g.bp == null) return null;
+    var tot = g.ap + g.bp, mg = Math.abs(g.ap - g.bp);
+    if (q.auto === "total" && q.line != null) return tot > q.line ? 0 : 1;
+    if (q.auto === "margin") return mg <= 3 ? 0 : mg <= 7 ? 1 : mg <= 14 ? 2 : 3;
+    if (q.auto === "winner") { var w = g.ap > g.bp ? g.a : g.b, cf = propsConf(board)[w]; var i = (q.opts || []).indexOf("{" + cf + "}"); return i >= 0 ? i : null; }
+    return null;
+  }
+  function propsAnswer(q, board) {
+    var a = ((board.pool && board.pool.extra) || {}).answers || {};
+    return a[q.id] != null ? +a[q.id] : propsAuto(q, board);
+  }
+  function props(board, now) {
+    var sheet = ((board.pool && board.pool.extra) || {}).props || [], by = {};
+    (board.picks || []).forEach(function (p) { if (p.team != null) (by[p.user] = by[p.user] || {})[p.slot] = p.team; });
+    var ans = {}; sheet.forEach(function (q) { ans[q.id] = propsAnswer(q, board); });
+    var g = propsGame(board), total = g && g.final && g.ap != null ? g.ap + g.bp : null;
+    var rows = (board.members || []).map(function (m) {
+      var mine = by[m.id] || {}, pts = 0, right = 0, left = 0, picked = 0;
+      sheet.forEach(function (q) {
+        var v = mine["p:" + q.id]; if (v == null || v === "") return;
+        picked++;
+        if (ans[q.id] == null) left += +q.pts || 1;
+        else if (+v === ans[q.id]) { pts += +q.pts || 1; right++; }
+      });
+      var tb = mine.tb != null && mine.tb !== "" ? Number(mine.tb) : null;
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, right: right, picked: picked, max: pts + left, tb: tb, off: tbOff(tb, total) };
+    });
+    var cmp = function (a, b) { return (b.points - a.points) || (a.off - b.off); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
+    var graded = sheet.filter(function (q) { return ans[q.id] != null; }).length, done = !!sheet.length && graded === sheet.length && total != null;
+    return { rows: rows, sheet: sheet, answers: ans, graded: graded, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
+  }
+
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
     bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap,
-    MM_PTS: MM_PTS, MM_FF: MM_FF, mmField: mmField, mmSlot: mmSlot, mmFeed: mmFeed, mmSlots: mmSlots, mmPick: mmPick, mmFill: mmFill, mmBracket: mmBracket };
+    MM_PTS: MM_PTS, MM_FF: MM_FF, mmField: mmField, mmSlot: mmSlot, mmFeed: mmFeed, mmSlots: mmSlots, mmPick: mmPick, mmFill: mmFill, mmBracket: mmBracket,
+    props: props, propsAnswer: propsAnswer, propsAuto: propsAuto, propsGame: propsGame, propsConf: propsConf };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);
