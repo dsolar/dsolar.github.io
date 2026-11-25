@@ -722,3 +722,24 @@ button.pl-chip{cursor:pointer}
 .pl-bmeta span{color:var(--line)}
 .pl-bmeta a{color:inherit;font-weight:700}
 .pl-bsch b small{display:block;font-weight:500;color:var(--muted);font-size:12.5px;margin-top:1px}
+/* each card names its sport: phones above the title (desktop already shows it in the card's top row) */
+.pl-gc h3 .pl-gc-lg{display:none}
+@media (max-width:640px){
+  .pl-gc h3 .pl-gc-lg{display:block;font-size:11.5px;font-weight:850;letter-spacing:.03em;color:var(--sc);margin-bottom:1px}
+}
+/* Up next: the one game to set up now */
+.pl-next{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;margin:0 0 18px;padding:16px 18px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--sc)}
+.pl-next .pl-gc-ic{width:44px;height:44px}
+.pl-next-t small{display:block;font-size:12px;font-weight:850;letter-spacing:.03em;color:var(--sc)}
+.pl-next h2{margin:2px 0 4px;font-size:21px}
+.pl-next p{margin:0 0 10px;line-height:1.5;max-width:62ch}
+.pl-next .pl-act{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px}
+/* someone with pools: the full catalog folds behind one line */
+.pl-more{margin:6px 0 0}
+.pl-more>summary{display:flex;flex-direction:column;gap:2px;cursor:pointer;list-style:none;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.pl-more>summary::-webkit-details-marker{display:none}
+.pl-more>summary .pl-sec-h{margin:0;font-size:18px}
+.pl-more>summary .pl-sec-h::after{content:" +";color:var(--muted)}
+.pl-more[open]>summary .pl-sec-h::after{content:" \2212"}
+.pl-more>summary small{color:var(--muted);font-size:13px}
+.pl-more[open]>.pl-cat{margin-top:14px}

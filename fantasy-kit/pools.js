@@ -147,16 +147,35 @@
     { sport: "NBA", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/fantasy/pools/wins/?make=nba", cta: "Start a wins pool", open: CAL.nbaTip, end: CAL.nbaEnd },
     { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January", open: CAL.nflField, end: CAL.superBowl },
-    { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflWeek1, end: CAL.superBowl },
+    { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
     { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
   ];
   const sportC = (k) => SPORT_C[SPORT[k]] || SPORT_C.NFL;
+  /* Up next: the one game to set up now, by the calendar (from the day shown up to, not including, the day it ends).
+     Each is a game in GAMES; the text says why now. Roll forward with CAL each summer. */
+  const UP_NEXT = [
+    { key: "bowls", from: "2026-11-15", until: CAL.bowlsSet, title: "Bowl pick'em", text: `Matchups come out ${shortDate(CAL.bowlsSet)} and the games start ${shortDate(CAL.bowls)}. Make your pool now so everyone's in before picks open.` },
+    { key: "bowls", from: CAL.bowlsSet, until: CAL.bowls, title: "Bowl pick'em", text: `The matchups are out and the first bowl kicks off ${shortDate(CAL.bowls)}. Get a pool going before it does.` },
+    { key: "nflpo", from: CAL.bowls, until: CAL.nflField, title: "NFL playoff bracket", text: `The field is set ${shortDate(CAL.nflField)} and brackets lock at the first Wild Card kickoff. Practice on the projected field until then.` },
+    { key: "nflpo", from: CAL.nflField, until: CAL.wildCard, title: "NFL playoff bracket", text: `The field is set. Brackets lock at the first Wild Card kickoff, ${shortDate(CAL.wildCard)} weekend.` },
+    { key: "squares", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl squares", text: `Fill the board before the Super Bowl on ${shortDate(CAL.superBowl)}. The numbers are drawn once it's full.` },
+    { key: "five", from: "2027-02-15", until: CAL.selection, title: "March Madness", text: `The field comes out ${shortDate(CAL.selection)}. Set up survivor or 5 teams now and practice on the projected bracket.` },
+  ];
+  function upNext(have) {
+    const now = Date.now(), u = UP_NEXT.find((x) => now >= day0(x.from) && now < day0(x.until));
+    if (u && have && have.has(u.key)) return ""; // already in one
+    const gm = u && GAMES.find((g) => g.key === u.key);
+    if (!gm) return "";
+    const act = gm.href ? `<a class="btn go" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go" data-make="${gm.key}">Make a pool</button>`;
+    return `<section class="pl-next" style="--sc:${SPORT_C[gm.sport]}" aria-label="Up next"><span class="pl-gc-ic">${ICON[gm.key]}</span><div class="pl-next-t"><small>Up next, ${esc(gm.sport)}</small><h2>${esc(u.title)}</h2><p>${esc(u.text)}</p>
+      <div class="pl-act">${act}<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details></div></div></section>`;
+  }
   function gameCard(gm) {
     const act = gm.href ? `<a class="btn go" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go" data-make="${gm.key}">Make a pool</button>`;
     return `<article class="pl-gc" style="--sc:${SPORT_C[gm.sport]}"><div class="pl-gc-top"><span class="pl-gc-ic">${ICON[gm.key]}</span><span class="pl-gc-sp">${esc(gm.sport)}</span><span class="pl-gc-st${gm.isLive ? " live" : ""}">${esc(gm.isLive ? "Live now" : gm.soon || `Opens ${shortDate(gm.open)}`)}</span></div>
-      <h3>${esc(gm.name)}</h3><p class="pl-tag">${esc(gm.tag)}</p><ul class="pl-gc-facts">${gm.facts.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+      <h3><small class="pl-gc-lg">${esc(gm.sport)}</small>${esc(gm.name)}</h3><p class="pl-tag">${esc(gm.tag)}</p><ul class="pl-gc-facts">${gm.facts.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
       <div class="pl-act">${act}${gm.href ? "" : `<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details>`}</div></article>`;
   }
   // where you stand in each of your pools: every board, scored the same way its own page does. Kept a minute, since
@@ -209,15 +228,18 @@
     const miles = MILESTONES.filter((m) => day0(m.d) + 864e5 > now).slice(0, 5);
     const timeline = miles.length ? `<ol class="pl-tl" aria-label="Coming up">${miles.map((m) => `<li style="--sc:${SPORT_C[m.sport]}"><time datetime="${m.d}">${shortDate(m.d)}</time><span>${esc(m.t)}</span></li>`).join("")}</ol>` : "";
     const group = (title, gs) => gs.length ? `<div class="pl-sec"><h3 class="pl-grp">${title}</h3><div class="pl-games">${gs.map(gameCard).join("")}</div></div>` : "";
-    const catalog = `<section class="pl-cat"><h2 class="pl-sec-h">Games</h2>${timeline}${group("Playing now", live)}${group("Coming up", soon)}
-      ${far.length ? `<details class="pl-later"><summary>Later: ${esc([...new Set(far.map((g) => g.sport))].join(", "))} <small>(${far.length} ${far.length === 1 ? "game" : "games"})</small></summary><div class="pl-games">${far.map(gameCard).join("")}</div></details>` : ""}</section>`;
+    const catBody = `${timeline}${group("Playing now", live)}${group("Coming up", soon)}
+      ${far.length ? `<details class="pl-later"><summary>Later: ${esc([...new Set(far.map((g) => g.sport))].join(", "))} <small>(${far.length} ${far.length === 1 ? "game" : "games"})</small></summary><div class="pl-games">${far.map(gameCard).join("")}</div></details>` : ""}`;
     const pill = (x) => !x ? "" : x.tone === "todo" ? `<span class="pl-due">${x.due ? `Due ${esc(dueText(x.due))}` : "To do"}</span>` : x.tone === "won" ? `<span class="pl-due won">Won</span>` : x.tone === "out" ? `<span class="pl-due out">Out</span>` : "";
     const row = (href, key, sc, name, sub, x) => `<li class="${x ? "t-" + x.tone : ""}"><a href="${href}"><span class="pl-badge" style="--sc:${sc}">${ICON[key]}</span><span class="pl-li-t"><b>${esc(name)}</b><small>${sub}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`;
     const sorted = (mine || []).slice().sort((a, c) => { const x = stat[a.id] || { tone: "ok" }, y = stat[c.id] || { tone: "ok" }; return (TONE_ORDER[x.tone] - TONE_ORDER[y.tone]) || ((x.due || 0) - (y.due || 0)); });
-    const items = sorted.map((p) => { const x = stat[p.id]; return row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x); })
-      .concat((groups || []).map((g) => row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat)));
+    // every kind of pool in one list, what's due soonest first
     const winStat = wins.map((p) => (window.FK.wins ? window.FK.wins.status(p) : null));
-    wins.forEach((p, i) => items.push(row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i])));
+    const rows = sorted.map((p) => { const x = stat[p.id]; return { x, html: row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x) }; })
+      .concat((groups || []).map((g) => ({ x: st.pkStat, html: row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat) })))
+      .concat(wins.map((p, i) => ({ x: winStat[i], html: row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i]) })));
+    const rank = (x) => TONE_ORDER[(x && x.tone) || "ok"];
+    const items = rows.map((r, i) => Object.assign(r, { i })).sort((a, c) => (rank(a.x) - rank(c.x)) || (((a.x && a.x.due) || Infinity) - ((c.x && c.x.due) || Infinity)) || (a.i - c.i)).map((r) => r.html);
     const todo = Object.values(stat).concat(st.pkStat && (groups || []).length ? [st.pkStat] : [], winStat.filter(Boolean)).filter((x) => x.tone === "todo").sort((a, c) => (a.due || Infinity) - (c.due || Infinity));
     const summary = !items.length ? "" : todo.length ? `<p class="pl-todo"><b>${todo.length === 1 ? "1 pool needs" : `${todo.length} pools need`} your picks.</b>${todo[0].due ? ` ${todo.length === 1 ? "Due" : "The first is due"} ${esc(dueText(todo[0].due))}.` : ""}</p>` : mine.length ? `<p class="pl-todo ok">You're all set. Nothing due right now.</p>` : "";
     // the make-a-pool choices in the same order as the games below: playing now, then soonest
@@ -238,8 +260,12 @@
       ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
       ${summary}${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="pl-empty"><b>No pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : "";
     const signin = st.user ? "" : signinCard("Sign in to make or join a pool");
+    const has = items.length > 0;
+    const catalog = has ? `<details class="pl-more"${st.moreOpen ? " open" : ""}><summary><h2 class="pl-sec-h">Start another pool</h2><small>Every game, what's on now and what's coming</small></summary><section class="pl-cat">${catBody}</section></details>`
+      : `<section class="pl-cat"><h2 class="pl-sec-h">Games</h2>${catBody}</section>`;
+    const next = upNext(new Set((mine || []).map((p) => p.kind)));
     app.innerHTML = `<div class="wrap page pl">${band("Pools", "Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.", st.user ? "" : `<div class="pl-share"><a class="btn sm" href="#pl-signin">Sign in to play</a></div>`)}
-      ${yours}${catalog}${signin}</div>`;
+      ${has ? yours + next : next + yours}${catalog}${signin}</div>`;
   }
 
   // ---------- a pool ----------
@@ -1201,7 +1227,7 @@
       k.pts = v; st.msg = ""; (st.bhand = st.bhand || {})[gid] = !!v; render();
     }
   });
-  app.addEventListener("toggle", (e) => { if (e.target.classList && e.target.classList.contains("pl-bdone")) st.bshowDone = e.target.open; }, true);
+  app.addEventListener("toggle", (e) => { const c = e.target.classList; if (!c) return; if (c.contains("pl-bdone")) st.bshowDone = e.target.open; if (c.contains("pl-more")) st.moreOpen = e.target.open; }, true);
   app.addEventListener("input", (e) => {
     const t = e.target;
     if (t.hasAttribute("data-btb")) { st.btb = t.value; const b = document.querySelector("[data-bsave]"); if (b) b.disabled = !P.bowlsCheck(st.bd, (st.board.games || []).length).ok; }
