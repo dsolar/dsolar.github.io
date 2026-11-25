@@ -1,8 +1,8 @@
-"""Writes each pool game's own page, /pools/<slug>/index.html, from the pools page (fantasy/pools/index.html).
+"""Writes each pool game's own page, /pools/<slug>/index.html, from the pools page (pools/index.html).
 
 Each is the same page with <html data-game="kind"> (pools.js shows that game's front page, and its pools' links live
 there: /pools/bowls/?p=CODE) and its own title, description and link preview. Run it after changing
-fantasy/pools/index.html:  python3 tools/pools_pages.py   (tests/pools-pages.test.cjs checks they're in step)."""
+pools/index.html:  python3 tools/pools_pages.py   (tests/pools-pages.test.cjs checks they're in step)."""
 import os, re, sys
 
 GAMES = [
@@ -27,12 +27,12 @@ def page(src, kind, slug, name, desc):
     out = re.sub(r'<meta property="og:title" content="[^"]*">', f'<meta property="og:title" content="Join my {name} pool">', out, count=1)
     out = re.sub(r'<meta property="og:description" content="[^"]*">', f'<meta property="og:description" content="{desc}">', out, count=1)
     # the header's "All pools" isn't the page you're on here
-    out = out.replace('<a href="/fantasy/pools/" aria-current="page">All pools</a>', '<a href="/fantasy/pools/">All pools</a>', 1)
+    out = out.replace('<a href="/pools/" aria-current="page">All pools</a>', '<a href="/pools/">All pools</a>', 1)
     return out
 
 def main(check=False):
     root = os.path.join(os.path.dirname(__file__), "..")
-    src = open(os.path.join(root, "fantasy/pools/index.html"), encoding="utf-8").read()
+    src = open(os.path.join(root, "pools/index.html"), encoding="utf-8").read()
     stale = []
     for kind, slug, name, desc in GAMES:
         path = os.path.join(root, "pools", slug, "index.html")

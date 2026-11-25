@@ -12,7 +12,7 @@
   var TABS = [["home", "Home"], ["leagues", "My leagues"], ["draft", "Mock draft"], ["rankings", "Rankings"], ["week", "Quick games"]];   // Pools is its own product now: the Hubs / Draft Lab / Pools switch
   var SPORTS = [["nba", "NBA"], ["nfl", "NFL"], ["nhl", "NHL"], ["mlb", "MLB"], ["cbb", "NCAAB"], ["cfb", "NCAAF"]];
   var HOME = "/fantasy/";
-  var URLS = { home: HOME, leagues: "/fantasy/leagues/", draft: "/fantasy/mock/", rankings: "/fantasy/rankings/", week: "/fantasy/quick/", pools: "/fantasy/pools/", league: "/fantasy/demo/" };
+  var URLS = { home: HOME, leagues: "/fantasy/leagues/", draft: "/fantasy/mock/", rankings: "/fantasy/rankings/", week: "/fantasy/quick/", pools: "/pools/", league: "/fantasy/demo/" };
   function href(tab, o) {
     o = o || {};
     var q = o.sport ? "?s=" + encodeURIComponent(o.sport) : "";

@@ -1,4 +1,4 @@
-/* The wins pool page (fantasy/pools/wins/, part of Pools): friends draft real NBA or NFL teams in a snake, and the most
+/* The wins pool page (/pools/wins/, part of Pools): friends draft real NBA or NFL teams in a snake, and the most
    combined wins from draft day forward takes it. The rules are wins-core.js (FK.wins); the pool, its entries and its
    picks live on the server (tools/fantasykit_wins.sql, through FK.cloud.rpc). Records come from the site's own
    standings files: celtics/live.json (NBA, every morning) and nfl/data/games.json (NFL, every day).
@@ -10,7 +10,7 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const HERE = "/fantasy/pools/wins/";
+  const HERE = "/pools/wins/";
   const SRC = { nba: "/celtics/live.json", nfl: "/nfl/data/games.json" };
   const SPORT_C = { nfl: "#C8102E", nba: "#1D5FBF" };
   const st = { user: C.user(), code: (params.get("p") || params.get("join") || "").toUpperCase(), join: !!params.get("join"), make: params.get("make"), board: null, recs: {}, tab: null, msg: "", invite: false, forId: null };
@@ -76,7 +76,7 @@
         <button type="button" class="btn sm${panel === "make" ? " on" : ""}" data-panel="make" aria-expanded="${panel === "make"}">+ Make a pool</button><button type="button" class="btn sm${panel === "join" ? " on" : ""}" data-panel="join" aria-expanded="${panel === "join"}">Join with a code</button></div></div>
       ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
       ${(mine || []).length ? `<ul class="pl-list">${mine.map(row).join("")}</ul>` : `<div class="pl-empty"><b>No wins pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : signinCard("Sign in to make or join a wins pool");
-    app.innerHTML = `<div class="wrap page pl">${band("Wins pool", "Draft real teams with your friends. Most combined wins from draft day forward takes it.", `<div class="pl-share"><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`)}
+    app.innerHTML = `<div class="wrap page pl">${band("Wins pool", "Draft real teams with your friends. Most combined wins from draft day forward takes it.", `<div class="pl-share"><a class="btn sm ghost" href="/pools/">All pools</a></div>`)}
       ${yours}<div class="card"><div class="mod-h"><h2>How it works</h2></div><div class="bd">${RULES()}</div></div></div>`;
   }
   const logoMark = () => `<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16M6 20v-5h3v5M10.5 20V10h3v10M15 20V5h3v15"/></svg>`;

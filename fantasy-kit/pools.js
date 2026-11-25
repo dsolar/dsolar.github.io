@@ -1,4 +1,4 @@
-/* Pools (fantasy/pools/), its own product beside the Hubs and Draft Lab: every competition to play with friends in one place. Pick'em (its own page,
+/* Pools (/pools/), its own product beside the Hubs and Draft Lab: every competition to play with friends in one place. Pick'em (its own page,
    pickem/) and its groups, season-long NFL survivor, and March Madness survivor and 5 teams: sign in, make or join a
    pool, pick, and the standings. The rules are pools-core.js (FK.pools); the games, picks and locks live on the server
    (tools/fantasykit_pools.sql, through FK.cloud.rpc). College team names, logos and ratings come from the college hub
@@ -20,7 +20,7 @@
      links still work and move to the game's address once the pool loads. */
   const SLUG = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor" };
   const GAME = SLUG[document.documentElement.dataset.game] ? document.documentElement.dataset.game : null;
-  const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/fantasy/pools/");
+  const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
   // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
   const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props" })[kind] || "";
@@ -191,8 +191,8 @@
   const GAMES = [
     { sport: "NFL", key: "pickem", name: "Pick'em", tag: "Every game against the spread. One board for everyone, plus private groups.", facts: ["Every game", "Against the spread", "Groups"], live: "Live now", href: "/pickem/", cta: "Make this week's picks", open: CAL.nflWeek1, end: CAL.nflField },
     { sport: "NFL", key: "nfl", name: "Survivor", tag: "One team a week to win. Lose and you're out.", facts: ["1 team a week", "Each team once", "Through week 18"], live: "Live now", open: CAL.nflWeek1, end: CAL.nflField },
-    { sport: "NFL", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/fantasy/pools/wins/?make=nfl", cta: "Start a wins pool", open: CAL.nflWeek1, end: CAL.nflField },
-    { sport: "NBA", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/fantasy/pools/wins/?make=nba", cta: "Start a wins pool", open: CAL.nbaTip, end: CAL.nbaEnd },
+    { sport: "NFL", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/pools/wins/?make=nfl", cta: "Start a wins pool", open: CAL.nflWeek1, end: CAL.nflField },
+    { sport: "NBA", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it.", facts: ["Draft teams", "No lineups", "No clock"], href: "/pools/wins/?make=nba", cta: "Start a wins pool", open: CAL.nbaTip, end: CAL.nbaEnd },
     { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "props", name: "Super Bowl prop sheet", tag: "Twenty questions on the big game, from the coin toss to the Gatorade.", facts: ["20 questions", "Locks at kickoff", "Edit the sheet"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
@@ -296,12 +296,12 @@
       ${nx ? `<div class="pl-note">${esc(nx.text)}</div>` : ""}${facts}
       ${yours}
       <section class="card pl-ghow"><div class="mod-h"><h2>How it works</h2></div><div class="bd">${rulesHtml(kind)}</div></section>
-      <p class="ps"><a href="/fantasy/pools/">Every pool, every sport</a></p></div>`;
+      <p class="ps"><a href="/pools/">Every pool, every sport</a></p></div>`;
   }
   async function home() {
     let mine = [], groups = [], wins = [], stat = {};
     if (st.user) {
-      // wins pools (their own page, fantasy/pools/wins/) are listed here with the rest
+      // wins pools (their own page, /pools/wins/) are listed here with the rest
       [mine, groups, wins] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => []), C.rpc("wn_mine").catch(() => [])]);
       if (!Array.isArray(wins)) wins = [];
       stat = await statuses(mine || []);
@@ -360,7 +360,7 @@
     const winStat = wins.map((p) => (window.FK.wins ? window.FK.wins.status(p) : null));
     const rows = sorted.filter((p) => inSport(sportKeyOf(p.kind))).map((p) => { const x = stat[p.id]; return { x, html: row(esc(poolUrl(p.id, p.kind)), p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x) }; })
       .concat((groups || []).filter(() => inSport("nfl")).map((g) => ({ x: st.pkStat, html: row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat) })))
-      .concat(wins.map((p, i) => ({ sk: p.sport === "nba" ? "nba" : "nfl", p, i })).filter((w) => inSport(w.sk)).map(({ p, i }) => ({ x: winStat[i], html: row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i]) })));
+      .concat(wins.map((p, i) => ({ sk: p.sport === "nba" ? "nba" : "nfl", p, i })).filter((w) => inSport(w.sk)).map(({ p, i }) => ({ x: winStat[i], html: row(`/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i]) })));
     const rank = (x) => TONE_ORDER[(x && x.tone) || "ok"];
 
     const items = rows.map((r, i) => Object.assign(r, { i })).sort((a, c) => (rank(a.x) - rank(c.x)) || (((a.x && a.x.due) || Infinity) - ((c.x && c.x.due) || Infinity)) || (a.i - c.i)).map((r) => r.html);
@@ -508,7 +508,7 @@
         <div class="card"><div class="bd">${rulesHtml(b.pool.kind)}</div></div></div>`;
       return;
     }
-    if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Pools", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="/fantasy/pools/">Back to your pools</a></p></div></div></div>`; return; }
+    if (!b || b.error) { app.innerHTML = `<div class="wrap page pl">${band("Pools", "")}<div class="card"><div class="bd"><p style="margin:0"><b>${esc((b && b.error) || "Couldn't load this pool.")}</b></p><p class="ps"><a href="/pools/">Back to your pools</a></p></div></div></div>`; return; }
     const tabs = b.pool.kind === "squares" ? [["picks", "Board"], ["standings", "Winners"], ["settings", "Settings"]]
       : [["picks", "Picks"], ["games", b.pool.kind === "nflff" ? "Lineups" : b.pool.kind === "props" ? "Answers" : b.pool.kind === "oscars" ? "Winners" : "Scores"], ["standings", "Standings"], ["settings", "Settings"]];
     if (st.tab === "rules") st.tab = "settings";
@@ -527,7 +527,7 @@
     const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
     const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
     const asBar = st.as && b.as ? `<div class="pl-asbar" role="status"><span><b>You're making picks for ${esc(b.as.name)}.</b> Every lock still applies, and each pick is logged where the whole pool can see it.</span><button type="button" class="btn sm" data-asdone>Done</button></div>` : "";
-    // an old /fantasy/pools/ link moves to the game's own address
+    // an old link moves to the game's own address
     if (SLUG[b.pool.kind] && !location.pathname.startsWith(gameUrl(b.pool.kind))) { try { history.replaceState(null, "", poolUrl(b.pool.id, b.pool.kind) + location.hash); } catch (x) { /* fine */ } }
     app.innerHTML = `<div class="wrap page pl${themeOf(b.pool.kind)}">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
@@ -1563,7 +1563,7 @@
       }
       else if (t.dataset.champrm != null) { const c = ((st.board.pool.extra || {}).champs || []).filter((_, i) => i !== +t.dataset.champrm); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); }
       else if (t.hasAttribute("data-xferb")) { ok(await C.rpc("mm_pool_transfer", { p_pool: st.code, p_user: st.xfer })); st.xferArm = false; st.xfer = null; st.msg = "Done. They own the pool now."; await load(); }
-      else if (t.hasAttribute("data-leave")) { ok(await C.rpc("mm_pool_leave", { p_code: st.code })); location.href = "/fantasy/pools/"; return; }
+      else if (t.hasAttribute("data-leave")) { ok(await C.rpc("mm_pool_leave", { p_code: st.code })); location.href = "/pools/"; return; }
       else if (t.dataset.rm) { ok(await C.rpc("mm_member_remove", { p_pool: st.code, p_user: t.dataset.rm })); st.rm = null; st.msg = "Removed."; await load(); }
       else if (t.hasAttribute("data-sqdraw")) { st.sqDraw = false; ok(await C.rpc("mm_squares_draw", { p_pool: st.code })); st.msg = "Numbers drawn. Good luck."; await load(); }
       else if (t.hasAttribute("data-save5")) { const r = ok(await srpc("mm_pick_five", { p_pool: st.code, p_teams: st.sel })); st.msg = `Saved: seeds add up to ${r.seeds}.`; st.sel = null; }
@@ -1627,7 +1627,7 @@
       if (f.id === "pl-money") { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { buyin: v("buyin") === "" ? null : +v("buyin"), payouts: [0, 1, 2].map((i) => +v("pay" + i) || 0) } })); st.msg = "Saved."; await load(); return render(); }
       if (f.id === "pl-oscrun") { const n = f.elements.run.value; ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { tbAnswer: n === "" ? null : +n } })); st.msg = n === "" ? "Cleared." : `Saved: ${n} minutes.`; await load(); return render(); }
       if (f.id === "pl-champ") { if (!v("name")) return; const c = ((st.board.pool.extra || {}).champs || []).concat([{ year: v("year"), name: v("name") }]); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); return render(); }
-      if (f.id === "pl-del") { ok(await C.rpc("mm_pool_delete", { p_pool: st.code, p_confirm: v("code") })); location.href = "/fantasy/pools/"; return; }
+      if (f.id === "pl-del") { ok(await C.rpc("mm_pool_delete", { p_pool: st.code, p_confirm: v("code") })); location.href = "/pools/"; return; }
       if (f.id === "pl-sqset") {
         ok(await C.rpc("mm_squares_set", { p_pool: st.code, p_cap: +v("cap"), p_price: v("price") === "" ? null : +v("price"), p_pay: [0, 1, 2, 3].map((k) => +v("pay" + k)) }));
         st.msg = "Settings saved."; st.sqOwn = true; await load(); return render();
@@ -1643,7 +1643,7 @@
         // not one of these pools: a wins pool's code joins on its own page
         if (raw && raw.error && /No pool has that code/.test(raw.error)) {
           const w = await C.rpc("wn_join", { p_code: v("code"), p_entry: v("entry") || null }).catch(() => null);
-          if (w && w.ok) { location.href = `/fantasy/pools/wins/?p=${encodeURIComponent(w.id)}`; return; }
+          if (w && w.ok) { location.href = `/pools/wins/?p=${encodeURIComponent(w.id)}`; return; }
           if (w && w.error && !/No pool has that code/.test(w.error)) throw new Error(w.error);
         }
         const r = ok(raw);

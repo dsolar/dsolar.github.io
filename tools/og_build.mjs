@@ -72,7 +72,7 @@ jobs.push(
   { file: "simulations", title: "Simulations & Tools", line: "Seasons played out thousands of times, front offices to run, drafts to mock.", path: "/simulations/", cards: fan(of("nfl/", "draft/", "31st-franchise/")) },
   { file: "kids", title: "Kids", line: "Games my daughters designed and we built together.", path: "/kids/", cards: fan(of("jellycat-battle/", "wild-bloom-isles/")) },
   { file: "fantasy-kit", title: "Draft Lab", line: "Mock drafts against bots, and private leagues with formats you won't find anywhere else.", path: "/fantasy/mock/", cards: fan(of("yoenis/", "guillotine/", "fantasy/")) },
-  { file: "pools", title: "Pools", line: "Pick'em, survivor, brackets and Super Bowl squares with your friends. Send the link, the site keeps score.", path: "/fantasy/pools/", cards: poolsCard() },
+  { file: "pools", title: "Pools", line: "Pick'em, survivor, brackets and Super Bowl squares with your friends. Send the link, the site keeps score.", path: "/pools/", cards: poolsCard() },
 );
 // the pools page has no cover: a squares board, drawn
 function poolsCard() {

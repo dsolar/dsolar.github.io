@@ -325,7 +325,7 @@
   const SITE = `<a class="fk-site" href="/" title="davidsolar.dev" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"></a>`;
   const ACCOUNT = `<div class="ds-account" id="ds-account"></div>`;
   // Draft Lab's site pages carry the same bar as the hubs: David Solar, then the Hubs / Draft Lab / Pools switch
-  const SITE_BAR = `<a class="fk-site ds-name" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"><b>David Solar</b></a><nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="/simulations/">Hubs</a><a href="/fantasy/" aria-current="page">Draft Lab</a><a href="/fantasy/pools/">Pools</a></nav>`;
+  const SITE_BAR = `<a class="fk-site ds-name" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"><b>David Solar</b></a><nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="/simulations/">Hubs</a><a href="/fantasy/" aria-current="page">Draft Lab</a><a href="/pools/">Pools</a></nav>`;
   function shell(opts) {
     const href = opts.hrefOf || ((t, s) => "#" + t + (s ? "/" + s : ""));
     const badge = (n) => (n ? `<span class="badge">${n}</span>` : "");

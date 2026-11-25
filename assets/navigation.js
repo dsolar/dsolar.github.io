@@ -104,7 +104,7 @@
     var visible = all.filter(function (p) { return !p.members && (!p.hidden || unlocked()) && (p.status !== "building" || (p.hidden && unlocked())); });
     bar.innerHTML = '<div class="ds-nav-inner"><a class="ds-brand" href="' + esc(root) + '" aria-label="David Solar, home"' + (!path ? ' aria-current="page"' : '') + '><img src="' + esc(at("assets/nav-mark.svg")) + '" alt="" width="42" height="42"><span>David Solar</span></a>'
       // the hubs carry the same switch as Draft Lab's bar: Hubs / Draft Lab
-      + (sportHub || poolsPage ? '<nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="' + esc(at("simulations/")) + '"' + (sportHub ? ' aria-current="page"' : '') + '>Hubs</a><a href="' + esc(at("fantasy/")) + '">Draft Lab</a><a href="' + esc(at("fantasy/pools/")) + '"' + (poolsPage ? ' aria-current="page"' : '') + '>Pools</a></nav>'
+      + (sportHub || poolsPage ? '<nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="' + esc(at("simulations/")) + '"' + (sportHub ? ' aria-current="page"' : '') + '>Hubs</a><a href="' + esc(at("fantasy/")) + '">Draft Lab</a><a href="' + esc(at("pools/")) + '"' + (poolsPage ? ' aria-current="page"' : '') + '>Pools</a></nav>'
         : !isHub && parent ? '<a class="ds-parent" href="' + esc(at(parent.url)) + '"><span aria-hidden="true">←</span> ' + esc(parent.label) + '</a>' : '')
       + '<button class="ds-menu-toggle" type="button" aria-expanded="false" aria-controls="ds-primary"><svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true"><path d="M2 5h16M2 10h16M2 15h16" stroke="currentColor" stroke-width="1.6"/></svg><span>Menu</span></button>'
       + '<div class="ds-primary" id="ds-primary"' + (!desktop.matches ? ' hidden' : '') + '>' + sections.map(function (s) {
