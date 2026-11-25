@@ -967,3 +967,67 @@ body{overflow-x:clip}
 /* Pools is its own product (the Hubs / Draft Lab / Pools switch): its own green accent under the bar */
 .fk-top .fk-mast.pools-mast{border-bottom-color:#2FB67C}
 .fk-mast.inline.pools-mast .mast-nav a[aria-current="page"]{border-bottom-color:#2FB67C}
+
+/* ---------- each game's own page (/pools/<slug>/) ---------- */
+.pl-game .pl-band .pl-share{margin-top:20px}
+.pl-game .pl-band .btn.go{background:var(--brand);border-color:var(--brand);color:var(--brand-ink,#1F1600)}
+.pl-gfacts{margin:4px 0 0;gap:6px 0}
+.pl-gfacts span+span::before{content:"";display:inline-block;width:4px;height:4px;border-radius:50%;background:var(--line-2);margin:0 12px}
+.pl-gfacts span{display:inline-flex;align-items:center}
+.pl-ghow .pl-rules{margin:0}
+
+/* ---------- Bowl pick'em: stadium night and tickets. The banner is a crimson night with the yard lines running
+   under a gold trophy; every bowl on the picks page is a ticket, the bowl's name, date and place on a stub torn
+   along a perforation from the matchup. Playoff games get gold stubs. ---------- */
+.g-bowls{--bw-red:#C8102E;--bw-night:#1A0609;--bw-ox:#3A0C13;--bw-gold:#E2B04A;--bw-paper:#FFFBF2;--bw-ink:#1B1012}
+.g-bowls .pl-band{background:linear-gradient(165deg,var(--bw-night) 0%,var(--bw-ox) 58%,#7A0F22 120%)}
+.g-bowls .pl-band::before{background:repeating-linear-gradient(90deg,transparent 0 88px,rgba(255,255,255,.06) 88px 90px),radial-gradient(60% 120% at 85% 100%,rgba(226,176,74,.22),transparent 60%)}
+.g-bowls .pl-band h1{font-family:var(--f-cond,"Barlow Condensed",sans-serif);font-weight:800;font-style:italic;letter-spacing:-.01em;font-size:clamp(52px,8vw,104px);line-height:.92}
+.g-bowls .pl-kick{color:var(--bw-gold)}
+.g-bowls .pl-band .pl-code{background:rgba(226,176,74,.16);color:var(--bw-gold)}
+.bowl-art{opacity:1;width:min(34%,280px);top:auto;bottom:0;transform:none}
+.g-bowls .pl-bday{display:flex;align-items:center;gap:10px;margin:18px 0 2px;font:800 15px/1 var(--f-cond,"Barlow Condensed",sans-serif);letter-spacing:.04em;color:var(--ink)}
+.g-bowls .pl-bday::after{content:"";flex:1;height:2px;background:linear-gradient(90deg,var(--bw-red),transparent)}
+.g-bowls .pl-bowls{gap:12px}
+/* the ticket: the stub (name, time, place) on the left, the matchup on the right, a perforation between them */
+.g-bowls .pl-bowl{--stub:208px;position:relative;grid-template-columns:var(--stub) minmax(0,1fr);grid-template-rows:auto 1fr;gap:0;padding:0;border:0;border-radius:10px;
+  background:var(--bw-paper);color:var(--bw-ink);box-shadow:0 1px 0 rgba(0,0,0,.04),0 6px 18px -12px rgba(58,12,19,.45);overflow:visible}
+.g-bowls .pl-bowl.cfp{border-left:0}
+/* the stub's color fills the whole left column, however many rows it has */
+.g-bowls .pl-bowl{background:linear-gradient(90deg,var(--bw-ox) 0,var(--bw-red) var(--stub),var(--bw-paper) var(--stub))}
+.g-bowls .pl-bowl.cfp{background:linear-gradient(90deg,#B8862E 0,var(--bw-gold) var(--stub),var(--bw-paper) var(--stub))}
+.g-bowls .pl-bowl.locked{background:linear-gradient(90deg,#5a1e27 0,#8d2a3a var(--stub),#F6F1E6 var(--stub))}
+.g-bowls .pl-bowl-h,.g-bowls .pl-bowl>.pl-bmeta{grid-column:1;color:#fff}
+.g-bowls .pl-bowl-h{grid-row:1;display:grid;gap:4px;align-content:start;padding:14px 16px 6px;border-radius:10px 0 0 0}
+.g-bowls .pl-bowl-h b{font:800 19px/1.05 var(--f-cond,"Barlow Condensed",sans-serif);letter-spacing:.01em}
+.g-bowls .pl-bowl-h>span{margin:0;color:rgba(255,255,255,.82);font-size:13px;font-weight:700}
+.g-bowls .pl-bowl-h .pl-pick{justify-self:start;margin-top:4px}
+.g-bowls .pl-bowl>.pl-bmeta{grid-row:2;margin:0;padding:0 16px 14px;font-size:12px;color:rgba(255,255,255,.75);border-radius:0 0 0 10px}
+.g-bowls .pl-bowl>.pl-bmeta span{color:rgba(255,255,255,.35)}
+.g-bowls .pl-bowl.locked .pl-bowl-h{grid-row:1/-1;padding-bottom:14px}
+.g-bowls .pl-bowl.cfp .pl-bowl-h,.g-bowls .pl-bowl.cfp>.pl-bmeta{color:var(--bw-ink)}
+.g-bowls .pl-bowl.cfp .pl-bowl-h>span,.g-bowls .pl-bowl.cfp>.pl-bmeta{color:rgba(27,16,18,.75)}
+.g-bowls .pl-bowl.cfp>.pl-bmeta span{color:rgba(27,16,18,.35)}
+.g-bowls .pl-bowl-b{grid-column:2;grid-row:1/-1;align-self:center;padding:12px 14px 12px 22px;border-left:2px dashed rgba(58,12,19,.22)}
+/* the notches where the ticket tears */
+.g-bowls .pl-bowl::before,.g-bowls .pl-bowl::after{content:"";position:absolute;left:calc(var(--stub) - 9px);width:18px;height:18px;border-radius:50%;background:var(--bg,#F1F3F6)}
+.g-bowls .pl-bowl::before{top:-9px}
+.g-bowls .pl-bowl::after{bottom:-9px}
+.g-bowls .pl-bt{background:#fff;border-color:rgba(58,12,19,.16);color:var(--bw-ink)}
+.g-bowls .pl-bt small,.g-bowls .pl-bt .pl-bpct{color:#7A6A66}
+.g-bowls .pl-bt.on{border-color:var(--bw-red);box-shadow:inset 0 0 0 1px var(--bw-red);background:#FDECEE}
+.g-bowls .pl-bt.on .pl-bpct{color:var(--bw-red)}
+.g-bowls .pl-bt.won{border-color:#1a8a4a}
+.g-bowls .pl-conf{color:#7A6A66}
+.g-bowls .pl-bowl.locked .pl-bowl-b{opacity:.85}
+.g-bowls .pl-bsch.cfp b{color:var(--bw-red)}
+@media (max-width:760px){
+  .g-bowls .pl-bowl,.g-bowls .pl-bowl.cfp,.g-bowls .pl-bowl.locked{grid-template-columns:1fr;grid-template-rows:auto auto auto;background:var(--bw-paper)}
+  .g-bowls .pl-bowl-h,.g-bowls .pl-bowl>.pl-bmeta{background:linear-gradient(160deg,var(--bw-ox),var(--bw-red))}
+  .g-bowls .pl-bowl.cfp .pl-bowl-h,.g-bowls .pl-bowl.cfp>.pl-bmeta{background:linear-gradient(160deg,#B8862E,var(--bw-gold))}
+  .g-bowls .pl-bowl-h{grid-row:1;border-radius:10px 10px 0 0;grid-template-columns:1fr auto;align-items:baseline;padding:12px 14px 4px}
+  .g-bowls .pl-bowl.locked .pl-bowl-h{grid-row:1;padding-bottom:12px}
+  .g-bowls .pl-bowl>.pl-bmeta{grid-row:2;border-radius:0;padding:0 14px 12px}
+  .g-bowls .pl-bowl-b{grid-column:1;grid-row:3;padding:12px 12px 12px;border-left:0;border-top:2px dashed rgba(58,12,19,.22)}
+  .g-bowls .pl-bowl::before,.g-bowls .pl-bowl::after{display:none}
+}

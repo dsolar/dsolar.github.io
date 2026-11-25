@@ -15,6 +15,15 @@
   const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness", oscars: "Oscars" };
   const kindName = (k) => k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : k === "oscars" ? "Oscars ballot" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
+  /* Each game has its own address, /pools/<slug>/ (pages written by tools/pools_pages.py, each a copy of this page with
+     <html data-game="kind">): the game's front page, and its pools' links (/pools/bowls/?p=CODE). Old /fantasy/pools/
+     links still work and move to the game's address once the pool loads. */
+  const SLUG = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor" };
+  const GAME = SLUG[document.documentElement.dataset.game] ? document.documentElement.dataset.game : null;
+  const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/fantasy/pools/");
+  const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
+  // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
+  const themeOf = (kind) => (kind === "oscars" ? " osc-night" : kind === "bowls" ? " g-bowls" : "");
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
   const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
@@ -60,7 +69,14 @@
     <ellipse cx="120" cy="176" rx="110" ry="70" fill="url(#osc-r)"/>
     <g fill="url(#osc-g)"><circle cx="120" cy="30" r="10"/><path d="M112 42h16l-3 14 5 6-4 50h-12l-4-50 5-6z"/><path d="M104 112h32v10h-32z"/><path d="M98 124h44v11H98z"/><path d="M92 137h56v14H92z"/></g>
     <path d="M70 160h100M84 168h72" stroke="#D9B867" stroke-width="1.5" opacity=".7"/></svg>`;
-  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
+  // the bowls: a trophy over the yard lines, in gold
+  const BOWL_ART = `<svg class="pl-art bowl-art" viewBox="0 0 240 180" aria-hidden="true"><defs>
+    <linearGradient id="bowl-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FCE7A8"/><stop offset=".5" stop-color="#E2B04A"/><stop offset="1" stop-color="#9C6E1E"/></linearGradient></defs>
+    <g stroke="#fff" stroke-opacity=".18" stroke-width="1.5"><path d="M10 170 60 40M70 170 95 40M130 170 130 40M190 170 165 40M250 170 200 40"/></g>
+    <g fill="url(#bowl-g)"><path d="M84 30h72v10c0 30-14 50-36 54-22-4-36-24-36-54z"/><path d="M84 38c-14 0-22 6-22 16s9 18 24 20l2-6c-11-2-18-7-18-14 0-6 5-9 14-9zM156 38c14 0 22 6 22 16s-9 18-24 20l-2-6c11-2 18-7 18-14 0-6-5-9-14-9z"/>
+    <path d="M114 94h12v22h-12z"/><path d="M100 116h40l6 14H94z"/><path d="M88 130h64v16H88z"/></g>
+    <g fill="#FFF6D6" opacity=".9"><path d="m120 48 3 7 7 .6-5.4 4.6 1.7 7-6.3-3.9-6.3 3.9 1.7-7-5.4-4.6 7-.6z"/></g></svg>`;
+  const artOf = (k) => (k === "oscars" ? OSC_ART : k === "bowls" ? BOWL_ART : k === "nfl" || k === "bowls" || k === "squares" ? GOAL_ART : BRACKET_ART);
   const rulesHtml = (kind) => kind === "squares" ? `<ul class="pl-rules">
       <li>A <b>10 by 10 board</b>: the AFC champion across the top, the NFC champion down the side. Tap a square to claim it.</li>
       <li>The pool's owner sets how many squares each person can take, and can put names on squares for people without an account.</li>
@@ -240,6 +256,37 @@
   // a deadline: the day and time this week, the date after that
   const dueText = (t) => t - Date.now() < 6 * 864e5 ? tipTime(t) : new Date(t).toLocaleDateString("en-US", Object.assign({ month: "short", day: "numeric" }, ET));
   const TONE_ORDER = { todo: 0, ok: 1, wait: 2, won: 3, out: 4, done: 5 };
+  // ---------- a game's own page (/pools/<slug>/): what it is, when it runs, your pools of it, make or join one ----------
+  async function gameHome(kind) {
+    const gm = GAMES.find((g) => g.key === kind) || { name: KIND[kind], tag: "", facts: [] };
+    let mine = [], stat = {};
+    if (st.user) { mine = ((await C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; })) || []).filter((p) => p.kind === kind); stat = await statuses(mine); }
+    const now = Date.now(), live = gm.open && now >= day0(gm.open) && now < day0(gm.end) + 864e5;
+    const when = gm.open ? (live ? (gm.live || "Live now") : now < day0(gm.open) ? gm.soon || `Opens ${shortDate(gm.open)}` : `Back next season`) : "";
+    const nx = UP_NEXT.find((x) => x.key === kind && now >= day0(x.from) && now < day0(x.until));
+    const panel = st.panel || (st.code ? "join" : null);
+    const acts = st.user ? `<div class="pl-share"><button type="button" class="btn go" data-make="${kind}">Make a pool</button><button type="button" class="btn" data-panel="join" aria-expanded="${panel === "join"}">Join with a code</button></div>`
+      : `<div class="pl-share"><a class="btn go" href="#pl-signin">Sign in to make a pool</a></div>`;
+    const makeForm = `<form class="pl-panel" id="pl-new"><div class="pl-form"><input type="hidden" name="kind" value="${esc(kind)}">
+        <label>Pool name<input name="name" maxlength="40" required placeholder="${esc(kind === "bowls" ? "Bowl Season" : kind === "oscars" ? "Oscar night" : "The office pool")}"></label>
+        <label>Your entry's name <small class="ps">optional</small><input name="entry" maxlength="28" placeholder="${esc((st.user && st.user.email || "").split("@")[0])}"></label>
+        <button class="btn go">Make the pool</button></div></form>`;
+    const joinForm = `<form class="pl-panel" id="pl-join"><div class="pl-form">
+        <label>Code <small class="ps">from the person who made the pool</small><input name="code" maxlength="6" required placeholder="ABC123" autocapitalize="characters" style="text-transform:uppercase;letter-spacing:.12em" value="${esc(st.code)}"></label>
+        <label>Your entry's name <small class="ps">optional</small><input name="entry" maxlength="28"></label>
+        <button class="btn go">Join</button></div></form>`;
+    const pill = (x) => !x ? "" : x.tone === "todo" ? `<span class="pl-due">${x.due ? `Due ${esc(dueText(x.due))}` : "To do"}</span>` : x.tone === "won" ? `<span class="pl-due won">Won</span>` : x.tone === "out" ? `<span class="pl-due out">Out</span>` : "";
+    const list = mine.map((p) => { const x = stat[p.id]; return `<li class="${x ? "t-" + x.tone : ""}"><a href="${esc(poolUrl(p.id, p.kind))}"><span class="pl-badge" style="--sc:${sportC(p.kind)}">${ICON[p.kind]}</span><span class="pl-li-t"><b>${esc(p.name)}</b><small>${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`; }).join("");
+    const yours = st.user ? `<section class="card pl-yours"><div class="pl-yours-h"><h2>Your pools</h2></div>
+      ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
+      ${list ? `<ul class="pl-list">${list}</ul>` : `<div class="pl-empty"><b>You're not in one yet.</b> Make one and send the link, or join a friend's with their code.</div>`}</section>` : signinCard("Sign in to make or join a pool");
+    const facts = (gm.facts || []).length ? `<p class="statline pl-gfacts">${gm.facts.map((f) => `<span>${esc(f)}</span>`).join("")}${when ? `<span><b>${esc(when)}</b></span>` : ""}</p>` : "";
+    app.innerHTML = `<div class="wrap page pl pl-game${themeOf(kind)}">${band(esc(gm.name), esc(gm.tag), acts, SPORT[kind] || "Pools", artOf(kind))}
+      ${nx ? `<div class="pl-note">${esc(nx.text)}</div>` : ""}${facts}
+      ${yours}
+      <section class="card pl-ghow"><div class="mod-h"><h2>How it works</h2></div><div class="bd">${rulesHtml(kind)}</div></section>
+      <p class="ps"><a href="/fantasy/pools/">Every pool, every sport</a></p></div>`;
+  }
   async function home() {
     let mine = [], groups = [], wins = [], stat = {};
     if (st.user) {
@@ -276,7 +323,7 @@
     const shown = st.sport ? sports.filter((sp) => sp.k === st.sport) : sports;
     const gameRow = (gm) => {
       const act = gm.href ? `<a class="btn go sm" href="${gm.href}">${esc(gm.cta)}</a>` : `<button type="button" class="btn go sm" data-make="${gm.key}">Make a pool</button>`;
-      return `<li><span class="pl-dg-ic">${ICON[gm.key]}</span><div class="pl-dg-t"><div class="pl-dg-h"><b>${esc(gm.name)}</b><span class="pl-dg-st${gm.isLive ? " on" : ""}">${esc(stateOf(gm))}</span></div><p>${esc(gm.tag)}</p>
+      return `<li><span class="pl-dg-ic">${ICON[gm.key]}</span><div class="pl-dg-t"><div class="pl-dg-h"><b>${SLUG[gm.key] && !gm.href ? `<a href="${gameUrl(gm.key)}">${esc(gm.name)}</a>` : esc(gm.name)}</b><span class="pl-dg-st${gm.isLive ? " on" : ""}">${esc(stateOf(gm))}</span></div><p>${esc(gm.tag)}</p>
         <div class="pl-dg-act">${act}${gm.href ? "" : `<details class="pl-how"><summary>How it works</summary>${rulesHtml(gm.key)}</details>`}</div></div></li>`;
     };
     // on wide screens a sport with four or more games runs the full width with its games side by side, and so does a
@@ -300,7 +347,7 @@
     const inSport = (k) => !st.sport || k === st.sport;
     // every kind of pool in one list, what's due soonest first
     const winStat = wins.map((p) => (window.FK.wins ? window.FK.wins.status(p) : null));
-    const rows = sorted.filter((p) => inSport(sportKeyOf(p.kind))).map((p) => { const x = stat[p.id]; return { x, html: row(`/fantasy/pools/?p=${esc(p.id)}`, p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x) }; })
+    const rows = sorted.filter((p) => inSport(sportKeyOf(p.kind))).map((p) => { const x = stat[p.id]; return { x, html: row(esc(poolUrl(p.id, p.kind)), p.kind, sportC(p.kind), p.name, `${esc(kindName(p.kind))} &middot; ${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, x) }; })
       .concat((groups || []).filter(() => inSport("nfl")).map((g) => ({ x: st.pkStat, html: row("/pickem/", "pickem", SPORT_C.NFL, g.name, `NFL pick'em group &middot; ${st.pkStat ? esc(st.pkStat.text) : `${g.members} ${g.members === 1 ? "member" : "members"}`}`, st.pkStat) })))
       .concat(wins.map((p, i) => ({ sk: p.sport === "nba" ? "nba" : "nfl", p, i })).filter((w) => inSport(w.sk)).map(({ p, i }) => ({ x: winStat[i], html: row(`/fantasy/pools/wins/?p=${esc(p.id)}`, "wins", SPORT_C[p.sport === "nba" ? "NBA" : "NFL"], p.name, `${p.sport === "nba" ? "NBA" : "NFL"} wins pool &middot; ${winStat[i] ? esc(winStat[i].text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}`, winStat[i]) })));
     const rank = (x) => TONE_ORDER[(x && x.tone) || "ok"];
@@ -359,7 +406,7 @@
   let qrLoad = null;
   const loadQr = () => qrLoad || (qrLoad = new Promise((res) => { const s = document.createElement("script"); s.src = "/fantasy-kit/vendor/qrcode.min.js"; s.onload = () => res(window.qrcode); s.onerror = () => res(null); document.head.appendChild(s); }));
   function invitePanel(b) {
-    const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
+    const p = b.pool, url = `${location.origin}${poolUrl(p.id, p.kind, true)}`;
     const text = `Join my ${kindName(p.kind)} pool, ${p.name}: ${url}`;
     let qr = "";
     if (window.qrcode) { try { const q = window.qrcode(0, "M"); q.addData(url); q.make(); qr = q.createSvgTag({ cellSize: 5, margin: 2, scalable: true }); } catch (e) { qr = ""; } }
@@ -375,10 +422,10 @@
       </div></div></section>`;
   }
   function poolHead(b) {
-    const p = b.pool, url = `${location.origin}/fantasy/pools/?join=${p.id}`;
+    const p = b.pool, url = `${location.origin}${poolUrl(p.id, p.kind, true)}`;
     const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" || p.kind === "props" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : p.kind === "oscars" ? `The Oscars, ${shortDate(CAL.oscars)}` : `${p.season} tournament`;
     return band(esc(p.name), `${KIND[p.kind]} &middot; ${when} &middot; ${b.members.length} ${b.members.length === 1 ? "entry" : "entries"}`,
-      `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
+      `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="${gameUrl(p.kind)}" title="This game's page: how it works, and your other pools">${esc(kindName(p.kind))}</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
   function projectedNote(b) {
     if (!b.projected || b.pool.kind === "bracket") return ""; // the bracket says it in its own words
@@ -445,7 +492,7 @@
     await load();
     const b = st.board;
     if (b && b.error === "join") {
-      app.innerHTML = `<div class="wrap page pl${b.pool.kind === "oscars" ? " osc-night" : ""}">${band(esc(b.pool.name), `${KIND[b.pool.kind]}${b.pool.kind === "nfl" ? ` from week ${b.pool.startWeek}` : ""} &middot; ${b.pool.members} ${b.pool.members === 1 ? "entry" : "entries"}`, "", SPORT[b.pool.kind], artOf(b.pool.kind))}
+      app.innerHTML = `<div class="wrap page pl${themeOf(b.pool.kind)}">${band(esc(b.pool.name), `${KIND[b.pool.kind]}${b.pool.kind === "nfl" ? ` from week ${b.pool.startWeek}` : ""} &middot; ${b.pool.members} ${b.pool.members === 1 ? "entry" : "entries"}`, "", SPORT[b.pool.kind], artOf(b.pool.kind))}
         ${st.user ? `<form class="card" id="pl-join"><div class="mod-h"><h2>Join this pool</h2></div><div class="bd pl-form"><input type="hidden" name="code" value="${esc(b.pool.id)}"><label>Your entry's name <small class="ps">(optional)</small><input name="entry" maxlength="28"></label><button class="btn go">Join ${esc(b.pool.name)}</button><p class="pl-msg" role="status">${esc(st.msg)}</p></div></form>` : signinCard(`Sign in to join ${b.pool.name}`)}
         <div class="card"><div class="bd">${rulesHtml(b.pool.kind)}</div></div></div>`;
       return;
@@ -469,7 +516,9 @@
     const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
     const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
     const asBar = st.as && b.as ? `<div class="pl-asbar" role="status"><span><b>You're making picks for ${esc(b.as.name)}.</b> Every lock still applies, and each pick is logged where the whole pool can see it.</span><button type="button" class="btn sm" data-asdone>Done</button></div>` : "";
-    app.innerHTML = `<div class="wrap page pl${b.pool.kind === "oscars" ? " osc-night" : ""}">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
+    // an old /fantasy/pools/ link moves to the game's own address
+    if (SLUG[b.pool.kind] && !location.pathname.startsWith(gameUrl(b.pool.kind))) { try { history.replaceState(null, "", poolUrl(b.pool.id, b.pool.kind) + location.hash); } catch (x) { /* fine */ } }
+    app.innerHTML = `<div class="wrap page pl${themeOf(b.pool.kind)}">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${st.tab === "standings" ? potAndChamps(b) : ""}</div>`;
     // 6: a day strip that runs past the screen opens on the day it's showing
@@ -1352,7 +1401,7 @@
   async function render() {
     document.body.classList.remove("pl-sheet-on");
     themeBtn();
-    if (st.code) await pool(); else await home();
+    if (st.code) await pool(); else if (GAME) await gameHome(GAME); else await home();
   }
   app.addEventListener("click", async (e) => {
     const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
@@ -1573,8 +1622,8 @@
         st.msg = "Settings saved."; st.sqOwn = true; await load(); return render();
       }
       if (f.id === "pl-new") {
-        const r = ok(await C.rpc("mm_pool_create", { p_name: v("name"), p_kind: (f.querySelector("input[name=kind]:checked") || {}).value, p_entry: v("entry") || null }));
-        history.replaceState(null, "", `/fantasy/pools/?p=${r.id}`); st.code = r.id; st.tab = "picks"; st.invite = true; st.msg = "Your pool is ready. Invite people below."; return render();
+        const r = ok(await C.rpc("mm_pool_create", { p_name: v("name"), p_kind: (f.querySelector("input[name=kind]:checked") || f.querySelector("input[name=kind][type=hidden]") || {}).value, p_entry: v("entry") || null }));
+        history.replaceState(null, "", poolUrl(r.id, r.kind)); st.code = r.id; st.tab = "picks"; st.invite = true; st.msg = "Your pool is ready. Invite people below."; return render();
       }
       if (f.id === "pl-join") {
         const raw = await C.rpc("mm_pool_join", { p_code: v("code"), p_entry: v("entry") || null });
@@ -1587,7 +1636,7 @@
           if (w && w.error && !/No pool has that code/.test(w.error)) throw new Error(w.error);
         }
         const r = ok(raw);
-        history.replaceState(null, "", `/fantasy/pools/?p=${r.id}`); st.code = r.id; st.tab = "picks"; return render();
+        history.replaceState(null, "", poolUrl(r.id, r.kind)); st.code = r.id; st.tab = "picks"; return render();
       }
     } catch (x) { fail(x); }
   });

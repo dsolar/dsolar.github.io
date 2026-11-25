@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" data-game="bowls">
+<head>
+<meta charset="utf-8">
+<base href="/fantasy-kit/">
+<script>
+/* This page lives at a clean Draft Lab address, and its files at /fantasy-kit/ (the <base> above). A link to "#..."
+   would resolve against the base and leave the page, so one the app didn't handle itself is kept here. */
+window.addEventListener("click", function (e) {
+  var a = e.target.closest && e.target.closest('a[href^="#"]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target) return;
+  e.preventDefault();
+  var h = a.getAttribute("href");
+  if (h.length > 1 && location.hash !== h) location.hash = h;
+});
+</script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Bowl pick'em | Pools</title>
+<meta name="description" content="Pick every bowl and College Football Playoff game, each with a confidence number. Make a pool, send the link, and the site keeps score.">
+<link rel="canonical" href="https://davidsolar.dev/pools/bowls/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/pools/bowls/">
+<meta property="og:title" content="Join my Bowl pick'em pool">
+<meta property="og:description" content="Pick every bowl and College Football Playoff game, each with a confidence number. Make a pool, send the link, and the site keeps score.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og/pools.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og/pools.jpg">
+<meta name="theme-color" content="#13233A">
+<script>try{var t=localStorage.getItem("fk-lab:theme");if(t==='"dark"'||t==="dark")document.documentElement.dataset.theme="dark"}catch(e){}</script>
+<link rel="icon" href="mark.svg" type="image/svg+xml">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Draft Lab">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&family=Barlow+Condensed:ital,wght@0,600;0,700;0,800;1,800&family=Besley:wght@700;800;900&display=swap">
+<link rel="stylesheet" href="../assets/bar.css">
+<link rel="stylesheet" href="../assets/pcard.css?v=20261124bb">
+<link rel="stylesheet" href="kit.css?v=20261124pc">
+<link rel="stylesheet" href="../assets/faces.css?v=202611201102">
+<script src="../assets/analytics.js" defer></script>
+<link rel="stylesheet" href="pools.css?v=20261125b2">
+
+<link rel="stylesheet" href="../assets/navigation.css?v=20261125pr">
+<script src="../assets/projects.js?v=20261124-bb" defer></script>
+<script src="../assets/navigation.js?v=20261125pr" defer></script>
+</head>
+<body>
+<div data-ds-navigation data-ds-own hidden></div>
+<header class="fk-top" id="top"><div class="fk-mast fk-band inline pools-mast"><div class="wrap">
+        <a class="fk-site ds-name" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"><b>David Solar</b></a><nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="/simulations/">Hubs</a><a href="/fantasy/">Draft Lab</a><a href="/fantasy/pools/" aria-current="page">Pools</a></nav>
+        <nav class="mast-nav" aria-label="Sections"><a href="/fantasy/pools/">All pools</a><a href="/pickem/">NFL pick'em</a><a href="/fantasy/pools/wins/">Wins pools</a></nav><div class="fk-who"><button class="btn sm ghost" data-theme="">Dark</button><div class="ds-account" id="ds-account"></div></div></div></div>
+</header>
+<main id="app"><div class="wrap page pl"><section class="pl-band"><div class="pl-band-in"><p class="pl-kick">Draft Lab</p><h1 class="disp">Pools</h1><p class="pl-sub">Pick'em, survivor and bracket games to play with friends. Make a pool, send the code, and the site keeps score.</p></div></section>
+  <noscript><p>Turn on JavaScript to play.</p></noscript></div></main>
+<script>
+["nav.js?v=20261125pr", "cloud.js?v=20261121ff1", "pools-core.js?v=20261125os", "wins-core.js?v=20261124wp", "sport-art.js?v=20261125os", "pools.js?v=20261125bw"].forEach(function(src){var s=document.createElement("script");s.src=src;s.async=false;document.body.appendChild(s)});
+</script>
+</body>
+</html>
