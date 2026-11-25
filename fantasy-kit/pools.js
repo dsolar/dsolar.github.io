@@ -11,8 +11,8 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares" };
-  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness" };
+  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket" };
+  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness" };
   const kindName = (k) => k === "squares" ? "Super Bowl squares" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
@@ -83,6 +83,12 @@
       <li>A loss or a <b>tie</b> is out. So is no pick by the week's last kickoff.</li>
       <li>Each pick locks when its own game kicks off, and shows to everyone then.</li>
       <li>The last one standing wins. If everyone left goes out the same week, or more than one makes it through week 18, they split it.</li></ul>`
+    : kind === "bracket" ? `<ul class="pl-rules">
+      <li>Pick the winner of <b>all 63 games</b>, from the Round of 64 to the title game.</li>
+      <li>A right pick scores by its round: <b>10, 20, 40, 80, 160, 320</b> points.</li>
+      <li>Brackets lock at the <b>first Round of 64 tip</b>. Opening Round games come first: pick either team in a shared slot, and change it until the lock.</li>
+      <li>Everyone's bracket shows at the lock. Most points wins; ties go to the closest guess at the <b>title game's total points</b>.</li>
+      <li>Until Selection Sunday it's a practice bracket on the college hub's projected field.</li></ul>`
     : kind === "five" ? `<ul class="pl-rules">
       <li>Pick <b>five teams</b> whose seeds add up to <b>25 or more</b>.</li>
       <li>Every win scores by its round: <b>1, 2, 4, 8, 16, 32</b> points from the first round to the title game. First Four wins don't count.</li>
@@ -95,7 +101,7 @@
       <li>The last one standing wins. If everyone left loses on the same day, or more than one survives the title game, the <b>higher combined seeds of their winning picks</b> wins. Still tied, they split it.</li></ul>`;
   const fail = (e) => { st.msg = e && e.message ? e.message : String(e || "Something went wrong."); st.busy = false; render(); };
   // picks the owner makes for a member go through mm_as, which runs the member's own save as them (and logs it)
-  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_nflff"]);
+  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_nflff", "mm_save_bracket"]);
   const srpc = (fn, args) => (st.as && SAVES.has(fn) ? C.rpc("mm_as", { p_pool: st.code, p_user: st.as, p_fn: fn, p_args: args }) : C.rpc(fn, args));
   const ok = (r) => { if (r && r.error) throw new Error(r.error); return r; };
 
@@ -123,6 +129,7 @@
     survivor: ico('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c-2.5 2.4-3.6 5.2-3.6 8.5s1.1 6.1 3.6 8.5M12 3.5c2.5 2.4 3.6 5.2 3.6 8.5s-1.1 6.1-3.6 8.5"/>'),
     squares: ico('<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/>'),
     wins: ico('<path d="M4 20h16M6 20v-5h3v5M10.5 20V10h3v10M15 20V5h3v15"/>'),
+    bracket: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h3v10H8M11 12h4M16 9h5v6h-5z"/>'),
     five: ico('<circle cx="6" cy="7" r="2"/><circle cx="18" cy="7" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="6" cy="17" r="2"/><circle cx="18" cy="17" r="2"/>'),
   };
   /* The season's dates, Eastern. Each game is "live" from open to end, and the list puts live games first, then the
@@ -142,6 +149,7 @@
     { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
+    { sport: "March Madness", key: "bracket", name: "Bracket", tag: "All 63 games, the classic way. Points double every round.", facts: ["63 games", "10-20-40-80-160-320", "Title game tiebreak"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "survivor", name: "Survivor", tag: "One team a day. Lose and you're out.", facts: ["1 team a day", "Each team once", "No 1-2 seeds day 1"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "five", name: "5 teams", tag: "Five teams whose seeds add up to 25. Wins pay double each round.", facts: ["5 teams", "Seeds reach 25", "Wins double"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
   ];
@@ -163,7 +171,7 @@
     { key: "nflpo", from: CAL.bowls, until: CAL.nflField, title: "NFL playoff bracket", text: `The field is set ${shortDate(CAL.nflField)} and brackets lock at the first Wild Card kickoff. Practice on the projected field until then.` },
     { key: "nflpo", from: CAL.nflField, until: CAL.wildCard, title: "NFL playoff bracket", text: `The field is set. Brackets lock at the first Wild Card kickoff, ${shortDate(CAL.wildCard)} weekend.` },
     { key: "squares", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl squares", text: `Fill the board before the Super Bowl on ${shortDate(CAL.superBowl)}. The numbers are drawn once it's full.` },
-    { key: "five", from: "2027-02-15", until: CAL.selection, title: "March Madness", text: `The field comes out ${shortDate(CAL.selection)}. Set up survivor or 5 teams now and practice on the projected bracket.` },
+    { key: "bracket", from: "2027-02-15", until: CAL.selection, title: "March Madness bracket", text: `The field comes out ${shortDate(CAL.selection)}. Start your pool now and practice on the projected bracket; brackets lock at the first Round of 64 tip.` },
   ];
   // the sport bar sticks just under the site's own sticky header, however tall that is on this screen
   function pinBar() {
@@ -345,7 +353,7 @@
       `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="/fantasy/pools/">All pools</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
   function projectedNote(b) {
-    if (!b.projected) return "";
+    if (!b.projected || b.pool.kind === "bracket") return ""; // the bracket says it in its own words
     return `<div class="pl-note"><b>Practice bracket.</b> These are the college hub's projected first-round games on this season's real dates. The real field comes out Selection Sunday, March 14, and replaces them; practice picks are cleared then.</div>`;
   }
   // the pot (from the buy-in and the members), each payout, who's paid, and past champions, under the standings
@@ -426,6 +434,7 @@
       : b.pool.kind === "nflpo" ? (st.tab === "picks" ? brPicks(b) : brTable(b))
       : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
       : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
+      : b.pool.kind === "bracket" ? (st.tab === "picks" ? bkPicks(b) : bkTable(b))
       : b.pool.kind === "five" ? (st.tab === "picks" ? fivePicks(b) : fiveTable(b)) : (st.tab === "picks" ? survPicks(b) : survTable(b));
     const ex0 = b.pool.extra || {}, boss = b.members.find((m) => m.owner);
     const pin = ex0.note ? `<div class="pl-note pl-pin"><b>From ${esc(boss ? boss.name : "the commish")}</b><span>${esc(ex0.note).replace(/\n/g, "<br>")}</span></div>` : "";
@@ -653,6 +662,63 @@
     return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r" title="Right and wrong picks">W-L</th><th class="r" title="Points still possible">Max</th><th class="r pl-hide-s" title="Title game total points guess">TB</th></tr></thead><tbody>
       ${B.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b>${r.hidden ? "" : !r.picked ? `<small class="ps"> no picks yet</small>` : r.picked < B.n ? `<small class="ps"> ${r.picked} of ${B.n} picked</small>` : ""}</td><td class="r num"><b>${r.points}</b></td><td class="r num ps">${r.right}-${r.wrong}</td><td class="r num ps">${r.max}</td><td class="r num ps pl-hide-s">${tbOpen || r.me ? (r.tb ?? "") : ""}</td></tr>`).join("")}
       </tbody></table></div></div><p class="ps">A right pick scores its confidence number. Max is what an entry could still reach. Everyone's pick shows at each game's kickoff.${B.total != null ? ` The title game totaled ${B.total}.` : ""}</p>`;
+  }
+
+
+  // ---------- March Madness bracket ----------
+  const RD_NAME = ["", "Round of 64", "Round of 32", "Sweet 16", "Elite 8", "Final Four", "Title game"];
+  const bkMine = (b, uid) => { const o = {}; (b.picks || []).forEach((k) => { if (k.user === uid && k.team != null && k.slot.startsWith("b:")) o[k.slot] = k.team; }); return o; };
+  const bkTb = (b, uid) => { const k = (b.picks || []).find((x) => x.user === uid && x.slot === "tb"); return k && k.team != null ? k.team : ""; };
+  const bkProb = (a, c) => P.winProb(team(a), team(c));
+  function bkPicks(b) {
+    const F = P.mmField(b), now = Date.now(), uid = meId(b), lock = b.fiveLock && now >= Date.parse(b.fiveLock);
+    if (!F.ready) return `<div class="pl-note">The field comes out on Selection Sunday, ${shortDate(CAL.selection)}. Until then you can practice on the college hub's projected bracket once it's posted.</div>`;
+    const viewing = st.bkView && st.bkView !== uid ? st.bkView : null, edit = !lock && !viewing;
+    if (!st.bk) { st.bk = bkMine(b, uid); st.bktb = bkTb(b, uid); }
+    const picks = viewing ? bkMine(b, viewing) : st.bk, B = P.mmBracket(b, now);
+    const n = Object.keys(picks).filter((k) => picks[k]).length;
+    const dirty = !viewing && (JSON.stringify(Object.entries(st.bk).filter(([, t]) => t).sort()) !== JSON.stringify(Object.entries(bkMine(b, uid)).sort()) || String(st.bktb || "") !== String(bkTb(b, uid) || ""));
+    if (!st.bkReg || (st.bkReg !== "ff" && !F.names.includes(st.bkReg))) st.bkReg = F.names[0];
+    const champ = picks["b:ch"];
+    const note = b.projected ? `<div class="pl-note"><b>Practice bracket.</b> This is the college hub's projected field: each conference's favorite takes its automatic bid, and the at-large teams and every seed come from the hub's ratings and résumés. The real field comes out Selection Sunday, ${shortDate(CAL.selection)}, and practice picks clear then.</div>`
+      : viewing ? `<div class="pl-note pl-bkview"><span><b>${esc(nameOf(b, viewing))}'s bracket.</b></span><button type="button" class="btn sm" data-bkview="">Back to yours</button></div>` : "";
+    const bar = viewing ? "" : `<div class="card pl-bar pl-bbar"><div class="bd">
+      <div class="pl-bstat"><span><b>${n}</b> of 63 picked</span>${champ ? `<span class="pl-bkch">${logo(champ, 20)}<b>${name(champ)}</b> wins it all</span>` : ""}${(B.rows.find((r) => r.me) || {}).right || lock ? `<span><b>${(B.rows.find((r) => r.me) || {}).points || 0}</b> points</span>` : ""}</div>
+      ${edit ? `<p class="pl-bhint">Tap the winner of each game, region by region, then the Final Four. Change an early pick and anything that depended on it clears.</p>` : lock ? `<p class="pl-bhint">Brackets locked at the first tip. Tap someone in Standings to see theirs.</p>` : ""}
+      <label class="pl-tb">Title game total points<input type="number" inputmode="numeric" min="0" max="400" data-bktb value="${esc(st.bktb || "")}" placeholder="e.g. 140"${edit ? "" : " disabled"}></label>
+      ${edit ? `<div class="pl-save"><button type="button" class="btn sm" data-bkfill title="Pick the college hub's favorite in every game you haven't picked">Fill in the favorites</button>${n ? `<button type="button" class="btn sm ghost" data-bkclear>Clear</button>` : ""}<span class="ps">${dirty ? "Not saved yet." : n ? "Saved." : "Tap a team to pick it."}</span><button type="button" class="btn go" data-bksave${dirty ? "" : " disabled"}>Save bracket</button></div>` : ""}</div></div>`;
+    const tabs = `<div class="seg pl-gsel pl-bkregs" role="tablist">${F.names.map((r) => { const done = picks["b:" + r + ":4:0"]; return `<button type="button" role="tab" data-bkreg="${esc(r)}" aria-selected="${st.bkReg === r}"><b>${esc(r)}</b>${done ? `<small>${esc(team(done).ab || team(done).n)}</small>` : "<small>&nbsp;</small>"}</button>`; }).join("")}<button type="button" role="tab" data-bkreg="ff" aria-selected="${st.bkReg === "ff"}"><b>Final Four</b><small>${champ ? esc(team(champ).ab || team(champ).n) : "&nbsp;"}</small></button></div>`;
+    // one matchup: two sides, each one team or an Opening Round pair
+    const side = (slot, ts, round) => {
+      if (!ts.length) return `<div class="pl-bkt tbd"><span class="pl-tn"><b>${round === 1 ? "TBD" : "Pick the game before"}</b></span></div>`;
+      return ts.map((t) => {
+        const on = picks[slot] === t, other = mmOther(slot, t), p = other ? bkProb(t, other) : null;
+        const res = B.won[slot] ? (B.won[slot] === t ? " won" : on ? " lost" : "") : on && B.out[t] ? " lost" : "";
+        return `<button type="button" class="pl-bkt${on ? " on" : ""}${res}${ts.length > 1 ? " pair" : ""}" data-bk="${esc(slot)}|${esc(t)}"${edit ? "" : " disabled"}>${seedTag(F.seedOf[t])}${logo(t, 22)}<span class="pl-tn"><b>${name(t)}</b>${ts.length > 1 ? `<small>Opening Round</small>` : ""}</span>${p != null && !B.won[slot] ? `<em class="pl-bkp num">${Math.round(p * 100)}%</em>` : ""}</button>`;
+      }).join("");
+    };
+    // who a team plays in a slot: the other side's pick (or its only team)
+    const feeds = {};
+    const mmOther = (slot, t) => { const f = feeds[slot] || (feeds[slot] = P.mmFeed(F, picks, slot)); const mine = f[0].includes(t) ? 0 : 1, o = f[1 - mine]; return o.length === 1 ? o[0] : o.length ? o.slice().sort((x, y) => (team(y).bpi || -99) - (team(x).bpi || -99))[0] : null; }; // against a pair, its stronger team
+    const match = (slot, round, label) => { const f = feeds[slot] || (feeds[slot] = P.mmFeed(F, picks, slot)); const pts = P.MM_PTS[round];
+      return `<div class="pl-bkm">${label ? `<div class="pl-bkm-h">${esc(label)}</div>` : ""}${side(slot, f[0], round)}${side(slot, f[1], round)}<span class="pl-bkm-pts">${pts} pts</span></div>`; };
+    let body;
+    if (st.bkReg === "ff") {
+      body = `<div class="pl-bkff">${F.ff.map((pr, x) => `<div class="pl-bkcol"><h3 class="pl-bkrd">${esc(pr[0])} vs ${esc(pr[1])}</h3>${match("b:ff:" + x, 5)}</div>`).join("")}<div class="pl-bkcol"><h3 class="pl-bkrd">Title game</h3>${match("b:ch", 6)}</div></div>`;
+    } else {
+      const reg = st.bkReg;
+      body = `<div class="pl-bkreg">${[1, 2, 3, 4].map((r) => `<div class="pl-bkcol r${r}"><h3 class="pl-bkrd">${RD_NAME[r]}</h3><div class="pl-bkms">${Array.from({ length: 8 >> (r - 1) }, (_, k) => match(`b:${reg}:${r}:${k}`, r)).join("")}</div></div>`).join("")}</div>`;
+    }
+    const next = edit && st.bkReg !== "ff" ? (() => { const i = F.names.indexOf(st.bkReg); const to = F.names[i + 1] || "ff"; return `<div class="pl-bknext"><button type="button" class="btn" data-bkreg="${esc(to)}">Next: ${to === "ff" ? "Final Four" : esc(to)}</button></div>`; })() : "";
+    const float = dirty ? `<div class="pl-float"><span>${n} of 63 picked</span><button type="button" class="btn go" data-bksave>Save bracket</button></div>` : "";
+    return note + bar + tabs + body + next + float;
+  }
+  function bkTable(b) {
+    const B = P.mmBracket(b, Date.now()), lock = b.fiveLock && Date.now() >= Date.parse(b.fiveLock);
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r" title="Points still possible">Max</th><th>Champion</th><th class="r pl-hide-s" title="Title game total points guess">TB</th></tr></thead><tbody>
+      ${B.rows.map((r) => `<tr class="${r.me ? "me" : ""}${lock ? " pl-click" : ""}"${lock ? ` data-bkview="${esc(r.id)}" tabindex="0" title="See ${esc(r.name)}'s bracket"` : ""}><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b>${r.me && r.picked < 63 && !lock ? `<small class="ps"> ${r.picked} of 63 picked</small>` : ""}</td><td class="r num"><b>${r.points}</b></td><td class="r num ps">${r.max}</td>
+        <td class="pl-bkchc">${r.champ ? `${logo(r.champ, 18)}<span>${name(r.champ)}</span>${B.out[r.champ] ? ` <small class="ps">out</small>` : ""}` : `<span class="ps">${!r.me && !lock ? "Shows at the first tip" : "None yet"}</span>`}</td><td class="r num ps pl-hide-s">${r.tb != null ? r.tb : ""}</td></tr>`).join("")}
+      </tbody></table></div></div><p class="ps">Points by round: 10, 20, 40, 80, 160 and 320. Max is what an entry could still reach. Everyone's bracket shows at the first Round of 64 tip${lock ? "; tap a row to see one" : ""}.${B.total != null ? ` The title game totaled ${B.total}.` : ""}</p>`;
   }
 
   // ---------- NFL playoff bracket ----------
@@ -961,20 +1027,24 @@
       const order = wk.games.map((g, i) => [i, (by[g.away] || []).length + (by[g.home] || []).length]).sort((x, y) => (y[1] > 0) - (x[1] > 0) || x[0] - y[0]).map(([i]) => blocks[i]);
       return segPick("w", ws.map((w) => [w.week, `Week ${w.week}`, w.done ? "Done" : ""]), wk.week) + head + gameList(order, "No games this week.");
     }
-    if (k === "survivor" || k === "five") {
+    if (k === "survivor" || k === "five" || k === "bracket") {
       const ds = P.days(b.games || []);
       if (!ds.length) return `<div class="pl-note">The games show up once the field is set on Selection Sunday.</div>`;
       const cur = st.gsel && st.gsel.k === "d" ? +st.gsel.v : (ds.find((d) => !d.done) || ds[ds.length - 1]).n;
       const d = ds.find((x) => x.n === cur) || ds[0], by = {}; let hidden = 0;
+      const BF = k === "bracket" ? P.mmField(b) : null, bkWho = {};
+      if (BF) d.games.forEach((g) => ["a", "b"].forEach((sd) => { const t = g[sd], sl = t && g.round >= 1 ? P.mmSlot(BF, t, g.round) : null; bkWho[g.id + sd] = sl ? (b.picks || []).filter((pk) => pk.slot === sl && pk.team === t).map((pk) => pk.user) : []; }));
       (b.picks || []).forEach((pk) => {
+        if (k === "bracket") return;
         if (k === "survivor" ? pk.slot !== "d" + d.n : pk.slot[0] !== "f") return;
         if (pk.team == null) { if (k === "survivor") hidden++; return; }
         (by[pk.team] = by[pk.team] || []).push(pk.user);
       });
       const blocks = d.games.map((g) => gameBlock({ x: "a", y: "b", when: g.tip, final: g.final, label: g.region }, (sd) => {
         const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.tip) <= now;
-        return { logo: logo(t, 22), name: name(t), seed: sd === "a" ? g.as : g.bs, score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(by[t] || []),
-          pct: pct(by[t], k === "survivor" ? on : b.games.some((x) => x.round === 1 && Date.parse(x.tip) <= now)) };
+        const ids = BF ? bkWho[g.id + sd] || [] : by[t] || [];
+        return { logo: logo(t, 22), name: name(t), seed: sd === "a" ? g.as : g.bs, score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(ids),
+          pct: pct(ids, k === "survivor" ? on : b.games.some((x) => x.round === 1 && Date.parse(x.tip) <= now)) };
       }));
       if (k === "survivor" && hidden) blocks.unshift(`<p class="pl-gsum">${hidden} ${hidden === 1 ? "pick shows" : "picks show"} once its game tips off.</p>`);
       return segPick("d", ds.map((x) => [x.n, `Day ${x.n}`, dayName(x.day)]), d.n) + (k === "five" && !b.games.some((g) => g.round === 1 && Date.parse(g.tip) <= now) ? `<p class="pl-gsum">Everyone's five teams show once the first round tips off.</p>` : "") + gameList(blocks, "No games this day.");
@@ -1130,7 +1200,7 @@
     if (st.code) await pool(); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
+    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
@@ -1157,8 +1227,8 @@
     if (t.dataset.ffcol) { if (st.ffsortcol === t.dataset.ffcol) st.ffsortdir = -(st.ffsortdir || -1); else { st.ffsortcol = t.dataset.ffcol; st.ffsortdir = t.dataset.ffcol === "pass_int" || t.dataset.ffcol === "pts_allow" ? 1 : -1; } return render(); }
     if (t.hasAttribute("data-ffback")) { st.ffslot = null; return render(); }
     if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return render(); }
-    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
-    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach"].forEach((k) => { st[k] = null; }); await load(); return render(); }
+    if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
+    if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView"].forEach((k) => { st[k] = null; }); await load(); return render(); }
     if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }
     if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
     if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
@@ -1167,6 +1237,11 @@
     if (t.hasAttribute("data-invite")) { st.invite = !st.invite; return render(); }
     if (t.dataset.copy && (t.hasAttribute("data-sheet") || (canShare() && !t.hasAttribute("data-nosheet")))) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
+    if (t.dataset.bk) { const i = t.dataset.bk.lastIndexOf("|"), slot = t.dataset.bk.slice(0, i), tm = t.dataset.bk.slice(i + 1); const F = P.mmField(st.board); st.bk = P.mmPick(F, st.bk || {}, slot, st.bk && st.bk[slot] === tm ? "" : tm); return render(); }
+    if (t.dataset.bkreg != null) { st.bkReg = t.dataset.bkreg; await render(); const r = document.querySelector(".pl-bkregs"); if (r && r.getBoundingClientRect().top < 0) r.scrollIntoView({ block: "start" }); return; }
+    if (t.hasAttribute("data-bkfill")) { const F = P.mmField(st.board), before = Object.keys(st.bk || {}).length; st.bk = P.mmFill(F, st.bk || {}, bkProb); st.msg = `Filled in ${Object.keys(st.bk).length - before} games with the college hub's favorites. Change any you like, then save.`; return render(); }
+    if (t.hasAttribute("data-bkclear")) { st.bk = {}; st.msg = "Cleared. Save to keep it that way."; return render(); }
+    if (t.dataset.bkview != null) { st.bkView = t.dataset.bkview || null; st.tab = "picks"; await render(); window.scrollTo(0, 0); return; }
     if (t.dataset.bteam) {
       // 2: a tap picks the team and numbers it at once: every number not set by hand is given out again by confidence
       const [gid, tm] = t.dataset.bteam.split("|"); const k = st.bd[gid] = st.bd[gid] || {}; k.team = k.team === tm ? "" : tm;
@@ -1212,6 +1287,10 @@
       else if (t.dataset.npick) { const [w, tm] = t.dataset.npick.split("|"); ok(await srpc("mm_pick_nfl", { p_pool: st.code, p_week: +w, p_team: tm })); st.msg = `Week ${w}: ${(NFL[tm] || [tm, tm])[1]}.`; }
       else if (t.dataset.nunpick) { ok(await srpc("mm_pick_nfl", { p_pool: st.code, p_week: +t.dataset.nunpick, p_team: null })); st.msg = "Pick taken back."; }
       else if (t.dataset.unpick) { ok(await srpc("mm_pick", { p_pool: st.code, p_day: +t.dataset.unpick, p_team: null })); st.msg = "Pick taken back."; }
+      else if (t.hasAttribute("data-bksave")) {
+        const r = ok(await srpc("mm_save_bracket", { p_pool: st.code, p_picks: st.bk || {}, p_tb: st.bktb === "" || st.bktb == null ? null : +st.bktb }));
+        st.msg = `Saved: ${r.saved} of 63 picked.`; st.bk = null;
+      }
       else if (t.hasAttribute("data-bsave")) {
         const picks = Object.entries(st.bd).filter(([, k]) => k.team || k.pts).map(([game, k]) => ({ game, team: k.team || "", pts: k.pts || null }));
         const r = ok(await srpc("mm_save_bowls", { p_pool: st.code, p_picks: picks, p_tb: st.btb === "" || st.btb == null ? null : +st.btb }));
@@ -1267,6 +1346,7 @@
   app.addEventListener("toggle", (e) => { const c = e.target.classList; if (!c) return; if (c.contains("pl-bdone")) st.bshowDone = e.target.open; if (c.contains("pl-more")) st.moreOpen = e.target.open; }, true);
   app.addEventListener("input", (e) => {
     const t = e.target;
+    if (t.hasAttribute("data-bktb")) { st.bktb = t.value; const b = document.querySelector("[data-bksave]"); if (b) b.disabled = false; return; }
     if (t.hasAttribute("data-btb")) { st.btb = t.value; const b = document.querySelector("[data-bsave]"); if (b) b.disabled = !P.bowlsCheck(st.bd, (st.board.games || []).length).ok; }
     if (t.hasAttribute("data-ffq")) {
       // filter the player list in place, so typing keeps the keyboard up

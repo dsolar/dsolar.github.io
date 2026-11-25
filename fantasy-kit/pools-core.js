@@ -640,6 +640,14 @@
       if (board.projected || !games.some(function (g) { return g.round >= 1; })) return { text: "Field set on Selection Sunday", tone: "wait" };
       return surv(survivor(board, now), "day", function (g) { return ms(g.tip); });
     }
+    if (kind === "bracket") {
+      var lkB = board.fiveLock ? ms(board.fiveLock) : null, MB = mmBracket(board, now), meM = MB.rows.filter(function (r) { return r.me; })[0] || {};
+      if (!MB.field.ready) return { text: "Field set on Selection Sunday", tone: "wait" };
+      if (board.projected) return { text: meM.picked ? "Practice bracket: " + meM.picked + " of 63 picked" : "Practice on the projected field", tone: "wait" };
+      if (MB.done) return meM.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(MB.rows), tone: "done" };
+      if (!lkB || now < lkB) return meM.picked >= 63 ? { text: "Bracket in", tone: "ok" } : { text: meM.picked ? meM.picked + " of 63 picked" : "Fill out your bracket", tone: "todo", due: lkB };
+      return { text: standing(MB.rows, function (r) { return r.points + " pts"; }), tone: "ok" };
+    }
     if (kind === "five") {
       var F = five(board, now), me5 = F.rows.filter(function (r) { return r.me; })[0] || {};
       if (board.projected || F.lock == null) return { text: "Field set on Selection Sunday", tone: "wait" };
@@ -701,8 +709,127 @@
     return { text: "", tone: "ok" };
   }
 
+
+  /* March Madness bracket ('bracket'). All 63 games from the Round of 64 to the title, picked before the first Round of
+     64 tip. A right pick scores 10, 20, 40, 80, 160 and 320 points by round; ties go to the closest guess at the title
+     game's total points. Slots: b:<region>:<round>:<k> for rounds 1-4 inside a region (k counts matchups down the
+     region from the 1-16 game), b:ff:<0|1> for the semifinals, b:ch for the champion. An Opening Round slot holds both
+     teams until it's played: pick either one through. */
+  var MM_ORDER = [1, 16, 8, 9, 5, 12, 4, 13, 6, 11, 3, 14, 7, 10, 2, 15];
+  var MM_PTS = [0, 10, 20, 40, 80, 160, 320];
+  var MM_REGIONS = ["East", "West", "South", "Midwest"];
+  // which regions meet in each national semifinal. Set it with the real bracket on Selection Sunday; until then the
+  // first region listed plays the fourth and the second the third (the projection's East-Midwest and West-South)
+  var MM_FF = { 2027: null };
+  var mmK = function (seed) { var i = MM_ORDER.indexOf(+seed); return i < 0 ? null : i >> 1; };
+  function mmField(board) {
+    var games = board.games || [], regs = [], seedOf = {}, regionOf = {}, mates = {};
+    games.forEach(function (g) { if ((g.round === 0 || g.round === 1) && g.region && regs.indexOf(g.region) < 0) regs.push(g.region); });
+    regs.sort(function (a, b) { var x = MM_REGIONS.indexOf(a), y = MM_REGIONS.indexOf(b); return (x < 0 ? 9 : x) - (y < 0 ? 9 : y) || (a < b ? -1 : 1); });
+    var put = function (t, seed, reg) { if (!t) return; if (seed != null) seedOf[t] = +seed; regionOf[t] = reg; };
+    games.forEach(function (g) {
+      if (g.round === 0) { put(g.a, g.as, g.region); put(g.b, g.bs, g.region); if (g.a && g.b) { mates[g.a] = g.b; mates[g.b] = g.a; } }
+      if (g.round === 1) { put(g.a, g.as, g.region); put(g.b, g.bs, g.region); }
+    });
+    // each region: the eight Round of 64 matchups, each side one team or an Opening Round pair
+    var regions = {};
+    regs.forEach(function (r) {
+      var m = []; for (var k = 0; k < 8; k++) m.push([[], []]);
+      Object.keys(regionOf).forEach(function (t) {
+        if (regionOf[t] !== r || seedOf[t] == null) return;
+        var i = MM_ORDER.indexOf(seedOf[t]); if (i < 0) return;
+        var side = m[i >> 1][i & 1]; if (side.indexOf(t) < 0) side.push(t);
+      });
+      // an Opening Round winner who's through shows alone; until then the pair shares the slot
+      games.forEach(function (g) { if (g.round === 0 && g.region === r && g.final && g.w) { var i = MM_ORDER.indexOf(seedOf[g.w]); if (i >= 0) m[i >> 1][i & 1] = [g.w]; } });
+      regions[r] = m;
+    });
+    var cfg = MM_FF[board.pool && board.pool.season], ff = cfg && cfg.every(function (x) { return regs.indexOf(x[0]) >= 0 && regs.indexOf(x[1]) >= 0; }) ? cfg
+      : regs.length === 4 ? [[regs[0], regs[3]], [regs[1], regs[2]]] : [];
+    return { regions: regions, names: regs, seedOf: seedOf, regionOf: regionOf, mates: mates, ff: ff, ready: regs.length === 4 };
+  }
+  // the slot a team fills by winning in a round
+  function mmSlot(F, team, round) {
+    var reg = F.regionOf[team], k = mmK(F.seedOf[team]);
+    if (reg == null || k == null) return null;
+    if (round <= 4) return "b:" + reg + ":" + round + ":" + (k >> (round - 1));
+    if (round === 5) { for (var x = 0; x < F.ff.length; x++) if (F.ff[x].indexOf(reg) >= 0) return "b:ff:" + x; return null; }
+    return "b:ch";
+  }
+  // the teams that can fill a slot, given a bracket's picks so far: [[side A teams], [side B teams]]
+  function mmFeed(F, picks, slot) {
+    var p = slot.split(":"), one = function (s) { return picks[s] ? [picks[s]] : []; };
+    if (p[1] === "ch") return [one("b:ff:0"), one("b:ff:1")];
+    if (p[1] === "ff") { var pr = F.ff[+p[2]] || []; return [one("b:" + pr[0] + ":4:0"), one("b:" + pr[1] + ":4:0")]; }
+    var reg = p[1], r = +p[2], k = +p[3];
+    if (r === 1) return ((F.regions[reg] || [])[k] || [[], []]).map(function (x) { return x.slice(); });
+    return [one("b:" + reg + ":" + (r - 1) + ":" + (2 * k)), one("b:" + reg + ":" + (r - 1) + ":" + (2 * k + 1))];
+  }
+  // every slot, round by round
+  function mmSlots(F) {
+    var out = [];
+    for (var r = 1; r <= 4; r++) F.names.forEach(function (reg) { for (var k = 0; k < 8 >> (r - 1); k++) out.push({ slot: "b:" + reg + ":" + r + ":" + k, round: r, region: reg, k: k }); });
+    out.push({ slot: "b:ff:0", round: 5, k: 0 }, { slot: "b:ff:1", round: 5, k: 1 }, { slot: "b:ch", round: 6, k: 0 });
+    return out;
+  }
+  // set a pick and clear anything later that no longer follows from it
+  function mmPick(F, picks, slot, team) {
+    var out = Object.assign({}, picks);
+    if (team) out[slot] = team; else delete out[slot];
+    mmSlots(F).forEach(function (x) {
+      if (!out[x.slot]) return;
+      var feed = mmFeed(F, out, x.slot), ok = feed[0].concat(feed[1]).indexOf(out[x.slot]) >= 0;
+      if (!ok) delete out[x.slot];
+    });
+    return out;
+  }
+  // the favorite in every open slot, round by round (prob(a, b) is a's chance)
+  function mmFill(F, picks, prob) {
+    var out = Object.assign({}, picks);
+    mmSlots(F).forEach(function (x) {
+      if (out[x.slot]) return;
+      var feed = mmFeed(F, out, x.slot), a = feed[0], b = feed[1];
+      var best = function (side) { return side.slice().sort(function (u, v) { return (prob(v, u) || 0.5) - (prob(u, v) || 0.5); })[0]; };
+      var ta = best(a), tb = best(b);
+      if (!ta && !tb) return;
+      out[x.slot] = !tb ? ta : !ta ? tb : ((prob(ta, tb) == null ? 0.5 : prob(ta, tb)) >= 0.5 ? ta : tb);
+    });
+    return out;
+  }
+  function mmBracket(board, now) {
+    now = now == null ? Date.now() : ms(now);
+    var F = mmField(board), games = board.games || [], by = {};
+    (board.picks || []).forEach(function (p) { if (p.team != null) (by[p.user] = by[p.user] || {})[p.slot] = p.team; });
+    var won = {}, out = {}, done = {};
+    games.forEach(function (g) {
+      if (!g.final || !g.w) return;
+      var loser = g.w === g.a ? g.b : g.a; if (loser) out[loser] = true;
+      if (g.round >= 1) { var sl = mmSlot(F, g.w, g.round); if (sl) { won[sl] = g.w; done[sl] = true; } }
+    });
+    var title = games.filter(function (g) { return g.round === 6; })[0], total = title && title.final ? (title.ap || 0) + (title.bp || 0) : null;
+    var slots = mmSlots(F);
+    var rows = (board.members || []).map(function (m) {
+      var mine = by[m.id] || {}, pts = 0, left = 0, right = 0, picked = 0;
+      slots.forEach(function (x) {
+        var t = mine[x.slot]; if (!t) return;
+        picked++;
+        if (done[x.slot]) { if (won[x.slot] === t) { pts += MM_PTS[x.round]; right++; } }
+        else if (!out[t]) left += MM_PTS[x.round];
+      });
+      var tb = mine.tb != null && mine.tb !== "" ? Number(mine.tb) : null;
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, right: right, picked: picked, max: pts + left, champ: mine["b:ch"] || null, tb: tb, off: tbOff(tb, total), hidden: !m.me && !Object.keys(mine).length };
+    });
+    var cmp = function (a, b) { return (b.points - a.points) || (a.off - b.off); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
+    var fin = !!(title && title.final);
+    return { rows: rows, field: F, won: won, out: out, total: total, done: fin, n: slots.length, winners: fin ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
+  }
+
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap };
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap,
+    MM_PTS: MM_PTS, MM_FF: MM_FF, mmField: mmField, mmSlot: mmSlot, mmFeed: mmFeed, mmSlots: mmSlots, mmPick: mmPick, mmFill: mmFill, mmBracket: mmBracket };
   if (typeof module === "object" && module.exports) module.exports = api;
   else { root.FK = root.FK || {}; root.FK.pools = api; }
 })(typeof window !== "undefined" ? window : this);

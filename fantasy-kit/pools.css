@@ -806,3 +806,42 @@ button.pl-chip{cursor:pointer}
   .pl-door.wide .pl-door-games>li{border-right:1px solid rgba(255,255,255,.09)}
   .pl-door.wide .pl-door-top p{max-width:640px}
 }
+
+/* ---------- March Madness bracket ---------- */
+.pl-bkregs{margin:14px 0 10px}
+.pl-bkch{display:inline-flex;align-items:center;gap:6px}
+.pl-bkview{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pl-bkrd{margin:0 0 8px;font-size:13px;font-weight:800;color:var(--muted);letter-spacing:.01em}
+.pl-bkcol{display:flex;flex-direction:column;min-width:0}
+.pl-bkms{display:flex;flex-direction:column;gap:10px;flex:1}
+.pl-bkm{position:relative;display:grid;gap:4px;padding:6px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.pl-bkm-pts{position:absolute;right:8px;top:-8px;font-size:10.5px;font-weight:800;color:var(--muted);background:var(--bg,#F3F5F8);padding:0 5px;border-radius:6px}
+.pl-bkt{display:flex;align-items:center;gap:8px;width:100%;min-height:42px;padding:6px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--ink);font:inherit;text-align:left;cursor:pointer}
+.pl-bkt:hover:not(:disabled){background:color-mix(in srgb,var(--ink) 5%,transparent)}
+.pl-bkt:disabled{cursor:default}
+.pl-bkt .pl-seed{min-width:20px;text-align:center}
+.pl-bkt .pl-tn{flex:1;min-width:0;display:grid}
+.pl-bkt .pl-tn b{font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-bkt .pl-tn small{font-size:11px;color:var(--muted)}
+.pl-bkt.pair{min-height:38px}
+.pl-bkt.on{background:color-mix(in srgb,#7C4DDB 12%,var(--surface));border-color:#7C4DDB}
+.pl-bkt.on .pl-tn b{color:var(--ink)}
+.pl-bkt.won{background:color-mix(in srgb,var(--up,#1a8a4a) 14%,var(--surface));border-color:var(--up,#1a8a4a)}
+.pl-bkt.lost .pl-tn b{text-decoration:line-through;color:var(--muted)}
+.pl-bkt.lost{border-color:color-mix(in srgb,var(--down,#c0392b) 50%,transparent)}
+.pl-bkt.tbd{cursor:default;color:var(--muted);font-size:13px}
+.pl-bkp{font-style:normal;font-weight:700;font-size:12.5px;color:var(--muted)}
+.pl-bkt.on .pl-bkp{color:var(--ink)}
+.pl-bknext{display:flex;justify-content:flex-end;margin:14px 0 0}
+.pl-bkff{display:grid;gap:16px}
+.pl-bkchc{white-space:nowrap}
+.pl-bkchc img{vertical-align:-4px;margin-right:6px}
+.pl-click{cursor:pointer}
+.pl-click:hover td{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.pl-bkreg{display:grid;gap:18px}
+@media (min-width:900px){
+  /* the classic bracket: four rounds side by side, each round's games spread to sit between the two that feed them */
+  .pl-bkreg{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
+  .pl-bkms{justify-content:space-around}
+  .pl-bkff{grid-template-columns:repeat(3,minmax(0,1fr));align-items:center}
+}

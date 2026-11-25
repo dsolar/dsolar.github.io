@@ -1698,3 +1698,154 @@ end $$;
 drop trigger if exists mm_members_remind_default on public.mm_members;
 create trigger mm_members_remind_default before insert on public.mm_members for each row execute function public.mm_members_remind_default();
 revoke all on function public.mm_members_remind_default() from public, anon, authenticated;
+
+-- ======== March Madness bracket (applied as migrations mm_bracket_pool_a and mm_bracket_pool_b) ========
+-- March Madness bracket ('bracket'): pick all 63 games from the Round of 64 to the title, before the first Round of 64
+-- tip (mm_five_lock). Until Selection Sunday the field is the college hub's projection (mm_project); when the real field
+-- posts, mm_espn clears the projection and every practice pick, the same as survivor and 5 teams.
+-- Slots: b:<region>:<round>:<k> for rounds 1-4 inside a region (k counts matchups down the region's bracket, from the
+-- 1-16 game), b:ff:<0|1> for the two national semifinals, b:ch for the champion; tb is the title game's total points.
+alter table public.mm_pools drop constraint if exists mm_pools_kind_check;
+alter table public.mm_pools add constraint mm_pools_kind_check check (kind in ('survivor', 'five', 'nfl', 'bowls', 'nflpo', 'nflff', 'squares', 'bracket'));
+
+create or replace function public.mm_pool_create(p_name text, p_kind text, p_entry text default null) returns jsonb
+language plpgsql security definer set search_path to 'public', 'extensions' as $$
+declare uid uuid := auth.uid(); code text; nm text := left(trim(coalesce(p_name, '')), 40); yr int; sw int;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to make a pool.'); end if;
+  if nm = '' then return jsonb_build_object('error', 'Name the pool.'); end if;
+  if p_kind not in ('survivor', 'five', 'nfl', 'bowls', 'nflpo', 'nflff', 'squares', 'bracket') then return jsonb_build_object('error', 'Pick a game.'); end if;
+  if (select count(*) from mm_pools where owner = uid) >= 20 then return jsonb_build_object('error', 'That''s a lot of pools. Leave one first.'); end if;
+  if p_kind = 'nfl' then
+    yr := mm_nfl_season(); sw := mm_nfl_start(yr);
+    if sw is null then return jsonb_build_object('error', 'The next week''s games aren''t set yet. Try again in a day or two.'); end if;
+    if sw > 18 then return jsonb_build_object('error', 'The regular season is over. NFL survivor comes back in September.'); end if;
+  elsif p_kind in ('bowls', 'nflpo', 'nflff', 'squares') then
+    yr := po_season();
+  else
+    yr := mm_season();
+  end if;
+  loop
+    code := upper(substr(translate(encode(gen_random_bytes(9), 'base64'), '+/=0Oo1IiLl', ''), 1, 6));
+    exit when length(code) = 6 and not exists (select 1 from mm_pools where id = code) and not exists (select 1 from pk_groups where id = code);
+  end loop;
+  insert into mm_pools (id, name, kind, season, owner, start_week, extra) values (code, nm, p_kind, yr, uid, sw,
+    case when p_kind = 'squares' then '{"cap": 10, "pay": [20, 20, 20, 40]}'::jsonb else '{}'::jsonb end);
+  insert into mm_members (pool, user_id, name) values (code, uid, nullif(left(trim(coalesce(p_entry, '')), 28), ''));
+  return jsonb_build_object('ok', true, 'id', code, 'name', nm, 'kind', p_kind);
+end $$;
+
+-- save a whole bracket: every slot you send replaces what you had; a slot left out is cleared. Teams must be in the field.
+create or replace function public.mm_save_bracket(p_pool text, p_picks jsonb, p_tb int default null) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; lk timestamptz; k text; t text; n int := 0;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to make picks.'); end if;
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.kind <> 'bracket' then return jsonb_build_object('error', 'That isn''t a bracket pool.'); end if;
+  if not exists (select 1 from mm_members where pool = p.id and user_id = uid) then return jsonb_build_object('error', 'Join this pool to pick.'); end if;
+  if not exists (select 1 from mm_games where season = p.season and round = 1) then return jsonb_build_object('error', 'The field isn''t out yet.'); end if;
+  lk := mm_five_lock(p.season);
+  if lk is not null and now() >= lk then return jsonb_build_object('error', 'Brackets locked at the first tip.'); end if;
+  if jsonb_typeof(coalesce(p_picks, '{}'::jsonb)) <> 'object' then return jsonb_build_object('error', 'That bracket doesn''t look right.'); end if;
+  for k, t in select key, value from jsonb_each_text(coalesce(p_picks, '{}'::jsonb)) loop
+    if k !~ '^b:([A-Za-z]+:[1-4]:[0-7]|ff:[01]|ch)$' then return jsonb_build_object('error', 'That bracket doesn''t look right.'); end if;
+    if t <> '' and not exists (select 1 from mm_games where season = p.season and round in (0, 1) and t in (a, b)) then
+      return jsonb_build_object('error', 'One of those teams isn''t in the field.');
+    end if;
+  end loop;
+  delete from mm_picks where pool = p.id and user_id = uid and (slot like 'b:%' or slot = 'tb');
+  for k, t in select key, value from jsonb_each_text(coalesce(p_picks, '{}'::jsonb)) loop
+    if t = '' then continue; end if;
+    insert into mm_picks (pool, user_id, slot, team) values (p.id, uid, k, t);
+    n := n + 1;
+  end loop;
+  if p_tb is not null then insert into mm_picks (pool, user_id, slot, team) values (p.id, uid, 'tb', greatest(0, least(400, p_tb))::text); end if;
+  return jsonb_build_object('ok', true, 'saved', n);
+end $$;
+revoke all on function public.mm_save_bracket(text, jsonb, int) from public, anon;
+grant execute on function public.mm_save_bracket(text, jsonb, int) to authenticated;
+
+create or replace function public.mm_board_core(p_pool text) returns jsonb
+language plpgsql stable security definer set search_path to 'public' as $function$
+declare uid uuid := auth.uid(); p mm_pools; lk timestamptz;
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found then return jsonb_build_object('error', 'No pool has that code.'); end if;
+  if uid is null or not exists (select 1 from mm_members where pool = p.id and user_id = uid) then
+    return jsonb_build_object('error', 'join', 'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'startWeek', p.start_week,
+      'members', (select count(*) from mm_members where pool = p.id)), 'signedIn', uid is not null);
+  end if;
+  if p.kind = 'nfl' then
+    return jsonb_build_object('ok', true, 'now', now(),
+      'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'startWeek', p.start_week, 'owner', p.owner = uid),
+      'games', coalesce((select jsonb_agg(jsonb_build_object('id', g.game_id, 'week', g.week, 'kickoff', g.kickoff, 'away', g.away, 'home', g.home,
+          'ap', g.away_score, 'hp', g.home_score, 'final', g.final, 'status', g.status, 'line', coalesce(g.spread, g.live_spread))
+        order by g.kickoff, g.game_id) from pk_games g where g.season = p.season and g.stype = 2 and g.week >= p.start_week), '[]'::jsonb),
+      'members', (select jsonb_agg(jsonb_build_object('id', m.user_id, 'name', mm_name(p.id, m.user_id), 'me', m.user_id = uid) order by m.joined_at) from mm_members m where m.pool = p.id),
+      'picks', coalesce((select jsonb_agg(jsonb_build_object('user', k.user_id, 'slot', k.slot,
+          'team', case when k.user_id = uid or exists (select 1 from pk_games g where g.season = p.season and g.stype = 2 and g.week = substring(k.slot from 2)::int
+            and k.team in (g.away, g.home) and g.kickoff <= now()) then k.team end))
+        from mm_picks k where k.pool = p.id), '[]'::jsonb));
+  end if;
+  if p.kind in ('bowls', 'nflpo', 'nflff', 'squares') then
+    lk := case when p.kind in ('nflpo', 'nflff') then po_nfl_lock(p.season) when p.kind = 'squares' then (select min(kickoff) from po_games where comp = 'nfl' and season = p.season and round = 4) else (select min(kickoff) from po_games where comp = 'cfb' and season = p.season and round = 4) end;
+    return jsonb_build_object('ok', true, 'now', now(), 'lock', lk,
+      'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'owner', p.owner = uid, 'extra', p.extra),
+      'games', coalesce((select jsonb_agg(jsonb_build_object('id', g.game_id, 'round', g.round, 'label', g.label, 'conf', g.conf, 'kickoff', g.kickoff,
+          'a', g.a, 'b', g.b, 'an', g.a_name, 'bn', g.b_name, 'ap', g.a_score, 'bp', g.b_score, 'w', g.winner, 'final', g.final, 'status', g.status, 'line', g.line, 'lines', g.lines)
+        order by g.kickoff, g.game_id) from po_games g where g.comp = case when p.kind = 'bowls' then 'cfb' else 'nfl' end and g.season = p.season), '[]'::jsonb),
+      'field', case when p.kind in ('nflpo', 'nflff', 'squares') then coalesce((select jsonb_agg(jsonb_build_object('team', f.team, 'conf', f.conf, 'seed', f.seed, 'name', f.name, 'pd', f.pd, 'gp', f.gp) order by f.conf, f.seed)
+        from po_field f where f.comp = 'nfl' and f.season = p.season), '[]'::jsonb) end,
+      'members', (select jsonb_agg(jsonb_build_object('id', m.user_id, 'name', mm_name(p.id, m.user_id), 'me', m.user_id = uid) order by m.joined_at) from mm_members m where m.pool = p.id),
+      'picks', coalesce((select jsonb_agg(x) from (select jsonb_build_object('user', k.user_id, 'slot', k.slot, 'team', k.team, 'pts', k.pts) x
+        from mm_picks k where k.pool = p.id and (k.user_id = uid
+          or (k.slot = 'tb' and lk is not null and now() >= lk)
+          or (p.kind = 'nflpo' and lk is not null and now() >= lk)
+          or p.kind = 'squares'
+          or (p.kind = 'nflff' and k.slot ~ '^r[1-4]:' and po_team_kick(p.season, substring(k.slot from 2 for 1)::int, split_part(k.team, '@', 2)) <= now())
+          or (p.kind = 'bowls' and exists (select 1 from po_games g where 'g' || g.game_id = k.slot and g.kickoff <= now())))) q), '[]'::jsonb));
+  end if;
+  lk := mm_five_lock(p.season);
+  return jsonb_build_object('ok', true, 'now', now(), 'fiveLock', lk,
+    'pool', jsonb_build_object('id', p.id, 'name', p.name, 'kind', p.kind, 'season', p.season, 'owner', p.owner = uid, 'extra', p.extra),
+    'projected', exists (select 1 from mm_games where season = p.season and projected) and not exists (select 1 from mm_games where season = p.season and not projected),
+    'games', coalesce((select jsonb_agg(jsonb_build_object('id', g.game_id, 'round', g.round, 'region', g.region, 'day', g.day, 'tip', g.tip,
+        'a', g.a, 'b', g.b, 'as', g.a_seed, 'bs', g.b_seed, 'ap', g.a_score, 'bp', g.b_score, 'w', g.winner, 'status', g.status, 'final', g.final)
+      order by g.tip, g.game_id) from mm_games g where g.season = p.season), '[]'::jsonb),
+    'members', (select jsonb_agg(jsonb_build_object('id', m.user_id, 'name', mm_name(p.id, m.user_id), 'me', m.user_id = uid) order by m.joined_at) from mm_members m where m.pool = p.id),
+    'picks', coalesce((select jsonb_agg(jsonb_build_object('user', k.user_id, 'slot', k.slot,
+        'team', case when k.user_id = uid then k.team
+          when p.kind in ('five', 'bracket') and lk is not null and now() >= lk then k.team
+          when p.kind = 'survivor' and exists (select 1 from mm_games g where g.season = p.season and g.round >= 1 and k.team in (g.a, g.b)
+            and g.day = mm_day_date(p.season, substring(k.slot from 2)::int) and g.tip <= now()) then k.team end))
+      from mm_picks k where k.pool = p.id), '[]'::jsonb));
+end $function$;
+
+create or replace function public.mm_as(p_pool text, p_user uuid, p_fn text, p_args jsonb) returns jsonb
+language plpgsql security definer set search_path to 'public' as $function$
+declare uid uuid := auth.uid(); p mm_pools; old text := current_setting('request.jwt.claims', true); r jsonb; a jsonb := coalesce(p_args, '{}'::jsonb);
+begin
+  select * into p from mm_pools where id = upper(trim(coalesce(p_pool, '')));
+  if not found or p.owner is distinct from uid then return jsonb_build_object('error', 'Only the pool''s owner can make picks for someone.'); end if;
+  if p_user = uid or not exists (select 1 from mm_members where pool = p.id and user_id = p_user) then return jsonb_build_object('error', 'They aren''t in this pool.'); end if;
+  perform set_config('request.jwt.claims', jsonb_build_object('sub', p_user, 'role', 'authenticated')::text, true);
+  begin
+    r := case p_fn
+      when 'mm_pick' then mm_pick(p.id, (a ->> 'p_day')::int, a ->> 'p_team')
+      when 'mm_pick_nfl' then mm_pick_nfl(p.id, (a ->> 'p_week')::int, a ->> 'p_team')
+      when 'mm_pick_five' then mm_pick_five(p.id, array(select jsonb_array_elements_text(a -> 'p_teams')))
+      when 'mm_save_bowls' then mm_save_bowls(p.id, a -> 'p_picks', (a ->> 'p_tb')::int)
+      when 'mm_save_nflpo' then mm_save_nflpo(p.id, a -> 'p_picks', (a ->> 'p_tb')::int)
+      when 'mm_save_nflff' then mm_save_nflff(p.id, (a ->> 'p_round')::int, a -> 'p_lineup')
+      when 'mm_save_bracket' then mm_save_bracket(p.id, a -> 'p_picks', (a ->> 'p_tb')::int)
+      else jsonb_build_object('error', 'That isn''t a pick the owner can make.') end;
+  exception when others then perform set_config('request.jwt.claims', coalesce(old, ''), true); raise;
+  end;
+  perform set_config('request.jwt.claims', coalesce(old, ''), true);
+  if r is not null and not (r ? 'error') then
+    insert into mm_log (pool, actor, target, what) values (p.id, uid, p_user, case p_fn when 'mm_save_nflff' then 'set a lineup for' when 'mm_save_nflpo' then 'filled out the bracket of'
+      when 'mm_save_bowls' then 'saved bowl picks for' when 'mm_save_bracket' then 'filled out the bracket of' when 'mm_pick_five' then 'picked five teams for' else 'made a pick for' end);
+  end if;
+  return r;
+end $function$;
