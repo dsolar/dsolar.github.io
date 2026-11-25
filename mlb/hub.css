@@ -416,3 +416,25 @@ button.card-link{font:inherit;color:inherit;background:transparent;border:0;padd
   .controls > label input[type=search]{border:0;background:transparent;padding:8px 8px 8px 0;flex:1;min-width:0}
   .controls label.chk{font-size:13px;letter-spacing:0;text-transform:none;font-weight:500;color:var(--muted);padding:0 4px}
 }
+
+/* ---------- one game card on every hub: the pro hubs' cards (.wg, assets/tonight.js and the NFL's week) and the
+   college hubs' (.gm) share one look. The time and TV wrap rather than get cut off, at most one tag sits at the right,
+   each team's record follows its name, and a card shorter than its row ends with blank space at the bottom instead of
+   a gap in the middle. ---------- */
+article.wg,article.gm{background:var(--card);border:1px solid var(--rule);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+article.wg>header,article.gm>header{display:flex;align-items:center;justify-content:space-between;gap:4px 8px;flex-wrap:wrap;min-height:34px;padding:7px 12px;font-size:12px;color:var(--muted);border-bottom:1px solid var(--rule-2)}
+article.wg>header>span:first-child,article.gm>header>span:first-child{flex:1 1 auto;min-width:0;white-space:normal;overflow:visible;text-overflow:clip}
+article.wg>header .pill,article.gm>header .pill{flex:none;margin-left:auto}
+article.wg>footer,article.gm>footer{margin-top:0}
+article.wg .wgt,article.gm .gt{display:flex;align-items:center;gap:7px;padding:7px 12px;font-size:14.5px;min-height:38px}
+article.wg .wgt .nm,article.gm .gt .nm{font-weight:700;color:var(--ink);text-decoration:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+article.wg .wgt .nm:hover,article.gm .gt .nm:hover{text-decoration:underline}
+article.wg .wgt small,article.gm .gt small{color:var(--faint);font-size:12px;margin-right:auto;padding-left:2px}
+article.wg .wgt .sc,article.gm .gt .sc{font:700 20px/1 var(--cond);min-width:34px;text-align:right;color:var(--muted)}
+article.wg .wgt.won .sc,article.wg .wgt.won .nm{color:var(--ink)}
+article.wg:has(.wgt.won) .wgt:not(.won) .nm{color:var(--muted)}
+article.wg .wgt img,article.wg .wgt .lg,article.gm .gt img{flex:none}
+
+/* a few numbers read across one line (the college hubs' slate summary), not a row of boxes */
+.statline{display:flex;flex-wrap:wrap;gap:6px 22px;margin:2px 0 16px;font-size:14px;color:var(--muted)}
+.statline b{font:700 22px/1 var(--cond);color:var(--ink);margin-right:3px;font-variant-numeric:tabular-nums}

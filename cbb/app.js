@@ -167,14 +167,18 @@ function gameCard(g) {
   else if (w >= 70 && g.state !== "post") tag = '<span class="pill new">Must watch</span>';
   if (fin_ && logged && logged.final) tag = logged.correct ? '<span class="pill up">Hub ✓</span>' : logged.upset ? '<span class="pill fill">Upset</span>' : '<span class="pill">Hub ✗</span>';
   const foot = shown ? "<span><b>" + favLine(shown, h, a) + "</b></span><span>O/U <b>" + half(shown.total) + "</b></span>" : "<span class=\"note\">No line: a team lacks ratings</span>";
-  return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + valuePills(g, l, h, a) + "</header>" +
+  // one tag at most: the hub's call on a final, then an upset alert, a value signal, must watch, then the other signals
+  const vp = valuePills(g, l, h, a).match(/<span class="pill[^"]*"[^>]*>.*?<\/span>/g) || [];
+  const one = fin_ && tag ? tag : /warn/.test(tag) ? tag : vp.find((x) => / val/.test(x)) || tag || vp[0] || "";
+  return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + one + "</header>" +
     side(a, false, g.awayScore) + side(h, true, g.homeScore) +
     '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, pace and stars on the floor">' + w + '</span><a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a></footer>' + betRow(g, h, a) + availRow(g, h, a) + "</article>";
 }
 
 /* ---------- pages ---------- */
-function tiles4(items) { return tiles(items).replace('class="stats"', 'class="stats q4"'); }
-function tiles(items) { return '<div class="stats">' + items.map(([v, l]) => '<div class="stat"><b>' + v + "</b><span>" + l + "</span></div>").join("") + "</div>"; }
+function tiles4(items) { return tiles(items); }
+// a few numbers read across one line, not a row of boxes
+function tiles(items) { return '<p class="statline">' + items.map(([v, l]) => "<span><b>" + v + "</b> " + l + "</span>").join("") + "</p>"; }
 
 function today(q) {
   const day = q.get("day") || dayNY(), followOnly = q.get("follow") === "1", sort = q.get("sort") || "watch";
@@ -305,7 +309,7 @@ function teams(q) {
   const table = (c, ts) => '<div class="panel st-conf"><h3>' + esc(c.name) + (mine(c) ? ' <small>you follow a team here</small>' : "") + '</h3><div class="scroll"><table class="t st"><thead><tr><th class=l>Team</th><th>Conf</th><th>Overall</th><th class="hide-m">Proj conf</th><th title="Chance to make the NCAA tournament">NCAA</th><th class="hide-m">Hasla. rank</th><th></th></tr></thead><tbody>' +
     ts.map(t => { const o = odds(t.id), pj = t.projection || {}, n = c.teams.indexOf(t) + 1;
       return '<tr class="go' + (faves.has(t.id) ? " mine" : "") + '" data-href="#/team?id=' + esc(t.id) + '"><td class="tm"><span class="pos">' + n + "</span>" + logo(t) + (t.apRank ? '<span class="ap">' + int(t.apRank) + "</span>" : "") + '<span class="nm">' + esc(t.short) + "</span></td><td><b>" + crec(t) + "</b></td><td>" + rec(t) + '</td><td class="hide-m">' + (fin(pj.confWins) ? Math.round(pj.confWins) + "-" + Math.round(pj.confLosses) : "—") + "</td><td>" + (o ? pct(o.in) : "—") + '</td><td class="hide-m">' + int(t.haslamRank) + "</td><td>" + star(t) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
-  return '<h2 class="sec">Standings</h2><p class="lede">Every conference, in order of conference record, then overall record. Make NCAA is from the hub\'s season simulation. Tap ☆ to follow a team: your teams show up first here and at the top of Today, on every device you sign in on.</p>' +
+  return '<h2 class="sec">Standings</h2><p class="lede">Every conference, in order of conference record, then overall record. Make NCAA is from the hub\'s season simulation. Tap ☆ to follow a team: your teams show up first here and at the top of Tonight, on every device you sign in on.</p>' +
     '<div class="controls"><label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Search 365 teams"></label><label>Conference<select data-param="conf"><option value="">All</option>' + order.map(c => "<option" + (c.name === pick ? " selected" : "") + ">" + esc(c.name) + "</option>").join("") + '</select></label><label class="switch"><input type="checkbox" data-param="follow" value="1"' + (follow ? " checked" : "") + "> <span>Only teams I follow (" + faves.size + ")</span></label></div>" +
     (shown.length ? '<div class="st-grid">' + shown.map(([c, ts]) => table(c, ts)).join("") + "</div>" : '<p class="callout">No teams match.</p>');
 }

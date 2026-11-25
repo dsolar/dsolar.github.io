@@ -57,7 +57,7 @@
         "<footer><span>Line <b>" + lineTxt(g) + '</b></span><a href="' + cfg.href(cfg.preview + "/" + g.id, {}) + '">Preview →</a></footer>' +
         (inj ? '<div class="injline">' + inj + "</div>" : "") + betLine(g, cfg) + "</article>";
     }).join("");
-    return '<h2 class="sec">Tonight</h2><p class="lede">Every game with the tip time, TV, the line, the public betting split and the injury report, and a preview of each one: each team\'s numbers against the other\'s, ranked league-wide.</p>' + nav +
+    return '<h2 class="sec">Tonight</h2><p class="lede">Every game with the start time, TV, the line, the public betting split and the injury report, and a preview of each one: each team\'s numbers against the other\'s, ranked league-wide.</p>' + nav +
       (cards ? '<div class="wkgames">' + cards + "</div>" : '<p class="note">No games this day.</p>') +
       '<p class="note">Schedule, lines (DraftKings, via ESPN) and injuries from ESPN. Bets: share of bets across the books <a href="https://www.actionnetwork.com" target="_blank" rel="noopener">Action Network</a> tracks. Kalshi: price on each team\'s wins market at <a href="https://kalshi.com" target="_blank" rel="noopener">Kalshi</a>, shown once 500+ contracts have traded.</p>';
   }

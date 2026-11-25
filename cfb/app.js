@@ -48,7 +48,8 @@ function confSelect(value, label = "Conference") { return '<label>' + label + '<
 function teamSelect(param, value, label) { return '<label>' + label + '<select data-param="' + param + '"><option value="">Choose a team</option>' + D.teams.slice().sort((a, b) => a.short.localeCompare(b.short)).map(t => '<option value="' + esc(t.id) + '"' + (t.id === value ? " selected" : "") + ">" + esc(t.short) + "</option>").join("") + "</select></label>"; }
 function sortTh(key, label, cur, title) { return '<th class="sort' + (cur === key ? " on" : "") + '" data-sort="' + key + '"' + (title ? ' title="' + esc(title) + '"' : "") + ">" + label + (cur === key ? " ▾" : "") + "</th>"; }
 function star(t) { const on = faves.has(t.id); return '<button class="star" type="button" data-follow="ncaaf:' + esc(t.id) + '" data-name="' + esc(t.short) + '" aria-pressed="' + on + '" title="' + (on ? "Following" : "Follow") + '">' + (on ? "★" : "☆") + "</button>"; }
-function tiles(items) { return '<div class="stats">' + items.map(([v, l]) => '<div class="stat"><b>' + v + "</b><span>" + l + "</span></div>").join("") + "</div>"; }
+// a few numbers read across one line, not a row of boxes
+function tiles(items) { return '<p class="statline">' + items.map(([v, l]) => "<span><b>" + v + "</b> " + l + "</span>").join("") + "</p>"; }
 function mv(x) { return fin(x) && x ? '<span class="mv ' + (x > 0 ? "up" : "dn") + '">' + (x > 0 ? "▲" : "▼") + Math.abs(x) + "</span>" : '<span class="mv">–</span>'; }
 
 /* ---------- CollegeFootballData (optional): EPA, SP+, opening and closing lines ---------- */
@@ -155,6 +156,11 @@ function valueBoard() {
     rows.map(([k, lab]) => '<tr><td class="l">' + lab + "</td>" + cell(k) + "</tr>").join("") + '</tbody></table></div><p class="note" style="padding:0 14px 12px">Break-even at standard −110 juice is 52.4%. Green beats it, red doesn\'t. "Value" tags on game cards mark the second signal and "Value+" the third, so read them with these records in mind: a tag is a disagreement worth a look, not a proven edge. The closing line is the market\'s sharpest number, so these records are a tough test.</p></div>';
 }
 
+// one tag on a game card: the hub's call on a final, then an upset alert, a value signal, then the rest
+function oneTag(tag, pills, done) {
+  const vp = String(pills || "").match(/<span class="pill[^"]*"[^>]*>.*?<\/span>/g) || [];
+  return done && tag ? tag : /warn/.test(tag) ? tag : vp.find((x) => / val/.test(x)) || tag || vp[0] || "";
+}
 function gameCard(g) {
   const h = team(g.home), a = team(g.away), l = shownLine(g), lg = logged(g), w = M.watch(g, l, ctx);
   const live = g.state === "in", done = g.state === "post", mk = g.market || (lg && lg.market);
@@ -173,7 +179,7 @@ function gameCard(g) {
   else if (w >= 72 && !done) tag = '<span class="pill new">Must watch</span>';
   if (done && lg && lg.final) tag = lg.ats === "win" ? '<span class="pill up">Hub ✓ ATS</span>' : lg.ats === "loss" ? '<span class="pill">Hub ✗ ATS</span>' : lg.correct ? '<span class="pill up">Hub ✓</span>' : lg.upset ? '<span class="pill fill">Upset</span>' : "";
   const foot = l ? "<span>Hub <b>" + favText(l.spread, h, a) + "</b></span><span>O/U <b>" + half(l.total) + "</b></span>" + (mk && fin(mk.spread) ? '<span class="mkt" title="' + esc(mk.book || "Sportsbook") + ' line shown by ESPN">Book ' + favText(mk.spread, h, a) + (BOOK(g.id) && fin(BOOK(g.id).open) && BOOK(g.id).open !== mk.spread ? " · opened " + favText(BOOK(g.id).open, h, a) : "") + "</span>" : "") : '<span class="note">No line: FCS opponent without a rating</span>';
-  return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + tag + valuePills(g, l, h, a) + "</header>" +
+  return '<article class="gm' + (live ? " is-live" : "") + '" data-watch="' + w + '"><header><span>' + status + (g.tv ? " · " + esc(g.tv) : "") + (g.neutral ? " · Neutral" : "") + "</span>" + oneTag(tag, valuePills(g, l, h, a), done) + "</header>" +
     (g.note ? '<div class="note2">' + esc(g.note) + "</div>" : "") +
     side(a, false, g.as) + side(h, true, g.hs) +
     '<footer>' + foot + '<span class="wi" title="Watchability: team quality, how close the line is, playoff stakes and polls">' + w + "</span>" + (h.fcs || a.fcs ? "" : '<a href="#/matchup?a=' + esc(a.id) + "&b=" + esc(h.id) + "&site=" + (g.neutral ? "n" : "b") + '">Matchup →</a>') + "</footer>" + betRow(g, h, a) + "</article>";
