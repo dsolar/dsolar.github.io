@@ -517,7 +517,11 @@
     return true;
   }
   async function pool() {
-    await load();
+    // a tap that only changes picks on this screen redraws from the board in hand (draw()); everything else asks
+    // the server again
+    if (st.local && st.board && st.board.ok) st.local = false; else { st.local = false; await load(); st.loadedAt = Date.now(); }
+    // a game on: look again in two minutes (one timer at a time, and none at all without a game being played)
+    if (live() && !st.liveT) st.liveT = setTimeout(() => { st.liveT = null; if (!document.hidden && live() && !busy()) render(); else if (live()) pool(); }, 120e3);
     const b = st.board;
     if (b && b.error === "join") {
       app.innerHTML = `<div class="wrap page pl${themeOf(b.pool.kind)}">${band(esc(b.pool.name), `${KIND[b.pool.kind]}${b.pool.kind === "nfl" ? ` from week ${b.pool.startWeek}` : ""} &middot; ${b.pool.members} ${b.pool.members === 1 ? "entry" : "entries"}`, "", SPORT[b.pool.kind], artOf(b.pool.kind))}
@@ -695,7 +699,8 @@
         const d = R[g.a].power - R[g.b].power, by = Math.round(Math.abs(d) * 2) / 2, fav = d > 0 ? g.a : g.b;
         bits.push(by < 0.5 ? "Hub line: pick'em" : `Hub line: ${cfbName(fav, fav === g.a ? g.an : g.bn)} by ${by}`);
       }
-      bits.push(`<a href="/cfb/#/matchup?a=${encodeURIComponent(h.away || g.a)}&b=${encodeURIComponent(h.home || g.b)}&site=n" target="_blank" rel="noopener">Preview</a>`);
+      const T = st.cfbT || {};
+      if ((R && R[g.a] && R[g.b]) || (T[g.a] && T[g.b])) bits.push(`<a href="/cfb/#/matchup?a=${encodeURIComponent(h.away || g.a)}&b=${encodeURIComponent(h.home || g.b)}&site=n" target="_blank" rel="noopener">Preview</a>`);
     }
     return bits.length ? `<p class="pl-bmeta">${bits.join('<span aria-hidden="true"> / </span>')}</p>` : "";
   }
@@ -733,6 +738,7 @@
     const picked = Object.values(st.bd).filter((k) => k.team).length, numbered = Object.values(st.bd).filter((k) => k.pts).length;
     const tbLocked = b.lock && now >= Date.parse(b.lock);
     const isOpen = (g) => now < Date.parse(g.kickoff);
+    const anyOpen = games.some(isOpen);
     const toPick = games.filter((g) => isOpen(g) && g.a && g.b && !(st.bd[g.id] || {}).team).length, later = games.filter((g) => isOpen(g) && !(g.a && g.b)).length;
     // 5: what the line next to Save says
     const say = !chk.ok ? esc(chk.why) : dirty ? "Not saved yet." : !picked && !numbered ? "Tap a team to pick it." : "Saved.";
@@ -741,15 +747,15 @@
       <div class="pl-bstat"><span><b>${picked}</b> of ${n} picked</span><span><b>${numbered}</b> of ${n} numbered</span>${place}</div>
       ${toPick ? `<p class="pl-bhint">Tap the team you think wins. Each pick gets a number right away, the biggest going to your surest picks; change any number with its menu.</p>` : ""}
       ${later ? `<p class="pl-bhint">${later} playoff ${later === 1 ? "game fills" : "games fill"} in as teams advance. Come back to pick ${later === 1 ? "it" : "them"} then; ${st.remind ? "you'll get an email about 3 hours before each one is due" : `<a href="#" data-bremind>email me before they're due</a>`}.</p>` : ""}
-      <label class="pl-tb">Title game total points<input type="number" inputmode="numeric" min="0" max="200" data-btb value="${esc(st.btb || "")}" placeholder="e.g. 48"${tbLocked ? " disabled" : ""}></label>
-      <div class="pl-save">${toPick ? `<button type="button" class="btn sm" data-bfav title="Pick the team the college hub favors in every game you haven't picked">Pick the favorites</button>` : ""}<button type="button" class="btn sm" data-bauto title="Give the biggest numbers to your surest picks">Number by confidence</button><span class="ps">${say}</span><button type="button" class="btn go" data-bsave${chk.ok && dirty ? "" : " disabled"}>Save picks</button></div></div></div>`;
+      ${anyOpen ? `<label class="pl-tb">Title game total points<input type="number" inputmode="numeric" min="0" max="200" data-btb value="${esc(st.btb || "")}" placeholder="e.g. 48"${tbLocked ? " disabled" : ""}></label>
+      <div class="pl-save">${toPick ? `<button type="button" class="btn sm" data-bfav title="Pick the team the college hub favors in every game you haven't picked">Pick the favorites</button>` : ""}<button type="button" class="btn sm" data-bauto title="Give the biggest numbers to your surest picks">Number by confidence</button><span class="ps">${say}</span><button type="button" class="btn go" data-bsave${chk.ok && dirty ? "" : " disabled"}>Save picks</button></div>` : `<p class="pl-bhint">Every game has kicked off, so picks are locked.${st.btb ? ` Your title game guess: <b>${esc(st.btb)}</b> points.` : ""}</p>`}</div></div>`;
     const card = (g, lastDay) => {
       const k = st.bd[g.id] || {}, locked = !isOpen(g), d = dayOf(g.kickoff);
       const head = d !== lastDay.v ? `<h3 class="pl-bday">${esc(d)}</h3>` : ""; lastDay.v = d;
       const side = (t, full) => {
         const p = cfbProb(g, t), on = k.team && k.team === t, won = g.final && g.w === t, lost = g.final && g.w && g.w !== t;
         return `<button type="button" class="pl-bt${on ? " on" : ""}${won ? " won" : ""}${lost ? " lost" : ""}" data-bteam="${esc(g.id)}|${esc(t || "")}"${!t || locked ? " disabled" : ""}>
-          ${cfbLogo(t, 24)}<span class="pl-tn"><b>${cfbName(t, full)}</b>${t && cfbTag(t) ? `<small>${esc(cfbTag(t))}</small>` : ""}</span>${g.final ? `<em class="pl-bpct num">${t === g.a ? g.ap : g.bp}</em>` : p != null ? `<em class="pl-bpct num" title="Chance to win, from the college football hub">${Math.round(p * 100)}%</em>` : ""}</button>`;
+          ${cfbLogo(t, 24)}<span class="pl-tn"><b>${cfbName(t, full)}</b>${t && cfbTag(t) ? `<small>${esc(cfbTag(t))}</small>` : ""}</span>${g.final || locked ? `<em class="pl-bpct num">${(t === g.a ? g.ap : g.bp) || 0}</em>` : p != null ? `<em class="pl-bpct num" title="Chance to win, from the college football hub">${Math.round(p * 100)}%</em>` : ""}</button>`;
       };
       const res = g.final && k.team ? (g.w === k.team ? `<span class="pl-pick win">+${k.pts || 0}</span>` : `<span class="pl-pick loss">0</span>`) : "";
       const sel = locked ? `<span class="pl-bpts">${k.pts ? `<b>${k.pts}</b>` : "&ndash;"}</span>` : `<select class="pl-bsel" data-bpts="${esc(g.id)}" aria-label="Confidence for the ${esc(g.label)}"><option value="">&ndash;</option>${Array.from({ length: n }, (_, i) => n - i).map((v) => `<option value="${v}"${k.pts === v ? " selected" : ""}>${v}${used[v] && k.pts !== v ? " (used)" : ""}</option>`).join("")}</select>`;
@@ -757,17 +763,25 @@
         <div class="pl-bowl-b"><div class="pl-bts">${side(g.a, g.an)}${side(g.b, g.bn)}</div><label class="pl-conf"><span>Points</span>${sel}</label></div></div>`;
     };
     // 3: games that have kicked off fold into one line, so the list starts at the next game you can still pick
-    const done = games.filter((g) => !isOpen(g)), open = games.filter(isOpen);
+    // games being played stay in the list, at the top, with their scores (the fold is for finished games)
+    const done = games.filter((g) => !isOpen(g) && g.final), open = games.filter((g) => isOpen(g) || !g.final);
     const dd = { v: "" }, od = { v: "" };
     const doneRows = done.map((g) => card(g, dd)).join(""), openRows = open.map((g) => card(g, od)).join("");
-    const fold = done.length && open.length ? `<details class="pl-bdone"${st.bshowDone ? " open" : ""}><summary><b>${done.length} ${done.length === 1 ? "game" : "games"} played</b>${row ? `<span>${row.right}-${row.wrong}, ${row.points} points</span>` : ""}<em>Show</em></summary>${doneRows}</details>` : doneRows;
+    const fold = done.length && open.length ? `<details class="pl-bdone"${st.bshowDone ? " open" : ""}><summary><b>${done.length} ${done.length === 1 ? "game" : "games"} finished</b>${row ? `<span>${row.right}-${row.wrong}, ${row.points} points</span>` : ""}<em>Show</em></summary>${doneRows}</details>` : doneRows;
     // with 40-odd games to go through, a save button follows you down the list once there's something to save
     const float = chk.ok && dirty ? `<div class="pl-float"><span>${picked} picked, ${numbered} numbered</span><button type="button" class="btn go" data-bsave>Save picks</button></div>` : "";
-    return bar + `<div class="pl-bowls">${fold}${openRows}</div><p class="ps">Chances come from the college football hub's ratings. Picking a number that's taken swaps it with that game.</p>` + float;
+    return bowlWin(b, B) + bar + `<div class="pl-bowls">${fold}${openRows}</div><p class="ps">Chances come from the college football hub's ratings. Picking a number that's taken swaps it with that game.</p>` + float;
+  }
+  // "Nick wins Bowl Season with 721 points": once every game is final
+  function bowlWin(b, B) {
+    if (!B.done || !B.winners || !B.winners.length) return "";
+    const W = B.rows.filter((r) => r.place === 1), nm = W.map((r) => esc(r.name)), you = W.some((r) => r.me);
+    const who = nm.length === 1 ? nm[0] : nm.slice(0, -1).join(", ") + " and " + nm[nm.length - 1];
+    return `<div class="pl-note pl-bwin"><b>${you && W.length === 1 ? "You won" : who + (W.length === 1 ? " wins" : " share")} ${esc(b.pool.name)}</b><span>${W[0].points} points, ${W[0].right} right.${B.total != null ? ` The title game totaled ${B.total}.` : ""}</span></div>`;
   }
   function bowlTable(b) {
     const B = P.bowls(b, Date.now()), tbOpen = b.lock && Date.now() >= Date.parse(b.lock);
-    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r" title="Right and wrong picks">W-L</th><th class="r" title="Points still possible">Max</th><th class="r pl-hide-s" title="Title game total points guess">TB</th></tr></thead><tbody>
+    return bowlWin(b, B) + `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r" title="Right and wrong picks">W-L</th><th class="r" title="Points still possible">Max</th><th class="r pl-hide-s" title="Title game total points guess">TB</th></tr></thead><tbody>
       ${B.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${r.place}</td><td class="nm"><b>${esc(r.name)}</b>${r.hidden ? "" : !r.picked ? `<small class="ps"> no picks yet</small>` : r.picked < B.n ? `<small class="ps"> ${r.picked} of ${B.n} picked</small>` : ""}</td><td class="r num"><b>${r.points}</b></td><td class="r num ps">${r.right}-${r.wrong}</td><td class="r num ps">${r.max}</td><td class="r num ps pl-hide-s">${tbOpen || r.me ? (r.tb ?? "") : ""}</td></tr>`).join("")}
       </tbody></table></div></div><p class="ps">A right pick scores its confidence number. Max is what an entry could still reach. Everyone's pick shows at each game's kickoff.${B.total != null ? ` The title game totaled ${B.total}.` : ""}</p>`;
   }
@@ -1521,6 +1535,7 @@
   }
 
   // ---------- render and events ----------
+  const draw = () => { st.local = true; return render(); };
   async function render() {
     document.body.classList.remove("pl-sheet-on");
     themeBtn();
@@ -1607,7 +1622,7 @@
       // 2: a tap picks the team and numbers it at once: every number not set by hand is given out again by confidence
       const [gid, tm] = t.dataset.bteam.split("|"); const k = st.bd[gid] = st.bd[gid] || {}; k.team = k.team === tm ? "" : tm;
       st.bd = P.autoRank(st.board.games, st.bd, cfbProb, Date.now(), st.bhand || {}, true);
-      return render();
+      return draw();
     }
     if (t.hasAttribute("data-bfav")) {
       // the college hub's favorite in every open game you haven't picked, then the numbers by confidence
@@ -1620,14 +1635,14 @@
       });
       st.bd = P.autoRank(st.board.games, st.bd, cfbProb, Date.now(), st.bhand || {}, true);
       st.msg = n ? `Picked the favorite in ${n} ${n === 1 ? "game" : "games"} and numbered them. Change any you like, then save.` : "No open games left to fill in.";
-      return render();
+      return draw();
     }
     if (t.hasAttribute("data-bremind")) {
       e.preventDefault();
       C.rpc("mm_remind_set", { p_pool: st.code, p_on: true }).then(ok).then(() => { st.remind = true; st.msg = "Reminders on. You'll get an email about 3 hours before a pick is due."; render(); }).catch((x) => { st.msg = x.message; render(); });
       return;
     }
-    if (t.hasAttribute("data-bauto")) { st.bhand = {}; st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return render(); }
+    if (t.hasAttribute("data-bauto")) { st.bhand = {}; st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return draw(); }
     if (t.dataset.ffr) { st.ffr = +t.dataset.ffr; st.ffl = null; return render(); }
     if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return render(); }
     if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]);
@@ -1717,7 +1732,7 @@
       // a number already on another open game trades places with this one
       const gid = t.dataset.bpts, v = t.value ? +t.value : null, k = st.bd[gid] = st.bd[gid] || {}, old = k.pts || null;
       if (v) Object.entries(st.bd).forEach(([id, o]) => { if (id !== gid && o.pts === v) { const g = (st.board.games || []).find((x) => x.id === id); if (g && Date.now() < Date.parse(g.kickoff)) o.pts = old; } });
-      k.pts = v; st.msg = ""; (st.bhand = st.bhand || {})[gid] = !!v; render();
+      k.pts = v; st.msg = ""; (st.bhand = st.bhand || {})[gid] = !!v; draw();
     }
   });
   app.addEventListener("toggle", (e) => { const c = e.target.classList; if (!c) return; if (c.contains("pl-bdone")) st.bshowDone = e.target.open; if (c.contains("pl-more")) st.moreOpen = e.target.open; }, true);
@@ -1786,6 +1801,11 @@
     } catch (x) { fail(x); }
   });
 
+  // while a game is being played the pool refreshes itself every two minutes (the scores sync about every 10),
+  // and when you come back to the tab; never while you're typing in a field or choosing a number
+  const live = () => { const b = st.board, now = Date.now(); return !!(st.code && b && b.ok && (b.games || []).some((g) => g.kickoff && Date.parse(g.kickoff) <= now && !g.final)); };
+  const busy = () => { const a = document.activeElement; return !!(a && /^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName)); };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && live() && !busy() && Date.now() - (st.loadedAt || 0) > 60e3) render(); });
   (async function start() {
     const back = C.fromLink();
     if (back && back.user) st.user = back.user;

@@ -77,7 +77,7 @@ test("played games fold into one line and the list starts at the next open game"
   try {
     const app = w.document.getElementById("app"), fold = app.querySelector(".pl-bdone");
     assert.ok(fold && !fold.open, "folded");
-    assert.match(fold.querySelector("summary").textContent, /3 games played/);
+    assert.match(fold.querySelector("summary").textContent, /3 games finished/);
     assert.match(fold.querySelector("summary").textContent, /3-0, 15 points/);
     assert.match(app.textContent, /1st of 2/);
     assert.match(app.textContent, /playoff game fills in as teams advance/);
@@ -109,6 +109,22 @@ test("a bowl card shows each team's rank, record and conference, and where, on w
     const meta = [...w.document.querySelectorAll(".pl-bmeta")].map((x) => x.textContent).find((x) => /Orlando/.test(x)) || "";
     assert.match(meta, /Camping World Stadium, Orlando, FL/); assert.match(meta, /ABC/); assert.match(meta, /Line A3 -6\.5, total 54\.5/);
     assert.ok(w.document.querySelector('.pl-bmeta a[href="/cfb/#/matchup?a=A3&b=B3&site=n"]'), "a preview link to the hub's matchup page");
+    assert.deepEqual(errs, []);
+  } finally { w.close(); }
+});
+
+test("a game being played stays at the top of the list, out of the fold; a tap redraws without asking the server", async () => {
+  const { w, errs } = await boot(Date.parse("2026-12-22T19:00:00Z"), null, true);
+  try {
+    const app = w.document.getElementById("app");
+    const fold = app.querySelector(".pl-bdone");
+    assert.match(fold.querySelector("summary").textContent, /2 games finished/);
+    const first = app.querySelector(".pl-bowls > .pl-bowl");
+    assert.match(first.textContent, /Bowl 2/); assert.match(first.textContent, /Playing/);
+    let calls = 0; const rpc = w.FK.cloud.rpc; w.FK.cloud.rpc = async (...a) => { calls++; return rpc(...a); };
+    app.querySelector('[data-bteam="g3|A3"]').click(); await pause(30);
+    assert.equal(calls, 0, "picking a team is drawn from the board in hand");
+    assert.match(app.textContent, /1 of 6 picked/);
     assert.deepEqual(errs, []);
   } finally { w.close(); }
 });
