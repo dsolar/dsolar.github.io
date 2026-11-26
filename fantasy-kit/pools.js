@@ -126,7 +126,7 @@
       <li>Each pick locks when its own game kicks off, and shows to everyone then.</li>
       <li>The last one standing wins. If everyone left goes out the same week, or more than one makes it through week 18, they split it.</li></ul>`
     : kind === "props" ? `<ul class="pl-rules">
-      <li>About <b>20 questions on the Super Bowl</b>: the coin toss, the first score, the MVP, the Gatorade color, the winner.</li>
+      <li><b>19 questions on the Super Bowl</b> to start (the owner can add, cut or change any): the coin toss, the first score, the MVP, the Gatorade color, the winner.</li>
       <li>A right answer scores its points (1 each, 2 for the winner, unless the owner changes them).</li>
       <li>Everything locks at <b>kickoff</b>, and everyone's answers show then.</li>
       <li>The owner marks the answers after the game; who wins, the total and the margin mark themselves from the final score.</li>
@@ -210,7 +210,7 @@
     { sport: "NBA", key: "wins", name: "Wins pool", tag: "Draft real teams in a snake. Most combined wins from draft day forward takes it, or play it over/under against win-total lines.", facts: ["Draft teams", "Wins or over/under", "No clock"], href: "/pools/wins/?make=nba", cta: "Start a wins pool", open: CAL.nbaTip, end: CAL.nbaEnd },
     { sport: "NFL", key: "nflpo", name: "Playoff bracket", tag: "The 14-team bracket, reseeded the NFL's way.", facts: ["14 teams", "1-2-4-8 points", "Locks at the Wild Card"], soon: "Practice now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "nflff", name: "Playoff fantasy", tag: "A fantasy lineup every playoff round, and each player only once.", facts: ["9-man lineups", "Each player once", "Half PPR"], soon: "Opens in January", open: CAL.nflField, end: CAL.superBowl },
-    { sport: "NFL", key: "props", name: "Super Bowl prop sheet", tag: "Twenty questions on the big game, from the coin toss to the Gatorade.", facts: ["20 questions", "Locks at kickoff", "Edit the sheet"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
+    { sport: "NFL", key: "props", name: "Super Bowl prop sheet", tag: "Nineteen questions on the big game, from the coin toss to the Gatorade.", facts: ["19 questions", "Locks at kickoff", "Edit the sheet"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
     { sport: "Oscars", key: "oscars", name: "Oscars ballot", tag: "Pick the winner in every category. Best Picture counts most.", facts: ["24 categories", "Locks at the show", "Runtime tiebreak"], soon: "Practice now", open: CAL.oscarNoms, end: CAL.oscars },
@@ -237,7 +237,7 @@
     { key: "bowls", from: CAL.bowlsSet, until: CAL.bowls, title: "Bowl pick'em", text: `The matchups are out and the first bowl kicks off ${shortDate(CAL.bowls)}. Get a pool going before it does.` },
     { key: "nflpo", from: CAL.bowls, until: CAL.nflField, title: "NFL playoff bracket", text: `The field is set ${shortDate(CAL.nflField)} and brackets lock at the first Wild Card kickoff. Practice on the projected field until then.` },
     { key: "nflpo", from: CAL.nflField, until: CAL.wildCard, title: "NFL playoff bracket", text: `The field is set. Brackets lock at the first Wild Card kickoff, ${shortDate(CAL.wildCard)} weekend.` },
-    { key: "props", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl prop sheet", text: `Twenty questions on the Super Bowl, ${shortDate(CAL.superBowl)}: the coin toss to the Gatorade. Make a sheet for your party; it locks at kickoff.` },
+    { key: "props", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl prop sheet", text: `Nineteen questions on the Super Bowl, ${shortDate(CAL.superBowl)}: the coin toss to the Gatorade. Make a sheet for your party; it locks at kickoff.` },
     { key: "bracket", from: "2027-02-15", until: CAL.selection, title: "March Madness bracket", text: `The field comes out ${shortDate(CAL.selection)}. Start your pool now and practice on the projected bracket; brackets lock at the first Round of 64 tip.` },
     { key: "oscars", from: "2027-02-15", until: "2027-03-15", title: "Oscars ballot", text: `The Oscars are ${shortDate(CAL.oscars)}. Make a ballot pool for your watch party: every category, and it locks when the show starts.` },
   ];
@@ -1535,7 +1535,7 @@
   }
 
   // ---------- render and events ----------
-  const draw = () => { st.local = true; return render(); };
+  const draw = () => { st.local = !!(st.code && st.board && st.board.ok); return render(); }; // only a pool page redraws from the board in hand
   async function render() {
     document.body.classList.remove("pl-sheet-on");
     themeBtn();
@@ -1545,10 +1545,10 @@
     const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-mfr],[data-mfslot],[data-mfadd],[data-mfclear],[data-mfsave],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
-    if (t.dataset.tab) { st.tab = t.dataset.tab; return render(); }
-    if (t.dataset.day) { const n = +t.dataset.day; st.open[n] = t.getAttribute("aria-expanded") !== "true"; return render(); }
-    if (t.dataset.week) { st.open["w" + t.dataset.week] = t.getAttribute("aria-expanded") !== "true"; return render(); }
-    if (t.dataset.panel) { st.panel = st.panel === t.dataset.panel ? "" : t.dataset.panel; return render(); }
+    if (t.dataset.tab) { st.tab = t.dataset.tab; return draw(); }
+    if (t.dataset.day) { const n = +t.dataset.day; st.open[n] = t.getAttribute("aria-expanded") !== "true"; return draw(); }
+    if (t.dataset.week) { st.open["w" + t.dataset.week] = t.getAttribute("aria-expanded") !== "true"; return draw(); }
+    if (t.dataset.panel) { st.panel = st.panel === t.dataset.panel ? "" : t.dataset.panel; return draw(); }
     if (t.dataset.sport != null) {
       st.sport = t.dataset.sport;
       try { history.replaceState(null, "", location.pathname + location.search + (st.sport ? "#" + st.sport : "")); } catch (x) { /* fine */ }
@@ -1564,37 +1564,37 @@
       return;
     }
     if (t.dataset.ffcard) { ffCard(t.dataset.ffcard, st.board); return; }
-    if (t.dataset.ffstat) { st.ffstat = t.dataset.ffstat; return render(); }
-    if (t.dataset.ffview) { st.ffview = t.dataset.ffview; return render(); }
-    if (t.dataset.ffcol) { if (st.ffsortcol === t.dataset.ffcol) st.ffsortdir = -(st.ffsortdir || -1); else { st.ffsortcol = t.dataset.ffcol; st.ffsortdir = t.dataset.ffcol === "pass_int" || t.dataset.ffcol === "pts_allow" ? 1 : -1; } return render(); }
-    if (t.hasAttribute("data-ffback")) { st.ffslot = null; return render(); }
-    if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return render(); }
+    if (t.dataset.ffstat) { st.ffstat = t.dataset.ffstat; return draw(); }
+    if (t.dataset.ffview) { st.ffview = t.dataset.ffview; return draw(); }
+    if (t.dataset.ffcol) { if (st.ffsortcol === t.dataset.ffcol) st.ffsortdir = -(st.ffsortdir || -1); else { st.ffsortcol = t.dataset.ffcol; st.ffsortdir = t.dataset.ffcol === "pass_int" || t.dataset.ffcol === "pts_allow" ? 1 : -1; } return draw(); }
+    if (t.hasAttribute("data-ffback")) { st.ffslot = null; return draw(); }
+    if (t.hasAttribute("data-planall")) { st.planAll = !st.planAll; return draw(); }
     if (t.dataset.as) { st.as = t.dataset.as; st.tab = "picks"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc", "mfl"].forEach((k) => { st[k] = null; }); await load(); window.scrollTo(0, 0); return render(); }
     if (t.hasAttribute("data-asdone")) { st.as = null; st.tab = "settings"; ["ffl", "ffr", "bd", "kb", "sel", "ffreach", "bk", "bkView", "pp", "osc", "mfl"].forEach((k) => { st[k] = null; }); await load(); return render(); }
-    if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return render(); }
-    if (t.dataset.luview) { st.luview = t.dataset.luview; return render(); }
-    if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return render(); }
-    if (t.dataset.rm && st.rm !== t.dataset.rm) { st.rm = t.dataset.rm; return render(); }
-    if (t.dataset.gsel) { const [k2, v2] = t.dataset.gsel.split("|"); st.gsel = { k: k2, v: v2 }; return render(); }
-    if (t.hasAttribute("data-invite")) { st.invite = !st.invite; return render(); }
+    if (t.hasAttribute("data-xferb") && !st.xferArm) { st.xferArm = true; return draw(); }
+    if (t.dataset.luview) { st.luview = t.dataset.luview; return draw(); }
+    if (t.hasAttribute("data-leave") && !st.leave) { st.leave = true; return draw(); }
+    if (t.dataset.rm && st.rm !== t.dataset.rm) { st.rm = t.dataset.rm; return draw(); }
+    if (t.dataset.gsel) { const [k2, v2] = t.dataset.gsel.split("|"); st.gsel = { k: k2, v: v2 }; return draw(); }
+    if (t.hasAttribute("data-invite")) { st.invite = !st.invite; return draw(); }
     if (t.dataset.copy && (t.hasAttribute("data-sheet") || (canShare() && !t.hasAttribute("data-nosheet")))) { navigator.share({ title: t.dataset.shareTitle, text: t.dataset.shareText, url: t.dataset.copy }).catch(() => {}); return; }
     if (t.dataset.copy) { try { await navigator.clipboard.writeText(t.dataset.copy); t.textContent = "Copied"; } catch (x) { prompt("Copy this invite link:", t.dataset.copy); } return; }
-    if (t.dataset.pp) { const [q, k] = t.dataset.pp.split("|"); st.pp = st.pp || {}; if (st.pp[q] === +k) delete st.pp[q]; else st.pp[q] = +k; return render(); }
-    if (t.dataset.mfr) { st.mfr = +t.dataset.mfr; st.mfslot = null; return render(); }
-    if (t.dataset.mfclear) { e.stopPropagation(); delete st.mfl[t.dataset.mfclear]; return render(); }
-    if (t.dataset.mfslot) { st.mfslot = st.mfslot === t.dataset.mfslot ? null : t.dataset.mfslot; return render(); }
+    if (t.dataset.pp) { const [q, k] = t.dataset.pp.split("|"); st.pp = st.pp || {}; if (st.pp[q] === +k) delete st.pp[q]; else st.pp[q] = +k; return draw(); }
+    if (t.dataset.mfr) { st.mfr = +t.dataset.mfr; st.mfslot = null; return draw(); }
+    if (t.dataset.mfclear) { e.stopPropagation(); delete st.mfl[t.dataset.mfclear]; return draw(); }
+    if (t.dataset.mfslot) { st.mfslot = st.mfslot === t.dataset.mfslot ? null : t.dataset.mfslot; return draw(); }
     if (t.dataset.mfadd) {
       const [pid] = t.dataset.mfadd.split("@"), p = (st.mfP || {})[pid], pos = ((p && p.pos) || "F").charAt(0);
       // the spot you picked, or the first open spot he fits
       const fits = (sl) => P.mmffSlots(sl).includes(pos);
       const sl = st.mfslot && fits(st.mfslot) ? st.mfslot : P.MMFF_SLOTS.find((x) => !st.mfl[x] && fits(x));
-      if (!sl) { st.msg = "No open spot he fits. Tap a spot to swap him in."; return render(); }
-      st.mfl[sl] = t.dataset.mfadd; st.mfslot = null; return render();
+      if (!sl) { st.msg = "No open spot he fits. Tap a spot to swap him in."; return draw(); }
+      st.mfl[sl] = t.dataset.mfadd; st.mfslot = null; return draw();
     }
-    if (t.dataset.osc) { const [c, x] = t.dataset.osc.split("|"); st.osc = st.osc || {}; if (st.osc[c] === x) delete st.osc[c]; else st.osc[c] = x; return render(); }
+    if (t.dataset.osc) { const [c, x] = t.dataset.osc.split("|"); st.osc = st.osc || {}; if (st.osc[c] === x) delete st.osc[c]; else st.osc[c] = x; return draw(); }
     if (t.hasAttribute("data-oscfav")) {
       let k = 0; (st.board.ballot.cats || []).forEach((c) => { if (c.noms.length && !c.noms.some((x) => x.id === st.osc[c.id])) { st.osc[c.id] = oscFav(c); k++; } });
-      st.msg = `Filled in ${k} ${k === 1 ? "category" : "categories"} with the pundits' favorites. Change any you like, then save.`; return render();
+      st.msg = `Filled in ${k} ${k === 1 ? "category" : "categories"} with the pundits' favorites. Change any you like, then save.`; return draw();
     }
     if (t.dataset.oscans) {
       const [c, x] = t.dataset.oscans.split("|"), cur = ((st.board.pool.extra || {}).answers || {})[c];
@@ -1606,17 +1606,17 @@
       try { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { answers: { [q]: cur === +k ? null : +k } } })); } catch (x) { st.msg = x.message; }
       await load(); return render();
     }
-    if (t.hasAttribute("data-pedadd")) { st.ped.push({ id: "q" + Date.now().toString(36).slice(-6), q: "", opts: ["Yes", "No"], pts: 1 }); return render(); }
-    if (t.dataset.peddel != null) { st.ped.splice(+t.dataset.peddel, 1); return render(); }
+    if (t.hasAttribute("data-pedadd")) { st.ped.push({ id: "q" + Date.now().toString(36).slice(-6), q: "", opts: ["Yes", "No"], pts: 1 }); return draw(); }
+    if (t.dataset.peddel != null) { st.ped.splice(+t.dataset.peddel, 1); return draw(); }
     if (t.hasAttribute("data-pedsave")) {
       const sheet = st.ped.filter((q) => q.q.trim()).map((q) => Object.assign({}, q, { q: q.q.trim(), opts: q.opts.map((o) => o.trim()).filter(Boolean) }));
       try { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { props: sheet } })); st.ped = null; st.pp = null; st.msg = "Sheet saved."; } catch (x) { st.msg = x.message; }
       await load(); return render();
     }
-    if (t.dataset.bk) { const i = t.dataset.bk.lastIndexOf("|"), slot = t.dataset.bk.slice(0, i), tm = t.dataset.bk.slice(i + 1); const F = P.mmField(st.board); st.bk = P.mmPick(F, st.bk || {}, slot, st.bk && st.bk[slot] === tm ? "" : tm); return render(); }
+    if (t.dataset.bk) { const i = t.dataset.bk.lastIndexOf("|"), slot = t.dataset.bk.slice(0, i), tm = t.dataset.bk.slice(i + 1); const F = P.mmField(st.board); st.bk = P.mmPick(F, st.bk || {}, slot, st.bk && st.bk[slot] === tm ? "" : tm); return draw(); }
     if (t.dataset.bkreg != null) { st.bkReg = t.dataset.bkreg; await render(); const r = document.querySelector(".pl-bkregs"); if (r && r.getBoundingClientRect().top < 0) r.scrollIntoView({ block: "start" }); return; }
-    if (t.hasAttribute("data-bkfill")) { const F = P.mmField(st.board), before = Object.keys(st.bk || {}).length; st.bk = P.mmFill(F, st.bk || {}, bkProb); st.msg = `Filled in ${Object.keys(st.bk).length - before} games with the college hub's favorites. Change any you like, then save.`; return render(); }
-    if (t.hasAttribute("data-bkclear")) { st.bk = {}; st.msg = "Cleared. Save to keep it that way."; return render(); }
+    if (t.hasAttribute("data-bkfill")) { const F = P.mmField(st.board), before = Object.keys(st.bk || {}).length; st.bk = P.mmFill(F, st.bk || {}, bkProb); st.msg = `Filled in ${Object.keys(st.bk).length - before} games with the college hub's favorites. Change any you like, then save.`; return draw(); }
+    if (t.hasAttribute("data-bkclear")) { st.bk = {}; st.msg = "Cleared. Save to keep it that way."; return draw(); }
     if (t.dataset.bkview != null) { st.bkView = t.dataset.bkview || null; st.tab = "picks"; await render(); window.scrollTo(0, 0); return; }
     if (t.dataset.bteam) {
       // 2: a tap picks the team and numbers it at once: every number not set by hand is given out again by confidence
@@ -1643,20 +1643,20 @@
       return;
     }
     if (t.hasAttribute("data-bauto")) { st.bhand = {}; st.bd = P.autoRank(st.board.games, st.bd, cfbProb); st.msg = "Numbered: your surest picks carry the most. Save to keep it."; return draw(); }
-    if (t.dataset.ffr) { st.ffr = +t.dataset.ffr; st.ffl = null; return render(); }
-    if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return render(); }
+    if (t.dataset.ffr) { st.ffr = +t.dataset.ffr; st.ffl = null; return draw(); }
+    if (t.dataset.ffslot != null) { st.ffslot = t.dataset.ffslot && st.ffslot !== t.dataset.ffslot ? t.dataset.ffslot : null; st.ffq = ""; return draw(); }
     if (t.dataset.ffpick != null) { st.ffl[st.ffslot] = t.dataset.ffpick || undefined; if (!t.dataset.ffpick) delete st.ffl[st.ffslot]; const nx = P.FF_SLOTS.find((x) => !st.ffl[x]);
       // on a phone the sheet closes after each pick, so the lineup (and its Save button) is right there
       const phone = matchMedia("(max-width: 760px)").matches;
       st.ffslot = t.dataset.ffpick && nx && !phone ? nx : null; st.ffq = "";
       if (phone && t.dataset.ffpick) st.msg = `${((st.ffp || {})[t.dataset.ffpick] || {}).n || "Player"} added. ${nx ? "Tap the next spot, or save." : "Lineup full: save it."}`;
-      return render(); }
-    if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = P.bracketPicks(st.board.field, st.kb); return render(); }
-    if (t.hasAttribute("data-sqdraw") && !st.sqDraw) { st.sqDraw = true; st.sqOwn = true; return render(); }
+      return draw(); }
+    if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = P.bracketPicks(st.board.field, st.kb); return draw(); }
+    if (t.hasAttribute("data-sqdraw") && !st.sqDraw) { st.sqDraw = true; st.sqOwn = true; return draw(); }
     if (t.dataset.five) {
       const id = t.dataset.five, i = st.sel.indexOf(id);
       if (i >= 0) st.sel.splice(i, 1); else if (st.sel.length < 5) st.sel.push(id);
-      return render();
+      return draw();
     }
     try {
       if (t.dataset.pick) { const [d, tm] = t.dataset.pick.split("|"); ok(await srpc("mm_pick", { p_pool: st.code, p_day: +d, p_team: tm })); st.msg = `Day ${d}: ${team(tm).n}.`; }
@@ -1701,7 +1701,7 @@
         const n = +t.dataset.sq, x = P.squares(st.board).cells[n], nm = (st.sqName || "").trim();
         if (x && (x.mine || (st.board.pool.owner && (x.guest || !nm)))) ok(await C.rpc("mm_squares_claim", { p_pool: st.code, p_sq: n, p_on: false }));
         else if (!x) ok(await C.rpc("mm_squares_claim", { p_pool: st.code, p_sq: n, p_on: true, p_name: nm || null }));
-        else { st.msg = `${x.name} has that square.`; return render(); }
+        else { st.msg = `${x.name} has that square.`; return draw(); }
         await load();
       }
       else if (t.dataset.champrm != null) { const c = ((st.board.pool.extra || {}).champs || []).filter((_, i) => i !== +t.dataset.champrm); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); }

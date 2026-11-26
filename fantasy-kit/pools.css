@@ -1286,3 +1286,10 @@ html{overflow-x:clip}
 @media (max-width:640px){
   .pl .pl-band .pl-art:not(.bowl-art):not(.osc-art){opacity:.14;width:min(30%,130px);top:12px;bottom:auto;transform:none}
 }
+/* the bracket after the lock: a pick that came in reads green with a check, a pick that's out reads red and struck,
+   over the game's own "picked" color */
+.g-nflpo .pl-kt.on.won,.pl-kt.on.won{border-color:var(--win);box-shadow:inset 0 0 0 1px var(--win);background:var(--win-soft)}
+.g-nflpo .pl-kt.on.lost,.pl-kt.on.lost{border-color:var(--loss);box-shadow:inset 0 0 0 1px var(--loss);background:var(--loss-soft)}
+.pl-kt.on.won b::after{content:" \2713";color:var(--win)}
+.pl-kt.on.lost b{text-decoration:line-through;text-decoration-thickness:1px}
+.g-nflpo .pl-ksb .pl-kt.on.lost{background:rgba(220,80,80,.2);border-color:#f08a8a;box-shadow:inset 0 0 0 1px #f08a8a}

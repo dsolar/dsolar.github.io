@@ -10,7 +10,7 @@ GAMES = [
     ("nflpo", "nfl-bracket", "NFL playoff bracket", "Fill out the 14-team NFL playoff bracket, reseeded the NFL's way. Make a pool, send the link, and the site keeps score."),
     ("nflff", "nfl-playoff-fantasy", "NFL playoff fantasy", "A fantasy lineup every playoff round, and each player only once. Make a pool, send the link, and the site keeps score."),
     ("squares", "squares", "Super Bowl squares", "A 10 by 10 board for the Super Bowl: claim squares, and each quarter's score picks a winner."),
-    ("props", "props", "Super Bowl prop sheet", "Twenty questions on the Super Bowl, from the coin toss to the Gatorade. Make a sheet for your party."),
+    ("props", "props", "Super Bowl prop sheet", "Nineteen questions on the Super Bowl, from the coin toss to the Gatorade. Make a sheet for your party."),
     ("oscars", "oscars", "Oscars ballot", "Pick the winner in every category at the Oscars. Make a pool for your watch party."),
     ("bracket", "march-madness", "March Madness bracket", "All 63 games, the classic way, with points doubling every round. Make a pool, send the link, and the site keeps score."),
     ("survivor", "march-madness-survivor", "March Madness survivor", "One team a day through the tournament. Lose and you're out."),
