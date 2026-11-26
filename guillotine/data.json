@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-26T22:07:21Z",
+ "updated": "2026-11-26T22:22:18Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -421,7 +421,7 @@
      "name": "DeVonta Smith",
      "nfl": "PHI",
      "pos": "WR",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 3.1,
      "game": "Thu 4:30 pm",
      "opp": "@ DAL",
      "season": {
@@ -1767,7 +1767,7 @@
    "manager": "JeffS",
    "faab": 15,
    "proj": 58.68,
-   "points": 35.8,
+   "points": 36.2,
    "scores": [
     111.28,
     66.9,
@@ -1828,7 +1828,7 @@
      "name": "Javonte Williams",
      "nfl": "DAL",
      "pos": "RB",
-     "yahoo_actual": 10.5,
+     "yahoo_actual": 10.9,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -3729,7 +3729,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-26T22:07:24Z",
+  "updated": "2026-11-26T22:22:21Z",
   "players": 3046,
   "unmatched": []
  }
