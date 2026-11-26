@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-25T20:10:50Z",
+ "updated": "2026-11-26T19:49:43Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,101 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "espn-401892781",
-   "date": "2026-11-25",
-   "time": "19:00",
-   "title": "Bruins vs Jets",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892781/jets-bruins",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv177Z_KGkwBdrwB",
-   "date": "2026-11-25",
-   "time": "19:00",
-   "title": "Maestros de la Bachata (18+)",
-   "cat": "music",
-   "venue": "Citizens House of Blues Boston",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/maestros-de-la-bachata-18-boston-massachusetts-11-25-2026/event/0100653CBA0DECBA",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-11-25-frank-reyes-and-hector-acosta-citizens-house-of-bl"
-   ],
-   "score": 0
-  },
-  {
-   "date": "2026-11-25",
-   "time": "19:30",
-   "title": "Doughboys",
-   "cat": "comedy",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://thewilbur.com/calendar/",
-   "sub": "Live podcast",
-   "source": "picks",
-   "id": "2026-11-25-doughboys-the-wilbur",
-   "score": 1
-  },
-  {
-   "id": "tm-vvG17Z_2pblCIW",
-   "date": "2026-11-25",
-   "time": "20:00",
-   "title": "TYLA - THE A*POP WORLD TOUR",
-   "cat": "music",
-   "venue": "MGM Music Hall at Fenway",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tyla-the-apop-world-tour-boston-massachusetts-11-25-2026/event/010064F598ACEA3D",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18404277",
-    "2026-11-25-tyla-mgm-music-hall-at-fe"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18867727",
-   "date": "2026-11-25",
-   "time": "21:00",
-   "title": "Konpa On Blast (21+)",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/konpa-on-blast-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-25-9-pm/concert/18867727",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "sg-18798837",
-   "date": "2026-11-25",
-   "time": "21:00",
-   "title": "Vintage Culture (21+)",
-   "cat": "music",
-   "venue": "Royale - Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/vintage-culture-tickets/boston-massachusetts-royale-boston-2026-11-25-9-pm/concert/18798837",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_4GkwLmmiX",
-   "date": "2026-11-25",
-   "time": "21:30",
-   "title": ".tribe ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/tribe-21-boston-massachusetts-11-25-2026/event/0100655C9FBAEB3E",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18828678"
-   ],
-   "score": 0
-  },
   {
    "id": "tm-vv177Z_fGkyt93Tn",
    "date": "2026-11-26",
@@ -153,6 +58,18 @@
     "sg-18601261"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918422",
+   "date": "2026-11-27",
+   "time": "19:00",
+   "title": "Ian Lara",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ian-lara-tickets/comedy/2026-11-27-7-pm/18918422",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-vv177Z_oGkTdSxs7",
@@ -310,6 +227,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918356",
+   "date": "2026-11-28",
+   "time": "18:30",
+   "title": "Janet McNamara",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/janet-mcnamara-tickets/comedy/2026-11-28-6-30-pm/18918356",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vvG17Z_GCIAEKl",
    "date": "2026-11-28",
    "time": "19:00",
@@ -432,6 +361,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918409",
+   "date": "2026-11-28",
+   "time": "21:00",
+   "title": "Angelo Colina",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/angelo-colina-tickets/comedy/2026-11-28-9-pm/18918409",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv177Z_8GkD9uNOB",
    "date": "2026-11-28",
    "time": "22:00",
@@ -441,6 +382,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dillstradamus-dillon-francis-b2b-flosstradamus-21-boston-massachusetts-11-28-2026/event/0100650ED736383A",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18970687"
+   ],
    "score": 0
   },
   {
@@ -672,7 +616,7 @@
    "time": "19:00",
    "title": "Sister's Christmas Catechism",
    "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
+   "venue": "Charles Playhouse",
    "city": "Boston, MA",
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-01-7-pm/18746342",
    "source": "seatgeek",
@@ -749,6 +693,18 @@
     "sg-18472133"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918368",
+   "date": "2026-12-02",
+   "time": "19:00",
+   "title": "Standoperos",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/standoperos-tickets/comedy/2026-12-02-7-pm/18918368",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "espn-401910078",
@@ -979,7 +935,7 @@
    "url": "https://www.ticketmaster.com/hunxho-2night-only-tour-boston-massachusetts-12-04-2026/event/010065360E0DF125",
    "source": "ticketmaster",
    "aka": [
-    "sg-18618956"
+    "sg-18623014"
    ],
    "score": 0
   },
@@ -1171,6 +1127,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918401",
+   "date": "2026-12-04",
+   "time": "21:30",
+   "title": "Dirty Disney!",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/dirty-disney-tickets/comedy/2026-12-04-9-30-pm/18918401",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1k7Z_8QpG7SRer",
    "date": "2026-12-04",
    "time": "22:00",
@@ -1256,20 +1224,22 @@
    "score": 0
   },
   {
-   "id": "sg-18666675",
+   "id": "sg-18918389",
    "date": "2026-12-05",
-   "time": "18:30",
+   "time": "16:00",
    "title": "Gabby Bryan",
    "cat": "comedy",
    "venue": "Laugh Boston",
    "city": "Boston, MA",
-   "url": "https://seatgeek.com/gabby-bryan-tickets/comedy/2026-12-05-6-30-pm/18666675",
+   "url": "https://seatgeek.com/gabby-bryan-tickets/comedy/2026-12-05-4-pm/18918389",
    "source": "seatgeek",
    "times": [
+    "16:00",
     "18:30",
     "21:00"
    ],
    "aka": [
+    "sg-18666675",
     "sg-18666681"
    ],
    "score": 1
@@ -1405,7 +1375,7 @@
    "url": "https://www.ticketmaster.com/meek-mill-dream-chasers-nights-boston-massachusetts-12-05-2026/event/01006550949C8CC7",
    "source": "ticketmaster",
    "aka": [
-    "sg-18724757"
+    "sg-18974904"
    ],
    "score": 0
   },
@@ -1486,6 +1456,25 @@
    "city": "Foxborough, MA",
    "url": "https://www.espn.com/nfl/game/_/gameId/401873105/bills-patriots",
    "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "sg-18918396",
+   "date": "2026-12-06",
+   "time": "16:30",
+   "title": "Sarper Guven",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/sarper-guven-tickets/comedy/2026-12-06-4-30-pm/18918396",
+   "source": "seatgeek",
+   "times": [
+    "16:30",
+    "19:00"
+   ],
+   "aka": [
+    "sg-18918380"
+   ],
    "score": 1
   },
   {
@@ -2442,21 +2431,6 @@
    "score": 1
   },
   {
-   "id": "sg-18818460",
-   "date": "2026-12-16",
-   "time": "20:00",
-   "title": "moe.",
-   "cat": "music",
-   "venue": "Infinity Hall Hartford",
-   "city": "Hartford, CT",
-   "url": "https://seatgeek.com/moe-tickets/hartford-connecticut-infinity-hall-hartford-2026-12-16-8-pm/concert/18818460",
-   "source": "seatgeek",
-   "drive_hours": 2.25,
-   "act": "moe.",
-   "score": 3,
-   "why": "love"
-  },
-  {
    "id": "espn-401892946",
    "date": "2026-12-17",
    "time": "19:00",
@@ -2466,6 +2440,18 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nhl/game/_/gameId/401892946/blues-bruins",
    "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "sg-18918378",
+   "date": "2026-12-17",
+   "time": "19:00",
+   "title": "Matt Lopes",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/matt-lopes-tickets/comedy/2026-12-17-7-pm/18918378",
+   "source": "seatgeek",
    "score": 1
   },
   {
@@ -2560,6 +2546,18 @@
     "2026-12-18-street-dogs-and-gang-green-paradise-rock-club"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918431",
+   "date": "2026-12-18",
+   "time": "19:00",
+   "title": "Leah Rudick",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/leah-rudick-tickets/comedy/2026-12-18-7-pm/18918431",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-vv1AvZk4AGkd9W0gU",
@@ -2674,6 +2672,18 @@
    "score": 1
   },
   {
+   "id": "sg-18918391",
+   "date": "2026-12-18",
+   "time": "21:30",
+   "title": "Dirty Disney!",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/dirty-disney-tickets/comedy/2026-12-18-9-30-pm/18918391",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-1AtZkfsGkdhCsax",
    "date": "2026-12-18",
    "time": "22:00",
@@ -2752,6 +2762,25 @@
    "why": "fav"
   },
   {
+   "id": "sg-18918427",
+   "date": "2026-12-19",
+   "time": "18:30",
+   "title": "Leah Rudick",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/leah-rudick-tickets/comedy/2026-12-19-6-30-pm/18918427",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18918429"
+   ],
+   "score": 1
+  },
+  {
    "id": "tm-vv177Z_8GkM_N1EN",
    "date": "2026-12-19",
    "time": "18:30",
@@ -2792,6 +2821,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/emo-night-brooklyn-18-boston-massachusetts-12-19-2026/event/01006572D102F84C",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18883152"
+   ],
    "score": 0
   },
   {
@@ -2878,6 +2910,18 @@
    "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-12-20-2-pm/18601268",
    "source": "seatgeek",
    "score": 0
+  },
+  {
+   "id": "sg-18918403",
+   "date": "2026-12-20",
+   "time": "18:00",
+   "title": "Success Jr",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/success-jr-tickets/comedy/2026-12-20-6-pm/18918403",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "espn-401910156",
@@ -3149,6 +3193,31 @@
    "why": "love"
   },
   {
+   "id": "tm-G5diZ_KV3gvWH",
+   "date": "2026-12-30",
+   "time": "17:55",
+   "title": "Phish",
+   "cat": "music",
+   "venue": "Madison Square Garden",
+   "city": "New York, NY",
+   "url": "https://www.ticketmaster.com/phish-new-york-new-york-12-30-2026/event/3B00653D12D41F7C",
+   "source": "ticketmaster",
+   "drive_hours": 4.25,
+   "act": "Phish",
+   "times": [
+    "17:55",
+    "19:30"
+   ],
+   "aka": [
+    "sg-18659386",
+    "sg-18659383",
+    "2026-12-30-phish-madison-square-garde"
+   ],
+   "sub": "New Year's run, night 1",
+   "score": 3,
+   "why": "love"
+  },
+  {
    "id": "tm-vvG17Z_29NYHQR",
    "date": "2026-12-30",
    "time": "19:00",
@@ -3177,27 +3246,6 @@
    "url": "https://www.espn.com/nhl/game/_/gameId/401893032/oilers-bruins",
    "source": "espn",
    "score": 1
-  },
-  {
-   "id": "tm-G5diZ_KV3gvWH",
-   "date": "2026-12-30",
-   "time": "19:30",
-   "title": "Phish",
-   "cat": "music",
-   "venue": "Madison Square Garden",
-   "city": "New York, NY",
-   "url": "https://www.ticketmaster.com/phish-new-york-new-york-12-30-2026/event/3B00653D12D41F7C",
-   "source": "ticketmaster",
-   "drive_hours": 4.25,
-   "act": "Phish",
-   "aka": [
-    "sg-18659386",
-    "sg-18659383",
-    "2026-12-30-phish-madison-square-garde"
-   ],
-   "sub": "New Year's run, night 1",
-   "score": 3,
-   "why": "love"
   },
   {
    "id": "tm-vv1AvZkf6GkeDwf1k",
@@ -3258,6 +3306,25 @@
    ],
    "aka": [
     "sg-18835585"
+   ],
+   "score": 1
+  },
+  {
+   "id": "sg-18918386",
+   "date": "2026-12-31",
+   "time": "18:30",
+   "title": "Best of Boston Comedy",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/best-of-boston-comedy-tickets/comedy/2026-12-31-6-30-pm/18918386",
+   "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18918387"
    ],
    "score": 1
   },
@@ -3501,6 +3568,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918417",
+   "date": "2027-01-02",
+   "time": "18:30",
+   "title": "Steven Rogers",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/steven-rogers-tickets/comedy/2027-01-02-6-30-pm/18918417",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-G5diZ_KV3DvXt",
    "date": "2027-01-02",
    "time": "19:30",
@@ -3590,6 +3669,37 @@
    "score": 1
   },
   {
+   "id": "sg-18918364",
+   "date": "2027-01-07",
+   "time": "19:00",
+   "title": "Kyle Kinane",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/kyle-kinane-tickets/comedy/2027-01-07-7-pm/18918364",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
+   "id": "sg-18918384",
+   "date": "2027-01-08",
+   "time": "19:00",
+   "title": "Kyle Kinane",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/kyle-kinane-tickets/comedy/2027-01-08-7-pm/18918384",
+   "source": "seatgeek",
+   "times": [
+    "19:00",
+    "21:30"
+   ],
+   "aka": [
+    "sg-18918376"
+   ],
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZk4eGkdq-Q-Q",
    "date": "2027-01-08",
    "time": "19:00",
@@ -3657,6 +3767,13 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/kyle-kinane-tickets/comedy/2027-01-09-6-30-pm/18339463",
    "source": "seatgeek",
+   "times": [
+    "18:30",
+    "21:00"
+   ],
+   "aka": [
+    "sg-18918365"
+   ],
    "score": 1
   },
   {
@@ -3843,7 +3960,7 @@
    "id": "sg-18825186",
    "date": "2027-01-15",
    "time": "20:00",
-   "title": "The Machine - Pink Floyd Tribute",
+   "title": "The Machine",
    "cat": "music",
    "venue": "The Cabot",
    "city": "Beverly, MA",
@@ -3945,6 +4062,18 @@
    "url": "https://www.ticketmaster.com/slip-bizkit-a-tribute-to-nu-boston-massachusetts-01-16-2027/event/01006566D22C4F78",
    "source": "ticketmaster",
    "score": 0
+  },
+  {
+   "id": "sg-18918374",
+   "date": "2027-01-16",
+   "time": "19:00",
+   "title": "Steve Furey",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/steve-furey-tickets/comedy/2027-01-16-7-pm/18918374",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-G5vVZ_4hZiNpD",
@@ -4053,6 +4182,18 @@
    "score": 1
   },
   {
+   "id": "sg-18918399",
+   "date": "2027-01-21",
+   "time": "19:00",
+   "title": "Chris Kattan",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/chris-kattan-tickets/comedy/2027-01-21-7-pm/18918399",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv177Z_fGkTQbkeK",
    "date": "2027-01-21",
    "time": "19:00",
@@ -4134,6 +4275,25 @@
    "score": 0
   },
   {
+   "id": "sg-18918372",
+   "date": "2027-01-22",
+   "time": "19:00",
+   "title": "Ian Fidance",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2027-01-22-7-pm/18918372",
+   "source": "seatgeek",
+   "times": [
+    "19:00",
+    "21:30"
+   ],
+   "aka": [
+    "sg-18447598"
+   ],
+   "score": 1
+  },
+  {
    "id": "sg-18548738",
    "date": "2027-01-22",
    "time": "19:00",
@@ -4183,18 +4343,6 @@
    "url": "https://www.ticketmaster.com/shrek-rave-18-boston-massachusetts-01-22-2027/event/0100649DCF9D1890",
    "source": "ticketmaster",
    "score": 0
-  },
-  {
-   "id": "sg-18447598",
-   "date": "2027-01-22",
-   "time": "21:30",
-   "title": "Ian Fidance",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ian-fidance-tickets/comedy/2027-01-22-9-30-pm/18447598",
-   "source": "seatgeek",
-   "score": 1
   },
   {
    "id": "tm-1AtZkfsGkdq0-aE",
@@ -4311,6 +4459,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918435",
+   "date": "2027-01-24",
+   "time": "18:00",
+   "title": "Colum Tyrrell",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/colum-tyrrell-tickets/comedy/2027-01-24-6-pm/18918435",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv177Z_KGkSVwjCp",
    "date": "2027-01-24",
    "time": "18:30",
@@ -4335,9 +4495,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/richard-thompson-band-boston-massachusetts-01-24-2027/event/01006546CEFDB67D",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18683861"
-   ],
    "score": 0
   },
   {
@@ -4353,6 +4510,18 @@
    "aka": [
     "2027-01-24-the-womack-sisters-royale"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18962466",
+   "date": "2027-01-24",
+   "time": null,
+   "title": "Gary Puckett",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/gary-puckett-tickets/beverly-massachusetts-the-cabot-2027-01-24-3-30-am/concert/18962466",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4437,6 +4606,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918433",
+   "date": "2027-01-27",
+   "time": "19:00",
+   "title": "Tara Cannistraci",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/tara-cannistraci-tickets/comedy/2027-01-27-7-pm/18918433",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "espn-401910430",
    "date": "2027-01-27",
    "time": "19:30",
@@ -4462,6 +4643,18 @@
     "sg-18727510"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18984920",
+   "date": "2027-01-28",
+   "time": "19:00",
+   "title": "Tara Cannistraci",
+   "cat": "comedy",
+   "venue": "Off Cabot Comedy and Events",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/tara-cannistraci-tickets/comedy/2027-01-28-7-pm/18984920",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "sg-18825111",
@@ -4798,7 +4991,7 @@
    "cat": "music",
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/bren-lukens-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-04-7-15-pm/concert/18747184",
+   "url": "https://seatgeek.com/something-in-the-way-music-festival-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-02-04-7-15-pm/concert/18747184",
    "source": "seatgeek",
    "score": 0
   },
@@ -4828,6 +5021,18 @@
     "sg-18667775"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918415",
+   "date": "2027-02-05",
+   "time": "19:00",
+   "title": "Luis J. Gomez",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/luis-j-gomez-tickets/comedy/2027-02-05-7-pm/18918415",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-vv177Z_4GkBGY9oV",
@@ -5128,6 +5333,18 @@
     "sg-18747186"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918394",
+   "date": "2027-02-11",
+   "time": "19:00",
+   "title": "Desi Alexander",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/desi-alexander-tickets/comedy/2027-02-11-7-pm/18918394",
+   "source": "seatgeek",
+   "score": 1
   },
   {
    "id": "tm-vv1AvZk4xGkdpBmdn",
@@ -5439,7 +5656,6 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18639183",
-    "sg-18830722",
     "2027-02-13-chelsea-cutler-roadrunner"
    ],
    "score": 0
@@ -5494,6 +5710,18 @@
    "city": "Boston, MA",
    "url": "https://www.espn.com/nba/game/_/gameId/401910568/raptors-celtics",
    "source": "espn",
+   "score": 1
+  },
+  {
+   "id": "sg-18878287",
+   "date": "2027-02-14",
+   "time": "19:00",
+   "title": "Anthony Rodia",
+   "cat": "comedy",
+   "venue": "The Wilbur",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/anthony-rodia-tickets/comedy/2027-02-14-7-pm/18878287",
+   "source": "seatgeek",
    "score": 1
   },
   {
@@ -5749,6 +5977,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918407",
+   "date": "2027-02-23",
+   "time": "19:00",
+   "title": "Taylor Wolfe",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/taylor-wolfe-tickets/comedy/2027-02-23-7-pm/18918407",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZk4xGkdoPWCV",
    "date": "2027-02-23",
    "time": "19:00",
@@ -5837,6 +6077,18 @@
    "aka": [
     "sg-18702716"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18918413",
+   "date": "2027-02-25",
+   "time": "19:00",
+   "title": "Fin Taylor",
+   "cat": "music",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/fin-taylor-tickets/boston-massachusetts-laugh-boston-2027-02-25-7-pm/concert/18918413",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6126,6 +6378,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918425",
+   "date": "2027-02-28",
+   "time": "18:00",
+   "title": "Cactus Tate",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/cactus-tate-tickets/comedy/2027-02-28-6-pm/18918425",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZkfYGkdvXBUH",
    "date": "2027-02-28",
    "time": "18:00",
@@ -6264,18 +6528,6 @@
    "aka": [
     "sg-18700654"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18813585",
-   "date": "2027-03-03",
-   "time": "20:00",
-   "title": "ROAR",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/roar-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-03-8-pm/concert/18813585",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -6443,6 +6695,18 @@
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
    "url": "https://seatgeek.com/supersonic-oasis-tribute-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-03-05-8-30-pm/concert/18813623",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
+   "id": "sg-18889432",
+   "date": "2027-03-05",
+   "time": "22:00",
+   "title": "Jkyl x Hyde",
+   "cat": "music",
+   "venue": "Royale - Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/jkyl-x-hyde-tickets/boston-massachusetts-royale-boston-2027-03-05-10-pm/concert/18889432",
    "source": "seatgeek",
    "score": 0
   },
@@ -7295,7 +7559,8 @@
     "20:00"
    ],
    "aka": [
-    "sg-18709470"
+    "sg-18709470",
+    "sg-18728587"
    ],
    "score": 0
   },
@@ -7876,6 +8141,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918411",
+   "date": "2027-03-25",
+   "time": "19:00",
+   "title": "Eagle Witt",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/eagle-witt-tickets/comedy/2027-03-25-7-pm/18918411",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZk4NGkeY3z0_",
    "date": "2027-03-25",
    "time": "19:00",
@@ -8130,6 +8407,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918362",
+   "date": "2027-04-01",
+   "time": "19:00",
+   "title": "Aaron Weber",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/aaron-weber-tickets/comedy/2027-04-01-7-pm/18918362",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv177Z_pGkMCN8zS",
    "date": "2027-04-01",
    "time": "19:00",
@@ -8177,6 +8466,25 @@
     "sg-18674833"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918370",
+   "date": "2027-04-02",
+   "time": "19:00",
+   "title": "Aaron Weber",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/aaron-weber-tickets/comedy/2027-04-02-7-pm/18918370",
+   "source": "seatgeek",
+   "times": [
+    "19:00",
+    "21:30"
+   ],
+   "aka": [
+    "sg-18918382"
+   ],
+   "score": 1
   },
   {
    "id": "tm-vv1k7Z_K8xG7IhPb",
@@ -8675,6 +8983,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/elder-18-boston-massachusetts-04-09-2027/event/010064A8C03869CC",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18740841"
    ],
@@ -9389,6 +9701,18 @@
    "score": 0
   },
   {
+   "id": "sg-18932474",
+   "date": "2027-04-22",
+   "time": "20:00",
+   "title": "MC4D",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/mc4d-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-04-22-8-pm/concert/18932474",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-vv177Z_3GklSY5Et",
    "date": "2027-04-23",
    "time": "19:00",
@@ -9752,6 +10076,18 @@
    "score": 0
   },
   {
+   "id": "sg-18918359",
+   "date": "2027-04-30",
+   "time": "19:00",
+   "title": "Marcus D Wiley",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/marcus-d-wiley-tickets/comedy/2027-04-30-7-pm/18918359",
+   "source": "seatgeek",
+   "score": 1
+  },
+  {
    "id": "tm-vv1AvZkfoGkeN-Wv0",
    "date": "2027-04-30",
    "time": "19:30",
@@ -9796,6 +10132,25 @@
     "sg-18493402"
    ],
    "score": 0
+  },
+  {
+   "id": "sg-18918420",
+   "date": "2027-05-01",
+   "time": "18:00",
+   "title": "Marcus D Wiley",
+   "cat": "comedy",
+   "venue": "Laugh Boston",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/marcus-d-wiley-tickets/comedy/2027-05-01-6-pm/18918420",
+   "source": "seatgeek",
+   "times": [
+    "18:00",
+    "20:30"
+   ],
+   "aka": [
+    "sg-18918358"
+   ],
+   "score": 1
   },
   {
    "id": "tm-vv177Z_7GkSjYNiw",
@@ -9955,7 +10310,12 @@
    "url": "https://www.ticketmaster.com/sim-hooman-after-all-world-tour-boston-massachusetts-05-04-2027/event/010064B2B5F2CFFB",
    "source": "ticketmaster",
    "aka": [
-    "sg-18793521"
+    "sg-18793521",
+    "sg-18880795"
+   ],
+   "times": [
+    "18:30",
+    "20:00"
    ],
    "score": 0
   },
@@ -9972,18 +10332,6 @@
    "aka": [
     "sg-18748265"
    ],
-   "score": 0
-  },
-  {
-   "id": "sg-18813612",
-   "date": "2027-05-04",
-   "time": null,
-   "title": "Leo Middea",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/leo-middea-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-04-3-30-am/concert/18813612",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -10091,12 +10439,12 @@
   {
    "id": "sg-18813656",
    "date": "2027-05-09",
-   "time": "19:30",
+   "time": "20:30",
    "title": "Gurriers",
    "cat": "music",
    "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/gurriers-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-09-7-30-pm/concert/18813656",
+   "url": "https://seatgeek.com/gurriers-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-09-8-30-pm/concert/18813656",
    "source": "seatgeek",
    "score": 0
   },
@@ -10113,6 +10461,18 @@
    "aka": [
     "sg-18642531"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18871055",
+   "date": "2027-05-12",
+   "time": "20:00",
+   "title": "Ron Gallo",
+   "cat": "music",
+   "venue": "The Sinclair - Cambridge",
+   "city": "Cambridge, MA",
+   "url": "https://seatgeek.com/ron-gallo-tickets/cambridge-massachusetts-the-sinclair-cambridge-2027-05-12-8-pm/concert/18871055",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -10472,6 +10832,24 @@
    "url": "https://seatgeek.com/hum-tickets/boston-massachusetts-roadrunner-boston-2027-05-24-8-pm/concert/18830735",
    "source": "seatgeek",
    "score": 0
+  },
+  {
+   "id": "tm-G5vVZ_pCLHsSB",
+   "date": "2027-05-25",
+   "time": "19:30",
+   "title": "Kings of Leon",
+   "cat": "music",
+   "venue": "Hartford HealthCare Amphitheater",
+   "city": "Bridgeport, CT",
+   "url": "https://www.ticketmaster.com/kings-of-leon-bridgeport-connecticut-05-25-2027/event/1D0065639FF31CFA",
+   "source": "ticketmaster",
+   "drive_hours": 3.25,
+   "act": "Kings of Leon",
+   "aka": [
+    "sg-18746650"
+   ],
+   "score": 2,
+   "why": "big"
   }
  ],
  "movies": [
@@ -10547,10 +10925,10 @@
   }
  ],
  "sources": {
-  "picks": 2,
+  "picks": 1,
   "venues": 0,
-  "espn": 66,
-  "ticketmaster": 487,
-  "seatgeek": 154
+  "espn": 65,
+  "ticketmaster": 485,
+  "seatgeek": 184
  }
 }
