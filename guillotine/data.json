@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-26T23:22:21Z",
+ "updated": "2026-11-26T23:37:17Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -1191,7 +1191,7 @@
    "manager": "Scott",
    "faab": 8,
    "proj": 142.92,
-   "points": 20.68,
+   "points": 25.16,
    "scores": [
     95.18,
     94.64,
@@ -1211,7 +1211,7 @@
      "name": "Dak Prescott",
      "nfl": "DAL",
      "pos": "QB",
-     "yahoo_actual": 10.38,
+     "yahoo_actual": 14.86,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1766,7 +1766,7 @@
    "manager": "JeffS",
    "faab": 15,
    "proj": 58.65,
-   "points": 45.7,
+   "points": 53.4,
    "scores": [
     111.28,
     66.9,
@@ -1827,7 +1827,7 @@
      "name": "Javonte Williams",
      "nfl": "DAL",
      "pos": "RB",
-     "yahoo_actual": 20.4,
+     "yahoo_actual": 28.1,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -3728,7 +3728,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-26T23:22:23Z",
+  "updated": "2026-11-26T23:37:18Z",
   "players": 3046,
   "unmatched": []
  }
