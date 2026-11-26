@@ -75,10 +75,18 @@ function conferences(teams){
  for(const t of teams){if(!t.conference)continue;if(!groups.has(t.conference))groups.set(t.conference,[]);groups.get(t.conference).push(t);}
  return [...groups].map(([name,ts])=>{const rated=ranked(ts).filter(t=>em(t)!==null);return {name,teams:ts,rated:rated.length,average:mean(rated.map(em)),top3:mean(rated.slice(0,3).map(em)),leader:rated[0]||ranked(ts)[0]};}).sort((a,b)=>(b.average??-1e6)-(a.average??-1e6)||a.name.localeCompare(b.name));
 }
+// each list's values for a metric, sorted once (the rankings page asks for every team's percentile)
+const pctCache=new WeakMap();
 function percentile(teams,t,k,low=false){
- const v=k==="margin"?em(t):teamMetric(t,k),xs=teams.map(x=>k==="margin"?em(x):teamMetric(x,k)).filter(x=>x!==null);
+ const val=x=>k==="margin"?em(x):teamMetric(x,k),v=val(t);
+ let by=pctCache.get(teams);if(!by){by={};pctCache.set(teams,by);}
+ const xs=by[k]||(by[k]=teams.map(val).filter(x=>x!==null).sort((a,b)=>a-b));
  if(v===null||!xs.length)return null;
- return Math.round(100*xs.filter(x=>low?x>=v:x<=v).length/xs.length);
+ // how many are at or below v (or at or above it, when lower is better)
+ let lo=0,hi=xs.length;
+ if(low){while(lo<hi){const m=(lo+hi)>>1;if(xs[m]<v)lo=m+1;else hi=m;}return Math.round(100*(xs.length-lo)/xs.length);}
+ while(lo<hi){const m=(lo+hi)>>1;if(xs[m]<=v)lo=m+1;else hi=m;}
+ return Math.round(100*lo/xs.length);
 }
 function teamStory(t,teams){
  const o=percentile(teams,t,"adjO"),d=percentile(teams,t,"adjD",true),pace=teamMetric(t,"tempo"),m=teamMetric(t,"momentum");
