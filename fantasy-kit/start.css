@@ -18,3 +18,12 @@
 
 .start-details [hidden]{display:none!important}
 
+/* the Mock draft page opens in the same dark band as My leagues and the home page, with the gold Draft Lab line */
+.start-hero{margin-top:18px;padding:34px 30px 32px;border-radius:16px;background:var(--band);color:#EEF2F7;position:relative;overflow:hidden;isolation:isolate}
+.start-hero::before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 120% at 100% 0%,rgba(246,196,69,.14),transparent 60%)}
+.start-hero h1{color:#fff}
+.start-hero>p{color:#B9C5D4}
+.start-hero>.start-kicker{display:inline-flex;align-items:center;gap:8px;color:var(--brand);font-weight:800;font-size:12px}
+.start-hero>.start-kicker::before{content:"";width:18px;height:2px;background:currentColor}
+.start-sports{margin-top:22px}
+@media(max-width:640px){.start-hero{padding:24px 18px 22px;margin-top:10px}}

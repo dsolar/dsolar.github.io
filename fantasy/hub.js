@@ -1,6 +1,6 @@
 /* Draft Lab's home page (/fantasy/) and its sport pages (/fantasy/nba/, /nfl/, /mlb/, /nhl/, /cbb/, /cfb/).
 
-   A page says what it is with <body data-page="overview" | "nba" | "nfl" | "mlb" | "nhl">, and this file fills in the parts
+   A page says what it is with <body data-page="overview" | "formats" | "nba" | "nfl" | "mlb" | "nhl">, and this file fills in the parts
    marked with data-* containers. Load after kit.css, hub.css, faces.css and these scripts (in order):
      fantasy-kit/sports.js, fantasy-kit/value.js, assets/faces.js, fantasy/hub.js
    Rankings, scoring options and categories come straight from Draft Lab (FK.sports, FK.value and its data files), so
@@ -470,5 +470,6 @@
 
   bar();
   theme();
-  if (SPORTS[page]) sportPage(page); else overview();
+  // the Formats page (data-page="formats") is just the bar and its own markup
+  if (SPORTS[page]) sportPage(page); else if (page === "overview") overview();
 })();

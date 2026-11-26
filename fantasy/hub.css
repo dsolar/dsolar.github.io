@@ -352,3 +352,12 @@ a.mode:hover{border-color:var(--sp);transform:translateY(-2px)}
 .manager-home .ym-c{border:0;box-shadow:none}
 .manager-home .ym-attention{margin:0;padding:10px 16px;border-top:1px solid var(--line);font-size:13px}
 .manager-home .ym-c:focus-visible,.manager-home .ym-attention:focus-visible{outline-offset:-3px}
+/* the home page's way to the Formats page, and that page's header */
+.fmt-door{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:22px 24px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:inherit;text-decoration:none;box-shadow:var(--shadow,none)}
+.fmt-door h2{margin:0;font-size:22px}
+.fmt-door p{margin:6px 0 0;color:var(--muted);max-width:70ch;line-height:1.5}
+.fmt-door .fmt-go{flex:none;font-weight:800;color:var(--brand-ink-on,#8a6200);white-space:nowrap}
+.fmt-door:hover{border-color:var(--brand)}
+@media (max-width:640px){.fmt-door{flex-direction:column;align-items:flex-start;padding:18px}}
+.fmt-hero .wrap{padding-top:44px;padding-bottom:40px}
+.fmt-hero .cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}

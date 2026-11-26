@@ -3088,3 +3088,12 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
   .rk-set[open]>summary::after{transform:rotate(-135deg)}
   .rk-set-in{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 12px}
 }
+/* My leagues: the set-up button with its note beside it, spaced, wrapping under it on a phone */
+.lg-cta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin:18px 0 4px}
+.lg-cta span{opacity:.8;font-size:14px}
+/* My leagues, signed out, on a wide screen: the pitch on the left, the sign-in card on the right, so the band is full */
+@media (min-width:960px){
+  .si-band.dl-band .nl-bi{display:grid;grid-template-columns:minmax(0,1fr) minmax(340px,430px);column-gap:44px;align-items:start;justify-items:stretch;max-width:none;width:100%;box-sizing:border-box}
+  .si-band.dl-band .nl-bi>*{grid-column:1;justify-self:start}
+  .si-band.dl-band .nl-bi>.si-card{grid-column:2;grid-row:1 / span 8;align-self:center;justify-self:stretch;margin:0}
+}
