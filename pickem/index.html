@@ -125,10 +125,11 @@ button{font:inherit;color:inherit}
 table.st{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin-bottom:24px}
 table.st th{padding:9px 10px;background:var(--ink);color:var(--card);font:700 .85rem var(--cond);letter-spacing:.08em;text-transform:uppercase;text-align:left}
 table.st td{padding:10px;border-top:1px solid #EDF1EA;font-variant-numeric:tabular-nums}
-table.st .n{text-align:right;font:700 1.1rem var(--cond)}
+table.st .n{text-align:right;font:700 1.1rem var(--cond);white-space:nowrap}
 table.st .rk{width:2.4em;font:800 1.15rem var(--cond);color:var(--ink-2)}
 table.st tr.me td{background:#FFF6D6}
-table.st td.nm{font-weight:600;overflow-wrap:anywhere}
+table.st td.nm{font-weight:600;overflow-wrap:break-word}
+@media (max-width:480px){table.st th{letter-spacing:.03em;padding:9px 7px}table.st td{padding:10px 7px}}
 .empty{padding:22px;border:2px dashed var(--rule);border-radius:6px;text-align:center;color:var(--ink-2);background:rgba(255,255,255,.5)}
 .grid-wrap{overflow-x:auto;margin:0 0 24px;border:1px solid var(--rule);border-radius:6px;background:var(--card)}
 table.gp{border-collapse:collapse;font-size:.9rem}
