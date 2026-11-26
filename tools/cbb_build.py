@@ -349,17 +349,18 @@ def main():
    if r and (not r["teamId"] or r["teamId"]==p["teamId"]):
     p["stats"]={k:v for k,v in r.items() if k!="teamId" and not k.startswith("_")};p["statsSource"]="ESPN season stats";matched+=1
   if matched<500:raise ValueError(f"Only {matched} roster players matched season stats")
-  # ESPN's roster feed errors for a few teams (it trips on one athlete it can't find): build those rosters from the
-  # stats feed instead, everyone who has played, so the team still has players
-  have={p["teamId"] for p in players};filled=[]
+  # ESPN's roster feed misses players: whole teams when it trips on one athlete it can't find (Mercer), and single
+  # players who play every night (Boston College's Zak Smrekar, a starter, isn't on its roster). Anyone the stats feed
+  # has for a Division I team who isn't on that team's roster joins it from there
+  ids={p["id"] for p in players};filled=[]
   for tid,t in teams.items():
-   if tid in have:continue
-   rows=[(aid,r) for aid,r in stat_rows.items() if r["teamId"]==tid and (r.get("_a") or {}).get("name")]
+   rows=[(aid,r) for aid,r in stat_rows.items() if r["teamId"]==tid and aid not in ids and (r.get("_a") or {}).get("name")]
    for aid,r in rows:
     players.append({"id":aid,"name":r["_a"]["name"],"teamId":tid,"team":t["short"],"conference":t["conference"],"pos":r["_a"]["pos"],"year":"","height":None,"weight":None,"jersey":None,
      "head":f"https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/{aid}.png","stats":{k:v for k,v in r.items() if k!="teamId" and not k.startswith("_")},
-     "source":"ESPN season stats (the roster feed failed)","url":None,"updated":stamp,"statsSource":"ESPN season stats"})
-   if rows:filled.append(t["short"])
+     "source":"ESPN season stats (missing from ESPN's roster)","url":None,"updated":stamp,"statsSource":"ESPN season stats"})
+   if rows:filled.append(f'{t["short"]} ({len(rows)})')
+  if filled:print(f"Players added from the stats feed: {', '.join(filled)}",flush=True)
   if filled and isinstance(sources.get("players"),dict):sources["players"]["fromStats"]=filled
   sources["playerStats"]={"name":"ESPN player season stats","status":"connected","url":"https://www.espn.com/mens-college-basketball/stats/player","updated":stamp,"checked":stamp,"coverage":matched}
  except Exception as e:
