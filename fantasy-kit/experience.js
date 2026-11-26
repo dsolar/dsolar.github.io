@@ -131,7 +131,10 @@
     const next = D.type === "auction" ? null : F.nextPickOf(D, team);
     const first = D.type === "auction" ? null : D.board.findIndex((p, i) => !p && D.order[i] != null) + 1;
     const wait = next == null || !first ? null : Math.max(0, next - first);
-    const later = wait == null ? null : legal[Math.min(legal.length - 1, wait)];
+    // who should still be there at your next pick: skips players out or doubtful this week, when there's anyone else
+    const out = (p) => /^(o|out|d|doubtful)\b/i.test(String(p.inj || "").trim());
+    const pool = legal.filter((p) => !out(p)).length > wait ? legal.filter((p) => !out(p)) : legal;
+    const later = wait == null ? null : pool[Math.min(pool.length - 1, wait)];
     return { best, fit, later, wait, next };
   }
   return { sportWeek, weekLabel, RULE_FIELDS, rulesOf, encode, decode, applyQuery, rankingConfig, mockConflict, fromDraft, targets, reliableSample, draftAdvice };
