@@ -143,7 +143,8 @@ def parse_standings(d, teams):
         ids = [i for dv in divisions for i in dv["teams"]]
         if not ids:
             continue
-        short = teams[ids[0]]["conference"]
+        # ESPN names a team's conference after its division ("Sun Belt - East"); the conference is the part before it
+        short = re.sub(r" - (East|West)$", "", teams[ids[0]]["conference"])
         confs.append({"id": str(c.get("id")), "name": c.get("name"), "short": short, "teams": ids,
                       "divisions": divisions if len(divisions) > 1 else None, "power": short in POWER,
                       "independent": str(c.get("id")) == "18"})

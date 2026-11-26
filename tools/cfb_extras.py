@@ -7,8 +7,9 @@
     straight up and against the sportsbook line ESPN shows.
   - Résumé: wins above what an average top-25 team would expect against the same schedule (the hub's Strength of Record).
   - Season simulation: the rest of the regular season, conference championship games (top two in the standings, or
-    division winners), a committee ranking, the 12-team field under the 2026 rules (four power champions, the best
-    Group of Six champion, Notre Dame if top 12, seven at-large) and the bracket, 10,000 times by default.
+    division winners), a committee ranking, the 12-team field under the 2026 rules (four power champions, the
+    highest-ranked Group of Six team, champion or not, Notre Dame if top 12, seven at-large) and the bracket, 10,000
+    times by default.
   - Heisman ladder: production per game weighted by team success, with daily snapshots for movers.
 The line formula mirrors CFB.line() in cfb/model.js; tests/cfb-model.test.cjs checks the two agree.
 """
@@ -40,6 +41,7 @@ FCS_PRIOR = (-11.0, 11.0)  # FCS opponents start 22 points worse than an average
 POWER = {"SEC", "Big Ten", "Big 12", "ACC"}
 HOSTED_CCG = {"American", "Sun Belt", "Mountain West", "C-USA", "CUSA", "Conference USA"}
 NOTRE_DAME = "87"
+G6_TEAMS = set()
 
 
 def read(p, default=None):
@@ -175,6 +177,9 @@ def simulate(hub, R, base, sims, seed=2026):
     fbs = set(teams)
     confs = [c for c in hub["conferences"] if not c.get("independent")]
     conf_of = {tid: c["short"] for c in hub["conferences"] for tid in c["teams"]}
+    global G6_TEAMS
+    # the Group of Six: every FBS conference outside the power four (independents aren't in it)
+    G6_TEAMS = {tid for c in hub["conferences"] if c["short"] not in POWER and not c.get("independent") for tid in c["teams"]}
     games = [g for g in hub["games"] if not g.get("post") and g["state"] != "off"]
     ccg_known = {}
     for g in games:
@@ -274,7 +279,8 @@ def simulate(hub, R, base, sims, seed=2026):
         score = {t: (RES[t] - mr) / sr + 0.45 * pz[t] + 0.6 * anchor.get(t, 0) + (0.3 if t in champ_set and conf_of.get(t) in POWER else 0.15 if t in champ_set else 0) for t in fbs}
         ranked = sorted(fbs, key=lambda t: -score[t]); rank = {t: i + 1 for i, t in enumerate(ranked)}
         auto = [champs[c] for c in champs if c in POWER]
-        g6 = sorted([champs[c] for c in champs if c not in POWER], key=lambda t: rank[t])
+        # 2026: the Group of Six bid goes to its highest-ranked team, conference champion or not
+        g6 = sorted([t for t in fbs if t in G6_TEAMS], key=lambda t: rank[t])
         if g6:
             auto.append(g6[0])
         field = set(auto)
@@ -329,7 +335,7 @@ def simulate(hub, R, base, sims, seed=2026):
     order = sorted(fbs, key=lambda t: -avg[t]); prank = {t: i + 1 for i, t in enumerate(order)}
     likely = {c: champ_count[c].most_common(1)[0][0] for c in champ_count}
     auto = [likely[c] for c in likely if c in POWER]
-    g6 = sorted([likely[c] for c in likely if c not in POWER], key=lambda t: prank[t])
+    g6 = sorted([t for t in fbs if t in G6_TEAMS], key=lambda t: prank[t])
     if g6:
         auto.append(g6[0])
     field = set(auto)
