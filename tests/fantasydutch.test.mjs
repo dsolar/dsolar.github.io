@@ -33,9 +33,9 @@ test('a Dutch draft is an auction underneath, with its own rules', () => {
   assert.equal(D.type, 'auction');
   assert.equal(F.formatOf(D), 'dutch');
   assert.ok(F.dutchOn(D));
-  assert.deepEqual([D.auction.dutch.size, D.auction.dutch.pace, D.auction.dutch.gap], [4, 'std', 10]);
-  assert.deepEqual([4, 8, 10, 12, 14, 20].map(F.dutchSize), [4, 4, 5, 6, 7, 8], 'about one player for every two teams');
-  assert.equal(room({ dutch: { size: 3 } }).D.auction.dutch.size, 3);
+  assert.deepEqual([D.auction.dutch.size, D.auction.dutch.pace, D.auction.dutch.gap, D.auction.dutch.mult], [3, 'std', 10, 1.35]);
+  assert.deepEqual([4, 8, 10, 12, 14, 20].map(F.dutchSize), [3, 3, 3, 4, 4, 4], 'three at a time, four in a big league');
+  assert.equal(room({ dutch: { size: 1 } }).D.auction.dutch.size, 1, 'one at a time is allowed');
   assert.equal(F.FORMATS.dutch, 'Dutch auction');
 });
 
@@ -51,7 +51,7 @@ test('a wave shows first, then every price falls to the floor and never rises', 
   assert.equal(w.at, T0 + 6000);
   assert.equal(w.ends, T0 + 36000);
   const top = ctx.byId[st.lots[0].pid];
-  assert.ok(st.lots[0].start >= Math.floor(top.$ * 1.6), 'opens well over his value');
+  assert.ok(st.lots[0].start >= Math.floor(top.$ * 1.35), 'opens over his value');
   let last = st.lots.map((l) => l.price);
   for (let t = w.at; t <= w.ends; t += 500) {
     const now = F.auctionState(D, t).lots.map((l) => l.price);
@@ -59,9 +59,10 @@ test('a wave shows first, then every price falls to the floor and never rises', 
     last = now;
   }
   assert.ok(last.every((p) => p === 1), 'everything reaches $1');
-  // around his value the fall is slow: it takes over half the clock to go from 120% to 72% of the opening share
-  const lot = w.lots[0], near = (u) => F.dutchPrice(D, lot, w.at + w.len * u);
-  assert.ok(near(0.2) - near(0.75) < near(0) - near(0.2) + near(0.75) - near(1));
+  // around his value the fall is slow: 60% of the clock goes on the stretch from about 117% to 78% of his value
+  const lot = w.lots[0], near = (u) => F.dutchPrice(D, lot, w.at + w.len * u), v = ctx.byId[lot.pid].$;
+  assert.ok(near(0.15) <= v * 1.2 && near(0.15) >= v * 1.1, `after the first step he's just over his value (${near(0.15)} for ${v})`);
+  assert.ok(near(0.75) <= v * 0.82 && near(0.75) >= v * 0.72);
 });
 
 test('the first claim wins at the price showing, and the budget guard holds', () => {
@@ -183,12 +184,12 @@ test('undo puts a claimed player back on sale in his wave, and a pause keeps the
   assert.ok(F.claim(D, ctx, 3, w.lots[2].pid, t + 61500).ok);
 });
 
-test('with a pace, a wave of stars gets a long clock and a cheap wave a short one', () => {
+test('with a pace, the clock fits the players: long for stars, short for the last waves', () => {
   const { D, ctx } = room({ teams: 10, seed: 6, dutch: { pace: 'std' } });
   assert.equal(room({ dutch: { fall: 45 } }).D.auction.dutch.pace, undefined, 'a fixed fall stays fixed');
   assert.equal(room({ dutch: { pace: 'nope' } }).D.auction.dutch.pace, 'std');
   F.start(D, T0, ctx);
-  const lens = [];
+  const seenW = [];
   let t = T0, seen = 0;
   for (let i = 0; i < 400000 && D.phase === 'live'; i++) {
     t += 500; F.tick(D, ctx, t);
@@ -196,17 +197,36 @@ test('with a pace, a wave of stars gets a long clock and a cheap wave a short on
     if (w && w.n !== seen) {
       seen = w.n;
       const top = Math.max(...w.lots.map((l) => l.start));
-      lens.push([top, w.len / 1000]);
-      // around his value the top player moves about two dollars a second, inside the pace's limits
-      const want = Math.max(15, Math.min(60, Math.round((0.3 * (top - 1)) / (0.55 * 2))));
-      assert.equal(w.len / 1000, want);
+      seenW.push({ top, len: w.len / 1000, wait: w.wait / 1000, lots: w.lots.length });
+      // four seconds for each square-root dollar of the priciest opening price, 6 to 75
+      assert.equal(w.len / 1000, Math.max(6, Math.min(75, Math.round(4 * Math.sqrt(top)))));
+      assert.equal(w.wait / 1000, Math.max(3, Math.min(10, Math.round(Math.sqrt(top)))), 'the look before prices move scales too');
       assert.equal(w.ends - w.at, w.len);
     }
   }
   assert.equal(D.phase, 'done');
-  assert.ok(lens[0][1] > lens[lens.length - 1][1], `first wave ${lens[0][1]}s, last ${lens[lens.length - 1][1]}s`);
-  assert.equal(lens[lens.length - 1][1], 15, 'the cheap waves take the minimum');
+  const first = seenW[0], last = seenW[seenW.length - 1];
+  assert.ok(first.len >= 30 && first.wait >= 8, `the first wave gets time (${first.len}s after a ${first.wait}s look)`);
+  assert.deepEqual([last.len, last.wait], [7, 3], 'the last waves are quick');
+  assert.equal(first.lots, 3);
+  assert.ok(seenW.some((w) => w.top <= 3 && w.lots === 6), 'the $1 waves come up six at a time');
+  assert.ok(seenW.filter((w) => w.top > 3).every((w) => w.lots <= 3));
   const fast = room({ teams: 10, seed: 6, dutch: { pace: 'fast' } }), slow = room({ teams: 10, seed: 6, dutch: { pace: 'slow' } });
   for (const r of [fast, slow]) { F.start(r.D, T0, r.ctx); F.tick(r.D, r.ctx, T0 + 1); }
-  assert.ok(fast.D.auction.wave.len < D.auction.dutch.fall * 1000 + 60000 && fast.D.auction.wave.len < slow.D.auction.wave.len);
+  assert.ok(fast.D.auction.wave.len < first.len * 1000 && first.len * 1000 < slow.D.auction.wave.len);
+});
+
+test('bots wait for a discount: stars go for about their value, and not in the first few seconds', () => {
+  const { D, ctx } = room({ teams: 10, seed: 8, dutch: { pace: 'std' } });
+  F.start(D, T0, ctx);
+  const at = {}; let t = T0, seen = 0;
+  for (let i = 0; i < 400000 && D.phase === 'live'; i++) { t += 250; F.tick(D, ctx, t); const w = D.auction.wave; if (w && w.n !== seen) { seen = w.n; at[w.n] = w.at; } }
+  const stars = D.sales.filter((s) => !s.auto && ctx.byId[s.pid].$ >= 40);
+  assert.ok(stars.length >= 8);
+  const ratio = stars.reduce((a, s) => a + s.price / ctx.byId[s.pid].$, 0) / stars.length;
+  assert.ok(ratio > 0.9 && ratio < 1.1, `stars go for about their value (${ratio.toFixed(2)})`);
+  const secs = stars.map((s) => (s.at - at[s.wave]) / 1000).sort((a, b) => a - b);
+  assert.ok(secs[0] >= 6, `nobody snipes a star in the first seconds (${secs[0]})`);
+  assert.ok(secs[Math.floor(secs.length / 2)] >= 10, `a typical star is on the board ten seconds or more (${secs[Math.floor(secs.length / 2)]})`);
+  assert.ok(D.teams.every((x) => x.budget <= 12), 'the room spends its money');
 });

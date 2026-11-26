@@ -1210,28 +1210,34 @@
      A player nobody claims comes back in a later wave at a lower opening price. A wave that sells no one is a dead
      wave: every team with an open spot is handed its best fit at the minimum, so the draft always ends. */
   const DUTCH_LINGER = 3000;
-  /* A wave's length by pace. One clock for every wave is wrong at both ends: a $170 star loses $7 a second, too fast
-     to time, and a $6 player takes as long to lose $5. So the clock is sized to the wave's priciest player: long
-     enough that around his value (the slow stretch of the curve, 30% of the fall in 55% of the time) his price moves
-     about `rate` dollars a second, between `min` and `max` seconds. */
-  const DUTCH_PACES = { fast: { label: "Fast", rate: 3, min: 12, max: 45 }, std: { label: "Standard", rate: 2, min: 15, max: 60 }, slow: { label: "Slow", rate: 1.3, min: 20, max: 80 } };
-  function dutchLen(R, lots, floor) {
+  /* Pace. A fixed clock is wrong at both ends: a $170 star loses $7 a second, too fast to time, and a $3 player
+     takes as long to lose $2. Dollars a second can't be constant either (a $25 player would be gone in five seconds).
+     So a wave's clock grows with the square root of its priciest opening price: k seconds times that root, between
+     min and max. At Standard a $90 opener gets 38 seconds and moves about a dollar a second around his value; a $34
+     opener gets 23; a $3 wave gets 6. The look before prices move (dutchWait) scales the same way, up to
+     dutch.gap seconds for the stars and three for the last waves. */
+  const DUTCH_PACES = { fast: { label: "Fast", k: 3, min: 5, max: 55 }, std: { label: "Standard", k: 4, min: 6, max: 75 }, slow: { label: "Slow", k: 5.5, min: 8, max: 100 } };
+  const dutchTop = (lots) => Math.max(...lots.map((l) => l.start));
+  function dutchLen(R, lots) {
     const P = DUTCH_PACES[R.pace];
     if (!P) return R.fall * 1000;
-    const top = Math.max(...lots.map((l) => l.start));
-    return Math.round(Math.max(P.min, Math.min(P.max, (0.3 * (top - floor)) / (0.55 * P.rate)))) * 1000;
+    return Math.round(Math.max(P.min, Math.min(P.max, P.k * Math.sqrt(dutchTop(lots))))) * 1000;
   }
-  const DUTCH_CURVE = [[0, 1], [0.2, 0.75], [0.75, 0.45], [1, 0]];     // [share of the clock gone, share of (start - floor) left]
+  const dutchWait = (R, lots) => (DUTCH_PACES[R.pace] ? Math.max(Math.min(3, R.gap), Math.min(R.gap, Math.round(Math.sqrt(dutchTop(lots))))) : R.gap) * 1000;
+  /* The fall: a quick first step off the opening price (nobody pays 135% of value), then 60% of the clock spent
+     between about 117% and 78% of his value, where the standoff is, then a fast run to the floor. */
+  const DUTCH_CURVE = [[0, 1], [0.15, 0.87], [0.75, 0.58], [1, 0]];     // [share of the clock gone, share of (start - floor) left]
   const dclamp = (x, d, lo, hi) => { const v = Number(x); return x == null || !Number.isFinite(v) ? d : Math.max(lo, Math.min(hi, v)); };
-  // players a wave when the commissioner hasn't said: about one for every two teams, so a wave fits on a phone
-  const dutchSize = (teams) => Math.max(4, Math.min(8, Math.ceil((teams || 8) / 2)));
+  // players a wave when the commissioner hasn't said: three (four in a big league), so a wave fits on a phone with
+  // room to think. The last waves, all at the minimum opening price, come up two at a time as many (dutchWave).
+  const dutchSize = (teams) => ((teams || 8) > 10 ? 4 : 3);
   function dutchRules(o, teams) {
     o = o || {};
     // pace: each wave's clock is set from its priciest player (dutchLen). A draft made with a fixed `fall` and no
     // pace keeps one length for every wave.
     const pace = DUTCH_PACES[o.pace] ? o.pace : o.fall != null ? undefined : "std";
-    return { size: Math.round(dclamp(o.size, dutchSize(teams), 3, 20)), fall: Math.round(dclamp(o.fall, 30, 10, 120)), pace,
-      gap: Math.round(dclamp(o.gap, 10, 0, 30)), mult: Math.round(dclamp(o.mult, 1.6, 1.2, 2.5) * 100) / 100, passed: {} };
+    return { size: Math.round(dclamp(o.size, dutchSize(teams), 1, 20)), fall: Math.round(dclamp(o.fall, 30, 10, 120)), pace,
+      gap: Math.round(dclamp(o.gap, 10, 0, 30)), mult: Math.round(dclamp(o.mult, 1.35, 1.1, 2.5) * 100) / 100, passed: {} };
   }
   const dutchOn = (D) => !!(D && D.auction && D.auction.dutch);
   const formatOf = (D) => (dutchOn(D) ? "dutch" : D.type);
@@ -1267,16 +1273,20 @@
   function dutchWave(D, ctx, at) {
     const A = D.auction, R = A.dutch, open = dutchOpen(D, ctx);
     if (!open.length) return null;
-    const lots = [];
+    const lots = [], low = A.minBid + 2;
     const pool = ctx.available.slice().sort((a, b) => (b.$ || 0) - (a.$ || 0) || a.rank - b.rank);
+    let size = R.size;
     for (const p of pool) {
-      if (lots.length >= R.size) break;
+      if (lots.length >= size) break;
       if (!open.some((t) => canAdd(D, ctx, t.id, p).ok)) continue;
       const cut = Math.pow(0.75, (R.passed || {})[p.id] || 0);
-      lots.push({ pid: p.id, start: Math.max(A.minBid + 2, Math.ceil(Math.max(1, p.$ || 0) * R.mult * cut)) });
+      const start = Math.max(low, Math.ceil(Math.max(1, p.$ || 0) * R.mult * cut));
+      // the bargain waves: once the best player left opens at the minimum, twice as many come up at a time
+      if (!lots.length && start <= low && DUTCH_PACES[R.pace]) size = Math.max(size, Math.min(6, size * 2));
+      lots.push({ pid: p.id, start });
     }
     if (!lots.length) return null;
-    const len = dutchLen(R, lots, A.minBid), wait = R.gap * 1000;
+    const len = dutchLen(R, lots), wait = dutchWait(R, lots);
     A.wave = { n: (A.waves || 0) + 1, at: at + wait, ends: at + wait + len, len, wait, lots, sold: 0 };
     A.waves = A.wave.n;
     return A.wave;
@@ -1306,12 +1316,27 @@
     refresh(D, ctx);
     if (finishIfDone(D, at)) D.auction.wave = null;
   }
-  // A bot waits for its price: its top price for the player (botMax), shaded a little, since the first claim pays
-  // what's showing and nobody pushes it up.
-  function dutchTarget(D, ctx, teamId, p) {
-    const top = botMax(D, ctx, teamId, p);
-    if (top < D.auction.minBid) return 0;
-    return Math.max(D.auction.minBid, Math.min(maxBid(D, teamId), Math.floor(top * (0.84 + 0.14 * hash01(`${D.seed}:dutch:${teamId}:${p.id}`)))));
+  // A bot waits for its price. Nobody pushes a Dutch price up, so a bot shades under what it thinks he's worth and
+  // the room's first claim lands around his value, not over it; late in a draft with money left over, the market's
+  // heat lifts everyone's number, the way an auction's last stars go for more.
+  // How hot the market is: the money still to be spent for each dollar of value still to be bought. Over 1, there's
+  // more money than talent left and prices should run above value; under 1, the room has overspent.
+  function dutchHeat(D, ctx) {
+    const min = D.auction.minBid, spots = sum(D.teams.map((t) => spotsLeft(D, t.id)));
+    if (!spots) return 1;
+    const money = sum(D.teams.map((t) => Math.max(0, t.budget - spotsLeft(D, t.id) * min)));
+    const value = sum(ctx.available.map((p) => p.$ || 0).sort((a, b) => b - a).slice(0, spots).map((v) => Math.max(0, v - min)));
+    return Math.max(0.85, Math.min(1.6, value > 0 ? money / value : 1.6));
+  }
+  function dutchTarget(D, ctx, teamId, p, heat) {
+    if (!canAdd(D, ctx, teamId, p).ok) return 0;
+    const left = spotsLeft(D, teamId), min = D.auction.minBid;
+    if (left <= 0) return 0;
+    const rich = (D.teams[teamId].budget / left) / Math.max(1, sum(D.teams.map((t) => t.budget)) / Math.max(1, sum(D.teams.map((t) => spotsLeft(D, t.id)))));
+    // 76% to 100% of what he's worth to this team: every bot waits for some discount, so the room's first claim comes
+    // around his value and a manager who wants him has to go a little early
+    const want = worth(D, ctx, teamId, p, null) * (0.76 + 0.24 * hash01(`${D.seed}:dutch:${teamId}:${p.id}`)) * (heat || 1) * Math.min(1.2, Math.max(0.8, Math.sqrt(rich)));
+    return Math.max(min, Math.min(maxBid(D, teamId), Math.floor(want)));
   }
   // The next bot claim in this wave: { team, lot, at }. Worked out once per sale (every sale moves budgets and needs).
   const dutchMemo = new WeakMap();
@@ -1319,14 +1344,14 @@
     const w = D.auction.wave, sig = `${w.n}:${D.sales.length}:${w.at}`;
     const m = dutchMemo.get(D);
     if (m && m.sig === sig) return m.next;
-    const lag = Math.min(D.botDelay || 0, w.len * 0.1);
+    const lag = Math.min(D.botDelay || 0, w.len * 0.1), heat = dutchHeat(D, ctx);
     let next = null;
     for (const lot of w.lots) {
       const p = ctx.byId[lot.pid];
       if (!p || lot.sold) continue;
       for (const t of D.teams) {
         if (!isBot(t) || spotsLeft(D, t.id) <= 0) continue;
-        const tg = dutchTarget(D, ctx, t.id, p);
+        const tg = dutchTarget(D, ctx, t.id, p, heat);
         if (!tg) continue;
         const at = Math.max(dutchWhen(D, lot, tg), w.at + lag);
         if (at > w.ends) continue;

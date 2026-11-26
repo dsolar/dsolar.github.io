@@ -2992,7 +2992,6 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .wv-need b{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:2px}
 .wv-need .slot{margin:0}.wv-need .slot i{font-style:normal;color:var(--brand)}
 .wv-need .wv-max{margin-left:auto}
-@media (max-width:600px){.wv-need .wv-max{margin-left:0;flex-basis:100%}}
 .wv-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
 .wv-c{position:relative;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"p d b" "p d w";align-items:center;gap:0 10px;padding:8px 10px 11px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .wv-c.star{border-color:var(--brand)}
@@ -3017,7 +3016,12 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .wv-w:empty{display:none}
 .wv-bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--surface-3)}
 .wv-bar i{display:block;height:100%;background:var(--brand);transition:width .25s linear}
-@media (max-width:600px){.wave{padding:8px 12px 10px}.wv-g{grid-template-columns:1fr;gap:6px}.wv-d b{font-size:24px}.wv-c{padding:6px 8px 9px}.wv-h .bid-limit{margin-left:0;flex-basis:100%}}
+/* on a phone a wave is a short stack of one-line rows, so the board and the player list both stay in view */
+@media (max-width:600px){.wave{padding:6px 12px 8px}.wv-h{margin-bottom:4px;gap:2px 8px}.wv-h b{font-size:16px}.wv-h .ps{font-size:11px;line-height:1.3}
+  .wv-g{grid-template-columns:1fr;gap:5px}.wv-c{padding:4px 8px 7px;gap:0 8px;border-radius:8px}.wv-c .av{width:28px;height:28px;font-size:10px}
+  .wv-n b{font-size:13px}.wv-n small{font-size:10px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap}.wv-d b{font-size:21px}.wv-d small{font-size:9px;margin-top:1px}
+  .wv-c .btn{min-height:34px;padding:0 12px}.wv-w{display:none}.wv-c.sold .wv-d b{font-size:17px}.wv-by{min-width:52px}
+  .wv-need{flex-wrap:nowrap;overflow-x:auto;margin-bottom:6px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.wv-need::-webkit-scrollbar{display:none}.wv-need>*{flex:none}.wv-need .wv-long{display:none}}
 @media (prefers-reduced-motion:reduce){.wave.open .wv-d b.tick{animation:none}.wv-bar i{transition:none}}
 
 /* Results: the league table under your team */
