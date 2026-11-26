@@ -230,3 +230,140 @@ test('bots wait for a discount: stars go for about their value, and not in the f
   assert.ok(secs[Math.floor(secs.length / 2)] >= 10, `a typical star is on the board ten seconds or more (${secs[Math.floor(secs.length / 2)]})`);
   assert.ok(D.teams.every((x) => x.budget <= 12), 'the room spends its money');
 });
+
+// ---------- the slow sale (pace "drip") ----------
+const H = 3600e3;
+function sale(o = {}) {
+  const r = room({ teams: o.teams || 8, seed: o.seed || 3, humans: o.humans || [], dutch: { pace: 'drip', window: o.window === undefined ? 48 * 3600 : o.window } });
+  F.start(r.D, T0, r.ctx); F.tick(r.D, r.ctx, T0 + 1);
+  return r;
+}
+const runSale = (D, ctx, step = 600e3) => { let t = T0; for (let i = 0; i < 5000 && D.phase === 'live'; i++) { t += step; F.tick(D, ctx, t, 500); } return t; };
+
+test('the sale: every draftable player in one wave, falling for the whole window', () => {
+  const { D } = sale();
+  const R = D.auction.dutch, w = D.auction.wave, spots = D.teams.length * D.rounds;
+  assert.deepEqual([R.pace, R.window, R.mult], ['drip', 48 * 3600, 1.2]);
+  assert.equal(w.len, 48 * H);
+  assert.equal(w.lots.length, Math.ceil(spots * 1.5), 'half again as many players as spots');
+  const st = F.auctionState(D, w.at + H);
+  assert.ok(st.drip && st.open);
+  assert.equal(room({ dutch: { pace: 'drip' } }).D.auction.dutch.window, 48 * 3600, 'two days unless set');
+  assert.equal(room({ dutch: { pace: 'std' } }).D.auction.dutch.window, undefined);
+});
+
+test('bots buy through the window, stars around their value, and every roster ends full', () => {
+  const { D, ctx } = sale({ seed: 5 });
+  const w = D.auction.wave, t = runSale(D, ctx);
+  assert.equal(D.phase, 'done');
+  assert.ok(t <= w.ends + 600e3 + 1, 'done by the end of the window');
+  F.rosters(D).forEach((ids, i) => { assert.equal(ids.length, F.sizeOf(D, i)); assert.ok(D.teams[i].budget >= 0); });
+  assert.equal(new Set(D.sales.map((s) => s.pid)).size, D.sales.length);
+  const stars = D.sales.filter((s) => !s.auto && ctx.byId[s.pid].$ >= 40);
+  const ratio = stars.reduce((a, s) => a + s.price / ctx.byId[s.pid].$, 0) / stars.length;
+  assert.ok(ratio > 0.88 && ratio < 1.1, `stars go for about their value (${ratio.toFixed(2)})`);
+  const first = Math.min(...D.sales.map((s) => s.at)) - w.at;
+  assert.ok(first > 2 * H && first < 16 * H, `the first claim comes hours in, not at the open (${(first / H).toFixed(1)}h)`);
+});
+
+test('a standing order claims the player the moment his price gets there, ahead of the bots', () => {
+  const { D, ctx } = sale({ humans: [0], seed: 4 });
+  const w = D.auction.wave, lot = w.lots[2], p = ctx.byId[lot.pid], want = Math.round(p.$ * 1.1);
+  assert.equal(F.order(D, ctx, 0, lot.pid, 0.4, T0 + 5).ok, true, 'a zero price is "take it off"');
+  assert.match(F.order(D, ctx, 0, lot.pid, 500, T0 + 5).why, /You have \$200/);
+  const r = F.order(D, ctx, 0, lot.pid, want, T0 + 5);
+  assert.deepEqual([r.ok, r.price, r.got], [true, want, false]);
+  assert.deepEqual(D.teams[0].orders[lot.pid], { p: want, at: T0 + 5 });
+  runSale(D, ctx);
+  const s = D.sales.find((x) => x.pid === lot.pid);
+  assert.equal(s.team, 0);
+  assert.ok(s.price <= want && s.price >= want - 1, `he paid his price (${s.price} for an order of ${want})`);
+  assert.ok(!s.auto);
+  assert.equal(D.teams[0].orders[lot.pid], undefined, 'a filled order is gone');
+  // everything he didn't claim is filled at the end, for the minimum
+  const filled = D.sales.filter((x) => x.team === 0 && x.auto);
+  assert.equal(filled.length, F.sizeOf(D, 0) - 1);
+  assert.ok(filled.every((x) => x.price === 1 && x.at === w.ends));
+});
+
+test('an order under the price showing waits; one over it buys now at the price showing', () => {
+  const { D, ctx } = sale({ humans: [0, 1, 2, 3, 4, 5, 6, 7] });
+  const w = D.auction.wave, a = w.lots[0], b = w.lots[1], t = w.at + 20 * H;
+  const pa = F.dutchPrice(D, a, t), pb = F.dutchPrice(D, b, t);
+  const low = F.order(D, ctx, 0, a.pid, pa - 5, t);
+  assert.deepEqual([low.ok, low.got], [true, false]);
+  const high = F.order(D, ctx, 1, b.pid, pb + 20, t);
+  assert.deepEqual([high.ok, high.got], [true, true]);
+  assert.equal(D.sales[D.sales.length - 1].price, pb, 'the price showing, not the order');
+  assert.equal(D.teams[1].budget, 200 - pb);
+  // two orders on one player: the higher gets there first
+  F.order(D, ctx, 2, a.pid, pa - 2, t + 1);
+  F.tick(D, ctx, w.ends - 1, 500);
+  const s = D.sales.find((x) => x.pid === a.pid);
+  assert.deepEqual([s.team, s.price], [2, pa - 2]);
+  assert.equal(D.teams[0].orders[a.pid], undefined, 'the loser\'s order is cleared');
+  // an order comes off
+  F.order(D, ctx, 3, w.lots[5].pid, 9, t + 2);
+  assert.ok(F.order(D, ctx, 3, w.lots[5].pid, 0, t + 3).off);
+  assert.equal(D.teams[3].orders[w.lots[5].pid], undefined);
+});
+
+test('an order respects the budget guard and the roster when its moment comes', () => {
+  const { D, ctx } = sale({ humans: [0, 1, 2, 3, 4, 5, 6, 7] });
+  const w = D.auction.wave, a = w.lots[0], b = w.lots[1], t = w.at + 10 * H;
+  // $48 of his $60 on one player leaves a dollar a spot: the second order can only fire once he's down to $1
+  D.teams[0].budget = 60;
+  F.order(D, ctx, 0, a.pid, 48, t);
+  F.order(D, ctx, 0, b.pid, 40, t);
+  F.tick(D, ctx, w.ends - 1, 500);
+  const got = D.sales.filter((x) => x.team === 0).map((x) => [x.pid, x.price]);
+  assert.deepEqual(got.map((x) => x[1]), [48, 1], 'the second waits until he can afford it');
+  assert.ok(D.teams[0].budget >= F.spotsLeft(D, 0), 'a dollar left for every open spot');
+});
+
+test('orders can go in before the draft starts, and a manual claim still works in the sale', () => {
+  const r = room({ teams: 8, humans: [0], dutch: { pace: 'drip', window: 3600 } });
+  const some = r.ctx.available.slice().sort((x, y) => y.$ - x.$)[4];
+  assert.ok(F.order(r.D, r.ctx, 0, some.id, Math.round(some.$ * 1.3), T0 - 100).ok);     // over the opening price: his at the open
+  F.start(r.D, T0, r.ctx); F.tick(r.D, r.ctx, T0 + 1);
+  const w = r.D.auction.wave, other = w.lots[9];
+  const c = F.claim(r.D, r.ctx, 0, other.pid, w.at + 60e3);
+  assert.ok(c.ok); assert.equal(c.price, F.dutchPrice(r.D, { start: other.start }, w.at + 60e3));
+  runSale(r.D, r.ctx, 30e3);
+  assert.equal(r.D.phase, 'done');
+  const mine = r.D.sales.find((x) => x.pid === some.id);
+  assert.equal(mine.team, 0);
+  assert.deepEqual([mine.at, mine.price], [w.at, mine.from], 'bought at the open, at the opening price');
+});
+
+test('the sale tells managers what happened while they were away', () => {
+  const Z = require('../fantasy-kit/season.js');
+  const { D, ctx } = sale({ humans: [0, 1], seed: 4 });
+  const w = D.auction.wave, a = w.lots[1], b = w.lots[2];
+  const seats = { 0: 'u0', 1: 'u1' }, o = { name: 'Test', url: 'https://x/', seats, me: null, byId: ctx.byId };
+  // setup to live: the open notice names the close
+  const pre = structuredClone(D); pre.phase = 'setup';
+  const open = Z.events({ draft: pre, league: null }, { draft: D, league: null }, { ...o, now: T0 + 1 });
+  assert.equal(open.length, 2); assert.match(open[0].subject, /the sale is open/); assert.match(open[0].body, /leave a price/);
+  // team 0 leaves a high price, team 1 a low one on the same player; team 1 also wants another
+  F.order(D, ctx, 0, a.pid, Math.round(ctx.byId[a.pid].$ * 1.12), T0 + 10);
+  F.order(D, ctx, 1, a.pid, Math.round(ctx.byId[a.pid].$ * 0.7), T0 + 10);
+  const base = structuredClone(D);
+  assert.equal(Z.driveDraft(D, ctx, w.at + 20 * H), true);
+  const ev = Z.events({ draft: base, league: null }, { draft: D, league: null }, { ...o, now: w.at + 20 * H });
+  const mine = ev.find((e) => e.team === 0), theirs = ev.find((e) => e.team === 1);
+  assert.match(mine.subject, new RegExp(`you got ${ctx.byId[a.pid].n}`));
+  assert.match(mine.body, /Your price was reached/);
+  assert.match(theirs.subject, /went to another team/);
+  assert.match(theirs.body, /your price was \$/);
+  assert.ok(D.sales.find((s) => s.pid === a.pid).order, 'marked as an order, not a click');
+  // the last call goes out once, three hours before the close, to teams with spots open
+  const b2 = structuredClone(D);
+  assert.equal(Z.driveDraft(D, ctx, w.ends - 2.5 * H), true);
+  const lastCall = Z.events({ draft: b2, league: null }, { draft: D, league: null }, { ...o, now: w.ends - 2.5 * H }).filter((e) => /closes in 3 hours/.test(e.subject));
+  assert.equal(lastCall.length, 2);
+  const b3 = structuredClone(D);
+  Z.driveDraft(D, ctx, w.ends - 2.4 * H);
+  assert.equal(Z.events({ draft: b3, league: null }, { draft: D, league: null }, { ...o, now: w.ends - 2.4 * H }).filter((e) => /closes in 3 hours/.test(e.subject)).length, 0);
+  void b;
+});

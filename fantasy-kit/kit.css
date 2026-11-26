@@ -3097,3 +3097,15 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
   .si-band.dl-band .nl-bi>*{grid-column:1;justify-self:start}
   .si-band.dl-band .nl-bi>.si-card{grid-column:2;grid-row:1 / span 8;align-self:center;justify-self:stretch;margin:0}
 }
+
+
+/* the slow Dutch sale: its panel above the table, and the price button in each row */
+.wave.sale .sl-r{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:6px;font-size:12px}
+.sl-r>b{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-right:2px}
+.sl-o{display:inline-flex;align-items:baseline;gap:5px;padding:4px 9px;border:1px solid var(--brand);border-radius:999px;background:var(--brand-soft);color:var(--ink);font:inherit;font-size:12px;cursor:pointer}
+.sl-o small{color:var(--muted);font-size:11px}
+.sl-g{display:inline-flex;align-items:center;gap:5px;padding:2px 8px 2px 3px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);font-variant-numeric:tabular-nums}
+.sl-g.me{border-color:var(--win)}
+.sl-b{display:inline-grid;justify-items:center;line-height:1.05;min-width:52px;padding-top:3px;padding-bottom:3px;font-variant-numeric:tabular-nums}
+.sl-b b{font-size:13px}.sl-b small{font-size:9px;font-weight:700;opacity:.8}
+@media (max-width:600px){.wave.sale .sl-r{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.wave.sale .sl-r::-webkit-scrollbar{display:none}.wave.sale .sl-r>*{flex:none}}

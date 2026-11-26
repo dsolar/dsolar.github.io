@@ -337,7 +337,11 @@
     if (!D || D.phase !== "live") return false;
     const held = F.offerHold(D, now);                     // an answered offer (or one held long enough) lets the draft go on
     if (D.paused) return held;
-    return F.tick(D, ctx, now, 2000) > 0 || held;
+    // the slow sale: three hours before it closes, a last call (events sends it to everyone with a spot open)
+    let last = false;
+    const sw = D.auction && D.auction.dutch && D.auction.dutch.pace === "drip" ? D.auction.wave : null;
+    if (sw && !D.auction.dutch.warned && sw.len >= 12 * HOUR && now >= sw.ends - 3 * HOUR && now < sw.ends) { D.auction.dutch.warned = now; last = true; }
+    return F.tick(D, ctx, now, 2000) > 0 || held || last;
   }
 
   /* ---------- emails ---------- */
@@ -404,7 +408,27 @@
     if (bd && cd && !(b && b.league)) {
       if (cd.phase === "setup" && cd.startAt && cd.startAt !== bd.startAt) seated.forEach((t) => add(t, "draft", `the draft is set for ${when(cd.startAt)}`, `The draft starts on its own at ${when(cd.startAt)}${(cd.clock || 0) > 0 && cd.clock < 3600 ? `, ${cd.clock} seconds a pick` : ""}. Build your queue before then: if you can't make it, your picks come from your queue, or the best player left.`));
       if (cd.phase === "setup" && cd.reminded && !bd.reminded) seated.forEach((t) => add(t, "draft", "the draft starts in an hour", `The draft starts at ${when(cd.startAt)}. Open the draft room a few minutes early and set your queue.`));
-      if (bd.phase === "setup" && cd.phase === "live") seated.forEach((t) => add(t, "draft", "the draft started", "The draft room is live. If your clock runs out, the best player left is taken for you, so jump in."));
+      const sale = cd.auction && cd.auction.dutch && cd.auction.dutch.pace === "drip";
+      if (bd.phase === "setup" && cd.phase === "live") seated.forEach((t) => (sale
+        ? add(t, "draft", "the sale is open", `Every player is on sale and every price is falling${cd.auction.wave ? ` until ${when(cd.auction.wave.ends)}` : ""}. Claim a player at the price showing, or leave a price on him and he's yours when he gets there. Any spot still open at the end is filled for $1 from who's left.`)
+        : add(t, "draft", "the draft started", "The draft room is live. If your clock runs out, the best player left is taken for you, so jump in.")));
+      // the sale, while nobody's looking: whose standing orders filled, and whose player went to someone else
+      if (sale && bd.phase === "live") {
+        const got = {}, lost = {};
+        for (const s of (cd.sales || []).slice((bd.sales || []).length)) {
+          if (s.auto) continue;
+          if (s.order) (got[s.team] = got[s.team] || []).push(`${pn(s.pid)} for $${s.price}`);
+          bd.teams.forEach((t, i) => { const o = t.orders && t.orders[s.pid]; if (o && i !== s.team) (lost[i] = lost[i] || []).push(`${pn(s.pid)} went to ${teamName(s.team)} for $${s.price} (your price was $${o.p})`); });
+        }
+        for (const t of seated) {
+          const g = got[t] || [], l = lost[t] || [];
+          if (!g.length && !l.length) continue;
+          const tm = cd.teams[t], open = F.spotsLeft(cd, t);
+          add(t, "draft", g.length ? `you got ${g[0].replace(/ for \$\d+$/, "")}${g.length > 1 ? ` and ${g.length - 1} more` : ""}` : `${l[0].split(" went to ")[0]} went to another team${l.length > 1 ? `, and ${l.length - 1} more` : ""}`,
+            `${g.length ? `Your price was reached:\n${g.map((x) => "  " + x).join("\n")}\n\n` : ""}${l.length ? `Gone:\n${l.map((x) => "  " + x).join("\n")}\n\n` : ""}You have $${tm.budget} and ${open} open spot${open === 1 ? "" : "s"}.`);
+        }
+        if (cd.auction.dutch.warned && !bd.auction.dutch.warned && cd.auction.wave) seated.forEach((t) => { const open = F.spotsLeft(cd, t); if (open > 0) add(t, "draft", "the sale closes in 3 hours", `It ends ${when(cd.auction.wave.ends)}. You have $${cd.teams[t].budget} and ${open} open spot${open === 1 ? "" : "s"}. Anything still open then is filled for $1 from who's left.`); });
+      }
       if (bd.phase !== "done" && cd.phase === "done") seated.forEach((t) => {
         const ros = c.league ? draftRoster(c.league, t, o.byId || {}) : null;
         add(t, "draft", "the draft is done", `Every pick is in.${c.league ? ` The season starts ${when(c.league.start)}.` : ""} Set your lineup and check the free agents.`
@@ -655,7 +679,7 @@
     if (pros) for (const k of keepers) if (k.round != null) k.round = Math.min(k.round, mainR);
     // a keeper whose round is taken slides to the team's next open pick, so place the earliest rounds first
     keepers.sort((a, b) => (a.round || 0) - (b.round || 0));
-    const D = F.create({ sport, type: F.formatOf(D0) || "snake", dutch: D0.auction && D0.auction.dutch ? { size: D0.auction.dutch.size, fall: D0.auction.dutch.fall, pace: D0.auction.dutch.pace, gap: D0.auction.dutch.gap, mult: D0.auction.dutch.mult } : undefined, teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
+    const D = F.create({ sport, type: F.formatOf(D0) || "snake", dutch: D0.auction && D0.auction.dutch ? { size: D0.auction.dutch.size, fall: D0.auction.dutch.fall, pace: D0.auction.dutch.pace, window: D0.auction.dutch.window, gap: D0.auction.dutch.gap, mult: D0.auction.dutch.mult } : undefined, teams: L.teams.map((t) => ({ name: t.name, abbr: t.abbr, owner: t.owner })), seed: Math.floor((o.seed != null ? o.seed : Math.random()) * 2 ** 31) || 1,
       now, lineup: L.settings.lineup, bench: L.settings.bench, scoring: L.scoring, botDelay: D0.botDelay, clock: D0.clock, bidClock: D0.auction ? D0.auction.bidClock : undefined,
       nomClock: D0.auction ? D0.auction.nomClock : undefined, budget: D0.auction ? D0.auction.budget : undefined, name: L.name, trades: D0.trading !== false, order, keepers: [],
       rounds: D0.rounds, curve: D0.type === "mystery" && ctx && ctx.players ? F.pickCurve(ctx.players, n * (D0.rounds || L.settings.lineup.length + L.settings.bench)) : D0.curve, reveal: D0.reveal,
