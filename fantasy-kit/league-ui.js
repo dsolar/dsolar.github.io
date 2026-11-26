@@ -1438,7 +1438,9 @@
       const h = L().settings.hardCap;
       if (!h) return "";
       const pay = G.payroll(L(), ctx, id), room = h.line - pay, exp = L().rosters[id].map((x) => ctx.byId[x]).filter((p) => S.expiring(p));
-      return `<div class="pkd-money hc-bar${room < 0 ? " over" : ""}"><span><b>${S.money(pay)}</b> of the ${S.money(h.line)} line</span><span>${room < 0 ? `<b class="loss">${S.money(-room)} over</b>: no adds until you're back under` : `${S.money(room)} room`}</span>${exp.length ? `<span class="ps">${exp.length} contract${exp.length === 1 ? "" : "s"} expiring this season${L().settings.dynasty ? ": re-sign or let go when it ends" : ""}</span>` : ""}</div>`;
+      // near the line, a tenth of a million: "$357.2M of the $357.5M line", not "$357M of the $358M line" with room left
+      const mm = (x) => (Math.abs(room) < 10e6 && Math.abs(x) >= 100e6 ? `$${(x / 1e6).toFixed(1)}M` : S.money(x));
+      return `<div class="pkd-money hc-bar${room < 0 ? " over" : ""}"><span><b>${mm(pay)}</b> of the ${mm(h.line)} line</span><span>${room < 0 ? `<b class="loss">${S.money(-room)} over</b>: no adds until you're back under` : `${S.money(room)} room`}</span>${exp.length ? `<span class="ps">${exp.length} contract${exp.length === 1 ? "" : "s"} expiring this season${L().settings.dynasty ? ": re-sign or let go when it ends" : ""}</span>` : ""}</div>`;
     }
     function rosterPage(arg) {
       const id = arg !== "" && arg != null && L().teams[+arg] ? +arg : me() != null ? me() : 0;
