@@ -144,3 +144,16 @@ test('an over/under pool: a team can go both ways, and the table ranks on total 
   const bos = sd.find((x) => x.team === 'BOS'), atl = sd.find((x) => x.team === 'ATL');
   assert.deepEqual([bos.o.user, bos.u.user, atl.o, atl.u, atl.line], ['b', 'c', null, null, 41]);
 });
+
+test('NFL records pick up this week\'s finals from the pick\'em board before games.json catches up', () => {
+  const data = { season: 2026, games: [['REG', 12, '2026-11-26', 'CHI', 'DET', null, null, -1.5, 0, 1, '13:00'], ['REG', 12, '2026-11-29', 'WAS', 'ARI', null, null, 7, 0, 0, '16:25'], ['REG', 11, '2026-11-22', 'TB', 'DET', 21, 31, 7, 0, 0, '13:00']] };
+  const wk = { season: 2026, stype: 2, week: 12, games: [{ away: 'CHI', home: 'DET', awayScore: 24, homeScore: 20, final: true }, { away: 'WSH', home: 'ARI', awayScore: 3, homeScore: 0, final: false }] };
+  const out = W.nflLive(data, wk);
+  assert.equal(out.live, 1);
+  assert.deepEqual(out.games[0].slice(5, 7), [24, 20]);
+  assert.equal(out.games[1][5], null);                                  // not final yet: left alone
+  const r = W.records('nfl', out);
+  assert.deepEqual(r.CHI, { w: 1, l: 0 });
+  assert.deepEqual(r.DET, { w: 1, l: 1 });
+  assert.equal(W.nflLive(data, Object.assign({}, wk, { stype: 3 })), data);   // only the regular season counts
+});

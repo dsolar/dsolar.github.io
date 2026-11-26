@@ -60,7 +60,12 @@
 
   async function records(sport) {
     if (st.recs[sport]) return st.recs[sport];
-    try { const j = await fetch(SRC[sport], { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)); st.recs[sport] = { at: j && j.updated, season: j && j.season, by: W.records(sport, j) }; }
+    try {
+      let j = await fetch(SRC[sport], { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null));
+      // NFL: the file is a day behind on game days, so fold in this week's finals from the pick'em board
+      if (sport === "nfl" && j) { const wk = await C.rpc("pk_board", {}).catch(() => null); if (wk && wk.season === j.season) j = W.nflLive(j, wk); }
+      st.recs[sport] = { at: j && j.updated, season: j && j.season, live: j && j.live, by: W.records(sport, j) };
+    }
     catch (e) { st.recs[sport] = { by: null }; }
     return st.recs[sport];
   }
@@ -182,7 +187,7 @@
     const lead = rows[0] && rows[0].w > 0 ? rows.filter((r) => r.rank === 1).map((r) => r.name) : [];
     const note = !R.by ? `<div class="pl-note">The standings didn't load, so wins aren't showing. Refresh in a minute.</div>` : "";
     return `${note}<div class="card"><div class="table-wrap"><table class="t pl-st wp-st"><thead><tr><th class="c">#</th><th>Entry</th><th class="r" title="Combined wins since the draft">W</th><th class="r" title="Combined losses since the draft">L</th><th>Teams, by wins since the draft</th></tr></thead><tbody>${body}</tbody></table></div></div>
-      <p class="ps">${lead.length ? `${esc(lead.join(" and "))} ${lead.length > 1 ? "lead" : "leads"}. ` : ""}Only wins after the draft started count. Fewer losses breaks a tie. ${p.sport === "nba" ? "NBA records update every morning." : "NFL records update the day after games."} Regular season only (${games} games): the playoffs don't count.</p>`;
+      <p class="ps">${lead.length ? `${esc(lead.join(" and "))} ${lead.length > 1 ? "lead" : "leads"}. ` : ""}Only wins after the draft started count. Fewer losses breaks a tie. ${p.sport === "nba" ? "NBA records update every morning." : "NFL records update as this week's games go final."} Regular season only (${games} games): the playoffs don't count.</p>`;
   }
   function teamsTab(b, R) {
     if (b.pool.mode === "ou") return teamsOu(b, R);

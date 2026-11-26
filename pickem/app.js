@@ -86,6 +86,11 @@
       var n = g.split.home + g.split.away, ap = Math.round((100 * g.split.away) / n);
       split = '<span class="split" title="How everyone picked">' + ap + "% " + esc(g.away) + ' <i><b style="width:' + ap + '%"></b></i> ' + (100 - ap) + "% " + esc(g.home) + "</span>";
     }
+    // while it's on: whether your pick is covering right now
+    if (live && g.pick && g.spread != null && g.homeScore != null && g.awayScore != null) {
+      var m = g.homeScore + Number(g.spread) - g.awayScore, mine = g.pick === "home" ? m : -m;
+      res = '<span class="now ' + (mine > 0 ? "w" : mine < 0 ? "l" : "p") + '">' + (mine > 0 ? "Covering" : mine < 0 ? "Not covering" : "On the number") + "</span>";
+    }
     var foot = res || split || (g.locked && g.spread == null ? "<span>No line was set, so it isn't graded</span>" : g.locked && !g.pick ? "<span>No pick</span>" : "");
     return '<article class="game' + (g.locked ? " locked" : "") + '" data-g="' + esc(g.id) + '"><div class="g-top"><span>' + top + '</span><span class="grow"></span><span>' + esc(g.away) + " @ " + esc(g.home) + "</span></div>"
       + side(g, "away") + side(g, "home")

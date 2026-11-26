@@ -696,7 +696,7 @@ button.pl-chip{cursor:pointer}
 .wp-st .wp-tms{white-space:normal}
 .wp-chip{display:inline-flex;align-items:center;gap:4px;margin:2px 6px 2px 0;padding:3px 8px 3px 5px;border:1px solid var(--line);border-radius:999px;background:var(--surface-2);font-size:13px;font-variant-numeric:tabular-nums}
 .wp-chip small{color:var(--muted);font-size:12px}
-@media (max-width:600px){.wp-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px 12px 12px}.wp-st th:nth-child(4),.wp-st td:nth-child(4){display:none}}
+@media (max-width:600px){.wp-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:10px 12px 12px}.wp-st th:nth-child(4),.wp-st td:nth-child(4){display:none}.wp-st td:last-child{min-width:0}table.t.wp-st td.nm{width:auto;min-width:0;max-width:110px}.wp-st .wp-chip{margin:2px 4px 2px 0;padding:2px 6px 2px 4px;font-size:12px}}
 .wp-chip i{font-style:normal;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
 /* bowl pick'em: before the matchups, hints, the played-games fold */
 .pl-bwait h2{margin:0 0 6px;font-size:19px}

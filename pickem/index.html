@@ -101,6 +101,8 @@ button{font:inherit;color:inherit}
 .g-foot .grow{flex:1}
 .stamp{display:inline-block;padding:2px 9px;border:2px solid currentColor;border-radius:3px;font:800 .95rem var(--cond);letter-spacing:.1em;text-transform:uppercase;transform:rotate(-4deg)}
 .stamp.w{color:var(--win)}.stamp.l{color:var(--loss)}.stamp.p{color:var(--push)}
+.now{display:inline-block;padding:2px 8px;border-radius:3px;font:700 .85rem var(--cond);letter-spacing:.06em;text-transform:uppercase}
+.now.w{color:var(--win);background:color-mix(in srgb,var(--win) 12%,transparent)}.now.l{color:var(--loss);background:color-mix(in srgb,var(--loss) 12%,transparent)}.now.p{color:var(--push);background:color-mix(in srgb,var(--push) 12%,transparent)}
 .split{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .split i{display:block;width:70px;height:6px;border-radius:3px;background:var(--stock-2);overflow:hidden}
 .split i b{display:block;height:100%;background:var(--ink-2)}
@@ -185,6 +187,6 @@ table.gp .w{color:var(--win);font-weight:700}.gp .l{color:var(--loss)}.gp .p{col
   </div>
 </main>
 <div class="bar" id="pk-bar" hidden><div class="wrap" id="pk-bar-in"></div></div>
-<script src="app.js?v=2" defer></script>
+<script src="app.js?v=3" defer></script>
 </body>
 </html>

@@ -9,6 +9,8 @@
    FK.wins.TEAMS[sport]                  { CODE: [city, name] } in the hubs' codes
    FK.wins.logo(sport, code, px)         ESPN's logo for a team
    FK.wins.records(sport, data)          records from celtics/live.json (nba) or nfl/data/games.json (nfl)
+   FK.wins.nflLive(data, week)           games.json with this week's finals filled in from pk_board (the pick'em sync,
+                                         every 10 minutes), since games.json only refreshes once a day
    FK.wins.turn(order, n)                whose pick the nth is (from 1) in a snake
    FK.wins.total(board)                  picks in the whole draft
    FK.wins.onClock(board)                { n, user, round, inRound } or null (not started, or done)
@@ -182,7 +184,18 @@
     return { text: row.members + " entries, " + row.per + " teams each", tone: "ok" };
   }
 
-  var api = { TEAMS: TEAMS, SPORTS: SPORTS, logo: logo, teamName: teamName, teamFull: teamFull, records: records, turn: turn, total: total, onClock: onClock,
+  function nflLive(data, wk) {
+    if (!data || !Array.isArray(data.games) || !wk || !Array.isArray(wk.games) || wk.stype !== 2) return data;
+    var code = function (t) { return t === "WSH" ? "WAS" : t; }, n = 0;
+    var games = data.games.map(function (g) {
+      if (g[0] !== "REG" || g[1] !== wk.week || g[5] != null) return g;
+      var x = wk.games.filter(function (y) { return y.final && code(y.away) === g[3] && code(y.home) === g[4] && y.awayScore != null && y.homeScore != null; })[0];
+      if (!x) return g;
+      n++; var out = g.slice(); out[5] = x.awayScore; out[6] = x.homeScore; return out;
+    });
+    return n ? Object.assign({}, data, { games: games, live: n }) : data;
+  }
+  var api = { TEAMS: TEAMS, SPORTS: SPORTS, logo: logo, teamName: teamName, teamFull: teamFull, records: records, nflLive: nflLive, turn: turn, total: total, onClock: onClock,
     maxPer: maxPer, since: since, table: table, available: available, status: status,
     isOu: isOu, projections: projections, lines: lines, final: final, margin: margin, tableOu: tableOu, sides: sides };
   if (typeof module !== "undefined" && module.exports) module.exports = api;
