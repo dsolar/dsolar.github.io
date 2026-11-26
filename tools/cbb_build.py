@@ -246,7 +246,8 @@ def parse_byathlete(d):
   out[aid]={"gp":g("gamesPlayed"),"min":g("avgMinutes"),"pts":g("avgPoints"),"reb":g("avgRebounds"),"ast":g("avgAssists"),"stl":g("avgSteals"),"blk":g("avgBlocks"),
    "tov":g("avgTurnovers"),"pf":g("avgFouls"),"fgm":g("avgFieldGoalsMade"),"fga":g("avgFieldGoalsAttempted"),"fgPct":g("fieldGoalPct"),
    "tpm":g("avgThreePointFieldGoalsMade"),"threeAtt":g("avgThreePointFieldGoalsAttempted"),"threePct":g("threePointFieldGoalPct"),
-   "ftm":g("avgFreeThrowsMade"),"fta":g("avgFreeThrowsAttempted"),"ftPct":g("freeThrowPct"),"per":g("PER"),"dd":g("doubleDouble"),"ts":ts,"efg":efg,"teamId":str(a.get("teamId",""))}
+   "ftm":g("avgFreeThrowsMade"),"fta":g("avgFreeThrowsAttempted"),"ftPct":g("freeThrowPct"),"per":g("PER"),"dd":g("doubleDouble"),"ts":ts,"efg":efg,"teamId":str(a.get("teamId","")),
+   "_a":{"name":a.get("displayName"),"pos":(a.get("position") or {}).get("abbreviation","")}}
  return out,d.get("pagination") or {}
 
 def main():
@@ -346,8 +347,20 @@ def main():
   for p in players:
    r=stat_rows.get(p["id"])
    if r and (not r["teamId"] or r["teamId"]==p["teamId"]):
-    p["stats"]={k:v for k,v in r.items() if k!="teamId"};p["statsSource"]="ESPN season stats";matched+=1
+    p["stats"]={k:v for k,v in r.items() if k!="teamId" and not k.startswith("_")};p["statsSource"]="ESPN season stats";matched+=1
   if matched<500:raise ValueError(f"Only {matched} roster players matched season stats")
+  # ESPN's roster feed errors for a few teams (it trips on one athlete it can't find): build those rosters from the
+  # stats feed instead, everyone who has played, so the team still has players
+  have={p["teamId"] for p in players};filled=[]
+  for tid,t in teams.items():
+   if tid in have:continue
+   rows=[(aid,r) for aid,r in stat_rows.items() if r["teamId"]==tid and (r.get("_a") or {}).get("name")]
+   for aid,r in rows:
+    players.append({"id":aid,"name":r["_a"]["name"],"teamId":tid,"team":t["short"],"conference":t["conference"],"pos":r["_a"]["pos"],"year":"","height":None,"weight":None,"jersey":None,
+     "head":f"https://a.espncdn.com/i/headshots/mens-college-basketball/players/full/{aid}.png","stats":{k:v for k,v in r.items() if k!="teamId" and not k.startswith("_")},
+     "source":"ESPN season stats (the roster feed failed)","url":None,"updated":stamp,"statsSource":"ESPN season stats"})
+   if rows:filled.append(t["short"])
+  if filled and isinstance(sources.get("players"),dict):sources["players"]["fromStats"]=filled
   sources["playerStats"]={"name":"ESPN player season stats","status":"connected","url":"https://www.espn.com/mens-college-basketball/stats/player","updated":stamp,"checked":stamp,"coverage":matched}
  except Exception as e:
   stat_err=str(e);errors.append("Player stats: "+stat_err)
@@ -383,7 +396,7 @@ def main():
     rows.update(r);pages=int(pg.get("pages") or 1);page+=1
    if len(rows)<1000:raise ValueError(f"only {len(rows)} players")
    PREV.write_text(json.dumps({"season":year-1,"label":f"{year-2}-{str(year-1)[2:]}","updated":stamp,"source":"ESPN player season stats",
-    "players":{k:{c:x for c,x in v.items() if x is not None} for k,v in rows.items()}},ensure_ascii=False,separators=(",",":"))+"\n")
+    "players":{k:{c:x for c,x in v.items() if x is not None and not c.startswith("_")} for k,v in rows.items()}},ensure_ascii=False,separators=(",",":"))+"\n")
    print(f"Last season: {len(rows)} players",flush=True)
   except Exception as e:errors.append("Last season's stats: "+str(e))
  # Every team's full season schedule, refreshed every run after six hours (365 small requests).
