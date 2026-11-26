@@ -877,7 +877,7 @@ button.pl-chip{cursor:pointer}
    rest sit two categories to a row, so no row ends with one stray nominee. ---------- */
 .osc-night{--bg:#0D0A07;--surface:#16110B;--surface-2:#1C160E;--surface-3:#251D12;--line:rgba(201,160,74,.2);--line-2:rgba(201,160,74,.34);--field:#110D08;
   --ink:#F2EADB;--muted:#A89A82;--dim:#93866F;--brand:#D4AC52;--accent:#E8C976;--gold:#D4AC52;--osc:#D4AC52;--osc-hi:#F1DC9C;--shadow:none;color-scheme:dark;color:var(--ink)}
-body:has(.osc-night){background:#0D0A07}
+html:has(.osc-night),body:has(.osc-night){background:#0D0A07}
 .osc-night .pl-band{background:linear-gradient(180deg,#120D08 0%,#1E1209 55%,#3B0D12 130%);color:var(--ink)}
 .osc-night .pl-band::before{background:radial-gradient(55% 120% at 82% 100%,rgba(212,172,82,.26),transparent 62%),radial-gradient(40% 80% at 0% 0%,rgba(59,13,18,.55),transparent 70%)}
 .osc-night .pl-band h1{background:linear-gradient(180deg,#FBF0CF 10%,#D4AC52 70%,#9A7429);-webkit-background-clip:text;background-clip:text;color:transparent}
