@@ -14,6 +14,11 @@ on:
       - tools/stale_check.py
       - .github/workflows/nba-tracking.yml
   workflow_dispatch:
+    inputs:
+      by:
+        description: "cron when the Supabase scheduler starts it on the daily timetable (tools/gh_scheduler.sql); blank by hand"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -37,7 +42,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Build the tracking file from the latest drop
-        run: python3 tools/nba_tracking.py ${{ github.event_name != 'schedule' && '--force' || '' }}
+        run: python3 tools/nba_tracking.py ${{ github.event_name != 'schedule' && inputs.by != 'cron' && '--force' || '' }}
 
       # card-sized copies of the tracking files for Draft Lab's player cards
       - name: Card-sized tracking files
@@ -56,5 +61,5 @@ jobs:
 
       # red run (and GitHub's failure email) when the weekly browser pull has missed by more than two days
       - name: Check the pull is fresh
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || inputs.by == 'cron'
         run: python3 tools/stale_check.py nba/data/tracking.json 216

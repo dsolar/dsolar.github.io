@@ -17,6 +17,11 @@ on:
       - tools/nfl_fpi.py
       - .github/workflows/nfl-hub.yml
   workflow_dispatch:
+    inputs:
+      by:
+        description: "cron when the Supabase scheduler starts it on the daily timetable (tools/gh_scheduler.sql); blank by hand"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -74,7 +79,7 @@ jobs:
       # rebuild it on Mondays (or when the script changes) rather than every day
       - name: Build the player rating
         run: |
-          if [ "$(date -u +%u)" = "1" ] || [ "${{ github.event_name }}" != "schedule" ] || [ ! -f nfl/data/rating.json ]; then
+          if [ "$(date -u +%u)" = "1" ] || { [ "${{ github.event_name }}" != "schedule" ] && [ "${{ inputs.by }}" != "cron" ]; } || [ ! -f nfl/data/rating.json ]; then
             python3 tools/nfl_rating.py
           else
             echo "Not Monday; keeping the current rating."

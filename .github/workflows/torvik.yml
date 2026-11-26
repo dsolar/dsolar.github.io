@@ -14,6 +14,11 @@ on:
       - tools/stale_check.py
       - .github/workflows/torvik.yml
   workflow_dispatch:
+    inputs:
+      by:
+        description: "cron when the Supabase scheduler starts it on the daily timetable (tools/gh_scheduler.sql); blank by hand"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -35,7 +40,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       - name: Publish the latest Torvik drop
-        run: python3 tools/torvik.py ${{ github.event_name != 'schedule' && '--force' || '' }}
+        run: python3 tools/torvik.py ${{ github.event_name != 'schedule' && inputs.by != 'cron' && '--force' || '' }}
       - name: Commit it
         run: |
           git add cbb/data/torvik.json cbb/data/torvik_hist.json
@@ -44,5 +49,5 @@ jobs:
           for i in 1 2 3 4 5; do (git pull --rebase -X theirs -q || { git rebase --abort; false; }) && git push && break; [ $i = 5 ] && exit 1; sleep $((i * 8)); done
       # red run (and GitHub's failure email) when the daily browser pull has missed for 1.5 days
       - name: Check the pull is fresh
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'schedule' || inputs.by == 'cron'
         run: python3 tools/stale_check.py cbb/data/torvik.json 36
