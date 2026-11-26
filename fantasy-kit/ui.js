@@ -1643,14 +1643,24 @@
       if (!adviceCache || adviceCache.key !== key) adviceCache = { key, advice: E.draftAdvice(F, d, ctx, mine) };
       return adviceCache.advice;
     }
+    // White elephant, on your turn: the best players you could steal instead, right above the list (the full list lives
+    // in the Steals tab). Drafted players are hidden from the Available list, so without this the steal is easy to miss.
+    function stealHint() {
+      const d = D(), m = me();
+      if (!elephant() || m == null || d.phase !== "live") return "";
+      const c = F.onClock(d, now()); if (!c || c.team !== m) return "";
+      const can = Object.keys(ctx.own).filter((id) => ctx.own[id] !== m && ctx.byId[id]).map((id) => ctx.byId[id]).sort((a, b) => a.rank - b.rank).filter((p) => { const ok = stealOk(p.id); return ok && ok.ok; }).slice(0, 3);
+      if (!can.length) return "";
+      return `<div class="steal-hint" role="note"><b>Or steal</b>${can.map((p) => `<span class="sh-p"><button type="button" class="sh-n" data-player="${esc(p.id)}">${esc(p.n)}</button><small>${esc(S.positions(p)[0] || "")} · ${esc(team(ctx.own[p.id]).name)}</small><button type="button" class="btn xs warn" data-steal="${esc(p.id)}">Steal</button></span>`).join("")}<small class="sh-left">${F.stealsLeft(d, m)} left</small></div>`;
+    }
     function draftCoach() {
-      const a = draftCoachAdvice(); if (!a) return "";
+      const a = draftCoachAdvice(); if (!a) return stealHint();
       const item = (label, p, why) => `<div class="lab-coach-item"><small>${label}</small><div class="lcn"><button type="button" data-player="${esc(p.id)}">${esc(p.n)}</button>${injTag(p)}</div><span>${why}</span></div>`;
       // one suggestion: the best player left when he's also what your roster needs, and only when they differ, both
       const same = a.fit.id === a.best.id, pos = S.positions(a.fit)[0];
       const pick = same ? item("Suggested pick", a.fit, `#${a.best.rank}, the best player left, and he fits your roster`)
         : item("Suggested pick", a.fit, auction() ? `Fits your open spots and your budget. #${a.fit.rank} overall` : `Fills a spot you still need (${esc(pos)}). #${a.fit.rank} overall`) + item("Best player left", a.best, `#${a.best.rank} for this scoring`);
-      return `<div class="lab-coach${same ? " one" : ""}" aria-label="Draft guidance">${pick}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `Likely still there at your next pick, ${a.wait} ${a.wait === 1 ? "pick" : "picks"} away. A rank-based estimate.`) : ""}</div>`;
+      return `<div class="lab-coach${same ? " one" : ""}" aria-label="Draft guidance">${pick}${a.later && a.wait > 0 ? item("Next-pick watch", a.later, `Likely still there at your next pick, ${a.wait} ${a.wait === 1 ? "pick" : "picks"} away. A rank-based estimate.`) : ""}</div>` + stealHint();
     }
     function players() {
       const d = D(), n = now(), mine = me();
@@ -1690,7 +1700,7 @@
         const q = team(mine).queue.includes(p.id);
         if (drip() && d.phase !== "done") {
           const l = saleLots && saleLots[p.id], o = (team(mine).orders || {})[p.id];
-          const btn = l ? `<button class="btn xs go sl-b" data-sale="${esc(p.id)}" aria-label="${esc(p.n)}, ${cash(l.price)} now${o ? `, your price ${cash(o.p)}` : ""}"><b data-wprice="${esc(p.id)}">${cash(l.price)}</b>${o ? `<small>you ${cash(o.p)}</small>` : ""}</button>` : d.phase === "setup" ? `<button class="btn xs sl-b" data-sale="${esc(p.id)}">${o ? `<b>${cash(o.p)}</b><small>your price</small>` : "Set price"}</button>` : "";
+          const btn = l ? `<button class="btn xs go sl-b" data-sale="${esc(p.id)}" aria-label="${esc(p.n)}, ${cash(l.price)} now${o ? `, your price ${cash(o.p)}` : ""}"><b data-wprice="${esc(p.id)}">${cash(l.price)}</b>${o ? `<small>you ${cash(o.p)}</small>` : ""}</button>` : d.phase === "setup" ? `<button class="btn xs sl-b" data-sale="${esc(p.id)}">${o ? `<b>${cash(o.p)}</b><small>your price</small>` : `Set<span class="hide-s"> price</span>`}</button>` : "";
           return `${btn} <button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your watch list" aria-pressed="${!!q}">${q ? "\u2605" : "\u2606"}</button>`;
         }
         return `${myTurn && ok && !d.packs ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
@@ -2195,6 +2205,8 @@
             // on a phone the gold bar along the bottom already says it's your pick; a toast there would cover the list
             const tb = $(".turn-bar", el);
             if (c.makeup || !tb || !tb.getClientRects().length) toast(c.makeup ? "You were robbed. Pick again." : `You're on the clock: pick ${c.pick}.`);
+            // the bar says it instead: clear a leftover "You're on deck." so it doesn't sit there while you pick
+            else { const t0 = $("#fk-toast"); if (t0 && /on deck/i.test(t0.textContent)) { t0.hidden = true; try { if (t0.matches(":popover-open")) t0.hidePopover(); } catch (e) { /* fine */ } } }
             alerts.chime("clock"); alerts.flash("Your pick!"); alerts.notify("You're on the clock", `${d.name || "Your draft"}: pick ${plab(c.index)}`);
           } else if (c && c.team !== me()) {
             alerts.stop();
