@@ -113,12 +113,13 @@ def main():
     rank_of = {str(t["id"]): t.get("bpiRank") or t.get("haslamRank") for t in hub.get("teams") or []}
     name_of = {str(t["id"]): t.get("short") or t.get("name") for t in hub.get("teams") or []}
 
-    # the player pool: anyone who has played real minutes
+    # the player pool: anyone in a team's rotation, 5+ minutes a game (leagues that draft from a few conferences go
+    # deep into benches; 10 left out real rotation players)
     players = []
     for p in hub["players"]:
         s, t = p.get("stats") or {}, teams.get(p["teamId"])
         gp, mins = num(s.get("gp")), num(s.get("min"))
-        if not t or not gp or not mins or mins < 10:
+        if not t or not gp or not mins or mins < 5:
             continue
         g = lambda k: num(s.get(k)) or 0
         dd = (num(s.get("dd")) or 0) / gp

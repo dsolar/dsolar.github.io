@@ -262,7 +262,9 @@ test('bots buy through the window, stars around their value, and every roster en
   const stars = D.sales.filter((s) => !s.auto && ctx.byId[s.pid].$ >= 40);
   const ratio = stars.reduce((a, s) => a + s.price / ctx.byId[s.pid].$, 0) / stars.length;
   assert.ok(ratio > 0.88 && ratio < 1.1, `stars go for about their value (${ratio.toFixed(2)})`);
-  const first = Math.min(...D.sales.map((s) => s.at)) - w.at;
+  // (a fringe player opening at the $3 floor can go at the open to a team that needs his position; anyone opening
+  // above it is worth waiting on, so those wait. Which fringe players open at $3 moves with the nightly values.)
+  const first = Math.min(...D.sales.filter((s) => s.from > D.auction.minBid + 2).map((s) => s.at)) - w.at;
   assert.ok(first > 2 * H && first < 16 * H, `the first claim comes hours in, not at the open (${(first / H).toFixed(1)}h)`);
 });
 
