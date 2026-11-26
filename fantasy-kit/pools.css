@@ -830,6 +830,7 @@ button.pl-chip{cursor:pointer}
 .pl-bkt.won{background:color-mix(in srgb,var(--up,#1a8a4a) 14%,var(--surface));border-color:var(--up,#1a8a4a)}
 .pl-bkt.lost .pl-tn b{text-decoration:line-through;color:var(--muted)}
 .pl-bkt.lost{border-color:color-mix(in srgb,var(--down,#c0392b) 50%,transparent)}
+.pl-bkt.gone .pl-tn b{color:var(--muted);font-weight:500}
 .pl-bkt.tbd{cursor:default;color:var(--muted);font-size:13px}
 .pl-bkp{font-style:normal;font-weight:700;font-size:12.5px;color:var(--muted)}
 .pl-bkt.on .pl-bkp{color:var(--ink)}
@@ -1193,7 +1194,7 @@ body{overflow-x:clip}
 .g-surv .pl-team.on{border-color:var(--sv-red);box-shadow:0 0 0 2px var(--sv-red);background:color-mix(in srgb,var(--sv-red) 7%,var(--surface))}
 .g-surv .pl-team:disabled .pl-tn b{text-decoration:line-through;text-decoration-color:var(--sv-red)}
 .g-surv .pl-wp i{background:linear-gradient(90deg,var(--ink) var(--w),var(--surface-3) var(--w))}
-.g-surv .pl-pick.loss{background:var(--sv-red);color:#fff}
+.g-surv .pl-pick.loss{background:var(--sv-red);color:#fff!important}
 .g-surv .pl-save .btn.go:not(:disabled){background:var(--sv-red);border-color:var(--sv-red);color:#fff}
 
 /* 5 teams: five chips on the table, seeds stacked to 25 */
@@ -1293,3 +1294,5 @@ html{overflow-x:clip}
 .pl-kt.on.won b::after{content:" \2713";color:var(--win)}
 .pl-kt.on.lost b{text-decoration:line-through;text-decoration-thickness:1px}
 .g-nflpo .pl-ksb .pl-kt.on.lost{background:rgba(220,80,80,.2);border-color:#f08a8a;box-shadow:inset 0 0 0 1px #f08a8a}
+.pl-st td.pl-bkchc{white-space:normal;line-height:1.25}
+.pl-st td.pl-bkchc small{white-space:nowrap}

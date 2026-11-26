@@ -20,7 +20,7 @@ const games = (res = {}) => [
 const members = [{ id: 'u1', name: 'Ann' }, { id: 'u2', name: 'Bo' }, { id: 'u3', name: 'Cy' }];
 const pk = (user, slot, team) => ({ user, slot, team });
 
-test('survivor days start with the first round and skip the First Four', () => {
+test('survivor days start with the first round and skip the Opening Round', () => {
   const ds = P.days(games());
   assert.equal(ds.length, 2);
   assert.deepEqual(ds.map((d) => d.day), ['2027-03-18', '2027-03-19']);
@@ -78,15 +78,18 @@ test('5 teams: seeds have to reach 25, five different teams from the field', () 
   assert.equal(P.fiveCheck({ games: [g('x', 1, 18, T(18, 1), 'A', 1, 'E', 2), g('y', 1, 18, T(18, 2), 'C', 3, 'G', 4), g('z', 1, 18, T(18, 3), 'H', 5, 'Q', 6)] }, ['A', 'E', 'C', 'G', 'H']).why, 'Your seeds add up to 15. They need to reach 25.');
   assert.equal(P.fiveCheck(b, ['A', 'A', 'B', 'C', 'D']).ok, false);
   assert.equal(P.fiveCheck(b, ['A', 'B', 'C', 'D']).why, 'Pick 1 more.');
-  assert.equal(P.fiveCheck(b, ['A', 'B', 'C', 'D', 'K']).ok, true);   // a First Four team is in the field
+  assert.equal(P.fiveCheck(b, ['A', 'B', 'C', 'D', 'K']).ok, true);   // an Opening Round team is in the field
+  const played = { games: games({ ff: 'K' }), members, picks: [] };   // ...until it loses there
+  assert.equal(P.fiveCheck(played, ['A', 'B', 'C', 'D', 'K']).ok, true);
+  assert.equal(P.fiveCheck(played, ['A', 'B', 'C', 'D', 'L']).why, 'One of those teams lost in the Opening Round.');
 });
 
-test('5 teams: each win scores 1, 2, 4... by round, First Four wins score nothing, a loss ends the upside', () => {
+test('5 teams: each win scores 1, 2, 4... by round, Opening Round wins score nothing, a loss ends the upside', () => {
   const b = { games: games({ ff: 'K', r1: 'A', r2: 'C', s1: 'A' }), members: members.slice(0, 2),
     picks: ['A', 'B', 'C', 'D', 'K'].map((t, i) => pk('u1', 'f' + (i + 1), t)).concat(['E', 'F', 'G', 'H', 'L'].map((t, i) => pk('u2', 'f' + (i + 1), t))) };
   const f = P.five(b, T(20, 23));
   const u1 = f.rows.find((r) => r.id === 'u1');
-  assert.equal(u1.points, 1 + 2 + 1);                                   // A won twice (1 + 2), C once (1), K's First Four win counts 0
+  assert.equal(u1.points, 1 + 2 + 1);                                   // A won twice (1 + 2), C once (1), K's Opening Round win counts 0
   assert.equal(u1.teams.find((t) => t.team === 'C').alive, false);      // C lost to A in the second round
   assert.equal(u1.teams.find((t) => t.team === 'A').left, 4 + 8 + 16 + 32);
   assert.equal(f.locked, true);

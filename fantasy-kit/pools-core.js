@@ -27,9 +27,9 @@
    FK.pools.ffSlots(slot)            the positions a lineup spot takes (FLEX: RB, WR or TE) */
 (function (root) {
   "use strict";
-  // every win scores by its round: 1, 2, 4, 8, 16, 32 (First Four wins don't count)
+  // every win scores by its round: 1, 2, 4, 8, 16, 32 (Opening Round wins don't count)
   var PTS = [0, 1, 2, 4, 8, 16, 32];
-  var ROUNDS = ["First Four", "First round", "Second round", "Sweet 16", "Elite Eight", "Final Four", "Title game"];
+  var ROUNDS = ["Opening Round", "First round", "Second round", "Sweet 16", "Elite Eight", "Final Four", "Title game"];
   var MIN_SEEDS = 25, SD = 11;
   var ms = function (t) { return typeof t === "number" ? t : Date.parse(t); };
 
@@ -37,7 +37,7 @@
     for (var i = 0; i < games.length; i++) { var g = games[i]; if (g.a === team && g.as != null) return g.as; if (g.b === team && g.bs != null) return g.bs; }
     return null;
   }
-  // the field: everyone in a First Four or first-round game (a projected bracket's First Four losers included)
+  // the field: everyone in an Opening Round or first-round game (a projected bracket's Opening Round losers included)
   function field(games) {
     var out = {};
     games.forEach(function (g) { if (g.round <= 1) [[g.a, g.as], [g.b, g.bs]].forEach(function (x) { if (x[0] && x[1] != null) out[x[0]] = x[1]; }); });
@@ -130,6 +130,8 @@
       if (uniq[teams[i]]) return { ok: false, seeds: seeds, why: "Pick five different teams." };
       uniq[teams[i]] = 1;
       if (f[teams[i]] == null) return { ok: false, seeds: seeds, why: "One of those teams isn't in the field." };
+      if ((board.games || []).some(function (g) { return g.round === 0 && g.final && g.w && g.w !== teams[i] && (g.a === teams[i] || g.b === teams[i]); }))
+        return { ok: false, seeds: seeds, why: "One of those teams lost in the Opening Round." };
       seeds += f[teams[i]];
     }
     if (teams.length !== 5) return { ok: false, seeds: seeds, why: teams.length < 5 ? "Pick " + (5 - teams.length) + " more." : "Pick only five." };

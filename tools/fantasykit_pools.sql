@@ -2551,3 +2551,68 @@ end $function$;
 -- The bowl pool covers FBS bowls only: po_sync skips the FCS Celebration Bowl, and the row already synced goes.
 -- (Applied as migration po_sync_drop_celebration_bowl, with the po_sync above.)
 delete from po_games where comp = 'cfb' and label ilike '%celebration bowl%';
+
+-- The 2027 tournament is 76 teams: ESPN calls the first 12 games the Opening Round (it was the First Four), so those
+-- count as round 0 too, and a placeholder team (a first-round slot waiting on its Opening Round game) stays empty
+-- rather than becoming a pickable team. The 5-team game won't take a team that lost in the Opening Round.
+-- (Applied as migration mm_opening_round.)
+create or replace function public.mm_espn(j jsonb) returns int
+language plpgsql security definer set search_path to 'public' as $$
+declare ev jsonb; c jsonb; x jsonb; y jsonb; hl text; rd int; s int; n int := 0;
+begin
+  for ev in select * from jsonb_array_elements(coalesce(j -> 'events', '[]'::jsonb)) loop
+    c := ev -> 'competitions' -> 0;
+    hl := coalesce(c -> 'notes' -> 0 ->> 'headline', '');
+    if hl !~* 'men''s basketball championship' then continue; end if;
+    rd := case when hl ~* 'first four|opening round' then 0 when hl ~* '1st round|first round' then 1 when hl ~* '2nd round|second round' then 2
+      when hl ~* 'sweet 16|sweet sixteen' then 3 when hl ~* 'elite 8|elite eight' then 4 when hl ~* 'final four' then 5
+      when hl ~* 'national championship' then 6 end;
+    if rd is null then continue; end if;
+    s := coalesce((ev -> 'season' ->> 'year')::int, extract(year from (ev ->> 'date')::timestamptz)::int);
+    -- the field is out: the projection and its practice picks go
+    if exists (select 1 from mm_games where season = s and projected) then
+      delete from mm_games where season = s and projected;
+      delete from mm_picks where pool in (select id from mm_pools where season = s);
+    end if;
+    x := c -> 'competitors' -> 0; y := c -> 'competitors' -> 1;
+    insert into mm_games (game_id, season, round, region, day, tip, a, b, a_seed, b_seed, a_score, b_score, winner, status, final, projected, updated_at)
+    values (ev ->> 'id', s, rd, substring(hl from '- *([A-Za-z]+) Region'), ((ev ->> 'date')::timestamptz at time zone 'America/New_York')::date, (ev ->> 'date')::timestamptz,
+      case when x -> 'team' ->> 'id' ~ '^[1-9][0-9]*$' then x -> 'team' ->> 'id' end, case when y -> 'team' ->> 'id' ~ '^[1-9][0-9]*$' then y -> 'team' ->> 'id' end,
+      (select v from (select coalesce(nullif(x ->> 'seed', '')::int, nullif(x -> 'curatedRank' ->> 'current', '')::int) v) q where v between 1 and 16),
+      (select v from (select coalesce(nullif(y ->> 'seed', '')::int, nullif(y -> 'curatedRank' ->> 'current', '')::int) v) q where v between 1 and 16),
+      nullif(x ->> 'score', '')::int, nullif(y ->> 'score', '')::int,
+      case when (x ->> 'winner')::boolean then x -> 'team' ->> 'id' when (y ->> 'winner')::boolean then y -> 'team' ->> 'id' end,
+      ev -> 'status' -> 'type' ->> 'name', coalesce((ev -> 'status' -> 'type' ->> 'completed')::boolean, false), false, now())
+    on conflict (game_id) do update set round = excluded.round, region = coalesce(excluded.region, mm_games.region), day = excluded.day, tip = excluded.tip,
+      a = excluded.a, b = excluded.b, a_seed = coalesce(excluded.a_seed, mm_games.a_seed), b_seed = coalesce(excluded.b_seed, mm_games.b_seed),
+      a_score = excluded.a_score, b_score = excluded.b_score, winner = excluded.winner, status = excluded.status, final = excluded.final, updated_at = now();
+    n := n + 1;
+  end loop;
+  return n;
+end $$;
+
+create or replace function public.mm_pick_five(p_pool text, p_teams text[]) returns jsonb
+language plpgsql security definer set search_path to 'public' as $$
+declare uid uuid := auth.uid(); p mm_pools; lk timestamptz; t text; tot int := 0; sd int; i int := 0;
+begin
+  if uid is null then return jsonb_build_object('error', 'Sign in to make picks.'); end if;
+  select * into p from mm_pools where id = p_pool;
+  if not found or p.kind <> 'five' then return jsonb_build_object('error', 'That isn''t a 5-team pool.'); end if;
+  if not exists (select 1 from mm_members where pool = p.id and user_id = uid) then return jsonb_build_object('error', 'Join this pool to pick.'); end if;
+  lk := mm_five_lock(p.season);
+  if lk is null then return jsonb_build_object('error', 'The bracket isn''t set yet.'); end if;
+  if now() >= lk then return jsonb_build_object('error', 'The first round has tipped off. Picks are locked.'); end if;
+  if coalesce(array_length(p_teams, 1), 0) <> 5 or (select count(distinct x) from unnest(p_teams) x) <> 5 then return jsonb_build_object('error', 'Pick five different teams.'); end if;
+  foreach t in array p_teams loop
+    sd := mm_seed(p.season, t);
+    if sd is null then return jsonb_build_object('error', 'One of those teams isn''t in the field.'); end if;
+    if exists (select 1 from mm_games where season = p.season and round = 0 and final and winner is not null and winner <> t and t in (a, b)) then
+      return jsonb_build_object('error', 'One of those teams lost in the Opening Round.');
+    end if;
+    tot := tot + sd;
+  end loop;
+  if tot < 25 then return jsonb_build_object('error', format('Your seeds add up to %s. They need to reach 25.', tot)); end if;
+  delete from mm_picks where pool = p.id and user_id = uid;
+  foreach t in array p_teams loop i := i + 1; insert into mm_picks (pool, user_id, slot, team) values (p.id, uid, 'f' || i, t); end loop;
+  return jsonb_build_object('ok', true, 'seeds', tot);
+end $$;

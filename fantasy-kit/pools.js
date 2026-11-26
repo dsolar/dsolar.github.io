@@ -151,7 +151,7 @@
       <li>Until Selection Sunday it's a practice bracket on the college hub's projected field.</li></ul>`
     : kind === "five" ? `<ul class="pl-rules">
       <li>Pick <b>five teams</b> whose seeds add up to <b>25 or more</b>.</li>
-      <li>Every win scores by its round: <b>1, 2, 4, 8, 16, 32</b> points from the first round to the title game. First Four wins don't count.</li>
+      <li>Every win scores by its round: <b>1, 2, 4, 8, 16, 32</b> points from the first round to the title game. Opening Round wins don't count.</li>
       <li>Picks lock when the first round tips off. Everyone's teams show once they lock.</li>
       <li>Most points wins. Ties go to the <b>higher combined seeds</b>, then the <b>deepest run</b> (whose best team won the most games, then the next best, and so on). Still tied, they split it.</li></ul>`
     : `<ul class="pl-rules">
@@ -567,7 +567,7 @@
       : row && !row.alive ? `<div class="pl-note loss"><b>You're out</b> on day ${row.out}. You can still follow along on Standings.</div>` : "";
     const cards = S.days.map((d) => {
       const cell = row ? row.cells[d.n] : null, locked = now >= d.lock, mineT = cell && cell.team;
-      const head = `<div class="pl-day-h"><b>Day ${d.n}</b><span>${dayName(d.day)} &middot; ${P.ROUNDS[d.round]}</span><span class="grow"></span>${mineT ? `<span class="pl-pick ${cell.win ? "win" : cell.loss ? "loss" : ""}">${logo(mineT, 18)}${name(mineT)}${cell.win ? " &middot; won" : cell.loss ? " &middot; lost" : cell.live ? " &middot; playing" : ""}</span>` : cell && cell.miss ? `<span class="pl-pick loss">No pick</span>` : locked ? "" : `<span class="pl-pick none" title="Each pick locks when its own game tips off">Last tip-off ${tipTime(d.lock)}</span>`}</div>`;
+      const head = `<div class="pl-day-h"><b>Day ${d.n}</b><span>${dayName(d.day)} &middot; ${P.ROUNDS[d.round]}</span><span class="grow"></span>${mineT ? `<span class="pl-pick ${cell.win ? "win" : cell.loss ? "loss" : ""}">${logo(mineT, 18)}${name(mineT)}${cell.win ? " &middot; won" : cell.loss ? " &middot; lost" : cell.live ? " &middot; playing" : ""}</span>` : cell && cell.miss ? `<span class="pl-pick loss">No pick</span>` : locked || S.winners || (row && !row.alive) ? "" : `<span class="pl-pick none" title="Each pick locks when its own game tips off">Last tip-off ${tipTime(d.lock)}</span>`}</div>`;
       const playable = row && row.alive && !S.winners && !locked;
       const showOpen = st.open[d.n] != null ? st.open[d.n] : playable && (!mineT || !cell.win) && S.days.filter((x) => now < x.lock)[0] === d;
       if (!playable) return `<div class="card pl-day done">${head}</div>`;
@@ -1030,8 +1030,10 @@
     const side = (slot, ts, round) => {
       if (!ts.length) return `<div class="pl-bkt tbd"><span class="pl-tn"><b>${round === 1 ? "TBD" : "Pick the game before"}</b></span></div>`;
       return ts.map((t) => {
-        const on = picks[slot] === t, other = mmOther(slot, t), p = other ? bkProb(t, other) : null;
-        const res = B.won[slot] ? (B.won[slot] === t ? " won" : on ? " lost" : "") : on && B.out[t] ? " lost" : "";
+        const on = picks[slot] === t, other = mmOther(slot, t);
+        // a chance only while the game can still happen: both teams alive and the slot undecided
+        const p = other && !B.won[slot] && !B.out[t] && !B.out[other] ? bkProb(t, other) : null;
+        const res = B.won[slot] ? (B.won[slot] === t ? " won" : on ? " lost" : "") : on && B.out[t] ? " lost" : B.out[t] ? " gone" : "";
         return `<button type="button" class="pl-bkt${on ? " on" : ""}${res}${ts.length > 1 ? " pair" : ""}" data-bk="${esc(slot)}|${esc(t)}"${edit ? "" : " disabled"}>${seedTag(F.seedOf[t])}${logo(t, 22)}<span class="pl-tn"><b>${name(t)}</b>${ts.length > 1 ? `<small>Opening Round</small>` : ""}</span>${p != null && !B.won[slot] ? `<em class="pl-bkp num">${Math.round(p * 100)}%</em>` : ""}</button>`;
       }).join("");
     };
@@ -1314,13 +1316,16 @@
     const byRegion = {};
     b.games.filter((g) => g.round <= 1).forEach((g) => [[g.a, g.as], [g.b, g.bs]].forEach(([t, s]) => { if (t && s != null) (byRegion[g.region || "Field"] = byRegion[g.region || "Field"] || {})[t] = s; }));
     const regions = Object.keys(byRegion);
+    // Opening Round teams: still to play (they can still go out before the lock) or already out
+    const orTeam = {}; b.games.filter((g) => g.round === 0).forEach((g) => [g.a, g.b].forEach((t) => { if (t) orTeam[t] = g.final && g.w ? (g.w === t ? "won" : "out") : "open"; }));
     return `<div class="pl-five">
       <div class="card pl-bar"><div class="bd"><div class="pl-chips">${Array.from({ length: 5 }, (_, i) => st.sel[i] ? `<button type="button" class="pl-chip" data-five="${esc(st.sel[i])}" title="Take off">${logo(st.sel[i], 20)}${seedTag(field[st.sel[i]])}${name(st.sel[i])}<i aria-hidden="true">&times;</i></button>` : `<span class="pl-chip empty" data-n="${i + 1}">Team ${i + 1}</span>`).join("")}</div>
         <div class="pl-meter ${chk.seeds >= P.MIN_SEEDS ? "ok" : ""}"><span>Seeds <b>${chk.seeds}</b> of ${P.MIN_SEEDS}</span><i style="--w:${Math.min(100, Math.round((chk.seeds / P.MIN_SEEDS) * 100))}%"></i></div>
         <div class="pl-save"><span class="ps">${chk.ok ? (dirty ? "Ready to save." : "Saved. You can change them until the first tip-off.") : esc(chk.why)} Locks ${tipTime(F.lock)}.</span><button type="button" class="btn go" data-save5${chk.ok && dirty ? "" : " disabled"}>Save my teams</button></div></div></div>
       <div class="pl-regions">${regions.map((rg) => `<div class="card"><div class="mod-h"><h2>${esc(rg)}</h2></div><div class="pl-field">${Object.entries(byRegion[rg]).sort((x, y) => x[1] - y[1] || String(team(x[0]).n).localeCompare(String(team(y[0]).n))).map(([t, s]) => {
-        const on = st.sel.includes(t), xp = P.xPts(team(t));
-        return `<button type="button" class="pl-team sm${on ? " on" : ""}" data-five="${esc(t)}"${!on && st.sel.length >= 5 ? " disabled" : ""}>${logo(t, 24)}<span class="pl-tn"><b>${seedTag(s)}${name(t)}</b>${team(t).conf ? `<small>${esc(team(t).conf)}</small>` : ""}</span>${xp != null ? `<span class="pl-xp" title="Expected points, from the college hub's tournament sim">${xp.toFixed(1)}<small>xPts</small></span>` : ""}</button>`;
+        const on = st.sel.includes(t), xp = P.xPts(team(t)), orx = orTeam[t], gone = orx === "out";
+        const sub = gone ? "Lost in the Opening Round" : orx === "open" ? "Opening Round" + (team(t).conf ? ", " + team(t).conf : "") : team(t).conf || "";
+        return `<button type="button" class="pl-team sm${on ? " on" : ""}${gone ? " out" : ""}" data-five="${esc(t)}"${(!on && st.sel.length >= 5) || (gone && !on) ? " disabled" : ""}>${logo(t, 24)}<span class="pl-tn"><b>${seedTag(s)}${name(t)}</b>${sub ? `<small>${esc(sub)}</small>` : ""}</span>${xp != null ? `<span class="pl-xp" title="Expected points, from the college hub's tournament sim">${xp.toFixed(1)}<small>xPts</small></span>` : ""}</button>`;
       }).join("")}</div></div>`).join("")}</div></div>`;
   }
   const fiveChips = (teams) => `<div class="pl-chips">${teams.map((t) => t.hidden ? `<span class="pl-chip hid">Picked</span>` : `<span class="pl-chip ${t.alive ? "" : "out"}">${logo(t.team, 20)}${seedTag(t.seed)}${name(t.team)}<b>${t.pts}</b></span>`).join("")}</div>`;
