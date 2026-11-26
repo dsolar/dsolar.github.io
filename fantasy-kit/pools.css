@@ -1274,3 +1274,5 @@ button.wp-side:disabled{cursor:default;opacity:.7}
 .wp-chip.up{border-color:color-mix(in srgb,var(--win) 45%,var(--line))}.wp-chip.dn{border-color:color-mix(in srgb,var(--loss,#c0392b) 45%,var(--line))}
 .pl-st .me-t{font-weight:800}
 @media (max-width:600px){.wp-grid.ou{grid-template-columns:1fr}}
+
+@media (max-width: 560px) { .wp-wide { display: none; } }
