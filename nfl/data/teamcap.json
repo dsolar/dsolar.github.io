@@ -1,6 +1,6 @@
 {
- "src": "Over The Cap, salary cap space page (overthecap.com/salary-cap-space), pulled 2026-11-25",
- "asOf": "2026-11-25",
+ "src": "Over The Cap, salary cap space page (overthecap.com/salary-cap-space), pulled 2026-11-26",
+ "asOf": "2026-11-26",
  "note": "teamCap = base cap plus carryover and adjustments (cap space + active spending + dead money). Dead money is what still counts for players no longer on the team. 2027 uses OTC's projected $327M base cap.",
  "base": {
   "2026": 301200000,
@@ -9,76 +9,70 @@
  "years": {
   "2026": {
    "SF": {
-    "space": 39774319,
-    "active": 241383835,
-    "dead": 59404945,
+    "space": 39902769,
+    "active": 241200335,
+    "dead": 59459995,
     "teamCap": 340563099
    },
    "TEN": {
-    "space": 38823038,
-    "active": 241516541,
-    "dead": 62598804,
+    "space": 38922621,
+    "active": 240655291,
+    "dead": 63360471,
     "teamCap": 342938383
    },
    "IND": {
-    "space": 36951442,
-    "active": 191996238,
-    "dead": 74116342,
+    "space": 36042824,
+    "active": 192349701,
+    "dead": 74671497,
     "teamCap": 303064022
    },
    "ATL": {
-    "space": 32736686,
+    "space": 32605297,
     "active": 193012673,
-    "dead": 79097289,
+    "dead": 79228678,
     "teamCap": 304846648
    },
    "DET": {
-    "space": 32452421,
-    "active": 254517489,
+    "space": 32551049,
+    "active": 254418861,
     "dead": 35446661,
     "teamCap": 322416571
    },
    "LAC": {
-    "space": 26123086,
-    "active": 268741584,
-    "dead": 10268760,
+    "space": 26256830,
+    "active": 268198656,
+    "dead": 10677944,
     "teamCap": 305133430
    },
    "WAS": {
-    "space": 23000090,
-    "active": 276528557,
-    "dead": 28639719,
+    "space": 23160040,
+    "active": 276080385,
+    "dead": 28927941,
     "teamCap": 328168366
    },
    "DAL": {
-    "space": 16991162,
-    "active": 264210497,
-    "dead": 50151428,
+    "space": 16701968,
+    "active": 264297841,
+    "dead": 50353278,
     "teamCap": 331353087
    },
    "TB": {
-    "space": 14924808,
-    "active": 283565700,
-    "dead": 18204999,
+    "space": 15049341,
+    "active": 283418317,
+    "dead": 18227849,
     "teamCap": 316695507
    },
    "SEA": {
-    "space": 13773572,
-    "active": 293162148,
-    "dead": 7478053,
+    "space": 13141944,
+    "active": 292693955,
+    "dead": 8577874,
     "teamCap": 314413773
    },
    "CLE": {
-    "space": 12137285,
+    "space": 11871285,
     "active": 204639634,
-    "dead": 121670428,
+    "dead": 121936428,
     "teamCap": 338447347
-   },
-   "PHI": {
-    "space": 10097207,
-    "active": 213663207,
-    "dead": 92336221,
-    "teamCap": 316096635
    },
    "JAX": {
     "space": 9967928,
@@ -86,70 +80,76 @@
     "dead": 61900528,
     "teamCap": 310148468
    },
-   "PIT": {
-    "space": 9886074,
-    "active": 286380383,
-    "dead": 24825102,
-    "teamCap": 321091559
-   },
    "NYJ": {
-    "space": 9392808,
-    "active": 194101337,
-    "dead": 119544283,
+    "space": 9870719,
+    "active": 193234942,
+    "dead": 119932767,
     "teamCap": 323038428
    },
+   "PHI": {
+    "space": 9821374,
+    "active": 213435707,
+    "dead": 92839554,
+    "teamCap": 316096635
+   },
+   "PIT": {
+    "space": 9815240,
+    "active": 263951217,
+    "dead": 47325102,
+    "teamCap": 321091559
+   },
    "LV": {
-    "space": 9295988,
-    "active": 243648351,
-    "dead": 61487746,
+    "space": 9473783,
+    "active": 243319306,
+    "dead": 61638996,
     "teamCap": 314432085
    },
-   "ARI": {
-    "space": 8073334,
-    "active": 215406238,
-    "dead": 104029752,
-    "teamCap": 327509324
-   },
    "DEN": {
-    "space": 7882379,
-    "active": 287248483,
-    "dead": 8386666,
+    "space": 7903768,
+    "active": 287107650,
+    "dead": 8506110,
     "teamCap": 303517528
    },
    "HOU": {
-    "space": 7764968,
-    "active": 226821988,
-    "dead": 75475112,
+    "space": 7732418,
+    "active": 226771966,
+    "dead": 75557684,
     "teamCap": 310062068
    },
-   "CIN": {
-    "space": 7523782,
-    "active": 297004673,
-    "dead": 12836064,
-    "teamCap": 317364519
+   "ARI": {
+    "space": 7641129,
+    "active": 215838443,
+    "dead": 104029752,
+    "teamCap": 327509324
    },
    "NO": {
-    "space": 7422023,
-    "active": 180862664,
+    "space": 7386606,
+    "active": 180898081,
     "dead": 128720779,
     "teamCap": 317005466
    },
+   "BAL": {
+    "space": 7192987,
+    "active": 284063793,
+    "dead": 22807195,
+    "teamCap": 314063975
+   },
+   "CIN": {
+    "space": 7190032,
+    "active": 296839673,
+    "dead": 13334814,
+    "teamCap": 317364519
+   },
    "GB": {
-    "space": 6586374,
-    "active": 257988045,
+    "space": 6554874,
+    "active": 258019545,
     "dead": 49685045,
     "teamCap": 314259464
    },
-   "BAL": {
-    "space": 6483610,
-    "active": 285608554,
-    "dead": 21971811,
-    "teamCap": 314063975
-   },
    "NYG": {
-    "space": 6314793,
-    "active": 245857460,
-    "dead": 48023081,
+    "space": 5983815,
+    "active": 245954222,
+    "dead": 48257297,
     "teamCap": 300195334
    },
    "NE": {
@@ -159,27 +159,27 @@
     "teamCap": 352289095
    },
    "MIN": {
-    "space": 4904425,
-    "active": 252182927,
-    "dead": 57297377,
+    "space": 5000675,
+    "active": 252059177,
+    "dead": 57324877,
     "teamCap": 314384729
    },
    "BUF": {
-    "space": 3981190,
-    "active": 245278173,
-    "dead": 51812238,
+    "space": 4099946,
+    "active": 244810945,
+    "dead": 52160710,
     "teamCap": 301071601
    },
    "CAR": {
-    "space": 3906418,
-    "active": 279358401,
-    "dead": 28718895,
+    "space": 4002323,
+    "active": 278985829,
+    "dead": 28995562,
     "teamCap": 311983714
    },
    "MIA": {
-    "space": 3905023,
-    "active": 112188963,
-    "dead": 192019892,
+    "space": 3526985,
+    "active": 112511168,
+    "dead": 192075725,
     "teamCap": 308113878
    },
    "LAR": {
@@ -188,17 +188,17 @@
     "dead": 15419680,
     "teamCap": 313607830
    },
-   "CHI": {
-    "space": 2625882,
-    "active": 280339653,
-    "dead": 26410999,
-    "teamCap": 309376534
-   },
    "KC": {
-    "space": 2494065,
-    "active": 281273820,
-    "dead": 17802198,
+    "space": 2365542,
+    "active": 281365743,
+    "dead": 17838798,
     "teamCap": 301570083
+   },
+   "CHI": {
+    "space": 2114912,
+    "active": 280511664,
+    "dead": 26749958,
+    "teamCap": 309376534
    }
   },
   "2027": {
@@ -221,8 +221,8 @@
     "teamCap": 327000000
    },
    "NYJ": {
-    "space": 85711009,
-    "active": 241249986,
+    "space": 86831009,
+    "active": 240129986,
     "dead": 39005,
     "teamCap": 327000000
    },
@@ -232,16 +232,16 @@
     "dead": 2697920,
     "teamCap": 327000000
    },
-   "LAC": {
-    "space": 70739789,
-    "active": 255362437,
-    "dead": 897774,
-    "teamCap": 327000000
-   },
    "WAS": {
     "space": 70182460,
     "active": 256502906,
     "dead": 314634,
+    "teamCap": 327000000
+   },
+   "LAC": {
+    "space": 69689789,
+    "active": 256412437,
+    "dead": 897774,
     "teamCap": 327000000
    },
    "LV": {
@@ -275,27 +275,27 @@
     "teamCap": 327000000
    },
    "SEA": {
-    "space": 31787937,
-    "active": 294283606,
+    "space": 31717937,
+    "active": 294353606,
     "dead": 928457,
     "teamCap": 327000000
    },
    "TEN": {
-    "space": 31537889,
-    "active": 267388677,
+    "space": 31677889,
+    "active": 267248677,
     "dead": 28073434,
-    "teamCap": 327000000
-   },
-   "NO": {
-    "space": 29733246,
-    "active": 276791303,
-    "dead": 20475451,
     "teamCap": 327000000
    },
    "PHI": {
     "space": 29264384,
     "active": 235038926,
     "dead": 62696690,
+    "teamCap": 327000000
+   },
+   "NO": {
+    "space": 28613246,
+    "active": 277911303,
+    "dead": 20475451,
     "teamCap": 327000000
    },
    "MIN": {
@@ -383,9 +383,9 @@
     "teamCap": 327000000
    },
    "BAL": {
-    "space": -48827770,
-    "active": 375204646,
-    "dead": 623124,
+    "space": -47761487,
+    "active": 374030929,
+    "dead": 730558,
     "teamCap": 327000000
    },
    "BUF": {
