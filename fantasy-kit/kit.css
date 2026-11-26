@@ -3058,3 +3058,16 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
   .fk-mast.inline .ds-acct-btn.out>span:last-child{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   .fk-mast.inline .ds-prod a{padding:7px 7px;font-size:12px}
 }
+/* a league's pages: Draft Lab's site bar, slim, above the league's own header (ui.js siteStrip); the league header's
+   own small Draft Lab mark gives way to it */
+.fk-sitebar{background:#0B1830;border-bottom:1px solid rgba(255,255,255,.08)}
+.fk-sitebar .wrap{display:flex;align-items:center;gap:12px;min-height:44px}
+.fk-sitebar .fk-site.ds-name{display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none}
+.fk-sitebar .fk-site.ds-name b{font:700 15px/1 var(--f-disp,Georgia,serif);white-space:nowrap}
+.fk-sitebar .sb-nav{display:flex;gap:2px;margin-left:8px;overflow-x:auto;scrollbar-width:none;align-self:stretch}
+.fk-sitebar .sb-nav a{display:flex;align-items:center;padding:0 10px;color:#AFC0D4;text-decoration:none;font-weight:700;font-size:13px;white-space:nowrap;border-bottom:2px solid transparent}
+.fk-sitebar .sb-nav a:hover{color:#fff}
+.fk-sitebar .sb-nav a.on{color:#fff;border-bottom-color:var(--brand)}
+.lgm:has(.fk-sitebar) .lgm-brand{display:none}
+.lgm:has(.fk-sitebar) .wrap.lgm-in{padding-top:12px}
+@media (max-width:760px){.fk-sitebar .sb-nav{display:none}.fk-sitebar .fk-site.ds-name b{display:none}.fk-sitebar .wrap{min-height:42px}}

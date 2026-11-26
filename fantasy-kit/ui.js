@@ -326,13 +326,19 @@
   const ACCOUNT = `<div class="ds-account" id="ds-account"></div>`;
   // Draft Lab's site pages carry the same bar as the hubs: David Solar, then the Hubs / Draft Lab / Pools switch
   const SITE_BAR = `<a class="fk-site ds-name" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="26" height="26"><b>David Solar</b></a><nav class="ds-prod" aria-label="Hubs, Draft Lab or Pools"><a href="/simulations/">Hubs</a><a href="/fantasy/" aria-current="page">Draft Lab</a><a href="/pools/">Pools</a></nav>`;
+  // a league's pages: the same site bar as the rest of Draft Lab, slim, above the league's own header
+  function siteStrip() {
+    const N = root.FK && root.FK.nav;
+    const links = N ? N.TABS.map(([k, n]) => `<a href="${esc(N.href(k))}"${k === "leagues" ? ' class="on"' : ""}>${esc(n)}</a>`).join("") : "";
+    return `<div class="fk-sitebar"><div class="wrap">${SITE_BAR}${links ? `<nav class="sb-nav" aria-label="Draft Lab">${links}</nav>` : ""}</div></div>`;
+  }
   function shell(opts) {
     const href = opts.hrefOf || ((t, s) => "#" + t + (s ? "/" + s : ""));
     const badge = (n) => (n ? `<span class="badge">${n}</span>` : "");
     const m = opts.mast ? leagueMast(opts.mast) : null;
     // opts.slim: the same masthead in the league's colors, one line tall (every page but the front page), so the
     // header doesn't change character from page to page
-    return `${m ? `<div class="fk-mast fk-band lgm${opts.slim ? " slim" : ""} c${opts.mast.brand.color}" style="--lc:${brandC(opts.mast.brand)}${opts.mast.brand.bg ? `;--band:${opts.mast.brand.bg}` : ""}"><div class="wrap lgm-in">
+    return `${m ? `<div class="fk-mast fk-band lgm${opts.slim ? " slim" : ""} c${opts.mast.brand.color}" style="--lc:${brandC(opts.mast.brand)}${opts.mast.brand.bg ? `;--band:${opts.mast.brand.bg}` : ""}">${siteStrip()}<div class="wrap lgm-in">
         ${m.crest}<div class="lgm-id"><div class="lgm-top"><span class="lgm-brand">${SITE}<a class="fk-brand" href="${esc(opts.brand.href || "./")}">${opts.brand.mark || ""}<b class="disp">${esc(opts.brand.name)}</b></a></span>${opts.title || ""}</div>${opts.slim ? "" : m.body}</div>
         <div class="lgm-side"><div class="fk-who">${opts.right || ""}${ACCOUNT}</div>${opts.slim ? "" : m.champs}</div></div></div>`
       : opts.inline && opts.tabs && opts.tabs.length ? `<div class="fk-mast fk-band inline"><div class="wrap">
