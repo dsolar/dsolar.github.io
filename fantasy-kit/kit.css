@@ -3037,3 +3037,24 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .lb-cd.soon{font-size:22px;color:var(--accent,var(--brand))}
 .lb-slot{margin:10px 0 0;font-size:14px}
 .lb-slot b{font-size:16px}
+/* phones: Draft Lab's site bar on one line (mark, switch, search, theme, account), the sections on the next, with a
+   fade at the right edge that says they scroll */
+@media (max-width:600px){
+  .fk-mast.inline .wrap{gap:6px}
+  .fk-mast.inline .fk-who{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .fk-mast.inline [data-act="theme"],.fk-mast.inline .fh-theme,.fk-mast.inline button[data-theme]{width:34px;min-width:34px;height:34px;min-height:34px;padding:0;font-size:0;background-repeat:no-repeat;background-position:center;background-size:16px;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F2F5F8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='8.5'/%3E%3Cpath d='M12 3.5a8.5 8.5 0 0 1 0 17z' fill='%23F2F5F8'/%3E%3C/svg%3E")}
+  .fk-mast.inline .ds-acct-btn{min-height:34px;padding:4px 9px;font-size:12.5px;white-space:nowrap}
+  .fk-mast.inline .ds-acct-btn.out .ds-acct-av{display:none}
+  .fk-mast.inline .ds-acct-btn .ds-acct-name{display:none}
+  .fk-mast.inline .fk-find input{width:34px;padding-left:30px}
+  .fk-mast.inline .ds-prod a{padding:7px 8px}
+  .fk-mast.inline .mast-nav{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 36px),transparent)}
+  .fk-mast.inline .mast-nav::after{content:"";flex:0 0 28px}
+}
+/* narrow phones: Sign in becomes a person icon (its words stay for screen readers) */
+@media (max-width:400px){
+  .fk-mast.inline .ds-acct-btn.out{width:34px;padding:0;justify-content:center;background:no-repeat center/17px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F2F5F8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='8' r='4'/%3E%3Cpath d='M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6'/%3E%3C/svg%3E")}
+  .fk-mast.inline .ds-acct-btn.out>span:last-child{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .fk-mast.inline .ds-prod a{padding:7px 7px;font-size:12px}
+}
