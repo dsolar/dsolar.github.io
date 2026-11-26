@@ -10,7 +10,7 @@
      et(iso)                   { wd, h, m } in New York (0 is Sunday)
      kick(iso)                 "Thu 8:15 PM"
 
-   One-day slates (basketball): the feed (cloud.slates("nba")) has today's and tomorrow's games, each day shaped like a
+   One-day slates (basketball, and hockey from cloud.slates("nhl")): the feed (cloud.slates("nba")) has today's and tomorrow's games, each day shaped like a
    week with a day ({ day, start, end, games }). list, pick and open read a day the same way, with a day's own slates:
    the main slate (every game), the early and late games, one game (a showdown) or games you pick. A day slate carries
    { sport, day } and no week. lineup(n, teams, "nba") gives basketball's lineups. dayName(day) is "Tonight",
@@ -149,8 +149,15 @@
     if (n <= 3) return nbaLineup(n);
     return { lineup: ["G", "G", "G", "F", "F", "F", "UTIL", "UTIL"], bench: 1, mult: null, note: "Three guards, three forwards and two flex, one bench spot" };
   }
+  // Hockey: one game is a showdown of skaters (a captain and five flex); two or three, the same with a bench spot; four
+  // or more start a center, two wingers, two defensemen, a goalie and two skater flex, with one bench spot.
+  function nhlLineup(n) {
+    if (n <= 3) return nbaLineup(n);
+    return { lineup: ["C", "W", "W", "D", "D", "G", "UTIL", "UTIL"], bench: 1, mult: null, note: "A center, two wingers, two defensemen, a goalie and two skater flex, one bench spot" };
+  }
   function lineup(n, teams, sport) {
     if (sport === "nba") return nbaLineup(n);
+    if (sport === "nhl") return nhlLineup(n);
     if (sport === "cbb") return cbbLineup(n);
     if (n <= 1) return { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 0, mult: { CPT: 1.5 }, note: "A captain at 1.5x and five flex of any position, no bench" };
     if (n <= 3) return { lineup: ["CPT", "UTIL", "UTIL", "UTIL", "UTIL", "UTIL"], bench: 1, mult: { CPT: 1.5 }, note: "A captain at 1.5x, five flex of any position and one bench spot" };
@@ -158,7 +165,7 @@
     if (n <= 7) return { lineup: [qb, "RB", "RB", "WR", "WR", "TE", "FLEX"], bench: 1, mult: null, note: `${qb === "QB" ? "QB" : "Superflex"}, 2 RB, 2 WR, TE and a flex, one bench spot` };
     return { lineup: [qb, "RB", "RB", "WR", "WR", "WR", "TE", "FLEX"], bench: 2, mult: null, note: `${qb === "QB" ? "QB" : "Superflex"}, 2 RB, 3 WR, TE and a flex, two bench spots` };
   }
-  const word = (sport) => (sport === "nba" || sport === "cbb" ? "tips off" : "kicks off");
+  const word = (sport) => (sport === "nba" || sport === "cbb" ? "tips off" : sport === "nhl" ? "drops the puck" : "kicks off");
   const periodKey = (w) => !w ? "" : w.day ? "day:" + w.day : "week:" + w.week;
   const resolvePeriod = (weeks, wanted, index = 0) => wanted ? weeks.find((w) => periodKey(w) === wanted) || null : weeks[Math.min(index || 0, Math.max(0, weeks.length - 1))] || null;
   return { open, list, pick, lineup, et, kick, label, night, sunday, isDay, dayName, tip, word, early, late, periodKey, resolvePeriod };

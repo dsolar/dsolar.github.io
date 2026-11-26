@@ -33,7 +33,7 @@
     // a feed that couldn't be reached ({ error }) is asked again from Try again (data-a="slates-retry")
     C.slates(k).then((d) => { slatesFor[k] = d && Array.isArray(d.weeks) ? d : { weeks: [], error: true }; render(); });
   }
-  const SLATE_SPORTS = ["nfl", "cfb", "nba", "cbb"];
+  const SLATE_SPORTS = ["nfl", "cfb", "nba", "cbb", "nhl"];
   // how many players each pro team has (data/<sport>.json), so a slate offers only the team counts its players can
   // fill: one football game's two teams have 30 or so, enough for five teams of six but not six
   const proCounts = {}, proAsked = {}, proTeams = {};
@@ -62,7 +62,10 @@
   const slWeeks = () => ((slData() && slData().weeks) || []).filter((w) => SL.list(w, slRef()).length);
   const slWeek = () => SL.resolvePeriod(slWeeks(), form.slPeriod, form.slWeek);
   const slateOn = () => oneWeek() && SLATE_SPORTS.includes(form.sport);
-  const dayOn = () => slateOn() && S.daily(form.sport);
+  // one-day games: basketball's (daily sports) and hockey's one-night slates
+  const oneDay = (k) => S.daily(k) || k === "nhl";
+  const dayOn = () => slateOn() && oneDay(form.sport);
+  const startWord = () => (form.sport === "nhl" ? "puck drop" : dayOn() ? "tip" : "kickoff");
   function curSlate() {
     const w = slWeek(); if (!w) return null;
     const kind = form.slKind || "full";
@@ -411,7 +414,7 @@
   // first, a season or one week; then for a season, what carries over to the next one
   const MODES = [["season", "A season", "Lineups, waivers, trades and playoffs, all season long"], ["week", "Quick game", "Draft, play one real night or week, crown a winner"]];
   // the mode card's name for basketball, where a one-week game is one night
-  const modeName = (k) => (k === "week" && S.daily(form.sport) ? ["One day", "Draft tonight's games, crown a winner by midnight"] : null);
+  const modeName = (k) => (k === "week" && oneDay(form.sport) ? ["One day", "Draft tonight's games, crown a winner by midnight"] : null);
   const KINDS = [["redraft", "Redraft", "A fresh draft every season"], ["keeper", "Keeper", "Keep a few players a year"], ["dynasty", "Dynasty", "Keep everyone, draft rookies"]];
   // college rosters turn over every year (graduation, the draft, the portal), so a college league is a fresh draft
   // each season: no keepers, no dynasty
@@ -573,7 +576,7 @@
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
     // every league type can be picked: one that a format doesn't allow switches the format instead (below, on click)
-    const modes = pickCards("mode", MODES.map((m) => (modeName(m[0]) ? [m[0]].concat(modeName(m[0])) : m)), oneWeek() ? "week" : "season", S.daily(form.sport) ? "A season or one day" : "A season or one week");
+    const modes = pickCards("mode", MODES.map((m) => (modeName(m[0]) ? [m[0]].concat(modeName(m[0])) : m)), oneWeek() ? "week" : "season", oneDay(form.sport) ? "A season or one day" : "A season or one week");
     if (collegeOnly() && (form.kind === "keeper" || form.kind === "dynasty")) form.kind = "redraft";
     const kinds = oneWeek() || collegeOnly() ? "" : pickCards("kind", KINDS, form.kind, "League type");
     // a one-week league plays the week that's on, or the next one when too little of this week is left (or for
@@ -596,7 +599,7 @@
     return `<div class="su sp-${sp.key}">
       <div class="nl-band">${FIELD[sp.key]}<div class="nl-bi">
         <div class="nl-sports" role="radiogroup" aria-label="Sport">${(oneWeek() ? Object.values(S.ALL) : S.SEASON_SPORTS).map((s) => `<label class="nl-sp"><input type="radio" name="sport" value="${s.key}"${s.key === form.sport ? " checked" : ""}>${icon(s.key)}<span class="sp-l">${esc(s.short || s.name)}</span><span class="sp-a">${esc(s.short || s.key.toUpperCase())}</span></label>`).join("")}</div>
-        <h1 class="disp">${dayOn() ? `Start a one-day ${form.sport === "cbb" ? "college basketball" : "basketball"} game` : oneWeek() ? `Start a ${form.sport === "cfb" ? "quick" : "one-week"} ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
+        <h1 class="disp">${dayOn() ? `Start a one-day ${form.sport === "cbb" ? "college basketball" : form.sport === "nhl" ? "hockey" : "basketball"} game` : oneWeek() ? `Start a ${form.sport === "cfb" ? "quick" : "one-week"} ${esc(sp.name.toLowerCase())} game` : `Start a ${esc(sp.name.toLowerCase())} league`}</h1>
         <p>${dayOn() ? "Pick tonight's games, draft with your group, and know the winner when the last game ends. Run it back tomorrow with the same people." : oneWeek() && form.sport === "cfb" ? "Pick one night, your Saturday, or a full FBS week. Play only the selected games and crown a winner when they finish. Run it back with the same people." : oneWeek() ? "Pick the games, draft with your group, play one real week and crown a winner. Run it back next week with the same people." : "Pick a league type and a format, give it a name, and you can send the invite link in a minute. Every rule has a default, and most can change after the draft."}</p>
       </div></div>
       <form class="nl-body" id="new" novalidate>
@@ -759,7 +762,7 @@
     const sl = curSlate();
     return `<div class="g2">${fld("Budget", seg("capBudget", [[50000, "$50,000"], [100, "$100"], [200, "$200"]], form.capBudget, "Budget"), "Stars cost about twice an even share, so you can't have them all.")}
       ${fld("Unique picks", toggle("capBonus", "1.25x for a player nobody else has", "Fading the obvious picks pays", form.capBonus))}</div>
-      <p class="fl-h">No draft: everyone builds one lineup under the budget, and anyone can pick the same players. Lineups stay hidden and lock at the first ${dayOn() ? "tip" : "kickoff"}${sl ? `, ${esc(SL.kick(sl.games[0].at))}` : ""}. Anyone who doesn't set one gets a bot's.</p>`;
+      <p class="fl-h">No draft: everyone builds one lineup under the budget, and anyone can pick the same players. Lineups stay hidden and lock at the first ${startWord()}${sl ? `, ${esc(SL.kick(sl.games[0].at))}` : ""}. Anyone who doesn't set one gets a bot's.</p>`;
   }
   // a sealed draft: the time the lists lock, when the draft runs itself (before the first kickoff, for a slate)
   function lockHtml() {
@@ -1086,7 +1089,7 @@
     if (rematch) form.teams = rematch.n;
     if (slateOn()) loadSlates();
     // one-day basketball defaults to points, as DraftKings scores it
-    if (dayOn() && !form.scoring && S.nba.scorings.points) form.scoring = "points";
+    if (dayOn() && !form.scoring && S[form.sport] && S[form.sport].scorings.points) form.scoring = "points";
     // keep the season inside the real one: fewer playoff weeks first if even one regular week won't fit, then fewer weeks
     const left = oneWeek() || form.season === "guillotine" ? null : weeksLeft();
     // weeksFull: the length before a short season cut it down, so switching to a sport with more of its season left
@@ -1136,7 +1139,7 @@
       // one-week football drafts from its slate's games (one game is a showdown)
       const slate = slateOn() ? curSlate() : null;
       if (slateOn() && !slate) throw new Error(slData() ? (dayOn() ? "Pick tonight's games." : "Pick the games for this week.") : "The schedule is still loading. Try again in a moment.");
-      if (slate && slate.first <= Date.now()) throw new Error(`A game in this slate ${dayOn() ? "has tipped off" : "has kicked off"}. Pick the games again.`);
+      if (slate && slate.first <= Date.now()) throw new Error(`A game in this slate ${form.sport === "nhl" ? "has started" : dayOn() ? "has tipped off" : "has kicked off"}. Pick the games again.`);
       const sd = slate && slate.games.length === 1 ? sdGame() : null;
       const slu = slate && !heist() ? SL.lineup(slate.games.length, form.teams, form.sport) : null;
       const lineup = slu ? slu.lineup.slice() : lineupOf(sport).filter((s) => sport.slots[s] === "*" || sport.slots[s].some((x) => have.has(x)));
@@ -1199,12 +1202,12 @@
       } else if (sealedOn()) {
         const t = form.lkAt || draftTimeDefault();
         if (t < Date.now() + 2 * 6e4) throw new Error("Pick a time for the lists to lock that's still to come.");
-        if (slate && t >= slate.first) throw new Error(`The lists have to lock before the first ${dayOn() ? "tip" : "kickoff"}, ${SL.kick(slate.games[0].at)}.`);
+        if (slate && t >= slate.first) throw new Error(`The lists have to lock before the first ${startWord()}, ${SL.kick(slate.games[0].at)}.`);
         D.sealed = { due: t };
       } else if (form.dtMode === "at") {
         const t = form.dtAt || draftTimeDefault();
         if (t < Date.now() + 2 * 6e4) throw new Error("Pick a draft time that's still to come.");
-        if (slate && t >= slate.first) throw new Error(`The draft has to start before the first ${dayOn() ? "tip" : "kickoff"}, ${SL.kick(slate.games[0].at)}.`);
+        if (slate && t >= slate.first) throw new Error(`The draft has to start before the first ${startWord()}, ${SL.kick(slate.games[0].at)}.`);
         D.startAt = t;
       }        // each team its own color, the same ones the league pages use
       const tn = (form.team || "").trim() || `${form.me.trim().split(" ")[0]}'s team`;

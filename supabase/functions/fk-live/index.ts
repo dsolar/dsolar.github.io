@@ -18,6 +18,7 @@
 //   ?sport=nba&slates=1          today's and tomorrow's NBA games (New York days), each { id, at, away, home, state }
 //   ?sport=cbb&slates=1          tonight's and tomorrow's featured college games (cbb.mjs)
 //   ?sport=cfb&slates=1          this and next college-football week, FBS-vs-FBS games
+//   ?sport=nhl&slates=1          today's and tomorrow's NHL games (New York days), like the NBA's
 //   ?sport=nba&games=id1,id2     those games' box scores and states, { games: { id: { state, lines } } }, whatever week
 //                                they're in, so a one-day league can score its own games and know when they're final
 //
@@ -502,6 +503,32 @@ async function nbaSlates() {
   return data;
 }
 
+// One-night hockey slates: today's and tomorrow's regular-season NHL games in New York days, shaped like the NBA's
+// (GET ?sport=nhl&slates=1), from the NHL's own schedule so the game ids match the week feed's box scores. Kept five
+// minutes (table fk_live, under "nhl-slates").
+async function nhlSlates() {
+  const key = "nhl-slates";
+  const r = await db(`fk_live?sport=eq.${key}&select=data,updated_at`);
+  const row = r.ok ? (await r.json())[0] : null;
+  if (row && Date.now() - Date.parse(row.updated_at) < 5 * 60e3) return row.data;
+  const today = nyDate(), days = [today, addDays(today, 1)];
+  const board: any = await getJSON(`https://api-web.nhle.com/v1/schedule/${today}`).catch(() => null);
+  if (!board || !Array.isArray(board.gameWeek)) return row ? row.data : { weeks: [] };
+  let season = "";
+  const weeks = days.map((d) => {
+    const day = board.gameWeek.find((x: any) => x.date === d);
+    const games = ((day && day.games) || []).filter((g: any) => g.gameType === 2).map((g: any) => {
+      const sy = String(g.season || ""); if (sy) season = `${sy.slice(0, 4)}-${sy.slice(-2)}`;
+      return { id: String(g.id), at: g.startTimeUTC, away: g.awayTeam?.abbrev, home: g.homeTeam?.abbrev, state: nhlState(g) };
+    }).filter((g: any) => g.away && g.home && g.state !== "off").sort((a: any, b: any) => Date.parse(a.at) - Date.parse(b.at));
+    return { day: d, start: d, end: d, games };
+  });
+  if (!season) { const y = Number(today.slice(0, 4)), sy = Number(today.slice(5, 7)) >= 9 ? y : y - 1; season = `${sy}-${String(sy + 1).slice(-2)}`; }
+  const data = { sport: "nhl", season, weeks, updated: new Date().toISOString() };
+  await db("fk_live", { method: "POST", headers: { Prefer: "resolution=merge-duplicates" }, body: JSON.stringify({ sport: key, data, updated_at: data.updated }) });
+  return data;
+}
+
 // Box scores for named games (GET ?sport=nba&games=id1,id2): { games: { id: { state, lines } } }, with the week's
 // columns. Games in this week come from the week's feed (kept a minute); a game from an earlier week (a Sunday night
 // game read on Monday) from the finished games kept for good, or from ESPN. A postponed game reads "off".
@@ -621,6 +648,7 @@ Deno.serve(async (req) => {
   }
   if (sport === "nfl" && q.get("slates")) return json(await nflSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "nba" && q.get("slates")) return json(await nbaSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
+  if (sport === "nhl" && q.get("slates")) return json(await nhlSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });
   // college hoops: its featured slates for one-day games; the weekly feed below serves season leagues
   if (sport === "cbb" && q.get("slates")) return json(await cbbSlates(getJSON).catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=120" });
   if (sport === "cfb" && q.get("slates")) return json(await cfbSlates().catch((e) => ({ weeks: [], error: String(e) })), { "cache-control": "max-age=60" });

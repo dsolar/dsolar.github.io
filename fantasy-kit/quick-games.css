@@ -125,3 +125,10 @@
 /* the next game's names sit beside the logo even when a logo doesn't load, and break between words */
 .q-feature-teams b{overflow-wrap:normal;word-break:normal}
 @media(max-width:420px){.q-feature-teams>div>b,.q-feature-teams>div>small{grid-column:2}}
+/* hockey: rink teal and ice, the faint red and blue lines of the rink behind the hero */
+.q-nhl{--q-accent:#0f6b77;--q-soft:#e6f4f6;--q-deep:#0d3a44;--q-light:#9fe3ec}
+[data-theme=dark] .q-nhl{--q-accent:#86d6e0;--q-soft:#16303a}
+.q-nhl .q-hero-art{background:linear-gradient(90deg,transparent 0 33%,#e0525233 33% 33.4%,transparent 33.4% 49.8%,#e0525255 49.8% 50.2%,transparent 50.2% 66.6%,#4a8fe033 66.6% 67%,transparent 67%)}
+.q-sports{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:1100px){.q-sports{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.q-sports{grid-template-columns:repeat(2,minmax(0,1fr))}}
