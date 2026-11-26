@@ -43,13 +43,46 @@
     // Move only once a player has moved; on a phone it rides next to the rank instead of taking a column
     const moved = D.players.some((p) => { const m = move(p); return m != null && m !== 0; });
     $("#thead").innerHTML = `<tr>${th("rank", "#", "r")}${moved ? th("move", "Move", "hide-s", prev ? `Spots since ${prev}` : "") : ""}${th("name", "Player")}
-      ${hasStats() ? `<th class="hide-m">${D.league === "nba" ? "This season" : "2026 season"}</th>` : ""}${th("score", "Avg", "r", "Weighted average rank")}
+      ${hasStats() ? th("prod", D.league === "nba" ? "This season" : "2026 season", "hide-m", D.league === "nba" ? "Sort by production: box plus-minus where the board has it, else points, rebounds, assists, steals and blocks, as a percentile of the class" : "Sort by production against his position on this board: yards a game for passers, runners and receivers, tackles and sacks for defenders") : ""}${th("score", "Avg", "r", "Weighted average rank")}
       ${live.map((s) => th("s:" + s.id, esc(s.abbr), "r col-src", `${s.name}${s.analyst ? `, ${s.analyst}` : ""}, ${fmtDay(s.date)}`)).join("")}
       ${live.length > 1 ? `${th("spread", "Range", "rng", "Best and worst rank across the boards")}` : ""}${mk.length ? th("mock", "Mock", "hide-s", mk.map((m) => `${m.name}, ${fmtDay(m.date)}`).join("; ")) : ""}</tr>`;
   }
 
   function cols() { return 3 + (D.players.some((p) => { const m = move(p); return m != null && m !== 0; }) ? 1 : 0) + (hasStats() ? 1 : 0) + liveBoards().length + (liveBoards().length > 1 ? 1 : 0) + (mocks().length ? 1 : 0); }
 
+  // production, as a percentile (0-100) of this board's players who have numbers: NBA by box plus-minus (OBPM + DBPM)
+  // when listed, else a box-score blend; NFL against his own position group by its main stat a game. No stats: null.
+  let prodCache = null;
+  function prod(p) {
+    if (!prodCache || prodCache.d !== D) {
+      const num = (x) => { const v = parseFloat(String(x == null ? "" : x).replace(/,/g, "")); return Number.isFinite(v) ? v : null; };
+      const stat = (q, k, per) => { const r = (q.stats || []).find((x) => x[0] === k); return r ? num(per ? (r[2] !== "" && r[2] != null ? r[2] : r[1]) : r[1]) : null; };
+      const raw = {}, group = {}, gOf = {};
+      for (const q of D.players) {
+        let v = null, g = "all";
+        if (D.league === "nba") {
+          const ob = stat(q, "OBPM"), db = stat(q, "DBPM");
+          if (ob != null && db != null) { v = ob + db; g = "bpm"; }
+          else { const pts = stat(q, "PTS"); if (pts != null) { v = pts + 0.7 * (stat(q, "REB") || 0) + (stat(q, "AST") || 0) + (stat(q, "STL") || 0) + 0.7 * (stat(q, "BLK") || 0); g = "box"; } }
+        } else {
+          const pos = String(q.pos || "").split("/")[0];
+          if (stat(q, "Pass Yds", true) != null) { v = stat(q, "Pass Yds", true); g = "QB"; }
+          else if (stat(q, "Rush Yds", true) != null) { v = stat(q, "Rush Yds", true); g = "RB"; }
+          else if (stat(q, "REC Yds", true) != null) { v = stat(q, "REC Yds", true); g = pos === "TE" ? "TE" : "WR"; }
+          else if (stat(q, "TACKLES") != null) { v = stat(q, "TACKLES") + 6 * (stat(q, "SACKS") || 0); g = ["EDGE", "DL"].includes(pos) ? "DL" : ["CB", "S"].includes(pos) ? "DB" : "LB"; }
+        }
+        if (v != null) { raw[q.id] = v; gOf[q.id] = g; (group[g] = group[g] || []).push(v); }
+      }
+      const out = {};
+      for (const q of D.players) {
+        if (raw[q.id] == null) continue;
+        const xs = group[gOf[q.id]];
+        out[q.id] = Math.round(100 * xs.filter((x) => x < raw[q.id]).length / Math.max(1, xs.length - 1));
+      }
+      prodCache = { d: D, out };
+    }
+    const v = prodCache.out[p.id]; return v == null ? null : v;
+  }
   function rows() {
     const live = liveBoards(), mk = mocks();
     const q = ui.q.trim().toLowerCase();
@@ -61,6 +94,7 @@
       if (ui.sort === "spread") return -(p.lo - p.hi);
       if (ui.sort === "mock") { const m = mk.map((s) => p.mocks[s.id]).find(Boolean); return m ? m[0] : 999; }
       if (ui.sort.startsWith("s:")) return p.ranks[ui.sort.slice(2)] ?? 999;
+      if (ui.sort === "prod") { const v = prod(p); return v == null ? 999 * ui.dir : -v; }
       return p[ui.sort];
     };
     ps = ps.slice().sort((a, b) => { const x = val(a), y = val(b); return (x < y ? -1 : x > y ? 1 : a.rank - b.rank) * ui.dir; });
