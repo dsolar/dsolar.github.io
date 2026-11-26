@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-26T23:37:17Z",
+ "updated": "2026-11-26T23:52:19Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -180,7 +180,7 @@
      "proj": 12.92,
      "rank": "WR14",
      "date": "2026-11-29",
-     "next_proj": 12.13,
+     "next_proj": 12.2,
      "in_best": true
     },
     {
@@ -420,7 +420,7 @@
      "name": "DeVonta Smith",
      "nfl": "PHI",
      "pos": "WR",
-     "yahoo_actual": 17.5,
+     "yahoo_actual": 18.5,
      "game": "Thu 4:30 pm",
      "opp": "@ DAL",
      "season": {
@@ -572,7 +572,7 @@
    ],
    "points_final": 69.8,
    "best": 149.6,
-   "best_next": 141.6,
+   "best_next": 141.7,
    "locked": 69.8,
    "locked_proj": 54.68,
    "games_final": 3
@@ -1101,7 +1101,7 @@
      "date": "2026-11-25",
      "final": true,
      "actual": 14.5,
-     "next_proj": 14.74,
+     "next_proj": 14.71,
      "in_best": true
     },
     {
@@ -1437,7 +1437,7 @@
      "date": "2026-11-25",
      "final": true,
      "actual": 4.4,
-     "next_proj": 14.41,
+     "next_proj": 14.38,
      "in_best": true
     },
     {
@@ -1592,7 +1592,7 @@
      "proj": 14.22,
      "rank": "RB12",
      "date": "2026-11-30",
-     "next_proj": 14.03
+     "next_proj": 13.8
     },
     {
      "slot": "BN",
@@ -1756,7 +1756,7 @@
    ],
    "points_final": 4.4,
    "best": 147.3,
-   "best_next": 140.9,
+   "best_next": 140.6,
    "locked": 4.4,
    "locked_proj": 12.91,
    "games_final": 1
@@ -1964,7 +1964,7 @@
      "proj": 11.55,
      "rank": "WR20",
      "date": "2026-11-30",
-     "next_proj": 10.8
+     "next_proj": 10.76
     },
     {
      "slot": "BN",
@@ -2002,7 +2002,7 @@
      "proj": 15.15,
      "rank": "WR5",
      "date": "2026-11-29",
-     "next_proj": 14.38,
+     "next_proj": 14.41,
      "in_best": true,
      "assumed_slot": "WR"
     },
@@ -3555,7 +3555,7 @@
     "nfl": "GB",
     "proj": 17.27,
     "rank": "QB12",
-    "next_proj": 20.46,
+    "next_proj": 20.32,
     "avg": 20.3,
     "g": 10,
     "last": 0
@@ -3622,7 +3622,7 @@
     "nfl": "GB",
     "proj": 12.91,
     "rank": "WR15",
-    "next_proj": 14.41,
+    "next_proj": 14.38,
     "avg": 14.7,
     "g": 10,
     "last": 0,
@@ -3647,7 +3647,7 @@
     "nfl": "CAR",
     "proj": 11.55,
     "rank": "WR20",
-    "next_proj": 10.8,
+    "next_proj": 10.76,
     "avg": 12.3,
     "g": 10,
     "last": 16.1,
@@ -3728,7 +3728,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-26T23:37:18Z",
+  "updated": "2026-11-26T23:52:21Z",
   "players": 3046,
   "unmatched": []
  }
