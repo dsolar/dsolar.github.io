@@ -8,6 +8,11 @@
 --   texted a pick in, and can undo the last pick. When every entry has its teams the draft is done.
 --   The page works out the table from the site's standings: each team's wins now, less its wins at the baseline.
 --
+-- Over/under (mode 'ou', added 2026-11-25): each pick is a team and a side against its win-total line, so a team can
+--   go twice, once over and once under. The line is the site's projection of the team's final wins the day the draft
+--   starts (nba/data/proj.json, nfl/data/fpi.json), rounded to the half, saved with the baseline. The page scores it:
+--   over is final wins less the line, under the reverse, using today's projection until the season's games are in.
+--
 -- Its own tables and functions (wn_*; wp_ is the Win Probability game): nothing here changes the other pools. Codes
 -- don't collide with theirs.
 -- Run in the Supabase SQL editor (it's safe to run again).
@@ -33,6 +38,16 @@ create table if not exists public.wn_picks (
   picked_at timestamptz not null default now(), by uuid,
   primary key (pool, n), unique (pool, team),
   foreign key (pool, user_id) references public.wn_members (pool, user_id) on delete cascade);
+alter table public.wn_pools add column if not exists mode text not null default 'wins';
+do $$ begin
+  if not exists (select 1 from pg_constraint where conname = 'wn_pools_mode_check') then
+    alter table public.wn_pools add constraint wn_pools_mode_check check (mode in ('wins', 'ou'));
+  end if;
+end $$;
+-- a pick's side: '' in a wins pool, 'o' or 'u' in an over/under pool (where a team can go once each way)
+alter table public.wn_picks add column if not exists side text not null default '';
+alter table public.wn_picks drop constraint if exists wn_picks_pool_team_key;
+create unique index if not exists wn_picks_pool_team_side on public.wn_picks (pool, team, side);
 alter table public.wn_pools enable row level security;
 alter table public.wn_members enable row level security;
 alter table public.wn_picks enable row level security;
@@ -52,13 +67,15 @@ language sql immutable as $$
     else jsonb_array_length(p_order) - 1 - (p_n - 1) % jsonb_array_length(p_order) end))::uuid;
 $$;
 
-create or replace function public.wn_create(p_name text, p_sport text, p_per int default 4, p_entry text default null) returns jsonb
+drop function if exists public.wn_create(text, text, int, text);
+create or replace function public.wn_create(p_name text, p_sport text, p_per int default 4, p_entry text default null, p_mode text default 'wins') returns jsonb
 language plpgsql security definer set search_path to 'public', 'extensions' as $$
 declare uid uuid := auth.uid(); code text; nm text := left(trim(coalesce(p_name, '')), 40);
 begin
   if uid is null then return jsonb_build_object('error', 'Sign in to make a pool.'); end if;
   if nm = '' then return jsonb_build_object('error', 'Name the pool.'); end if;
   if p_sport not in ('nba', 'nfl') then return jsonb_build_object('error', 'Pick the NBA or the NFL.'); end if;
+  if coalesce(p_mode, 'wins') not in ('wins', 'ou') then return jsonb_build_object('error', 'Pick most wins or over/under.'); end if;
   if coalesce(p_per, 0) not between 1 and 16 then return jsonb_build_object('error', 'Each entry drafts 1 to 16 teams.'); end if;
   if (select count(*) from wn_pools where owner = uid) >= 20 then return jsonb_build_object('error', 'That''s a lot of pools. Delete one first.'); end if;
   loop
@@ -66,7 +83,7 @@ begin
     exit when length(code) = 6 and not exists (select 1 from wn_pools where id = code)
       and not exists (select 1 from mm_pools where id = code) and not exists (select 1 from pk_groups where id = code);
   end loop;
-  insert into wn_pools (id, name, sport, per, owner) values (code, nm, p_sport, p_per, uid);
+  insert into wn_pools (id, name, sport, per, owner, mode) values (code, nm, p_sport, p_per, uid, coalesce(p_mode, 'wins'));
   insert into wn_members (pool, user_id, name) values (code, uid, nullif(left(trim(coalesce(p_entry, '')), 28), ''));
   return jsonb_build_object('ok', true, 'id', code, 'name', nm, 'sport', p_sport);
 end $$;
@@ -133,9 +150,10 @@ end $$;
 
 -- the owner starts the draft: the league's teams and each one's record right now (from the site's standings file),
 -- and a shuffled order. Every entry needs its teams, so entries times teams each can't pass the league's size.
-create or replace function public.wn_start(p_pool text, p_teams text[], p_base jsonb, p_season text default null) returns jsonb
+drop function if exists public.wn_start(text, text[], jsonb, text);
+create or replace function public.wn_start(p_pool text, p_teams text[], p_base jsonb, p_season text default null, p_lines jsonb default null) returns jsonb
 language plpgsql security definer set search_path to 'public' as $$
-declare uid uuid := auth.uid(); p wn_pools; m int; ord jsonb; t text; rec jsonb; clean jsonb := '{}'::jsonb; want int;
+declare uid uuid := auth.uid(); p wn_pools; m int; ord jsonb; t text; rec jsonb; clean jsonb := '{}'::jsonb; want int; room int; lines jsonb := '{}'::jsonb; ln text;
 begin
   select * into p from wn_pools where id = p_pool for update;
   if not found or uid is null or p.owner is distinct from uid then return jsonb_build_object('error', 'Only the pool''s owner can start the draft.'); end if;
@@ -146,24 +164,32 @@ begin
   if p_teams is null or cardinality(p_teams) <> want or (select count(distinct x) from unnest(p_teams) x) <> want then
     return jsonb_build_object('error', 'The standings didn''t load. Refresh and try again.');
   end if;
-  if m * p.per > want then return jsonb_build_object('error', format('%s entries drafting %s teams each is more than the league''s %s. Lower the teams each.', m, p.per, want)); end if;
+  room := case when p.mode = 'ou' then want * 2 else want end;
+  if m * p.per > room then return jsonb_build_object('error', format('%s entries drafting %s each is more than the %s there are. Lower the teams each.', m, p.per, room)); end if;
   foreach t in array p_teams loop
     if t !~ '^[A-Z]{2,4}$' then return jsonb_build_object('error', 'The standings didn''t load. Refresh and try again.'); end if;
     rec := coalesce(p_base -> t, '{}'::jsonb);
     clean := clean || jsonb_build_object(t, jsonb_build_object(
       'w', case when rec ->> 'w' ~ '^[0-9]{1,3}$' then least(200, (rec ->> 'w')::int) else 0 end,
       'l', case when rec ->> 'l' ~ '^[0-9]{1,3}$' then least(200, (rec ->> 'l')::int) else 0 end));
+    if p.mode = 'ou' then
+      -- every team needs a line: a number of wins to the half
+      ln := p_lines ->> t;
+      if ln is null or ln !~ '^[0-9]{1,3}(\.[05])?$' then return jsonb_build_object('error', 'The win-total lines didn''t load. Refresh and try again.'); end if;
+      lines := lines || jsonb_build_object(t, ln::numeric);
+    end if;
   end loop;
   select jsonb_agg(user_id order by random()) into ord from wn_members where pool = p.id;
   update wn_pools set draft = jsonb_build_object('order', ord, 'started', now(), 'teams', to_jsonb(p_teams), 'base', clean,
-    'season', left(coalesce(p_season, ''), 12)) where id = p.id;
+    'season', left(coalesce(p_season, ''), 12)) || case when p.mode = 'ou' then jsonb_build_object('lines', lines) else '{}'::jsonb end where id = p.id;
   return jsonb_build_object('ok', true);
 end $$;
 
 -- a pick: the entry that's up takes a team nobody has. The owner can make it for them (p_for).
-create or replace function public.wn_pick(p_pool text, p_team text, p_for uuid default null) returns jsonb
+drop function if exists public.wn_pick(text, text, uuid);
+create or replace function public.wn_pick(p_pool text, p_team text, p_for uuid default null, p_side text default null) returns jsonb
 language plpgsql security definer set search_path to 'public' as $$
-declare uid uuid := auth.uid(); p wn_pools; m int; n int; up uuid;
+declare uid uuid := auth.uid(); p wn_pools; m int; n int; up uuid; sd text;
 begin
   if uid is null then return jsonb_build_object('error', 'Sign in to draft.'); end if;
   select * into p from wn_pools where id = p_pool for update;
@@ -177,8 +203,12 @@ begin
     return jsonb_build_object('error', format('It''s %s''s pick.', wn_name(p.id, up)));
   end if;
   if not (p.draft -> 'teams') ? p_team then return jsonb_build_object('error', 'That team isn''t in this pool.'); end if;
-  if exists (select 1 from wn_picks where pool = p.id and team = p_team) then return jsonb_build_object('error', 'That team is taken.'); end if;
-  insert into wn_picks (pool, n, user_id, team, by) values (p.id, n, up, p_team, case when up <> uid then uid end);
+  sd := case when p.mode = 'ou' then coalesce(p_side, '') else '' end;
+  if p.mode = 'ou' and sd not in ('o', 'u') then return jsonb_build_object('error', 'Pick the over or the under.'); end if;
+  if exists (select 1 from wn_picks where pool = p.id and team = p_team and side = sd) then
+    return jsonb_build_object('error', case when p.mode = 'ou' then 'That side of that team is taken.' else 'That team is taken.' end);
+  end if;
+  insert into wn_picks (pool, n, user_id, team, side, by) values (p.id, n, up, p_team, sd, case when up <> uid then uid end);
   if n >= m * p.per then update wn_pools set done_at = now() where id = p.id; end if;
   return jsonb_build_object('ok', true, 'n', n, 'done', n >= m * p.per);
 end $$;
@@ -204,17 +234,17 @@ begin
   select * into p from wn_pools where id = upper(trim(coalesce(p_pool, '')));
   if not found then return jsonb_build_object('error', 'No pool has that code.'); end if;
   return jsonb_build_object('ok', true,
-    'pool', jsonb_build_object('id', p.id, 'name', p.name, 'sport', p.sport, 'per', p.per, 'mine', p.owner is not distinct from uid and uid is not null,
+    'pool', jsonb_build_object('id', p.id, 'name', p.name, 'sport', p.sport, 'mode', p.mode, 'per', p.per, 'mine', p.owner is not distinct from uid and uid is not null,
       'draft', p.draft, 'done', p.done_at, 'created', p.created_at),
     'members', coalesce((select jsonb_agg(jsonb_build_object('id', m.user_id, 'name', wn_name(p.id, m.user_id), 'me', m.user_id = uid) order by m.joined_at)
       from wn_members m where m.pool = p.id), '[]'::jsonb),
-    'picks', coalesce((select jsonb_agg(jsonb_build_object('n', k.n, 'user', k.user_id, 'team', k.team, 'at', k.picked_at, 'by', k.by is not null) order by k.n)
+    'picks', coalesce((select jsonb_agg(jsonb_build_object('n', k.n, 'user', k.user_id, 'team', k.team, 'side', k.side, 'at', k.picked_at, 'by', k.by is not null) order by k.n)
       from wn_picks k where k.pool = p.id), '[]'::jsonb));
 end $$;
 
 create or replace function public.wn_mine() returns jsonb
 language sql stable security definer set search_path to 'public' as $$
-  select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name, 'sport', p.sport, 'per', p.per,
+  select coalesce(jsonb_agg(jsonb_build_object('id', p.id, 'name', p.name, 'sport', p.sport, 'mode', p.mode, 'per', p.per,
       'members', (select count(*) from wn_members x where x.pool = p.id),
       'picks', (select count(*) from wn_picks k where k.pool = p.id),
       'started', p.draft is not null, 'done', p.done_at is not null,
@@ -226,6 +256,6 @@ $$;
 
 revoke all on function public.wn_name(text, uuid), public.wn_turn(jsonb, int) from public, anon, authenticated;
 grant execute on function public.wn_board(text) to anon, authenticated;
-grant execute on function public.wn_create(text, text, int, text), public.wn_join(text, text), public.wn_leave(text),
-  public.wn_update(text, text, int, uuid), public.wn_delete(text, text), public.wn_start(text, text[], jsonb, text),
-  public.wn_pick(text, text, uuid), public.wn_undo(text), public.wn_mine() to authenticated;
+grant execute on function public.wn_create(text, text, int, text, text), public.wn_join(text, text), public.wn_leave(text),
+  public.wn_update(text, text, int, uuid), public.wn_delete(text, text), public.wn_start(text, text[], jsonb, text, jsonb),
+  public.wn_pick(text, text, uuid, text), public.wn_undo(text), public.wn_mine() to authenticated;

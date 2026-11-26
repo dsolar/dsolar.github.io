@@ -39,7 +39,7 @@ test('the site\'s own standings files give every team a record', () => {
 
 test('a tie is neither a win nor a loss', () => {
   const rec = W.records('nfl', { games: [['REG', 1, '2026-09-13', 'NE', 'BUF', 20, 20], ['REG', 1, '2026-09-13', 'KC', 'DEN', 27, 13], ['REG', 2, '2026-09-20', 'NE', 'KC', null, null]] });
-  assert.deepEqual(rec.NE, { w: 0, l: 0 }); assert.deepEqual(rec.KC, { w: 1, l: 0 }); assert.deepEqual(rec.DEN, { w: 0, l: 1 });
+  assert.deepEqual(rec.NE, { w: 0, l: 0, t: 1 }); assert.deepEqual(rec.KC, { w: 1, l: 0 }); assert.deepEqual(rec.DEN, { w: 0, l: 1 });
 });
 
 test('the draft is a snake over the shuffled order', () => {
@@ -88,4 +88,59 @@ test('a pool\'s line on the pools list', () => {
   assert.deepEqual(W.status({ members: 3, per: 4, picks: 5, started: true, done: false, up: true }), { text: "You're up: pick 6", tone: 'todo' });
   assert.match(W.status({ members: 3, per: 4, picks: 5, started: true, done: false, up: false }).text, /pick 6 of 12/);
   assert.equal(W.status({ members: 3, per: 4, picks: 12, started: true, done: true }).tone, 'ok');
+});
+
+// ---------- over/under ----------
+const nba = Object.keys(W.TEAMS.nba);
+const ouBoard = (picks, lines) => ({ ok: true, pool: { id: 'OU2345', name: 'OU', sport: 'nba', mode: 'ou', per: 2, mine: true, done: null,
+  draft: { order: ['b', 'c', 'a'], started: '2026-11-25T20:00:00Z', teams: nba, base: {}, lines } }, members, picks: picks.map(([user, team, side], i) => ({ n: i + 1, user, team, side })) });
+
+test('the site\'s projection files give every team a win total, and lines round to the half', () => {
+  const np = W.projections('nba', JSON.parse(readFileSync(new URL('../nba/data/proj.json', import.meta.url), 'utf8')));
+  assert.equal(Object.keys(np).length, 30);
+  assert.ok(np.BRK != null && np.CHO != null && np.PHO != null, 'in the standings\' codes');
+  const fp = W.projections('nfl', JSON.parse(readFileSync(new URL('../nfl/data/fpi.json', import.meta.url), 'utf8')));
+  assert.equal(Object.keys(fp).length, 32);
+  assert.ok(Object.values(fp).every((v) => v >= 0 && v <= 17));
+  const ln = W.lines({ A: 41.9, B: 44.26, C: 7.2, D: 10 });
+  assert.deepEqual(ln, { A: 42, B: 44.5, C: 7, D: 10 });
+  assert.ok(Object.values(W.lines(np)).every((v) => /^\d{1,2}(\.5)?$/.test(String(v))), 'the server\'s format');
+  assert.equal(W.projections('nba', { teams: { BOS: { w: 50 } } }), null, 'all thirty or nothing');
+  assert.equal(W.lines(null), null);
+});
+
+test('a team\'s final wins: the projection until its games are in, then what it won', () => {
+  assert.deepEqual(W.final('nfl', { w: 9, l: 1 }, 14.3), { w: 14.3, done: false });
+  assert.deepEqual(W.final('nfl', { w: 12, l: 5 }, 9), { w: 12, done: true });
+  assert.deepEqual(W.final('nfl', { w: 11, l: 5, t: 1 }, 9), { w: 11, done: true }, 'a tie is a game played');
+  assert.deepEqual(W.final('nfl', { w: 10, l: 2 }, 8), { w: 10, done: false }, 'never under what it already has');
+  assert.deepEqual(W.final('nfl', { w: 2, l: 12 }, 9), { w: 5, done: false }, 'never over what it can still reach');
+  assert.deepEqual(W.final('nba', { w: 20, l: 21 }, null), { w: 40, done: false }, 'no projection: its pace');
+  assert.equal(W.margin('o', 44.5, 50), 5.5); assert.equal(W.margin('u', 44.5, 50), -5.5); assert.equal(W.margin('u', 9.5, 7), 2.5);
+});
+
+test('an over/under pool: a team can go both ways, and the table ranks on total margin', () => {
+  const lines = Object.fromEntries(nba.map((t) => [t, 41]));
+  Object.assign(lines, { BOS: 54.5, OKC: 58.5, WAS: 18.5 });
+  const b = ouBoard([['b', 'BOS', 'o'], ['c', 'BOS', 'u'], ['a', 'WAS', 'u'], ['a', 'OKC', 'o'], ['c', 'WAS', 'o'], ['b', 'OKC', 'u']], lines);
+  assert.ok(W.isOu(b));
+  assert.equal(W.maxPer('nba', 6, 'ou'), 10); assert.equal(W.maxPer('nfl', 8, 'ou'), 8);
+  const recs = Object.fromEntries(nba.map((t) => [t, { w: 10, l: 8 }]));
+  const proj = Object.fromEntries(nba.map((t) => [t, 41]));
+  Object.assign(proj, { BOS: 57.5, OKC: 55, WAS: 20 });
+  const rows = W.tableOu(b, recs, proj);
+  // BOS +3 over / -3 under; OKC -3.5 over / +3.5 under; WAS +1.5 over / -1.5 under
+  assert.deepEqual(rows.map((r) => [r.name, r.m, r.rank]), [['Bo', 6.5, 1], ['Cy', -1.5, 2], ['Ann', -5, 3]]);
+  assert.deepEqual(rows[0].teams.map((t) => [t.team, t.side, t.line, t.est, t.m]), [['OKC', 'u', 58.5, 55, 3.5], ['BOS', 'o', 54.5, 57.5, 3]]);
+  // before any movement everyone is level
+  assert.deepEqual(W.tableOu(b, recs, lines).map((r) => [r.m, r.rank]), [[0, 1], [0, 1], [0, 1]]);
+  // once a team's 82 games are in, the real number counts, whatever the projection file says
+  recs.BOS = { w: 50, l: 32 };
+  const done = W.tableOu(b, recs, proj).find((r) => r.name === 'Bo').teams.find((t) => t.team === 'BOS');
+  assert.deepEqual([done.est, done.done, done.m], [50, true, -4.5]);
+  const sd = W.sides(b, recs, proj);
+  assert.equal(sd.length, 30);
+  assert.equal(sd[0].team, 'OKC', 'highest line first');
+  const bos = sd.find((x) => x.team === 'BOS'), atl = sd.find((x) => x.team === 'ATL');
+  assert.deepEqual([bos.o.user, bos.u.user, atl.o, atl.u, atl.line], ['b', 'c', null, null, 41]);
 });

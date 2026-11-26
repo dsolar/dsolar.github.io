@@ -1257,3 +1257,20 @@ body{overflow-x:clip}
 [data-theme=dark] .g-wins.pl .seg button[aria-selected="true"],[data-theme=dark] .g-wins.pl .seg button[aria-pressed="true"]{background:var(--wn-chalk);color:var(--wn-slate)}
 .g-wins .wp-chip{border-radius:4px}
 @media (max-width:640px){.g-wins .tally-art{opacity:.18}}
+
+/* over/under wins pool: a team row with its line and the two sides, and margins in green and red */
+.wp-grid.ou{grid-template-columns:repeat(auto-fill,minmax(290px,1fr))}
+.wp-ou{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--surface-2)}
+.wp-ou.gone{opacity:.55}
+.wp-ou-t{display:grid;line-height:1.2;min-width:0}.wp-ou-t b{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.wp-ou-t small{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}.wp-ou-t small b{font-size:12px;color:var(--ink)}
+.wp-ou-b{display:flex;gap:6px}
+.wp-side{min-width:58px;min-height:36px;padding:0 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+button.wp-side:not(:disabled):hover,button.wp-side:not(:disabled):focus-visible{border-color:var(--brand);background:var(--brand-soft)}
+button.wp-side:disabled{cursor:default;opacity:.7}
+.wp-side.took{border-style:dashed;color:var(--muted);font-weight:800;cursor:default;display:inline-grid;line-height:1.05;justify-items:center;font-size:12px}
+.wp-side.took small{font-size:9px;font-weight:600;max-width:54px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wp-side.took.me{border-style:solid;border-color:var(--win);color:var(--win)}
+.wp-st .up,.pl-st .up{color:var(--win)}.wp-st .dn,.pl-st .dn{color:var(--loss,#c0392b)}
+.wp-chip.up{border-color:color-mix(in srgb,var(--win) 45%,var(--line))}.wp-chip.dn{border-color:color-mix(in srgb,var(--loss,#c0392b) 45%,var(--line))}
+.pl-st .me-t{font-weight:800}
+@media (max-width:600px){.wp-grid.ou{grid-template-columns:1fr}}
