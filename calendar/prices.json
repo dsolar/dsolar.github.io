@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T03:38:23Z",
+ "updated": "2026-11-26T17:04:38Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -306,6 +306,10 @@
     [
      "2026-11-25",
      56
+    ],
+    [
+     "2026-11-26",
+     56
     ]
    ],
    "sg": null,
@@ -489,6 +493,10 @@
     ],
     [
      "2026-11-25",
+     22
+    ],
+    [
+     "2026-11-26",
      22
     ]
    ],
@@ -736,6 +744,10 @@
     [
      "2026-11-25",
      28
+    ],
+    [
+     "2026-11-26",
+     28
     ]
    ],
    "sg": null,
@@ -857,16 +869,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892781": {
-   "history": [],
-   "sg": 18378516,
-   "title": "Bruins vs Jets",
-   "date": "2026-11-25",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892781/jets-bruins",
-   "src": null,
-   "low": null
-  },
   "espn-401892795": {
    "history": [],
    "sg": 18378518,
@@ -956,6 +958,10 @@
     [
      "2026-11-25",
      44
+    ],
+    [
+     "2026-11-26",
+     44
     ]
    ],
    "sg": null,
@@ -1015,6 +1021,10 @@
     ],
     [
      "2026-11-25",
+     44
+    ],
+    [
+     "2026-11-26",
      44
     ]
    ],
@@ -1192,6 +1202,10 @@
     [
      "2026-11-25",
      34
+    ],
+    [
+     "2026-11-26",
+     34
     ]
    ],
    "sg": null,
@@ -1250,6 +1264,16 @@
    "date": "2027-04-17",
    "venue": "The Wilbur",
    "url": "https://www.ticketmaster.com/joe-list-boston-massachusetts-04-17-2027/event/01006538259313C0",
+   "src": null,
+   "low": null
+  },
+  "espn-401873109": {
+   "history": [],
+   "sg": 18013968,
+   "title": "Patriots vs Vikings",
+   "date": "2026-12-10",
+   "venue": "Gillette Stadium",
+   "url": "https://www.espn.com/nfl/game/_/gameId/401873109/vikings-patriots",
    "src": null,
    "low": null
   }
