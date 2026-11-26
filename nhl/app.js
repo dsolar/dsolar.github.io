@@ -240,14 +240,16 @@
     var rank = H.teams.slice().sort(function (a, b) { return b.rating - a.rating; }).indexOf(t) + 1;
     // the shared team header (assets/pcard.js), then the team picker
     var h = window.PCard.teamHead({ logo: logo(t, 44), name: t.name, follow: { sport: "nhl", id: t.abbr }, color: NHL_COLOR[t.abbr] || "var(--ink)",
-      meta: [esc(t.div) + " Division", rec(t) + ", " + r.points + " points in " + r.gamesPlayed + " games"],
+      meta: [esc(t.div) + " Division", rec(t) + ", " + r.points + " points in " + r.gamesPlayed + " games", r.homeWins != null ? "Home " + r.homeWins + "-" + r.homeLosses + "-" + r.homeOtLosses + ", road " + r.roadWins + "-" + r.roadLosses + "-" + r.roadOtLosses : ""],
       chips: [["Last 10: " + r.l10Wins + "-" + r.l10Losses + "-" + r.l10OtLosses, ""], r.streakCode ? [r.streakCode + r.streakCount + " streak", r.streakCode === "W" ? "tag" : ""] : null, ["Strength " + sgn(t.rating, 2) + ", " + ord(rank), t.rating >= 0 ? "tag" : ""], t.cap ? [m(t.cap.space, 1) + " cap space", t.cap.space >= 0 ? "" : "inj"] : null],
       head: [{ v: Math.round(t.projPts), l: "Projected points" }, { v: pct(t.odds.po), l: "Playoffs" }, { v: pct(t.odds.div), l: "Division" }, { v: pct(t.odds.cup), l: "Stanley Cup" }],
       tabs: [{ label: "Lines and odds", href: "#/team/" + t.abbr, on: true }, { label: "Players", href: "#/players?t=" + t.abbr }, t.cap ? { label: "Contracts", href: "#/contracts?t=" + t.abbr } : null].filter(Boolean) });
     h += '<div class="teampick">' + H.teams.slice().sort(function (a, b) { return a.abbr < b.abbr ? -1 : 1; }).map(function (x) {
       return '<a href="#/team/' + x.abbr + '"' + (x === t ? ' style="border-color:var(--ink)"' : "") + ">" + logo(x, 18) + x.abbr + "</a>";
     }).join("") + "</div>";
-    h += '<p class="note">Reach the conference final: ' + pct(t.odds.cf) + ".</p>";
+    // the road through the playoffs, round by round, and the Presidents' Trophy
+    var o = t.odds, path = [["Playoffs", o.po], ["Win a round", o.r2], ["Conference final", o.cf], ["Cup final", o.final], ["Stanley Cup", o.cup]].filter(function (x) { return x[1] != null; });
+    h += '<p class="note">Round by round: ' + path.map(function (x) { return x[0] + " " + pct(x[1]); }).join(", ") + (o.pres != null ? ". Presidents' Trophy (best record): " + pct(o.pres) : "") + ".</p>";
 
     // lines and pairings
     var lines = '<div class="rink"><h3>Forward lines <small>Most-used 5-on-5 trios this season, among players still here</small></h3>';

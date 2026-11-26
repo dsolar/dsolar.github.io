@@ -1213,6 +1213,8 @@
       return true;
     });
     var withSigned = list.some(function (x) { return x.signed; });
+    // the top 60 until you ask for everyone (the full pool runs past 200)
+    var fullN = list.length; if (q.all !== "1" && show !== "signed") list = list.slice(0, 60);
     html += '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>Player</th><th>Pos</th><th>Age</th><th>From</th><th>Proj WAR</th><th title="Statcast expected stats: xwOBA for hitters, xERA for pitchers">xwOBA / xERA</th><th>QO</th><th>Crowd</th><th>Fair / yr</th><th>Market / yr</th>' + (withSigned ? "<th>Signed</th><th>vs Market</th><th>Grade</th>" : "") + "</tr></thead><tbody>";
     list.forEach(function (x, i) {
       var r = x.r, pl = faName(x, 24), fp = /P$|SP|RP/.test(String(r.pos || ""));
@@ -1222,6 +1224,7 @@
         (x.gap == null ? "" : (x.gap > 0 ? "+" : "") + pct(x.gap, 0)) + "</td><td>" + gradeTag(x.grade) + "</td></tr>");
     });
     html += "</tbody></table></div></div>";
+    if (list.length < fullN) html += '<p><a class="btn" href="' + href("fa", Object.assign({}, q, { all: "1" })) + '">Show all ' + fullN + " free agents</a></p>";
     html += '<h2 class="sec">How these numbers work</h2><p class="lede"><b>Fair</b> is what each free agent is worth per year over the crowd\'s contract length (or the length he signed for): his projected wins at the market price of a win (' + money(H.cfg.dpw) + '), adjusted for what players of his tier have gone for. <b>Market</b> adds what deals of that length have actually gone for: one-year deals come in well under the going rate, long ones over it. A player coming off a big league club with little big league time (under about 1,000 plate appearances, 300 innings as a starter or 120 in relief over three seasons) has his projection counted at 55-100%, since it leans on minor league or overseas numbers teams discount (marked *); players signing from Japan or Korea keep theirs. The crowd numbers are FanGraphs readers\' median predictions.</p>' +
       '<p class="lede"><b>Grades</b> weigh what a team pays against the market price for deals that long. B runs from 6% under market to 10% over, since teams expect to pay a small premium; a signing that fills a hole (a spot in the bottom third of the league that he improves by most of a win) gets a little more room, and a qualifying-offer player costs a small dock (about ' + money(H.cfg.qoPickCost) + ' for the lost pick). <b>Surplus</b> is what he should produce over the deal minus his salary, discounted, as on his card. Deals awaiting contract terms or a projection are marked pending.</p>';
     if (mk) html += marketCallout(mk) + marketSection(mk);

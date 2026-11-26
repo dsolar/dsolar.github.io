@@ -94,13 +94,14 @@
     state.route = parts[0] || "week"; state.arg = parts[1] ? parts[1].toUpperCase() : null; state.q = q;
   }
   // Four sections, as in the NBA Hub; grouped pages get a sub-tab row, and a section tab returns to the page last used in it
-  var GROUP = { week: "games", game: "games", standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", adv: "players", contracts: "players", fa: "moves", trade: "moves" };
+  var GROUP = { week: "games", game: "games", standings: "standings", power: "standings", teams: "teams", team: "teams", offseason: "teams", cap: "teams", league: "teams", players: "players", ngs: "players", adv: "players", contracts: "players", fa: "fa", trade: "trades" };
   var SUBS = {
     games: [["week", "This week"]],
     standings: [["standings", "Standings"], ["power", "Power rankings"]],
     teams: [["teams", "Teams"], ["offseason", "Offseason"], ["cap", "League cap"]],
     players: [["players", "Players"], ["ngs", "Next Gen Stats"], ["adv", "Advanced"], ["contracts", "Contracts"]],
-    moves: [["fa", "Free agents"], ["trade", "Trade value"]]
+    trades: [["trade", "Trade value"]],
+    fa: [["fa", "Free agents"]]
   };
   // the teams you follow (assets/follow.js), above the main pages; redrawn when you follow or unfollow
   function yoursSlot() {
@@ -122,7 +123,7 @@
       if (last && SUBS[a.dataset.tab]) a.setAttribute("href", href(last, {}));
     });
     var st = $("#subtabs");
-    st.hidden = false;
+    st.hidden = subs.length < 2; // a section with one page needs no sub-tab row
     st.innerHTML = subs.map(function (x) { return '<a href="' + href(x[0], {}) + '"' + (x[0] === cur ? ' aria-current="page"' : "") + ">" + x[1] + "</a>"; }).join("");
     ({ week: weekPage, game: gamePage, standings: standingsPage, power: powerPage, fa: faPage, teams: teamsPage, team: teamPage, players: playersPage, ngs: ngsPage, adv: advPage, contracts: contractsPage, trade: tradePage, offseason: offseasonPage, cap: leaguePage, league: leaguePage, method: methodPage }[state.route] || standingsPage)();
     yoursSlot();
@@ -763,7 +764,7 @@
     html += '<div class="panel"><div class="pr-scale"><span></span><span class="pr-axis"><i style="left:' + (50 - tick / max * 50) + '%">-' + tick + '</i><i style="left:50%">0</i><i style="left:' + (50 + tick / max * 50) + '%">+' + tick + '</i></span><span class="note">pts</span></div><ol class="power">' + pw.map(function (x) {
       var c = x.code, o = SIM.teams[c], res = x.res, mv = base ? r0[c] - x.rank : 0;
       var fp = now && FPI && FPI.teams[c];
-      var side = now ? '<span class="pr-meta">' + rec(o.rec) + " · proj. " + o.wins.toFixed(1) + " wins · " + pctTxt(o.playoffs) + " playoffs · " + pctTxt(o.sb) + " title" + (fp ? ' · <span title="ESPN Football Power Index: points better than an average team">ESPN FPI ' + (fp.fpi >= 0 ? "+" : "") + fp.fpi.toFixed(1) + " (" + ngOrd(fp.rank) + ")</span>" : "") + "</span>"
+      var side = now ? '<span class="pr-meta">' + rec(o.rec) + " · proj. " + o.wins.toFixed(1) + " wins · " + pctTxt(o.playoffs) + " playoffs · " + pctTxt(o.sb) + " title" + (fp ? ' · <span title="ESPN Football Power Index: points better than an average team">ESPN FPI ' + (fp.fpi >= 0 ? "+" : "") + fp.fpi.toFixed(1) + " (" + ngOrd(fp.rank) + ")" + (fp.projW != null ? ", projects " + fp.projW.toFixed(1) + "-" + (fp.projL != null ? fp.projL.toFixed(1) : "") : "") + (fp.sos ? ", " + ngOrd(fp.sos) + " toughest schedule" : "") + "</span>" : "") + "</span>"
         : '<span class="pr-meta">' + m(res.roster, 0) + " under contract · " + (res.qb ? "QB " + esc(lastName(res.qb.p.n)) : '<b class="neg">no QB under contract</b>') + " · " + m(res.space, 0) + " cap space · " + m(res.draft, 0) + " draft value</span>";
       return '<li><a href="' + href("team/" + c) + '" style="--tc:' + team(c).color + '"><span class="pr-rank">' + x.rank + "</span>" + logo(c, 30) + '<span class="pr-name"><b>' + esc(team(c).name) + "</b>" + side + "</span>" +
         '<span class="pr-move ' + (mv > 0 ? "pos" : mv < 0 ? "neg" : "") + '">' + (!base ? "" : mv > 0 ? "▲" + mv : mv < 0 ? "▼" + (-mv) : "–") + "</span>" +

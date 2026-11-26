@@ -309,13 +309,17 @@ function teams(q) {
   }) }));
   const mine = c => c.teams.some(t => faves.has(t.id));
   const order = cs.filter(mine).concat(cs.filter(c => !mine(c)));
-  const shown = order.filter(c => !pick || c.name === pick).map(c => [c, c.teams.filter(t => (!s || (t.name + " " + t.short).toLowerCase().includes(s)) && (!follow || faves.has(t.id)))]).filter(x => x[1].length);
+  const shownAll = order.filter(c => !pick || c.name === pick).map(c => [c, c.teams.filter(t => (!s || (t.name + " " + t.short).toLowerCase().includes(s)) && (!follow || faves.has(t.id)))]).filter(x => x[1].length);
+  // 31 conferences is a very long page (16,000 pixels on a phone): the strongest eight (and any with a team you
+  // follow) until you ask for the rest; a search, a conference pick or the follow filter shows everything it matches
+  const cut = !pick && !s && !follow && q.get("all") !== "1", shown = cut ? shownAll.filter(([c], i) => i < 8 || mine(c)) : shownAll;
   const table = (c, ts) => '<div class="panel st-conf"><h3>' + esc(c.name) + (mine(c) ? ' <small>you follow a team here</small>' : "") + '</h3><div class="scroll"><table class="t st"><thead><tr><th class=l>Team</th><th>Conf</th><th>Overall</th><th class="hide-m">Proj conf</th><th title="Chance to make the NCAA tournament">NCAA</th><th class="hide-m">Hasla. rank</th><th></th></tr></thead><tbody>' +
     ts.map(t => { const o = odds(t.id), pj = t.projection || {}, n = c.teams.indexOf(t) + 1;
       return '<tr class="go' + (faves.has(t.id) ? " mine" : "") + '" data-href="#/team?id=' + esc(t.id) + '"><td class="tm"><span class="pos">' + n + "</span>" + logo(t) + (t.apRank ? '<span class="ap">' + int(t.apRank) + "</span>" : "") + '<span class="nm">' + esc(t.short) + "</span></td><td><b>" + crec(t) + "</b></td><td>" + rec(t) + '</td><td class="hide-m">' + (fin(pj.confWins) ? Math.round(pj.confWins) + "-" + Math.round(pj.confLosses) : "—") + "</td><td>" + (o ? pct(o.in) : "—") + '</td><td class="hide-m">' + int(t.haslamRank) + "</td><td>" + star(t) + "</td></tr>"; }).join("") + "</tbody></table></div></div>";
   return '<h2 class="sec">Standings</h2><p class="lede">Every conference, in order of conference record, then overall record. Make NCAA is from the hub\'s season simulation. Tap ☆ to follow a team: your teams show up first here and at the top of Tonight, on every device you sign in on.</p>' +
     '<div class="controls"><label>Find a team<input type="search" data-param="q" value="' + esc(q.get("q") || "") + '" placeholder="Search 365 teams"></label><label>Conference<select data-param="conf"><option value="">All</option>' + order.map(c => "<option" + (c.name === pick ? " selected" : "") + ">" + esc(c.name) + "</option>").join("") + '</select></label><label class="switch"><input type="checkbox" data-param="follow" value="1"' + (follow ? " checked" : "") + "> <span>Only teams I follow (" + faves.size + ")</span></label></div>" +
-    (shown.length ? '<div class="st-grid">' + shown.map(([c, ts]) => table(c, ts)).join("") + "</div>" : '<p class="callout">No teams match.</p>');
+    (shown.length ? '<div class="st-grid">' + shown.map(([c, ts]) => table(c, ts)).join("") + "</div>" : '<p class="callout">No teams match.</p>') +
+    (shown.length < shownAll.length ? '<p><button class="btn" data-more="all">Show the other ' + (shownAll.length - shown.length) + " conferences</button></p>" : "");
 }
 
 function teamPage(q) {
@@ -353,6 +357,8 @@ function teamPage(q) {
 '<div class="two">' +
     '<div><div class="panel"><h3>Résumé so far' + (nt ? " <small>NCAA NET #" + nt.rank + (nt.prev && nt.prev !== nt.rank ? " (was " + nt.prev + ")" : "") + "</small>" : "") + '</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
     ["best", "worst", "latest"].filter(k => hl[k]).map(k => { const h = hl[k]; return '<p class="tldr"><b>' + { best: "Best game", worst: "Worst game", latest: "Latest" }[k] + ":</b> " + (h.us > h.them ? "W " : "L ") + int(h.us) + "-" + int(h.them) + " " + (h.venue === "H" ? "vs" : h.venue === "A" ? "at" : "vs") + " " + esc(h.opponent) + " (" + esc(h.date) + ")</p>"; }).join("") +
+    // ESPN's BPI split into offense and defense, and how hard the rest of the schedule is (hub.json metrics)
+    (fin(t.metrics.bpiOff) && fin(t.metrics.bpiDef) ? '<p class="tldr"><b>ESPN BPI:</b> offense ' + sg(t.metrics.bpiOff) + ", defense " + sg(t.metrics.bpiDef) + " (points a game better than average)" + (fin(t.metrics.remainingSosRank) ? ". Schedule left: " + ordinalC(int(t.metrics.remainingSosRank)) + " toughest" : "") + ".</p>" : "") +
     (nt ? '<p class="tldr"><b>By site:</b> ' + esc(nt.home || "—") + " home, " + esc(nt.road || "—") + " road, " + esc(nt.neutral || "—") + " neutral</p>" : "") +
     (nt ? '<p class="note">Quadrants are the NCAA\'s official NET quadrants' + (NETD.through ? ", through games " + dLabel(NETD.through) : "") + ". Q1 is the toughest: home games against the NET top 30, neutral against the top 50, road against the top 75.</p></div></div>"
       : '<p class="note">Quadrants are Haslametrics\' own hNET quadrants until the NCAA releases its official NET (about December 1).</p></div></div>') + outlook(t) + '</div></div>';
@@ -470,6 +476,13 @@ let SCHED = null, schedLoading = null;
 function ensureSched() {
   if (SCHED || schedLoading) return;
   schedLoading = fetch("data/schedule.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).then(x => { SCHED = x && x.games ? x : { games: [] }; if (["team", "bubble"].includes(route().page)) render(); }).catch(() => { SCHED = { games: [] }; });
+}
+// last season's per-game lines (tools/cbb_build.py), for the player card's Stats tab: loaded the first time a card opens
+let PREV = null, prevLoading = null;
+function ensurePrev() {
+  if (PREV || prevLoading) return prevLoading;
+  prevLoading = fetch("data/prev.json").then(r => r.ok ? r.json() : null).then(x => { PREV = x && x.players ? x : { players: {} }; }).catch(() => { PREV = { players: {} }; });
+  return prevLoading;
 }
 function ensureBoard() {
   if (BOARD || boardLoading) return boardLoading;
@@ -751,6 +764,8 @@ function openPlayer(id) {
   const p = byPlayer[id]; if (!p) return;
   // the Big Board loads on first use: open now, then fill the Draft tab in once it lands (same tab stays open)
   if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { let d = null; try { d = $("#card"); } catch (e) { return; } if (d && d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }).catch(() => {}); } else ensureBoard();
+  // last season loads on first use too: open now, redraw the Stats tab when it lands
+  if (!PREV) { const pend = ensurePrev(); if (pend) pend.then(() => { const d = $("#card"); if (d && d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }); }
   const P = window.PCard, t = byId[p.teamId], b = BOARD ? (BOARD.players || []).find(x => M.key(x.n) === M.key(p.name)) : null, n = X && X.naismith.ladder.find(r => r.id === id), g = nextGame(p.teamId);
   const sh = teamShare(p), out = outLast(t).find(o => o.p.id === p.id), pr = pctRows(p), gp = stat(p, "gp") || 0;
   const chips = [out ? ["Out last game" + (out.note ? " (" + out.note + ")" : ""), "out"] : null, n ? ["Naismith ladder #" + n.rank, "tag"] : null, fin(p.draftRank) ? ["Big Board #" + p.draftRank, "tag"] : null,
@@ -770,10 +785,14 @@ function openPlayer(id) {
   if (sh) ov += '<p class="note">Scores ' + sh.pct + "% of " + esc(t.short) + "'s points, " + (sh.rank === 1 ? "the most on the team" : ordinalC(sh.rank) + " on the team") + "." + (n ? ' On the Naismith watch list: hub ladder #' + n.rank + " of 50" + (n.prev && n.prev !== n.rank ? " (" + (n.prev > n.rank ? "up " + (n.prev - n.rank) : "down " + (n.rank - n.prev)) + " since " + dLabel(X.naismith.since) + ")" : "") + '. <a href="#/naismith">Ladder</a>' : "") + "</p>";
   if (!ov) ov = '<p class="note">No games yet this season.</p>';
   // stats: the season line
-  const COLS = [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null);
-  const st = gp ? P.sec("Per game", String(p.year || "")) + P.table(["Season"].concat(COLS.map(c => c[1])), [["2026-27"].concat(COLS.map(([k, , d]) => f1(pval(p, k), d === 0 ? 0 : 1)))], 0) +
+  // last season: his line wherever he played (a transfer's old team is named)
+  const lastRow = PREV && PREV.players && PREV.players[p.id], lastP = lastRow && M.num(lastRow.gp) > 0 ? { stats: lastRow } : null;
+  const lastTid = lastP && ((PREV.teams && PREV.teams[p.id]) || lastRow.teamId), lastTeam = lastTid && lastTid !== p.teamId ? byId[lastTid] : null;
+  const COLS = [["gp", "GP", 0], ["min", "MIN"], ["pts", "PTS"], ["reb", "REB"], ["ast", "AST"], ["stl", "STL"], ["blk", "BLK"], ["tov", "TOV"], ["fgPct", "FG%"], ["threePct", "3P%"], ["ftPct", "FT%"], ["ts", "TS%"], ["gs", "GmSc"]].filter(([k]) => pval(p, k) !== null || (lastP && pval(lastP, k) !== null));
+  const seasonRows = (gp ? [["2026-27"].concat(COLS.map(([k, , d]) => f1(pval(p, k), d === 0 ? 0 : 1)))] : []).concat(lastP ? [[(PREV.label || "2025-26") + (lastTeam ? " " + (lastTeam.abbr || lastTeam.short) : "")].concat(COLS.map(([k, , d]) => f1(pval(lastP, k), d === 0 ? 0 : 1)))] : []);
+  const st = gp || lastP ? P.sec("Per game", String(p.year || "")) + P.table(["Season"].concat(COLS.map(c => c[1])), seasonRows, 0) + (lastTeam ? '<p class="note">Last season at ' + esc(lastTeam.short) + ".</p>" : "") + (!gp ? "" :
     P.facts([[f1(stat(p, "threeAtt")), "Threes tried a game"], [f1(stat(p, "fga")), "Shots a game"], [fin(stat(p, "tov")) && stat(p, "tov") >= 0.5 ? f1((stat(p, "ast") || 0) / stat(p, "tov"), 2) : "", "Assists per turnover"]]) +
-    '<p class="note">Season line: ' + esc(p.source || "ESPN") + ".</p>" : "";
+    '<p class="note">Season line: ' + esc(p.source || "ESPN") + ".</p>") : "";
   // draft: the NBA Big Board
   const dr = b ? P.sec("NBA Big Board", "consensus of " + b.on + " boards") + P.facts([["#" + b.rank, "Consensus rank"], [b.hi + "-" + b.lo, "Range"], [b.on, "Boards"], fin(b.age) ? [f1(b.age), "Age on draft night"] : null]) +
       (b.stats && b.stats.length ? '<p class="note">' + b.stats.map(s2 => esc(s2[0]) + " " + esc(s2[1])).join(", ") + "</p>" : "") + '<p class="note">' + spark(b.hist) + ' <a href="../draft/">See him on the Big Board</a></p>'

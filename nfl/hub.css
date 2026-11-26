@@ -315,3 +315,17 @@ td.ngc{font-variant-numeric:tabular-nums;font-weight:700}
 .edges .edge-l li{display:flex;gap:10px;align-items:flex-start;font-size:14.5px;line-height:1.45}
 .edges .edge-l li img{flex:none;margin-top:2px}
 .edges .note{padding:0 16px 12px}
+/* the player card's rating and the seasons ahead read as plain numbers in their tier's color, not boxed chips */
+.rc-big .rscore,.rproj .rscore{background:none!important;padding:0;min-width:0;border-radius:0}
+.rc-big .rscore{font:800 34px/1 var(--cond)}
+.rproj .rscore{font:800 18px/1.1 var(--cond)}
+.rc-big .rscore.e,.rproj .rscore.e{color:var(--t-elite-i)} .rc-big .rscore.g,.rproj .rscore.g{color:var(--t-strong-i)}
+.rc-big .rscore.a,.rproj .rscore.a{color:var(--ink)} .rc-big .rscore.w,.rproj .rscore.w{color:var(--down)}
+.rproj{background:none;padding:8px 0 0;border-top:1px solid var(--rule);border-radius:0}
+table.t.tfeed{width:100%} table.t.tfeed td,table.t.tfeed th{white-space:normal}
+/* Free Agents shortens to FA on a phone, as in the NBA Hub */
+.tabs .sl{display:none}
+@media (max-width:760px){ .tabs .fl{display:none} .tabs .sl{display:inline} }
+/* seven sections fit a phone's width, as in the NBA Hub */
+@media (max-width:520px){ .tabs a{padding:9px 5px 8px;font-size:12.5px} }
+@media (max-width:370px){ .tabs a{padding:9px 4px 8px;font-size:11.5px} }

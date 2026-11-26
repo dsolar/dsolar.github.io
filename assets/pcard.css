@@ -86,8 +86,9 @@ dialog#card:has(.pc) .card-b{padding:0}
 .pc-pane .scroll{margin:0 calc(-1 * var(--pc-pad));padding:0 var(--pc-pad)}
 .pc .pc-pane th{letter-spacing:0;text-transform:none}
 @media (max-width:640px){
-  .pc .pc-tabs button{padding:13px 7px 11px;font-size:14px}
-  .pc .pc-tabs{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);padding-right:24px}
+  /* every tab fits on a phone (six at most, the NBA card): they share the row instead of running off the edge */
+  .pc .pc-tabs{padding:0 4px}
+  .pc .pc-tabs button{flex:1 1 auto;padding:13px 3px 11px;font-size:13.5px;text-align:center}
   dialog#card:has(.pc){height:min(88vh,780px)}
   .pc{--pc-pad:14px}
   .pc-hd{padding-top:14px}
@@ -193,3 +194,6 @@ dialog#card:has(.pc) .card-b{padding:0}
 .pc-spec dt{font-size:14px;color:var(--muted)}
 .pc-spec dd{margin:0;font-size:14.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
 .pc-spec dd small{font-weight:500;color:var(--muted)}
+/* a matchup's headline numbers ("Louisville -1.0", the book line, the total, the chance) go two by two on a phone
+   rather than cutting team names down to "Loui..." */
+@media (max-width:520px){ .pg .pc-head{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px} }

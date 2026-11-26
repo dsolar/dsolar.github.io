@@ -54,8 +54,14 @@ test("ratings search and conference filters narrow the team pool",async()=>{
   w.document.querySelector('[data-sort="adjD"]').click();assert.ok(w.location.hash.includes("sort=adjD"));
  }finally{w.close();}
 });
-test("following a team saves to the shared (synced) list, carries over the old one, and filters the standings",async()=>{
+test("standings open on the strongest eight conferences, with a button for the rest",async()=>{
  const w=await boot("#/teams");try{
+  assert.equal(w.document.querySelectorAll("table.st").length,8,"eight conferences to start");
+  assert.match(w.document.querySelector("[data-more]").textContent,/Show the other \d+ conferences/);
+ }finally{w.close();}
+});
+test("following a team saves to the shared (synced) list, carries over the old one, and filters the standings",async()=>{
+ const w=await boot("#/teams?all=1");try{
   assert.ok(w.document.querySelectorAll("table.st").length>=30,"a standings table for every conference");
   const star=w.document.querySelector("[data-follow]"),id=star.dataset.follow.split(":")[1];star.click();
   assert.ok(JSON.parse(w.localStorage.getItem("ds-fav:ncaab")).includes(id));

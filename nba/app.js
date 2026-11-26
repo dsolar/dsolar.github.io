@@ -2060,7 +2060,8 @@
     var yopts = ""; for (var j = 1; j < Hub.YEARS; j++) yopts += '<option value="' + j + '"' + (j === yr ? " selected" : "") + ">Summer " + (2026 + j) + " (" + sname(j) + ")</option>";
     var html = '<h2 class="sec">Free Agents</h2><p class="lede">Everyone whose contract ends before the season you pick, with options called the way the model expects.</p>';
     html += controls('<label>Class<select data-q="yr">' + yopts + "</select></label>" + teamSelect(q.t || ""));
-    var list = fa.filter(function (x) { return !q.t || x.team === q.t; }).slice(0, 120);
+    // the top 50 until you ask for the whole class (a long scroll on a phone)
+    var full = fa.filter(function (x) { return !q.t || x.team === q.t; }), list = q.all === "1" || q.t ? full.slice(0, 120) : full.slice(0, 50);
     // Expected to opt in, so not in the class below, but with a real chance of opting out
     var mo = H.maybeOut(yr).filter(function (x) { return !q.t || x.team === q.t; });
     if (mo.length) html += tablePanel("Could opt out", "<th>Player</th><th>Team</th><th>Option</th><th>Market</th><th>Chance</th>", mo.map(function (x) {
@@ -2070,6 +2071,7 @@
       var gap = x.fair - x.market;
       return "<tr><td>" + (k + 1) + ". " + pname(x.p, 22, x.opt ? ' <span class="pill" title="Projected to decline his ' + esc(CBA.OPT_NAME[x.opt].toLowerCase()) + '">' + esc(x.opt) + " out</span>" : "") + "</td><td>" + logo(x.team, 18) + "</td><td>" + x.age + "</td><td>" + (x.kind === "RFA" ? '<span class="pill up">RFA</span>' : '<span class="pill">UFA</span>') + "</td><td>" + rchip(x.r) + "</td><td>" + x.yrs + "</td><td>" + money(x.fair) + "</td><td><b>" + money(x.market) + '</b></td><td class="' + (gap >= 0 ? "pos" : "neg") + '">' + signed(gap) + "</td></tr>";
     }).join(""), "Gap: positive means a bargain at the market price", "tfa");
+    if (list.length < Math.min(full.length, 120)) html += '<p><a class="btn" href="' + href("fa", Object.assign({}, q, { all: "1" })) + '">Show the next ' + (Math.min(full.length, 120) - list.length) + " free agents</a></p>";
 
     html += tablePanel("Who can spend in " + sname(yr), "<th>Team</th><th>Committed</th><th>Room (renounce all)</th><th>Cap holds</th><th>Room with holds</th><th>Players</th><th>Best tool</th>", cap.map(function (c) {
       var hl = c.holdList.slice().sort(function (a, b) { return b.amt - a.amt; }).slice(0, 4).map(function (h) { return esc(h.n) + " " + money(h.amt); }).join(", ");

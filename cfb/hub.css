@@ -220,3 +220,10 @@ table.st .star[aria-pressed="true"]{color:#d4a514}
 @media (max-width:640px){table.st .hide-m{display:none}table.st td,table.st th{padding-left:6px;padding-right:6px}}
 /* wide screens: two conferences side by side */
 @media (min-width:1000px){.st-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;align-items:start}.st-grid .st-conf{margin-bottom:14px}}
+/* rank trends (extras.json history) and the playoff page's projected champions and Top 25 */
+.rk-trend{display:flex;align-items:center;gap:8px;margin:6px 0 10px}
+td.trd{white-space:nowrap} td.trd .spark{vertical-align:middle;margin-right:6px}
+.rlist b.cfn{min-width:118px;font-weight:700}
+.rlist.t25 .rk{width:22px;font:700 13px/1 var(--cond);color:var(--muted)}
+@media (max-width:640px){ td.trd .spark{display:none} .rlist b.cfn{min-width:92px;font-size:13px} }
+.panel>p.note{margin:8px 12px 12px}

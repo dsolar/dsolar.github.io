@@ -280,6 +280,11 @@ function playoff(q) {
     "</tbody></table></div></div>" +
     '<div class="two"><div class="panel"><h3>Bids by conference <small>average across simulations</small></h3><ul class="rlist">' + Object.entries(bids).sort((a, b) => b[1] - a[1]).filter(x => x[1] >= 0.05).map(([c, b]) => '<li><b>' + esc(c) + '</b><span class="grow"></span><span class="num">' + f1(b) + "</span></li>").join("") + "</ul></div>" +
     '<div class="panel"><h3>Most likely title games</h3><ul class="rlist">' + (S_.titleGames || []).map(x => "<li>" + x.teams.map(id => logo(byId[id]) + " " + esc(byId[id].short)).join(" <span class=\"note\">vs</span> ") + '<span class="grow"></span><span class="num">' + pct(x.p) + "</span></li>").join("") + "</ul></div></div>" +
+    // where the simulations most often end up: each conference's champion and the final Top 25
+    (pj.champions || pj.top25 ? '<div class="two">' +
+      (pj.champions ? '<div class="panel"><h3>Projected conference champions <small>most common in the simulations</small></h3><ul class="rlist">' + Object.entries(pj.champions).filter(([, id]) => byId[id]).sort((a, b) => a[0].localeCompare(b[0])).map(([c, id]) => { const t = byId[id], o = odds(id); return '<li><b class="cfn">' + esc(c) + "</b>" + logo(t) + '<a class="tl" href="#/team?id=' + esc(id) + '"><span class="nm">' + esc(t.short) + '</span></a><span class="grow"></span><span class="num">' + (o ? pct(o.champ) : "") + "</span></li>"; }).join("") + '</ul><p class="note">The number is that team\'s chance to win the league.</p></div>' : "") +
+      (pj.top25 ? '<div class="panel"><h3>Projected final Top 25 <small>the hub\'s committee model after the title games</small></h3><ol class="rlist t25">' + pj.top25.filter(id => byId[id]).map((id, i) => { const t = byId[id], now = t.polls.cfp && t.polls.cfp.rank; return "<li><span class=\"rk\">" + (i + 1) + "</span>" + logo(t) + '<a class="tl" href="#/team?id=' + esc(id) + '"><span class="nm">' + esc(t.short) + '</span></a><span class="grow sub">' + esc(t.conference) + '</span><span class="num sub">' + (now ? "now No. " + now : "unranked now") + "</span></li>"; }).join("") + "</ol></div>" : "") +
+      "</div>" : "") +
     (cfpNow.length ? '<div class="panel"><h3>The committee\'s current top 25 <small>' + esc(head || "") + '</small></h3><div class="scroll"><table class="t"><thead><tr><th>CFP</th><th class=l>Team</th><th>Rec</th><th>Prev</th><th>Hub power</th><th>Hub résumé</th><th>Make CFP</th></tr></thead><tbody>' +
       cfpNow.map(t => { const c = t.polls.cfp, r = R(t.id); return '<tr class="go" data-href="#/team?id=' + esc(t.id) + '"><td><b>' + c.rank + '</b></td><td class="tm">' + logo(t) + '<span class="nm">' + esc(t.short) + "</span></td><td>" + rec(t) + "</td><td>" + (c.prev || "—") + "</td><td>#" + r.rank + "</td><td>#" + r.resRank + "</td><td>" + pct(odds(t.id).cfp) + "</td></tr>"; }).join("") + "</tbody></table></div></div>" : "");
 }
@@ -525,7 +530,9 @@ function teamPage(q) {
     "</div><div>" + leaders(t.id) +
     (pros.length ? '<div class="panel"><h3>NFL prospects <small><a href="../draft/">Big Board ↗</a></small></h3><ul class="rlist">' + pros.map(p => '<li><span class="pill nfl">#' + p.nfl.rank + "</span>" + playerLink(p) + '<span class="grow sub">' + esc(p.pos) + (p.year ? " · " + esc(p.year) : "") + "</span></li>").join("") + "</ul></div>" : "") +
     "</div></div>";
-  return head + window.PCard.facts([[o ? Math.round(o.w) + "-" + Math.round(o.l) : "—", "Projected record"]]) +
+  const prh = rankHist(X && X.history, t.id, r.rank), trend = trendLine(prh, "Power rank No. " + r.rank + ",");
+  return head + window.PCard.facts([[o ? Math.round(o.w) + "-" + Math.round(o.l) : "—", "Projected record"], o && fin(o.winOut) ? [pct(o.winOut), "Wins out"] : null].filter(Boolean)) +
+    (trend ? '<p class="note rk-trend">' + trend + ".</p>" : "") +
     '<p class="callout">' + esc(story(t)) + "</p>" + efficiency(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(x => '<option value="' + esc(x.id) + '">' + esc(x.short) + "</option>").join("") + "</select></label></div>";
 }
@@ -579,12 +586,24 @@ function heisman() {
   if (!X || !P) return '<p class="loading">Loading…</p>';
   const lad = X.heisman.ladder;
   return '<h2 class="sec">Heisman ladder</h2><p class="lede">The hub\'s ranking of the Heisman race: production per game (yards, touchdowns and turnovers for quarterbacks, yards and scores for runners and receivers, sacks, tackles for loss and takeaways for defenders) weighted by how good the team is and how it\'s winning, because voters reward stars on contenders. The leader is set to 100. It\'s a model of the race, not betting odds.</p>' +
-    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>#</th><th>7-day</th><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th class=l>Season</th>' + (C && C.playerEpa ? "<th>EPA</th>" : "") + '<th>Per game</th><th>Ladder</th><th class=l>Next</th></tr></thead><tbody>' +
-    lad.slice(0, 30).map(x => { const p = byPlayer[x.id], t = byId[x.teamId]; if (!p) return ""; const d = fin(x.prev) ? x.prev - x.rank : null; return "<tr><td><b>" + x.rank + "</b></td><td>" + (x.prev ? mv(d) : X.heisman.since ? '<span class="pill new">New</span>' : '<span class="mv">–</span>') + '</td><td class="l">' + playerLink(p) + (p.nfl ? ' <span class="pill nfl">NFL #' + p.nfl.rank + "</span>" : "") + '</td><td class="tm">' + logo(t) + rk(t) + '<span class="nm">' + esc(t.short) + '</span> <small class="cf">' + rec(t) + "</small></td><td>" + esc(p.pos) + '</td><td class="ln">' + esc(M.statLine(p)) + "</td>" + (C && C.playerEpa ? "<td>" + (PEPA(p.id) ? f1(PEPA(p.id).epa) : "—") + "</td>" : "") + "<td>" + f1(x.prod) + "</td><td><b>" + f1(x.score) + '</b><span class="hzbar"><b style="width:' + x.score + '%"></b></span></td><td class="ln">' + nextText(x.teamId) + "</td></tr>"; }).join("") +
-    "</tbody></table></div></div>" + '<p class="note">7-day: places gained or lost since ' + (X.heisman.since ? dLabel(X.heisman.since) : "the first snapshot") + ". The ladder refreshes with each stat update.</p>";
+    '<div class="panel"><div class="scroll"><table class="t"><thead><tr><th>#</th><th class="trd">7-day</th><th class=l>Player</th><th class=l>Team</th><th>Pos</th><th class=l>Season</th>' + (C && C.playerEpa ? "<th>EPA</th>" : "") + '<th>Per game</th><th>Ladder</th><th class=l>Next</th></tr></thead><tbody>' +
+    lad.slice(0, 30).map(x => { const p = byPlayer[x.id], t = byId[x.teamId]; if (!p) return ""; const d = fin(x.prev) ? x.prev - x.rank : null; return "<tr><td><b>" + x.rank + "</b></td><td class=\"trd\">" + spark(rankHist(X.heisman.history, x.id, x.rank).h) + (x.prev ? mv(d) : X.heisman.since ? '<span class="pill new">New</span>' : '<span class="mv">–</span>') + '</td><td class="l">' + playerLink(p) + (p.nfl ? ' <span class="pill nfl">NFL #' + p.nfl.rank + "</span>" : "") + '</td><td class="tm">' + logo(t) + rk(t) + '<span class="nm">' + esc(t.short) + '</span> <small class="cf">' + rec(t) + "</small></td><td>" + esc(p.pos) + '</td><td class="ln">' + esc(M.statLine(p)) + "</td>" + (C && C.playerEpa ? "<td>" + (PEPA(p.id) ? f1(PEPA(p.id).epa) : "—") + "</td>" : "") + "<td>" + f1(x.prod) + "</td><td><b>" + f1(x.score) + '</b><span class="hzbar"><b style="width:' + x.score + '%"></b></span></td><td class="ln">' + nextText(x.teamId) + "</td></tr>"; }).join("") +
+    "</tbody></table></div></div>" + '<p class="note">7-day: places gained or lost since ' + (X.heisman.since ? dLabel(X.heisman.since) : "the first snapshot") + ". Trend: his place on the ladder each day since " + dLabel(Object.keys(X.heisman.history || {}).sort()[0] || X.heisman.since) + ", up is better. The ladder refreshes with each stat update.</p>";
 }
 
 /* ---------- prospects ---------- */
+// day-by-day ranks from extras.json (history: power rank by team; heisman.history: ladder place by player), oldest
+// first, ending with today's
+function rankHist(book, id, now) {
+  const days = Object.keys(book || {}).sort(), h = days.map(d => (book[d] || {})[id]).filter(fin);
+  if (fin(now) && h[h.length - 1] !== now) h.push(now);
+  return { h, since: days[0] };
+}
+function trendLine(rh, word) {
+  if (rh.h.length < 2) return "";
+  const d = rh.h[0] - rh.h[rh.h.length - 1];
+  return spark(rh.h) + " " + word + " " + (d > 0 ? "up " + d : d < 0 ? "down " + (-d) : "unchanged") + " since " + dLabel(rh.since);
+}
 function spark(hist) {
   const h = (hist || []).filter(fin); if (h.length < 2) return "";
   const lo = Math.min(...h), hi = Math.max(...h), W = 70, H = 18, x = i => i / (h.length - 1) * W, y = v => hi === lo ? H / 2 : (v - lo) / (hi - lo) * H;
