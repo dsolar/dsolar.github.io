@@ -2504,6 +2504,8 @@ begin
           hl := c -> 'notes' -> 0 ->> 'headline';
           if r.kind = 'cfb' then
             rd := case when hl ilike '%playoff first round%' then 1 when hl ilike '%quarterfinal%' then 2 when hl ilike '%semifinal%' then 3 when hl ilike '%national championship%' then 4 else 0 end;
+            -- the Celebration Bowl is an FCS game (two HBCU champions), not one of the FBS bowls the pool covers
+            if hl ilike '%celebration bowl%' then continue; end if;
           else
             wk := (ev -> 'week' ->> 'number')::int; nm := coalesce(hl, '') || ' ' || coalesce(ev ->> 'name', '') || ' ' || coalesce(ev ->> 'shortName', '');
             -- weeks 4 and 5: the Super Bowl, whichever week ESPN files it in; the Pro Bowl (AFC vs NFC) is skipped
@@ -2545,3 +2547,7 @@ begin
   end if;
   return jsonb_build_object('saved', n);
 end $function$;
+
+-- The bowl pool covers FBS bowls only: po_sync skips the FCS Celebration Bowl, and the row already synced goes.
+-- (Applied as migration po_sync_drop_celebration_bowl, with the po_sync above.)
+delete from po_games where comp = 'cfb' and label ilike '%celebration bowl%';
