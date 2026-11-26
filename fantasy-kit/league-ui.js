@@ -268,14 +268,16 @@
       const pj = live && m.proj ? m.proj : null;
       // before anyone has played, the projection is the score worth reading, not two zeros
       const pre = live && !m.live && pts() && !(m.sa || m.sb) && m.pa != null;
+      // the same for categories: before the week's first game the cells show each side's projected line, not zeros
+      const catPre = live && !m.live && !pts() && !!pj && !(m.frac > 0) && !(m.sa || m.sb);
       // counting stats are whole numbers (runs, hits, strikeouts); rates keep their own format. The first pitching
       // category starts a new group, so hitting and pitching read apart
-      const cats = !pts() && m.cats ? sc().cats.map((c, i, all) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => String(Math.round(v))); const q = pj && pj.probs[c.k], px = pj && pj.cats[c.k]; return { label: c.label, fa: f(x), fb: f(y), d, p: q, pa: px ? f(px[0]) : null, pb: px ? f(px[1]) : null, grp: i > 0 && (c.line || "") !== (all[i - 1].line || "") }; }) : null;
+      const cats = !pts() && m.cats ? sc().cats.map((c, i, all) => { const [x, y, d] = m.cats[c.k]; const f = c.fmt || ((v) => String(Math.round(v))); const q = pj && pj.probs[c.k], px = pj && pj.cats[c.k]; if (catPre && px) return { label: c.label, fa: f(px[0]), fb: f(px[1]), d: q == null ? 0 : q > 0.5 ? 1 : q < 0.5 ? -1 : 0, p: q, pa: f(px[0]), pb: f(px[1]), grp: i > 0 && (c.line || "") !== (all[i - 1].line || "") }; return { label: c.label, fa: f(x), fb: f(y), d, p: q, pa: px ? f(px[0]) : null, pb: px ? f(px[1]) : null, grp: i > 0 && (c.line || "") !== (all[i - 1].line || "") }; }) : null;
       // a category week projects to a record: "Projected 6-3"
       const rec = (x, y, t) => `${x}-${y}${t ? `-${t}` : ""}`;
       if (pre) return { a: { team: T(m.a), rec: recOf(m.a), score: m.pa, projText: "Projected" }, b: { team: T(m.b), rec: recOf(m.b), score: m.pb, projText: "Projected" }, wp: m.winProb, status: "No games yet", live: false, cats: null, fmt: fmtS };
       return { a: { team: T(m.a), rec: recOf(m.a), score: m.sa, proj: live && pts() ? m.pa : null, projText: pj ? `Projected ${rec(pj.sa, pj.sb, pj.ties)}` : null }, b: { team: T(m.b), rec: recOf(m.b), score: m.sb, proj: live && pts() ? m.pb : null, projText: pj ? `Projected ${rec(pj.sb, pj.sa, pj.ties)}` : null },
-        wp: live ? m.winProb : null, status: m.final ? "Final" : m.live ? `Live, ${Math.round((m.frac || 0) * 100)}% played` : "Projected", live: m.live, cats, fmt: fmtS };
+        wp: live ? m.winProb : null, status: m.final ? "Final" : m.live ? `Live, ${Math.round((m.frac || 0) * 100)}% played` : catPre ? "No games yet: projected lines" : "Projected", live: m.live, cats, fmt: fmtS };
     }
     // the same game with the sides swapped, so your team reads first
     function flip(m) {
