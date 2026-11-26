@@ -1281,3 +1281,8 @@ html{overflow-x:clip}
 /* a finished bowl pool: who won */
 .pl-bwin{display:grid;gap:2px;margin:0 0 12px;border-left-color:var(--bw-gold,#E2B04A)}
 .pl-bwin b{font-size:16px}
+/* On a phone each game's art becomes a faint mark in the band's top corner, so it never sits under the words
+   (the bowls trophy and the Oscars statuette already stand at the bottom, clear of the text) */
+@media (max-width:640px){
+  .pl .pl-band .pl-art:not(.bowl-art):not(.osc-art){opacity:.14;width:min(30%,130px);top:12px;bottom:auto;transform:none}
+}
