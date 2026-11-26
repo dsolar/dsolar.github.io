@@ -1170,14 +1170,29 @@
       }
       return out;
     };
-    // Better-of groups: hand each pick to whoever gets it where the picks are projected to land today
-    for (const g of W.pickGroups) {
-      const slots = {};
-      for (const id of g.picks) { const p = W.picks.find(x => x.id === id); slots[id] = H.pickInfo(Object.assign({}, p, { prot: null })).avg; }
-      const a = assignGroup(g, slots);
-      for (const id of g.picks) { const p = W.picks.find(x => x.id === id); p.owner = a[id]; p.locked = a[id] !== g.to[0]; }
+    // Better-of groups: hand each pick to whoever gets it where the picks are projected to land today. That needs the
+    // full season simulation, so it waits until something first asks who owns one of these picks (most pages never
+    // do, and the front page shouldn't stall on it); the owner and locked fields work the same either way.
+    let built = false, grouped = false;
+    const assignGroups = () => {
+      if (grouped) return;
+      grouped = true;
+      for (const g of W.pickGroups) {
+        const slots = {};
+        for (const id of g.picks) { const p = W.picks.find(x => x.id === id); slots[id] = H.pickInfo(Object.assign({}, p, { prot: null })).avg; }
+        const a = assignGroup(g, slots);
+        for (const id of g.picks) { const p = W.picks.find(x => x.id === id); p.owner = a[id]; p.locked = a[id] !== g.to[0]; }
+      }
+      if (!built) memo.clear();                             // projections made mid-build may predate the rest of it
+    };
+    for (const g of W.pickGroups) for (const id of g.picks) {
+      const p = W.picks.find(x => x.id === id);
+      if (!p) continue;
+      for (const f of ["owner", "locked"]) {
+        let v = p[f];
+        Object.defineProperty(p, f, { enumerable: true, configurable: true, get() { assignGroups(); return v; }, set(x) { assignGroups(); v = x; } });
+      }
     }
-    memo.clear();
     // Things the cap rules here don't block but a real trade would run into
     const deadline = L.dates(0).deadlineEnd;
     H.deadline = deadline;
@@ -1629,6 +1644,7 @@
         if (p && (!p.oo || p.oo[1] < v[1])) p.oo = v;
       }
     }
+    built = true;
     return H;
   }
 

@@ -144,6 +144,18 @@
     return { teams: out, ratings: rat, records: base, winP, left, sims };
   };
 
+  // A short fingerprint of the games list, so a simulation saved ahead of time (tools/nfl_sim.js) is only used
+  // when it was run on exactly these games
+  S.gamesKey = games => { const s = JSON.stringify(games || []); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + "." + s.length; };
+  // Turn a saved simulation back into what S.simulate returns: the remaining games and their win chances point at
+  // this page's own game rows again
+  S.hydrate = (saved, games) => {
+    const sim = saved.sim, rat = sim.ratings, winP = new Map();
+    const left = games.filter(g => g[0] === "REG" && g[5] == null);
+    for (const g of left) { const a = g[3], h = g[4]; winP.set(g, S.winProb(g[7] != null ? g[7] : rat[h] - rat[a] + (g[8] ? 0 : HFA))); }
+    return Object.assign({}, sim, { winP, left });
+  };
+
   if (typeof module !== "undefined" && module.exports) module.exports = S;
   root.NFLSeason = S;
 })(typeof window !== "undefined" ? window : globalThis);

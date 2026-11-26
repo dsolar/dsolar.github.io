@@ -1497,7 +1497,7 @@
     weekPage();
     var tb = document.querySelector('.tabs a[data-tab="games"]'); if (tb) tb.setAttribute("aria-current", "page");
   });
-  Promise.all([get("data/league.json"), get("data/teamcap.json", true), get("../tools/draft_teams.json"), get("../draft/nfl.json", true), get("data/rating.json", true)]).then(function (r) {
+  Promise.all([get("data/league.json"), get("data/teamcap.json", true), get("../tools/draft_teams.json"), get("../draft/nfl.json", true), get("data/rating.json", true), get("data/sim.json", true)]).then(function (r) {
     TEAMS = r[2].nfl;
     W = P.init(C.newWorld(r[0], r[1], r[4]));
     // data freshness: a banner when a feed has gone quiet, and the list under How it works
@@ -1513,7 +1513,8 @@
     W.bbNeeds = r[3] && r[3].needs ? r[3].needs : null;
     W.board = r[3] && r[3].players ? r[3].players : [];
     W.games = r[0].games || []; W.stats = r[0].stats || null; W.week = r[0].week || 10;
-    SIM = S.simulate(W.games, Object.keys(S.divOf), { sims: 6000 });
+    // the season simulation is saved ahead of time (tools/nfl_sim.js); run it here only if the games have moved since
+    SIM = r[5] && r[5].sim && r[5].sims === 6000 && r[5].key === S.gamesKey(W.games) ? S.hydrate(r[5], W.games) : S.simulate(W.games, Object.keys(S.divOf), { sims: 6000 });
     W.sim = SIM;
     $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts." + ' <a href="#/method">How it works</a>.';
     render();

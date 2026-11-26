@@ -84,9 +84,13 @@ jobs:
       - name: Pull out the games
         run: node -e "const fs=require('fs');const L=JSON.parse(fs.readFileSync('nfl/data/league.json'));fs.writeFileSync('nfl/data/games.json',JSON.stringify({season:L.season,week:L.week,updated:L.updated,games:L.games}))"
 
+      # the season simulation, so phones don't run 6,000 seasons on load (the page falls back to running it)
+      - name: Simulate the season
+        run: node tools/nfl_sim.js
+
       - name: Commit it
         run: |
-          git add nfl/data/teamcap.json nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json nfl/data/ngs.json nfl/data/teamstats.json nfl/data/adv.json nfl/data/fpi.json
+          git add nfl/data/teamcap.json nfl/data/league.json nfl/data/weeks.json nfl/data/rating.json nfl/data/games.json nfl/data/sim.json nfl/data/ngs.json nfl/data/teamstats.json nfl/data/adv.json nfl/data/fpi.json
           if git diff --cached --quiet; then
             echo "Nothing changed."
             exit 0
