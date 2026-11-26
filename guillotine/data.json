@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-26T22:37:23Z",
+ "updated": "2026-11-26T22:52:19Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -420,7 +420,7 @@
      "name": "DeVonta Smith",
      "nfl": "PHI",
      "pos": "WR",
-     "yahoo_actual": 3.1,
+     "yahoo_actual": 6.0,
      "game": "Thu 4:30 pm",
      "opp": "@ DAL",
      "season": {
@@ -3728,7 +3728,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-26T22:37:26Z",
+  "updated": "2026-11-26T22:52:21Z",
   "players": 3046,
   "unmatched": []
  }
