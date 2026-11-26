@@ -367,3 +367,22 @@ test('the sale tells managers what happened while they were away', () => {
   assert.equal(Z.events({ draft: b3, league: null }, { draft: D, league: null }, { ...o, now: w.ends - 2.4 * H }).filter((e) => /closes in 3 hours/.test(e.subject)).length, 0);
   void b;
 });
+
+test('a price left on a player works in the fast waves too, even before his wave comes up', () => {
+  const { D, ctx } = room({ humans: [0], seed: 7, dutch: { pace: 'std', size: 3 } });
+  F.start(D, T0, ctx); F.tick(D, ctx, T0 + 1);
+  const w1 = D.auction.wave, now1 = w1.lots[0], later = ctx.available.slice().sort((x, y) => y.$ - x.$)[7];
+  assert.ok(!w1.lots.some((l) => l.pid === later.id), 'he is not up yet');
+  // during the look, before prices move: a price over the opening one buys the moment the wave opens
+  assert.ok(F.order(D, ctx, 0, now1.pid, now1.start + 5, T0 + 2000).ok);
+  assert.ok(F.order(D, ctx, 0, later.id, Math.round(later.$ * 1.25), T0 + 2000).ok);
+  F.tick(D, ctx, w1.at + 1);
+  const first = D.sales.find((s) => s.pid === now1.pid);
+  assert.deepEqual([first.team, first.price, first.at, first.order], [0, now1.start, w1.at, true]);
+  let t = w1.at;
+  for (let i = 0; i < 4000 && !D.sales.some((s) => s.pid === later.id); i++) { t += 500; F.tick(D, ctx, t); }
+  const second = D.sales.find((s) => s.pid === later.id);
+  assert.equal(second.team, 0, 'his when his wave came up');
+  assert.ok(second.order && second.price <= Math.round(later.$ * 1.25));
+  assert.ok(second.wave > 1);
+});

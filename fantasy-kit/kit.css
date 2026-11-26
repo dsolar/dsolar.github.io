@@ -3109,3 +3109,8 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .sl-b{display:inline-grid;justify-items:center;line-height:1.05;min-width:52px;padding-top:3px;padding-bottom:3px;font-variant-numeric:tabular-nums}
 .sl-b b{font-size:13px}.sl-b small{font-size:9px;font-weight:700;opacity:.8}
 @media (max-width:600px){.wave.sale .sl-r{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}.wave.sale .sl-r::-webkit-scrollbar{display:none}.wave.sale .sl-r>*{flex:none}}
+
+/* a wave card's price is a button: tap it to leave a price */
+.wv-db{appearance:none;border:0;background:none;padding:2px 4px;margin:-2px -4px;border-radius:6px;color:inherit;font:inherit;cursor:pointer}
+.wv-db:hover,.wv-db:focus-visible{background:var(--surface-3)}
+.wv-d small.mine{color:var(--brand);font-weight:800}

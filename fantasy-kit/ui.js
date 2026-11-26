@@ -1491,10 +1491,10 @@
         const fit = mine != null && spots > 0 ? F.canAdd(d, ctx, mine, p) : null;
         const can = fit && fit.ok && st.open && !d.paused && l.price <= max;
         const why = mine == null ? "" : spots <= 0 ? "Your roster is full" : fit && !fit.ok ? fit.why || "Doesn't fit" : l.price > max ? `Yours at ${money(max)}` : !st.open ? "Opens in a moment" : "";
-        const q = mine != null && team(mine).queue.includes(p.id);
-        return `<div class="wv-c${q ? " star" : ""}${fit && !fit.ok ? " off" : ""}" data-wlot="${esc(l.pid)}" data-start="${l.start}">
+        const q = mine != null && team(mine).queue.includes(p.id), ord = mine != null ? (team(mine).orders || {})[p.id] : null;
+        return `<div class="wv-c${q || ord ? " star" : ""}${fit && !fit.ok ? " off" : ""}" data-wlot="${esc(l.pid)}" data-start="${l.start}">
           <span class="wv-p" data-player="${esc(p.id)}">${playerAv(sport, p, "sm")}<span class="wv-n"><b>${esc(p.n)}</b><small>${posChips(sport, p)} ${proTeam(sport, p.t)} · value ${money(p.$)}</small></span></span>
-          <span class="wv-d"><b data-wprice="${esc(l.pid)}">${money(l.price)}</b><small>from ${money(l.start)}</small></span>
+          ${mine != null ? `<button type="button" class="wv-d wv-db" data-sale="${esc(l.pid)}" title="Leave a price: he's yours when he gets there" aria-label="${esc(p.n)}, ${money(l.price)} now. Leave a price${ord ? `, yours is ${money(ord.p)}` : ""}"><b data-wprice="${esc(l.pid)}">${money(l.price)}</b><small${ord ? ` class="mine"` : ""}>${ord ? `you ${money(ord.p)}` : `from ${money(l.start)}`}</small></button>` : `<span class="wv-d"><b data-wprice="${esc(l.pid)}">${money(l.price)}</b><small>from ${money(l.start)}</small></span>`}
           ${mine != null ? `<button class="btn sm go" data-claim="${esc(l.pid)}"${can ? "" : " disabled"} title="${esc(why || "Take him at the price showing")}">Claim</button><small class="wv-w" data-wwhy="${esc(l.pid)}">${esc(why)}</small>` : ""}
           <span class="wv-bar"><i data-wbar="${esc(l.pid)}" style="width:${Math.round(100 * (l.price - 1) / Math.max(1, l.start - 1))}%"></i></span></div>`;
       }).join("");
@@ -1508,7 +1508,7 @@
         need = `<div class="wv-need" aria-label="Spots you still need"><b>Need</b>${Object.entries(by).map(([sl, k]) => `<span class="slot">${esc(sl)}${k > 1 ? ` <i>&times;${k}</i>` : ""}</span>`).join("") || `<span class="ps">Starters set</span>`}${bench ? `<span class="ps">+ ${bench} bench</span>` : ""}<span class="ps wv-max">Max ${money(max)}<span class="wv-long"> on one player</span></span></div>`;
       }
       if (st.drip) return saleBar(st, need);
-      const head = !st.wave ? "The next wave is being set." : st.open ? (st.unsold ? "Every price falls until someone claims him. First claim wins." : "All claimed. The next wave is coming.") : "Look them over. Prices start falling in a moment.";
+      const head = !st.wave ? "The next wave is being set." : st.open ? (st.unsold ? `Every price falls until someone claims him. First claim wins.${mine != null ? " Tap a price to leave your own." : ""}` : "All claimed. The next wave is coming.") : `Look them over. Prices start falling in a moment.${mine != null ? " Tap a price to leave your own." : ""}`;
       return `<div><div class="wave${st.open ? " open" : ""}"><div class="wv-h"><b class="disp">Wave ${st.n}</b><span class="ps">${head}</span></div>${need}<div class="wv-g">${cards || `<p class="ps" style="margin:0">Everyone in this wave is sold.</p>`}</div></div><div class="budgets">${budgetChips()}</div></div>`;
     }
     // The slow sale's panel: what you need, the prices you've left, and the last few to go. The players themselves
@@ -1532,7 +1532,7 @@
       const max = F.maxBid(d, mine), fit = F.canAdd(d, ctx, mine, p), has = (team(mine).orders || {})[pid];
       const canNow = lot && st.open && !d.paused && fit.ok && lot.price <= max;
       const why = !fit.ok ? fit.why || "He doesn't fit your roster" : lot && lot.price > max ? `He's ${money(lot.price)} now and the most you can spend on one player is ${money(max)}` : "";
-      dialog(`<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)} · value ${money(p.$)}${lot ? ` · <b>${money(lot.price)}</b> now, from ${money(lot.start)}` : d.phase === "live" ? " · not in the sale" : ""}</div></div></div>
+      dialog(`<div class="pc-h">${playerAv(sport, p, "lg")}<div><h3 class="disp">${esc(p.n)}</h3><div class="ps">${posChips(sport, p)} ${proTeam(sport, p.t)} · value ${money(p.$)}${lot ? ` · <b>${money(lot.price)}</b> now, from ${money(lot.start)}` : d.phase === "live" ? (drip() ? " · not in the sale" : " · not up yet: your price waits for his wave") : ""}</div></div></div>
         <form class="stack">${lot ? `<div><button class="btn go" name="go" value="claim"${canNow ? "" : " disabled"}>Claim him now for ${money(lot.price)}</button>${why ? `<p class="ps bad" style="margin:6px 0 0">${esc(why)}</p>` : ""}</div>` : ""}
         <div class="field"><label for="fk-ord">${lot ? "Or claim him for me when he reaches" : "Claim him for me when he reaches"}</label><input type="number" id="fk-ord" name="amt" inputmode="numeric" min="${d.auction.minBid}" max="${max}" step="1" value="${has ? has.p : ""}" placeholder="${Math.max(d.auction.minBid, Math.round((p.$ || 1) * 0.9))}">
           <p class="hint">The first to get there wins, so a higher price beats a lower one. You pay your price, or less if he's already under it. You can spend up to ${money(max)} on one player.</p></div>
@@ -2302,6 +2302,8 @@
       const sk = taken && ctx.own[pid] !== mine ? stealOk(pid) : null;
       if (sk && sk.ok) actions += `<button class="btn warn" data-card="steal">Steal ${esc(last(p.n))}</button>`;
       if (can && can.ok && st && st.kind === "nominate" && st.team === mine) actions += `<button class="btn go" data-card="nominate">Nominate</button>`;
+      // a Dutch auction: claim him or leave a price, from his card too (his wave may not be up yet)
+      if (dutch() && mine != null && !taken && d.phase !== "done") actions += `<button class="btn go" data-card="sale">${(team(mine).orders || {})[pid] ? "Change my price" : "Claim or leave a price"}</button>`;
       const status = taken ? `${teamAv(team(ctx.own[pid]), "sm")} On ${esc(team(ctx.own[pid]).name)}${elephant() ? `, stolen ${F.stealsOf(d, pid)} of ${d.steals.freeze} times${sk && !sk.ok && c && c.team === mine ? `. <span class="bad">${esc(sk.why)}</span>` : ""}` : ""}` : can && !can.ok ? `<span class="bad">${esc(can.why)}</span>` : "";
       const Dl = dialog(playerCard(sport, p, { scoring: d.scoring, actions, status, stats: cardStats(p), draft: cardDraft(p, taken, can) }), null, { wide: true, dark: true });
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
@@ -2309,6 +2311,7 @@
         if (a === "pick") { if (act(() => F.pick(D(), ctx, mine, pid, now()))) Dl.close(); }
         else if (a === "steal") { Dl.close(); const from = team(ctx.own[pid]); confirm(`Steal ${p.n}?`, stealNote(from.name), "Steal him", () => { if (act(() => F.steal(D(), ctx, mine, pid, now()))) { ui.left = "players"; render(); toast(`You stole ${p.n} from ${from.abbr}.`); } }); }
         else if (a === "nominate") { Dl.close(); nominateDialog(pid); }
+        else if (a === "sale") { Dl.close(); saleDialog(pid); }
         else { toggleQueue(pid); Dl.close(); }
       }));
     }
