@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-26T22:22:18Z",
+ "updated": "2026-11-26T22:37:23Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -60,7 +60,7 @@
        "rush_td": 2
       }
      },
-     "proj": 16.3,
+     "proj": 16.32,
      "rank": "QB15",
      "date": "2026-11-29",
      "next_proj": 15.62,
@@ -335,7 +335,7 @@
        "rush_td": 4
       }
      },
-     "proj": 12.1,
+     "proj": 12.09,
      "rank": "RB21",
      "date": "2026-11-29",
      "next_proj": 11.61
@@ -373,7 +373,7 @@
        "rush_td": 3
       }
      },
-     "proj": 23.58,
+     "proj": 23.59,
      "rank": "QB1",
      "date": "2026-11-29",
      "next_proj": 20.71,
@@ -384,7 +384,6 @@
      "name": "Harold Fannin Jr.",
      "nfl": "CLE",
      "pos": "TE",
-     "status": "Q",
      "yahoo_actual": 0.0,
      "game": "Sun 8:20 pm",
      "opp": "vs LV",
@@ -411,7 +410,7 @@
        "fum_lost": 2
       }
      },
-     "proj": 9.21,
+     "proj": 9.29,
      "rank": "TE7",
      "date": "2026-11-29",
      "next_proj": 9.62
@@ -582,7 +581,7 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 60,
-   "proj": 146.8,
+   "proj": 146.84,
    "points": 3.3,
    "scores": [
     135.46,
@@ -794,7 +793,7 @@
        "rush_yd": 29
       }
      },
-     "proj": 20.11,
+     "proj": 20.17,
      "rank": "WR1",
      "date": "2026-11-29",
      "next_proj": 24.2,
@@ -867,7 +866,7 @@
        "fum_lost": 1
       }
      },
-     "proj": 9.65,
+     "proj": 9.68,
      "rank": "TE6",
      "date": "2026-11-29",
      "next_proj": 11.14,
@@ -986,7 +985,7 @@
        "rec_td": 2
       }
      },
-     "proj": 12.37,
+     "proj": 12.36,
      "rank": "RB19",
      "date": "2026-11-29",
      "next_proj": 10.87
@@ -1059,7 +1058,7 @@
        "rush_td": 2
       }
      },
-     "proj": 15.97,
+     "proj": 16.0,
      "rank": "QB16",
      "date": "2026-11-29",
      "next_proj": 19.79
@@ -1181,7 +1180,7 @@
     }
    ],
    "points_final": 0,
-   "best": 146.0,
+   "best": 146.1,
    "best_next": 139.0,
    "locked": 0,
    "locked_proj": 0,
@@ -1191,8 +1190,8 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 8,
-   "proj": 142.97,
-   "points": 5.72,
+   "proj": 142.96,
+   "points": 16.5,
    "scores": [
     95.18,
     94.64,
@@ -1212,7 +1211,7 @@
      "name": "Dak Prescott",
      "nfl": "DAL",
      "pos": "QB",
-     "yahoo_actual": 1.32,
+     "yahoo_actual": 8.0,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1280,7 +1279,7 @@
        "rec_td": 3
       }
      },
-     "proj": 16.44,
+     "proj": 16.43,
      "rank": "RB9",
      "date": "2026-11-29",
      "next_proj": 18.88,
@@ -1368,7 +1367,7 @@
      "name": "George Pickens",
      "nfl": "DAL",
      "pos": "WR",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 4.1,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1590,7 +1589,7 @@
        "rec_td": 2
       }
      },
-     "proj": 14.2,
+     "proj": 14.22,
      "rank": "RB12",
      "date": "2026-11-30",
      "next_proj": 14.03
@@ -1767,7 +1766,7 @@
    "manager": "JeffS",
    "faab": 15,
    "proj": 58.68,
-   "points": 36.2,
+   "points": 36.4,
    "scores": [
     111.28,
     66.9,
@@ -1828,7 +1827,7 @@
      "name": "Javonte Williams",
      "nfl": "DAL",
      "pos": "RB",
-     "yahoo_actual": 10.9,
+     "yahoo_actual": 11.1,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1962,7 +1961,7 @@
        "rec_td": 4
       }
      },
-     "proj": 11.58,
+     "proj": 11.55,
      "rank": "WR20",
      "date": "2026-11-30",
      "next_proj": 10.8
@@ -2081,7 +2080,7 @@
        "rec_td": 1
       }
      },
-     "proj": 19.18,
+     "proj": 19.26,
      "rank": "RB2",
      "date": "2026-11-30",
      "next_proj": 17.96,
@@ -2121,7 +2120,7 @@
        "rush_yd": 13
       }
      },
-     "proj": 14.6,
+     "proj": 14.61,
      "rank": "WR7",
      "date": "2026-11-29",
      "next_proj": 13.06,
@@ -2162,7 +2161,7 @@
        "rush_yd": 2
       }
      },
-     "proj": 12.34,
+     "proj": 12.36,
      "rank": "TE1",
      "date": "2026-11-29",
      "bye_next": true,
@@ -2367,9 +2366,9 @@
     }
    ],
    "points_final": 25.3,
-   "best": 154.9,
+   "best": 155.0,
    "best_next": 143.3,
-   "fill": 91.32,
+   "fill": 91.43,
    "locked": 25.3,
    "locked_proj": 21.06,
    "games_final": 1
@@ -3565,7 +3564,7 @@
     "name": "Christian McCaffrey",
     "pos": "RB",
     "nfl": "SF",
-    "proj": 16.44,
+    "proj": 16.43,
     "rank": "RB9",
     "next_proj": 18.88,
     "avg": 20.6,
@@ -3646,7 +3645,7 @@
     "name": "Tetairoa McMillan",
     "pos": "WR",
     "nfl": "CAR",
-    "proj": 11.58,
+    "proj": 11.55,
     "rank": "WR20",
     "next_proj": 10.8,
     "avg": 12.3,
@@ -3709,7 +3708,7 @@
     "name": "Brock Bowers",
     "pos": "TE",
     "nfl": "LV",
-    "proj": 12.34,
+    "proj": 12.36,
     "rank": "TE1",
     "next_proj": 0.0,
     "avg": 15.6,
@@ -3729,7 +3728,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-26T22:22:21Z",
+  "updated": "2026-11-26T22:37:26Z",
   "players": 3046,
   "unmatched": []
  }
