@@ -2391,7 +2391,7 @@
       const groups = sport.groups && !pts() ? Object.keys(sport.groups).map((g) => [g, U.groupLabel(sport, g)]) : [[null, "Players"]];
       const inGrp = (p, g) => !g || U.playerGroup(sport, p) === g;
       const tbl = (list, g, title) => {
-        const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: g, scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions });
+        const cols = U.poolColumns(sport, { allLine: true, players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: g, scoring: L().scoring, owner: statusOf, ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions });
         const rows = U.sortRows(list, cols, ui.psort);
         return `<div class="stack" style="gap:6px;margin-top:14px"><h2 style="margin:0;font-size:15px">${title} <span class="ps">${rows.length}</span></h2>${U.table({ cols, rows, sort: ui.psort, dense: true, id: g ? `fk-watch-${g}` : "fk-watch", empty: "None yet.", rowAttr: (p) => `data-player="${esc(p.id)}"${ctx.own[p.id] === mid ? ' class="me"' : ""}` })}</div>`;
       };
@@ -2442,7 +2442,7 @@
         if (own === mid) return `${star}<button class="btn icon drop" data-drop="${esc(p.id)}" aria-label="Drop ${esc(p.n)}">&minus;</button>`;
         return L().settings.trades === false ? star : `${star}<button class="btn icon trade" data-trade="${own}" data-want="${esc(p.id)}" aria-label="Trade for ${esc(p.n)}">&#8644;</button>`;
       };
-      const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() && !over() && !G.offseason(L()) && !pre() ? [{ k: "wkp", label: `Wk ${curWeek()}`, cls: "r num", title: `Projected fantasy points for the rest of week ${curWeek()}: his projection for the games he has left`, sort: (p) => projFor(p, 0, curWeek()), html: (p) => { const v = projFor(p, 0, curWeek()); return v > 0.05 ? `<b>${v.toFixed(1)}</b>` : `<span class="ps">0.0</span>`; } }] : [] });
+      const cols = U.poolColumns(sport, { allLine: true, players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), group: U.groupOf(sport, ui.pf), scoring: L().scoring, owner: statusOf, ownerHide: ["avail", "fa", "w"].includes(show) || sub === "watch", ownerSort: (p) => (ctx.own[p.id] == null ? -1 : ctx.own[p.id]), actions, extra: pts() && !over() && !G.offseason(L()) && !pre() ? [{ k: "wkp", label: `Wk ${curWeek()}`, cls: "r num", title: `Projected fantasy points for the rest of week ${curWeek()}: his projection for the games he has left`, sort: (p) => projFor(p, 0, curWeek()), html: (p) => { const v = projFor(p, 0, curWeek()); return v > 0.05 ? `<b>${v.toFixed(1)}</b>` : `<span class="ps">0.0</span>`; } }] : [] });
       // Yahoo's columns beside ours: games played, last season's preseason and final ranks, and % rostered (another
       // site's, when the league came from one: L.ext)
       { const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, yr = Number(L().season) || "", grp = U.groupOf(sport, ui.pf);
@@ -3222,7 +3222,7 @@
           openTrade(seller, null, { get: (isFrom ? t.give : t.get).slice(), pickGet: ((isFrom ? t.pickGive : t.pickGet) || []).slice(), give: [], rivalOf: t.id, lockGet: true });
         }
         else if (d.trCounter) { const t = L().trades.find((x) => x.id === +d.trCounter); openTrade(t.from, null, { give: t.get.slice(), get: t.give.slice(), pickGive: (t.pickGet || []).slice(), pickGet: (t.pickGive || []).slice(), faabGive: t.faabGet, faabGet: t.faabGive, counterOf: t.id }); }
-        else if (d.sort) { const cols = U.poolColumns(sport, { players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
+        else if (d.sort) { const cols = U.poolColumns(sport, { allLine: true, players: opts.players, salary: !!L().settings.hardCap, money: auctionLg(), value: pts(), scoring: L().scoring, group: U.groupOf(sport, ui.pf), owner: statusOf, ownerSort: (p) => ctx.own[p.id] }); ui.psort = U.nextSort(ui.psort, d.sort, cols); render(); }
         return;
       }
       const pl = e.target.closest("[data-player]");

@@ -570,6 +570,9 @@
     // compact (the draft room): with no position picked, only what compares across positions; a position's own stats
     // show once you pick it
     const compact = !!opts.compact && !opts.group;
+    // opts.allLine (Rankings, a league's Players): football with no position picked shows the season as one line per
+    // player, not every position's columns side by side (passing yards for running backs, mostly zeros)
+    const lineAll = !!opts.allLine && !opts.group && (sport.key === "nfl" || sport.key === "cfb") && sport.statView !== "proj" && statSet(sport) === "std";
     if (opts.age !== false && sport.hasAge && !(opts.compact && !opts.dynasty)) cols.push({ k: "age", label: "Age", cls: "r num", hide: "s", sort: (p) => p.age, asc: true, html: (p) => (p.age ? Number(p.age).toFixed(1) : `<span class="ps">-</span>`) });
     if (opts.owner) cols.push({ k: "owner", label: "Status", cls: "st", hide: opts.ownerHide ? "s" : undefined, sort: opts.ownerSort, html: opts.owner });
     // the market, when the page loaded it (value.js market): ESPN's rank and what players go for in real ESPN auctions
@@ -598,7 +601,7 @@
     if (pts && wkOf == null && sport.data && sport.data.lines && sport.data.lines.proj && sport.data.lines.proj.ros) cols.push({ k: "ros", label: "ROS", cls: "r num", hide: "s", title: `Projected points for the rest of the season, ${sport.data.lines.proj.weeks} weeks`, sort: (p) => p.ros, html: (p) => (p.ros == null ? `<span class="ps">-</span>` : p.ros.toFixed(0)) });
     for (const c of opts.extra || []) cols.push(c);
     if (opts.stats !== false) for (const [i, c] of statColumns(sport, opts.scoring).entries()) {
-      if (compact && (c.pos || c.group)) continue;
+      if ((compact || lineAll) && (c.pos || c.group)) continue;
       if (opts.group && c.group && c.group !== opts.group) continue;
       if (opts.group && c.pos && !c.pos.includes(opts.group)) continue;
       if (!opts.group && c.posOnly) continue;
@@ -610,7 +613,7 @@
         html: (p) => { const v = statCell(sport, p, c); return v == null ? `<span class="ps">-</span>` : small(p) ? `<span class="ps" title="Small sample: too little volume to rank">${c.fmt(v)}</span>` : v === 0 && !c.fpts && !c.fpg ? `<span class="zero">${c.fmt(v)}</span>` : c.fmt(v); } });
     }
     // the draft room's All view in football: the season's key stats as one line, instead of a wide empty name column
-    if (compact && opts.stats !== false && sport.statView !== "proj" && statSet(sport) === "std" && (sport.key === "nfl" || sport.key === "cfb"))
+    if ((compact || lineAll) && opts.stats !== false && sport.statView !== "proj" && statSet(sport) === "std" && (sport.key === "nfl" || sport.key === "cfb"))
       cols.push({ k: "fbl", label: sport.statView === "prev" ? `${sport.data.prev}` : "Season", td: "fbl-c", hide: "s", title: "His key stats at his position", html: (p) => fbLine(sport, p) });
     if (opts.actions) cols.push({ k: "act", label: '<span class="sr">Actions</span>', raw: true, cls: "r act", html: opts.actions });
     return (opts.lead || []).concat(cols);

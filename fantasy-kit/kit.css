@@ -3071,3 +3071,16 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .lgm:has(.fk-sitebar) .lgm-brand{display:none}
 .lgm:has(.fk-sitebar) .wrap.lgm-in{padding-top:12px}
 @media (max-width:760px){.fk-sitebar .sb-nav{display:none}.fk-sitebar .fk-site.ds-name b{display:none}.fk-sitebar .wrap{min-height:42px}}
+/* Rankings: the league settings fold into one row on a phone ("League settings · Half PPR · 10 teams · $200"); on a
+   wider screen they sit in the toolbar as before */
+.rk-set,.rk-set-in{display:contents}
+.rk-set>summary{display:none}
+@media (max-width:640px){
+  .rk-set{display:block;flex:1 0 100%;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+  .rk-set>summary{display:flex;align-items:center;gap:8px;padding:10px 12px;font-weight:800;font-size:13.5px;cursor:pointer;list-style:none}
+  .rk-set>summary::-webkit-details-marker{display:none}
+  .rk-set>summary span{color:var(--muted);font-weight:600;font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rk-set>summary::after{content:"";margin-left:auto;flex:none;width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);opacity:.6}
+  .rk-set[open]>summary::after{transform:rotate(-135deg)}
+  .rk-set-in{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 12px}
+}
