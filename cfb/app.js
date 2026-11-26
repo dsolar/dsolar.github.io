@@ -246,7 +246,7 @@ function bracketSlot(id, seed, opts = {}) {
 }
 function bracket() {
   const S_ = SIM(); if (!S_) return "";
-  const pj = S_.projected, s = i => pj.seeds[i - 1], A = pj.auto || [];
+  const pj = S_.official || S_.projected, s = i => pj.seeds[i - 1], A = pj.auto || [];
   const mu = (rows, foot) => '<div class="mu">' + rows.join("") + (foot ? "<footer>" + foot + "</footer>" : "") + "</div>";
   const fr = (hi, lo) => mu([bracketSlot(s(hi), hi, { auto: A }), bracketSlot(s(lo), lo, { auto: A })], "First round · at " + esc(byId[s(hi)] ? byId[s(hi)].short : "the higher seed"));
   const qf = (top, a, b) => mu([bracketSlot(s(top), top, { auto: A }), bracketSlot(null, "", { label: "Winner " + a + "/" + b })], "Quarterfinal");
@@ -271,7 +271,7 @@ function playoff(q) {
   const head = cfpNow[0] && cfpNow[0].polls.cfp.headline;
   return '<h2 class="sec">Playoff odds</h2><p class="lede">The rest of the season played out ' + S_.sims.toLocaleString() + ' times: every remaining game, the conference championship games, a committee ranking built from each team\'s résumé, its rating and where the committee has it now, then the 12-team field and bracket under this year\'s rules (four power-conference champions, the highest-ranked Group of Six team, Notre Dame if it\'s top 12, seven at-large teams, straight seeding with byes for the top four).</p>' +
     titleStrip(8) +
-    '<h3 class="ch">Projected bracket</h3><p class="note">If the season finished the way the simulations most expect. Seeds come from the hub\'s projected final committee ranking; AQ marks the automatic bids. Selection day is Dec. 6.</p>' + bracket() +
+    (S_.official ? '<h3 class="ch">The field</h3><p class="note">Set by the committee\'s final ranking (' + esc(S_.official.poll) + ') and this year\'s rules. AQ marks the automatic bids.</p>' : '<h3 class="ch">Projected bracket</h3><p class="note">If the season finished the way the simulations most expect. Seeds come from the hub\'s projected final committee ranking; AQ marks the automatic bids. Selection day is Dec. 6.</p>') + bracket() +
     '<div class="bubble">' + bubble(pj.lastIn, "Last in") + bubble(pj.firstOut, "First out") + "</div>" +
     '<h3 class="ch">Every contender</h3>' +
     '<div class="controls">' + seg("show", [["contenders", "Contenders"], ["all", "All 138"]], view_) + '<span class="note">Click a column to sort. FPI is ESPN\'s own playoff chance, for comparison.</span></div>' +

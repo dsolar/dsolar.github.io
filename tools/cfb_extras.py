@@ -13,7 +13,7 @@
   - Heisman ladder: production per game weighted by team success, with daily snapshots for movers.
 The line formula mirrors CFB.line() in cfb/model.js; tests/cfb-model.test.cjs checks the two agree.
 """
-import json, math, random, sys, time
+import json, math, random, re, sys, time
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -41,6 +41,7 @@ FCS_PRIOR = (-11.0, 11.0)  # FCS opponents start 22 points worse than an average
 POWER = {"SEC", "Big Ten", "Big 12", "ACC"}
 HOSTED_CCG = {"American", "Sun Belt", "Mountain West", "C-USA", "CUSA", "Conference USA"}
 NOTRE_DAME = "87"
+SELECTION = "2026-12-06"   # the committee announces the field
 G6_TEAMS = set()
 
 
@@ -350,10 +351,31 @@ def simulate(hub, R, base, sims, seed=2026):
     cut = [t for t in seeds if t not in auto and t != NOTRE_DAME]
     last_in = cut[-4:][::-1]
     first_out = [t for t in order if t not in field][:4]
-    return {"sims": sims, "drift": DRIFT, "remaining": len(left), "teams": out,
+    # Selection day: once every game is played and the committee's final ranking is out, the field isn't a projection.
+    # The 2026 rules applied to that ranking and the real champions give exactly the field the committee announces.
+    official = None
+    cfp_rank = {tid: ((t.get("polls") or {}).get("cfp") or {}).get("rank") for tid, t in teams.items()}
+    head = next((((t.get("polls") or {}).get("cfp") or {}).get("headline") or "" for t in teams.values() if (t.get("polls") or {}).get("cfp")), "")
+    if not left and datetime.now(NY).date().isoformat() >= SELECTION and re.search(r"final|week 1[5-9]", head, re.I) and sum(1 for r in cfp_rank.values() if r) >= 20:
+        ranked_r = sorted([t for t in fbs if cfp_rank.get(t)], key=lambda t: cfp_rank[t])
+        rr = {t: i + 1 for i, t in enumerate(ranked_r)}
+        auto_r = [likely[c] for c in likely if c in POWER]
+        # (the committee always ranks the Group of Six team it takes; if none is ranked, the model's best one)
+        g6r = [t for t in ranked_r if t in G6_TEAMS] or g6[:1]
+        if g6r:
+            auto_r.append(g6r[0])
+        fr = set(auto_r)
+        if rr.get(NOTRE_DAME, 99) <= 12:
+            fr.add(NOTRE_DAME)
+        for t in ranked_r:
+            if len(fr) >= 12:
+                break
+            fr.add(t)
+        official = {"seeds": sorted(fr, key=lambda t: rr.get(t, 99)), "auto": auto_r, "poll": head}
+    return {"sims": sims, "drift": DRIFT, "remaining": len(left), "teams": out, "official": official,
             "projected": {"seeds": seeds, "auto": auto, "champions": likely, "top25": order[:25], "lastIn": last_in, "firstOut": first_out},
             "titleGames": [{"teams": list(k), "p": round(v / n, 4)} for k, v in title_pairs.most_common(6)],
-            "selection": "2026-12-06", "championship": "2027-01-25"}
+            "selection": SELECTION, "championship": "2027-01-25"}
 
 
 # ---------- Heisman ladder ----------
