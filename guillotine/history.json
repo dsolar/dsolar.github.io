@@ -8125,7 +8125,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 57,
-      "next_proj": 15.28
+      "next_proj": 15.29
      },
      {
       "n": "Christian McCaffrey",
@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 18.81
+      "next_proj": 18.88
      },
      {
       "n": "James Cook III",
@@ -8141,7 +8141,7 @@
       "nfl": "BUF",
       "claimed_by": "Drake Mayezini",
       "bid": 39,
-      "next_proj": 17.47
+      "next_proj": 17.48
      },
      {
       "n": "Josh Allen",
@@ -8149,7 +8149,7 @@
       "nfl": "BUF",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 35,
-      "next_proj": 23.39
+      "next_proj": 23.34
      },
      {
       "n": "Brock Bowers",
@@ -8189,7 +8189,7 @@
       "nfl": "HOU",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 19.1
+      "next_proj": 19.09
      },
      {
       "n": "D'Andre Swift",
@@ -8197,7 +8197,7 @@
       "nfl": "CHI",
       "claimed_by": "A Warren Boston",
       "bid": 0,
-      "next_proj": 13.98
+      "next_proj": 13.85
      },
      {
       "n": "Zay Flowers",
@@ -8301,7 +8301,7 @@
       "pos": "QB",
       "nfl": "CLE",
       "slot": "QB",
-      "proj": 16.31,
+      "proj": 16.3,
       "pts": null
      },
      {
@@ -8310,14 +8310,14 @@
       "nfl": "DET",
       "slot": "RB",
       "proj": 23.57,
-      "pts": null
+      "pts": 45.7
      },
      {
       "n": "Jonah Coleman",
       "pos": "RB",
       "nfl": "DEN",
       "slot": "RB",
-      "proj": 16.36,
+      "proj": 16.49,
       "pts": null
      },
      {
@@ -8334,7 +8334,7 @@
       "nfl": "DET",
       "slot": "WR",
       "proj": 17.59,
-      "pts": null
+      "pts": 18.1
      },
      {
       "n": "Luther Burden III",
@@ -8342,7 +8342,7 @@
       "nfl": "CHI",
       "slot": "WR",
       "proj": 13.52,
-      "pts": null
+      "pts": 6
      },
      {
       "n": "Isaiah Likely",
@@ -8365,7 +8365,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 23.59,
+      "proj": 23.58,
       "pts": null
      },
      {
@@ -8373,7 +8373,7 @@
       "pos": "TE",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 9.27,
+      "proj": 9.21,
       "pts": null
      },
      {
@@ -8381,7 +8381,7 @@
       "pos": "WR",
       "nfl": "PHI",
       "slot": "BN",
-      "proj": 11.66,
+      "proj": 11.72,
       "pts": null
      },
      {
@@ -8390,14 +8390,14 @@
       "nfl": "CHI",
       "slot": "BN",
       "proj": 13.55,
-      "pts": null
+      "pts": 25.7
      },
      {
       "n": "Omarion Hampton",
       "pos": "RB",
       "nfl": "LAC",
       "slot": "BN",
-      "proj": 9.55,
+      "proj": 9.07,
       "pts": null
      },
      {
@@ -8447,7 +8447,7 @@
       "pos": "WR",
       "nfl": "SEA",
       "slot": "WR",
-      "proj": 20.12,
+      "proj": 20.11,
       "pts": null
      },
      {
@@ -8455,7 +8455,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.31,
+      "proj": 16.3,
       "pts": null
      },
      {
@@ -8487,7 +8487,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 12.36,
+      "proj": 12.37,
       "pts": null
      },
      {
@@ -8503,7 +8503,7 @@
       "pos": "QB",
       "nfl": "SF",
       "slot": "BN",
-      "proj": 15.98,
+      "proj": 15.97,
       "pts": null
      },
      {
@@ -8545,7 +8545,7 @@
       "pos": "RB",
       "nfl": "SF",
       "slot": "RB",
-      "proj": 16.43,
+      "proj": 16.44,
       "pts": null
      },
      {
@@ -8626,7 +8626,7 @@
       "nfl": "DET",
       "slot": "BN",
       "proj": 20.4,
-      "pts": null
+      "pts": 16.82
      },
      {
       "n": "Kyren Williams",
@@ -8641,7 +8641,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 10.97,
+      "proj": 10.96,
       "pts": null
      }
     ],
@@ -8652,7 +8652,7 @@
       "nfl": "CHI",
       "slot": "QB",
       "proj": 21.06,
-      "pts": null
+      "pts": 25.3
      },
      {
       "n": "Javonte Williams",
@@ -8715,7 +8715,7 @@
       "pos": "TE",
       "nfl": "LV",
       "slot": "BN",
-      "proj": 12.35,
+      "proj": 12.34,
       "pts": null
      },
      {
@@ -8732,7 +8732,7 @@
       "nfl": "CHI",
       "slot": "BN",
       "proj": 9.93,
-      "pts": null
+      "pts": -1
      },
      {
       "n": "Jayden Daniels",
