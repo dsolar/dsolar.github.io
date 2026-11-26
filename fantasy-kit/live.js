@@ -735,9 +735,14 @@
       return;
     }
     if (r.error === "stale") {
+      const local = clone(D), was = base && base.draft;
       D = r.draft; L = r.league; version = r.version; base = clone({ draft: D, league: L }); dirty = false; lastChange = Date.now();
+      // someone else saved first (often just a star on their watch list): carry over what only this manager changes,
+      // his own watch list and a pick he just made that still stands, and save again on top of their copy
+      const re = rebase(local, was, D);
+      if (re.changed) push();
       refreshView();
-      if (mineMove) U.toast("Someone else moved first, so this reloaded. Check it and try again.", true);
+      if (re.lost) U.toast(re.lost, true);
       return;
     }
     U.toast(r.error, true);
@@ -745,6 +750,29 @@
     if (base) { D = clone(base.draft); L = clone(base.league); }
     dirty = false; version = -1; refreshView();
     pull();
+  }
+  // A save that lost the race: re-apply this manager's own moves to the copy that won. His watch list is his alone, so
+  // it carries over as it was; a pick he made carries over if he's still on the clock there and the player is still
+  // there. Auctions and pack drafts move too fast to replay, so those take the other copy as it is.
+  function rebase(local, was, srv) {
+    const out = { changed: false, lost: "" }, m = info.me;
+    if (m == null || !local || !srv || !srv.teams || !srv.teams[m] || !local.teams || !local.teams[m]) return out;
+    const mineQ = local.teams[m].queue || [], baseQ = was && was.teams && was.teams[m] ? was.teams[m].queue || [] : null;
+    if (baseQ && JSON.stringify(mineQ) !== JSON.stringify(baseQ)) {
+      const owned = new Set((srv.board || []).filter(Boolean).map((e) => e.pid));
+      srv.teams[m].queue = mineQ.filter((x) => !owned.has(x)); out.changed = true;
+    }
+    if (srv.phase !== "live" || srv.packs || srv.type === "auction" || srv.type === "dutch" || !was || !local.board) return out;
+    const fresh = local.board.filter((e, i) => e && e.team === m && !(was.board || [])[i] && !e.auto);
+    for (const e of fresh) {
+      if ((srv.board || []).some((x) => x && x.pid === e.pid)) { if (!(srv.board || []).some((x) => x && x.pid === e.pid && x.team === m)) out.lost = `${(byId[e.pid] || {}).n || "That player"} went to another team first. Pick again.`; continue; }
+      const res = F.pick(srv, F.context(srv, players, sport, hooks()), m, e.pid, now());
+      if (res.ok) { out.changed = true; continue; }
+      // the usual reason: the clock ran out a moment before the pick landed and the autopick went in for him
+      const auto = (srv.board || []).find((x, i) => x && x.team === m && x.auto && !(was.board || [])[i]);
+      out.lost = auto ? `Your clock ran out just before that pick landed, so the autopick took ${(byId[auto.pid] || {}).n || "a player"}.` : `Your pick didn't go through: ${res.why.toLowerCase()}. Check the board and try again.`;
+    }
+    return out;
   }
   async function pull() {
     if (inflight || dirty) return;
