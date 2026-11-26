@@ -2469,3 +2469,79 @@ begin
   end if;
   return r;
 end $function$;
+
+-- The Super Bowl moved weeks: ESPN files it as postseason week 4 this season (week 5 when there's a Pro Bowl week),
+-- so po_sync asks for weeks 1 to 5 and calls a game round 4 when it's the Super Bowl by its name, never the Pro Bowl.
+-- (Applied as migration po_sync_super_bowl_week.)
+create or replace function public.po_sync() returns jsonb
+language plpgsql security definer set search_path to 'public', 'net' as $function$
+declare r record; ev jsonb; c jsonb; h jsonb; a jsonb; ch jsonb; en jsonb; n int := 0; yr int := po_season(); hl text; rd int; wk int; sd int; pdv numeric; gpv numeric; nm text;
+begin
+  for r in select q.id, q.kind, x.content from po_sync_req q join net._http_response x on x.id = q.id where x.status_code = 200 loop
+    begin
+      if r.kind = 'std' then
+        if po_nfl_lock(yr) is null or po_nfl_lock(yr) > now() then
+          delete from po_field where comp = 'nfl' and season = yr;
+          for ch in select * from jsonb_array_elements(r.content::jsonb -> 'children') loop
+            for en in select * from jsonb_array_elements(ch -> 'standings' -> 'entries') loop
+              select (s ->> 'value')::numeric::int into sd from jsonb_array_elements(en -> 'stats') s where s ->> 'name' = 'playoffSeed';
+              select coalesce(max((s ->> 'value')::numeric) filter (where s ->> 'name' in ('pointDifferential', 'differential')),
+                       max((s ->> 'value')::numeric) filter (where s ->> 'name' = 'pointsFor') - max((s ->> 'value')::numeric) filter (where s ->> 'name' = 'pointsAgainst')),
+                     sum((s ->> 'value')::numeric) filter (where s ->> 'name' in ('wins', 'losses', 'ties'))
+                into pdv, gpv from jsonb_array_elements(en -> 'stats') s;
+              if sd between 1 and 7 then
+                insert into po_field (comp, season, team, conf, seed, name, pd, gp) values ('nfl', yr, en -> 'team' ->> 'abbreviation', ch ->> 'abbreviation', sd, en -> 'team' ->> 'displayName', pdv, gpv)
+                on conflict (comp, season, team) do update set conf = excluded.conf, seed = excluded.seed, name = excluded.name, pd = excluded.pd, gp = excluded.gp, updated_at = now();
+              end if;
+            end loop;
+          end loop;
+        end if;
+      else
+        for ev in select * from jsonb_array_elements(r.content::jsonb -> 'events') loop
+          c := ev -> 'competitions' -> 0;
+          select x into h from jsonb_array_elements(c -> 'competitors') x where x ->> 'homeAway' = 'home';
+          select x into a from jsonb_array_elements(c -> 'competitors') x where x ->> 'homeAway' = 'away';
+          hl := c -> 'notes' -> 0 ->> 'headline';
+          if r.kind = 'cfb' then
+            rd := case when hl ilike '%playoff first round%' then 1 when hl ilike '%quarterfinal%' then 2 when hl ilike '%semifinal%' then 3 when hl ilike '%national championship%' then 4 else 0 end;
+          else
+            wk := (ev -> 'week' ->> 'number')::int; nm := coalesce(hl, '') || ' ' || coalesce(ev ->> 'name', '') || ' ' || coalesce(ev ->> 'shortName', '');
+            -- weeks 4 and 5: the Super Bowl, whichever week ESPN files it in; the Pro Bowl (AFC vs NFC) is skipped
+            rd := case when wk in (1, 2, 3) then wk
+                       when wk in (4, 5) and nm not ilike '%pro bowl%' and coalesce(a -> 'team' ->> 'abbreviation', '') not in ('AFC', 'NFC') then 4 end;
+            if rd is null then continue; end if;
+          end if;
+          insert into po_games (game_id, comp, season, round, label, conf, kickoff, a, b, a_name, b_name, a_score, b_score, winner, line, status, final, lines, updated_at)
+          values (ev ->> 'id', r.kind, coalesce((ev -> 'season' ->> 'year')::int, yr), rd, coalesce(hl, case when r.kind = 'nfl' and rd = 4 then 'Super Bowl' end, ev ->> 'name'),
+            case when r.kind = 'nfl' then substring(hl from '^(AFC|NFC)') end, (ev ->> 'date')::timestamptz,
+            case when (a -> 'team' ->> 'id')::int > 0 then case when r.kind = 'cfb' then a -> 'team' ->> 'id' else a -> 'team' ->> 'abbreviation' end end,
+            case when (h -> 'team' ->> 'id')::int > 0 then case when r.kind = 'cfb' then h -> 'team' ->> 'id' else h -> 'team' ->> 'abbreviation' end end,
+            case when (a -> 'team' ->> 'id')::int > 0 then a -> 'team' ->> 'displayName' end, case when (h -> 'team' ->> 'id')::int > 0 then h -> 'team' ->> 'displayName' end,
+            nullif(a ->> 'score', '')::int, nullif(h ->> 'score', '')::int,
+            case when coalesce((ev -> 'status' -> 'type' ->> 'completed')::boolean, false) then
+              case when (h ->> 'winner')::boolean then case when r.kind = 'cfb' then h -> 'team' ->> 'id' else h -> 'team' ->> 'abbreviation' end
+                   when (a ->> 'winner')::boolean then case when r.kind = 'cfb' then a -> 'team' ->> 'id' else a -> 'team' ->> 'abbreviation' end end end,
+            (c -> 'odds' -> 0 ->> 'spread')::numeric, ev -> 'status' -> 'type' ->> 'name',
+            coalesce((ev -> 'status' -> 'type' ->> 'completed')::boolean, false),
+            case when jsonb_array_length(coalesce(a -> 'linescores', '[]'::jsonb)) > 0 then jsonb_build_object(
+              'a', (select jsonb_agg(coalesce((x ->> 'value')::numeric::int, 0) order by o) from jsonb_array_elements(a -> 'linescores') with ordinality t(x, o)),
+              'b', (select jsonb_agg(coalesce((x ->> 'value')::numeric::int, 0) order by o) from jsonb_array_elements(h -> 'linescores') with ordinality t(x, o))) end,
+            now())
+          on conflict (game_id) do update set round = excluded.round, label = excluded.label, conf = excluded.conf, kickoff = excluded.kickoff,
+            a = excluded.a, b = excluded.b, a_name = excluded.a_name, b_name = excluded.b_name, a_score = excluded.a_score, b_score = excluded.b_score,
+            winner = excluded.winner, status = excluded.status, final = excluded.final, lines = coalesce(excluded.lines, po_games.lines), updated_at = now(),
+            line = case when excluded.kickoff > now() then coalesce(excluded.line, po_games.line) else po_games.line end;
+          n := n + 1;
+        end loop;
+      end if;
+    exception when others then null;
+    end;
+  end loop;
+  delete from po_sync_req where id in (select q.id from po_sync_req q left join net._http_response x on x.id = q.id where x.id is not null or q.at < now() - interval '1 hour');
+  insert into po_sync_req (id, kind) select net.http_get(format('https://site.api.espn.com/apis/site/v2/sports/football/college-football/scoreboard?seasontype=3&groups=80&limit=300&dates=%s', yr), timeout_milliseconds => 20000), 'cfb';
+  insert into po_sync_req (id, kind) select net.http_get(format('https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?seasontype=3&week=%s&dates=%s', w, yr), timeout_milliseconds => 20000), 'nfl' from unnest(array[1, 2, 3, 4, 5]) w;
+  if po_nfl_lock(yr) is null or po_nfl_lock(yr) > now() then
+    insert into po_sync_req (id, kind) select net.http_get(format('https://site.api.espn.com/apis/v2/sports/football/nfl/standings?season=%s', yr), timeout_milliseconds => 20000), 'std';
+  end if;
+  return jsonb_build_object('saved', n);
+end $function$;
