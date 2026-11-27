@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 18.81
+      "next_proj": 19.09
      },
      {
       "n": "James Cook III",
@@ -8229,7 +8229,7 @@
       "n": "Tony Pollard",
       "pos": "RB",
       "nfl": "TEN",
-      "next_proj": 13.33
+      "next_proj": 13.21
      }
     ]
    },
@@ -8317,7 +8317,7 @@
       "pos": "RB",
       "nfl": "DEN",
       "slot": "RB",
-      "proj": 16.5,
+      "proj": 16.49,
       "pts": null
      },
      {
@@ -8325,7 +8325,7 @@
       "pos": "WR",
       "nfl": "NO",
       "slot": "WR",
-      "proj": 12.77,
+      "proj": 12.79,
       "pts": null
      },
      {
@@ -8365,7 +8365,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 23.49,
+      "proj": 23.5,
       "pts": null
      },
      {
@@ -8455,7 +8455,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.22,
+      "proj": 16.25,
       "pts": null
      },
      {
@@ -8495,7 +8495,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 12.43,
+      "proj": 12.41,
       "pts": null
      },
      {
@@ -8503,7 +8503,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 13.96,
+      "proj": 13.98,
       "pts": null
      },
      {
@@ -8609,7 +8609,7 @@
       "pos": "RB",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 14.21,
+      "proj": 14.13,
       "pts": null
      },
      {
@@ -8641,7 +8641,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 10.98,
+      "proj": 10.97,
       "pts": null
      }
     ],
@@ -8675,7 +8675,7 @@
       "pos": "RB",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 19.26,
+      "proj": 19.17,
       "pts": null
      },
      {
@@ -8683,7 +8683,7 @@
       "pos": "TE",
       "nfl": "LV",
       "slot": "BN",
-      "proj": 12.05,
+      "proj": 12.04,
       "pts": null
      },
      {
@@ -8723,7 +8723,7 @@
       "pos": "WR",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 11.56,
+      "proj": 11.6,
       "pts": null
      },
      {
@@ -8755,7 +8755,7 @@
       "pos": "TE",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 6.83,
+      "proj": 6.85,
       "pts": null
      }
     ]
