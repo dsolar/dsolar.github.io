@@ -3177,3 +3177,20 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .cmp-sec th{text-align:left !important;font-size:11.5px;font-weight:800;color:var(--ink) !important;padding-top:14px;background:var(--surface)}
 .cmp-mu{display:block;font-size:11.5px;font-weight:650;color:var(--muted)}.cmp-mu.up{color:var(--win)}.cmp-mu.dn{color:var(--loss)}
 .tag.mu{margin-left:4px}
+/* league polls in the chat: each choice a button with its share as a bar behind it */
+.pl{margin:4px 0 2px;max-width:440px;display:grid;gap:8px}
+.pl-q{font-size:15px;line-height:1.3}
+.pl-l{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pl-o{position:relative;overflow:hidden;width:100%;display:flex;align-items:center;gap:10px;justify-content:space-between;text-align:left;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:9px 12px;font:inherit;font-size:14px;font-weight:650;color:inherit;cursor:pointer}
+.pl-o:disabled{cursor:default;opacity:1}
+.pl-o:not(:disabled):hover,.pl-o:focus-visible{border-color:var(--ink)}
+.pl-bar{position:absolute;inset:0 auto 0 0;background:var(--surface-3);transition:width .3s}
+.pl-o.me{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pl-o.me .pl-bar{background:var(--brand-soft)}
+.pl-o.win .pl-bar{background:var(--win-soft)}
+.pl-t,.pl-n{position:relative}
+.pl-t small{font-size:11.5px;font-weight:750;color:var(--muted);margin-left:4px}
+.pl-o.win .pl-t small{color:var(--win)}
+.pl-n{font-variant-numeric:tabular-nums;font-weight:800}
+.pl-f{font-size:12.5px}
+@media (prefers-reduced-motion:reduce){.pl-bar{transition:none}}

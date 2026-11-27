@@ -1073,6 +1073,48 @@
       const pick = mine && open ? `<span class="rx-pick" role="group" aria-label="Pick a reaction">${RX.map(([e, label]) => `<button type="button" data-rx="${pid}|${e}" aria-label="${label}">${e}</button>`).join("")}</span>` : "";
       return `<div class="rx" data-post="${pid}">${chips}${mine ? `<button type="button" class="rx-add" data-rxopen="${pid}" aria-expanded="${!!open}" aria-label="Add a reaction" title="React">${open ? "&times;" : `<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="9" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6.6" cy="8.4" r="1" fill="currentColor"/><circle cx="11.4" cy="8.4" r="1" fill="currentColor"/><path d="M5.8 11.6c1.6 2 4.8 2 6.4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16.5 2.5v4M14.5 4.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`}</button>` : ""}${pick}</div>`;
     }
+    /* A poll in the chat (p.poll: { q, opts, closes }; opts.chat.votes(): [{ post, team, opt, me }]). Each choice is a
+       button with its share of the votes as a bar and who picked it; tapping your choice again takes your vote back.
+       After it closes the bars stay and the winner is marked. One vote a team. */
+    function pollBox(p) {
+      const pl = p.poll, vs = (opts.chat.votes ? opts.chat.votes() : []).filter((v) => v.post === p.id), mid = me();
+      const open = now() < pl.closes, mine = vs.find((v) => v.team === mid), n = vs.length, teams = L().teams.length;
+      const counts = pl.opts.map((_, i) => vs.filter((v) => v.opt === i).length), top = Math.max(0, ...counts);
+      const can = open && mid != null && !!opts.chat.vote;
+      const left = pl.closes - now();
+      const when = !open ? "Closed" : left < 36e5 ? `Closes in ${Math.max(1, Math.round(left / 6e4))} min` : left < 48 * 36e5 ? `Closes in ${Math.round(left / 36e5)} hours` : `Closes ${new Date(pl.closes).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}`;
+      const rows = pl.opts.map((o, i) => {
+        const c = counts[i], pct = n ? Math.round((c / n) * 100) : 0, who = vs.filter((v) => v.opt === i).map((v) => (T(v.team) || {}).name).filter(Boolean);
+        const win = !open && c && c === top, me_ = mine && mine.opt === i;
+        return `<li><button type="button" class="pl-o${me_ ? " me" : ""}${win ? " win" : ""}" data-vote="${p.id}|${i}"${can ? "" : " disabled"} aria-pressed="${!!me_}" title="${esc(who.join(", "))}">
+          <span class="pl-bar" style="width:${pct}%"></span><span class="pl-t">${esc(o)}${me_ ? ` <small>Your vote</small>` : ""}${win ? ` <small>${counts.filter((x) => x === top).length > 1 ? "Tied" : "Won"}</small>` : ""}</span><span class="pl-n">${c ? `${pct}%` : ""}</span></button></li>`;
+      }).join("");
+      return `<div class="pl" role="group" aria-label="${esc("Poll: " + pl.q)}"><b class="pl-q">${esc(pl.q)}</b><ul class="pl-l">${rows}</ul>
+        <div class="ps pl-f">${n} of ${teams} team${teams === 1 ? "" : "s"} voted. ${when}${can ? (mine ? ". Tap your choice again to take it back" : "") : !open ? "" : mid == null ? ". Managers in the league can vote" : ""}.</div></div>`;
+    }
+    function pollDialog() {
+      const D = U.dialog(`<h3 class="disp" style="margin:0 0 4px">Start a poll</h3><p class="ps" style="margin:0 0 12px">The whole league can vote, one vote a team. It goes in the chat.</p>
+        <form class="stack" style="gap:10px"><label class="field"><span class="lbl">Question</span><input type="text" name="q" maxlength="200" required placeholder="Add a second flex spot next season?"></label>
+        <div class="stack pl-opts" style="gap:6px"><span class="lbl" style="font-size:13px;font-weight:650;color:var(--muted)">Choices</span>${[0, 1].map((i) => `<input type="text" name="o" maxlength="80" aria-label="Choice ${i + 1}" placeholder="${i ? "No" : "Yes"}">`).join("")}</div>
+        <button type="button" class="btn sm ghost" data-poadd style="justify-self:start">Add a choice</button>
+        <label class="field"><span class="lbl">Open for</span><select name="h" class="txsel" style="justify-self:start;width:auto;min-width:170px"><option value="24">1 day</option><option value="72" selected>3 days</option><option value="168">1 week</option><option value="336">2 weeks</option></select></label>
+        <div class="row" style="justify-content:flex-end;gap:8px"><button type="button" class="btn ghost" data-close>Cancel</button><button class="btn go">Post poll</button></div></form>`, (fd, f) => {
+        const q = String(fd.get("q") || "").trim(), os = fd.getAll("o").map((x) => String(x).trim()).filter(Boolean);
+        if (os.length < 2) { U.toast("Give it at least two choices", true); return false; }
+        const btn = f.querySelector(".btn.go"); btn.disabled = true;
+        opts.chat.poll(q, os, +fd.get("h") || 72).then((r) => {
+          if (r && r.error) { btn.disabled = false; U.toast(r.error, true); return; }
+          D.close(); render();
+        }, (e) => { btn.disabled = false; U.toast(e.message, true); });
+        return false;
+      });
+      D.querySelector("[data-poadd]").addEventListener("click", (e) => {
+        const box = D.querySelector(".pl-opts"), n = box.querySelectorAll("input").length;
+        if (n < 6) { box.insertAdjacentHTML("beforeend", `<input type="text" name="o" maxlength="80" aria-label="Choice ${n + 1}">`); box.lastElementChild.focus(); }
+        if (n + 1 >= 6) e.currentTarget.remove();
+      });
+      setTimeout(() => { const q = D.querySelector("[name=q]"); if (q) q.focus(); }, 50);
+    }
     const redrawReacts = (pid, open) => { for (const el of opts.el.querySelectorAll(`.rx[data-post="${pid}"]`)) el.outerHTML = reactRow(pid, open); };
     function chatLi(it, prev) {
       if (it.x) {
@@ -1083,12 +1125,12 @@
       const p = it.p, t = T(p.team) || { name: p.author, abbr: "", color: 0 };
       // a run of posts from the same team within ten minutes reads as one message
       const cont = prev && prev.p && prev.p.team === p.team && it.at - prev.at < 6e5;
-      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : faces()[p.team] && faces()[p.team].photo ? U.faceAv(faces()[p.team], p.author, "sm") : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}<p>${chatBody(p.body)}</p>${reactRow(p.id, ui.rxOpen === p.id)}</div></li>`;
+      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : faces()[p.team] && faces()[p.team].photo ? U.faceAv(faces()[p.team], p.author, "sm") : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}${p.poll ? pollBox(p) : `<p>${chatBody(p.body)}</p>`}${reactRow(p.id, ui.rxOpen === p.id)}</div></li>`;
     }
     function chatList(items) {
       return items.length ? `<ul class="chat">${items.map((it, i) => chatLi(it, items[i - 1])).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">No posts yet. Say hello, or talk some trash about this week's matchup.</p></div>`;
     }
-    const chatForm = (big) => (me() != null ? `<form class="chat-f" id="fk-chatf"><label class="sr" for="fk-chat">Message the league</label><textarea id="fk-chat" rows="${big ? 2 : 1}" maxlength="500" placeholder="Message the league">${esc(ui.chatDraft || "")}</textarea><button class="btn go">Send</button></form>`
+    const chatForm = (big) => (me() != null ? `<form class="chat-f" id="fk-chatf"><label class="sr" for="fk-chat">Message the league</label><textarea id="fk-chat" rows="${big ? 2 : 1}" maxlength="500" placeholder="Message the league">${esc(ui.chatDraft || "")}</textarea>${big && opts.chat.poll ? `<button type="button" class="btn ghost" data-pollnew title="Start a poll">Poll</button>` : ""}<button class="btn go">Send</button></form>`
       : `<div class="bd ps">Only managers in this league can post.</div>`);
     function chatPage() {
       opts.chat.seen();
@@ -3261,6 +3303,16 @@
     opts.el.addEventListener("click", async (e) => {
       const add = e.target.closest("[data-rxopen]"), b = !add && e.target.closest("[data-rx]");
       if (add) { const pid = +add.dataset.rxopen, was = ui.rxOpen; if (was != null && was !== pid) redrawReacts(was, false); ui.rxOpen = was === pid ? null : pid; redrawReacts(pid, ui.rxOpen === pid); const f = opts.el.querySelector(`.rx[data-post="${pid}"] .rx-pick button`); if (f) f.focus(); return; }
+      const pv = !add && !b && e.target.closest("[data-vote],[data-pollnew]");
+      if (pv && opts.chat) {
+        if (pv.dataset.pollnew != null) { pollDialog(); return; }
+        if (pv.disabled || !opts.chat.vote) return;
+        const [pid, oi] = pv.dataset.vote.split("|");
+        pv.disabled = true;
+        const r = await opts.chat.vote(+pid, +oi).catch((err) => ({ error: err.message }));
+        if (r && r.error) { U.toast(r.error, true); pv.disabled = false; return; }
+        render(); return;
+      }
       if (!b || !opts.chat || !opts.chat.react || b.disabled) return;
       const [pid, emo] = b.dataset.rx.split("|"), id = +pid;
       b.disabled = true;

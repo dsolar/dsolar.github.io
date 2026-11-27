@@ -491,12 +491,25 @@
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden && weeks) livePoll(); });
   /* ---------- league chat: posts load every few seconds while the page is open ---------- */
-  let posts = [], postT = null, seen = 0, reacts = [], reactAt = 0;
+  let posts = [], postT = null, seen = 0, reacts = [], reactAt = 0, votes = [];
   try { seen = Number(localStorage.getItem("fk-chat-seen:" + id)) || 0; } catch (e) { /* no storage */ }
   const lastId = () => (posts.length ? posts[posts.length - 1].id : 0);
   const chat = {
     posts: () => posts,
     reacts: () => reacts,
+    // polls (tools/fantasykit_polls.sql): votes come back with the reactions check
+    votes: () => votes,
+    async vote(post, opt) {
+      const r = await C.rpc("fk_vote", { p_id: id, p_post: post, p_opt: opt });
+      if (r && r.ok) { votes = r.votes || []; reactAt = 0; }   // the next check brings the reactions back up to date too
+      return r;
+    },
+    async poll(q, opts, hours) {
+      const r = await C.rpc("fk_poll", { p_id: id, p_q: q, p_opts: opts, p_hours: hours });
+      if (r && r.post && !posts.some((p) => p.id === r.post.id)) posts.push(r.post);
+      if (r && r.ok) chat.seen();
+      return r;
+    },
     async react(post, emoji) {
       const r = await C.rpc("fk_react", { p_id: id, p_post: post, p_emoji: emoji });
       if (r && r.ok) { reacts = r.list || []; reactAt = r.at || reactAt; }
@@ -522,6 +535,7 @@
         changed = true;
       }
       if (rx && Array.isArray(rx.list)) { reacts = rx.list; reactAt = rx.at || 0; changed = true; }
+      if (rx && Array.isArray(rx.votes)) votes = rx.votes;
       // a picker left open, or someone typing, isn't thrown away by a redraw
       const busy = document.activeElement && document.activeElement.closest && document.activeElement.closest(".rx");
       if (changed && !U.dialogOpen() && !busy) { if (room) room.render(); else if (app) app.refresh(); }
