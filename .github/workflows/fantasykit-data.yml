@@ -8,12 +8,14 @@ on:
   schedule:
     - cron: "47 11 * * *"
     - cron: "17 22 * * *"
-    # football game nights (UTC): Sunday afternoon through Monday night, and Thursday night, every two hours
-    - cron: "7 17,19,21,23 * * 0"
+    # football game days (UTC), hourly for injury news: Sunday afternoon through Sunday night, Monday and Thursday nights
+    - cron: "7 17-23 * * 0"
+    - cron: "7 0-5 * * 1"
+    - cron: "7 0-4 * * 2,5"
     # Sunday inactives (11:30 ET for the 1:00 games): a pull right after, for the late-scratch alerts
     - cron: "37 16 * * 0"
-    - cron: "7 1,3,5,23 * * 1"
-    - cron: "7 1,3,5 * * 2,5"
+    # basketball and hockey nights (and before Monday and Thursday kickoffs): late scratches before the 7:00 ET games
+    - cron: "7 21,23 * * 1-6"
     # college football Saturdays (UTC): the afternoon and night games
     - cron: "37 21,23 * * 6"
   push:

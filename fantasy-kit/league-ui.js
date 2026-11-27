@@ -207,11 +207,11 @@
       // before the draft: what Yahoo shows then, standings at 0-0, every roster's empty spots, the player pool
       if (pre()) return tab === "league" ? [["overview", "Overview"], ["standings", gl() ? "Survivors" : "Standings"], ["managers", "Managers"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : [])
         : tab === "team" ? [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]])
-        : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : sport.key === "nfl" ? [["trends", "Trends"]] : []) : [];
+        : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : sport.key === "nfl" ? [["trends", "Trends"], ["news", "News"]] : hasNews() ? [["news", "News"]] : []) : [];
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
-      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(sport.key === "mlb" ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
+      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(hasNews() ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
       return [];
     }
     const pendingTrades = () => L().trades.filter((t) => (t.status === "pending" && t.to === me()) || (t.status === "review" && G.voters(L(), t).includes(me()) && !(t.votes || {})[me()])).length;
@@ -2462,7 +2462,7 @@
       const mid = me(), w = watch();
       if (sub === "claims") return claimsPage();
       if (sub === "tx") return txPage();
-      if (sub === "news" && sport.key === "mlb") return newsPage();
+      if (sub === "news" && hasNews()) return newsPage();
       if (sub === "trends") return trendsPage();
       if (sub === "finder") return finderPage();
       let rows = opts.players.filter((p) => U.passes(sport, p, ui.pf));
@@ -2738,15 +2738,20 @@
        hours; the headline links to the story) and MLB's transaction wire straight from its Stats API (injured list
        moves, call-ups and options, trades, signings, releases). */
     const NEWS_DAYS = 21;
+    // baseball: MLB.com plus the transaction wire; football, basketball, hockey, college hoops: ESPN's stories
+    // (functions, so the tab list can ask before this part of the file has run)
+    function hasNews() { return ["mlb", "nfl", "nba", "nhl", "cbb"].includes(sport.key); }
+    function hasWire() { return sport.key === "mlb"; }
     let newsFile, newsAsked = false, wire, wireAsked = false;
     // a jersey number change isn't news
     const noNews = (x) => /number/i.test(x.typeDesc || "") || x.typeCode === "NUM" || /changed (his )?(uniform |jersey )?number/i.test(x.description || "");
     const isoDay = (t) => new Date(t).toISOString().slice(0, 10);
     function newsData() {
-      if (!newsAsked) { newsAsked = true; fetch("data/news-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { newsFile = j && Array.isArray(j.items) ? j : { items: [] }; newsRender(); }).catch(() => { newsFile = { items: [] }; newsRender(); }); }
+      if (!newsAsked) { newsAsked = true; fetch(`data/news-${sport.key}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).then((j) => { newsFile = j && Array.isArray(j.items) ? j : { items: [] }; newsRender(); }).catch(() => { newsFile = { items: [] }; newsRender(); }); }
       return newsFile;
     }
     function wireData() {
+      if (!hasWire()) return [];
       if (!wireAsked) { wireAsked = true; fetch(`https://statsapi.mlb.com/api/v1/transactions?sportId=1&startDate=${isoDay(now() - NEWS_DAYS * 864e5)}&endDate=${isoDay(now())}`).then((r) => (r.ok ? r.json() : null)).then((j) => { wire = (j && j.transactions) || []; newsRender(); }).catch(() => { wire = []; newsRender(); }); }
       return wire;
     }
@@ -2786,17 +2791,17 @@
     async function playerNews(p, el) {
       if (!el) return;
       let moves = [];
-      try {
+      if (hasWire()) try {
         const j = await fetch(`https://statsapi.mlb.com/api/v1/transactions?playerId=${encodeURIComponent(p.id)}&startDate=${isoDay(now() - 400 * 864e5)}&endDate=${isoDay(now())}`).then((r) => (r.ok ? r.json() : null));
         moves = ((j && j.transactions) || []).filter((x) => x.description && !noNews(x)).map((x) => { const [k, c] = wireKind(x); return { at: Date.parse((x.effectiveDate || x.date) + "T12:00:00Z"), ids: [String(p.id)], kind: k, cls: c, text: x.description, url: null }; });
       } catch (e) { /* the stories still show */ }
-      const nf = newsFile || await fetch("data/news-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      const nf = newsFile || await fetch(`data/news-${sport.key}.json`, { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
       if (nf && !newsFile) newsFile = nf;
       const stories = ((nf && nf.items) || []).filter((s) => (s.ids || []).includes(String(p.id))).map((s) => ({ at: Date.parse(s.at), ids: [String(p.id)], kind: s.src || "News", cls: "story", text: s.t, url: /^https:\/\//.test(s.u || "") ? s.u : null }));
       const seen = new Set(), all = stories.concat(moves).sort((a, b) => b.at - a.at).filter((n) => { if (seen.has(n.text)) return false; seen.add(n.text); return true; });
-      const od = ownFile !== undefined ? ownFile : await fetch("data/own-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+      const od = !hasWire() ? null : ownFile !== undefined ? ownFile : await fetch("data/own-mlb.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
       const ow = ownOf(od, String(p.id), 7), owTxt = ow ? `<span class="pc-own" title="Yahoo % rostered, the last 30 days">${spark(ow.row, ow.chg > 0 ? "up" : ow.chg < 0 ? "dn" : "")}<b>${ow.cur}%</b> rostered on Yahoo${ow.chg ? ` <em class="${ow.chg > 0 ? "up" : "dn"}">${ow.chg > 0 ? "+" : ""}${ow.chg} this week</em>` : ""}</span>` : "";
-      el.innerHTML = `<div class="mod-h" style="padding:0;flex-wrap:wrap"><h3 style="margin:0;font-size:14px">News</h3><span class="grow"></span>${owTxt || `<span class="ps">MLB.com and MLB transactions</span>`}</div>${all.length ? `<ul class="nw-l">${all.slice(0, 8).map((n) => newsLi(n, { noWho: true })).join("")}</ul>${all.length > 8 ? `<button type="button" class="btn sm ghost nw-more">All ${all.length}</button>` : ""}` : `<p class="ps" style="margin:6px 0 0">No news on him in the last year.</p>`}`;
+      el.innerHTML = `<div class="mod-h" style="padding:0;flex-wrap:wrap"><h3 style="margin:0;font-size:14px">News</h3><span class="grow"></span>${owTxt || `<span class="ps">${hasWire() ? "MLB.com and MLB transactions" : "ESPN"}</span>`}</div>${all.length ? `<ul class="nw-l">${all.slice(0, 8).map((n) => newsLi(n, { noWho: true })).join("")}</ul>${all.length > 8 ? `<button type="button" class="btn sm ghost nw-more">All ${all.length}</button>` : ""}` : `<p class="ps" style="margin:6px 0 0">No news on him in the last year.</p>`}`;
       const more = el.querySelector(".nw-more");
       if (more) more.addEventListener("click", () => { el.querySelector(".nw-l").innerHTML = all.map((n) => newsLi(n, { noWho: true })).join(""); more.remove(); });
     }
@@ -2806,14 +2811,14 @@
       const keep = (n) => show === "all" ? true : show === "owned" ? n.ids.some((id) => ctx.own[id] != null) : show === "fa" ? n.ids.some((id) => ctx.own[id] == null) : show === "mine" ? n.ids.some((id) => ctx.own[id] === mid) : n.ids.some((id) => String(ctx.own[id]) === show);
       const kinds = ui.newsKind || "", list = (items || []).filter(keep).filter((n) => !kinds || (kinds === "story" ? n.cls === "story" : n.cls !== "story"));
       const sel = `<label class="sr" for="fk-nshow">Whose news</label><select id="fk-nshow" class="txsel">${(mid != null ? [["mine", "My team"]] : []).concat([["owned", "Every rostered player"], ["fa", "Free agents"], ["all", "Everyone"]]).map(([k, n]) => `<option value="${k}"${show === k ? " selected" : ""}>${n}</option>`).join("")}<optgroup label="A team">${L().teams.filter((t) => t.id !== mid).map((t) => `<option value="${t.id}"${show === String(t.id) ? " selected" : ""}>${esc(t.name)}</option>`).join("")}</optgroup></select>`;
-      const seg = `<div class="seg" role="group" aria-label="Kind">${[["", "All"], ["story", "Stories"], ["wire", "Moves"]].map(([k, n]) => `<button type="button" data-nkind="${k}" aria-pressed="${kinds === k}">${n}</button>`).join("")}</div>`;
-      return `<div class="wrap page"><div class="head"><h1 class="disp">Player news</h1><span class="ps">The last ${NEWS_DAYS} days: MLB.com stories and MLB's transaction wire</span></div>
+      const seg = !hasWire() ? "" : `<div class="seg" role="group" aria-label="Kind">${[["", "All"], ["story", "Stories"], ["wire", "Moves"]].map(([k, n]) => `<button type="button" data-nkind="${k}" aria-pressed="${kinds === k}">${n}</button>`).join("")}</div>`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Player news</h1><span class="ps">The last ${NEWS_DAYS} days: ${hasWire() ? "MLB.com stories and MLB's transaction wire" : "ESPN stories"}</span></div>
         <div class="tools">${sel}${seg}</div>
         <div class="card">${items === undefined ? `<div class="bd"><p class="ps" style="margin:0">Loading the news…</p></div>` : list.length ? `<ul class="nw-l nw-page">${list.slice(0, ui.newsMore ? 400 : 60).map((n) => newsLi(n)).join("")}</ul>${list.length > 60 && !ui.newsMore ? `<div class="bd"><button type="button" class="btn sm ghost" data-nmore>Show all ${list.length}</button></div>` : ""}` : `<div class="bd"><p class="ps" style="margin:0">${show === "mine" ? "Nothing on your players lately." : "Nothing here lately."}</p></div>`}</div></div>`;
     }
     // the home page's card: the latest on rostered players, yours first
     function newsCard() {
-      if (sport.key !== "mlb") return "";
+      if (!hasNews()) return "";
       const items = newsItems(), mid = me();
       if (items === undefined) return `<div class="card"><div class="mod-h"><h2>Player news</h2><a href="#players/news">All news</a></div><div class="bd"><p class="ps" style="margin:0">Loading…</p></div></div>`;
       const owned = items.filter((n) => n.ids.some((id) => ctx.own[id] != null));
@@ -2931,11 +2936,12 @@
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
       // a category league leads with his season in the league's own categories; a season brought in from another
       // site has no weekly lines here, so there's no week-by-week table for it
-      const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id));
+      const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id)), newsOn = hasNews() && !mlbOn;
       const wkp = weekPanel(p, W || {});
       if (!wkp && pts() && W && W.cur && W.cur.pj != null && !over()) stats.splice(2, 0, [`${weekLabel(curWeek())}`, fmtS(W.cur.pj)]);
-      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: wkp, extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (mlbOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div><div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
+      const Dl = U.dialog(U.playerCard(sport, p, { scoring: L().scoring, actions, status, stats, logo: true, noZ: !pts(), week: wkp, extra: (pts() ? weekBars(p, W) : seasonCats(p) + (L().imported ? "" : catWeeks(p))) + (newsOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div>` : "") + (mlbOn ? `<div class="pc-news" aria-live="polite"><p class="ps" style="margin:0">Loading news…</p></div><div class="pc-mlb" aria-live="polite"><p class="ps" style="margin:0">Loading splits and game log…</p></div>` : ""), after: leagueLog(p), fold: true, lines: pts() ? undefined : false }), null, { wide: true, sheet: true });
       if (mlbOn) { playerNews(p, Dl.querySelector(".pc-news")); mlbSplits(p, Dl.querySelector(".pc-mlb")); }
+      else if (newsOn) playerNews(p, Dl.querySelector(".pc-news"));
       $$("[data-card]", Dl).forEach((b) => b.addEventListener("click", () => {
         const a = b.dataset.card; Dl.close();
         if (a === "watch") { const w = watch(); const i = w.indexOf(pid); if (i >= 0) w.splice(i, 1); else w.push(pid); save(); render(); }
