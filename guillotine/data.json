@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T04:07:15Z",
+ "updated": "2026-11-27T04:11:57Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -586,7 +586,7 @@
    "manager": "Daid B",
    "faab": 60,
    "proj": 146.32,
-   "points": 46.26,
+   "points": 46.7,
    "scores": [
     135.46,
     161.16,
@@ -924,7 +924,7 @@
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
-     "yahoo_actual": 7.16,
+     "yahoo_actual": 7.6,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -3712,7 +3712,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T04:07:17Z",
+  "updated": "2026-11-27T04:11:59Z",
   "players": 3046,
   "unmatched": []
  }
