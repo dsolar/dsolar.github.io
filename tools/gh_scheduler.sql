@@ -53,6 +53,7 @@ select cron.schedule('gh-fantasykit-data-3', '7 17,19,21,23 * * 0', $$select pub
 select cron.schedule('gh-fantasykit-data-4', '7 1,3,5,23 * * 1', $$select public.gh_dispatch('fantasykit-data.yml')$$);
 select cron.schedule('gh-fantasykit-data-5', '7 1,3,5 * * 2,5', $$select public.gh_dispatch('fantasykit-data.yml')$$);
 select cron.schedule('gh-fantasykit-data-6', '37 21,23 * * 6', $$select public.gh_dispatch('fantasykit-data.yml')$$);
+select cron.schedule('gh-fantasykit-data-7', '37 16 * * 0', $$select public.gh_dispatch('fantasykit-data.yml')$$);
 select cron.schedule('gh-guillotine-update-1', '17 14 * 9-12,1 *', $$select public.gh_dispatch('guillotine-update.yml')$$);
 select cron.schedule('gh-guillotine-update-2', '47 9,11 * 9-12,1 *', $$select public.gh_dispatch('guillotine-update.yml')$$);
 select cron.schedule('gh-guillotine-update-3', '7,22,37,52 14-23 * 9-12,1 0', $$select public.gh_dispatch('guillotine-update.yml')$$);

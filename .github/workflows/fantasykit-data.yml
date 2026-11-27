@@ -10,6 +10,8 @@ on:
     - cron: "17 22 * * *"
     # football game nights (UTC): Sunday afternoon through Monday night, and Thursday night, every two hours
     - cron: "7 17,19,21,23 * * 0"
+    # Sunday inactives (11:30 ET for the 1:00 games): a pull right after, for the late-scratch alerts
+    - cron: "37 16 * * 0"
     - cron: "7 1,3,5,23 * * 1"
     - cron: "7 1,3,5 * * 2,5"
     # college football Saturdays (UTC): the afternoon and night games

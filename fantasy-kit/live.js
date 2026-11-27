@@ -429,7 +429,7 @@
         `<a href="/fantasy/leagues/">My leagues<small>Start or join a league</small></a><a href="/fantasy/">Draft Lab<small>Mock drafts and rankings</small></a>`),
       right: () => `${info.invite && openSeats() ? `<button class="btn sm" data-live="invite">Invite</button>` : ""}<button class="btn sm ghost" data-live="league">League</button>`,
       get commishTools() { return info.commish ? commishTools : null; },
-      notice: () => guestNote() + duesNote() + startNote() + keeperNote(),
+      notice: () => guestNote() + duesNote() + alertNote() + startNote() + keeperNote(),
       get dues() { return info.dues !== undefined && (duesOn() || info.commish) ? duesBody : null; },
       // the commissioner's manager emails (fk_contacts), loaded the first time the Managers page asks
       contacts: () => (info.commish && C.user() ? contactsApi() : null),
@@ -523,6 +523,21 @@
     if (!/^#?(league(\/overview)?|team(\/roster)?)?$/.test(location.hash)) return "";
     const d = new Date(L.start).toLocaleString("en-US", { weekday: "long", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" });
     return `<div class="wrap" style="padding-top:12px"><div class="banner"><b>${esc(FK.experience.weekLabel(sport, 1, L.start, L.settings.slate))} starts ${esc(d)}.</b> <span class="muted">Until then, set your lineup, work the waiver wire and make trades.</span></div></div>`;
+  }
+  /* ---------- alerts: a one-line nudge on the overview for a manager whose device doesn't get them yet ----------
+     "off": one tap turns them on. "install": an iPhone needs Draft Lab on the home screen first. "Not now" hides it
+     for 30 days on this device. */
+  let pushSt = null;
+  const NUDGE = "fk-alert-nudge";
+  const nudgeHidden = () => { try { return Date.now() - (+localStorage.getItem(NUDGE) || 0) < 30 * 864e5; } catch (e) { return true; } };
+  function alertNote() {
+    if (info.me == null || !C.user() || !C.push || !L || nudgeHidden() || !app || !/^#?(league(\/overview)?)?$/.test(location.hash)) return "";
+    if (pushSt == null) { pushSt = "?"; C.push.state().then((s) => { pushSt = s; if ((s === "off" || s === "install") && app && !U.dialogOpen()) app.render(); }).catch(() => {}); return ""; }
+    if (pushSt !== "off" && pushSt !== "install") return "";
+    const what = "when a starter is ruled out, a trade offer comes in, your waiver claims run and each week ends";
+    const body = pushSt === "off" ? `<b>Get alerts on this device</b> <span class="muted">${esc(what)}.</span> <button class="btn sm go" data-live="alerts-on">Turn on alerts</button>`
+      : `<b>Get alerts on this iPhone</b> <span class="muted">${esc(what)}. Tap Share, then Add to Home Screen, then open Draft Lab from your home screen and turn alerts on.</span>`;
+    return `<div class="wrap" style="padding-top:12px"><div class="banner">${body} <button class="btn sm ghost" data-live="alerts-later">Not now</button></div></div>`;
   }
   function guestNote() {
     if (info.me != null || info.commish) return "";
@@ -845,7 +860,7 @@
       ${info.commish && D && !L && D.phase !== "done" && D.trading ? `<div class="field" style="margin-top:10px"><label for="lv-oh">A trade offer stops the clock</label><select id="lv-oh">${opt("clock", "When it's to the team on the clock", D.offerHold || "clock")}${opt("all", "For any manager, up to 90 seconds", D.offerHold || "clock")}${opt("off", "Never: the draft keeps going", D.offerHold || "clock")}</select></div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null && C.user() ? `<div id="lv-push" style="margin-top:12px"></div>` : ""}
-      ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
+      ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results, starters ruled out${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
       <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="/fantasy/leagues/">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
     dialogClicks(dlg);
@@ -1496,6 +1511,11 @@
     }
     if (lv && lv.dataset.live === "invite") { e.preventDefault(); inviteDialog(); }
     if (lv && lv.dataset.live === "dues") { e.preventDefault(); duesDialog(); }
+    if (lv && lv.dataset.live === "alerts-later") { try { localStorage.setItem(NUDGE, String(Date.now())); } catch (er) { /* private mode */ } if (app) app.render(); }
+    if (lv && lv.dataset.live === "alerts-on") {
+      lv.disabled = true;
+      C.push.on().then(() => { pushSt = "on"; U.toast("Alerts are on for this device."); }).catch((er) => { U.toast(er.message, true); return C.push.state().then((s2) => { pushSt = s2; }); }).finally(() => { if (app) app.render(); });
+    }
     if (lv && lv.dataset.live === "keepers") keeperDialog();
     if (lv && lv.dataset.live === "open-keepers" && info.commish) keeperOpenDialog();
     if (lv && lv.dataset.live === "keeper-copy" && info.commish) copyKeepers();

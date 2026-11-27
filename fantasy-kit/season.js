@@ -291,6 +291,7 @@
     G.freezeLineups(L, ctx, now);
     G.tick(L, ctx, now);
     lineupCheck(L, ctx, now);
+    lateCheck(L, ctx, now);
     return JSON.stringify(L) !== before;
   }
 
@@ -310,10 +311,39 @@
       if (w > L.settings.weeks && !G.isGuillotine(L)) { let gs = []; try { gs = G.playoffGames(L, ctx, w) || []; } catch (e) { gs = []; } if (!gs.some((g) => g && (g[0] === t.id || g[1] === t.id))) continue; }
       let ids; try { ids = G.lineupFor(L, ctx, t.id, w); } catch (e) { continue; }
       const empty = slots.filter((s, i) => !ids[i]);
-      const hurt = ids.map((id) => id && ctx.byId[id]).filter((p) => p && OUT.test(String(p.inj || "").trim())).map((p) => ({ n: p.n, pos: (p.pos || [])[0] || "", inj: p.inj }));
+      const hurt = ids.map((id) => id && ctx.byId[id]).filter((p) => p && OUT.test(String(p.inj || "").trim())).map((p) => ({ id: p.id, n: p.n, pos: (p.pos || [])[0] || "", inj: p.inj }));
       if (empty.length || hurt.length) out[t.id] = { empty, hurt };
     }
     (L.reminders = L.reminders || {})[w] = { at: now, teams: out };
+  }
+  // After the weekly check, a starter ruled out later (Sunday's inactives, a scratch before tip-off) gets his own
+  // alert, once a week per player, while his game hasn't started and there's still time to swap him. Daily leagues
+  // look at today's lineup and today's game. Only real-game leagues: the feed's kickoffs (L.kick) say who's still open.
+  // L.reminders[w].late = { team: [{ id, n, pos, inj, at, kick }] }
+  function lateCheck(L, ctx, now) {
+    const w = L.week, r = L.reminders && L.reminders[w];
+    if (!r || L.settings.bestBall || !L.settings.real || !L.kick || L.kick.week !== w || w > G.totalWeeks(L)) return;
+    const day = G.daily(L) ? G.dayNow(L, w) : null;
+    const nextGame = (p) => {
+      if (day == null) { const at = L.kick.teams[p.t]; return at != null && at > now ? at : null; }
+      const at = ((L.kick.all || {})[p.t] || []).filter((x) => x > now && G.dayIdx(L, w, x) === day).sort((a, b) => a - b)[0];
+      return at != null ? at : null;
+    };
+    for (const t of L.teams) {
+      if (!G.isAlive(L, t.id)) continue;
+      if (w > L.settings.weeks && !G.isGuillotine(L)) { let gs = []; try { gs = G.playoffGames(L, ctx, w) || []; } catch (e) { gs = []; } if (!gs.some((g) => g && (g[0] === t.id || g[1] === t.id))) continue; }
+      let ids; try { ids = day == null ? G.lineupFor(L, ctx, t.id, w) : G.lineupFor(L, ctx, t.id, w, day); } catch (e) { continue; }
+      const told = ((r.teams || {})[t.id] || { hurt: [] }).hurt, late = ((r.late = r.late || {})[t.id] || []);
+      for (const id of ids) {
+        const p = id && ctx.byId[id];
+        if (!p || !OUT.test(String(p.inj || "").trim()) || late.some((x) => x.id === id) || told.some((x) => (x.id != null ? x.id === id : x.n === p.n))) continue;
+        const kick = nextGame(p);
+        if (kick == null) continue;
+        late.push({ id, n: p.n, pos: (p.pos || [])[0] || "", inj: p.inj, at: now, kick });
+      }
+      if (late.length) r.late[t.id] = late;
+    }
+    if (r.late && !Object.keys(r.late).length) delete r.late;
   }
 
   // sealed: the entries for a salary cap game or a sealed draft ({ team: entry }), once they're due
@@ -474,6 +504,18 @@
           for (const h of x.hurt) bits.push(`${h.n} (${h.pos}) is listed as ${String(h.inj).toLowerCase() === "o" ? "out" : String(h.inj).toLowerCase()}`);
           const list = bits.length > 1 ? `${bits.slice(0, -1).join(", ")} and ${bits.at(-1)}` : bits[0];
           add(+t, "lineup", `set your lineup for week ${w}`, `Your week ${w} lineup has ${list}. Swap in someone who's playing before the games start.`);
+        }
+      }
+      // a starter ruled out after the weekly check: one alert per team with everyone new since the last one
+      for (const [w, r] of Object.entries(cl.reminders || {})) {
+        const before = ((bl.reminders || {})[w] || {}).late || {};
+        for (const [t, xs] of Object.entries(r.late || {})) {
+          const fresh = xs.filter((x) => !(before[t] || []).some((y) => y.id === x.id));
+          if (!fresh.length) continue;
+          const one = fresh.length === 1, st = (x) => (/^(o|out)$/i.test(String(x.inj)) ? "out" : String(x.inj).toLowerCase());
+          const lines = fresh.map((x) => `${x.n} (${x.pos}) is listed as ${st(x)}. His game starts ${when(x.kick)}.`).join("\n");
+          add(+t, "lineup", one ? `${fresh[0].n} is ${st(fresh[0])}` : `${fresh.length} of your starters are out`,
+            `${one ? `${fresh[0].n} is in your week ${w} lineup.` : `These players are in your week ${w} lineup:`}\n${lines}\n\nSwap in someone who's playing before ${one ? "his game starts" : "their games start"}.`, null, "team/roster");
         }
       }
       const was = Object.fromEntries((bl.claims || []).map((x) => [x.id, x.status]));

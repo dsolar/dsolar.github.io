@@ -217,3 +217,30 @@ test('lineup reminder: once a week, before kickoff, for a hole in the lineup', (
   Z.catchUp(L, ctx, start + 60 * 3600e3);
   assert.equal(Z.events(again, { draft: D, league: L }, { name: 'T', url: 'u', seats: { 1: 'B' }, me: null, byId: ctx.byId, now: start + 60 * 3600e3 }).filter((x) => x.kind === 'lineup').length, 0, 'only once a week');
 });
+
+test('late scratch: a starter ruled out after the weekly check gets one alert, while his game is still ahead', () => {
+  const { L, ctx, D } = league({ deadline: 0 });
+  const w = L.week, start = G.weekStart(L, w);
+  const full = G.lineupFor(L, ctx, 1, w), ids = full.filter(Boolean);
+  ctx.byId[ids[0]].inj = 'Out';
+  G.setLineup(L, ctx, 1, w, full, start - 1);
+  Z.catchUp(L, ctx, start + 57 * 3600e3);
+  assert.ok(L.reminders[w].teams[1], 'the weekly check caught the first one');
+  // Sunday: two more starters ruled out, one whose game already started
+  const later = ctx.byId[ids[1]], gone = ctx.byId[ids.find((id) => ctx.byId[id].t !== later.t && id !== ids[0])];
+  later.inj = 'Out'; gone.inj = 'Out';
+  L.settings.real = true;
+  L.kick = { week: w, teams: { [later.t]: start + 120 * 3600e3, [gone.t]: start + 90 * 3600e3 } };
+  const base = JSON.parse(JSON.stringify({ draft: D, league: L }));
+  Z.catchUp(L, ctx, start + 100 * 3600e3);
+  const late = L.reminders[w].late[1].map((x) => x.id);
+  assert.deepEqual(late, [later.id], 'only the one still to play, and not the one the weekly check named');
+  const ev = Z.events(base, { draft: D, league: L }, { name: 'T', url: 'u', seats: { 1: 'B' }, me: null, byId: ctx.byId, now: start + 100 * 3600e3 });
+  const e = ev.filter((x) => x.kind === 'lineup' && x.team === 1);
+  assert.equal(e.length, 1);
+  assert.equal(e[0].subject, `T: ${later.n} is out`);
+  assert.match(e[0].body, /#team\/roster$/);
+  const again = JSON.parse(JSON.stringify({ draft: D, league: L }));
+  Z.catchUp(L, ctx, start + 101 * 3600e3);
+  assert.equal(Z.events(again, { draft: D, league: L }, { name: 'T', url: 'u', seats: { 1: 'B' }, me: null, byId: ctx.byId, now: start + 101 * 3600e3 }).filter((x) => x.kind === 'lineup').length, 0, 'once per player');
+});

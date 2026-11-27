@@ -1135,7 +1135,7 @@
   function pushBox(el, compact) {
     const C = FK.cloud;
     if (!el || !C || !C.push) return;
-    const what = "Your turn in a slow draft, trade offers and answers, waiver results and each week's result";
+    const what = "Your turn in a slow draft, a starter ruled out, trade offers and answers, waiver results and each week's result";
     const paint = async () => {
       const st = await C.push.state();
       const line = { on: "Alerts are on for this device.", off: `Get a notification on this device: ${what.toLowerCase()}.`, blocked: "Notifications are blocked for this site. Allow them in your browser's settings to turn alerts on.",
