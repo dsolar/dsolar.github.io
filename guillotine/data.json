@@ -4,14 +4,14 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T04:22:21Z",
+ "updated": "2026-11-27T04:37:17Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 146.91,
+   "proj": 146.88,
    "points": 69.8,
    "scores": [
     132.74,
@@ -177,7 +177,7 @@
        "rec_td": 2
       }
      },
-     "proj": 12.82,
+     "proj": 12.77,
      "rank": "WR15",
      "date": "2026-11-29",
      "next_proj": 12.2,
@@ -335,7 +335,7 @@
        "rush_td": 4
       }
      },
-     "proj": 12.09,
+     "proj": 12.1,
      "rank": "RB21",
      "date": "2026-11-29",
      "next_proj": 11.56
@@ -373,7 +373,7 @@
        "rush_td": 3
       }
      },
-     "proj": 23.51,
+     "proj": 23.49,
      "rank": "QB1",
      "date": "2026-11-29",
      "next_proj": 20.81,
@@ -575,7 +575,7 @@
     }
    ],
    "points_final": 69.8,
-   "best": 149.4,
+   "best": 149.3,
    "best_next": 141.4,
    "locked": 69.8,
    "locked_proj": 54.68,
@@ -585,8 +585,8 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 60,
-   "proj": 146.32,
-   "points": 46.7,
+   "proj": 146.3,
+   "points": 47.2,
    "scores": [
     135.46,
     161.16,
@@ -609,6 +609,7 @@
      "yahoo_actual": 5.54,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
+     "yfinal": true,
      "season": {
       "g": 10,
       "wk": [
@@ -640,6 +641,8 @@
      "proj": 20.18,
      "rank": "QB8",
      "date": "2026-11-26",
+     "actual": 5.54,
+     "final": true,
      "next_proj": 23.11,
      "in_best": true
     },
@@ -690,9 +693,10 @@
      "name": "Emmett Johnson",
      "nfl": "KC",
      "pos": "RB",
-     "yahoo_actual": 17.1,
+     "yahoo_actual": 17.6,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
+     "yfinal": true,
      "season": {
       "g": 10,
       "wk": [
@@ -721,6 +725,8 @@
      "proj": 17.49,
      "rank": "RB5",
      "date": "2026-11-26",
+     "actual": 17.6,
+     "final": true,
      "next_proj": 5.61,
      "in_best": true
     },
@@ -836,7 +842,7 @@
        "rec_td": 7
       }
      },
-     "proj": 16.27,
+     "proj": 16.22,
      "rank": "WR4",
      "date": "2026-11-29",
      "next_proj": 15.42,
@@ -927,6 +933,7 @@
      "yahoo_actual": 7.16,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
+     "yfinal": true,
      "season": {
       "g": 10,
       "wk": [
@@ -955,6 +962,8 @@
      "proj": 16.72,
      "rank": "QB13",
      "date": "2026-11-26",
+     "actual": 7.16,
+     "final": true,
      "next_proj": 18.12,
      "in_best": true
     },
@@ -1030,7 +1039,7 @@
        "rec_td": 2
       }
      },
-     "proj": 12.4,
+     "proj": 12.43,
      "rank": "RB18",
      "date": "2026-11-29",
      "next_proj": 10.84
@@ -1065,7 +1074,7 @@
        "rec_td": 7
       }
      },
-     "proj": 14.0,
+     "proj": 13.97,
      "rank": "WR9",
      "date": "2026-11-29",
      "next_proj": 13.35
@@ -1120,6 +1129,7 @@
      "yahoo_actual": 0.0,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
+     "yfinal": true,
      "season": {
       "g": 8,
       "wk": [
@@ -1146,6 +1156,8 @@
       }
      },
      "proj": 0.0,
+     "actual": 0.0,
+     "final": true,
      "next_proj": 17.71
     },
     {
@@ -1186,12 +1198,12 @@
      "next_proj": 0.0
     }
    ],
-   "points_final": 16.9,
-   "best": 146.1,
+   "points_final": 47.2,
+   "best": 146.0,
    "best_next": 138.1,
-   "locked": 16.9,
-   "locked_proj": 16.97,
-   "games_final": 1
+   "locked": 47.2,
+   "locked_proj": 71.36,
+   "games_final": 4
   },
   {
    "name": "Drake Mayezini",
@@ -1303,6 +1315,7 @@
      "yahoo_actual": 19.0,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
+     "yfinal": true,
      "season": {
       "g": 10,
       "wk": [
@@ -1331,6 +1344,8 @@
      "proj": 16.76,
      "rank": "RB6",
      "date": "2026-11-26",
+     "actual": 19.0,
+     "final": true,
      "next_proj": 17.86,
      "in_best": true
     },
@@ -1602,8 +1617,8 @@
        "rec_td": 2
       }
      },
-     "proj": 14.09,
-     "rank": "RB13",
+     "proj": 14.21,
+     "rank": "RB12",
      "date": "2026-11-30",
      "next_proj": 14.03
     },
@@ -1760,19 +1775,19 @@
        "rec_td": 1
       }
      },
-     "proj": 10.97,
+     "proj": 10.98,
      "rank": "RB25",
      "date": "2026-11-29",
      "bye_next": true,
      "next_proj": 0.0
     }
    ],
-   "points_final": 40.14,
+   "points_final": 59.14,
    "best": 147.3,
    "best_next": 140.7,
-   "locked": 40.14,
-   "locked_proj": 46.25,
-   "games_final": 3
+   "locked": 59.14,
+   "locked_proj": 63.01,
+   "games_final": 4
   },
   {
    "name": "Tai Streetz Lata?",
@@ -1985,7 +2000,7 @@
        "rec_td": 1
       }
      },
-     "proj": 19.18,
+     "proj": 19.26,
      "rank": "RB2",
      "date": "2026-11-30",
      "next_proj": 17.9,
@@ -2227,7 +2242,7 @@
        "rec_td": 4
       }
      },
-     "proj": 11.72,
+     "proj": 11.56,
      "rank": "WR20",
      "date": "2026-11-30",
      "next_proj": 10.8
@@ -2350,9 +2365,9 @@
     }
    ],
    "points_final": 57.1,
-   "best": 154.9,
+   "best": 155.0,
    "best_next": 142.3,
-   "fill": 114.73,
+   "fill": 114.81,
    "locked": 57.1,
    "locked_proj": 39.29,
    "games_final": 2
@@ -3576,7 +3591,7 @@
     "name": "Ja'Marr Chase",
     "pos": "WR",
     "nfl": "CIN",
-    "proj": 16.27,
+    "proj": 16.22,
     "rank": "WR4",
     "next_proj": 15.42,
     "avg": 16.7,
@@ -3629,7 +3644,7 @@
     "name": "Tetairoa McMillan",
     "pos": "WR",
     "nfl": "CAR",
-    "proj": 11.72,
+    "proj": 11.56,
     "rank": "WR20",
     "next_proj": 10.8,
     "avg": 12.3,
@@ -3668,7 +3683,7 @@
     "pos": "WR",
     "nfl": "PIT",
     "proj": 6.39,
-    "rank": "WR50",
+    "rank": "WR49",
     "next_proj": 7.62,
     "avg": 7.7,
     "g": 10,
@@ -3712,7 +3727,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T04:22:22Z",
+  "updated": "2026-11-27T04:37:19Z",
   "players": 3046,
   "unmatched": []
  }

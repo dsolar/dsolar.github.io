@@ -8325,7 +8325,7 @@
       "pos": "WR",
       "nfl": "NO",
       "slot": "WR",
-      "proj": 12.82,
+      "proj": 12.77,
       "pts": null
      },
      {
@@ -8357,7 +8357,7 @@
       "pos": "RB",
       "nfl": "CLE",
       "slot": "W/R/T",
-      "proj": 12.09,
+      "proj": 12.1,
       "pts": null
      },
      {
@@ -8365,7 +8365,7 @@
       "pos": "QB",
       "nfl": "CIN",
       "slot": "Q/W/R/T",
-      "proj": 23.51,
+      "proj": 23.49,
       "pts": null
      },
      {
@@ -8416,7 +8416,7 @@
       "nfl": "BUF",
       "slot": "QB",
       "proj": 20.18,
-      "pts": null
+      "pts": 5.54
      },
      {
       "n": "Derrick Henry",
@@ -8432,7 +8432,7 @@
       "nfl": "KC",
       "slot": "RB",
       "proj": 17.49,
-      "pts": null
+      "pts": 17.6
      },
      {
       "n": "CeeDee Lamb",
@@ -8455,7 +8455,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "WR",
-      "proj": 16.27,
+      "proj": 16.22,
       "pts": null
      },
      {
@@ -8480,7 +8480,7 @@
       "nfl": "KC",
       "slot": "Q/W/R/T",
       "proj": 16.72,
-      "pts": null
+      "pts": 7.16
      },
      {
       "n": "Brock Purdy",
@@ -8495,7 +8495,7 @@
       "pos": "RB",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 12.4,
+      "proj": 12.43,
       "pts": null
      },
      {
@@ -8503,7 +8503,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 14,
+      "proj": 13.97,
       "pts": null
      },
      {
@@ -8520,7 +8520,7 @@
       "nfl": "KC",
       "slot": "BN",
       "proj": 0,
-      "pts": null
+      "pts": 0
      },
      {
       "n": "Jeremiyah Love",
@@ -8554,7 +8554,7 @@
       "nfl": "BUF",
       "slot": "RB",
       "proj": 16.76,
-      "pts": null
+      "pts": 19
      },
      {
       "n": "Nico Collins",
@@ -8609,7 +8609,7 @@
       "pos": "RB",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 14.09,
+      "proj": 14.21,
       "pts": null
      },
      {
@@ -8641,7 +8641,7 @@
       "pos": "RB",
       "nfl": "NYJ",
       "slot": "BN",
-      "proj": 10.97,
+      "proj": 10.98,
       "pts": null
      }
     ],
@@ -8675,7 +8675,7 @@
       "pos": "RB",
       "nfl": "TB",
       "slot": "BN",
-      "proj": 19.18,
+      "proj": 19.26,
       "pts": null
      },
      {
@@ -8723,7 +8723,7 @@
       "pos": "WR",
       "nfl": "CAR",
       "slot": "BN",
-      "proj": 11.72,
+      "proj": 11.56,
       "pts": null
      },
      {
