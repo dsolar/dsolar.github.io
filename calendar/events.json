@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T10:41:59Z",
+ "updated": "2026-11-27T19:39:44Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -21,28 +21,9 @@
    "cat": "sports",
    "venue": "TD Garden",
    "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892795/maple-leafs-bruins",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892795",
    "source": "espn",
    "score": 1
-  },
-  {
-   "id": "sg-18601258",
-   "date": "2026-11-27",
-   "time": "14:00",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-27-2-pm/18601258",
-   "source": "seatgeek",
-   "times": [
-    "14:00",
-    "19:30"
-   ],
-   "aka": [
-    "sg-18601261"
-   ],
-   "score": 0
   },
   {
    "id": "sg-18918422",
@@ -84,6 +65,18 @@
    "aka": [
     "sg-18827281"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18601261",
+   "date": "2026-11-27",
+   "time": "19:30",
+   "title": "Sister's Christmas Catechism",
+   "cat": "comedy",
+   "venue": "Charles Playhouse - Stage II",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-27-7-30-pm/18601261",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -147,6 +140,18 @@
    "score": 0
   },
   {
+   "id": "sg-18618955",
+   "date": "2026-11-27",
+   "time": "22:00",
+   "title": "Lake Tahoe Reggae Festival",
+   "cat": "music",
+   "venue": "Big Night Live",
+   "city": "Boston, MA",
+   "url": "https://seatgeek.com/lake-tahoe-reggae-festival-tickets/boston-massachusetts-big-night-live-2026-11-27-10-pm/music-festival/18618955",
+   "source": "seatgeek",
+   "score": 0
+  },
+  {
    "id": "tm-LvZ18Qn8Lu9EIOyyLMpD0",
    "date": "2026-11-27",
    "time": "22:00",
@@ -156,9 +161,6 @@
    "city": "Boston, MA",
    "url": "https://www.universe.com/events/reggae-fest-boston-at-big-night-live-tickets-5RC691?ref=ticketmaster",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18618955"
-   ],
    "score": 0
   },
   {
@@ -1045,16 +1047,17 @@
    "date": "2026-12-04",
    "time": "20:00",
    "title": "Brett Eldredge: Glow 10 Year Anniversary Tour",
-   "cat": "music",
+   "cat": "comedy",
    "venue": "Boch Center Wang Theatre",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/brett-eldredge-glow-10-year-anniversary-boston-massachusetts-12-04-2026/event/010064F1B45E5D6E",
    "source": "ticketmaster",
    "aka": [
+    "tm-vvG17Z_2kV9Pgm",
     "sg-18399302",
     "2026-12-04-brett-eldredge-wang-theatre"
    ],
-   "score": 0
+   "score": 1
   },
   {
    "id": "sg-18752611",
@@ -1239,6 +1242,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/ga20-sue-foley-together-for-the-boston-massachusetts-12-05-2026/event/01006527205727EC",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "19:30"
+   ],
    "aka": [
     "sg-18571956"
    ],
@@ -1280,6 +1287,10 @@
    "url": "https://www.ticketmaster.com/mihali-presents-mihalidaze-18-boston-massachusetts-12-05-2026/event/01006504D8E3E277",
    "source": "ticketmaster",
    "act": "Mihali",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18484942",
     "2026-12-05-mihali-paradise-rock-club"
@@ -1338,16 +1349,17 @@
    "date": "2026-12-05",
    "time": "20:00",
    "title": "Brett Eldredge: Glow 10 Year Anniversary Tour",
-   "cat": "music",
+   "cat": "comedy",
    "venue": "Boch Center Wang Theatre",
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/brett-eldredge-glow-10-year-anniversary-boston-massachusetts-12-05-2026/event/010064F1B4615D79",
    "source": "ticketmaster",
    "aka": [
+    "tm-vvG17Z_2kVb4gy",
     "sg-18399303",
     "2026-12-05-brett-eldredge-wang-theatre"
    ],
-   "score": 0
+   "score": 1
   },
   {
    "id": "tm-vv16vZk48PaZAuauuF",
@@ -1669,6 +1681,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/gallant-boston-massachusetts-12-09-2026/event/01006503DD4BA128",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18472131"
    ],
@@ -2097,6 +2113,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/juice-boston-massachusetts-12-12-2026/event/010064D9B3803088",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18370121",
     "2026-12-12-juice-paradise-rock-club"
@@ -2235,6 +2255,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/silverstein-story-of-the-year-camp-boston-massachusetts-12-13-2026/event/010064F6E8B91C31",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
    "aka": [
     "sg-18408721",
     "2026-12-13-silverstein-and-story-of-the-yea-citizens-house-of-bl"
@@ -3217,6 +3241,10 @@
     "tm-vvG17Z_29z4Fyq",
     "sg-18408759"
    ],
+   "times": [
+    "19:00",
+    "19:30"
+   ],
    "score": 2,
    "why": "like"
   },
@@ -3324,6 +3352,10 @@
    "url": "https://www.ticketmaster.com/pigeons-playing-ping-pong-nye-2026-boston-massachusetts-12-31-2026/event/010064EFE3B83EE5",
    "source": "ticketmaster",
    "act": "Pigeons Playing Ping Pong",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18408720",
     "2026-12-31-pigeons-playing-ping-pong-citizens-house-of-bl"
@@ -3780,7 +3812,7 @@
    "id": "sg-18825233",
    "date": "2027-01-09",
    "time": "20:00",
-   "title": "EagleMania - The Worlds Greatest Eagles Tribute Band",
+   "title": "The Fat City Band",
    "cat": "music",
    "venue": "The Cabot",
    "city": "Beverly, MA",
@@ -4027,13 +4059,6 @@
    "city": "Beverly, MA",
    "url": "https://www.ticketmaster.com/event/Z7r9jZ1AA7NZ3",
    "source": "ticketmaster",
-   "times": [
-    "19:00",
-    "20:00"
-   ],
-   "aka": [
-    "sg-18825237"
-   ],
    "score": 0
   },
   {
@@ -4242,6 +4267,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/mollie-elizabeth-people-pleaser-live-boston-massachusetts-01-22-2027/event/0100654CE498F79D",
    "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "19:00"
+   ],
    "aka": [
     "sg-18700869"
    ],
@@ -4480,6 +4509,9 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/richard-thompson-band-boston-massachusetts-01-24-2027/event/01006546CEFDB67D",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18683861"
+   ],
    "score": 0
   },
   {
@@ -4814,6 +4846,9 @@
    "city": "Somerville, MA",
    "url": "https://www.eventbrite.com/e/nurse-georgie-carroll-tickets-2003174281199?aff=oddtdtcreator",
    "source": "ticketmaster",
+   "aka": [
+    "sg-18989575"
+   ],
    "score": 0
   },
   {
@@ -5117,6 +5152,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/bob-marleys-bday-reggae-winter-splash-boston-massachusetts-02-06-2027/event/010065389E7E19D7",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18645462"
    ],
@@ -5299,6 +5338,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/the-lemonheads-the-love-chant-tour-boston-massachusetts-02-10-2027/event/0100652A99F0DC61",
    "source": "ticketmaster",
+   "times": [
+    "19:30",
+    "20:30"
+   ],
    "aka": [
     "sg-18593831"
    ],
@@ -5563,6 +5606,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/james-marriott-world-tour-boston-massachusetts-02-13-2027/event/01006531CB1DC64D",
    "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "19:30"
+   ],
    "aka": [
     "sg-18609661",
     "2027-02-13-james-marriott-paradise-rock-club"
@@ -5641,6 +5688,7 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18639183",
+    "sg-18830722",
     "2027-02-13-chelsea-cutler-roadrunner"
    ],
    "score": 0
@@ -5788,6 +5836,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/currents-our-fates-lie-in-tandem-boston-massachusetts-02-19-2027/event/0100655CC1567178",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
    "aka": [
     "sg-18740838"
    ],
@@ -5983,6 +6035,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/galdive-rumgold-a-friend-tour-boston-massachusetts-02-23-2027/event/01006562D197D3B4",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18740876"
    ],
@@ -6245,6 +6301,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/romare-18-boston-massachusetts-02-27-2027/event/01006531DAC11475",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18609698"
    ],
@@ -6717,6 +6777,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/millington-plus-suckerpunch-boston-massachusetts-03-06-2027/event/01006563BD69A0A8",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18754430"
    ],
@@ -6810,6 +6874,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/the-castellows-on-the-highway-tour-boston-massachusetts-03-06-2027/event/0100655DD2619527",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18738761"
    ],
@@ -7497,6 +7565,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/amira-elfeky-it-was-only-a-boston-massachusetts-03-14-2027/event/0100656BB9ACC878",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18781082"
    ],
@@ -7544,8 +7616,7 @@
     "20:00"
    ],
    "aka": [
-    "sg-18709470",
-    "sg-18728587"
+    "sg-18709470"
    ],
    "score": 0
   },
@@ -7604,6 +7675,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/jack-kays-jack-kays-and-his-boston-massachusetts-03-17-2027/event/01006538D9065629",
    "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "19:30"
+   ],
    "aka": [
     "sg-18629491"
    ],
@@ -7635,6 +7710,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/himra-boston-massachusetts-03-17-2027/event/01006572DF6440FB",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18844499"
    ],
@@ -8120,6 +8199,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/dj-shadow-celebrates-30-years-of-boston-massachusetts-03-25-2027/event/0100656DA4769CBE",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18780957"
    ],
@@ -8596,6 +8679,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/chvrches-live-2027-boston-massachusetts-04-03-2027/event/0100656C1765B7CA",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18785402"
    ],
@@ -8626,6 +8713,10 @@
    "city": "Medford, MA",
    "url": "https://www.ticketmaster.com/jimmy-o-yang-has-no-friends-medford-massachusetts-04-03-2027/event/01006548212F4F3B",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "19:30"
+   ],
    "aka": [
     "sg-18807769"
    ],
@@ -8722,6 +8813,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/the-white-buffalo-18-boston-massachusetts-04-04-2027/event/01006566CAAC34D7",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18756317"
    ],
@@ -8907,6 +9002,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/temper-city-self-aware-tour-boston-massachusetts-04-08-2027/event/01006556D02E76E5",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18725868"
    ],
@@ -9198,6 +9297,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/ash-1977-30th-anniversary-tour-north-boston-massachusetts-04-12-2027/event/0100656DD11C15BE",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18785497"
    ],
@@ -9528,6 +9631,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/deca-joins-18-boston-massachusetts-04-18-2027/event/0100654FD1FE48AC",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18708217"
    ],
@@ -9574,6 +9681,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/rio-romeo-personal-slot-machine-tour-boston-massachusetts-04-19-2027/event/0100656AE3CE2888",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18781084"
    ],
@@ -9589,6 +9700,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/an-evening-with-shadowgrass-18-boston-massachusetts-04-20-2027/event/010065639F836BD6",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18756379"
    ],
@@ -9604,6 +9719,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/racing-mount-pleasant-boston-massachusetts-04-20-2027/event/0100656CE1962DF7",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18785403"
    ],
@@ -9707,6 +9826,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/chasing-abbey-18-boston-massachusetts-04-23-2027/event/0100652AF3C0B9E9",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18593769"
    ],
@@ -9771,6 +9894,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/haiden-henderson-the-dumblond-tour-boston-massachusetts-04-24-2027/event/01006530B5A77396",
    "source": "ticketmaster",
+   "times": [
+    "18:00",
+    "19:00"
+   ],
    "aka": [
     "sg-18613146"
    ],
@@ -9786,6 +9913,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/panchiko-boston-massachusetts-04-24-2027/event/0100655BCC6413BB",
    "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "19:30"
+   ],
    "aka": [
     "sg-18738759"
    ],
@@ -9891,6 +10022,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/cursive-happy-hollow-20th-anniversary-18-boston-massachusetts-04-25-2027/event/0100656AA860A15B",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18781081"
    ],
@@ -9952,6 +10087,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/the-chats-us-tour-2027-boston-massachusetts-04-27-2027/event/0100655EBDA730CD",
    "source": "ticketmaster",
+   "times": [
+    "18:30",
+    "19:30"
+   ],
    "aka": [
     "sg-18743759"
    ],
@@ -10590,6 +10729,10 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/76th-street-boston-massachusetts-05-15-2027/event/0100656BAF8FB4B5",
    "source": "ticketmaster",
+   "times": [
+    "19:00",
+    "20:00"
+   ],
    "aka": [
     "sg-18781079"
    ],
@@ -10914,6 +11057,6 @@
   "venues": 0,
   "espn": 65,
   "ticketmaster": 484,
-  "seatgeek": 184
+  "seatgeek": 185
  }
 }
