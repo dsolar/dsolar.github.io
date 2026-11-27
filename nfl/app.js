@@ -353,11 +353,28 @@
   function rec(r) { return r.w + "-" + r.l + (r.t ? "-" + r.t : ""); }
   function pctTxt(x) { return x >= 0.995 ? ">99%" : x > 0 && x < 0.005 ? "<1%" : Math.round(x * 100) + "%"; }
   function bar(x, cls) { return '<span class="obar ' + (cls || "") + '"><i style="width:' + Math.max(0, Math.min(100, x * 100)).toFixed(1) + '%"></i><b>' + pctTxt(x) + "</b></span>"; }
+  // the playoff picture today (S.picture), worked out once per load: seeds, the hunt, and marks that are certain
+  var PIC = null;
+  function pic() { return PIC || (PIC = S.picture(W.games, Object.keys(S.divOf))); }
+  var MARK = { z: "Clinched the top seed and the bye", y: "Clinched the division", x: "Clinched a playoff spot", e: "Eliminated" };
+  function markTag(t) { var k = pic().marks[t]; return k ? ' <abbr class="pmark pm-' + k + '" title="' + MARK[k] + '">' + k + "</abbr>" : ""; }
+  function picturePanel(cf) {
+    var P = pic(), c = P[cf], rows = c.seeds.map(function (t, i) {
+      var o = SIM.teams[t];
+      return '<tr class="go' + (i === 6 ? " cutline" : "") + '" data-team="' + t + '"><td class="num">' + (i + 1) + '</td><td class="tm">' + logo(t) + '<span class="nm">' + esc(team(t).short) + "</span>" + markTag(t) + "</td><td>" + rec(o.rec) + '</td><td class="pspot">' + (i < 4 ? "Division leader" : "Wild card") + "</td><td><b>" + pctTxt(o.playoffs) + "</b></td></tr>";
+    }).concat(c.hunt.map(function (t) {
+      var o = SIM.teams[t];
+      return '<tr class="go hunt" data-team="' + t + '"><td class="num"></td><td class="tm">' + logo(t) + '<span class="nm">' + esc(team(t).short) + "</span>" + markTag(t) + "</td><td>" + rec(o.rec) + '</td><td class="pspot">In the hunt</td><td>' + (o.playoffs < 0.005 ? "&lt;1%" : pctTxt(o.playoffs)) + "</td></tr>";
+    }));
+    var gone = c.out.length ? '<p class="note pgone">Eliminated: ' + c.out.map(function (t) { return esc(team(t).short) + " (" + rec(SIM.teams[t].rec) + ")"; }).join(", ") + "</p>" : "";
+    var panel = tablePanel(cf + " playoff picture", '<th>Seed</th><th>Team</th><th>Record</th><th class="pspot">Spot</th><th>Playoffs</th>', rows.join(""), "if the season ended today");
+    return panel.slice(0, -"</div>".length) + gone + "</div>";
+  }
   function divCard(d) {
     var ts = S.DIV[d].slice().sort(function (a, b) { return SIM.teams[b].wins - SIM.teams[a].wins; });
     return '<div class="dcard"><h4>' + esc(d) + '</h4><div class="drows"><div class="dhd"><span>Team</span><span>Now</span><span>Proj.</span><span>Division</span><span>Playoffs</span><span>Title</span></div>' + ts.map(function (t) {
       var o = SIM.teams[t], w = o.wins;
-      return '<a class="drow3" href="' + href("team/" + t) + '" style="--tc:' + team(t).color + '">' + '<span class="tn">' + logo(t, 26) + "<b>" + esc(team(t).short) + "</b></span><span>" + rec(o.rec) + "</span><span>" + w.toFixed(1) + "-" + (17 - w).toFixed(1) + "</span>" +
+      return '<a class="drow3" href="' + href("team/" + t) + '" style="--tc:' + team(t).color + '">' + '<span class="tn">' + logo(t, 26) + "<b>" + esc(team(t).short) + "</b>" + markTag(t) + "</span><span>" + rec(o.rec) + "</span><span>" + w.toFixed(1) + "-" + (17 - w).toFixed(1) + "</span>" +
         "<span>" + bar(o.div, "dv") + "</span><span>" + bar(o.playoffs, "po") + '</span><span class="sbp">' + pctTxt(o.sb) + "</span></a>";
     }).join("") + "</div></div>";
   }
@@ -366,7 +383,11 @@
     ["AFC", "NFC"].forEach(function (cf) {
       html += '<h3 class="subsec">' + cf + '</h3><div class="divgrid">' + Object.keys(S.DIV).filter(function (d) { return d.indexOf(cf) === 0; }).map(divCard).join("") + "</div>";
     });
-    // the playoff picture: most likely seeds right now
+    // the playoff picture: the seeds if the season ended today, then the race in odds
+    var anyMark = Object.keys(pic().marks).length;
+    html += '<h3 class="subsec">Playoff picture</h3><div class="two">' + ["AFC", "NFC"].map(picturePanel).join("") + "</div>" +
+      '<p class="note">Today\'s order breaks ties on division record, then conference record, then point differential: a simplified version of the NFL\'s tiebreakers. ' +
+      (anyMark ? "Marks are certain from the records alone: z clinched the top seed, y clinched the division, x clinched a playoff spot, e eliminated." : "Clinched and eliminated marks (z, y, x, e) appear here once a team's spot is certain from the records alone.") + "</p>";
     html += '<div class="two">' + ["AFC", "NFC"].map(function (cf) {
       var ts = Object.keys(SIM.teams).filter(function (t) { return S.confOf[t] === cf; }).sort(function (a, b) { return SIM.teams[b].playoffs - SIM.teams[a].playoffs || SIM.teams[b].wins - SIM.teams[a].wins; });
       return tablePanel(cf + " playoff race", "<th>Team</th><th>Proj. wins</th><th>Bye</th><th>Playoffs</th><th>Conference</th><th>Super Bowl</th>", ts.map(function (t, i) {

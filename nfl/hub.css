@@ -329,3 +329,12 @@ table.t.tfeed{width:100%} table.t.tfeed td,table.t.tfeed th{white-space:normal}
 /* seven sections fit a phone's width, as in the NBA Hub */
 @media (max-width:520px){ .tabs a{padding:9px 5px 8px;font-size:12.5px} }
 @media (max-width:370px){ .tabs a{padding:9px 4px 8px;font-size:11.5px} }
+/* playoff picture marks: z top seed, y division, x playoff spot, e eliminated */
+.pmark{display:inline-block;margin-left:5px;padding:0 5px;border-radius:4px;font-size:11px;font-weight:800;line-height:16px;text-decoration:none;vertical-align:1px;background:var(--rule);color:var(--ink)}
+.pmark.pm-z,.pmark.pm-y,.pmark.pm-x{background:color-mix(in srgb,#1a7f37 18%,transparent);color:#1a7f37}
+.pmark.pm-e{background:color-mix(in srgb,#b42318 14%,transparent);color:#b42318}
+tr.hunt td{color:var(--muted,inherit)}
+.pgone{margin:0;padding:10px 14px;border-top:1px solid var(--rule)}
+@media (max-width:600px){ .pspot{display:none} }
+@media (prefers-color-scheme: dark){ .pmark.pm-z,.pmark.pm-y,.pmark.pm-x{color:#6fdd8b} .pmark.pm-e{color:#ff8b7e} }
+

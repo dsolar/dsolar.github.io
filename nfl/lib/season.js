@@ -144,6 +144,51 @@
     return { teams: out, ratings: rat, records: base, winP, left, sims };
   };
 
+  /* The playoff picture today: the seeds if the season ended now (division winners 1-4, then three wild cards), the
+     teams still in the hunt, and marks that are certain rather than simulated, worked out from records alone:
+       z  clinched the top seed and the bye: nobody else in the conference can reach its worst case
+       y  clinched the division: no division rival can reach its worst case
+       x  clinched a playoff spot: even losing out, too few teams can pass it (a division with nobody who can reach
+          its worst case still sends a winner, so that division counts one)
+       e  eliminated: can't win the division, and seven conference teams are already sure to finish ahead of its best
+     A tie on record counts against the team being checked, so a mark is never wrong; it can only come a week late
+     next to the NFL's full tiebreakers. Today's order breaks ties on division record (division titles), then
+     conference record, then point differential: a simplified version of the NFL's tiebreakers.
+     { AFC: { seeds: [team x7], hunt: [team], out: [team] }, NFC: {...}, marks: { team: "z"|"y"|"x"|"e" }, left: { team: games left } } */
+  S.picture = (games, teams) => {
+    const R = S.records(games, teams), left = {}, marks = {};
+    teams.forEach(t => { left[t] = 0; });
+    for (const g of games) if (g[0] === "REG" && g[5] == null) { if (left[g[3]] != null) left[g[3]]++; if (left[g[4]] != null) left[g[4]]++; }
+    const W = t => R[t].w + 0.5 * R[t].t, lo = t => W(t), hi = t => W(t) + left[t];
+    const pct = t => (R[t].w + 0.5 * R[t].t) / Math.max(1, R[t].w + R[t].l + R[t].t);
+    const diff = (a, b) => (b[0] - b[1]) - (a[0] - a[1]);
+    const ordDiv = (x, y) => (pct(y) - pct(x)) || diff([R[x].dw, R[x].dl], [R[y].dw, R[y].dl]) || diff([R[x].cw, R[x].cl], [R[y].cw, R[y].cl]) || ((R[y].pf - R[y].pa) - (R[x].pf - R[x].pa)) || (x < y ? -1 : 1);
+    const ordConf = (x, y) => (pct(y) - pct(x)) || diff([R[x].cw, R[x].cl], [R[y].cw, R[y].cl]) || ((R[y].pf - R[y].pa) - (R[x].pf - R[x].pa)) || (x < y ? -1 : 1);
+    const out = { marks, left };
+    for (const conf of ["AFC", "NFC"]) {
+      const divs = Object.entries(S.DIV).filter(([d]) => d.startsWith(conf)), cts = divs.flatMap(([, ts]) => ts).filter(t => R[t]);
+      const winners = [], rest = [];
+      for (const [, ts] of divs) { const o = ts.filter(t => R[t]).sort(ordDiv); winners.push(o[0]); rest.push(...o.slice(1)); }
+      winners.sort(ordConf); rest.sort(ordConf);
+      const seeds = winners.concat(rest.slice(0, 3));
+      for (const t of cts) {
+        const mates = S.DIV[S.divOf[t]].filter(u => u !== t && R[u]), others = cts.filter(u => u !== t);
+        const reach = u => hi(u) >= lo(t);                                   // could finish level with or ahead of t's worst
+        const div = !mates.some(reach);
+        let threat = mates.filter(reach).length;
+        for (const [d, ts] of divs) if (d !== S.divOf[t]) threat += Math.max(1, ts.filter(u => R[u] && reach(u)).length);
+        const spot = div || threat < 7;
+        const bye = div && !others.some(reach);
+        const sure = u => lo(u) > hi(t);                                     // already sure to finish ahead of t's best
+        const gone = !div && mates.some(sure) && others.filter(sure).length >= 7;
+        if (bye) marks[t] = "z"; else if (div) marks[t] = "y"; else if (spot) marks[t] = "x"; else if (gone) marks[t] = "e";
+      }
+      const hunt = rest.slice(3).filter(t => marks[t] !== "e"), gone = cts.filter(t => marks[t] === "e").sort(ordConf);
+      out[conf] = { seeds, hunt, out: gone };
+    }
+    return out;
+  };
+
   // A short fingerprint of the games list, so a simulation saved ahead of time (tools/nfl_sim.js) is only used
   // when it was run on exactly these games
   S.gamesKey = games => { const s = JSON.stringify(games || []); let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36) + "." + s.length; };
