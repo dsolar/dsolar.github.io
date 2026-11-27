@@ -2,7 +2,7 @@
  "built": "2026-11-27",
  "sports": {
   "mlb": {
-   "registry": 12325,
+   "registry": 12326,
    "shown": 851,
    "found": 824,
    "missing": [
@@ -373,7 +373,7 @@
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
-    "Stefan Joksimović"
+    "Stefan Joksimovic"
    ],
    "noPhoto": [
     "A.J. Williams",
@@ -415,7 +415,6 @@
     "Pavle Backo",
     "Petar Bjelica",
     "Ryan Hampton",
-    "Stefan Joksimović",
     "Tony Bryant"
    ]
   },
