@@ -8157,7 +8157,7 @@
       "nfl": "LV",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 0.0
+      "next_proj": 0
      },
      {
       "n": "Kenneth Walker III",
@@ -8205,7 +8205,7 @@
       "nfl": "BAL",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 0,
-      "next_proj": 0.0
+      "next_proj": 0
      },
      {
       "n": "DK Metcalf",
@@ -8666,16 +8666,40 @@
       "n": "Trevor Lawrence",
       "pos": "QB",
       "nfl": "JAX",
-      "slot": "Q/W/R/T",
+      "slot": "BN",
       "proj": 23.39,
       "pts": null
      },
      {
-      "n": "Tetairoa McMillan",
-      "pos": "WR",
-      "nfl": "CAR",
+      "n": "Bucky Irving",
+      "pos": "RB",
+      "nfl": "TB",
       "slot": "BN",
-      "proj": 11.72,
+      "proj": 19.18,
+      "pts": null
+     },
+     {
+      "n": "Brock Bowers",
+      "pos": "TE",
+      "nfl": "LV",
+      "slot": "BN",
+      "proj": 12.35,
+      "pts": null
+     },
+     {
+      "n": "Parker Washington",
+      "pos": "WR",
+      "nfl": "JAX",
+      "slot": "BN",
+      "proj": 14.61,
+      "pts": null
+     },
+     {
+      "n": "Zay Flowers",
+      "pos": "WR",
+      "nfl": "BAL",
+      "slot": "BN",
+      "proj": 13.55,
       "pts": null
      },
      {
@@ -8695,27 +8719,11 @@
       "pts": null
      },
      {
-      "n": "Bucky Irving",
-      "pos": "RB",
-      "nfl": "TB",
-      "slot": "BN",
-      "proj": 19.18,
-      "pts": null
-     },
-     {
-      "n": "Parker Washington",
+      "n": "Tetairoa McMillan",
       "pos": "WR",
-      "nfl": "JAX",
+      "nfl": "CAR",
       "slot": "BN",
-      "proj": 14.61,
-      "pts": null
-     },
-     {
-      "n": "Brock Bowers",
-      "pos": "TE",
-      "nfl": "LV",
-      "slot": "BN",
-      "proj": 12.35,
+      "proj": 11.72,
       "pts": null
      },
      {
@@ -8740,14 +8748,6 @@
       "nfl": "WAS",
       "slot": "BN",
       "proj": 21.94,
-      "pts": null
-     },
-     {
-      "n": "Zay Flowers",
-      "pos": "WR",
-      "nfl": "BAL",
-      "slot": "BN",
-      "proj": 13.55,
       "pts": null
      }
     ]

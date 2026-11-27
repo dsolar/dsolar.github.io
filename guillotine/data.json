@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T02:52:19Z",
+ "updated": "2026-11-27T03:07:16Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -1778,7 +1778,7 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 15,
-   "proj": 58.74,
+   "proj": 36.36,
    "points": 57.1,
    "scores": [
     111.28,
@@ -1909,6 +1909,11 @@
     },
     {
      "slot": "Q/W/R/T",
+     "empty": true,
+     "assumed": "Trevor Lawrence"
+    },
+    {
+     "slot": "BN",
      "name": "Trevor Lawrence",
      "nfl": "JAX",
      "pos": "QB",
@@ -1943,44 +1948,172 @@
      "rank": "QB2",
      "date": "2026-11-29",
      "next_proj": 19.92,
-     "in_best": true
+     "in_best": true,
+     "assumed_slot": "Q/W/R/T"
     },
     {
      "slot": "BN",
-     "name": "Tetairoa McMillan",
-     "nfl": "CAR",
-     "pos": "WR",
-     "status": "Q",
+     "name": "Bucky Irving",
+     "nfl": "TB",
+     "pos": "RB",
      "yahoo_actual": 0.0,
      "game": "Mon 8:15 pm",
-     "opp": "@ TB",
+     "opp": "vs CAR",
      "season": {
       "g": 10,
       "wk": [
-       8.0,
-       12.6,
-       2.7,
-       38.2,
+       16.8,
+       11.0,
+       6.8,
+       6.1,
+       30.5,
+       5.9,
+       23.5,
+       21.0,
+       26.5,
        null,
-       11.6,
-       6.0,
-       8.8,
-       13.6,
-       5.0,
-       16.1
+       17.5
       ],
       "tot": {
-       "rec": 55,
-       "rec_tgt": 87,
-       "rec_yd": 731,
-       "fum_lost": 1,
-       "rec_td": 4
+       "rush_att": 185,
+       "rush_yd": 893,
+       "rush_td": 8,
+       "rec": 25,
+       "rec_tgt": 32,
+       "rec_yd": 138,
+       "fum_lost": 2,
+       "rec_td": 1
       }
      },
-     "proj": 11.72,
-     "rank": "WR20",
+     "proj": 19.18,
+     "rank": "RB2",
      "date": "2026-11-30",
-     "next_proj": 10.8
+     "next_proj": 17.9,
+     "in_best": true,
+     "assumed_slot": "RB"
+    },
+    {
+     "slot": "BN",
+     "name": "Brock Bowers",
+     "nfl": "LV",
+     "pos": "TE",
+     "status": "Q",
+     "yahoo_actual": 0.0,
+     "game": "Sun 8:20 pm",
+     "opp": "@ CLE",
+     "season": {
+      "g": 8,
+      "wk": [
+       null,
+       null,
+       22.6,
+       17.6,
+       19.0,
+       9.0,
+       10.3,
+       24.7,
+       18.8,
+       2.8,
+       null
+      ],
+      "tot": {
+       "rec": 50,
+       "rec_tgt": 72,
+       "rec_yd": 676,
+       "rec_td": 6,
+       "fum_lost": 2,
+       "rush_att": 1,
+       "rush_yd": 2
+      }
+     },
+     "proj": 12.35,
+     "rank": "TE1",
+     "date": "2026-11-29",
+     "bye_next": true,
+     "next_proj": 0.0,
+     "in_best": true,
+     "assumed_slot": "TE"
+    },
+    {
+     "slot": "BN",
+     "name": "Parker Washington",
+     "nfl": "JAX",
+     "pos": "WR",
+     "status": "Q",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "vs TEN",
+     "season": {
+      "g": 10,
+      "wk": [
+       16.8,
+       13.3,
+       11.5,
+       1.5,
+       27.4,
+       8.4,
+       null,
+       3.1,
+       13.1,
+       24.7,
+       14.3
+      ],
+      "tot": {
+       "rec": 44,
+       "rec_tgt": 81,
+       "rec_yd": 748,
+       "rec_td": 6,
+       "rush_att": 2,
+       "rush_yd": 13
+      }
+     },
+     "proj": 14.61,
+     "rank": "WR7",
+     "date": "2026-11-29",
+     "next_proj": 12.92,
+     "in_best": true,
+     "assumed_slot": "WR"
+    },
+    {
+     "slot": "BN",
+     "name": "Zay Flowers",
+     "nfl": "BAL",
+     "pos": "WR",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "@ HOU",
+     "season": {
+      "g": 10,
+      "wk": [
+       23.5,
+       null,
+       12.9,
+       21.8,
+       10.6,
+       9.7,
+       23.7,
+       0.0,
+       3.8,
+       8.4,
+       12.4
+      ],
+      "tot": {
+       "rec": 57,
+       "rec_tgt": 82,
+       "rec_yd": 785,
+       "rec_td": 3,
+       "rush_att": 7,
+       "rush_yd": 38,
+       "fum_lost": 1
+      }
+     },
+     "proj": 13.55,
+     "rank": "WR10",
+     "date": "2026-11-29",
+     "bye_next": true,
+     "next_proj": 0.0,
+     "in_best": true,
+     "assumed_slot": "WR"
     },
     {
      "slot": "BN",
@@ -2064,126 +2197,40 @@
     },
     {
      "slot": "BN",
-     "name": "Bucky Irving",
-     "nfl": "TB",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Mon 8:15 pm",
-     "opp": "vs CAR",
-     "season": {
-      "g": 10,
-      "wk": [
-       16.8,
-       11.0,
-       6.8,
-       6.1,
-       30.5,
-       5.9,
-       23.5,
-       21.0,
-       26.5,
-       null,
-       17.5
-      ],
-      "tot": {
-       "rush_att": 185,
-       "rush_yd": 893,
-       "rush_td": 8,
-       "rec": 25,
-       "rec_tgt": 32,
-       "rec_yd": 138,
-       "fum_lost": 2,
-       "rec_td": 1
-      }
-     },
-     "proj": 19.18,
-     "rank": "RB2",
-     "date": "2026-11-30",
-     "next_proj": 17.9,
-     "in_best": true,
-     "assumed_slot": "RB"
-    },
-    {
-     "slot": "BN",
-     "name": "Parker Washington",
-     "nfl": "JAX",
+     "name": "Tetairoa McMillan",
+     "nfl": "CAR",
      "pos": "WR",
      "status": "Q",
      "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "vs TEN",
+     "game": "Mon 8:15 pm",
+     "opp": "@ TB",
      "season": {
       "g": 10,
       "wk": [
-       16.8,
-       13.3,
-       11.5,
-       1.5,
-       27.4,
-       8.4,
+       8.0,
+       12.6,
+       2.7,
+       38.2,
        null,
-       3.1,
-       13.1,
-       24.7,
-       14.3
+       11.6,
+       6.0,
+       8.8,
+       13.6,
+       5.0,
+       16.1
       ],
       "tot": {
-       "rec": 44,
-       "rec_tgt": 81,
-       "rec_yd": 748,
-       "rec_td": 6,
-       "rush_att": 2,
-       "rush_yd": 13
+       "rec": 55,
+       "rec_tgt": 87,
+       "rec_yd": 731,
+       "fum_lost": 1,
+       "rec_td": 4
       }
      },
-     "proj": 14.61,
-     "rank": "WR7",
-     "date": "2026-11-29",
-     "next_proj": 12.92,
-     "in_best": true,
-     "assumed_slot": "WR"
-    },
-    {
-     "slot": "BN",
-     "name": "Brock Bowers",
-     "nfl": "LV",
-     "pos": "TE",
-     "status": "Q",
-     "yahoo_actual": 0.0,
-     "game": "Sun 8:20 pm",
-     "opp": "@ CLE",
-     "season": {
-      "g": 8,
-      "wk": [
-       null,
-       null,
-       22.6,
-       17.6,
-       19.0,
-       9.0,
-       10.3,
-       24.7,
-       18.8,
-       2.8,
-       null
-      ],
-      "tot": {
-       "rec": 50,
-       "rec_tgt": 72,
-       "rec_yd": 676,
-       "rec_td": 6,
-       "fum_lost": 2,
-       "rush_att": 1,
-       "rush_yd": 2
-      }
-     },
-     "proj": 12.35,
-     "rank": "TE1",
-     "date": "2026-11-29",
-     "bye_next": true,
-     "next_proj": 0.0,
-     "in_best": true,
-     "assumed_slot": "TE"
+     "proj": 11.72,
+     "rank": "WR20",
+     "date": "2026-11-30",
+     "next_proj": 10.8
     },
     {
      "slot": "BN",
@@ -2300,53 +2347,12 @@
      "date": "2026-11-29",
      "next_proj": 22.11,
      "in_best": true
-    },
-    {
-     "slot": "BN",
-     "name": "Zay Flowers",
-     "nfl": "BAL",
-     "pos": "WR",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "@ HOU",
-     "season": {
-      "g": 10,
-      "wk": [
-       23.5,
-       null,
-       12.9,
-       21.8,
-       10.6,
-       9.7,
-       23.7,
-       0.0,
-       3.8,
-       8.4,
-       12.4
-      ],
-      "tot": {
-       "rec": 57,
-       "rec_tgt": 82,
-       "rec_yd": 785,
-       "rec_td": 3,
-       "rush_att": 7,
-       "rush_yd": 38,
-       "fum_lost": 1
-      }
-     },
-     "proj": 13.55,
-     "rank": "WR10",
-     "date": "2026-11-29",
-     "bye_next": true,
-     "next_proj": 0.0,
-     "in_best": true,
-     "assumed_slot": "WR"
     }
    ],
    "points_final": 57.1,
    "best": 154.9,
    "best_next": 142.3,
-   "fill": 91.34,
+   "fill": 114.73,
    "locked": 57.1,
    "locked_proj": 39.29,
    "games_final": 2
@@ -3706,7 +3712,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T02:52:21Z",
+  "updated": "2026-11-27T03:07:18Z",
   "players": 3046,
   "unmatched": []
  }
