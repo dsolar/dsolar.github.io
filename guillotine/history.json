@@ -8125,7 +8125,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 57,
-      "next_proj": 15.29
+      "next_proj": 15.42
      },
      {
       "n": "Christian McCaffrey",
@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 18.88
+      "next_proj": 19.16
      },
      {
       "n": "James Cook III",
@@ -8141,7 +8141,7 @@
       "nfl": "BUF",
       "claimed_by": "Drake Mayezini",
       "bid": 39,
-      "next_proj": 17.48
+      "next_proj": 17.83
      },
      {
       "n": "Josh Allen",
@@ -8149,7 +8149,7 @@
       "nfl": "BUF",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 35,
-      "next_proj": 23.34
+      "next_proj": 23.17
      },
      {
       "n": "Brock Bowers",
@@ -8173,7 +8173,7 @@
       "nfl": "GB",
       "claimed_by": "Drake Mayezini",
       "bid": 3,
-      "next_proj": 14.38
+      "next_proj": 14.41
      },
      {
       "n": "Tetairoa McMillan",
@@ -8181,7 +8181,7 @@
       "nfl": "CAR",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 2,
-      "next_proj": 10.76
+      "next_proj": 10.8
      },
      {
       "n": "C.J. Stroud",
@@ -8189,7 +8189,7 @@
       "nfl": "HOU",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 19.09
+      "next_proj": 18.95
      },
      {
       "n": "D'Andre Swift",
@@ -8197,7 +8197,7 @@
       "nfl": "CHI",
       "claimed_by": "A Warren Boston",
       "bid": 0,
-      "next_proj": 13.85
+      "next_proj": 13.87
      },
      {
       "n": "Zay Flowers",
@@ -8211,13 +8211,13 @@
       "n": "DK Metcalf",
       "pos": "WR",
       "nfl": "PIT",
-      "next_proj": 7.7
+      "next_proj": 7.64
      },
      {
       "n": "Jordan Love",
       "pos": "QB",
       "nfl": "GB",
-      "next_proj": 20.32
+      "next_proj": 20.46
      },
      {
       "n": "Sam LaPorta",
@@ -8317,7 +8317,7 @@
       "pos": "RB",
       "nfl": "DEN",
       "slot": "RB",
-      "proj": 16.44,
+      "proj": 16.51,
       "pts": null
      },
      {
@@ -8475,10 +8475,18 @@
       "pts": null
      },
      {
+      "n": "Brock Purdy",
+      "pos": "QB",
+      "nfl": "SF",
+      "slot": "Q/W/R/T",
+      "proj": 16,
+      "pts": null
+     },
+     {
       "n": "Patrick Mahomes",
       "pos": "QB",
       "nfl": "KC",
-      "slot": "Q/W/R/T",
+      "slot": "BN",
       "proj": 16.72,
       "pts": null
      },
@@ -8496,14 +8504,6 @@
       "nfl": "CIN",
       "slot": "BN",
       "proj": 14.01,
-      "pts": null
-     },
-     {
-      "n": "Brock Purdy",
-      "pos": "QB",
-      "nfl": "SF",
-      "slot": "BN",
-      "proj": 16,
       "pts": null
      },
      {
