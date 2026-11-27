@@ -565,7 +565,10 @@
   /* ---------- the clock ---------- */
   const nextIndex = (D) => D.board.findIndex((x) => !x);
   // How long the pick on the clock gets: the pick clock, or what's left of the team's bank (never under the floor).
+  // a team at the in-person draft (the commissioner enters its picks), as opposed to one picking remotely
+  const inRoom = (D, teamId) => !!D.inPerson && (!Array.isArray(D.room) || D.room.includes(teamId));
   function clockLen(D, k) {
+    if (D.inPerson) return Infinity;
     if (D.bank) { const t = D.teams[D.order[k]]; return Math.max(t.bank, D.bank.floor * 1000); }
     return D.clock ? D.clock * 1000 : Infinity;
   }
@@ -989,6 +992,10 @@
   }
   const holdLeft = (D, now) => (D.hold ? Math.max(0, HOLD_MAX - (now - D.hold.at)) : 0);
   function tick(D, ctx, now, max = 1000) {
+    // an in-person draft has no clock. A team in the room (D.room, every team unless it's set) picks when the
+    // commissioner enters it; a team picking remotely picks from its own device, or its bot does (a bot, or autodraft).
+    // An in-person auction moves only when the commissioner records a sale.
+    if (D.inPerson && D.type === "auction") return 0;
     if (D.type === "auction") return D.auction.dutch ? dutchTick(D, ctx, now, max) : auctionTick(D, ctx, now, max);
     if (D.packs) return packTick(D, ctx, now, max);
     offerHold(D, now);
@@ -997,6 +1004,7 @@
       const c = onClock(D, now);
       if (!c) break;
       const team = D.teams[c.team];
+      if (inRoom(D, c.team)) break;
       if (!isBot(team) && !D.offered[c.index]) { D.offered[c.index] = true; if (botOffer(D, ctx, c, Math.min(now, D.clockStart))) { offerHold(D, now); if (D.paused) break; } }
       if (D.trivia && !D.trivia.ok[c.index] && !D.trivia.bumped[c.index]) {
         if (!team.owner) {
@@ -1161,6 +1169,24 @@
     lot.bid = price; lot.team = top[0]; lot.ends = now + D.auction.bidClock * 1000; lot.bids.push([top[0], price, now]);
   }
 
+  /* An in-person auction (D.inPerson): the room does the bidding out loud and the commissioner records each sale as it
+     happens, in any order: this player, to this team, for this price. The usual checks still hold (a roster spot for
+     him, and no more than the team can bid while keeping $1 for each spot left). */
+  function record(D, ctx, teamId, pid, price, now) {
+    if (D.type !== "auction" || D.auction.dutch) return { ok: false, why: "Only an auction records sales" };
+    if (D.phase !== "live") return { ok: false, why: "The draft isn't open" };
+    const p = ctx.byId[pid];
+    if (!p || ctx.own[pid] != null) return { ok: false, why: "He's already taken" };
+    const t = D.teams[teamId];
+    if (!t) return { ok: false, why: "Pick a team" };
+    const ok = canAdd(D, ctx, teamId, p);
+    if (!ok.ok) return ok;
+    if (!Number.isInteger(price) || price < D.auction.minBid) return { ok: false, why: `Enter a whole-dollar price of at least $${D.auction.minBid}` };
+    if (price > maxBid(D, teamId)) return { ok: false, why: `${t.name} can spend at most $${maxBid(D, teamId)}` };
+    D.auction.lot = { pid, by: teamId, bid: price, team: teamId, ends: now, at: now, bids: [[teamId, price, now]], passed: [] };
+    sell(D, ctx, now);
+    return { ok: true };
+  }
   function sell(D, ctx, at) {
     const lot = D.auction.lot;
     D.sales.push({ team: lot.team, pid: lot.pid, price: lot.bid, at, by: lot.by });
@@ -2059,7 +2085,7 @@
     D.sealed.ran = now;
     return true;
   }
-  return { payroll, capRoom, triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
+  return { record, inRoom, payroll, capRoom, triviaAsk, triviaAnswer, triviaUp, TRIVIA_BOT, capPrices, capPrice, capCost, capMoney, capStep, capCheck, capAuto, capReveal, sealedRun, dealPacks, packMoney, packPrice, packFor, packAt, packSlot, packTurnNow, HEIST, heistRules, heistFoe, heistLineup, heistMove, heistCheck, heistDefault, heistTick, heistSealed, heistDue, heistIn, heistUnseal, spinOf, wheelFor, respin, respinsLeft, setOrder, recap, FORMATS, REVEALS, NAMES, rng, hash01, makeOrder, create, keep, made, rosters, context, assign, canAdd, onClock, nextPickOf, isBot,
     start, pause, pick, worth, resize, offerHold, holdLeft, HOLD_MAX, autoChoice, tick, undo, maxBid, spotsLeft, nominator, auctionState, nominate, bid, pass, claim, order, dutchOn, formatOf, dutchPrice, dutchRules, dutchSize, DUTCH_PACES, botMax, standings, sizeOf,
     clockLen, thinkTime, bankShare, slotInfo, fitsRoster, prospectRound, prospectPicks, drawOrder, canSteal, steal, stealsOf, stealsLeft, stealsOpen, botSteal, tags, tagMults, taxOf, goldenOf, pickCurve, dealPackages, fairDeal, seen, pickLabel, picksOf, pickValue, pickId, isPickId, pickIdx, assetValue, sideValue,
     tradeCheck, balance, propose, respond, cancel, botAnswer, botOffer };

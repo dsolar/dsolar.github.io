@@ -1281,6 +1281,11 @@
     const whenTxt = (ms) => new Date(ms).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" });
     const hoursTxt = (sec) => (sec >= 86400 && sec % 86400 === 0 ? `${sec / 86400} day${sec === 86400 ? "" : "s"}` : sec >= 3600 ? `${Math.round(sec / 360) / 10} hours` : `${Math.round(sec / 60)} minutes`);
     const mystery = () => D().type === "mystery";
+    // an in-person draft (D.inPerson): no clock, nobody picks on his own, and the commissioner's device enters every
+    // team's pick (or records each sale in an auction) as the room makes it
+    const inPerson = () => !!D().inPerson;
+    const enterAll = () => !!opts.commish && inPerson();
+    const ipOk = () => { const d = D(); return !d.packs && !(d.auction && d.auction.dutch) && d.type !== "mystery" && !d.steals && !d.trivia; };
     const pts = () => isPoints(sport, D().scoring);
     const canTrade = () => { const d = D(); return d.trading && me() != null && d.phase !== "done"; };
     // a pick's short label for the ticker and board: 2.5 in a snake, #15 in mystery packages
@@ -1335,6 +1340,8 @@
         prim.push(`<button class="btn sm${team(me()).auto ? " on" : ""}" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">${team(me()).auto ? "Autodraft on" : "Autodraft"}</button>`);
         menu.push(`<button class="btn sm" data-act="alerts" title="A chime, and a notification while this tab is in the background, when you're up">${alerts.on() ? "Sound: on" : "Sound: off"}</button>`, `<button class="btn sm" data-act="test-sound">Test sound</button>`);
       }
+      if (opts.commish && d.inPerson && !auction() && (d.phase === "setup" || d.phase === "live")) menu.push(`<button class="btn sm" data-act="room">Who's in the room</button>`);
+      if (opts.commish && ipOk() && (d.phase === "setup" || d.phase === "live")) menu.push(`<button class="btn sm${d.inPerson ? " on" : ""}" data-act="inperson" aria-pressed="${!!d.inPerson}" title="Drafting in one room: no clock, and you enter every pick here">${d.inPerson ? "In-person draft: on" : "In-person draft"}</button>`);
       if (d.phase !== "heist") menu.push(`<button class="btn sm" data-act="tv" title="The board full screen for a TV, with each pick announced">TV mode</button>`);
       if (opts.commish && d.phase === "live") menu.push(`${d.paused && !d.hold ? "" : `<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause the draft"}</button>`}<button class="btn sm" data-act="undo">Undo the last pick</button>`);
       if (d.phase === "done" && opts.extra) prim.push(opts.extra());
@@ -1669,7 +1676,9 @@
     function players() {
       const d = D(), n = now(), mine = me();
       const c = !auction() && d.phase === "live" ? F.onClock(d, n) : null;
-      const myTurn = d.packs ? mine != null && F.packSlot(d, mine) >= 0 : c && c.team === mine;
+      // entering picks for the room: the buttons draft for whoever is on the clock
+      const forTeam = enterAll() && c ? c.team : mine;
+      const myTurn = d.packs ? mine != null && F.packSlot(d, mine) >= 0 : c && (c.team === mine || (enterAll() && !!c));
       const st = auction() && d.phase === "live" ? F.auctionState(d, n) : null;
       const myNom = st && st.kind === "nominate" && st.team === mine;
       let rows = (ui.show === "all" ? opts.players : ctx.available).filter((p) => passes(sport, p, ui.f));
@@ -1699,15 +1708,17 @@
       const saleLots = drip() && st && st.lots ? Object.fromEntries(st.lots.filter((l) => !l.sold).map((l) => [l.pid, l])) : null;
       const actions = (p) => {
         if (ctx.own[p.id] != null) { const ok = stealOk(p.id); return `${ok && ok.ok ? `<button class="btn xs warn" data-steal="${esc(p.id)}">Steal</button> ` : ""}${teamAv(team(ctx.own[p.id]), "sm")}`; }
-        if (mine == null) return "";
-        const ok = F.canAdd(d, ctx, mine, p).ok;
+        if (enterAll() && auction() && d.phase === "live") return `<button class="btn xs go" data-sold="${esc(p.id)}">Sold</button>`;
+        if (mine == null && !enterAll()) return "";
+        if (mine == null) return c && F.canAdd(d, ctx, forTeam, p).ok ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft for ${esc(team(forTeam).abbr || team(forTeam).name)}</button>` : "";
+        const ok = F.canAdd(d, ctx, forTeam != null ? forTeam : mine, p).ok;
         const q = team(mine).queue.includes(p.id);
         if (drip() && d.phase !== "done") {
           const l = saleLots && saleLots[p.id], o = (team(mine).orders || {})[p.id];
           const btn = l ? `<button class="btn xs go sl-b" data-sale="${esc(p.id)}" aria-label="${esc(p.n)}, ${cash(l.price)} now${o ? `, your price ${cash(o.p)}` : ""}"><b data-wprice="${esc(p.id)}">${cash(l.price)}</b>${o ? `<small>you ${cash(o.p)}</small>` : ""}</button>` : d.phase === "setup" ? `<button class="btn xs sl-b" data-sale="${esc(p.id)}">${o ? `<b>${cash(o.p)}</b><small>your price</small>` : `Set<span class="hide-s"> price</span>`}</button>` : "";
           return `${btn} <button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your watch list" aria-pressed="${!!q}">${q ? "\u2605" : "\u2606"}</button>`;
         }
-        return `${myTurn && ok && !d.packs ? `<button class="btn xs go" data-pick="${esc(p.id)}">Draft</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
+        return `${myTurn && ok && !d.packs ? `<button class="btn xs go" data-pick="${esc(p.id)}">${forTeam !== mine ? `Draft for ${esc(team(forTeam).abbr || team(forTeam).name)}` : "Draft"}</button> ` : ""}${myNom && ok ? `<button class="btn xs go" data-nominate="${esc(p.id)}">Nominate</button> ` : ""}<button class="star${q ? " on" : ""}" data-queue="${esc(p.id)}" aria-label="${q ? "Remove" : "Add"} ${esc(p.n)} ${q ? "from" : "to"} your queue" aria-pressed="${!!q}" title="${q ? "In your queue" : "Add to queue"}">${q ? "&#9733;" : "&#9734;"}</button>`;
       };
       // your board, when you've made one: its place and tier, sortable, and the sort the room opens on
       const bd = mine != null ? myBoard.of(sport.key, opts.players) : null, at = bd && bd.custom ? myBoard.places(bd) : null;
@@ -1732,7 +1743,9 @@
       })() : "";
       const sortable = cols.filter((c) => c.sort && c.label && !c.raw);
       const sortSel = `<div class="psort show-m"><label for="fk-psort">Sort by</label><select id="fk-psort">${sortable.map((c) => `<option value="${esc(c.k)}"${ui.sort.k === c.k ? " selected" : ""}>${esc(c.title || c.label)}</option>`).join("")}</select><button type="button" class="btn xs ghost" data-act="sortdir" aria-label="Flip the order">${ui.sort.dir > 0 ? "Low to high" : "High to low"}</button></div>`;
-      return draftCoach() + fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: (ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "") + (myTurn && !d.packs ? " turn" : ""), limit: ui.limit || POOL_ROWS, step: 100, empty: "No one matches.",
+      const roomBar = enterAll() && c && !auction() ? `<div class="rl-bar"><span>${F.inRoom(d, c.team) ? `In-person draft: tap Draft next to a player to enter ${esc(team(c.team).name)}'s pick.` : `<b>${esc(team(c.team).name)}</b> is picking remotely${F.isBot(team(c.team)) ? "; its bot will pick" : ", from their own device"}. If they tell you the pick, you can enter it here.`}</span><button type="button" class="btn xs ghost" data-act="room">Who's in the room</button></div>`
+        : inPerson() && !enterAll() && c && !auction() ? `<div class="rl-bar"><span>${c.team === mine ? "You're up. Make your pick here, or tell the commissioner." : `In-person draft: the commissioner enters picks for the teams in the room.`}</span></div>` : "";
+      return draftCoach() + roomBar + fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: (ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "") + (myTurn && !d.packs ? " turn" : ""), limit: ui.limit || POOL_ROWS, step: 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
@@ -1744,7 +1757,8 @@
       const yr = +(sport.data && sport.data.season) || null, pl = sport.key === "mlb" && yr ? `${yr + 1} projected` : "Projected", sl = yr ? `${yr} stats` : "Stats";
       return `<div class="seg sv" role="group" aria-label="Numbers">${[["proj", pl], ["stats", sl]].concat(hasPrev(sport) ? [["prev", `${sport.data.prev}`]] : []).map(([v, l]) => `<button type="button" data-act="sview" data-v="${v}" aria-pressed="${sport.statView === v}">${esc(l)}</button>`).join("")}</div>`;
     }
-    function board() {
+    // big: the TV's board, where each pick is a card with his picture
+    function board(big) {
       const d = D(), cols = d.round1, n = cols.length;
       const slots = auction() ? null : cols.map(slotsOf);
       const rounds = auction() ? d.rounds : Math.max(d.rounds, ...slots.map((x) => x.length));
@@ -1754,7 +1768,7 @@
         return k == null ? null : { pk: d.board[k], k };
       };
       const nowK = !auction() && d.phase === "live" ? F.onClock(d, now()).index : -1;
-      let cells = `<div class="h"></div>${cols.map((id) => { const t = team(id); return `<div class="h${isMe(t) ? " me" : ""}" title="${esc(t.name)}${t.owner ? ", " + esc(t.owner) : ", bot"}">${teamAv(t, "sm")}<b>${esc(t.name)}</b><small>${auction() ? money(t.budget) + " left" : esc(t.owner || "Bot")}</small></div>`; }).join("")}`;
+      let cells = `<div class="h"></div>${cols.map((id) => { const t = team(id); return `<div class="h${isMe(t) ? " me" : ""}" title="${esc(t.name)}${t.owner ? ", " + esc(t.owner) : ", bot"}">${teamAv(t, "sm")}<b>${esc(t.name)}</b><small>${auction() ? money(t.budget) + " left" : esc(t.owner || "Bot")}${inPerson() && !auction() && !F.inRoom(d, id) ? " · remote" : ""}</small></div>`; }).join("")}`;
       for (let r = 0; r < rounds; r++) {
         cells += `<div class="rn">${r + 1}</div>`;
         for (let col = 0; col < n; col++) {
@@ -1763,7 +1777,7 @@
           if (x && x.k != null && !pk && !seenK(x.k)) { cells += `<div class="cell hid${isMe(t) ? " me" : ""}"><small class="ps">Sealed</small></div>`; continue; }
           const via = x && x.k != null ? (pk && pk.drafter != null && pk.drafter !== pk.team ? team(pk.drafter) : !pk ? viaOf(x.k) : null) : null;
           const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : "", pk && pk.steal ? "steal" : "", x && x.k != null && !pk && D().extra[x.k] ? "mk" : ""].join(" ").replace(/\s+/g, " ");
-          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `<b>${esc(shortName(p))}</b><small>${pk.steal ? (taxTxt() ? `stolen ${taxTxt()}, ${esc(team(pk.from).abbr)}` : `stolen from ${esc(team(pk.from).abbr)}`) : D().extra && D().extra[x.k] && goldTxt() ? `golden, ${goldTxt()}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
+          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `${big ? `${playerAv(sport, p, "sm")}<span class="tvc">` : ""}<b>${esc(shortName(p))}</b><small>${pk.steal ? (taxTxt() ? `stolen ${taxTxt()}, ${esc(team(pk.from).abbr)}` : `stolen from ${esc(team(pk.from).abbr)}`) : D().extra && D().extra[x.k] && goldTxt() ? `golden, ${goldTxt()}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>${big ? "</span>" : ""}` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
         }
       }
       return `<div class="board" id="fk-board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
@@ -2258,6 +2272,14 @@
       if (on) alerts.test().catch(() => {});   // the tap that opened it lets the fanfare play later
       render();
     }
+    // last season in this draft's points (football's player file keeps it), for the TV's card: [["2025", "212.4 pts, 17 games"]]
+    function lastYear(p) {
+      const sc = (sport.scorings || {})[D().scoring] || {}, col = sc.type === "points" ? sc.col : null, ix = sport.cols && sc.line && sport.cols[sc.line];
+      const ln = p.l0 && sc.line && p.l0[sc.line];
+      if (!col || !ix || !ln || ix[col] == null) return [];
+      const pts = ln[ix[col]], g = ix.g != null ? ln[ix.g] : null, yr = sport.data && sport.data.prev;
+      return pts ? [[yr ? String(yr) : "Last season", `${(+pts).toFixed(1)} pts${g ? `<em>${Math.round(g)} games</em>` : ""}`]] : [];
+    }
     function tvRender() {
       const d = D(), n = now(), made = F.made(d);
       // a new pick since the last look: announce the latest one (a burst of autopicks shows only the last)
@@ -2273,6 +2295,7 @@
       let clock = "", who = "", next = "";
       if (d.phase === "setup") who = `<small>${d.startAt ? "The draft starts" : "Waiting for the draft"}</small><b>${d.startAt ? esc(new Date(d.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })) : esc(d.name || "Draft")}</b>`;
       else if (d.phase === "done") who = `<small>Draft complete</small><b>${made.length} ${auction() ? "players bought" : "picks"}</b>`;
+      else if (auction() && inPerson()) who = `<span><small>Live auction${d.paused ? ", paused" : ""}</small><b>${made.length} of ${d.teams.length * d.rounds} bought</b></span>`;
       else if (auction()) {
         const st = F.auctionState(d, n);
         clock = `<span class="ring tv-ring" id="fk-ring2"><span id="fk-timer2"></span></span>`;
@@ -2280,8 +2303,8 @@
         else if (st && st.team != null) { const t = team(st.team); who = `${teamAv(t, "lg")}<span><small>Nominating</small><b>${esc(t.name)}</b></span>`; }
       } else if (!d.packs) {
         const c = F.onClock(d, n), t = c && team(c.team);
-        clock = `<span class="ring tv-ring" id="fk-ring2"><span id="fk-timer2"></span></span>`;
-        if (t) who = `${teamAv(t, "lg")}<span><small>On the clock${d.paused ? ", paused" : ""}, pick ${esc(plab(c.index))}</small><b>${esc(t.name)}</b>${t.owner ? `<em>${esc(t.owner)}</em>` : ""}</span>`;
+        if (c && Number.isFinite(c.left)) clock = `<span class="ring tv-ring" id="fk-ring2"><span id="fk-timer2"></span></span>`;
+        if (t) who = `${teamAv(t, "lg")}<span><small>On the clock${d.paused ? ", paused" : ""}, pick ${esc(plab(c.index))}</small><b>${esc(t.name)}</b>${t.owner || (inPerson() && !F.inRoom(d, c.team)) ? `<em>${esc([t.owner, inPerson() && !F.inRoom(d, c.team) ? "picking remotely" : ""].filter(Boolean).join(", "))}</em>` : ""}</span>`;
         const up = c ? d.order.slice(c.index + 1, c.index + 3).map((id, i) => ({ t: team(id), k: c.index + 1 + i })) : [];
         if (up.length) next = `<div class="tv-next"><small>Up next</small>${up.map((x) => `<span>${teamAv(x.t, "sm")}<b>${esc(x.t.name)}</b><em>${esc(plab(x.k))}</em></span>`).join("")}</div>`;
       }
@@ -2291,12 +2314,13 @@
       const reveal = shP ? `<div class="tv-pick" role="status" aria-live="assertive"><div class="tv-card"><p class="tv-k">${auction() ? `Sold for ${money(sh.price)}` : `With pick ${esc(plab(sh.n - 1))}`}</p>
         <p class="tv-by">${teamAv(shT, "md")}<span>${esc(shT.name)} ${auction() ? "buys" : "selects"}</span></p>
         <div class="tv-pl">${playerAv(sport, shP, "lg")}<h2 class="disp">${esc(shP.n)}</h2></div>
-        <p class="tv-sub">${esc(S.positions(shP).join(", "))}${shP.t ? ` · ${esc(shP.t)}` : ""}${shP.rank ? ` · ranked #${shP.rank}` : ""}${shP.prank ? `, ${esc(shP.prank)}` : ""}</p></div></div>` : "";
+        <p class="tv-sub">${esc(S.positions(shP).join(", "))}${shP.t ? ` · ${esc(shP.t)}` : ""}${shP.age ? ` · age ${Math.floor(shP.age)}` : ""}</p>
+        <dl class="tv-st">${cardStats(shP).slice(0, 4).concat(lastYear(shP)).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join("")}</dl></div></div>` : "";
       el.innerHTML = `<div class="droom fk-dark tv">
         <header class="tv-h"><div class="tv-lg">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[F.formatOf(d)])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></div>
           <div class="tv-otc">${clock}<div class="tv-who">${who}</div></div>${next}
           <button type="button" class="btn sm ghost tv-x" data-act="tvexit">Exit TV mode</button></header>
-        <div class="tv-b">${board()}</div>
+        <div class="tv-b">${board(true)}</div>
         ${last ? `<ol class="tv-last" aria-label="Latest picks">${last}</ol>` : ""}${reveal}</div>`;
       drawTimer();
       // keep the pick on the clock in view on a board taller than the screen
@@ -2309,6 +2333,36 @@
         const wake = () => { const r = $(".droom.tv", el); if (!r) return; r.classList.add("awake"); clearTimeout(ui.tvHide); ui.tvHide = setTimeout(() => { const r2 = $(".droom.tv", el); if (r2) r2.classList.remove("awake"); }, 2500); };
         document.addEventListener("pointermove", wake); document.addEventListener("pointerdown", wake);
       }
+    }
+    // an in-person draft: which teams are in the room (the commissioner enters their picks) and which pick remotely
+    // (from their own device, or their bot does). Nobody has a clock either way.
+    function roomDialog() {
+      const d = D(), here = (t) => F.inRoom(d, t.id);
+      dialog(`<h3>Who's in the room?</h3><p class="muted" style="margin:0 0 10px">Check the teams drafting in person: you enter their picks here. Everyone else picks from their own phone or computer, and a bot picks for a team nobody has. There's no clock for anyone.</p>
+        <form class="stack" style="gap:6px"><div class="stack" style="gap:4px;max-height:50vh;overflow:auto">${d.teams.map((t) => `<label class="check" style="display:flex;gap:10px;align-items:center;padding:6px 2px"><input type="checkbox" name="r" value="${t.id}"${here(t) ? " checked" : ""}>${teamAv(t, "sm")}<span><b>${esc(t.name)}</b> <small class="muted">${esc(t.owner || "Bot")}</small></span></label>`).join("")}</div>
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Save</button></div></form>`, (fd) => {
+        const ids = fd.getAll("r").map(Number);
+        const dd = D();
+        if (ids.length === dd.teams.length) delete dd.room; else dd.room = ids;
+        save(); render();
+        toast(ids.length === dd.teams.length ? "Every team is in the room." : `${ids.length} in the room, ${dd.teams.length - ids.length} picking remotely.`);
+      });
+    }
+    // an in-person auction: who got him and for how much, the way the room settled it
+    function soldDialog(pid) {
+      const d = D(), p = ctx.byId[pid];
+      if (!p) return;
+      const can = d.teams.filter((t) => F.canAdd(d, ctx, t.id, p).ok && F.maxBid(d, t.id) >= d.auction.minBid);
+      if (!can.length) { toast("No team has room for him", true); return; }
+      const dl = dialog(`<h3>Sold: ${esc(p.n)}</h3><p class="muted" style="margin:0 0 10px">${esc(S.positions(p).join(", "))} ${esc(p.t || "")}, value ${money(p.$)}. Record who won him and the price.</p>
+        <form class="stack" style="gap:10px"><label class="field"><span class="lbl">Team</span><select name="t">${can.map((t) => `<option value="${t.id}">${esc(t.name)}: ${money(t.budget)} left, up to ${money(F.maxBid(d, t.id))}</option>`).join("")}</select></label>
+        <label class="field"><span class="lbl">Price</span><input type="number" name="v" min="${d.auction.minBid}" step="1" required inputmode="numeric" value="${Math.max(d.auction.minBid, Math.round(p.$ || d.auction.minBid))}"></label>
+        <div class="acts"><button type="button" class="btn" data-close>Cancel</button><button class="btn go">Record the sale</button></div></form>`, (fd) => {
+        const t = +fd.get("t"), v = Math.round(+fd.get("v"));
+        if (!act(() => F.record(D(), ctx, t, pid, v, now()))) return false;
+        toast(`${p.n} to ${team(t).name} for ${money(v)}.`);
+      });
+      const inp = dl && dl.querySelector("[name=v]"); if (inp) setTimeout(() => { inp.focus(); inp.select(); }, 30);
     }
     function drawTimer() {
       const d = D(), n = now();
@@ -2465,15 +2519,17 @@
         toast(r.right ? "Right! Make your pick." : `Not quite: it was ${r.answer}. Your pick moves to the end of the round.`, !r.right);
         return;
       }
-      const b = e.target.closest("button[data-pick],button[data-claim],button[data-sale],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act],th[data-act]");
+      const b = e.target.closest("button[data-pick],button[data-claim],button[data-sale],button[data-sold],button[data-queue],button[data-nominate],button[data-bid],button[data-bidq],button[data-qup],button[data-act],th[data-act]");
       if (b) {
         e.stopPropagation();
         const d = D(), n = now();
         if (b.dataset.pick) {
           const pid = b.dataset.pick, myst = d.packs && d.packs.mystery && d.packs.mystery[pid], cost = d.packs && d.packs.price ? F.packPrice(d, me(), pid) : null;
-          if (act(() => F.pick(d, ctx, me(), pid, n))) { const p = ctx.byId[pid]; if (myst) toast(`The mystery card: ${p.n}, ${S.positions(p)[0]} ${p.t}, ranked #${p.rank}. You paid $${cost}.`); else if (p) toast(`You drafted ${p.n}.`); }
+          const oc = enterAll() && !d.packs ? F.onClock(d, n) : null, who = oc ? oc.team : me();
+          if (act(() => F.pick(d, ctx, who, pid, n))) { const p = ctx.byId[pid]; if (myst) toast(`The mystery card: ${p.n}, ${S.positions(p)[0]} ${p.t}, ranked #${p.rank}. You paid $${cost}.`); else if (p) toast(who !== me() ? `${team(who).name} drafted ${p.n}.` : `You drafted ${p.n}.`); }
         }
         else if (b.dataset.sale) saleDialog(b.dataset.sale);
+        else if (b.dataset.sold) soldDialog(b.dataset.sold);
         else if (b.dataset.claim) {
           const pid = b.dataset.claim, r = F.claim(d, ctx, me(), pid, n);
           if (r.ok) { const p = ctx.byId[pid]; toast(`${p ? p.n : "He"} is yours for ${money(r.price)}.`); alerts.chime("deck"); } else toast(r.why, true);
@@ -2498,6 +2554,14 @@
             }
           }
           else if (a === "tv") tvMode(true);
+          else if (a === "room") roomDialog();
+          else if (a === "inperson") {
+            const on = !d.inPerson;
+            d.inPerson = on; if (!on) d.clockStart = n;   // back to a clock: the team that's up gets a full one
+            save(); render();
+            if (on && !auction()) { roomDialog(); return; }
+            toast(on ? (auction() ? "In-person auction: bid out loud, then tap Sold next to a player to record who got him and for how much." : "In-person draft: no clock. Tap Draft next to a player to enter the pick for whoever is on the clock.") : "The pick clock is back on.");
+          }
           else if (a === "tvexit") tvMode(false);
           else if (a === "pause") act(() => F.pause(d, n, !d.paused));
           else if (a === "undo") act(() => F.undo(d, ctx, n));

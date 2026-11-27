@@ -593,7 +593,7 @@
     if (hcOn() && !HC_TYPES.includes(form.type)) form.type = "snake";
     // a Dutch auction's clock is how long prices fall: 30 seconds unless the commissioner picks another
     const clocksFor = dutch ? "dutch" : auction;
-    if (!form.clocks || form.clocks !== clocksFor) { const was = form.clocks; form.clocks = clocksFor; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800]; if (!ok.includes(form.clock)) form.clock = dutch ? 30 : auction ? 15 : 90; else if (dutch && was !== undefined) form.clock = 30; else if (auction && was === "dutch") form.clock = 15; }
+    if (!form.clocks || form.clocks !== clocksFor) { const was = form.clocks; form.clocks = clocksFor; const ok = auction ? [15, 30, 60] : [30, 60, 90, 120, 3600, 14400, 28800, 0]; if (!ok.includes(form.clock)) form.clock = dutch ? 30 : auction ? 15 : 90; else if (dutch && was !== undefined) form.clock = 30; else if (auction && was === "dutch") form.clock = 15; }
     const V = values(sp), fmt = formatOf(), gl = form.season === "guillotine";
     // a guillotine empties chopped rosters and a vampire's steals would pile up year after year, so both are redraft only
     const oneYear = gl ? "guillotine" : fmt === "vampire" ? "vampire" : null;
@@ -613,7 +613,7 @@
       : cats && k === "h2h" ? ["Most categories", "Head to head: win more categories, win the week"] : cats && k === "h2hcats" ? ["Each category", "Head to head: a 6-4 week counts as 6 wins"] : FORMATS[k]);
     const formats = pickCards("format", formatsFor(sp).filter(formatFits).map((k) => [k, label(k)[0], label(k)[1]]), fmt, "Format");
     const presets = Object.entries(sp.scorings).map(([k, x]) => [k, x.label === "Points" ? "Standard points" : x.label.replace(/ \(.*\)$/, ""), SC_SUB[k] || ""]).concat([["cp", "Custom points", "Set the points for every stat"]]);
-    const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"]];
+    const live = auction ? [[15, "15 sec"], [30, "30 sec"], [60, "1 min"]] : [[30, "30 sec"], [60, "1 min"], [90, "90 sec"], [120, "2 min"], [3600, "1 hr"], [14400, "4 hr"], [28800, "8 hr"], [0, "No clock"]];
     const rows = ROWS(sp).map(([k, title, sub, value, body]) => {
       const open = !!form.open[k];
       return `<div class="nr${open ? " open" : ""}"><button type="button" class="nr-h" data-row="${k}" aria-expanded="${open}" aria-controls="nr-${k}"><span class="nr-t"><b>${esc(title)}</b><small>${esc(sub)}</small></span><span class="nr-v">${esc(value)}</span><span class="chev" aria-hidden="true"></span></button>${open ? `<div class="nr-b" id="nr-${k}">${body()}</div>` : ""}</div>`;
@@ -660,7 +660,7 @@
             `<div class="g2">${fld("The wheel spins", seg("rlRound", [[0, "Every pick"], [1, "Once a round, same team for all"]], form.rlRound, "The wheel spins", { wrap: true }))}${fld("Re-spins a team", seg("respins", [[0, "None"], [1, "1"], [2, "2"], [3, "3"]], form.respins, "Re-spins a team"))}</div>`) : ""}
           ${noRoom() ? "" : dutch ? (() => { const k = dripOn() ? "drip" : F.DUTCH_PACES[form.dPace] ? form.dPace : "std", P = F.DUTCH_PACES[k], opts = Object.entries(F.DUTCH_PACES).map(([v, x]) => [v, x.label]).concat([["drip", "One big sale"]]);
             if (!P) return fld("Pace", seg("dPace", opts, k, "Pace", { wrap: true }), "No draft night. Every player goes on sale at once and every price falls until someone claims him. Managers check in when they can: claim a player at the price showing, or leave a price and he's theirs when he gets there. Open spots at the end are filled from who's left for $1.") + fld("The sale runs", seg("dWindow", [[24, "24 hours"], [48, "48 hours"], [72, "72 hours"]], [24, 48, 72].includes(form.dWindow) ? form.dWindow : 48, "The sale runs"), "Stars start going about an eighth of the way in. The server keeps it moving with nobody's page open.");
-            return fld("Pace", seg("dPace", opts, k, "Pace", { wrap: true }), `Nobody bids. Every player in a wave opens above his value and falls to $1, and the first claim wins at the price showing. The clock fits the players: about ${Math.round(P.k * 9.5)} seconds for a wave of stars, ${Math.round(P.k * 5.5)} in the middle rounds, ${P.min} for the last $1 waves.`); })() : fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}
+            return fld("Pace", seg("dPace", opts, k, "Pace", { wrap: true }), `Nobody bids. Every player in a wave opens above his value and falls to $1, and the first claim wins at the price showing. The clock fits the players: about ${Math.round(P.k * 9.5)} seconds for a wave of stars, ${Math.round(P.k * 5.5)} in the middle rounds, ${P.min} for the last $1 waves.`); })() : fld(auction ? "Bid clock" : "Pick clock", seg("clock", live, form.clock, auction ? "Bid clock" : "Pick clock", { wrap: true }), auction ? "Every bid resets the clock." : !form.clock ? "Nobody is rushed: the draft moves when each pick is made. For a draft in one room, the commissioner can also enter every pick from the draft room's More menu." : form.clock >= 3600 ? "A slow draft: managers with email alerts get one when they're up." : "When a clock runs out, the best player left is taken.")}
           ${dutch && !noRoom() && !dripOn() ? (() => { const auto = F.dutchSize(form.teams), cur = form.dWave || auto; return fld("Players a wave", stepper("dWave", [...new Set([1, 2, 3, 4, 5, 6, 8, cur])].sort((x, y) => x - y), cur, (x) => `${x} player${x === 1 ? "" : "s"}`, "Players a wave"), "How many come up at once. Fewer is easier to follow, especially on a phone, and makes a longer draft. Claimed players stay on the board, greyed out, until the wave ends."); })() : ""}</div>
           ${capOn() ? capHtml() : sealedOn() ? lockHtml() : draftTimeHtml()}
         </section>
@@ -682,7 +682,7 @@
       if (S.football(sp) && form.scoring !== "cp" && form.scoring !== "cc" && form.ptd !== 4) bon.push(`${form.ptd}-pt pass TD`);
       const sm = SX.summary(sxOf(), sp.key); if (sm) bon.push(sm);
     }
-    const clock = form.clock >= 3600 ? `${form.clock / 3600} hr` : form.clock >= 60 ? `${form.clock === 90 ? "90 sec" : form.clock / 60 + " min"}` : `${form.clock} sec`;
+    const clock = !form.clock ? "no clock" : form.clock >= 3600 ? `${form.clock / 3600} hr` : form.clock >= 60 ? `${form.clock === 90 ? "90 sec" : form.clock / 60 + " min"}` : `${form.clock} sec`;
     const faab = form.faab == null ? (gl ? 1000 : 100) : form.faab;
     const dl = form.deadline == null ? Math.max(1, form.weeks - 3) : form.deadline;
     const seasonName = (seasonsFor(sp).find(([x]) => x === form.season) || [, ""])[1].split(":")[0];
