@@ -8475,19 +8475,19 @@
       "pts": null
      },
      {
-      "n": "Brock Purdy",
-      "pos": "QB",
-      "nfl": "SF",
-      "slot": "Q/W/R/T",
-      "proj": 16,
-      "pts": null
-     },
-     {
       "n": "Patrick Mahomes",
       "pos": "QB",
       "nfl": "KC",
-      "slot": "BN",
+      "slot": "Q/W/R/T",
       "proj": 16.72,
+      "pts": null
+     },
+     {
+      "n": "Brock Purdy",
+      "pos": "QB",
+      "nfl": "SF",
+      "slot": "BN",
+      "proj": 16,
       "pts": null
      },
      {

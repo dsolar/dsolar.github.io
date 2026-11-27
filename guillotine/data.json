@@ -4,14 +4,14 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T01:07:28Z",
+ "updated": "2026-11-27T01:22:18Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 147.21,
+   "proj": 146.93,
    "points": 69.8,
    "scores": [
     132.74,
@@ -581,7 +581,7 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 60,
-   "proj": 146.49,
+   "proj": 146.31,
    "points": 16.9,
    "scores": [
     135.46,
@@ -914,44 +914,6 @@
     },
     {
      "slot": "Q/W/R/T",
-     "name": "Brock Purdy",
-     "nfl": "SF",
-     "pos": "QB",
-     "status": "Q",
-     "yahoo_actual": 0.0,
-     "game": "Sun 4:25 pm",
-     "opp": "vs SEA",
-     "season": {
-      "g": 10,
-      "wk": [
-       22.1,
-       28.5,
-       31.3,
-       19.6,
-       17.2,
-       17.4,
-       14.0,
-       null,
-       26.3,
-       31.7,
-       22.2
-      ],
-      "tot": {
-       "pass_yd": 2624,
-       "pass_td": 23,
-       "pass_int": 5,
-       "rush_att": 41,
-       "rush_yd": 222,
-       "rush_td": 2
-      }
-     },
-     "proj": 16.0,
-     "rank": "QB16",
-     "date": "2026-11-29",
-     "next_proj": 19.44
-    },
-    {
-     "slot": "BN",
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
@@ -988,6 +950,44 @@
      "date": "2026-11-26",
      "next_proj": 18.12,
      "in_best": true
+    },
+    {
+     "slot": "BN",
+     "name": "Brock Purdy",
+     "nfl": "SF",
+     "pos": "QB",
+     "status": "Q",
+     "yahoo_actual": 0.0,
+     "game": "Sun 4:25 pm",
+     "opp": "vs SEA",
+     "season": {
+      "g": 10,
+      "wk": [
+       22.1,
+       28.5,
+       31.3,
+       19.6,
+       17.2,
+       17.4,
+       14.0,
+       null,
+       26.3,
+       31.7,
+       22.2
+      ],
+      "tot": {
+       "pass_yd": 2624,
+       "pass_td": 23,
+       "pass_int": 5,
+       "rush_att": 41,
+       "rush_yd": 222,
+       "rush_td": 2
+      }
+     },
+     "proj": 16.0,
+     "rank": "QB16",
+     "date": "2026-11-29",
+     "next_proj": 19.44
     },
     {
      "slot": "BN",
@@ -1190,8 +1190,8 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 8,
-   "proj": 143.01,
-   "points": 40.54,
+   "proj": 142.94,
+   "points": 41.14,
    "scores": [
     95.18,
     94.64,
@@ -1211,7 +1211,7 @@
      "name": "Dak Prescott",
      "nfl": "DAL",
      "pos": "QB",
-     "yahoo_actual": 26.94,
+     "yahoo_actual": 27.54,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1765,8 +1765,8 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 15,
-   "proj": 58.66,
-   "points": 56.0,
+   "proj": 58.74,
+   "points": 57.1,
    "scores": [
     111.28,
     66.9,
@@ -1827,7 +1827,7 @@
      "name": "Javonte Williams",
      "nfl": "DAL",
      "pos": "RB",
-     "yahoo_actual": 30.7,
+     "yahoo_actual": 31.8,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -3690,7 +3690,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T01:07:31Z",
+  "updated": "2026-11-27T01:22:19Z",
   "players": 3046,
   "unmatched": []
  }
