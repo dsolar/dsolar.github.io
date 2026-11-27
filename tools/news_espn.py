@@ -23,10 +23,10 @@ ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
 KEEP_DAYS = 21
 FEEDS = {
-    "nfl": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=100",
-    "nba": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news?limit=100",
-    "nhl": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/news?limit=100",
-    "cbb": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/news?limit=100",
+    "nfl": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50",
+    "nba": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news?limit=50",
+    "nhl": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/news?limit=50",
+    "cbb": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/news?limit=50",
 }
 SKIP_TYPES = {"media", "video", "clip"}
 
@@ -102,7 +102,7 @@ def one(sport):
         if str(a.get("type") or "").lower() in SKIP_TYPES:
             continue
         title = re.sub(r"\s+", " ", a.get("headline") or a.get("title") or "").strip()
-        link = (((a.get("links") or {}).get("web") or {}).get("href") or "").strip()
+        link = re.sub(r"^http://", "https://", (((a.get("links") or {}).get("web") or {}).get("href") or "").strip())  # recaps come as http
         if not title or not link.startswith("https://"):
             continue
         ids, team = [], None
