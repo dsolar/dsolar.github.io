@@ -8125,7 +8125,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 57,
-      "next_proj": 15.42
+      "next_proj": 15.29
      },
      {
       "n": "Christian McCaffrey",
@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 19.17
+      "next_proj": 18.88
      },
      {
       "n": "James Cook III",
@@ -8157,7 +8157,7 @@
       "nfl": "LV",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 0.0
+      "next_proj": 0
      },
      {
       "n": "Kenneth Walker III",
@@ -8205,7 +8205,7 @@
       "nfl": "BAL",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 0,
-      "next_proj": 0.0
+      "next_proj": 0
      },
      {
       "n": "DK Metcalf",
@@ -8301,7 +8301,7 @@
       "pos": "QB",
       "nfl": "CLE",
       "slot": "QB",
-      "proj": 16.31,
+      "proj": 16.01,
       "pts": null
      },
      {
@@ -8317,7 +8317,7 @@
       "pos": "RB",
       "nfl": "DEN",
       "slot": "RB",
-      "proj": 16.49,
+      "proj": 16.5,
       "pts": null
      },
      {
@@ -8357,7 +8357,7 @@
       "pos": "RB",
       "nfl": "CLE",
       "slot": "W/R/T",
-      "proj": 12.1,
+      "proj": 12.33,
       "pts": null
      },
      {
@@ -8373,7 +8373,7 @@
       "pos": "TE",
       "nfl": "CLE",
       "slot": "BN",
-      "proj": 9.28,
+      "proj": 8.98,
       "pts": null
      },
      {
@@ -8503,7 +8503,7 @@
       "pos": "WR",
       "nfl": "CIN",
       "slot": "BN",
-      "proj": 13.97,
+      "proj": 13.96,
       "pts": null
      },
      {
@@ -8683,7 +8683,7 @@
       "pos": "TE",
       "nfl": "LV",
       "slot": "BN",
-      "proj": 12.35,
+      "proj": 12.05,
       "pts": null
      },
      {
