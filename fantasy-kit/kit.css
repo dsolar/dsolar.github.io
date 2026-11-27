@@ -3142,3 +3142,11 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 @media (max-width:600px){table.t td .pn .fn{display:none}table.t td .pn .fi{display:inline}}
 /* Hard Cap players list on a phone: the salary without its years, so it isn't hidden under the add button */
 @media (max-width:600px){table.t .sal-y{display:none}}
+/* badges: a team's chips (team header, league history) */
+.bdgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bdg{display:inline-flex;align-items:center;gap:5px;padding:3px 9px 3px 6px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.3;cursor:default}
+.bdg i{font-style:normal;font-size:14px}
+.bdg b{font-size:11.5px;min-width:18px;padding:0 5px;border-radius:999px;background:var(--surface-2);text-align:center;font-variant-numeric:tabular-nums}
+.bdg.more{color:var(--muted);padding-left:9px}
+.bdg:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+

@@ -556,7 +556,10 @@
                 const xs = res.flatMap((x) => [x.sa, x.sb]).sort((p, q) => p - q), m = xs.length % 2 ? xs[(xs.length - 1) / 2] : (xs[xs.length / 2 - 1] + xs[xs.length / 2]) / 2;
                 med = ` Against the league median of ${fmtS(m)}, you ${sm > m ? "won" : sm < m ? "lost" : "tied"}.`;
               }
-              add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.${med}${cl.settings.weeks > 1 ? (g.cats ? " The recap has every result and who moved in the standings." : " The recap has every result, the top players and who left points on the bench.") : ""}`, null, cl.settings.weeks > 1 ? `league/recap/${w}` : null);
+              // badges earned this week (from the results alone: the server has no box scores here)
+              let bd = "";
+              if (G.badges) { try { const xs = G.badges(cl, null).list.filter((x) => x.week === +w && x.team === mine && !["record", "first", "champ", "runner"].includes(x.id)); if (xs.length) bd = ` ${xs.length === 1 ? "Badge" : "Badges"} earned: ${xs.map((x) => `${G.BADGES[x.id].name}${x.text ? ` (${x.text})` : ""}`).join(", ")}.`; } catch (e) { bd = ""; } }
+              add(mine, "week", `week ${w} final`, `You ${won == null ? "tied" : won ? "beat" : "lost to"} ${teamName(opp)}, ${fmtS(sm)} to ${fmtS(so)}.${med}${bd}${cl.settings.weeks > 1 ? (g.cats ? " The recap has every result and who moved in the standings." : " The recap has every result, the top players and who left points on the bench.") : ""}`, null, cl.settings.weeks > 1 ? `league/recap/${w}` : null);
               continue;
             }
             // the chase: where you stand after each week, and your place at the end

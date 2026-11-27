@@ -1956,6 +1956,89 @@
     for (const k of Object.keys(out)) if (typeof out[k].v === "number") out[k].v = Math.round(out[k].v * 100) / 100;
     return out;
   }
+  /* Badges: what each team has earned this season, worked out from the results (nothing is stored, so they never
+     drift from the games). Each week of a head-to-head league can hand out:
+       top      Top score: the week's highest score (points)
+       perfect  Perfect lineup: nobody on the bench would have scored more (points, set lineups)
+       nail     Nail-biter: won by less than 2% of the winning score, or by one category
+       blowout  Blowout: won by 40% of the loser's score or more, or swept the categories
+       badbeat  Bad beat: lost with one of the week's three best scores (points, six teams or more)
+       heist    Heist: won with one of the week's three lowest scores (points, six teams or more)
+       gem      Waiver gem: the league's top scorer of the week was a player you picked up this season (points)
+       fire     On fire: a fourth straight win (and an eighth), regular season
+       bounce   Bounce back: a win that ends a losing streak of three or more, regular season
+     and once a season: record (the league's season-high score, its current holder), first (first place when the
+     regular season ends), champ and runner (the title game). Guillotine, roto and total-points leagues only get the
+     season ones. { list: [{ id, team, week, text }], byTeam: { team: [...] } } */
+  const BADGES = {
+    top: { name: "Top score", about: "The week's highest score" }, perfect: { name: "Perfect lineup", about: "Nobody on the bench would have scored more" },
+    nail: { name: "Nail-biter", about: "Won by less than 2% of the winning score, or by one category" }, blowout: { name: "Blowout", about: "Won by 40% of the loser's score or more, or swept the categories" },
+    badbeat: { name: "Bad beat", about: "Lost with one of the week's three best scores" }, heist: { name: "Heist", about: "Won with one of the week's three lowest scores" },
+    gem: { name: "Waiver gem", about: "The league's top scorer of the week was a pickup" }, fire: { name: "On fire", about: "Four straight wins" },
+    bounce: { name: "Bounce back", about: "A win that ended a losing streak of three or more" }, record: { name: "Season high", about: "The league's highest score this season" },
+    first: { name: "Regular-season champ", about: "First place when the regular season ended" }, champ: { name: "Champion", about: "Won the title" }, runner: { name: "Runner-up", about: "Made the title game" },
+  };
+  // without the players (an email from the server's clock): the week's games and scores straight from the results, so
+  // everything but the perfect lineup and the waiver gem
+  function liteWeek(L, w) {
+    if (isGuillotine(L) || isRoto(L) || isTotal(L) || !Array.isArray(L.results[w]) || !L.results[w].length) return null;
+    const res = L.results[w], pts = !res.some((g) => g.cats), round = (x) => Math.round(x * 100) / 100;
+    const games = res.map((g, i) => ({ i, a: g.a, b: g.b, sa: g.sa, sb: g.sb, w: g.w, ties: g.ties || 0, margin: round(Math.abs(g.sa - g.sb)) }));
+    const seen = new Set(), scores = [];
+    for (const g of games) for (const [t, x] of [[g.a, g.sa], [g.b, g.sb]]) if (!seen.has(t)) { seen.add(t); scores.push({ team: t, score: x }); }
+    scores.sort((x, y) => y.score - x.score || x.team - y.team);
+    return { pts, games, scores, perfect: [], top: [] };
+  }
+  function badges(L, ctx) {
+    const list = [], add = (id, team, week, text) => { if (team != null && L.teams[team]) list.push({ id, team, week, text }); };
+    const done = Math.min(L.week - 1, totalWeeks(L)), weeks = L.settings.weeks, n = L.teams.length;
+    const r1 = (x) => (Math.round(x * 10) / 10).toString();
+    const run = {}, loss = {};
+    let high = null;
+    for (let w = 1; w <= done; w++) {
+      let rc = null; try { rc = ctx ? recap(L, ctx, w) : liteWeek(L, w); } catch (e) { rc = null; }
+      if (!rc) continue;
+      const po = w > weeks, decided = rc.games.filter((g) => g.w === "a" || g.w === "b");
+      if (rc.pts && rc.scores.length > 1) {
+        const top = rc.scores[0];
+        if (top.score > (rc.scores[1] || {}).score) add("top", top.team, w, `${r1(top.score)} points`);
+        if (!high || top.score > high.score) high = { team: top.team, score: top.score, week: w };
+        for (const t of rc.perfect) add("perfect", t, w, "");
+        const best3 = rc.scores.slice(0, 3).map((x) => x.team), low3 = rc.scores.slice(-3).map((x) => x.team);
+        for (const g of decided) {
+          const [win, lose, ws, ls] = g.w === "a" ? [g.a, g.b, g.sa, g.sb] : [g.b, g.a, g.sb, g.sa];
+          if (ws > 0 && g.margin < 0.02 * ws) add("nail", win, w, `by ${r1(g.margin)}`);
+          if (ls > 0 && g.margin >= 0.4 * ls) add("blowout", win, w, `by ${r1(g.margin)}`);
+          if (n >= 6 && rc.scores.length >= 6) {
+            if (best3.includes(lose)) add("badbeat", lose, w, `${r1(ls)} points`);
+            if (low3.includes(win)) add("heist", win, w, `${r1(ws)} points`);
+          }
+        }
+        // a pickup: added off waivers or free agency by this team (a trade or a draft pick doesn't count)
+        const star = rc.top[0];
+        if (star && ctx.byId[star.pid] && (L.tx || []).some((x) => x.team === star.team && x.type !== "trade" && x.type !== "draft" && (x.adds || []).includes(star.pid)))
+          add("gem", star.team, w, `${ctx.byId[star.pid].n}, ${r1(star.pts)} points`);
+      } else if (!rc.pts) {
+        for (const g of decided) {
+          const [win, ws, ls] = g.w === "a" ? [g.a, g.sa, g.sb] : [g.b, g.sb, g.sa];
+          if (ws - ls === 1) add("nail", win, w, `${ws}-${ls}`);
+          if (ls === 0 && ws >= 3 && !g.ties) add("blowout", win, w, `${ws}-0`);
+        }
+      }
+      if (po) continue;
+      for (const g of rc.games) for (const [t, side] of [[g.a, "a"], [g.b, "b"]]) {
+        const won = g.w === side, lost = (g.w === "a" || g.w === "b") && !won;
+        if (won) { if ((loss[t] || 0) >= 3) add("bounce", t, w, `after ${loss[t]} straight losses`); run[t] = (run[t] || 0) + 1; loss[t] = 0; if (run[t] === 4 || run[t] === 8) add("fire", t, w, `${run[t]} straight wins`); }
+        else { run[t] = 0; loss[t] = lost ? (loss[t] || 0) + 1 : 0; }
+      }
+    }
+    if (high) add("record", high.team, high.week, `${r1(high.score)} points`);
+    if (done >= weeks && weeks > 0 && !isGuillotine(L) && !isRoto(L) && !isTotal(L)) { const st = standings(L, weeks); if (st[0]) add("first", st[0].team, weeks, `${st[0].w}-${st[0].l}${st[0].t ? "-" + st[0].t : ""}`); }
+    if (L.week > totalWeeks(L)) { let f = {}; try { f = finish(L); } catch (e) { f = {}; } add("champ", f.champion, totalWeeks(L), ""); add("runner", f.runnerUp, totalWeeks(L), ""); }
+    const byTeam = {};
+    for (const b of list) (byTeam[b.team] = byTeam[b.team] || []).push(b);
+    return { list, byTeam };
+  }
   // A finished season in a few lines, for the league's history.
   function summary(L) {
     const st = standings(L), fin = finish(L), champ = fin.champion != null ? fin.champion : st[0] && st[0].team;
@@ -3058,7 +3141,7 @@
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
   return { payroll, capRoom, sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, playoffOdds, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
+    finishWeek, playoffOdds, badges, BADGES, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     halfOf, halvesOk, HALF_NAMES, weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

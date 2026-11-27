@@ -682,6 +682,8 @@
       const stCard = st.length ? `<div class="card"><div class="mod-h"><h2>Around the league</h2><a href="#league/standings">Standings</a></div><ul class="feed">${st.join("")}</ul></div>` : "";
       const pw = w === last && !over() ? G.power(L(), ctx).slice(0, 5) : [];
       const pwCard = pw.length ? `<div class="card"><div class="mod-h"><h2>Power rankings</h2><a href="#league/standings">More</a></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<span class="ell"><b>${nm(r.team)}</b> <span class="ps">${recOf(r.team)}</span></span>${moveTag(r.move)}</li>`).join("")}</ol></div>` : "";
+      const wb = badgesNow().list.filter((x) => x.week === w && !["record", "first", "champ", "runner"].includes(x.id)).sort((a, b) => BD_ORDER.indexOf(a.id) - BD_ORDER.indexOf(b.id));
+      const bdCard = wb.length ? `<div class="card"><div class="mod-h"><h2>Badges this week</h2></div><ul class="feed">${wb.map((x) => row(x.team, `<span aria-hidden="true">${BD_ICON[x.id] || "★"}</span> ${esc(bdName(x.id))}`, `${nm(x.team)}${x.text ? `, ${esc(x.text)}` : ""}`, "")).join("")}</ul></div>` : "";
       const lede = recapLede(rc);
       const hl = !pts() ? catHighs(w) : "";
       // a playoff week leads with its biggest game: the championship in the last round
@@ -697,7 +699,7 @@
           ${title ? gameCard(title, esc(kindName("title", w))) : gameCard(rc.close, "Game of the week")}${hl}
           ${topCard || stCard || pwCard ? everyCard : ""}
           ${callsCard}
-        </div><aside class="stack">${topCard || stCard || pwCard ? `${topCard}${stCard}${pwCard}` : everyCard}</aside></div></div>`;
+        </div><aside class="stack">${topCard || stCard || pwCard ? `${topCard}${bdCard}${stCard}${pwCard}` : everyCard + bdCard}</aside></div></div>`;
     }
     const moveTag = (m) => (m > 0 ? `<span class="tag win">+${m}</span>` : m < 0 ? `<span class="tag loss">${m}</span>` : `<span class="ps">-</span>`);
     const championOf = () => G.finish(L()).champion;
@@ -825,6 +827,28 @@
     const zoneTag = (z) => (z ? ` <span class="tag ${PZ[z][0]}" title="${esc(PZ[z][1] === "Playoff" ? "Plays the other tier's team for a place after the regular season" : PZ[z][1] === "Relegation" ? "In the drop zone: goes down if the season ended today" : "Goes up if the season ended today")}">${PZ[z][1]}</span>` : "");
     // playoff odds (G.playoffOdds), worked out once per change to the results, rosters or rules: they take a moment
     let poMemo = { key: null, val: null };
+    // badges (G.badges), worked out once per change to the results or moves
+    let bdMemo = { key: null, val: null };
+    const BD_ICON = { top: "💯", perfect: "🎯", nail: "😅", blowout: "💥", badbeat: "💔", heist: "🦹", gem: "💎", fire: "🔥", bounce: "🔄", record: "📈", first: "🥇", champ: "🏆", runner: "🥈" };
+    const BD_ORDER = ["champ", "runner", "first", "record", "fire", "perfect", "top", "gem", "blowout", "nail", "heist", "bounce", "badbeat"];
+    const badgesNow = () => {
+      if (pre()) return { list: [], byTeam: {} };
+      const key = JSON.stringify([L().week, Object.keys(L().results || {}).length, (L().tx || []).length, L().version || 0]);
+      if (bdMemo.key !== key) { let v = { list: [], byTeam: {} }; try { v = G.badges(L(), ctx) || v; } catch (e) { /* none */ } bdMemo = { key, val: v }; }
+      return bdMemo.val;
+    };
+    const bdName = (id) => (G.BADGES[id] || {}).name || id;
+    // a team's badges as chips: one per kind, with how many and the weeks (newest first in the tooltip)
+    function badgeChips(id, max) {
+      const xs = badgesNow().byTeam[id] || [];
+      if (!xs.length) return "";
+      const kinds = BD_ORDER.filter((k) => xs.some((x) => x.id === k));
+      const chip = (k) => { const ys = xs.filter((x) => x.id === k).sort((a, b) => b.week - a.week), n = ys.length;
+        const tip = `${bdName(k)}: ${(G.BADGES[k] || {}).about || ""}. ${ys.map((y) => `${weekLabel(y.week)}${y.text ? `, ${y.text}` : ""}`).join("; ")}`;
+        return `<span class="bdg" title="${esc(tip)}" tabindex="0" aria-label="${esc(tip)}"><i aria-hidden="true">${BD_ICON[k] || "★"}</i>${esc(bdName(k))}${n > 1 ? `<b>${n}</b>` : ""}</span>`; };
+      const shown = max ? kinds.slice(0, max) : kinds;
+      return `<div class="bdgs">${shown.map(chip).join("")}${max && kinds.length > max ? `<span class="bdg more">+${kinds.length - max}</span>` : ""}</div>`;
+    }
     const poOdds = () => {
       if (pre() || over()) return null;
       const key = JSON.stringify([L().week, Object.keys(L().results || {}).length, (L().tx || []).length, L().settings.playoffTeams, L().settings.weeks, L().divs ? 1 : 0]);
@@ -1169,6 +1193,8 @@
         <div class="cols2"><div class="stack">
           <div class="card"><div class="mod-h"><h2>Champions</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Season</th><th>Champion</th>${all.some((x) => !x.live && x.runnerUp) ? `<th class="hide-s">Runner-up</th>` : ""}<th class="r">Record</th></tr></thead><tbody>${champRows}</tbody></table></div>
             ${many ? "" : `<p class="ps" style="margin:10px 16px 14px">Each finished season is added here when the commissioner starts the next one.</p>`}</div>
+          ${(() => { const bt = badgesNow().byTeam, ids = Object.keys(bt).map(Number).sort((a, b) => bt[b].length - bt[a].length);
+            return ids.length ? `<div class="card"><div class="mod-h"><h2>Badges</h2><span class="ps">This season</span></div><ul class="feed">${ids.map((t) => `<li style="grid-template-columns:auto minmax(0,1fr);align-items:start;padding:10px 16px">${teamAv(T(t), "sm")}<span style="min-width:0"><a href="${teamHref(t)}" style="color:inherit;text-decoration:none"><b>${nm(t)}</b></a>${badgeChips(t)}</span></li>`).join("")}</ul></div>` : ""; })()}
           <div class="card"><div class="mod-h"><h2>Records</h2>${many ? `<span class="ps">All seasons</span>` : ""}</div>${recRows.length ? `<div class="bd"><dl class="kv rec">${recRows.map(([k, v, w]) => `<dt>${k}</dt><dd>${v}<small>${w}</small></dd>`).join("")}</dl></div>` : `<p class="empty">${pts() || gl() ? "Records start once a week is final." : "Score records are for points leagues; win streaks start once a week is final."}</p>`}</div>
         </div>
         <div class="card"><div class="mod-h"><h2>All-time standings</h2></div><div class="table-wrap"><table class="t"><thead><tr><th>Team</th>${many ? `<th class="r hide-s">Seasons</th>` : ""}${hasWL ? `<th class="r">Record</th><th class="r hide-s">Pct</th>` : ""}<th class="r">Titles</th>${many ? `<th class="r hide-s" title="Average finish">Avg</th>` : ""}${pts() ? `<th class="r hide-s">Points</th>` : ""}</tr></thead><tbody>
@@ -1433,7 +1459,7 @@
     function teamHead(id, o = {}) {
       const t = T(id), r = standings().find((x) => x.team === id);
       return `<div class="team-h">${teamAv(t, "xl")}<div style="min-width:0"><h1 class="disp">${esc(t.name)}${isMe(id) ? ` <span class="tag you" style="font-size:13px;vertical-align:6px">You</span>` : ""}${G.vampireOf(L()) === id ? ` <span class="tag loss" style="font-size:13px;vertical-align:6px">Vampire</span>` : ""}</h1>
-        <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner && !(isMe(id) && /^you$/i.test(t.owner)) ? `<a href="#league/managers" data-mgr="${id}"${isMe(id) ? ' class="th-me"' : ""} style="display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none">${U.faceAv(faceOf(id), t.owner, "sm")}Manager <b>${esc(t.owner)}</b></a>` : t.owner ? "" : `<span>Bot</span>`}</div></div>
+        <div class="meta">${gl() ? `<span><b>${esc(recOf(id))}</b>${r.alive ? `, ${ord(r.rank)} in points` : ""}</span>` : `<span><b>${r.w}-${r.l}${r.t ? "-" + r.t : ""}</b>, ${ord(r.rank)} place</span>`}<span>${pts() ? `<b>${fmtS(r.pf)}</b> points for` : `<b>${r.pf}</b> categories won`}</span><span>FAAB <b>$${t.faab}</b></span><span>Waiver priority <b>${ord(t.priority + 1)}</b></span>${t.owner && !(isMe(id) && /^you$/i.test(t.owner)) ? `<a href="#league/managers" data-mgr="${id}"${isMe(id) ? ' class="th-me"' : ""} style="display:inline-flex;align-items:center;gap:6px;color:inherit;text-decoration:none">${U.faceAv(faceOf(id), t.owner, "sm")}Manager <b>${esc(t.owner)}</b></a>` : t.owner ? "" : `<span>Bot</span>`}</div>${badgeChips(id)}</div>
         <span class="grow"></span><div class="th-acts">${isMe(id) ? `<button class="btn" data-editteam>Edit team</button>` : ""}${!isMe(id) && canTrade() ? `<button class="btn go" data-trade="${id}">Propose a trade</button>` : ""}
         <label class="sr" for="team-pick">Team</label><select id="team-pick" style="width:auto;border-radius:999px">${o.all ? `<option value="all"${o.all === "on" ? " selected" : ""}>All teams</option>` : ""}${L().teams.map((x) => `<option value="${x.id}"${x.id === id && o.all !== "on" ? " selected" : ""}>${esc(x.name)}${isMe(x.id) ? " (you)" : ""}</option>`).join("")}</select></div></div>`;
     }
