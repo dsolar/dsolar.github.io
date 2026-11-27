@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T00:37:22Z",
+ "updated": "2026-11-27T00:52:23Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -420,7 +420,7 @@
      "name": "DeVonta Smith",
      "nfl": "PHI",
      "pos": "WR",
-     "yahoo_actual": 31.4,
+     "yahoo_actual": 35.1,
      "game": "Thu 4:30 pm",
      "opp": "@ DAL",
      "season": {
@@ -1191,7 +1191,7 @@
    "manager": "Scott",
    "faab": 8,
    "proj": 142.92,
-   "points": 29.36,
+   "points": 37.82,
    "scores": [
     95.18,
     94.64,
@@ -1211,7 +1211,7 @@
      "name": "Dak Prescott",
      "nfl": "DAL",
      "pos": "QB",
-     "yahoo_actual": 18.66,
+     "yahoo_actual": 26.22,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1367,7 +1367,7 @@
      "name": "George Pickens",
      "nfl": "DAL",
      "pos": "WR",
-     "yahoo_actual": 6.3,
+     "yahoo_actual": 7.2,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1766,7 +1766,7 @@
    "manager": "JeffS",
    "faab": 15,
    "proj": 58.66,
-   "points": 54.4,
+   "points": 55.4,
    "scores": [
     111.28,
     66.9,
@@ -1827,7 +1827,7 @@
      "name": "Javonte Williams",
      "nfl": "DAL",
      "pos": "RB",
-     "yahoo_actual": 29.1,
+     "yahoo_actual": 30.1,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -3690,7 +3690,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T00:37:25Z",
+  "updated": "2026-11-27T00:52:24Z",
   "players": 3046,
   "unmatched": []
  }
