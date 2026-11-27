@@ -3149,4 +3149,6 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .bdg b{font-size:11.5px;min-width:18px;padding:0 5px;border-radius:999px;background:var(--surface-2);text-align:center;font-variant-numeric:tabular-nums}
 .bdg.more{color:var(--muted);padding-left:9px}
 .bdg:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
-
+/* draft results: an auction player's price, then the order he was bought */
+.res-at{display:inline-flex;align-items:baseline;gap:6px;white-space:nowrap}
+.res-at small{font-size:12px}

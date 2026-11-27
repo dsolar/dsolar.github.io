@@ -833,7 +833,7 @@
       ${on ? fld("Who counts as a prospect", seg("proRule", [["strict", strict], ["loose", loose]], form.proRule, "Who counts as a prospect", { wrap: true }), "A prospect who graduates (plays his way past the line) has two weeks on the taxi squad, then he's promoted.") : ""}</div>`;
   }
   function carryBody() {
-    if (form.kind === "keeper") return `<div class="g2">${fld("Keepers a team", stepper("keepN", [1, 2, 3, 4, 5, 6, 8], form.keepN, String, "Keepers a team"))}
+    if (form.kind === "keeper") return `<div class="g2">${fld("Keepers a team", stepper("keepN", [1, 2, 3, 4, 5, 6, 8, 10, 12, 15], form.keepN, String, "Keepers a team"))}
         ${fld("A keeper costs", seg("keeperCost", auction() ? [["price", "His price"], ["price5", "His price + $5"]] : [["round", "His round"], ["round1", "A round earlier"], ["free", "A last-round pick"]], kc(), "A keeper costs", { wrap: true }), `Worst team picks first. Players picked up in season cost ${form.type === "auction" ? "$5" : "the last round"}.`)}</div>${prospectFields()}`;
     return `<div class="g3">${fld("Rookie draft", stepper("rookie", [2, 3, 4, 5], form.rookie, (x) => `${x} rounds`, "Rookie draft rounds"), "Worst team picks first.")}
         ${fld("Taxi squad", stepper("taxi", [0, 1, 2, 3, 4, 5], form.taxi, (x) => (x ? `${x} spot${x > 1 ? "s" : ""}` : "None"), "Taxi squad spots"), "Stash rookies off the roster.")}
@@ -1244,6 +1244,8 @@
       D.season = { format: fmt, tally: form.season === "h2hcats" ? "cats" : form.season === "allplay" ? "allplay" : "game", weeks: form.weeks,
         faab: form.faab == null ? (gl ? 1000 : 100) : form.faab, ir: form.ir, maxAdds: form.maxAdds || 0, maxAddsSeason: form.maxAddsSeason || 0, minBid: form.minBid || 0, waiverPrice: form.waiverPrice === "second" ? "second" : "first",
         posMax: Object.fromEntries(Object.entries(form.posMax).filter(([, v]) => v)) };
+      // a keeper takes a pick next season, so a team keeps fewer players than it drafts
+      if (form.keepers > 0 && D.rounds && form.keepers >= D.rounds) throw new Error(`${form.keepers} keepers needs a draft longer than ${D.rounds} rounds. Keep fewer, or add roster spots.`);
       if (form.keepers > 0) Object.assign(D.season, { keepers: form.keepers, keeperCost: kc() });
       if (form.keepers === -1 && !gl) { D.season.dynasty = { rounds: form.rookie || 3, picks: form.fpicks !== 0 }; if (form.taxi) D.season.taxi = form.taxi; }
       if (sd) Object.assign(D.season, { showdown: { id: sd.id, teams: [sd.away, sd.home], at: sd.at, week: sd.week, label: `${sd.away} @ ${sd.home}` }, ir: 0, when: "now" });
