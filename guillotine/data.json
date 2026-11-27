@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T01:22:18Z",
+ "updated": "2026-11-27T01:37:26Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -420,9 +420,10 @@
      "name": "DeVonta Smith",
      "nfl": "PHI",
      "pos": "WR",
-     "yahoo_actual": 35.1,
+     "yahoo_actual": 37.5,
      "game": "Thu 4:30 pm",
      "opp": "@ DAL",
+     "yfinal": true,
      "season": {
       "g": 5,
       "wk": [
@@ -448,6 +449,8 @@
      "proj": 11.72,
      "rank": "WR19",
      "date": "2026-11-26",
+     "actual": 37.5,
+     "final": true,
      "next_proj": 11.04
     },
     {
@@ -582,7 +585,7 @@
    "manager": "Daid B",
    "faab": 60,
    "proj": 146.31,
-   "points": 16.9,
+   "points": 18.22,
    "scores": [
     135.46,
     161.16,
@@ -602,7 +605,7 @@
      "name": "Josh Allen",
      "nfl": "BUF",
      "pos": "QB",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 1.32,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -728,6 +731,7 @@
      "yahoo_actual": 16.9,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
+     "yfinal": true,
      "season": {
       "g": 11,
       "wk": [
@@ -756,6 +760,8 @@
      "proj": 16.97,
      "rank": "WR3",
      "date": "2026-11-26",
+     "actual": 16.9,
+     "final": true,
      "next_proj": 13.94,
      "in_best": true
     },
@@ -1179,19 +1185,19 @@
      "next_proj": 0.0
     }
    ],
-   "points_final": 0,
+   "points_final": 16.9,
    "best": 146.1,
    "best_next": 138.1,
-   "locked": 0,
-   "locked_proj": 0,
-   "games_final": 0
+   "locked": 16.9,
+   "locked_proj": 16.97,
+   "games_final": 1
   },
   {
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 8,
    "proj": 142.94,
-   "points": 41.14,
+   "points": 42.14,
    "scores": [
     95.18,
     94.64,
@@ -1211,9 +1217,10 @@
      "name": "Dak Prescott",
      "nfl": "DAL",
      "pos": "QB",
-     "yahoo_actual": 27.54,
+     "yahoo_actual": 26.54,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
+     "yfinal": true,
      "season": {
       "g": 11,
       "wk": [
@@ -1242,6 +1249,8 @@
      "proj": 20.83,
      "rank": "QB6",
      "date": "2026-11-26",
+     "actual": 26.54,
+     "final": true,
      "next_proj": 14.51,
      "in_best": true
     },
@@ -1290,7 +1299,7 @@
      "name": "James Cook III",
      "nfl": "BUF",
      "pos": "RB",
-     "yahoo_actual": 0.0,
+     "yahoo_actual": 2.0,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -1370,6 +1379,7 @@
      "yahoo_actual": 9.2,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
+     "yfinal": true,
      "season": {
       "g": 10,
       "wk": [
@@ -1397,6 +1407,8 @@
      "proj": 12.51,
      "rank": "WR16",
      "date": "2026-11-26",
+     "actual": 9.2,
+     "final": true,
      "next_proj": 10.42
     },
     {
@@ -1754,12 +1766,12 @@
      "next_proj": 0.0
     }
    ],
-   "points_final": 4.4,
+   "points_final": 40.14,
    "best": 147.3,
    "best_next": 140.8,
-   "locked": 4.4,
-   "locked_proj": 12.91,
-   "games_final": 1
+   "locked": 40.14,
+   "locked_proj": 46.25,
+   "games_final": 3
   },
   {
    "name": "Tai Streetz Lata?",
@@ -1830,6 +1842,7 @@
      "yahoo_actual": 31.8,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
+     "yfinal": true,
      "season": {
       "g": 11,
       "wk": [
@@ -1858,6 +1871,8 @@
      "proj": 18.23,
      "rank": "RB4",
      "date": "2026-11-26",
+     "actual": 31.8,
+     "final": true,
      "next_proj": 12.81,
      "in_best": true
     },
@@ -2327,13 +2342,13 @@
      "assumed_slot": "WR"
     }
    ],
-   "points_final": 25.3,
+   "points_final": 57.1,
    "best": 154.9,
    "best_next": 142.4,
    "fill": 91.35,
-   "locked": 25.3,
-   "locked_proj": 21.06,
-   "games_final": 1
+   "locked": 57.1,
+   "locked_proj": 39.29,
+   "games_final": 2
   },
   {
    "name": "Holofernes",
@@ -3690,7 +3705,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T01:22:19Z",
+  "updated": "2026-11-27T01:37:28Z",
   "players": 3046,
   "unmatched": []
  }
