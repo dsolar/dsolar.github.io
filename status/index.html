@@ -119,7 +119,9 @@
     var now = h.now;
     $("st-live").innerHTML = Object.keys(SPORTS).map(function (k) {
       var x = h.live[k]; if (!x) return row("", SPORTS[k], "No feed yet", "");
-      return row(x.on ? "on" : "ok", SPORTS[k], x.on ? "Games on now" : "", "updated " + ago(x.at, now));
+      // the stored copy may have been saved mid-game and not asked for since: only a recent one says games are on
+      var on = x.on && now - x.at < 15 * 60e3;
+      return row(on ? "on" : "ok", SPORTS[k], on ? "Games on now" : "", "updated " + ago(x.at, now));
     }).join("");
     var clockOk = h.clock && now - h.clock < 20 * 60e3;
     if (!clockOk) behind.push("the league clock");
