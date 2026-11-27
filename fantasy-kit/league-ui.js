@@ -1025,6 +1025,19 @@
       return posts.concat(moves).sort((a, b) => a.at - b.at);
     }
     const chatBody = (t) => esc(t).replace(/\n/g, "<br>");
+    // reactions under a post (opts.chat.reacts(): [{ post, e, team, me }]): one chip per emoji with its count and who,
+    // yours highlighted; the + opens the six to pick from. Tapping toggles yours.
+    const RX = [["👍", "Thumbs up"], ["😂", "Laughing"], ["🔥", "Fire"], ["😮", "Wow"], ["💀", "Dead"], ["🗑️", "Trash"]];
+    function reactRow(pid, open) {
+      if (!opts.chat || !opts.chat.reacts) return "";
+      const mine = me() != null, list = opts.chat.reacts().filter((r) => r.post === pid), groups = [];
+      for (const [e, label] of RX) { const xs = list.filter((r) => r.e === e); if (xs.length) groups.push({ e, label, n: xs.length, me: xs.some((r) => r.me), who: [...new Set(xs.map((r) => (T(r.team) || {}).name).filter(Boolean))] }); }
+      if (!groups.length && !mine) return "";
+      const chips = groups.map((g) => `<button type="button" class="rx-b${g.me ? " on" : ""}" data-rx="${pid}|${g.e}" aria-pressed="${g.me}" title="${esc(g.who.join(", "))}"${mine ? "" : " disabled"} aria-label="${esc(`${g.label}, ${g.n}: ${g.who.join(", ")}`)}">${g.e}<span>${g.n}</span></button>`).join("");
+      const pick = mine && open ? `<span class="rx-pick" role="group" aria-label="Pick a reaction">${RX.map(([e, label]) => `<button type="button" data-rx="${pid}|${e}" aria-label="${label}">${e}</button>`).join("")}</span>` : "";
+      return `<div class="rx" data-post="${pid}">${chips}${mine ? `<button type="button" class="rx-add" data-rxopen="${pid}" aria-expanded="${!!open}" aria-label="Add a reaction" title="React">${open ? "&times;" : `<svg viewBox="0 0 20 20" width="15" height="15" aria-hidden="true"><circle cx="9" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="6.6" cy="8.4" r="1" fill="currentColor"/><circle cx="11.4" cy="8.4" r="1" fill="currentColor"/><path d="M5.8 11.6c1.6 2 4.8 2 6.4 0" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M16.5 2.5v4M14.5 4.5h4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>`}</button>` : ""}${pick}</div>`;
+    }
+    const redrawReacts = (pid, open) => { for (const el of opts.el.querySelectorAll(`.rx[data-post="${pid}"]`)) el.outerHTML = reactRow(pid, open); };
     function chatLi(it, prev) {
       if (it.x) {
         const x = it.x, t = T(x.team);
@@ -1034,7 +1047,7 @@
       const p = it.p, t = T(p.team) || { name: p.author, abbr: "", color: 0 };
       // a run of posts from the same team within ten minutes reads as one message
       const cont = prev && prev.p && prev.p.team === p.team && it.at - prev.at < 6e5;
-      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : faces()[p.team] && faces()[p.team].photo ? U.faceAv(faces()[p.team], p.author, "sm") : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}<p>${chatBody(p.body)}</p></div></li>`;
+      return `<li class="${isMe(p.team) ? "mine " : ""}${cont ? "cont" : ""}">${cont ? `<span></span>` : faces()[p.team] && faces()[p.team].photo ? U.faceAv(faces()[p.team], p.author, "sm") : teamAv(t, "sm")}<div class="what">${cont ? "" : `<div class="who"><b>${esc(t.name)}</b><span class="ps">${esc(p.author)}</span><time>${esc(U.ago(p.at, now()))}</time></div>`}<p>${chatBody(p.body)}</p>${reactRow(p.id, ui.rxOpen === p.id)}</div></li>`;
     }
     function chatList(items) {
       return items.length ? `<ul class="chat">${items.map((it, i) => chatLi(it, items[i - 1])).join("")}</ul>` : `<div class="bd"><p class="ps" style="margin:0">No posts yet. Say hello, or talk some trash about this week's matchup.</p></div>`;
@@ -3108,6 +3121,16 @@
     window.addEventListener("keydown", (e) => { if (e.key === "Escape" && drag) endDrag(e, false); });
     opts.el.addEventListener("contextmenu", (e) => { if (drag && drag.live) e.preventDefault(); });
 
+    opts.el.addEventListener("click", async (e) => {
+      const add = e.target.closest("[data-rxopen]"), b = !add && e.target.closest("[data-rx]");
+      if (add) { const pid = +add.dataset.rxopen, was = ui.rxOpen; if (was != null && was !== pid) redrawReacts(was, false); ui.rxOpen = was === pid ? null : pid; redrawReacts(pid, ui.rxOpen === pid); const f = opts.el.querySelector(`.rx[data-post="${pid}"] .rx-pick button`); if (f) f.focus(); return; }
+      if (!b || !opts.chat || !opts.chat.react || b.disabled) return;
+      const [pid, emo] = b.dataset.rx.split("|"), id = +pid;
+      b.disabled = true;
+      const r = await opts.chat.react(id, emo).catch((err) => ({ error: err.message }));
+      if (r && r.error) { U.toast(r.error, true); b.disabled = false; return; }
+      ui.rxOpen = null; redrawReacts(id, false);
+    });
     opts.el.addEventListener("input", (e) => { if (e.target.id === "fk-chat") ui.chatDraft = e.target.value; });
     opts.el.addEventListener("keydown", (e) => {
       // Enter sends, Shift+Enter starts a new line

@@ -488,11 +488,17 @@
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden && weeks) livePoll(); });
   /* ---------- league chat: posts load every few seconds while the page is open ---------- */
-  let posts = [], postT = null, seen = 0;
+  let posts = [], postT = null, seen = 0, reacts = [], reactAt = 0;
   try { seen = Number(localStorage.getItem("fk-chat-seen:" + id)) || 0; } catch (e) { /* no storage */ }
   const lastId = () => (posts.length ? posts[posts.length - 1].id : 0);
   const chat = {
     posts: () => posts,
+    reacts: () => reacts,
+    async react(post, emoji) {
+      const r = await C.rpc("fk_react", { p_id: id, p_post: post, p_emoji: emoji });
+      if (r && r.ok) { reacts = r.list || []; reactAt = r.at || reactAt; }
+      return r;
+    },
     unread: () => posts.filter((p) => p.id > seen && p.team !== info.me).length,
     seen: () => { const n = lastId(); if (n > seen) { seen = n; try { localStorage.setItem("fk-chat-seen:" + id, String(n)); } catch (e) { /* no storage */ } } },
     async send(body) {
@@ -505,12 +511,17 @@
   async function loadPosts() {
     clearTimeout(postT);
     if (!document.hidden && (L || D)) {
-      const r = await C.rpc("fk_posts", { p_id: id, p_after: lastId() }).catch(() => null);
+      const [r, rx] = await Promise.all([C.rpc("fk_posts", { p_id: id, p_after: lastId() }).catch(() => null), C.rpc("fk_reacts", { p_id: id, p_since: reactAt }).catch(() => null)]);
+      let changed = false;
       if (Array.isArray(r) && r.length) {
         const have = new Set(posts.map((p) => p.id));
         posts = posts.concat(r.filter((p) => !have.has(p.id))).slice(-300);
-        if (!U.dialogOpen()) { if (room) room.render(); else if (app) app.refresh(); }
+        changed = true;
       }
+      if (rx && Array.isArray(rx.list)) { reacts = rx.list; reactAt = rx.at || 0; changed = true; }
+      // a picker left open, or someone typing, isn't thrown away by a redraw
+      const busy = document.activeElement && document.activeElement.closest && document.activeElement.closest(".rx");
+      if (changed && !U.dialogOpen() && !busy) { if (room) room.render(); else if (app) app.refresh(); }
     }
     clearTimeout(postT);   // a nudge can start a second load while one is out: still one timer
     postT = setTimeout(loadPosts, document.hidden ? 60000 : rt && rt.live() ? 45000 : 10000);

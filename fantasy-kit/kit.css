@@ -645,6 +645,21 @@ small.only-s{display:none;font-size:11px;font-weight:500}
 .chat>li p{margin:2px 0 0;font-size:14.5px;line-height:1.45;overflow-wrap:anywhere}
 .chat>li.mine p{color:var(--ink)}
 .chat>li.mine .who b::after{content:" (you)";font-weight:600;color:var(--muted)}
+.rx{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:5px}
+.rx button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;line-height:1;min-height:28px}
+.rx-b{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;font-size:14px}
+.rx-b span{font-size:12.5px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.rx-b.on{border-color:var(--sp,var(--ink));background:color-mix(in srgb,var(--sp,var(--ink)) 12%,var(--surface))}
+.rx-b.on span{color:var(--ink)}
+.rx-b:disabled{cursor:default;opacity:1}
+.rx-add{display:inline-grid;place-items:center;width:30px;padding:0;color:var(--muted)}
+.chat>li:not(:hover):not(:focus-within) .rx-add[aria-expanded="false"]{opacity:.55}
+@media (hover:none){.chat>li .rx-add[aria-expanded="false"]{opacity:.55}}
+.rx-add:hover,.rx-add:focus-visible{color:var(--ink);opacity:1}
+.rx-pick{display:inline-flex;gap:2px;padding:2px 4px;border:1px solid var(--line);border-radius:999px;background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.rx-pick button{border:0;background:none;font-size:18px;width:34px;min-height:32px;padding:0;border-radius:8px}
+.rx-pick button:hover,.rx-pick button:focus-visible{background:var(--surface-2)}
+.rx button:focus-visible{outline:2px solid var(--sp,var(--ink));outline-offset:2px}
 .chat>li.sys{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;font-size:13px;color:var(--muted);padding:6px 16px}
 .chat>li.sys time{margin-left:0}
 .chat-card .chat{max-height:none}
