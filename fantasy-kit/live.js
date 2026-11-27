@@ -38,7 +38,7 @@
   const teamName = (t) => { const doc = L || D; return doc && doc.teams[t] ? doc.teams[t].name : "A team"; };
 
   function take(v) {
-    info = { me: v.me, commish: !!v.commish, seats: v.seats || {}, invite: v.invite, notify: v.notify, name: v.name, sport: v.sport, dues: v.dues };
+    info = { me: v.me, co: !!v.co, commish: !!v.commish, seats: v.seats || {}, invite: v.invite, notify: v.notify, name: v.name, sport: v.sport, dues: v.dues };
     if (v.version != null) version = v.version;
     if ("draft" in v) {
       D = v.draft; L = v.league;
@@ -860,11 +860,13 @@
       ${info.commish && D && !L && D.phase !== "done" && D.trading ? `<div class="field" style="margin-top:10px"><label for="lv-oh">A trade offer stops the clock</label><select id="lv-oh">${opt("clock", "When it's to the team on the clock", D.offerHold || "clock")}${opt("all", "For any manager, up to 90 seconds", D.offerHold || "clock")}${opt("off", "Never: the draft keeps going", D.offerHold || "clock")}</select></div>` : ""}
       <div id="lv-past"></div>
       ${info.me != null && C.user() ? `<div id="lv-push" style="margin-top:12px"></div>` : ""}
+      ${(info.me != null || info.commish) && C.user() ? `<div id="lv-co" style="margin-top:12px"></div>` : ""}
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results, starters ruled out${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
       <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="/fantasy/leagues/">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
     dialogClicks(dlg);
     U.pushBox($("#lv-push"), true);
+    coBox();
     // past seasons, newest first; most leagues have none yet, so this stays empty until there are
     if ((D && D.year > 1) || (L && L.draft && L.draft.year > 1)) C.rpc("fk_history", { p_id: id }).then((h) => {
       const el = $("#lv-past"); if (!el || !Array.isArray(h) || !h.length) return;
@@ -878,10 +880,58 @@
       if (r.error) { U.toast(r.error, true); e.target.checked = !on; } else { info.notify = on; U.toast(on ? "Email alerts are on." : "Email alerts are off."); }
     };
   }
+  /* ---------- co-managers: share your team with a friend (fk_co_*). The team's manager invites with a link and can
+     remove a co-manager; a co-manager can leave; the commissioner sees and can remove every team's. ---------- */
+  let coLink = null;
+  const coUrl = (code) => `${location.origin}/fantasy/leagues/?join=${encodeURIComponent(id)}&co=${encodeURIComponent(code)}`;
+  async function coBox() {
+    const el = $("#lv-co"); if (!el) return;
+    const r = await C.rpc("fk_co_list", { p_id: id }).catch((e) => ({ error: e.message }));
+    if (!el.isConnected || !r || r.error) { el.innerHTML = ""; return; }
+    const doc = L || D, rows = r.seats || [], mine = rows.filter((x) => x.team === info.me), own = mine.some((x) => x.me && !x.co);
+    const cos = mine.filter((x) => x.co), others = rows.filter((x) => x.team !== info.me && x.co);
+    if (r.invite && !coLink) coLink = r.invite;
+    if (info.me == null && !(info.commish && others.length)) { el.innerHTML = ""; return; }
+    const li = (x, label) => `<li><span class="grow"><b>${esc(x.name)}${x.me ? " (you)" : ""}</b><small>${esc(label)}</small></span>${x.co && x.me ? `<button type="button" class="btn xs ghost" data-lv="co-rm" data-u="${esc(x.id)}" data-n="${esc(x.name)}">Leave</button>` : x.co && (own || info.commish) ? `<button type="button" class="btn xs ghost" data-lv="co-rm" data-u="${esc(x.id)}" data-n="${esc(x.name)}">Remove</button>` : ""}</li>`;
+    const tn = (t) => (doc && doc.teams[t] ? doc.teams[t].name : "A team");
+    const share = typeof navigator.share === "function";
+    const link = own && coLink && cos.length < 2 ? `<div class="inv-share" style="margin-top:8px">${share ? `<button type="button" class="btn sm go" data-lv="co-share">Share the link</button>` : ""}<a class="btn sm${share ? "" : " go"}" href="sms:?&body=${encodeURIComponent(`Co-manage ${tn(info.me)} with me in ${info.name} on Draft Lab: ${coUrl(coLink)}`)}">Text it</a><button type="button" class="btn sm" data-lv="co-copy">Copy</button><button type="button" class="btn sm ghost" data-lv="co-new">New link</button></div>
+      <input type="text" readonly value="${esc(coUrl(coLink))}" id="lv-colink" class="inv-link" aria-label="Co-manager link"><p class="ps" style="margin:4px 0 0">Anyone with this link can join your team until two have. New link turns this one off.</p>` : "";
+    el.innerHTML = `<h4 style="margin:0 0 4px">Co-managers</h4>
+      ${info.me != null ? `<p class="ps" style="margin:0 0 6px">${cos.length ? "Everyone here can set the lineup, make trades and claim players, and gets the team's alerts." : "Share your team with a friend. A co-manager can set the lineup, make trades and claim players, and gets the team's alerts."}</p>` : ""}
+      ${info.me != null && (cos.length || info.co) ? `<ul class="seatl">${mine.map((x) => li(x, x.co ? "Co-manager" : "Manager")).join("")}</ul>` : ""}
+      ${own && !coLink && cos.length < 2 ? `<button type="button" class="btn sm" data-lv="co-invite">Invite a co-manager</button>` : link}
+      ${info.commish && others.length ? `<p class="ps" style="margin:10px 0 4px">Other teams' co-managers</p><ul class="seatl">${others.map((x) => li(x, `Co-manager, ${tn(x.team)}`)).join("")}</ul>` : ""}`;
+  }
+  async function coAct(b) {
+    const k = b.dataset.lv;
+    if (k === "co-invite" || k === "co-new") {
+      b.disabled = true;
+      const r = await C.rpc("fk_co_invite", { p_id: id, p_new: k === "co-new" }).catch((e) => ({ error: e.message }));
+      if (r.error) { U.toast(r.error, true); b.disabled = false; return; }
+      coLink = r.code; if (k === "co-new") U.toast("New link made. The old one no longer works.");
+      coBox();
+    } else if (k === "co-copy") {
+      try { await navigator.clipboard.writeText(coUrl(coLink)); } catch (err) { const el = $("#lv-colink"); if (el) { el.select(); document.execCommand("copy"); } }
+      U.toast("Link copied");
+    } else if (k === "co-share") {
+      try { await navigator.share({ title: `Co-manage my team in ${info.name}`, url: coUrl(coLink) }); } catch (err) { /* closed the share sheet */ }
+    } else if (k === "co-rm") {
+      const self = b.textContent === "Leave", who = b.dataset.n, u = b.dataset.u, dlg = $("#fk-dlg");
+      if (dlg) dlg.close();
+      U.confirm(self ? "Leave this team?" : `Remove ${who}?`, self ? "You stop managing it and its alerts stop. Only a new link from its manager brings you back." : `${esc(who)} stops co-managing the team and its alerts stop.`, self ? "Leave the team" : "Remove", async () => {
+        const r = await C.rpc("fk_co_remove", { p_id: id, p_user: u }).catch((e) => ({ error: e.message }));
+        if (r.error) { U.toast(r.error, true); return; }
+        if (self) { location.reload(); return; }
+        U.toast(`${who} was removed.`); version = -1; pull();
+      });
+    }
+  }
   function dialogClicks(dlg) {
     dlg.onclick = async (e) => {
       const b = e.target.closest("[data-lv],[data-free]");
       if (!b) return;
+      if (/^co-/.test(b.dataset.lv || "")) { coAct(b); return; }
       if (b.dataset.lv === "copy") { try { await navigator.clipboard.writeText(inviteUrl()); } catch (err) { const el = $("#lv-link"); if (el) { el.select(); document.execCommand("copy"); } } U.toast("Invite link copied"); }
       else if (b.dataset.lv === "share") { try { await navigator.share({ title: `Join ${info.name}`, text: inviteMsg().replace(inviteUrl(), "").trim(), url: inviteUrl() }); } catch (err) { /* closed the share sheet */ } }
       else if (b.dataset.lv === "invite") { dlg.close(); inviteDialog(); }
@@ -903,7 +953,7 @@
       else if (b.dataset.free != null) {
         const t = Number(b.dataset.free);
         dlg.close();
-        U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} loses the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {
+        U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} ${String(info.seats[t]).includes(" & ") ? "lose" : "loses"} the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {
           const r = await C.rpc("fk_leave", { p_id: id, p_team: t }).catch((err) => ({ error: err.message }));
           if (r.error) U.toast(r.error, true); else { U.toast("Done. The team is open."); version = -1; pull(); }
         });
@@ -1538,7 +1588,7 @@
     if (rv && info.commish) { const tid = Number(rv.dataset.cmRev); U.confirm("Reverse this trade?", "Every player, pick and FAAB dollar goes back to the team that sent it.", "Reverse the trade", () => commishSave(G.reverseTrade(L, lctx(), tid, now()), "Trade reversed.")); }
     if (lv && lv.dataset.live === "new-season") U.confirm(midSeason() ? "Start the redraft?" : "Start next season?", midSeason() ? "The first half goes into the league's history, and the league opens a new draft room for the second half. You can't undo it." : "This season goes into the league's history, and the league opens a new draft room. You can't undo it.", midSeason() ? "Start the redraft" : "Start next season", newSeason);
     const fr = e.target.closest("#app [data-free]");
-    if (fr) { const t = Number(fr.dataset.free); U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} loses the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {
+    if (fr) { const t = Number(fr.dataset.free); U.confirm(`Free ${teamName(t)}?`, `${esc(info.seats[t])} ${String(info.seats[t]).includes(" & ") ? "lose" : "loses"} the team, and a bot runs it until someone else claims it with the invite link.`, "Free the team", async () => {
       const r = await C.rpc("fk_leave", { p_id: id, p_team: t }).catch((err) => ({ error: err.message }));
       if (r.error) U.toast(r.error, true); else { U.toast("Done. The team is open."); version = -1; pull(); }
     }); }

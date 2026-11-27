@@ -9,7 +9,7 @@
   const N = window.FK.nav;   // Draft Lab's one navigation (nav.js)
   const theme = U.theme("fk-lab");
   const params = new URLSearchParams(location.search);
-  const joinId = params.get("join"), joinCode = params.get("code") || "";
+  const joinId = params.get("join"), joinCode = params.get("code") || "", coCode = params.get("co") || "";
   const top = $("#top"), app = $("#app");
   const link = C.fromLink();
   const SPORT_CLR = { nba: 4, nfl: 2, mlb: 0, nhl: 7, cbb: 5 };
@@ -224,7 +224,12 @@
     if (u && !prof) await loadProfile();
     const err = link && link.error ? fail(`That sign-in link didn't work: ${link.error}. Send yourself a new one.`) : "";
     let invite = "";
-    if (joinId) {
+    if (joinId && coCode) {
+      const v = await C.rpc("fk_co_peek", { p_id: joinId, p_code: coCode }).catch((e) => ({ error: e.message }));
+      if (!v.error) v.coTeam = v.teamName || "a team";
+      invite = v.error ? fail(v.error) : u ? coCard(v) : "";
+      if (!u && !v.error) return page(`${err}${signInCard(v)}`);
+    } else if (joinId) {
       const v = await C.rpc("fk_view", { p_id: joinId, p_since: null }).catch((e) => ({ error: e.message }));
       invite = v.error ? fail(v.error) : u ? joinCard(v) : "";
       if (!u && !v.error) return page(`${err}${signInCard(v)}`);
@@ -323,7 +328,7 @@
     const lead = !inv && waiting ? `<h1 class="disp">Sign in to make ${esc(form.name || "your league")}</h1>
         <p>Your settings are saved. Sign in or make an account and the league is made right away. <button type="button" class="si-link" data-a="new" style="color:#fff">Back to the settings</button></p>`
       : inv ? `<p class="jn-kick">${icon(k0, "sp-ic")}You're invited</p><h1 class="disp">${esc(inv.name)}</h1>
-        <p>A ${esc(S[k0].name.toLowerCase())} league with ${inv.draft.teams.length} teams. Sign in or make an account, then pick your team.</p>` : `<h1 class="disp">Draft with your friends.</h1>
+        <p>${inv.coTeam != null ? `Co-manage ${esc(inv.coTeam)}${inv.manager ? ` with ${esc(inv.manager)}` : ""}. Sign in or make an account to join.` : `A ${esc(S[k0].name.toLowerCase())} league with ${inv.draft.teams.length} teams. Sign in or make an account, then pick your team.`}</p>` : `<h1 class="disp">Draft with your friends.</h1>
         <p>Start a league, send the invite link and draft live. Every move saves for the whole league, and you can get an email when a trade offer or a waiver result needs you.</p>
         <div class="lg-cta"><button type="button" class="btn go" data-a="new">Set up a league</button><span>No account needed until you make it.</span></div>`;
     const tabs = `<div class="si-tabs" role="tablist" aria-label="Sign in or make an account">${[["password", "Sign in"], ["signup", "Create account"]].map(([m, n]) => `<button type="button" role="tab" aria-selected="${siMode === m || (m === "password" && (siMode === "forgot" || siMode === "link"))}" data-a="si-mode" data-m="${m}">${n}</button>`).join("")}</div>`;
@@ -400,6 +405,23 @@
         <div class="fl"><div class="fl-l">Pick your team</div><fieldset class="seats"><legend class="sr">Pick a team</legend>${teams.map((t, i) => `<label class="${seats[i] != null ? "taken" : ""}"><input type="radio" name="team" value="${i}"${seats[i] != null ? " disabled" : pickI === i ? " checked" : ""}>${U.teamAv(t, "sm")}<span><b>${esc(t.name)}</b><small>${seats[i] != null ? esc(seats[i]) : "Open"}</small></span></label>`).join("")}</fieldset></div>
         <div class="g2"><div class="fl"><div class="fl-l"><label for="j-name">Your name</label></div><input id="j-name" type="text" maxlength="24" required value="${esc(guess)}" autocomplete="name"></div><div class="fl"><div class="fl-l"><label for="j-team">Your team's name</label></div><input id="j-team" type="text" maxlength="28" placeholder="Leave blank to keep it" autocomplete="off"></div></div>
         <div><button class="btn go" type="submit">Join the league</button></div>
+      </div></form></div>`;
+  }
+
+  // a co-manager link (?join=<id>&co=<code>): one team, already picked, and your name
+  function coCard(v) {
+    if (v.me != null) return `<div class="banner"><b>You're already in ${esc(v.name)}.</b> <a href="/fantasy/league/?id=${esc(joinId)}">Open the league</a></div>`;
+    if (v.count >= 2) return fail(`${v.teamName || "That team"} already has two co-managers.`);
+    const u = C.user(), guess = (prof && prof.name) || (u.email.split("@")[0] || "").replace(/[._-]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()).slice(0, 24);
+    const k = S[v.sport] ? v.sport : "nfl";
+    return `<div class="su sp-${k}"><form id="cojoin"><div class="nl-band si-band jn-band">${FIELD[k] || ""}<div class="nl-bi">
+        <p class="jn-kick">${icon(k, "sp-ic")}You're invited to co-manage</p>
+        <h1 class="disp">${esc(v.teamName || "A team")}</h1>
+        <p>${esc(v.name)}${v.manager ? `, with ${esc(v.manager)}` : ""}. Co-managers share the team: either of you can set the lineup, make trades and claim players, and you both get its alerts.</p>
+      </div></div>
+      <div class="nl-ess jn-body">
+        <div class="fl"><div class="fl-l"><label for="cj-name">Your name</label></div><input id="cj-name" type="text" maxlength="24" required value="${esc(guess)}" autocomplete="name"></div>
+        <div><button class="btn go" type="submit">Join as co-manager</button></div>
       </div></form></div>`;
   }
 
@@ -1338,6 +1360,10 @@
       if (r.error) { U.toast(r.error, true); return; }
       const tn = $("#j-team").value.trim();
       if (tn) await C.rpc("fk_team_name", { p_id: joinId, p_name: tn }).catch(() => null);
+      location.href = `/fantasy/league/?id=${encodeURIComponent(joinId)}`;
+    } else if (f.id === "cojoin") {
+      const r = await C.rpc("fk_co_join", { p_id: joinId, p_code: coCode, p_manager: $("#cj-name").value }).catch((err) => ({ error: err.message }));
+      if (r.error) { U.toast(r.error, true); return; }
       location.href = `/fantasy/league/?id=${encodeURIComponent(joinId)}`;
     } else if (f.id === "new") makeLeague();
   });
