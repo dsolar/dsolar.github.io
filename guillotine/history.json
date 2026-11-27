@@ -8157,7 +8157,7 @@
       "nfl": "LV",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 0.0
+      "next_proj": 0
      },
      {
       "n": "Kenneth Walker III",
@@ -8205,7 +8205,7 @@
       "nfl": "BAL",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 0,
-      "next_proj": 0.0
+      "next_proj": 0
      },
      {
       "n": "DK Metcalf",
@@ -8740,14 +8740,6 @@
       "nfl": "WAS",
       "slot": "BN",
       "proj": 21.94,
-      "pts": null
-     },
-     {
-      "n": "Travis Kelce",
-      "pos": "TE",
-      "nfl": "KC",
-      "slot": "BN",
-      "proj": 7.87,
       "pts": null
      },
      {

@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-26T23:52:19Z",
+ "updated": "2026-11-27T00:07:21Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -582,7 +582,7 @@
    "manager": "Daid B",
    "faab": 60,
    "proj": 146.8,
-   "points": 7.2,
+   "points": 9.9,
    "scores": [
     135.46,
     161.16,
@@ -725,7 +725,7 @@
      "name": "CeeDee Lamb",
      "nfl": "DAL",
      "pos": "WR",
-     "yahoo_actual": 7.2,
+     "yahoo_actual": 9.9,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1191,7 +1191,7 @@
    "manager": "Scott",
    "faab": 8,
    "proj": 142.92,
-   "points": 25.16,
+   "points": 26.04,
    "scores": [
     95.18,
     94.64,
@@ -1211,7 +1211,7 @@
      "name": "Dak Prescott",
      "nfl": "DAL",
      "pos": "QB",
-     "yahoo_actual": 14.86,
+     "yahoo_actual": 15.74,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -1766,7 +1766,7 @@
    "manager": "JeffS",
    "faab": 15,
    "proj": 58.65,
-   "points": 53.4,
+   "points": 53.1,
    "scores": [
     111.28,
     66.9,
@@ -1827,7 +1827,7 @@
      "name": "Javonte Williams",
      "nfl": "DAL",
      "pos": "RB",
-     "yahoo_actual": 28.1,
+     "yahoo_actual": 27.8,
      "game": "Thu 4:30 pm",
      "opp": "vs PHI",
      "season": {
@@ -2287,44 +2287,6 @@
     },
     {
      "slot": "BN",
-     "name": "Travis Kelce",
-     "nfl": "KC",
-     "pos": "TE",
-     "yahoo_actual": 0.0,
-     "game": "Thu 8:20 pm",
-     "opp": "@ BUF",
-     "season": {
-      "g": 10,
-      "wk": [
-       8.6,
-       20.6,
-       12.9,
-       2.5,
-       null,
-       7.3,
-       6.4,
-       9.2,
-       15.3,
-       4.0,
-       22.4
-      ],
-      "tot": {
-       "rec": 41,
-       "rec_tgt": 57,
-       "rec_yd": 586,
-       "rec_td": 4,
-       "rush_att": 1,
-       "rush_yd": 1,
-       "rush_td": 1
-      }
-     },
-     "proj": 7.87,
-     "rank": "TE14",
-     "date": "2026-11-26",
-     "next_proj": 9.71
-    },
-    {
-     "slot": "BN",
      "name": "Zay Flowers",
      "nfl": "BAL",
      "pos": "WR",
@@ -2367,7 +2329,7 @@
    ],
    "points_final": 25.3,
    "best": 155.0,
-   "best_next": 143.3,
+   "best_next": 142.7,
    "fill": 91.43,
    "locked": 25.3,
    "locked_proj": 21.06,
@@ -3728,7 +3690,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-26T23:52:21Z",
+  "updated": "2026-11-27T00:07:25Z",
   "players": 3046,
   "unmatched": []
  }
