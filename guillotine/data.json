@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T04:37:17Z",
+ "updated": "2026-11-27T05:07:17Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -104,8 +104,8 @@
      "proj": 23.57,
      "rank": "RB1",
      "date": "2026-11-26",
-     "actual": 45.7,
      "final": true,
+     "actual": 45.7,
      "next_proj": 23.3,
      "in_best": true
     },
@@ -219,8 +219,8 @@
      "proj": 17.59,
      "rank": "WR2",
      "date": "2026-11-26",
-     "actual": 18.1,
      "final": true,
+     "actual": 18.1,
      "next_proj": 16.04,
      "in_best": true
     },
@@ -261,8 +261,8 @@
      "proj": 13.52,
      "rank": "WR11",
      "date": "2026-11-26",
-     "actual": 6.0,
      "final": true,
+     "actual": 6.0,
      "next_proj": 12.81,
      "in_best": true
     },
@@ -450,8 +450,8 @@
      "proj": 11.72,
      "rank": "WR19",
      "date": "2026-11-26",
-     "actual": 37.5,
      "final": true,
+     "actual": 37.5,
      "next_proj": 11.03
     },
     {
@@ -492,8 +492,8 @@
      "proj": 13.55,
      "rank": "RB14",
      "date": "2026-11-26",
-     "actual": 25.7,
      "final": true,
+     "actual": 25.7,
      "next_proj": 13.81,
      "in_best": true
     },
@@ -641,9 +641,9 @@
      "proj": 20.18,
      "rank": "QB8",
      "date": "2026-11-26",
-     "actual": 5.54,
      "final": true,
-     "next_proj": 23.11,
+     "actual": 5.54,
+     "next_proj": 22.93,
      "in_best": true
     },
     {
@@ -725,8 +725,8 @@
      "proj": 17.49,
      "rank": "RB5",
      "date": "2026-11-26",
-     "actual": 17.6,
      "final": true,
+     "actual": 17.6,
      "next_proj": 5.61,
      "in_best": true
     },
@@ -767,8 +767,8 @@
      "proj": 16.97,
      "rank": "WR3",
      "date": "2026-11-26",
-     "actual": 16.9,
      "final": true,
+     "actual": 16.9,
      "next_proj": 13.98,
      "in_best": true
     },
@@ -962,8 +962,8 @@
      "proj": 16.72,
      "rank": "QB13",
      "date": "2026-11-26",
-     "actual": 7.16,
      "final": true,
+     "actual": 7.16,
      "next_proj": 18.12,
      "in_best": true
     },
@@ -1200,7 +1200,7 @@
    ],
    "points_final": 47.2,
    "best": 146.0,
-   "best_next": 138.1,
+   "best_next": 137.9,
    "locked": 47.2,
    "locked_proj": 71.36,
    "games_final": 4
@@ -1262,8 +1262,8 @@
      "proj": 20.83,
      "rank": "QB6",
      "date": "2026-11-26",
-     "actual": 26.54,
      "final": true,
+     "actual": 26.54,
      "next_proj": 14.57,
      "in_best": true
     },
@@ -1344,9 +1344,9 @@
      "proj": 16.76,
      "rank": "RB6",
      "date": "2026-11-26",
-     "actual": 19.0,
      "final": true,
-     "next_proj": 17.86,
+     "actual": 19.0,
+     "next_proj": 17.65,
      "in_best": true
     },
     {
@@ -1423,8 +1423,8 @@
      "proj": 12.51,
      "rank": "WR16",
      "date": "2026-11-26",
-     "actual": 9.2,
      "final": true,
+     "actual": 9.2,
      "next_proj": 10.45
     },
     {
@@ -1696,8 +1696,8 @@
      "proj": 20.4,
      "rank": "QB7",
      "date": "2026-11-26",
-     "actual": 16.82,
      "final": true,
+     "actual": 16.82,
      "next_proj": 18.21
     },
     {
@@ -1784,7 +1784,7 @@
    ],
    "points_final": 59.14,
    "best": 147.3,
-   "best_next": 140.7,
+   "best_next": 140.5,
    "locked": 59.14,
    "locked_proj": 63.01,
    "games_final": 4
@@ -1846,8 +1846,8 @@
      "proj": 21.06,
      "rank": "QB5",
      "date": "2026-11-26",
-     "actual": 25.3,
      "final": true,
+     "actual": 25.3,
      "next_proj": 18.58
     },
     {
@@ -1887,8 +1887,8 @@
      "proj": 18.23,
      "rank": "RB4",
      "date": "2026-11-26",
-     "actual": 31.8,
      "final": true,
+     "actual": 31.8,
      "next_proj": 12.79,
      "in_best": true
     },
@@ -2320,8 +2320,8 @@
      "proj": 9.93,
      "rank": "TE5",
      "date": "2026-11-26",
-     "actual": -1.0,
      "final": true,
+     "actual": -1.0,
      "next_proj": 9.04
     },
     {
@@ -3526,7 +3526,7 @@
     "nfl": "BUF",
     "proj": 20.18,
     "rank": "QB8",
-    "next_proj": 23.11,
+    "next_proj": 22.93,
     "avg": 24.4,
     "g": 10,
     "last": 14.16,
@@ -3579,7 +3579,7 @@
     "nfl": "BUF",
     "proj": 16.76,
     "rank": "RB6",
-    "next_proj": 17.86,
+    "next_proj": 17.65,
     "avg": 18.0,
     "g": 10,
     "last": 16.2,
@@ -3727,7 +3727,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T04:37:19Z",
+  "updated": "2026-11-27T05:07:18Z",
   "players": 3046,
   "unmatched": []
  }
