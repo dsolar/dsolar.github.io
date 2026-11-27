@@ -1472,6 +1472,80 @@
   }
 
   /* ---------- standings and playoffs ---------- */
+  /* Playoff odds: the rest of the regular season played out opts.sims times (1,000 by default), each team scoring
+     around its rate (its weeks so far, leaning on its current roster's projection early in the season), and the
+     standings' own tiebreaks and seeding decide who's in. Clinched and Out are certain, not simulated: a team has
+     clinched when it can't fall below the cut even losing every game left while everyone else wins theirs, and is
+     out when enough teams are already sure to finish ahead of its best case. Division leagues get odds without the
+     marks (a division winner can take a spot with a worse record). Not for the guillotine, roto, total points,
+     split tables, ladders or halves, an imported season, or once the regular season is over.
+     { odds: { team: share in }, top: { team: share first }, clinched: { team: true }, out: { team: true }, sims, weeksLeft } */
+  function playoffOdds(L, ctx, opts = {}) {
+    const N = L.settings.playoffTeams, weeks = L.settings.weeks, n = L.teams.length;
+    if (!N || N >= n || isGuillotine(L) || isRoto(L) || isTotal(L) || L.split || L.settings.split || L.ladder || L.settings.halves || (L.imported && L.imported.standings)) return null;
+    const done = Object.keys(L.results || {}).map(Number).filter((w) => w <= weeks && Array.isArray(L.results[w]) && L.results[w].length);
+    const last = done.length ? Math.max(...done) : 0;
+    if (last >= weeks) return null;
+    const left = []; for (let w = last + 1; w <= weeks; w++) left.push(w);
+    const sc = scoring(L, ctx), cats = sc.type !== "points", tally = L.settings.tally || "game";
+    // what each team has done: points scored a week, or categories won and played
+    const seen = L.teams.map(() => ({ k: 0, pts: 0, cw: 0, cn: 0 }));
+    let ncat = cats ? (sc.cats || []).length : 0, all = [];
+    for (const w of done) for (const g of L.results[w]) for (const [t, x, y] of [[g.a, g.sa, g.sb], [g.b, g.sb, g.sa]]) {
+      const r = seen[t]; if (!r) continue;
+      r.k++; r.pts += x; all.push([t, x]);
+      if (cats) { const tie = g.ties || 0; r.cw += x + tie / 2; r.cn += x + y + tie; ncat = Math.max(ncat, x + y + tie); }
+    }
+    let proj = L.teams.map((t) => { try { return projection(L, ctx, t.id, Math.min(L.week, weeks)).total || 0; } catch (e) { return 0; } });
+    const pm = proj.reduce((a, b) => a + b, 0) / n, psd = Math.sqrt(proj.reduce((a, b) => a + (b - pm) ** 2, 0) / n) || 1;
+    const lean = (k) => k / (k + 3);   // three weeks in, the season so far counts as much as the roster
+    let mu, sd, rate;
+    if (!cats) {
+      const avg = seen.map((r) => (r.k ? r.pts / r.k : null)), known = avg.filter((x) => x != null), lm = known.length ? known.reduce((a, b) => a + b, 0) / known.length : pm;
+      // a roster projection on a different scale from real scores (simulated leagues): scale it to the league's scoring
+      const scale = known.length && pm > 0 ? lm / pm : 1;
+      mu = seen.map((r, t) => { const pr = proj[t] > 0 ? proj[t] * scale : lm; return r.k ? lean(r.k) * avg[t] + (1 - lean(r.k)) * pr : pr; });
+      const dev = all.map(([t, x]) => x - (avg[t] != null ? avg[t] : lm)), base = Math.max(1, lm || pm);
+      sd = dev.length >= 2 * n ? Math.max(0.08 * base, Math.sqrt(dev.reduce((a, b) => a + b * b, 0) / dev.length)) : 0.18 * base;
+    } else {
+      ncat = ncat || 8;
+      rate = seen.map((r, t) => { const pr = 0.5 + 0.15 * Math.tanh((proj[t] - pm) / psd); return r.cn ? lean(r.k) * (r.cw / r.cn) + (1 - lean(r.k)) * pr : pr; });
+    }
+    const R = rng(opts.seed != null ? opts.seed : (L.seed || 1) * 31 + last * 977 + 5), z = () => gauss(R);
+    const pairsOf = (w) => {
+      const s0 = L.schedule && L.schedule[w - 1];
+      if (s0 && s0.length) return s0;
+      const ids = L.teams.map((t) => t.id);
+      for (let i = ids.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [ids[i], ids[j]] = [ids[j], ids[i]]; }
+      const out = []; for (let i = 0; i + 1 < ids.length; i += 2) out.push([ids[i], ids[i + 1]]);
+      return out;
+    };
+    const sims = opts.sims || 1000, inn = L.teams.map(() => 0), top = L.teams.map(() => 0);
+    for (let k = 0; k < sims; k++) {
+      const res = Object.assign({}, L.results);
+      for (const w of left) res[w] = pairsOf(w).map(([a, b]) => {
+        if (!cats) { const sa = Math.max(0, mu[a] + sd * z()), sb = Math.max(0, mu[b] + sd * z()); return { a, b, sa, sb, w: sa > sb ? "a" : sa < sb ? "b" : "t" }; }
+        const q = Math.min(0.92, Math.max(0.08, 0.5 + (rate[a] - rate[b]))); let sa = 0, sb = 0;
+        for (let c = 0; c < ncat; c++) { if (R() < q) sa++; else sb++; }
+        return { a, b, sa, sb, w: sa > sb ? "a" : sa < sb ? "b" : "t" };
+      });
+      const st = standings(Object.assign({}, L, { results: res }), weeks);
+      for (const r of st) { if (r.inPlayoffs) inn[r.team]++; if ((L.divs ? r.seed : r.rank) === 1) top[r.team]++; }
+    }
+    // certain marks, from records alone: games left a team can still win (ties count as losses for its rivals' sake)
+    const cur = standings(L, weeks), clinched = {}, out = {};
+    if (!L.divs) {
+      const per = tally === "allplay" ? n - 1 : tally === "cats" ? ncat : 1 + (L.settings.median && tally !== "allplay" ? 1 : 0);
+      const gl = (t) => left.reduce((a, w) => { const s0 = L.schedule && L.schedule[w - 1]; return a + (!s0 || !s0.length || s0.some((g) => g.includes(t)) ? per : 0); }, 0);
+      const b = cur.map((r) => { const G0 = r.w + r.l + r.t, W = r.w + r.t / 2, g = gl(r.team); return { team: r.team, lo: (G0 + g) ? W / (G0 + g) : 0, hi: (G0 + g) ? (W + g) / (G0 + g) : 1 }; });
+      for (const x of b) {
+        if (b.filter((y) => y.team !== x.team && y.hi >= x.lo).length < N) clinched[x.team] = true;
+        if (b.filter((y) => y.team !== x.team && y.lo > x.hi).length >= N) out[x.team] = true;
+      }
+    }
+    const share = (xs) => Object.fromEntries(L.teams.map((t) => [t.id, clinched[t.id] && xs === inn ? 1 : out[t.id] ? 0 : xs[t.id] / sims]));
+    return { odds: share(inn), top: share(top), clinched, out, sims, weeksLeft: left.length };
+  }
   function standings(L, upTo, live) {
     // an imported season: its final standings as the other site had them, { team, w, l, t, rank }
     if (L.imported && L.imported.standings && !Object.keys(L.results || {}).length) return L.imported.standings.map((r) => Object.assign({ pf: r.w, pa: r.l, streak: "", form: [], pct: (r.w + r.t / 2) / Math.max(1, r.w + r.l + r.t) }, r));
@@ -2984,7 +3058,7 @@
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
   return { payroll, capRoom, sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
+    finishWeek, playoffOdds, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     halfOf, halvesOk, HALF_NAMES, weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

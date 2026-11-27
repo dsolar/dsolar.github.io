@@ -544,7 +544,7 @@
       const w = curWeek(), mid = me();
       const games = gamesVM(w);
       const mine = mid != null && !over() ? findGame(w, mid) : null;
-      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !L().divs && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, zone: zones()[r.team], badge: seedTag(r) + zoneTag(zones()[r.team]) }));
+      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !L().divs && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, zone: zones()[r.team], badge: poTag(r.team) + seedTag(r) + zoneTag(zones()[r.team]) }));
       const recent = L().tx.slice().reverse().filter((x) => x.type !== "draft").slice(0, 7);
       const offers = L().trades.filter((t) => t.status === "pending" && t.to === mid);
       const champ = over() ? championOf() : null;
@@ -823,6 +823,17 @@
     const PZ = { down: ["loss", "Relegation"], up: ["win", "Promotion"], playoff: ["gold", "Playoff"] };
     const zones = () => (L().settings.pyramid && window.FK.pyramid ? window.FK.pyramid.zones(L()) : {});
     const zoneTag = (z) => (z ? ` <span class="tag ${PZ[z][0]}" title="${esc(PZ[z][1] === "Playoff" ? "Plays the other tier's team for a place after the regular season" : PZ[z][1] === "Relegation" ? "In the drop zone: goes down if the season ended today" : "Goes up if the season ended today")}">${PZ[z][1]}</span>` : "");
+    // playoff odds (G.playoffOdds), worked out once per change to the results, rosters or rules: they take a moment
+    let poMemo = { key: null, val: null };
+    const poOdds = () => {
+      if (pre() || over()) return null;
+      const key = JSON.stringify([L().week, Object.keys(L().results || {}).length, (L().tx || []).length, L().settings.playoffTeams, L().settings.weeks, L().divs ? 1 : 0]);
+      if (poMemo.key !== key) { let v = null; try { v = G.playoffOdds(L(), ctx); } catch (e) { v = null; } poMemo = { key, val: v }; }
+      return poMemo.val;
+    };
+    const poTag = (id) => { const o = poOdds(); return !o ? "" : o.clinched[id] ? ` <span class="tag win" title="Clinched a playoff spot">Clinched</span>` : o.out[id] ? ` <span class="tag" title="Can't make the playoffs">Out</span>` : ""; };
+    const poPct = (x, certain) => (certain ? `${Math.round(x * 100)}%` : x >= 0.995 ? "&gt;99%" : x < 0.005 ? "&lt;1%" : `${Math.round(x * 100)}%`);
+    const poCol = () => { const o = poOdds(); return o ? [{ k: "po", label: "Playoffs", cls: "r num", html: (r) => { const id = r.team && r.team.id != null ? r.team.id : r.team; return `<b>${poPct(o.odds[id], o.clinched[id] || o.out[id])}</b>`; } }] : null; };
     const seedTag = (r) => (L().divs && r.seed && !over() ? ` <span class="tag${r.divLeader ? " gold" : " info"}" title="${r.divLeader ? "Leads the division" : "Wild card"}">Seed ${r.seed}</span>` : "") + crownTag(r.team);
     // a player's projection for the week: with the live feed, what he has plus what his team's games left should add
     // Football: Sleeper's projection for the week, less the share of his game already played. Basketball and baseball:
@@ -936,11 +947,11 @@
       if (tot()) return totalStandingsPage();
       const dv = !!L().divs;
       const zs = zones();
-      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !dv && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, zone: zs[r.team], badge: (finishTag(r.team) || seedTag(r)) + zoneTag(zs[r.team]) }));
-      const pw = G.power(L(), ctx);
-      const tables = dv ? L().divNames.map((nm, k) => `<div class="stack" style="gap:8px"><h2 style="margin:0;font-size:16px">${esc(nm)}</h2>${U.standingsTable(st.filter((r) => r.div === k).map((r, i) => Object.assign({}, r, { rank: i + 1 })), { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS })}</div>`).join("")
-        : L().split && G.splitOn(L()) ? G.splitNames(L()).map((nm, k) => `<div class="stack" style="gap:8px"><h2 style="margin:0;font-size:16px">${esc(nm)}</h2>${U.standingsTable(st.filter((r) => r.half === k), { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS })}</div>`).join("")
-        : U.standingsTable(st, { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS });
+      const st = standings().map((r) => Object.assign({}, r, { team: T(r.team), me: isMe(r.team), href: teamHref(r.team), cut: !dv && r.rank === L().settings.playoffTeams && r.rank < L().teams.length, zone: zs[r.team], badge: (finishTag(r.team) || poTag(r.team) + seedTag(r)) + zoneTag(zs[r.team]) }));
+      const pw = G.power(L(), ctx), po = poOdds(), extra = poCol();
+      const tables = dv ? L().divNames.map((nm, k) => `<div class="stack" style="gap:8px"><h2 style="margin:0;font-size:16px">${esc(nm)}</h2>${U.standingsTable(st.filter((r) => r.div === k).map((r, i) => Object.assign({}, r, { rank: i + 1 })), { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS, extra, pfHide: extra ? "s" : undefined })}</div>`).join("")
+        : L().split && G.splitOn(L()) ? G.splitNames(L()).map((nm, k) => `<div class="stack" style="gap:8px"><h2 style="margin:0;font-size:16px">${esc(nm)}</h2>${U.standingsTable(st.filter((r) => r.half === k), { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS, extra, pfHide: extra ? "s" : undefined })}</div>`).join("")
+        : U.standingsTable(st, { pfLabel: pts() ? "PF" : "Cats won", paLabel: pts() ? "PA" : "Cats lost", fmt: fmtS, extra, pfHide: extra ? "s" : undefined });
       // the split: what happens after its week, until it does
       const sp = L().settings.split, splitNote = sp && !L().split ? `<p class="ps" style="margin:0">After week ${sp.after} the table splits in half. The top ${Math.ceil(L().teams.length / 2)} play only each other for the title${L().settings.playoffTeams ? " and the playoffs" : ""}; the bottom ${Math.floor(L().teams.length / 2)} play only each other, and can't finish above the top half.</p>` : L().split ? `<p class="ps" style="margin:0">The table split after week ${L().split.after}. Records carried over; each half plays only itself, and the whole top half finishes above the bottom half.</p>` : "";
       // a split season: which half this is, and what its table decides
@@ -952,6 +963,7 @@
       return `<div class="wrap page"><div class="head"><h1 class="disp">Standings</h1><span class="ps">${hv ? `Split season, ${G.HALF_NAMES[(hv.half || 1) - 1].toLowerCase()}. Ties break on ${pts() ? "points for" : "categories won"}.` : !L().settings.playoffTeams ? `No playoffs: first place wins the title. Ties break on ${pts() ? "points for" : "categories won"}.` : over() ? "Final regular-season standings. The playoffs decided the title." : `${dv ? `${L().settings.playoffTeams >= L().settings.divisions ? "Division winners get the top seeds, then the best records fill" : "The best records make"} the ${L().settings.playoffTeams} playoff spots` : `Top ${L().settings.playoffTeams} make the playoffs (the dashed line)`}${byes() ? `, and the top ${byes()} get a bye` : ""}.${L().settings.median ? " Records count a game against the league median each week." : ""} Ties break on ${pts() ? "points for" : "categories won"}.`}</span></div>
         ${splitNote}${halvesNote}
         ${tables}
+        ${po ? `<p class="ps" style="margin:0">Playoffs: the chance of making the top ${L().settings.playoffTeams}, from the rest of the regular season played out ${po.sims.toLocaleString("en-US")} times on each team's scoring so far and its current roster. ${L().divs ? "" : "Clinched and Out are certain. "}Updates as weeks finish and rosters change.</p>` : ""}
         ${br.length ? bracketCard(br) : ""}
         <div class="cols2">
           <div class="card"><div class="mod-h"><h2>Power rankings</h2><span class="ps">Record, scoring and roster strength</span></div><ol class="feed">${pw.map((r) => `<li style="grid-template-columns:24px auto minmax(0,1fr) auto;align-items:center;padding:8px 16px"><b class="ps num">${r.rank}</b>${teamAv(T(r.team), "sm")}<a class="ell" href="${teamHref(r.team)}" style="color:inherit;text-decoration:none"><b>${esc(T(r.team).name)}</b> <span class="ps">${recOf(r.team)}</span></a>${moveTag(r.move)}</li>`).join("")}</ol></div>
