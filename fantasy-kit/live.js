@@ -437,6 +437,7 @@
       prizes: () => (duesOn() && Array.isArray(dues().prizes) ? dues().prizes.filter((x) => x.kind === "playoff" || x.kind === "season").map((x) => ({ label: prizeLabel(x), team: prizeWinner(x), amount: prizeTotal(x), kind: x.kind, place: x.place })) : null),
       get invite() { return info.invite ? openSeats() : null; },
       chat,
+      picks: pickApi,
       history: () => past,
       faces: () => faces,
       editProfile: C.user() ? editProfile : null,
@@ -521,6 +522,23 @@
       const r = await C.rpc("fk_post", { p_id: id, p_body: body });
       if (r && r.post && !posts.some((p) => p.id === r.post.id)) posts.push(r.post);
       if (r && r.ok) chat.seen();
+      return r;
+    },
+  };
+  // league pick'em (tools/fantasykit_picks.sql): this season's picks, loaded when the page asks and at most once a
+  // minute after that; saving brings back the whole list
+  let pickList, pickAt = 0, pickBusy = false;
+  const pickApi = {
+    list() {
+      if (!pickBusy && Date.now() - pickAt > 60e3) {
+        pickBusy = true; pickAt = Date.now();
+        C.rpc("fk_picks", { p_id: id }).then((r) => { if (Array.isArray(r)) { pickList = r; if (app && !U.dialogOpen()) app.refresh(); } }).catch(() => {}).finally(() => { pickBusy = false; });
+      }
+      return pickList;
+    },
+    async save(week, picks) {
+      const r = await C.rpc("fk_pick", { p_id: id, p_week: week, p_picks: picks });
+      if (r && Array.isArray(r.list)) { pickList = r.list; pickAt = Date.now(); }
       return r;
     },
   };

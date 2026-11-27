@@ -208,7 +208,7 @@
       if (pre()) return tab === "league" ? [["overview", "Overview"], ["standings", gl() ? "Survivors" : "Standings"], ["managers", "Managers"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : [])
         : tab === "team" ? [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]])
         : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : sport.key === "nfl" ? [["trends", "Trends"], ["news", "News"]] : hasNews() ? [["news", "News"]] : []) : [];
-      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
+      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(pickOn() ? [["picks", "Pick'em"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(hasNews() ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
@@ -1052,6 +1052,73 @@
       if (x.type === "bite") { lines.length = 0; for (const id of x.adds) lines.push(U.txLine(sport, "trade", playerVM(id), `from ${esc(T(x.other).abbr)}`)); for (const id of x.drops) lines.push(U.txLine(sport, "trade", playerVM(id), `to ${esc(T(x.other).abbr)}`)); }
       const badge = x.type === "deal" ? `<span class="tag gold">Deal</span>` : x.type === "split" ? `<span class="tag info">The split</span>` : x.type === "half" ? `<span class="tag gold">Half</span>` : x.type === "bite" ? `<span class="tag loss">Bite</span>` : x.type === "chop" ? `<span class="tag loss">Chopped</span>` : x.type === "champion" ? `<span class="tag win">Champion</span>` : x.type === "trade" ? `<span class="tag info">Trade</span>` : x.type === "waiver" ? `<span class="tag gold">Waiver</span>` : x.type === "veto" ? `<span class="tag loss">Veto</span>` : "";
       return { team: T(Math.max(0, x.team)), with: x.type === "trade" ? T(x.other) : null, when: now() - x.at < 2 * 864e5 && x.at <= now() ? U.ago(x.at, now()) : txDate(x.at), lines, badge };
+    }
+    /* ---------- league pick'em ----------
+       Each week every manager picks the winner of each matchup here (opts.picks: list() of { week, team, picks, at,
+       me }, save(week, picks); tools/fantasykit_picks.sql). Picks are keyed by the pair, low team id first, so a
+       schedule shown in another order still lines up. They lock at the week's first kickoff in a league on real games
+       (the saved kick times), at the week's start in a simulated one. Other teams' picks show once a week locks. */
+    function pickOn() { return !!opts.picks && !gl() && !roto() && !tot() && !allplay1() && !pre(); }
+    const pairKey = (a, b) => `${Math.min(a, b)}-${Math.max(a, b)}`;
+    function pickLock(w) {
+      if (w < L().week) return 0;
+      if (L().kick && L().kick.week === w) { const ks = Object.values(L().kick.teams || {}).filter(Number.isFinite); if (ks.length) return Math.min(...ks); }
+      if (w === L().week && !L().settings.real) return G.weekStart(L(), w);
+      return null;
+    }
+    const pickLocked = (w) => { const k = pickLock(w); return k != null && now() >= k; };
+    // the week to pick: this one until it locks, then the next (regular season only)
+    const pickWeek = () => { const w = L().week; return !pickLocked(w) ? w : w + 1 <= L().settings.weeks ? w + 1 : null; };
+    // who picked right in a finished week: { team: [right, picked] }
+    function pickScore(w, rows) {
+      const games = G.matchups(L(), ctx, w, 1).filter((m) => m.final && (m.w === "a" || m.w === "b")), out = {};
+      for (const r of rows.filter((x) => x.week === w && x.picks)) {
+        let right = 0, n = 0;
+        for (const m of games) { const k = r.picks[pairKey(m.a, m.b)]; if (k == null) continue; n++; if (k === (m.w === "a" ? m.a : m.b)) right++; }
+        if (n) out[r.team] = [right, n];
+      }
+      return out;
+    }
+    function picksPage() {
+      const rows = opts.picks.list(), mid = me(), pw = pickWeek(), cw = L().week;
+      const head = `<div class="head"><h1 class="disp">Pick'em</h1><span class="ps">Pick the winner of every matchup each week. Picks lock when the week's first game starts.</span></div>`;
+      if (rows === undefined) return `<div class="wrap page">${head}<div class="card"><div class="bd"><p class="ps" style="margin:0">Loading picks…</p></div></div></div>`;
+      // this week's card, or next week's once this one locks; a locked current week shows everyone's picks
+      const card = (w, live) => {
+        const games = G.matchups(L(), ctx, w, live ? frac(w) : 0), mineRow = rows.find((r) => r.week === w && r.team === mid);
+        const draft = ui.pick && ui.pick.w === w ? ui.pick.p : (mineRow && mineRow.picks) || {};
+        const locked = pickLocked(w), lk = pickLock(w), others = rows.filter((r) => r.week === w);
+        const lockTxt = locked ? "Locked" : lk ? `Locks ${new Date(lk).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }).replace(":00", "")}` : "Locks at the first kickoff";
+        const can = !locked && mid != null;
+        const side = (m, t, other) => {
+          const k = pairKey(m.a, m.b), on = draft[k] === t, wp = m.winProb != null ? Math.round((t === m.a ? m.winProb : 1 - m.winProb) * 100) : null;
+          const by = locked ? others.filter((r) => r.picks && r.picks[k] === t) : [];
+          const won = m.final && ((m.w === "a" && t === m.a) || (m.w === "b" && t === m.b));
+          return `<button type="button" class="pk-s${on ? " on" : ""}${won ? " won" : ""}" data-pick="${w}|${k}|${t}"${can ? "" : " disabled"} aria-pressed="${on}">
+            ${teamAv(T(t), "sm")}<span class="pk-n"><b class="ell">${esc(T(t).name)}</b><small class="ps">${esc(recOf(t))}${wp != null && !m.final ? `, ${wp}% to win` : ""}</small></span>
+            ${locked ? `<span class="pk-c" title="${esc(by.map((r) => T(r.team).name).join(", "))}">${by.length}</span>` : on ? `<span class="pk-ck" aria-hidden="true">&#10003;</span>` : ""}</button>`;
+        };
+        const list = games.map((m) => `<li>${side(m, m.a)}<span class="pk-vs">${m.final ? `${fmtS(m.sa)}-${fmtS(m.sb)}` : live && (m.sa || m.sb) ? `${fmtS(m.sa)}-${fmtS(m.sb)}` : "vs"}</span>${side(m, m.b)}</li>`).join("");
+        const done = Object.keys(draft).length, picked = others.length;
+        const foot = locked ? `${picked} of ${L().teams.length} teams picked. The numbers show how many picked each side.`
+          : mid == null ? "Managers in the league can pick." : `${done} of ${games.length} picked${mineRow ? ", saved" : ""}. ${picked} of ${L().teams.length} teams have picked so far.`;
+        return `<div class="card"><div class="mod-h"><h2>${esc(weekLabel(w))}</h2><span class="grow"></span><span class="ps">${lockTxt}</span></div><ul class="pk-l">${list}</ul><div class="bd ps" style="padding-top:0">${foot}</div></div>`;
+      };
+      const cards = [];
+      if (pw != null) cards.push(card(pw, false));
+      if (pw !== cw && cw <= L().settings.weeks) cards.unshift(card(cw, true));
+      // the season so far: right picks over finished weeks, and each week's best
+      const done = Array.from({ length: Math.min(cw - 1, L().settings.weeks) }, (_, i) => i + 1), tally = {}, best = [];
+      for (const w of done) {
+        const sc_ = pickScore(w, rows); let top = null;
+        for (const [t, [r, n]] of Object.entries(sc_)) { const x = (tally[t] = tally[t] || { r: 0, n: 0, wk: 0 }); x.r += r; x.n += n; if (!top || r > top.r) top = { r, t: [+t] }; else if (r === top.r) top.t.push(+t); }
+        if (top) { for (const t of top.t) tally[t].wk++; best.push({ w, top }); }
+      }
+      const board = Object.entries(tally).map(([t, x]) => ({ t: +t, ...x })).sort((a, b) => b.r - a.r || a.n - b.n || b.wk - a.wk);
+      const lb = board.length ? `<div class="card"><div class="mod-h"><h2>Leaderboard</h2><span class="grow"></span><span class="ps">${done.length} week${done.length === 1 ? "" : "s"} scored</span></div><div class="table-wrap"><table class="t"><thead><tr><th>#</th><th>Team</th><th class="num">Right</th><th class="num">Pct</th><th class="num" title="Weeks with the most right picks">Best week</th></tr></thead><tbody>${board.map((x, i) => `<tr${isMe(x.t) ? ' class="me"' : ""}><td>${i === 0 || board[i - 1].r !== x.r ? i + 1 : ""}</td><td><span class="row" style="gap:7px">${teamAv(T(x.t), "sm")}<b class="ell">${esc(T(x.t).name)}</b></span></td><td class="num"><b>${x.r}</b>-${x.n - x.r}</td><td class="num">${x.n ? Math.round((x.r / x.n) * 100) : 0}%</td><td class="num">${x.wk || ""}</td></tr>`).join("")}</tbody></table></div>
+        ${best.length ? `<div class="bd ps" style="padding-top:8px">${best.slice(-3).reverse().map((b) => `${esc(weekLabel(b.w))}: ${b.top.t.length > 2 ? `${b.top.t.length} teams tied` : b.top.t.map((t) => esc(T(t).name)).join(" and ")} with ${b.top.r} right`).join(". ")}.</div>` : ""}</div>`
+        : `<div class="card"><div class="bd"><p class="ps" style="margin:0">The leaderboard starts once a week with picks is final.</p></div></div>`;
+      return `<div class="wrap page">${head}<div class="stack" style="max-width:820px">${cards.join("")}${lb}</div></div>`;
     }
     /* ---------- league chat (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) ---------- */
     // Posts and the league's biggest moves, oldest first, so a trade shows up where people talked about it.
@@ -3170,7 +3237,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, teamstats: teamStatsPage, rosters: rostersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, picks: picksPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, teamstats: teamStatsPage, rosters: rostersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: () => tradesPage(r.arg) }[r.sub]();
       if (pre() && (r.tab === "team" || (r.tab === "league" && (r.sub === "standings" || r.sub === "managers")))) html = `<div class="wrap" style="padding-top:12px"><div class="banner pre-note"><b>Before the draft.</b> ${r.tab === "team" ? (r.sub === "schedule" ? "The schedule as it stands. It's set when the draft ends." : "These are the spots to fill. Rosters fill in at the draft; build your queue on the Players tab.") : "Everyone's 0-0 until the season starts after the draft."} <a href="#draft">Enter the draft room</a></div></div>` + html;
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
@@ -3303,6 +3370,21 @@
     opts.el.addEventListener("click", async (e) => {
       const add = e.target.closest("[data-rxopen]"), b = !add && e.target.closest("[data-rx]");
       if (add) { const pid = +add.dataset.rxopen, was = ui.rxOpen; if (was != null && was !== pid) redrawReacts(was, false); ui.rxOpen = was === pid ? null : pid; redrawReacts(pid, ui.rxOpen === pid); const f = opts.el.querySelector(`.rx[data-post="${pid}"] .rx-pick button`); if (f) f.focus(); return; }
+      const pkb = !add && !b && e.target.closest("[data-pick]");
+      if (pkb && opts.picks && !pkb.disabled) {
+        const [w, k, t] = pkb.dataset.pick.split("|"), wk = +w, mineRow = (opts.picks.list() || []).find((r) => r.week === wk && r.team === me());
+        const cur = Object.assign({}, ui.pick && ui.pick.w === wk ? ui.pick.p : (mineRow && mineRow.picks) || {});
+        if (cur[k] === +t) delete cur[k]; else cur[k] = +t;
+        ui.pick = { w: wk, p: cur }; render();
+        clearTimeout(ui.pickT);
+        // a run of taps saves once
+        ui.pickT = setTimeout(async () => {
+          const r = await opts.picks.save(wk, ui.pick.p).catch((err) => ({ error: err.message }));
+          if (r && r.error) U.toast(r.error, true);
+          ui.pick = null; render();
+        }, 600);
+        return;
+      }
       const pv = !add && !b && e.target.closest("[data-vote],[data-pollnew]");
       if (pv && opts.chat) {
         if (pv.dataset.pollnew != null) { pollDialog(); return; }
