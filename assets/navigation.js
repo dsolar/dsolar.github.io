@@ -1,4 +1,29 @@
 /* One navigation for the whole site. Project links come from assets/projects.js. */
+/* Site health: a page's uncaught errors go to the site's database (tools/site_health.sql site_error), so a broken page
+   shows up in the morning digest instead of waiting for someone to mention it. The page's path only (no query string:
+   invite codes live there), the message, the file and line, and the browser. Five a page at most; none from localhost. */
+(function () {
+  "use strict";
+  var URL_ = "https://baxrczyufqbzrogftmyn.supabase.co", KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4", sent = 0;
+  if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) || !window.fetch) return;
+  function send(o) {
+    if (sent >= 5) return;
+    sent++;
+    var p = { page: location.pathname + (location.hash ? location.hash.split("/")[0].slice(0, 40) : ""), msg: String(o.msg || "").slice(0, 400), src: o.src ? String(o.src).split("?")[0] : null, line: o.line || null, stack: o.stack ? String(o.stack).slice(0, 2000) : null, ua: navigator.userAgent };
+    try { fetch(URL_ + "/rest/v1/rpc/site_error", { method: "POST", keepalive: true, headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify({ p: p }) }).catch(function () {}); } catch (e) { /* never break the page over this */ }
+  }
+  window.addEventListener("error", function (e) {
+    // a missing image or script has no message; another site's script hides its details ("Script error.")
+    if (!e.message || /^Script error\.?$/.test(e.message)) return;
+    send({ msg: e.message, src: e.filename, line: e.lineno, stack: e.error && e.error.stack });
+  });
+  window.addEventListener("unhandledrejection", function (e) {
+    var r = e.reason, m = r && (r.message || String(r));
+    // a dropped connection isn't a bug
+    if (!m || /Failed to fetch|NetworkError|Load failed|aborted|network connection was lost/i.test(m)) return;
+    send({ msg: "Unhandled: " + m, stack: r && r.stack });
+  });
+})();
 (function () {
   "use strict";
   var script = document.currentScript;
@@ -122,7 +147,7 @@
     // The same category destinations in every full-size footer.
     document.querySelectorAll(".foot-nav").forEach(function (footer) {
       var email = footer.querySelector("[data-user]");
-      footer.innerHTML = sections.map(function (s) { return '<a href="' + esc(at(s.url)) + '">' + esc(s.label) + '</a>'; }).join("") + '<a href="' + esc(at("#about")) + '">About</a><a href="' + esc(at("privacy/")) + '">Privacy</a><a href="' + esc(at("terms/")) + '">Terms</a>';
+      footer.innerHTML = sections.map(function (s) { return '<a href="' + esc(at(s.url)) + '">' + esc(s.label) + '</a>'; }).join("") + '<a href="' + esc(at("#about")) + '">About</a><a href="' + esc(at("status/")) + '">Status</a><a href="' + esc(at("privacy/")) + '">Privacy</a><a href="' + esc(at("terms/")) + '">Terms</a>';
       if (email) footer.appendChild(email);
     });
   }

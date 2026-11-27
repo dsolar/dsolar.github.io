@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Status | David Solar</title>
+<meta name="description" content="Whether the site is up to date: live scores, the data behind the hubs and Draft Lab, and the league clock. Report a problem here too.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://davidsolar.dev/status/">
+<meta property="og:title" content="Status">
+<meta property="og:description" content="Whether the site is up to date: live scores, the data behind the hubs and Draft Lab, and the league clock. Report a problem here too.">
+<meta property="og:image" content="https://davidsolar.dev/assets/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://davidsolar.dev/assets/og.png">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Besley:ital,wght@0,500;0,600;0,700;0,800;1,500&family=Libre+Franklin:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="/assets/site.css?v=20261112">
+<script src="/assets/site.js" defer></script>
+<script src="/assets/analytics.js" defer></script>
+<style>
+  .st{max-width:46rem;padding-block:48px 72px}
+  .st h1{margin:0 0 6px}
+  .st-verdict{margin:0 0 30px;font-size:1.1rem;line-height:1.5}
+  .st-verdict b{font-weight:700}
+  .st h2{margin:34px 0 4px;font-size:1.3rem}
+  .st .about{margin:0 0 10px;color:var(--muted,#5c6878);font-size:.95rem;line-height:1.5}
+  .st-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule,#d9dde3)}
+  .st-list li{display:grid;grid-template-columns:14px minmax(0,1fr) auto;gap:12px;align-items:center;padding:11px 2px;border-bottom:1px solid var(--rule,#d9dde3)}
+  .st-list .nm{font-weight:600}
+  .st-list .nm small{display:block;font-weight:400;color:var(--muted,#5c6878);font-size:.85rem;margin-top:1px}
+  .st-list .when{color:var(--muted,#5c6878);font-size:.92rem;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .dot{width:10px;height:10px;border-radius:50%;background:#9aa3ad}
+  .dot.ok{background:#1f8a4c}.dot.late{background:#d08a00}.dot.bad{background:#c0392b}.dot.on{background:#1f8a4c;box-shadow:0 0 0 4px rgba(31,138,76,.18)}
+  .st-form{display:grid;gap:12px;margin-top:10px}
+  .st-form label{font-weight:600;display:grid;gap:6px}
+  .st-form label span{font-weight:400;color:var(--muted,#5c6878);font-size:.9rem}
+  .st-form textarea,.st-form input{font:inherit;padding:10px 12px;border:1px solid var(--rule,#c9cfd6);border-radius:8px;background:var(--paper,#fff);color:var(--ink,#16202b);width:100%;box-sizing:border-box}
+  .st-form textarea{min-height:120px;resize:vertical}
+  .st-form button{justify-self:start;font:inherit;font-weight:700;padding:10px 18px;border-radius:8px;border:0;background:var(--button,#16202b);color:var(--button-ink,#fff);cursor:pointer}
+  .st-form button:disabled{opacity:.6;cursor:default}
+  .st-msg{margin:0;font-weight:600}
+  .st-msg.err{color:#c0392b}
+  @media (max-width:560px){.st-list .when{font-size:.85rem}}
+</style>
+<link rel="stylesheet" href="/assets/navigation.css?v=20261125pr">
+<script src="/assets/projects.js?v=20261124-bb" defer></script>
+<script src="/assets/navigation.js?v=20261127sh" defer></script>
+</head>
+<body>
+<nav class="ds-bar ds-navigation" data-ds-navigation aria-label="Main">
+  <a class="ds-brand" href="/" aria-label="David Solar, home"><img src="/assets/nav-mark.svg" alt="" width="38" height="38"><span>David Solar</span></a>
+  <a href="/#projects">Explore all projects</a>
+</nav>
+<main class="wrap st">
+<h1>Status</h1>
+<p class="st-verdict" id="st-verdict" role="status">Checking&hellip;</p>
+
+<h2>Live scores</h2>
+<p class="about">Box scores for Draft Lab leagues and the hubs, refreshed every 15 seconds while games are on. A feed updates when a page asks for it, so a quiet day can look older.</p>
+<ul class="st-list" id="st-live"></ul>
+
+<h2>Data updates</h2>
+<p class="about">The players, stats, injuries and ratings behind Draft Lab and each hub, refreshed by scheduled jobs. Each shows its last successful update.</p>
+<ul class="st-list" id="st-data"></ul>
+
+<h2>Leagues</h2>
+<ul class="st-list" id="st-league"></ul>
+
+<h2 id="report">Report a problem</h2>
+<p class="about">Something broken, wrong or confusing? Say what you were doing and what happened. It goes straight to David.</p>
+<form class="st-form" id="st-form">
+  <label>What went wrong<textarea id="st-body" maxlength="3000" required></textarea></label>
+  <label>Page <span>Where it happened, if it isn't the one you came from</span><input id="st-page" type="text" maxlength="300" autocomplete="off"></label>
+  <label>How to reach you <span>Optional: an email or phone number, if you'd like an answer</span><input id="st-contact" type="text" maxlength="200" autocomplete="email"></label>
+  <button type="submit">Send report</button>
+  <p class="st-msg" id="st-msg" role="status"></p>
+</form>
+</main>
+<script>
+(function () {
+  "use strict";
+  var URL_ = "https://baxrczyufqbzrogftmyn.supabase.co", KEY = "sb_publishable_brDXGevzcoI7mBaPO7Plow_yaUy4gk4";
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); };
+  var rpc = function (fn, body) { return fetch(URL_ + "/rest/v1/rpc/" + fn, { method: "POST", headers: { apikey: KEY, "Content-Type": "application/json" }, body: JSON.stringify(body || {}) }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); };
+  var ago = function (t, now) {
+    var m = Math.round((now - t) / 60000);
+    if (m < 1) return "just now"; if (m < 60) return m + " min ago";
+    var h = Math.round(m / 60); if (h < 48) return h + (h === 1 ? " hour ago" : " hours ago");
+    return Math.round(h / 24) + " days ago";
+  };
+  var row = function (state, name, sub, when) { return '<li><span class="dot ' + state + '" aria-hidden="true"></span><span class="nm">' + esc(name) + (sub ? "<small>" + esc(sub) + "</small>" : "") + '</span><span class="when">' + esc(when) + "</span></li>"; };
+  var behind = [];
+  // what each data job keeps up to date, and how long before it counts as behind (hours)
+  var DATA = [
+    ["Draft Lab football", "fantasy-kit/data/nfl.json", 18, "Players, stats, injuries"],
+    ["Draft Lab basketball", "fantasy-kit/data/nba.json", 30, "Players and stats"],
+    ["Draft Lab hockey", "fantasy-kit/data/nhl.json", 30, "Players and stats"],
+    ["Draft Lab college hoops", "fantasy-kit/data/cbb.json", 30, "Players and stats"],
+    ["Draft Lab baseball", "fantasy-kit/data/mlb.json", 30, "Players and stats"],
+    ["NFL hub", "nfl/data/league.json", 30, "Ratings, schedule, odds"],
+    ["NBA hub", "nba/data/ratings.json", 30, "Ratings and projections"],
+    ["NHL hub", "nhl/data/hub.json", 30, "Ratings and projections"],
+    ["College basketball hub", "cbb/data/hub.json", 14, "Ratings, rosters, the bracket"],
+    ["College football hub", "cfb/data/hub.json", 14, "Ratings, rankings, the playoff"],
+    ["MLB hub", "mlb/data/hub.json", 24 * 8, "Offseason: weekly"]
+  ];
+  var SPORTS = { nfl: "NFL", nba: "NBA", nhl: "NHL", mlb: "MLB", cbb: "College basketball", cfb: "College football" };
+  function verdict() {
+    $("st-verdict").innerHTML = behind.length ? "<b>Running, with " + (behind.length === 1 ? "one thing" : behind.length + " things") + " behind:</b> " + esc(behind.join(", ")) + "." : "<b>Everything's running and up to date.</b>";
+  }
+  var health = rpc("site_health").then(function (h) {
+    if (!h) { $("st-live").innerHTML = row("bad", "Couldn't reach the database", "Leagues and live scores may be down", ""); behind.push("the database"); return; }
+    var now = h.now;
+    $("st-live").innerHTML = Object.keys(SPORTS).map(function (k) {
+      var x = h.live[k]; if (!x) return row("", SPORTS[k], "No feed yet", "");
+      return row(x.on ? "on" : "ok", SPORTS[k], x.on ? "Games on now" : "", "updated " + ago(x.at, now));
+    }).join("");
+    var clockOk = h.clock && now - h.clock < 20 * 60e3;
+    if (!clockOk) behind.push("the league clock");
+    $("st-league").innerHTML = row(clockOk ? "ok" : "bad", "League clock", "Runs every 5 minutes: waivers, trades, week results, alerts", h.clock ? "last ran " + ago(h.clock, now) : "no recent run")
+      + row(h.errors ? "late" : "ok", "Page errors", "In the last day, across the site", h.errors ? h.errors + (h.errors === 1 ? " error" : " errors") : "none")
+      + row("ok", "Problem reports", "In the last day", h.reports ? String(h.reports) : "none");
+  });
+  // each data file's last update: its last commit (GitHub's public API, one call per file)
+  var data = Promise.all(DATA.map(function (d) {
+    return fetch("https://api.github.com/repos/dsolar/dsolar.github.io/commits?per_page=1&path=" + encodeURIComponent(d[1])).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (c) {
+      var t = c && c[0] && Date.parse(c[0].commit.committer.date);
+      if (!t) return row("", d[0], d[3], "can't check right now");
+      var late = Date.now() - t > d[2] * 3600e3;
+      if (late) behind.push(d[0]);
+      return row(late ? "late" : "ok", d[0], d[3], ago(t, Date.now()));
+    });
+  })).then(function (rows) { $("st-data").innerHTML = rows.join(""); });
+  Promise.all([health, data]).then(verdict);
+  // the report form: the page you came from fills in the page
+  var from = new URLSearchParams(location.search).get("from") || (document.referrer && new URL(document.referrer).origin === location.origin ? new URL(document.referrer).pathname : "");
+  if (from) $("st-page").value = from.split("?")[0].slice(0, 300);
+  $("st-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var b = $("st-body").value.trim(), btn = this.querySelector("button"), msg = $("st-msg");
+    if (b.length < 3) { msg.className = "st-msg err"; msg.textContent = "Say what went wrong first."; return; }
+    btn.disabled = true; msg.className = "st-msg"; msg.textContent = "Sending…";
+    rpc("site_report", { p_page: $("st-page").value.trim() || null, p_body: b, p_contact: $("st-contact").value.trim() || null, p_ua: navigator.userAgent }).then(function (r) {
+      btn.disabled = false;
+      if (r && r.ok) { msg.textContent = "Sent. Thanks: David will see it within a few minutes."; $("st-body").value = ""; }
+      else { msg.className = "st-msg err"; msg.textContent = (r && r.error) || "That didn't send. Try again in a minute."; }
+    });
+  });
+})();
+</script>
+<footer class="site-footer">
+  <div class="wrap">
+    <a class="footer-brand" href="/" aria-label="David Solar, home"><img class="brand-logo" src="/assets/david-solar-sports-data-nonsense.svg" alt=""></a>
+    <div class="foot-copy"><span>&copy; <span id="year">2026</span> David Solar</span></div>
+    <nav class="foot-nav" aria-label="Footer"><a href="/fantasy/">Fantasy</a><a href="/#games">Games</a><a href="/#simulations">Simulations &amp; Tools</a><a href="/kids/">Kids</a><a href="/#writing">Writing</a><a href="/#about">About</a><a data-user="hello" data-domain="davidsolar.dev">Email</a></nav>
+  </div>
+</footer>
+</body>
+</html>

@@ -448,6 +448,30 @@ async function pickemReminders(token: string) {
   return { due: due.length, sent, failed };
 }
 
+// Site health (tools/site_health.sql): problem reports from davidsolar.dev/status/ go to the site's owner as they come
+// in, and from 8 a.m. Eastern a once-a-day digest of new page errors, when there are any.
+async function siteAdmin(token: string) {
+  const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
+  if (!key || !from) return { admin: "mail not set up" };
+  const r = await rpc("site_admin_take", { p_token: token });
+  if (!r || r.error) return { error: r && r.error };
+  const mails: { subject: string; text: string }[] = [];
+  for (const x of r.reports || []) mails.push({ subject: `Problem report${x.page ? `: ${String(x.page).slice(0, 60)}` : ""}`,
+    text: `${x.body}\n\nPage: ${x.page || "(not given)"}\nContact: ${x.contact || "(none)"}${x.signed ? " (signed in)" : ""}\nAt: ${etTime(Date.parse(x.at))}\n\nFrom davidsolar.dev/status/` });
+  if (r.errors && r.errors.length) {
+    const total = r.errors.reduce((a: number, e: any) => a + (e.n || 1), 0);
+    mails.push({ subject: `davidsolar.dev: ${total} page error${total === 1 ? "" : "s"} since yesterday`,
+      text: r.errors.slice(0, 25).map((e: any) => `${e.n}x  ${e.page}\n    ${e.msg}${e.src ? `\n    ${String(e.src).replace("https://davidsolar.dev", "")}${e.line ? `:${e.line}` : ""}` : ""}`).join("\n\n") + (r.errors.length > 25 ? `\n\nand ${r.errors.length - 25} more` : "") + "\n\nThe full list is in the site_errors table." });
+  }
+  let sent = 0;
+  for (const m of mails) {
+    const res = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify({ from, to: [r.to], subject: m.subject, text: m.text }) }).catch(() => null);
+    if (res && res.ok) sent++;
+    await new Promise((ok) => setTimeout(ok, 550));
+  }
+  return { reports: (r.reports || []).length, digest: !!(r.errors && r.errors.length), sent };
+}
+
 // Weekly recaps: Tuesday morning (9 to 11 a.m. Eastern), each member who turned them on gets a note on every pool with a
 // game that finished in the last week: who went out, the top of the standings, where they stand, and what's due.
 async function poolRecaps(token: string) {
@@ -537,5 +561,6 @@ Deno.serve(async (req) => {
   const reminders = await poolReminders(token).catch((e) => ({ error: String(e.message || e) }));
   const recaps = await poolRecaps(token).catch((e) => ({ error: String(e.message || e) }));
   const pickem = await pickemReminders(token).catch((e) => ({ error: String(e.message || e) }));
-  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, pickem, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
+  const site = await siteAdmin(token).catch((e) => ({ error: String(e.message || e) }));
+  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, pickem, site, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
 });

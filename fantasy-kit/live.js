@@ -875,6 +875,7 @@
       <div id="lv-past"></div>
       ${info.me != null && C.user() ? `<div id="lv-push" style="margin-top:12px"></div>` : ""}
       ${(info.me != null || info.commish) && C.user() ? `<div id="lv-co" style="margin-top:12px"></div>` : ""}
+      <p class="ps" style="margin:14px 0 0">Something broken? <a href="/status/?from=${encodeURIComponent(location.pathname)}#report">Report a problem</a> or <a href="/status/">check the site's status</a>.</p>
       ${info.me != null ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="lv-mail"${info.notify !== false ? " checked" : ""}> Email me about trade offers, waiver results, starters ruled out${D && D.clock >= 3600 ? ", my turn in the draft" : ""} and weekly results</label>` : ""}
       <div class="row ps" style="margin:12px 0 0;gap:6px 16px;flex-wrap:wrap"><span>${u ? `Signed in as ${esc(u.email)}` : `<a href="/fantasy/leagues/">Sign in</a> to make moves`}</span><span class="grow"></span>${info.commish && !L ? `<button type="button" class="btn sm ghost warn" data-lv="delete">Delete league</button>` : ""}${u ? `<button type="button" class="btn sm ghost" data-lv="out">Sign out</button>` : ""}<button type="button" class="btn sm ghost" data-lv="theme">${theme.dark() ? "Light mode" : "Dark mode"}</button></div>`, null, { wide: true });
     const dlg = $("#fk-dlg");
