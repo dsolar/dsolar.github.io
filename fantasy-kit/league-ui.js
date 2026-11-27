@@ -2916,6 +2916,7 @@
         else if (own === mid && canMove()) actions += `${L().settings.trades !== false && !over() ? `<button class="btn" data-card="block">${G.blockOf(L(), ctx, mid).includes(pid) ? "Take off the block" : "Put on the block"}</button>` : ""}<button class="btn warn" data-card="drop">Drop</button>`;
         else if (own != null && own !== mid && canTrade()) actions += `<button class="btn go" data-card="trade">Trade for him</button>`;
       }
+      actions += `<button class="btn" data-card="compare">Compare</button>`;
       const status = own != null ? `${teamAv(T(own), "sm")} On ${esc(T(own).name)}` : G.onWaivers(L(), pid, now()) ? `<span class="tag gold" title="Claims run ${esc(G.waiverWhen(G.clearAt(L(), pid)))}">On waivers until ${clearDay(pid)}</span>` : `<span class="tag win">Free agent</span>`;
       // the headline numbers: rank and position, then how he's scoring here (season average, the last three weeks),
       // how often his team starts him, and what he'd go for in an auction
@@ -2949,8 +2950,95 @@
         else if (a === "add") addDialog(pid);
         else if (a === "drop") dropDialog(pid);
         else if (a === "trade") openTrade(own, pid);
+        else if (a === "compare") compareDialog([pid]);
         else if (a === "block") { const on = !G.blockOf(L(), ctx, mid).includes(pid); act(() => G.setBlock(L(), mid, pid, on), on ? `${p.n} is on the block.` : `${p.n} is off the block.`); }
       }));
+    }
+
+    /* ---------- Compare players ----------
+       Up to three players side by side in this league's scoring: where they rank, how they've scored here (points
+       leagues: per week, the last three weeks, this week's projection, best week; category leagues: the season line in
+       the league's own categories), who has them, and the latest headline. The best number in each row is marked. */
+    const cmpFold = (x) => String(x || "").normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9 ]+/g, "");
+    function compareRows(ps) {
+      const rows = [], add = (label, vals, o = {}) => rows.push(Object.assign({ label, vals }, o));
+      add("Rostered by", ps.map((p) => { const o = ctx.own[p.id]; return o != null ? `<span class="cmp-own">${teamAv(T(o), "sm")}<span class="ell">${esc(T(o).abbr || T(o).name)}</span></span>` : G.onWaivers(L(), p.id, now()) ? `<span class="tag gold">Waivers</span>` : `<span class="tag win">Free agent</span>`; }), { html: true });
+      add("Overall", ps.map((p) => (p.rank != null ? p.rank : null)), { low: true, fmt: (v) => `#${v}` });
+      add("Position", ps.map((p) => esc(p.prank || "-")), { html: true });
+      if (ps.some((p) => p.inj)) add("Injury", ps.map((p) => (p.inj ? `<span class="tag loss">${esc(p.inj)}</span>` : `<span class="ps">-</span>`)), { html: true });
+      if (pts()) {
+        const Ws = ps.map(weeksOf);
+        if (Ws.some((W) => W.done.length)) {
+          add("Per week", Ws.map((W) => W.avg));
+          add("Last 3 weeks", Ws.map((W) => (W.done.length >= 3 ? W.done.slice(-3).reduce((t, x) => t + x.v, 0) / 3 : null)));
+          if (!over() && Ws.some((W) => W.cur)) add(`${weekLabel(curWeek())} projection`, Ws.map((W) => (W.cur ? W.cur.pj : null)));
+          add("Best week", Ws.map((W) => (W.done.length ? Math.max(...W.done.map((x) => x.v)) : null)));
+          add("Season total", Ws.map((W) => (W.done.length ? W.done.reduce((t, x) => t + x.v, 0) : null)));
+        } else add(sport.weekOf != null ? "Projected a week" : "Projection", ps.map((p) => (p.v == null ? null : sport.weekOf != null ? p.v / 17 : p.v)));
+      } else {
+        // the league's categories, a block per kind of line (hitting, pitching; skaters, goalies), this season's when
+        // anyone here has one, otherwise the projection
+        const cols = U.statColumns(sport, L().scoring), yr = (sport.data && sport.data.season) || L().season;
+        for (const g of ["bat", "pit", "pg", "sk", "goalie"]) {
+          if (!ps.some((p) => p.l && (p.l[g] || p.l["p" + g]))) continue;
+          const line = ps.some((p) => p.l && p.l[g]) ? g : "p" + g;
+          const cs = cols.filter((c) => ((c.group || c.line) === g || (!c.group && !c.line)) && (!sport.gamesCol || c.col !== sport.gamesCol));
+          if (!cs.length) continue;
+          rows.push({ section: `${sport.groups && sport.groups[g] ? U.groupLabel(sport, g) + ", " : ""}${line === g ? yr : "projected"}` });
+          const gamesCol = sport.gamesCol || "g";
+          if (sport.cols[g] && sport.cols[g][gamesCol] != null) add("Games", ps.map((p) => (p.l && p.l[line] ? S.stat(sport, p, line, gamesCol) : null)), { fmt: (v) => String(Math.round(v)), plain: true });
+          // games and minutes played say how much he's played, not how well
+          for (const c of cs) add(c.label, ps.map((p) => (p.l && p.l[line] ? U.statCell(sport, p, Object.assign({}, c, { line })) : null)), { low: !!c.low, fmt: c.fmt, plain: c.col === gamesCol || c.col === "min" });
+        }
+      }
+      if (auctionLg()) add("Auction", ps.map((p) => p.$ || null), { fmt: money });
+      if ((L().settings.keepers || L().settings.dynasty) && window.FK.season) add(`${nextYearOf()} keeper`, ps.map(keepShort), { html: true });
+      const latest = (p) => (newsFile && newsFile.items || []).find((x) => (x.ids || []).includes(String(p.id)));
+      if (hasNews() && ps.some(latest)) add("Latest news", ps.map((p) => { const n = latest(p); return n ? `<span class="cmp-nw">${/^https:\/\//.test(n.u || "") ? `<a href="${esc(n.u)}" target="_blank" rel="noopener">${esc(n.t)}</a>` : esc(n.t)}<small class="ps">${esc(new Date(n.at).toLocaleDateString("en-US", { month: "short", day: "numeric" }))}</small></span>` : `<span class="ps">-</span>`; }), { html: true, wrap: true });
+      return rows;
+    }
+    function compareHtml(ids) {
+      const ps = ids.map((id) => ctx.byId[id]);
+      const head = ps.map((p) => `<th scope="col" class="cmp-p"><button type="button" class="cmp-rm" data-cmprm="${esc(p.id)}" aria-label="Take ${esc(p.n)} out">&times;</button><button type="button" class="cmp-who" data-cmpcard="${esc(p.id)}">${U.playerAv(sport, p, "")}<b>${esc(p.n)}</b><small class="ps">${esc([p.t, (p.pos || []).join("/")].filter(Boolean).join(" "))}</small></button></th>`).join("");
+      const slot = ps.length < 3 ? `<th scope="col" class="cmp-p cmp-add"><label class="sr" for="fk-cmpq">Add a player to compare</label><input id="fk-cmpq" class="txsel" type="search" autocomplete="off" placeholder="Add a player" value="${esc(ui.cmpQ || "")}"><ul class="cmp-hits" role="listbox"></ul></th>` : "";
+      const body = compareRows(ps).map((r) => {
+        if (r.section) return `<tr class="cmp-sec"><th scope="rowgroup" colspan="${ps.length + 1 + (slot ? 1 : 0)}">${esc(r.section)}</th></tr>`;
+        // the best is judged on the numbers as shown, so two players at 0.8 tie
+        const shown = r.html ? r.vals : r.vals.map((v) => (v == null || !isFinite(v) ? null : r.fmt ? r.fmt(v) : fmtS(v)));
+        const key = (t) => (t == null ? null : Number(String(t).replace(/[^0-9.\-]/g, "")));
+        const nums = r.html ? [] : shown.map(key).filter((v) => v != null && isFinite(v));
+        const best = !r.plain && nums.length > 1 && new Set(nums).size > 1 ? (r.low ? Math.min(...nums) : Math.max(...nums)) : null;
+        const cells = r.vals.map((v, i) => r.html ? `<td class="${r.wrap ? "cmp-w" : ""}">${v}</td>` : shown[i] == null ? `<td class="num"><span class="ps">-</span></td>` : `<td class="num${best != null && key(shown[i]) === best ? " cmp-b" : ""}">${shown[i]}</td>`).join("");
+        return `<tr><th scope="row">${esc(r.label)}</th>${cells}${slot ? "<td></td>" : ""}</tr>`;
+      }).join("");
+      return `<h3 class="disp" style="margin:0 0 4px">Compare players</h3><p class="ps" style="margin:0 0 12px">In this league's scoring. The best number in each row is marked.</p>
+        <div class="cmp-wrap"><table class="cmp"><thead><tr><th></th>${head}${slot}</tr></thead><tbody>${body}</tbody></table></div>`;
+    }
+    function compareHits(D) {
+      const q = cmpFold(ui.cmpQ).trim(), ul = D.querySelector(".cmp-hits");
+      if (!ul) return;
+      if (q.length < 2) { ul.innerHTML = ""; return; }
+      const words = q.split(/\s+/);
+      const hits = Object.values(ctx.byId).filter((p) => !ui.cmpIds.includes(p.id) && p.n && words.every((w) => cmpFold(p.n).includes(w))).sort((a, b) => (a.rank || 1e9) - (b.rank || 1e9)).slice(0, 6);
+      ul.innerHTML = hits.length ? hits.map((p) => `<li><button type="button" data-cmpadd="${esc(p.id)}">${esc(p.n)} <small class="ps">${esc([p.t, (p.pos || []).join("/")].filter(Boolean).join(" "))}</small></button></li>`).join("") : `<li class="ps">No one by that name</li>`;
+    }
+    function compareDialog(ids) {
+      ui.cmpIds = ids.filter((id) => ctx.byId[id]).slice(0, 3); ui.cmpQ = "";
+      if (hasNews()) newsData();
+      const draw = () => {
+        const D = U.dialog(compareHtml(ui.cmpIds), null, { wide: true });
+        D.onclick = (e) => {
+          const t = e.target.closest("[data-cmprm],[data-cmpadd],[data-cmpcard]");
+          if (!t) return;
+          if (t.dataset.cmprm) { ui.cmpIds = ui.cmpIds.filter((id) => id !== t.dataset.cmprm); if (!ui.cmpIds.length) { D.close(); return; } draw(); }
+          else if (t.dataset.cmpadd) { ui.cmpIds = ui.cmpIds.concat(t.dataset.cmpadd).slice(0, 3); ui.cmpQ = ""; draw(); const q = $("#fk-cmpq", D.ownerDocument); if (q) q.focus(); }
+          else if (t.dataset.cmpcard) playerCard(t.dataset.cmpcard);
+        };
+        D.oninput = (e) => { if (e.target.id === "fk-cmpq") { ui.cmpQ = e.target.value; compareHits(D); } };
+        const q = D.querySelector("#fk-cmpq");
+        if (q && ui.cmpIds.length < 2) setTimeout(() => q.focus(), 50);
+      };
+      draw();
     }
 
     /* The season's last word on the front page, in the league's own colors: the champion and the title game on the
