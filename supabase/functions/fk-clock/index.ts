@@ -121,6 +121,17 @@ async function loadClass(S: any, sport: string) {
   return S.prospectClass ? S.prospectClass(boards[sport].data, sport) : null;
 }
 
+// This week's live feed for a sport (kickoff times), once per sweep: the late-scratch alert needs to know whose game
+// hasn't started, and nobody may have the league open to set it from a page
+const liveFeeds: Record<string, { at: number; p: Promise<any> }> = {};
+function liveFeed(sport: string) {
+  const c = liveFeeds[sport];
+  if (c && Date.now() - c.at < 4 * 60e3) return c.p;   // a warm worker keeps this between sweeps: a few minutes at most
+  const p = fetch(`${URL_}/functions/v1/fk-live?sport=${encodeURIComponent(sport)}`, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` } }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+  liveFeeds[sport] = { at: Date.now(), p };
+  return p;
+}
+
 // One league's turn: overdue picks in a live draft, or an ended week, waivers and trades in a season, saved with the
 // version it started from. one: a single league woken by its own save (see bots below), not the five-minute sweep.
 async function advance(FK: any, token: string, l: any, one: boolean) {
@@ -195,7 +206,15 @@ async function advance(FK: any, token: string, l: any, one: boolean) {
           L = Z.begin(D, sport, { name: l.name, season: data.season, now, real });
           changed = true;
         }
-      } else changed = Z.catchUp(L, G.context(L, players, sport, hooks), now);
+      } else {
+        // after the weekly lineup check, keep this week's kickoff times current so a starter ruled out later is caught
+        let kicked = false;
+        if (L.settings && L.settings.real && G.setKicks && L.reminders && L.reminders[L.week] && L.week <= G.totalWeeks(L)) {
+          const lv = await liveFeed(l.sport);
+          if (lv) { const before = JSON.stringify(L.kick || null); G.setKicks(L, lv); kicked = JSON.stringify(L.kick || null) !== before; }
+        }
+        changed = Z.catchUp(L, G.context(L, players, sport, hooks), now) || kicked;
+      }
       if (!changed) return out;
       const events = Z.events(base, { draft: D, league: L }, { name: l.name, url: `https://davidsolar.dev/fantasy/league/?id=${encodeURIComponent(l.id)}`, seats: l.seats, me: null, byId, now });
       const r = await rpc("fk_clock_save", { p_token: token, p_id: l.id, p_version: l.version, p_draft: base.league ? null : D, p_league: L, p_events: events });
