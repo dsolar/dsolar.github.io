@@ -8125,7 +8125,7 @@
       "nfl": "CIN",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 57,
-      "next_proj": 15.29
+      "next_proj": 15.27
      },
      {
       "n": "Christian McCaffrey",
@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 18.88
+      "next_proj": 18.81
      },
      {
       "n": "James Cook III",
@@ -8141,7 +8141,7 @@
       "nfl": "BUF",
       "claimed_by": "Drake Mayezini",
       "bid": 39,
-      "next_proj": 17.65
+      "next_proj": 17.69
      },
      {
       "n": "Josh Allen",
@@ -8149,7 +8149,7 @@
       "nfl": "BUF",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 35,
-      "next_proj": 22.93
+      "next_proj": 22.99
      },
      {
       "n": "Brock Bowers",
@@ -8189,7 +8189,7 @@
       "nfl": "HOU",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 18.92
+      "next_proj": 18.94
      },
      {
       "n": "D'Andre Swift",
@@ -8197,7 +8197,7 @@
       "nfl": "CHI",
       "claimed_by": "A Warren Boston",
       "bid": 0,
-      "next_proj": 13.81
+      "next_proj": 13.88
      },
      {
       "n": "Zay Flowers",
@@ -8211,7 +8211,7 @@
       "n": "DK Metcalf",
       "pos": "WR",
       "nfl": "PIT",
-      "next_proj": 7.62
+      "next_proj": 7.63
      },
      {
       "n": "Jordan Love",
@@ -8229,7 +8229,7 @@
       "n": "Tony Pollard",
       "pos": "RB",
       "nfl": "TEN",
-      "next_proj": 13.31
+      "next_proj": 13.33
      }
     ]
    },
@@ -8447,7 +8447,7 @@
       "pos": "WR",
       "nfl": "SEA",
       "slot": "WR",
-      "proj": 20.17,
+      "proj": 20.14,
       "pts": null
      },
      {
@@ -8463,7 +8463,7 @@
       "pos": "TE",
       "nfl": "SF",
       "slot": "TE",
-      "proj": 9.68,
+      "proj": 9.66,
       "pts": null
      },
      {
@@ -8487,7 +8487,7 @@
       "pos": "QB",
       "nfl": "SF",
       "slot": "BN",
-      "proj": 16,
+      "proj": 15.99,
       "pts": null
      },
      {
@@ -8545,7 +8545,7 @@
       "pos": "RB",
       "nfl": "SF",
       "slot": "RB",
-      "proj": 16.43,
+      "proj": 16.49,
       "pts": null
      },
      {
@@ -8735,19 +8735,27 @@
       "pts": null
      },
      {
-      "n": "Colston Loveland",
-      "pos": "TE",
-      "nfl": "CHI",
-      "slot": "BN",
-      "proj": 9.93,
-      "pts": -1
-     },
-     {
       "n": "Jayden Daniels",
       "pos": "QB",
       "nfl": "WAS",
       "slot": "BN",
       "proj": 21.94,
+      "pts": null
+     },
+     {
+      "n": "T.J. Hockenson",
+      "pos": "TE",
+      "nfl": "MIN",
+      "slot": "BN",
+      "proj": 8.5,
+      "pts": null
+     },
+     {
+      "n": "Darren Waller",
+      "pos": "TE",
+      "nfl": "CAR",
+      "slot": "BN",
+      "proj": 6.83,
       "pts": null
      }
     ]
