@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 19.16
+      "next_proj": 19.17
      },
      {
       "n": "James Cook III",
@@ -8141,7 +8141,7 @@
       "nfl": "BUF",
       "claimed_by": "Drake Mayezini",
       "bid": 39,
-      "next_proj": 17.83
+      "next_proj": 17.86
      },
      {
       "n": "Josh Allen",
@@ -8149,7 +8149,7 @@
       "nfl": "BUF",
       "claimed_by": "Love a Kittle Lamb & WhiteRice",
       "bid": 35,
-      "next_proj": 23.17
+      "next_proj": 23.11
      },
      {
       "n": "Brock Bowers",
@@ -8157,7 +8157,7 @@
       "nfl": "LV",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 21,
-      "next_proj": 0
+      "next_proj": 0.0
      },
      {
       "n": "Kenneth Walker III",
@@ -8173,7 +8173,7 @@
       "nfl": "GB",
       "claimed_by": "Drake Mayezini",
       "bid": 3,
-      "next_proj": 14.41
+      "next_proj": 14.38
      },
      {
       "n": "Tetairoa McMillan",
@@ -8189,7 +8189,7 @@
       "nfl": "HOU",
       "claimed_by": "Drake Mayezini",
       "bid": 1,
-      "next_proj": 18.95
+      "next_proj": 18.92
      },
      {
       "n": "D'Andre Swift",
@@ -8197,7 +8197,7 @@
       "nfl": "CHI",
       "claimed_by": "A Warren Boston",
       "bid": 0,
-      "next_proj": 13.87
+      "next_proj": 13.81
      },
      {
       "n": "Zay Flowers",
@@ -8205,19 +8205,19 @@
       "nfl": "BAL",
       "claimed_by": "Tai Streetz Lata?",
       "bid": 0,
-      "next_proj": 0
+      "next_proj": 0.0
      },
      {
       "n": "DK Metcalf",
       "pos": "WR",
       "nfl": "PIT",
-      "next_proj": 7.64
+      "next_proj": 7.62
      },
      {
       "n": "Jordan Love",
       "pos": "QB",
       "nfl": "GB",
-      "next_proj": 20.46
+      "next_proj": 20.32
      },
      {
       "n": "Sam LaPorta",

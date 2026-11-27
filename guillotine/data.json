@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T02:37:18Z",
+ "updated": "2026-11-27T02:52:19Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -144,7 +144,7 @@
      "proj": 16.44,
      "rank": "RB8",
      "date": "2026-11-27",
-     "next_proj": 15.01,
+     "next_proj": 15.03,
      "in_best": true
     },
     {
@@ -180,7 +180,7 @@
      "proj": 12.82,
      "rank": "WR15",
      "date": "2026-11-29",
-     "next_proj": 12.13,
+     "next_proj": 12.2,
      "in_best": true
     },
     {
@@ -263,7 +263,7 @@
      "date": "2026-11-26",
      "actual": 6.0,
      "final": true,
-     "next_proj": 12.82,
+     "next_proj": 12.81,
      "in_best": true
     },
     {
@@ -300,7 +300,7 @@
      "proj": 12.05,
      "rank": "TE2",
      "date": "2026-11-29",
-     "next_proj": 11.17,
+     "next_proj": 11.15,
      "in_best": true
     },
     {
@@ -494,7 +494,7 @@
      "date": "2026-11-26",
      "actual": 25.7,
      "final": true,
-     "next_proj": 13.87,
+     "next_proj": 13.81,
      "in_best": true
     },
     {
@@ -586,7 +586,7 @@
    "manager": "Daid B",
    "faab": 60,
    "proj": 146.31,
-   "points": 23.66,
+   "points": 26.42,
    "scores": [
     135.46,
     161.16,
@@ -640,7 +640,7 @@
      "proj": 20.18,
      "rank": "QB8",
      "date": "2026-11-26",
-     "next_proj": 23.17,
+     "next_proj": 23.11,
      "in_best": true
     },
     {
@@ -763,7 +763,7 @@
      "date": "2026-11-26",
      "actual": 16.9,
      "final": true,
-     "next_proj": 13.94,
+     "next_proj": 13.98,
      "in_best": true
     },
     {
@@ -803,7 +803,7 @@
      "proj": 20.17,
      "rank": "WR1",
      "date": "2026-11-29",
-     "next_proj": 24.03,
+     "next_proj": 24.16,
      "in_best": true
     },
     {
@@ -876,7 +876,7 @@
      "proj": 9.68,
      "rank": "TE6",
      "date": "2026-11-29",
-     "next_proj": 10.86,
+     "next_proj": 10.84,
      "in_best": true
     },
     {
@@ -924,7 +924,7 @@
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
-     "yahoo_actual": 1.32,
+     "yahoo_actual": 4.08,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -994,7 +994,7 @@
      "proj": 16.0,
      "rank": "QB16",
      "date": "2026-11-29",
-     "next_proj": 19.44
+     "next_proj": 19.39
     },
     {
      "slot": "BN",
@@ -1108,7 +1108,7 @@
      "date": "2026-11-25",
      "final": true,
      "actual": 14.5,
-     "next_proj": 14.74,
+     "next_proj": 14.71,
      "in_best": true
     },
     {
@@ -1252,7 +1252,7 @@
      "date": "2026-11-26",
      "actual": 26.54,
      "final": true,
-     "next_proj": 14.51,
+     "next_proj": 14.57,
      "in_best": true
     },
     {
@@ -1292,7 +1292,7 @@
      "proj": 16.43,
      "rank": "RB9",
      "date": "2026-11-29",
-     "next_proj": 19.16,
+     "next_proj": 19.17,
      "in_best": true
     },
     {
@@ -1331,7 +1331,7 @@
      "proj": 16.76,
      "rank": "RB6",
      "date": "2026-11-26",
-     "next_proj": 17.83,
+     "next_proj": 17.86,
      "in_best": true
     },
     {
@@ -1369,7 +1369,7 @@
      "proj": 15.06,
      "rank": "WR6",
      "date": "2026-11-29",
-     "next_proj": 13.48,
+     "next_proj": 13.46,
      "in_best": true
     },
     {
@@ -1410,7 +1410,7 @@
      "date": "2026-11-26",
      "actual": 9.2,
      "final": true,
-     "next_proj": 10.42
+     "next_proj": 10.45
     },
     {
      "slot": "WR",
@@ -1450,7 +1450,7 @@
      "date": "2026-11-25",
      "final": true,
      "actual": 4.4,
-     "next_proj": 14.41,
+     "next_proj": 14.38,
      "in_best": true
     },
     {
@@ -1527,7 +1527,7 @@
      "proj": 18.46,
      "rank": "RB3",
      "date": "2026-11-29",
-     "next_proj": 12.36,
+     "next_proj": 12.37,
      "in_best": true
     },
     {
@@ -1566,7 +1566,7 @@
      "proj": 21.46,
      "rank": "QB4",
      "date": "2026-11-29",
-     "next_proj": 18.95,
+     "next_proj": 18.92,
      "in_best": true
     },
     {
@@ -1641,7 +1641,7 @@
      "proj": 13.42,
      "rank": "WR12",
      "date": "2026-11-29",
-     "next_proj": 12.2,
+     "next_proj": 12.19,
      "in_best": true
     },
     {
@@ -1833,7 +1833,7 @@
      "date": "2026-11-26",
      "actual": 25.3,
      "final": true,
-     "next_proj": 18.63
+     "next_proj": 18.58
     },
     {
      "slot": "RB",
@@ -1874,7 +1874,7 @@
      "date": "2026-11-26",
      "actual": 31.8,
      "final": true,
-     "next_proj": 12.81,
+     "next_proj": 12.79,
      "in_best": true
     },
     {
@@ -1942,7 +1942,7 @@
      "proj": 23.39,
      "rank": "QB2",
      "date": "2026-11-29",
-     "next_proj": 19.97,
+     "next_proj": 19.92,
      "in_best": true
     },
     {
@@ -2139,7 +2139,7 @@
      "proj": 14.61,
      "rank": "WR7",
      "date": "2026-11-29",
-     "next_proj": 12.93,
+     "next_proj": 12.92,
      "in_best": true,
      "assumed_slot": "WR"
     },
@@ -2260,7 +2260,7 @@
      "date": "2026-11-26",
      "actual": -1.0,
      "final": true,
-     "next_proj": 9.05
+     "next_proj": 9.04
     },
     {
      "slot": "BN",
@@ -2298,7 +2298,7 @@
      "proj": 21.94,
      "rank": "QB3",
      "date": "2026-11-29",
-     "next_proj": 22.16,
+     "next_proj": 22.11,
      "in_best": true
     },
     {
@@ -2345,7 +2345,7 @@
    ],
    "points_final": 57.1,
    "best": 154.9,
-   "best_next": 142.4,
+   "best_next": 142.3,
    "fill": 91.34,
    "locked": 57.1,
    "locked_proj": 39.29,
@@ -3505,7 +3505,7 @@
     "nfl": "BUF",
     "proj": 20.18,
     "rank": "QB8",
-    "next_proj": 23.17,
+    "next_proj": 23.11,
     "avg": 24.4,
     "g": 10,
     "last": 14.16,
@@ -3519,7 +3519,7 @@
     "nfl": "HOU",
     "proj": 21.46,
     "rank": "QB4",
-    "next_proj": 18.95,
+    "next_proj": 18.92,
     "avg": 20.9,
     "g": 10,
     "last": 21.46,
@@ -3533,7 +3533,7 @@
     "nfl": "GB",
     "proj": 17.27,
     "rank": "QB12",
-    "next_proj": 20.46,
+    "next_proj": 20.32,
     "avg": 20.3,
     "g": 10,
     "last": 0
@@ -3544,7 +3544,7 @@
     "nfl": "SF",
     "proj": 16.43,
     "rank": "RB9",
-    "next_proj": 19.16,
+    "next_proj": 19.17,
     "avg": 20.6,
     "g": 10,
     "last": 13.2,
@@ -3558,7 +3558,7 @@
     "nfl": "BUF",
     "proj": 16.76,
     "rank": "RB6",
-    "next_proj": 17.83,
+    "next_proj": 17.86,
     "avg": 18.0,
     "g": 10,
     "last": 16.2,
@@ -3586,7 +3586,7 @@
     "nfl": "CHI",
     "proj": 13.55,
     "rank": "RB14",
-    "next_proj": 13.87,
+    "next_proj": 13.81,
     "avg": 15.3,
     "g": 10,
     "last": 10.9,
@@ -3600,7 +3600,7 @@
     "nfl": "GB",
     "proj": 12.91,
     "rank": "WR14",
-    "next_proj": 14.41,
+    "next_proj": 14.38,
     "avg": 14.7,
     "g": 10,
     "last": 0,
@@ -3663,7 +3663,7 @@
     "nfl": "PIT",
     "proj": 6.36,
     "rank": "WR50",
-    "next_proj": 7.64,
+    "next_proj": 7.62,
     "avg": 7.7,
     "g": 10,
     "last": 0.7
@@ -3706,7 +3706,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T02:37:20Z",
+  "updated": "2026-11-27T02:52:21Z",
   "players": 3046,
   "unmatched": []
  }
