@@ -211,7 +211,7 @@
       if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(pickOn() ? [["picks", "Pick'em"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
-      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !pts() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(hasNews() ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
+      if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !gl() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(hasNews() ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
       return [];
     }
     const pendingTrades = () => L().trades.filter((t) => (t.status === "pending" && t.to === me()) || (t.status === "review" && G.voters(L(), t).includes(me()) && !(t.votes || {})[me()])).length;
@@ -2489,7 +2489,72 @@
          sell  the reverse: send production, get keeper value for next season
        "Now" is a player's value this season (between seasons, next season's projection); "keeper value" is how many
        rounds he beats his keeper cost by (a 1st-round talent kept in round 15 is worth 14 rounds). */
+    /* The trade finder in a points league: what a deal does to each team's best starting lineup. A player's weekly
+       value is a blend of what he's scored here (his last six weeks he played, once he has three) and his projection;
+       a player listed out counts for less. A deal scores for a team by the points a week its best lineup gains, so a
+       bench player who'd start for them is worth something and a third quarterback isn't. It suggests 1-for-1s and
+       2-for-1s both ways that help both lineups at close to even trade value (the trade window's meter), best for you
+       first. */
+    function finderPts() {
+      const mid = me(), slots = L().settings.lineup, wk = G.WEEK[sport.key] || { weeks: 20 };
+      const OUTR = /^(out|o|ir|il|suspended|susp|pup|nfi)/i, rvs = {};
+      const rv = (id) => {
+        if (rvs[id] != null) return rvs[id];
+        const p = ctx.byId[id]; if (!p) return (rvs[id] = 0);
+        const proj = (p.v || 0) / wk.weeks, W = weeksOf(p), played = W.done.filter((x) => x.v > 0).slice(-6);
+        let v = played.length >= 3 ? 0.6 * (played.reduce((a, x) => a + x.v, 0) / played.length) + 0.4 * proj : proj;
+        if (p.inj && OUTR.test(String(p.inj))) v *= 0.35;
+        return (rvs[id] = Math.max(0, v));
+      };
+      const best = (ids) => FK.draft.assign(sport, ids.map((id) => ctx.byId[id]).filter(Boolean).map((p) => Object.assign({}, p, { v: rv(p.id) })), slots).map((p, i) => (p ? { id: p.id, slot: slots[i], v: p.v } : null)).filter(Boolean);
+      const lv = (ids) => best(ids).reduce((a, x) => a + x.v, 0);
+      const trv = (ids) => G.sideValue(ctx, ids, 0, L());
+      const roster = (t) => L().rosters[t].filter((id) => ctx.byId[id]);
+      const mine = roster(mid), myBase = lv(mine), max = L().settings.tradeMax || 9;
+      const tops = (ids) => ids.slice().sort((a, b) => rv(b) - rv(a)).slice(0, 10);
+      const pairs = (ids) => { const tp = tops(ids), o = []; for (let i = 0; i < tp.length; i++) for (let j = i + 1; j < tp.length; j++) o.push([tp[i], tp[j]]); return o; };
+      const out = [];
+      for (const t of L().teams) {
+        if (t.id === mid) continue;
+        const theirs = roster(t.id), base = lv(theirs);
+        const gives = mine.map((x) => [x]).concat(max >= 2 ? pairs(mine) : []), gets = theirs.map((x) => [x]).concat(max >= 2 ? pairs(theirs) : []);
+        for (const give of gives) for (const get of gets) {
+          if (give.length === 2 && get.length === 2) continue;
+          const a = trv(give), b = trv(get), swing = (b - a) / ((a + b) || 1);
+          if (Math.abs(swing) > 0.12) continue;
+          const g1 = lv(mine.filter((x) => !give.includes(x)).concat(get)) - myBase;
+          if (g1 < 0.8) continue;
+          const g2 = lv(theirs.filter((x) => !get.includes(x)).concat(give)) - base;
+          if (g2 < 0.4) continue;
+          out.push({ to: t.id, give, get, g1, g2, swing, score: Math.min(g1, g2 * 1.3) - 0.15 * (give.length + get.length - 2) });
+        }
+      }
+      out.sort((x, y) => y.score - x.score);
+      const per = {}, sent = {}, picks = out.filter((x) => { const k = x.give.slice().sort().join(","); if ((per[x.to] || 0) >= 2 || (sent[k] || 0) >= 2) return false; per[x.to] = (per[x.to] || 0) + 1; sent[k] = (sent[k] || 0) + 1; return true; }).slice(0, 14);
+      // where a player would start for the team getting him, if he would
+      const startsAt = (team, ids, inn) => { const b = best(ids); return inn.map((id) => { const x = b.find((y) => y.id === id); return x ? x.slot : null; }); };
+      const pl = (ids, slotsIn) => ids.map((id, i) => { const p = ctx.byId[id]; return `<div class="tf-p" data-player="${esc(id)}">${pname(sport, p, `${fmtS(rv(id))} a week${slotsIn && slotsIn[i] ? `, starts at ${esc(slotsIn[i])}` : slotsIn ? ", bench" : ""}`, { size: "sm" })}</div>`; }).join("");
+      const meter = (sw) => (Math.abs(sw) < 0.08 ? "About even" : sw > 0 ? "Leans your way" : "Leans their way");
+      const row = (x) => {
+        const mineAfter = mine.filter((id) => !x.give.includes(id)).concat(x.get), theirsAfter = roster(x.to).filter((id) => !x.get.includes(id)).concat(x.give);
+        return `<li class="tf-r"><div class="tf-t">${teamAv(T(x.to), "md")}<span><b class="ell">${esc(T(x.to).name)}</b><small class="ps">${esc(recOf(x.to))}</small></span></div>
+        <div class="tf-side"><small>You send</small>${pl(x.give, startsAt(x.to, theirsAfter, x.give))}</div><span class="tf-ar" aria-hidden="true">&#8644;</span><div class="tf-side"><small>You get</small>${pl(x.get, startsAt(mid, mineAfter, x.get))}</div>
+        <div class="tf-why"><div><small>Your lineup</small><b class="up">+${fmtS(x.g1)} a week</b></div><div><small>Their lineup</small><b>+${fmtS(x.g2)} a week</b></div><div><small>Trade value</small><b>${meter(x.swing)}</b></div></div>
+        <div class="tf-go"><button class="btn sm go" data-tfprop="${x.to}" data-give="${esc(x.give.join(","))}" data-get="${esc(x.get.join(","))}">Propose</button></div></li>`;
+      };
+      // your thinnest starting spot: the slot where your starter is furthest below the league's typical starter there
+      const typical = {};
+      for (const t of L().teams) for (const x of best(roster(t.id))) (typical[x.slot] = typical[x.slot] || []).push(x.v);
+      const med = (a) => { const b = a.slice().sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : 0; };
+      const thin = best(mine).map((x) => [x.slot, x.v - med(typical[x.slot] || [])]).sort((a, b) => a[1] - b[1]).filter((x) => x[1] < 0).slice(0, 2).map((x) => x[0]);
+      const lead = `Deals that make your best starting lineup score more each week and help the other team's too, at close to even trade value.${thin.length ? ((u) => ` Your thinnest spot${u.length > 1 ? "s are" : " is"} <b>${esc(u.join(" and "))}</b>.`)([...new Set(thin)]) : ""} Points a week blend what each player has scored here with his projection.`;
+      return `<div class="wrap page"><div class="head"><h1 class="disp">Trade finder</h1><span class="ps">For ${esc(T(mid).name)}</span></div>
+        <p class="tf-lead">${lead}</p>
+        ${picks.length ? `<ul class="tf-list card">${picks.map(row).join("")}</ul>` : `<div class="card"><p class="empty" style="margin:0">No deal helps both lineups right now. Try again after a few moves around the league.</p></div>`}</div>`;
+    }
     function finderPage() {
+      if (!canTrade()) return `<div class="wrap page"><div class="head"><h1 class="disp">Trade finder</h1></div><div class="card"><p class="empty" style="margin:0">${over() ? "The season is over. The finder opens again once the offseason starts and trades are back on." : L().settings.deadline && L().week > L().settings.deadline ? `The trade deadline was week ${L().settings.deadline}, so there's nothing to propose until the offseason.` : "Trades aren't open right now."}</p></div></div>`;
+      if (pts()) return finderPts();
       const mid = me(), mode = ["fit", "buy", "sell"].includes(ui.tfMode) ? ui.tfMode : "fit";
       const cats = sc().cats.map((c) => c.k), n = L().teams.length, wk = Math.min(L().week, G.totalWeeks(L()));
       const zc = (id) => (ctx.byId[id] && ctx.byId[id].zc) || {}, val = (id) => (ctx.byId[id] && ctx.byId[id].v) || 0;
