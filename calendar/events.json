@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T19:49:43Z",
+ "updated": "2026-11-27T10:41:59Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,21 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-vv177Z_fGkyt93Tn",
-   "date": "2026-11-26",
-   "time": "21:00",
-   "title": "Kocaina ( 21+ )",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/kocaina-21-boston-massachusetts-11-26-2026/event/0100654E695D2FEA",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18688581"
-   ],
-   "score": 0
-  },
   {
    "id": "espn-401892795",
    "date": "2026-11-27",
@@ -10928,7 +10913,7 @@
   "picks": 1,
   "venues": 0,
   "espn": 65,
-  "ticketmaster": 485,
+  "ticketmaster": 484,
   "seatgeek": 184
  }
 }
