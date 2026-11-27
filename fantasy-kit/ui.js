@@ -1223,7 +1223,7 @@
       if (!ready()) { pending = kind; return; }
       pending = null;
       try {
-        const t0 = ac.currentTime + 0.02, notes = kind === "deck" ? [587] : [659, 880];
+        const t0 = ac.currentTime + 0.02, notes = kind === "deck" ? [587] : kind === "pick" ? [523, 659, 784] : [659, 880];
         notes.forEach((f, i) => {
           const o = ac.createOscillator(), g = ac.createGain(), t = t0 + i * 0.17;
           o.type = "sine"; o.frequency.value = f;
@@ -1264,6 +1264,7 @@
     const ui = { left: "players", right: "team", sort: { k: "rank", dir: 1 }, f: { q: "", pos: sport.groups ? "g:" + Object.keys(sport.groups)[0] : "" }, show: "avail", view: null, bidAmt: null, mobileRight: false };
     // a dynasty's rookie draft opens on the rookies
     try { if (opts.draft().rookie && (opts.players || []).some((p) => p.rk)) ui.f.pos = "rk"; } catch (e) { /* no draft yet */ }
+    try { if (new URLSearchParams(location.search).has("tv")) ui.tv = true; } catch (e) { /* no location */ }
     let ctx = null, timer = null;
     const D = () => opts.draft();
     const me = () => (opts.me ? opts.me() : null);
@@ -1334,6 +1335,7 @@
         prim.push(`<button class="btn sm${team(me()).auto ? " on" : ""}" data-act="auto" aria-pressed="${!!team(me()).auto}" title="Let the bot draft for you">${team(me()).auto ? "Autodraft on" : "Autodraft"}</button>`);
         menu.push(`<button class="btn sm" data-act="alerts" title="A chime, and a notification while this tab is in the background, when you're up">${alerts.on() ? "Sound: on" : "Sound: off"}</button>`, `<button class="btn sm" data-act="test-sound">Test sound</button>`);
       }
+      if (d.phase !== "heist") menu.push(`<button class="btn sm" data-act="tv" title="The board full screen for a TV, with each pick announced">TV mode</button>`);
       if (opts.commish && d.phase === "live") menu.push(`${d.paused && !d.hold ? "" : `<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause the draft"}</button>`}<button class="btn sm" data-act="undo">Undo the last pick</button>`);
       if (d.phase === "done" && opts.extra) prim.push(opts.extra());
       if (opts.tools) side.push(opts.tools());
@@ -2158,6 +2160,7 @@
       const keep = { f: focusKey(el), scroll: {} };
       $$("#fk-pool,#fk-board,#fk-picks,.dr-panel,#fk-ticker,#fk-seg,#fk-seg2,#fk-rchatl", el).forEach((x) => (keep.scroll[x.id || x.className] = [x.scrollTop, x.scrollLeft]));
       if (d.phase === "heist") { const sc = $(".hz-scroll", el), y = sc ? sc.scrollTop : 0; el.innerHTML = `<div class="droom hzr fk-dark">${top()}<div class="hz-scroll">${heistView()}</div></div>`; if (y) $(".hz-scroll", el).scrollTop = y; drawTimer(); if (opts.onChange) opts.onChange(d); return; }
+      if (ui.tv) { tvRender(); if (opts.onChange) opts.onChange(d); return; }
       const lobby = () => `<div class="dr-panel" style="overflow:auto;flex:1;min-height:0">${opts.lobby()}</div>`;
       const left = { lobby, players, board, picks, results, packages, steal: steals, proj: projected }[ui.left]();
       const right = { team: () => rosterPanel(me()), queue: queuePanel, teams: teamsPanel, trades: tradesPanel, chat: chatPanel }[ui.right]();
@@ -2241,6 +2244,71 @@
         if (JSON.stringify(t.board || null) !== JSON.stringify(want)) { if (want) t.board = want; else delete t.board; opts.save(d); refresh(); }
       }
       if (opts.onChange) opts.onChange(d);
+    }
+    /* TV mode, for a draft party: the whole board on a big screen, who's on the clock with the clock itself, the next
+       teams up and the last few picks along the bottom, and each new pick announced across the screen for a few
+       seconds with a fanfare. No controls but the way out (Esc, or the button that shows when the mouse moves).
+       Anyone with the league's link can put it up, signed in or not; ?tv=1 on the link opens straight into it. */
+    function tvMode(on) {
+      ui.tv = on; ui.tvSeen = F.made(D()).length; ui.tvShow = null;
+      try {
+        if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().then(() => { ui.tvFs = true; }, () => {});
+        if (!on) { ui.tvFs = false; if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }
+      } catch (e) { /* no fullscreen here */ }
+      if (on) alerts.test().catch(() => {});   // the tap that opened it lets the fanfare play later
+      render();
+    }
+    function tvRender() {
+      const d = D(), n = now(), made = F.made(d);
+      // a new pick since the last look: announce the latest one (a burst of autopicks shows only the last)
+      if (ui.tvSeen == null) ui.tvSeen = made.length;
+      if (made.length > ui.tvSeen) {
+        const pk = made[made.length - 1];
+        ui.tvShow = { pk, until: Date.now() + 7000 };
+        alerts.chime("pick");
+        clearTimeout(ui.tvT); ui.tvT = setTimeout(() => { if (ui.tv) render(); }, 7100);
+      }
+      ui.tvSeen = made.length;
+      const brand = opts.brand || {};
+      let clock = "", who = "", next = "";
+      if (d.phase === "setup") who = `<small>${d.startAt ? "The draft starts" : "Waiting for the draft"}</small><b>${d.startAt ? esc(new Date(d.startAt).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" })) : esc(d.name || "Draft")}</b>`;
+      else if (d.phase === "done") who = `<small>Draft complete</small><b>${made.length} ${auction() ? "players bought" : "picks"}</b>`;
+      else if (auction()) {
+        const st = F.auctionState(d, n);
+        clock = `<span class="ring tv-ring" id="fk-ring2"><span id="fk-timer2"></span></span>`;
+        if (st && st.kind === "lot") { const p = ctx.byId[st.lot.pid], lead = team(st.lot.team); who = `${playerAv(sport, p, "lg")}<span><small>On the block</small><b>${esc(p.n)}</b><em>${esc(lead.name)} leads at ${money(st.lot.bid)}</em></span>`; }
+        else if (st && st.team != null) { const t = team(st.team); who = `${teamAv(t, "lg")}<span><small>Nominating</small><b>${esc(t.name)}</b></span>`; }
+      } else if (!d.packs) {
+        const c = F.onClock(d, n), t = c && team(c.team);
+        clock = `<span class="ring tv-ring" id="fk-ring2"><span id="fk-timer2"></span></span>`;
+        if (t) who = `${teamAv(t, "lg")}<span><small>On the clock${d.paused ? ", paused" : ""}, pick ${esc(plab(c.index))}</small><b>${esc(t.name)}</b>${t.owner ? `<em>${esc(t.owner)}</em>` : ""}</span>`;
+        const up = c ? d.order.slice(c.index + 1, c.index + 3).map((id, i) => ({ t: team(id), k: c.index + 1 + i })) : [];
+        if (up.length) next = `<div class="tv-next"><small>Up next</small>${up.map((x) => `<span>${teamAv(x.t, "sm")}<b>${esc(x.t.name)}</b><em>${esc(plab(x.k))}</em></span>`).join("")}</div>`;
+      }
+      const last = made.slice(-8).reverse().map((pk) => { const p = ctx.byId[pk.pid], t = team(pk.team); return p ? `<li class="c${colorOf(sport, p)}"><em>${auction() ? money(pk.price) : esc(plab(pk.n - 1))}</em><b>${esc(shortName(p))}</b><small>${esc(S.positions(p)[0] || "")} · ${esc(t.abbr || t.name)}</small></li>` : ""; }).join("");
+      const sh = ui.tvShow && Date.now() < ui.tvShow.until ? ui.tvShow.pk : null;
+      const shP = sh && ctx.byId[sh.pid], shT = sh && team(sh.team);
+      const reveal = shP ? `<div class="tv-pick" role="status" aria-live="assertive"><div class="tv-card"><p class="tv-k">${auction() ? `Sold for ${money(sh.price)}` : `With pick ${esc(plab(sh.n - 1))}`}</p>
+        <p class="tv-by">${teamAv(shT, "md")}<span>${esc(shT.name)} ${auction() ? "buys" : "selects"}</span></p>
+        <div class="tv-pl">${playerAv(sport, shP, "lg")}<h2 class="disp">${esc(shP.n)}</h2></div>
+        <p class="tv-sub">${esc(S.positions(shP).join(", "))}${shP.t ? ` · ${esc(shP.t)}` : ""}${shP.rank ? ` · ranked #${shP.rank}` : ""}${shP.prank ? `, ${esc(shP.prank)}` : ""}</p></div></div>` : "";
+      el.innerHTML = `<div class="droom fk-dark tv">
+        <header class="tv-h"><div class="tv-lg">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[F.formatOf(d)])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></div>
+          <div class="tv-otc">${clock}<div class="tv-who">${who}</div></div>${next}
+          <button type="button" class="btn sm ghost tv-x" data-act="tvexit">Exit TV mode</button></header>
+        <div class="tv-b">${board()}</div>
+        ${last ? `<ol class="tv-last" aria-label="Latest picks">${last}</ol>` : ""}${reveal}</div>`;
+      drawTimer();
+      // keep the pick on the clock in view on a board taller than the screen
+      const bd = $("#fk-board", el), cur = bd && $(".cell.now", bd);
+      if (bd && cur) bd.scrollTop = Math.max(0, cur.offsetTop - bd.clientHeight / 2);
+      // the way out shows when the mouse moves, then hides again
+      const root = $(".droom.tv", el);
+      if (root && !ui.tvMove) {
+        ui.tvMove = true;
+        const wake = () => { const r = $(".droom.tv", el); if (!r) return; r.classList.add("awake"); clearTimeout(ui.tvHide); ui.tvHide = setTimeout(() => { const r2 = $(".droom.tv", el); if (r2) r2.classList.remove("awake"); }, 2500); };
+        document.addEventListener("pointermove", wake); document.addEventListener("pointerdown", wake);
+      }
     }
     function drawTimer() {
       const d = D(), n = now();
@@ -2429,6 +2497,8 @@
               confirm("Start the draft?", `It starts for everyone, and the first pick is on the clock right away.${bots ? ` ${bots} team${bots > 1 ? "s have" : " has"} no manager and will be drafted by bots.` : ""} You can pause it, but you can't undo the start.`, "Start the draft", () => { const d2 = D(); if (d2.phase === "setup") act(() => F.start(d2, now(), ctx)); });
             }
           }
+          else if (a === "tv") tvMode(true);
+          else if (a === "tvexit") tvMode(false);
           else if (a === "pause") act(() => F.pause(d, n, !d.paused));
           else if (a === "undo") act(() => F.undo(d, ctx, n));
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
@@ -2589,6 +2659,10 @@
         else { ui.right = "trades"; render(); }
       });
     }
+    // Esc leaves TV mode (in full screen the browser's own Esc comes first and leaves full screen)
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && ui.tv && !document.fullscreenElement && !dialogOpen()) tvMode(false); });
+    // leaving full screen (the browser's Esc) leaves TV mode too, when TV mode is what went full screen
+    document.addEventListener("fullscreenchange", () => { if (!document.fullscreenElement && ui.tv && ui.tvFs) tvMode(false); });
     timer = setInterval(() => {
       // a paused or finished draft has no clock to run; check for changes from elsewhere once a second
       if (opts.drive && D().phase === "heist") {
