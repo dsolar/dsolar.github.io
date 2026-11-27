@@ -312,9 +312,21 @@
     // "Sun 1 PM vs NYJ", "Q3 4:21, 17-10", "Final, W 24-17", plus "2 of 4 played" for the daily sports
     // the schedule's known for this week (a real season): what "Start active players" goes by
     const hasGames = (tid, w) => L().rosters[tid].some((x) => ctx.byId[x] && Array.isArray(gamesOf(ctx.byId[x], w)));
+    // football: this week's opponent and how that defense has done against his position (league.matchupOf)
+    const muOf = (p, w) => (G.matchupOf && p && w ? G.matchupOf(L(), ctx, p, w) : null);
+    function muWords(p, m) {
+      const k = m.n - m.rank + 1, pos = (p.pos || [])[0] || "";
+      return `${k === 1 ? "the most" : m.rank === 1 ? "the fewest" : k <= m.n / 2 ? `the ${ord(k)}-most` : `the ${ord(m.rank)}-fewest`} points to ${pos}s`;
+    }
+    const muShort = (p, m) => { const k = m.n - m.rank + 1, pos = (p.pos || [])[0] || ""; return k === 1 ? `Most to ${pos}s` : m.rank === 1 ? `Fewest to ${pos}s` : k <= m.n / 2 ? `${ord(k)}-most to ${pos}s` : `${ord(m.rank)}-fewest to ${pos}s`; };
+    const muTip = (p, m) => `${m.def} has given up ${muWords(p, m)} this season, ${fmtS(m.avg)} a game`;
+    function muTag(p, m) {
+      if (!m || !m.ease) return "";
+      return ` <span class="tag ${m.ease === "easy" ? "win" : "loss"} mu" title="${esc(muTip(p, m))}">${m.ease === "easy" ? "Easy" : "Tough"} matchup</span>`;
+    }
     function gameChip(p, w) {
       const gs = gamesOf(p, w);
-      if (!gs) return "";
+      if (!gs) { const m = muOf(p, w); return m ? (m.bye ? `<span class="gm none">Bye week</span>` : `<span class="gm" title="${m.rank ? esc(muTip(p, m)) : ""}">${m.home ? "vs" : "@"} ${esc(m.def)}</span>${muTag(p, m)}`) : ""; }
       if (!gs.length) return `<span class="gm none">No game this week</span>`;
       const g = gameNow(gs), done = gs.filter((x) => x.state === "post").length;
       const of = gs.length > 1 ? `<span class="gm-of">${done} of ${gs.length} played</span>` : "";
@@ -332,7 +344,7 @@
         return stats.length ? `<dl class="game-stats" aria-label="Game box score for ${esc(p.n)}">${stats.map(([k,v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : `<span class="ps game-missing">${game.state === "pre" ? "Stats appear after the game starts" : dnp ? "Didn't play" : "Awaiting game stats"}</span>`;
       };
       const others = gs.filter(x => x.id !== g.id);
-      return oneGame(g) + of + box(g) + (others.length ? `<details class="game-history"><summary>Other games this week</summary>${others.map(x => `<div class="game-history-row">${oneGame(x)}${box(x)}</div>`).join("")}</details>` : "");
+      return oneGame(g) + (g.state === "pre" ? muTag(p, muOf(p, w)) : "") + of + box(g) + (others.length ? `<details class="game-history"><summary>Other games this week</summary>${others.map(x => `<div class="game-history-row">${oneGame(x)}${box(x)}</div>`).join("")}</details>` : "");
     }
     // baseball: is he in the day's lineup, and where (or the probable starter). The day is the roster page's day in a
     // daily league, else today; the feed covers today and tomorrow (opts.hooks.lineups, fk-live ?lineups=1)
@@ -2936,6 +2948,8 @@
         .concat(acq ? [["Acquired", `${esc(acq.how)}<em>${acq.detail}</em>`]] : !auctionLg() && draftedAt(pid) ? [["Drafted", `Rd ${draftedAt(pid).r}, #${draftedAt(pid).n}`]] : [])
         .concat((L().settings.keepers || L().settings.dynasty) && window.FK.season ? [[`${nextYearOf()} keeper`, keepShort(p)]] : [])
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
+      const mu = !over() ? muOf(p, curWeek()) : null;
+      if (mu) stats.push([`${weekLabel(curWeek())} opponent`, mu.bye ? "Bye" : `${mu.home ? "vs" : "@"} ${esc(mu.def)}${mu.rank ? `<em class="${mu.ease === "easy" ? "up" : mu.ease === "tough" ? "dn" : ""}" title="${esc(muTip(p, mu))}">${esc(muShort(p, mu))}</em>` : ""}`]);
       // a category league leads with his season in the league's own categories; a season brought in from another
       // site has no weekly lines here, so there's no week-by-week table for it
       const mlbOn = sport.key === "mlb" && /^\d+$/.test(String(p.id)), newsOn = hasNews() && !mlbOn;
@@ -2972,6 +2986,8 @@
           add("Per week", Ws.map((W) => W.avg));
           add("Last 3 weeks", Ws.map((W) => (W.done.length >= 3 ? W.done.slice(-3).reduce((t, x) => t + x.v, 0) / 3 : null)));
           if (!over() && Ws.some((W) => W.cur)) add(`${weekLabel(curWeek())} projection`, Ws.map((W) => (W.cur ? W.cur.pj : null)));
+          const mus = !over() ? ps.map((p) => muOf(p, curWeek())) : [];
+          if (mus.some(Boolean)) add(`${weekLabel(curWeek())} matchup`, mus.map((m, i) => (!m ? `<span class="ps">-</span>` : m.bye ? "Bye" : `<span title="${m.rank ? esc(muTip(ps[i], m)) : ""}">${m.home ? "vs" : "@"} ${esc(m.def)}</span>${m.rank ? `<small class="cmp-mu ${m.ease === "easy" ? "up" : m.ease === "tough" ? "dn" : ""}">${esc(muShort(ps[i], m))}</small>` : ""}`)), { html: true });
           add("Best week", Ws.map((W) => (W.done.length ? Math.max(...W.done.map((x) => x.v)) : null)));
           add("Season total", Ws.map((W) => (W.done.length ? W.done.reduce((t, x) => t + x.v, 0) : null)));
         } else add(sport.weekOf != null ? "Projected a week" : "Projection", ps.map((p) => (p.v == null ? null : sport.weekOf != null ? p.v / 17 : p.v)));

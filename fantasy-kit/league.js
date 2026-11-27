@@ -748,6 +748,50 @@
     };
     return S.pointsOf(sc, p, at);
   };
+  /* Football matchups. How many fantasy points each NFL defense has given up to each position this season, in this
+     league's scoring, per game: ranked 1 (gave up the fewest, the toughest matchup) to 32 (the most, the easiest).
+     From the weekly file's box scores and its schedule (R.sched: each team's opponent by week, "@" on the road); a
+     player counts against whoever his team played that week. Points leagues only; cached on ctx. */
+  function matchupRanks(L, ctx) {
+    const R = ctx.hooks && ctx.hooks.real;
+    if (ctx.sport.key !== "nfl" || !R || !R.sched || !R.weeks) return null;
+    const sc = scoring(L, ctx);
+    if (sc.type !== "points") return null;
+    if (ctx._mr && ctx._mrOf === R && ctx._mrSc === sc) return ctx._mr;
+    const tot = {}, played = {};
+    for (const [wk, W] of Object.entries(R.weeks)) {
+      const w = +wk;
+      for (const [id, line] of Object.entries(W.lines || {})) {
+        const p = ctx.byId[id], pos = p && (p.pos || [])[0];
+        const o = p && R.sched[p.t] && R.sched[p.t][w - 1];
+        if (!o || !pos || !(Array.isArray(line) && line[0] > 0)) continue;
+        const d = o.replace(/^@/, "");
+        (tot[d] = tot[d] || {})[pos] = (tot[d][pos] || 0) + realPts(R, sc, line, p);
+        (played[d] = played[d] || new Set()).add(w);
+      }
+    }
+    const rank = {}, avg = {}, n = {};
+    const poss = new Set(Object.values(tot).flatMap((x) => Object.keys(x)));
+    for (const pos of poss) {
+      const list = Object.keys(tot).map((d) => [d, (tot[d][pos] || 0) / played[d].size]).sort((a, b) => a[1] - b[1]);
+      n[pos] = list.length;
+      list.forEach(([d, v], i) => { (rank[d] = rank[d] || {})[pos] = i + 1; (avg[d] = avg[d] || {})[pos] = v; });
+    }
+    ctx._mr = { rank, avg, n }; ctx._mrOf = R; ctx._mrSc = sc;
+    return ctx._mr;
+  }
+  // A player's opponent in a league week, with how that defense has done against his position:
+  // { opp: "@KC", def: "KC", home, rank, n, avg, ease: "easy" | "tough" | "" } or { bye: true }; null without the data
+  function matchupOf(L, ctx, p, w) {
+    const R = ctx.hooks && ctx.hooks.real, mr = matchupRanks(L, ctx);
+    if (!mr || !p || !R.weeks["1"] || !R.sched[p.t]) return null;
+    const nw = Math.round((weekStart(L, w) - Date.parse(R.weeks["1"].start + "T12:00:00Z")) / (7 * DAY)) + 1;
+    if (nw < 1 || nw > 18) return null;
+    const o = R.sched[p.t][nw - 1];
+    if (!o) return { bye: true };
+    const def = o.replace(/^@/, ""), pos = (p.pos || [])[0], rank = mr.rank[def] && mr.rank[def][pos], n = mr.n[pos] || 0;
+    return { opp: o, def, home: o[0] !== "@", rank: rank || null, n, avg: rank ? mr.avg[def][pos] : null, ease: !rank || n < 20 ? "" : rank > n - 8 ? "easy" : rank <= 8 ? "tough" : "" };
+  }
   function playerWeek(L, ctx, p, w, frac = 1, whole) {
     // traded out of a conference-only pool: he keeps his roster spot but doesn't score
     if (S.outOfPool && S.outOfPool(L, p)) return scoring(L, ctx).type === "points" ? { pts: 0, out: true } : {};
@@ -3141,7 +3185,7 @@
     const seeds = seedOrder(L); return seeds.indexOf(m.a) <= seeds.indexOf(m.b) ? m.a : m.b;
   }
   return { payroll, capRoom, sitting, graduated, prospectUpkeep, daily, dayIdx, dayNow, dayLines, hasDays, dailyLines, dailyPlayerLine, playoffWinner, recap, takerOf, openRaids, protectOf, kingOf, hungover, pyoTurn, pyoOptions, pyoPick, pyoAuto, runPyo, pyoLast, PYO_HOURS, realPts, commishVeto, reorderWaivers, seasonPickups, seasonPickupsLeft, vampireFill, vampireOf, openBite, biteCheck, bite, autoBite, runBites, skipBite, vampireFirst, summary, records, taxiOf, held, taxiSlots, taxiEligible, toTaxi, promote, stashRookies, DEFAULTS, WEEK, realWeek, canFinish, lineupLocked, isRoto, rotoLive, rotoStandings, isTotal, totalLive, totalStandings, flat, pickups, pickupsLeft, create, roundRobin, context, refresh, maxRoster, totalWeeks, weekStart, lineupFor, setLineup, move, scoring, playerWeek, teamWeek, projection, compare, matchups, winProb,
-    finishWeek, playoffOdds, badges, BADGES, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
+    finishWeek, playoffOdds, badges, BADGES, matchupRanks, matchupOf, slotMult, setKicks, isLocked, freezeLineups, autoStart, setAutoStart, bestLineup, lockedStarter, projectCats, projectLine, catOdds, gamesLeft, plays, formOf, hot, standings, outlook, playoffGames, bracket, playoffPlan, roundOf, postseason, finish, seedOrder, medianOf, DIV_NAMES, blockOf, setBlock, blockNote, setRules, commishMove, reverseTrade, editTeam, setWaiverOrder, setDivisions, offseason, pickYear, pickSlot, pickProspect, pickRounds, pickOwner, picksOf, pickLabel, pickValue, overLimit, cutDown, power, onWaivers, canRoster, addDrop, claim, cancelClaim, moveClaim, myClaims, runWaivers, pValue, sideValue, keeperMarket, tradeCheck, dropsNeeded, propose, respond, cancelTrade, botsAct, rivalCheck, rivalsOf, draftLottery,
     voters, vetoesNeeded, vote, finalize, execute, botAnswer, botsAnswer, botWeek, tick, log,
     halfOf, halvesOk, HALF_NAMES, weekFrac, joined, effFrac, bank, chaseOn, decideChase, ladderSeed, ladderSeeding: seeding, waiverPrice, waiverClear, nextWeekClear, waiverDays, clearAt, gameLockOn, lockPlayed, runDue, waiverWhen, fillLineup, offerEnds, closeSeason, IR_OK, irEligible, irSlots, toIR, activate, irBlocked, GUILLOTINE, isGuillotine, isAlive, block, chopOdds, chop, champion, survival, dealOffer, dealTake, dealPass, dealsLeft, dealDue, dealTaken, runDeals, ladderTargets, ladderChallenge, ladderRung, ladderBooked, ladderDone, splitOk, splitOn, splitNames, applySplit, waiverRunAt, botBids, bestBallIds };
 });

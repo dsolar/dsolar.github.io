@@ -3175,3 +3175,5 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .cmp-hits button{width:100%;text-align:left;background:var(--surface-2,transparent);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font:inherit;font-size:13px;font-weight:650;color:inherit;cursor:pointer}
 .cmp-hits button:hover,.cmp-hits button:focus-visible{border-color:var(--ink)}
 .cmp-sec th{text-align:left !important;font-size:11.5px;font-weight:800;color:var(--ink) !important;padding-top:14px;background:var(--surface)}
+.cmp-mu{display:block;font-size:11.5px;font-weight:650;color:var(--muted)}.cmp-mu.up{color:var(--win)}.cmp-mu.dn{color:var(--loss)}
+.tag.mu{margin-left:4px}

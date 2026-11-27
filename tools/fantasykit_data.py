@@ -1235,7 +1235,23 @@ def nfl_weeks(season, state, nv=None):
             # a player with only nflverse numbers (a quarterback's kneel-downs, say) gets a line of his own
             lines[pid] = nflv_into(lines.get(pid) or [1] + [0] * (len(NFL_COLS) - 1), vals)
     write_weeks("nfl", {"sport": "nfl", "season": str(season), "updated": NOW, "source": "Sleeper",
-                        "line": "tot", "cols": NFL_COLS, "weeks": weeks})
+                        "line": "tot", "cols": NFL_COLS, "weeks": weeks, "sched": nfl_sched(season)})
+
+
+def nfl_sched(season):
+    """Each team's opponent, week by week, from the NFL hub's schedule (nfl/data/league.json): { "KC": ["@LV", "DEN",
+    null (the bye), ...] }, "@" for a road game. The league pages rank each defense against each position with it."""
+    lg = load("nfl/data/league.json") or {}
+    if str(lg.get("season")) != str(season):
+        return None
+    out = {}
+    for g in lg.get("games") or []:
+        if len(g) < 5 or g[0] != "REG" or not isinstance(g[1], int) or not 1 <= g[1] <= 18:
+            continue
+        w, away, home = g[1], g[3], g[4]
+        out.setdefault(away, [None] * 18)[w - 1] = "@" + home
+        out.setdefault(home, [None] * 18)[w - 1] = away
+    return out or None
 
 
 def nfl_seed(season):
