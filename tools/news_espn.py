@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Football, basketball, hockey and college hoops player news for Draft Lab: ESPN's news feeds, matched to players.
+"""Football, basketball and hockey player news for Draft Lab: ESPN's news feeds, matched to players.
 
-Writes fantasy-kit/data/news-<sport>.json for nfl, nba, nhl and cbb, in the same shape as news-mlb.json:
+Writes fantasy-kit/data/news-<sport>.json for nfl, nba and nhl, in the same shape as news-mlb.json:
   { updated, source, items: [{ t: headline, u: link, at: ISO time, src, team, ids: [player ids] }] }
 newest first, the last 21 days. Headlines and links only; the story stays on ESPN.
 
 A story names a player when ESPN tags him on it (its athlete categories, matched by ESPN id where the player file
-keeps one: football, basketball, college), or when his full name is in the headline or summary. Video clips are left
+keeps one: football, basketball), or when his full name is in the headline or summary. Video clips are left
 out. One sport's feed being down leaves that sport's old file alone.
 
   python3 tools/news_espn.py [nfl nba ...]
@@ -26,7 +26,6 @@ FEEDS = {
     "nfl": "https://site.api.espn.com/apis/site/v2/sports/football/nfl/news?limit=50",
     "nba": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/news?limit=50",
     "nhl": "https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/news?limit=50",
-    "cbb": "https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/news?limit=50",
 }
 SKIP_TYPES = {"media", "video", "clip"}
 

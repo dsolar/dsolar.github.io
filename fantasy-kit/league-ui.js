@@ -2738,9 +2738,10 @@
        hours; the headline links to the story) and MLB's transaction wire straight from its Stats API (injured list
        moves, call-ups and options, trades, signings, releases). */
     const NEWS_DAYS = 21;
-    // baseball: MLB.com plus the transaction wire; football, basketball, hockey, college hoops: ESPN's stories
+    // baseball: MLB.com plus the transaction wire; football, basketball, hockey: ESPN's stories (ESPN's college feed is
+    // mostly game previews that name players by last name only, so college hoops has none)
     // (functions, so the tab list can ask before this part of the file has run)
-    function hasNews() { return ["mlb", "nfl", "nba", "nhl", "cbb"].includes(sport.key); }
+    function hasNews() { return ["mlb", "nfl", "nba", "nhl"].includes(sport.key); }
     function hasWire() { return sport.key === "mlb"; }
     let newsFile, newsAsked = false, wire, wireAsked = false;
     // a jersey number change isn't news

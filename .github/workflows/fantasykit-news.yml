@@ -1,5 +1,5 @@
-# Player news for Draft Lab: MLB.com's news feeds (news-mlb.json) and ESPN's for football, basketball, hockey and
-# college hoops (news-nfl/nba/nhl/cbb.json), matched to players.
+# Player news for Draft Lab: MLB.com's news feeds (news-mlb.json) and ESPN's for football, basketball and hockey
+# (news-nfl/nba/nhl.json), matched to players.
 # Headlines and links only. Commits only when there's a new story.
 name: Draft Lab player news
 
