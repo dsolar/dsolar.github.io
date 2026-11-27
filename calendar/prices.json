@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-26T17:04:38Z",
+ "updated": "2026-11-27T01:47:55Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -1167,16 +1167,6 @@
    "src": null,
    "low": null
   },
-  "sg-18818460": {
-   "history": [],
-   "sg": 18818460,
-   "title": "moe.",
-   "date": "2026-12-16",
-   "venue": "Infinity Hall Hartford",
-   "url": "https://seatgeek.com/moe-tickets/hartford-connecticut-infinity-hall-hartford-2026-12-16-8-pm/concert/18818460",
-   "src": null,
-   "low": null
-  },
   "tm-rZ7HnEZ1A4v9FN": {
    "history": [
     [
@@ -1274,6 +1264,16 @@
    "date": "2026-12-10",
    "venue": "Gillette Stadium",
    "url": "https://www.espn.com/nfl/game/_/gameId/401873109/vikings-patriots",
+   "src": null,
+   "low": null
+  },
+  "tm-G5vVZ_pCLHsSB": {
+   "history": [],
+   "sg": 18746650,
+   "title": "Kings of Leon",
+   "date": "2027-05-25",
+   "venue": "Hartford HealthCare Amphitheater",
+   "url": "https://www.ticketmaster.com/kings-of-leon-bridgeport-connecticut-05-25-2027/event/1D0065639FF31CFA",
    "src": null,
    "low": null
   }
