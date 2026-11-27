@@ -611,10 +611,21 @@ async function gamesFor(sport: string, ids: string[]) {
 const BUILD: Record<string, () => Promise<any>> = { nba, nfl, mlb, nhl, cbb, cfb };
 // the week's feed for a sport: the kept copy if it's under a minute old, else built fresh and kept; a feed that's down
 // gives the last copy marked stale
+// While a game is on, the feed is rebuilt every 15 seconds (every 50 otherwise), shared by everyone asking. When it's
+// due, one request claims the rebuild (moving updated_at forward only if nobody else has) and the rest get what's
+// there, so a full league of open pages doesn't all hit ESPN at once.
+const LIVE_MS = 15e3;
+const isLive = (d: any) => !!(d && d.teams && Object.values(d.teams).some((t: any) => t && t.live > 0));
+const freshFor = (d: any) => (isLive(d) ? LIVE_MS : FRESH_MS);
 async function liveData(sport: string) {
   const r = await db(`fk_live?sport=eq.${sport}&select=data,updated_at`);
   const row = r.ok ? (await r.json())[0] : null;
-  if (row && Date.now() - Date.parse(row.updated_at) < FRESH_MS) return row.data;
+  if (row && Date.now() - Date.parse(row.updated_at) < freshFor(row.data)) return row.data;
+  if (row) {
+    const claim = await db(`fk_live?sport=eq.${sport}&updated_at=eq.${encodeURIComponent(row.updated_at)}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ updated_at: new Date().toISOString() }) }).catch(() => null);
+    const got = claim && claim.ok ? await claim.json().catch(() => []) : [];
+    if (claim && claim.ok && !got.length) return row.data;          // someone else is rebuilding it right now
+  }
   try {
     errors.length = 0;
     const data = await BUILD[sport]();
@@ -663,7 +674,8 @@ Deno.serve(async (req) => {
     return json(await gamesFor(sport, ids).catch((e) => ({ games: {}, error: String(e) })), { "cache-control": "max-age=30" });
   }
   try {
-    return json(await liveData(sport), { "cache-control": "max-age=30" });
+    const d = await liveData(sport);
+    return json(d, { "cache-control": isLive(d) ? "max-age=10" : "max-age=30" });
   } catch (e) {
     return json({ error: String(e) }, {}, 502);
   }

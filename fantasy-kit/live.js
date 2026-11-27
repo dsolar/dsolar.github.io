@@ -462,7 +462,7 @@
   // Outside dynasty rankings (data/dynasty-<sport>.json, rebuilt daily by tools/dynasty_pull.py), when there are any.
   const dynastyRanks = (k) => fetch(`data/dynasty-${k}.json`, { cache: "no-cache" }).then((x) => (x.ok ? x.json() : null)).catch(() => null);
   /* ---------- live box scores: every minute while the page is open and the league plays on real games ---------- */
-  let liveT = null;
+  let liveT = null, lastLive = null;
   async function livePoll() {
     clearTimeout(liveT);
     if (weeks && !document.hidden && (!L || L.settings.real)) {
@@ -470,6 +470,7 @@
       const ids = Z.slateGames && Z.slateGames(L);
       // (a one-day college league skips the weekly feed: 400 games a week, and it only needs its own)
       const lv = ids && info.sport === "cbb" ? null : await C.live(info.sport);
+      if (lv) lastLive = lv;
       // this week's kickoff times go with the league, so every page and the clock lock players when their games start
       const kicked = L && canAct() && G.setKicks(L, lv);
       if (kicked) push();
@@ -484,7 +485,9 @@
       const lu = await C.lineups();
       if (lu && lu.days) { lineups = lu; if (app && !U.dialogOpen()) app.refresh(); }
     }
-    liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : 60e3);
+    // every 20 seconds while one of this sport's games is on, a minute otherwise, five when the tab is hidden
+    const on = !!(lastLive && lastLive.teams && Object.values(lastLive.teams).some((t) => t && t.live > 0));
+    liveT = setTimeout(livePoll, document.hidden ? 5 * 60e3 : on ? 20e3 : 60e3);
   }
   document.addEventListener("visibilitychange", () => { if (!document.hidden && weeks) livePoll(); });
   /* ---------- league chat: posts load every few seconds while the page is open ---------- */
