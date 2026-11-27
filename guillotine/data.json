@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T02:07:20Z",
+ "updated": "2026-11-27T02:22:26Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -585,7 +585,7 @@
    "manager": "Daid B",
    "faab": 60,
    "proj": 146.29,
-   "points": 20.4,
+   "points": 21.2,
    "scores": [
     135.46,
     161.16,
@@ -605,7 +605,7 @@
      "name": "Josh Allen",
      "nfl": "BUF",
      "pos": "QB",
-     "yahoo_actual": 2.2,
+     "yahoo_actual": 1.48,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -689,7 +689,7 @@
      "name": "Emmett Johnson",
      "nfl": "KC",
      "pos": "RB",
-     "yahoo_actual": 1.1,
+     "yahoo_actual": 1.9,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -923,7 +923,7 @@
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
-     "yahoo_actual": 0.2,
+     "yahoo_actual": 0.92,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -1197,7 +1197,7 @@
    "manager": "Scott",
    "faab": 8,
    "proj": 142.79,
-   "points": 51.64,
+   "points": 53.24,
    "scores": [
     95.18,
     94.64,
@@ -1299,7 +1299,7 @@
      "name": "James Cook III",
      "nfl": "BUF",
      "pos": "RB",
-     "yahoo_actual": 11.5,
+     "yahoo_actual": 13.1,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -3705,7 +3705,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T02:07:23Z",
+  "updated": "2026-11-27T02:22:30Z",
   "players": 3046,
   "unmatched": []
  }
