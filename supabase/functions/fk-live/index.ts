@@ -621,7 +621,8 @@ async function liveData(sport: string) {
   const r = await db(`fk_live?sport=eq.${sport}&select=data,updated_at`);
   const row = r.ok ? (await r.json())[0] : null;
   if (row && Date.now() - Date.parse(row.updated_at) < freshFor(row.data)) return row.data;
-  if (row) {
+  // (a copy more than two minutes old isn't worth waiting on someone else for: it could be last week's)
+  if (row && Date.now() - Date.parse(row.updated_at) < 120e3) {
     const claim = await db(`fk_live?sport=eq.${sport}&updated_at=eq.${encodeURIComponent(row.updated_at)}`, { method: "PATCH", headers: { Prefer: "return=representation" }, body: JSON.stringify({ updated_at: new Date().toISOString() }) }).catch(() => null);
     const got = claim && claim.ok ? await claim.json().catch(() => []) : [];
     if (claim && claim.ok && !got.length) return row.data;          // someone else is rebuilding it right now
