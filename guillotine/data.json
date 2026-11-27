@@ -4,14 +4,14 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T03:52:21Z",
+ "updated": "2026-11-27T04:07:15Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 146.89,
+   "proj": 146.91,
    "points": 69.8,
    "scores": [
     132.74,
@@ -141,7 +141,7 @@
        "rec_yd": 146
       }
      },
-     "proj": 16.44,
+     "proj": 16.49,
      "rank": "RB8",
      "date": "2026-11-27",
      "next_proj": 15.03,
@@ -585,8 +585,8 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 60,
-   "proj": 146.31,
-   "points": 43.28,
+   "proj": 146.32,
+   "points": 46.26,
    "scores": [
     135.46,
     161.16,
@@ -606,7 +606,7 @@
      "name": "Josh Allen",
      "nfl": "BUF",
      "pos": "QB",
-     "yahoo_actual": 4.9,
+     "yahoo_actual": 5.1,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -690,7 +690,7 @@
      "name": "Emmett Johnson",
      "nfl": "KC",
      "pos": "RB",
-     "yahoo_actual": 16.0,
+     "yahoo_actual": 17.1,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -924,7 +924,7 @@
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
-     "yahoo_actual": 5.48,
+     "yahoo_actual": 7.16,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -1197,8 +1197,8 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 8,
-   "proj": 142.94,
-   "points": 57.84,
+   "proj": 142.9,
+   "points": 59.14,
    "scores": [
     95.18,
     94.64,
@@ -1300,7 +1300,7 @@
      "name": "James Cook III",
      "nfl": "BUF",
      "pos": "RB",
-     "yahoo_actual": 17.7,
+     "yahoo_actual": 19.0,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -3667,7 +3667,7 @@
     "name": "DK Metcalf",
     "pos": "WR",
     "nfl": "PIT",
-    "proj": 6.36,
+    "proj": 6.39,
     "rank": "WR50",
     "next_proj": 7.62,
     "avg": 7.7,
@@ -3712,7 +3712,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T03:52:22Z",
+  "updated": "2026-11-27T04:07:17Z",
   "players": 3046,
   "unmatched": []
  }
