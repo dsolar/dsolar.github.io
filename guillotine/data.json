@@ -4,7 +4,7 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-27T04:11:57Z",
+ "updated": "2026-11-27T04:22:21Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
@@ -606,7 +606,7 @@
      "name": "Josh Allen",
      "nfl": "BUF",
      "pos": "QB",
-     "yahoo_actual": 5.1,
+     "yahoo_actual": 5.54,
      "game": "Thu 8:20 pm",
      "opp": "vs KC",
      "season": {
@@ -924,7 +924,7 @@
      "name": "Patrick Mahomes",
      "nfl": "KC",
      "pos": "QB",
-     "yahoo_actual": 7.6,
+     "yahoo_actual": 7.16,
      "game": "Thu 8:20 pm",
      "opp": "@ BUF",
      "season": {
@@ -3712,7 +3712,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-27T04:11:59Z",
+  "updated": "2026-11-27T04:22:22Z",
   "players": 3046,
   "unmatched": []
  }
