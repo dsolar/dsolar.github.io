@@ -3258,12 +3258,36 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 @media (max-width:760px){.tv-h{grid-template-columns:1fr;justify-items:start}.tv-next{justify-self:start;display:flex;flex-wrap:wrap;gap:10px}}
 /* the TV board's picks as cards: his picture beside his name */
 .droom.tv .cell.f{flex-direction:row;align-items:center;justify-content:flex-start;gap:clamp(5px,.5vw,10px)}
-.droom.tv .cell.f .pav{flex:none;width:clamp(24px,2.4vw,46px);height:clamp(24px,2.4vw,46px);font-size:clamp(9px,.7vw,13px)}
+.droom.tv .cell.f .pav{flex:none;width:clamp(18px,1.6vw,34px);height:clamp(18px,1.6vw,34px);font-size:clamp(8px,.55vw,11px)}
+.droom.tv .cell.f{gap:clamp(4px,.35vw,7px)}
+.droom.tv .cell.f b{font-size:clamp(11px,.8vw,16px)}
 .droom.tv .cell .tvc{display:grid;min-width:0;flex:1;gap:1px}
-.droom.tv .cell.f b{-webkit-line-clamp:1;display:block;white-space:nowrap}
+.droom.tv .cell.f b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.1}
 .droom.tv .cell.f{min-height:clamp(38px,5vh,70px)}
 .tv-st{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(10px,2vw,44px);margin:clamp(4px,1vh,16px) 0 0}
 .tv-st div{display:grid;gap:2px}
 .tv-st dt{font-size:clamp(11px,.9vw,18px);color:var(--muted);font-weight:700}
 .tv-st dd{margin:0;font-size:clamp(20px,2.2vw,44px);font-weight:900;font-variant-numeric:tabular-nums}
 .tv-st dd em{display:block;font-style:normal;font-size:clamp(11px,.85vw,16px);color:var(--muted);font-weight:650}
+/* TV mode: the way out and the announcer switch together; the count-up or shot clock; the best-available panel */
+.tv-x{display:flex;gap:8px}
+.tv-up{display:grid;justify-items:center;min-width:clamp(90px,8vw,160px);padding:clamp(6px,.6vw,12px) clamp(10px,1vw,18px);border-radius:14px;background:var(--surface-2);border:1px solid var(--line)}
+.tv-up small{font-size:clamp(10px,.8vw,15px);color:var(--muted);font-weight:750}
+.tv-up b{font-size:clamp(24px,2.6vw,52px);font-weight:900;font-variant-numeric:tabular-nums;line-height:1}
+.tv-up.hot{border-color:#FF6B78;color:#FF6B78}
+.tv-up.over{background:#FF6B78;color:#140608;animation:tvBlink 1s steps(2) infinite}
+@keyframes tvBlink{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){.tv-up.over{animation:none}}
+.tv-b{gap:clamp(8px,1vw,18px)}
+.tv-b .board{flex:1;min-width:0}
+.tv-side{flex:0 0 clamp(190px,15vw,320px);overflow:hidden;display:flex;flex-direction:column;gap:clamp(4px,.5vh,8px)}
+.tv-side h3{margin:0;font-size:clamp(13px,1.05vw,20px);font-weight:850}
+.tv-side h4{margin:clamp(4px,.6vh,10px) 0 0;font-size:clamp(11px,.85vw,16px);color:var(--muted);font-weight:800}
+.tv-ba{list-style:none;margin:0;padding:0;display:grid;gap:clamp(3px,.35vh,6px)}
+.tv-ba li{display:grid;padding:clamp(4px,.45vw,8px) clamp(7px,.6vw,11px);border-radius:9px;background:var(--pc,var(--surface-2));color:var(--pci,inherit)}
+.tv-ba b{font-size:clamp(12px,1vw,19px);font-weight:850;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-ba small{font-size:clamp(10px,.75vw,14px);opacity:.85}
+.tv-ba.sm li{padding:clamp(3px,.3vw,6px) clamp(7px,.6vw,11px)}
+.tv-ba.sm b{font-size:clamp(11px,.85vw,16px)}
+.tv-run{margin:0;padding:clamp(6px,.6vw,10px) clamp(8px,.8vw,12px);border-radius:10px;background:var(--brand);color:#141008;font-size:clamp(12px,.95vw,18px)}
+@media (max-width:1100px){.tv-side{display:none}}

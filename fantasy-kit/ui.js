@@ -1342,6 +1342,7 @@
       }
       if (opts.commish && d.inPerson && !auction() && (d.phase === "setup" || d.phase === "live")) menu.push(`<button class="btn sm" data-act="room">Who's in the room</button>`);
       if (opts.commish && ipOk() && (d.phase === "setup" || d.phase === "live")) menu.push(`<button class="btn sm${d.inPerson ? " on" : ""}" data-act="inperson" aria-pressed="${!!d.inPerson}" title="Drafting in one room: no clock, and you enter every pick here">${d.inPerson ? "In-person draft: on" : "In-person draft"}</button>`);
+      if (opts.commish && d.phase === "live" && !auction() && !d.packs && !enterAll() && F.onClock(d, n) && !Number.isFinite(F.onClock(d, n).left)) menu.push(`<button class="btn sm" data-act="shot" title="60 seconds on the TV for whoever is up; nothing is picked when it runs out">${d.shot && d.shot.k === F.onClock(d, n).index ? "Stop the shot clock" : "Shot clock (60 sec)"}</button>`);
       if (d.phase !== "heist") menu.push(`<button class="btn sm" data-act="tv" title="The board full screen for a TV, with each pick announced">TV mode</button>`);
       if (opts.commish && d.phase === "live") menu.push(`${d.paused && !d.hold ? "" : `<button class="btn sm" data-act="pause">${d.paused ? "Resume" : "Pause the draft"}</button>`}<button class="btn sm" data-act="undo">Undo the last pick</button>`);
       if (d.phase === "done" && opts.extra) prim.push(opts.extra());
@@ -1743,12 +1744,14 @@
       })() : "";
       const sortable = cols.filter((c) => c.sort && c.label && !c.raw);
       const sortSel = `<div class="psort show-m"><label for="fk-psort">Sort by</label><select id="fk-psort">${sortable.map((c) => `<option value="${esc(c.k)}"${ui.sort.k === c.k ? " selected" : ""}>${esc(c.title || c.label)}</option>`).join("")}</select><button type="button" class="btn xs ghost" data-act="sortdir" aria-label="Flip the order">${ui.sort.dir > 0 ? "Low to high" : "High to low"}</button></div>`;
-      const roomBar = enterAll() && c && !auction() ? `<div class="rl-bar"><span>${F.inRoom(d, c.team) ? `In-person draft: tap Draft next to a player to enter ${esc(team(c.team).name)}'s pick.` : `<b>${esc(team(c.team).name)}</b> is picking remotely${F.isBot(team(c.team)) ? "; its bot will pick" : ", from their own device"}. If they tell you the pick, you can enter it here.`}</span><button type="button" class="btn xs ghost" data-act="room">Who's in the room</button></div>`
+      const roomBar = enterAll() && c && !auction() ? `<div class="rl-bar"><span>${F.inRoom(d, c.team) ? `In-person draft: tap Draft next to a player to enter ${esc(team(c.team).name)}'s pick.` : `<b>${esc(team(c.team).name)}</b> is picking remotely${F.isBot(team(c.team)) ? "; its bot will pick" : ", from their own device"}. If they tell you the pick, you can enter it here.`}</span><button type="button" class="btn xs ghost" data-act="shot">${d.shot && d.shot.k === c.index ? "Stop the shot clock" : "Shot clock"}</button><button type="button" class="btn xs ghost" data-act="room">Who's in the room</button></div>`
         : inPerson() && !enterAll() && c && !auction() ? `<div class="rl-bar"><span>${c.team === mine ? "You're up. Make your pick here, or tell the commissioner." : `In-person draft: the commissioner enters picks for the teams in the room.`}</span></div>` : "";
       return draftCoach() + roomBar + fitBar + capBar + rlBar + sortSel + table({ cols, rows, sort: ui.sort, dense: true, id: "fk-pool", cls: (ui.sort.k && !["rank", "name", "my"].includes(ui.sort.k) ? "srtd" : "") + (myTurn && !d.packs ? " turn" : ""), limit: ui.limit || POOL_ROWS, step: 100, empty: "No one matches.",
         rowAttr: (p) => `data-player="${esc(p.id)}" class="${mine != null && ctx.own[p.id] == null && !F.canAdd(d, ctx, mine, p).ok ? "dim" : ""}"` });
     }
     // a board cell's name: first initial and last name ("J. Smith-Njigba"); a defense by its team
+    // a TV card's name, the way a sticker board has it: the last name (a defense is its team)
+    const lastOf = (p) => { if (S.positions(p).includes("DEF")) return `${p.t} D/ST`; const w = String(p.n).split(" "); return w.length > 1 ? w.slice(1).join(" ") : p.n; };
     const shortName = (p) => { if (S.positions(p).includes("DEF")) return `${p.t} D/ST`; const w = String(p.n).split(" "); return w.length > 1 && !/^(Jr\.?|Sr\.?|II|III|IV)$/.test(w[1]) ? `${w[0][0]}. ${w.slice(1).join(" ")}` : p.n; };
     // projections or last season's stats, side by side as a switch
     function statSeg() {
@@ -1777,7 +1780,7 @@
           if (x && x.k != null && !pk && !seenK(x.k)) { cells += `<div class="cell hid${isMe(t) ? " me" : ""}"><small class="ps">Sealed</small></div>`; continue; }
           const via = x && x.k != null ? (pk && pk.drafter != null && pk.drafter !== pk.team ? team(pk.drafter) : !pk ? viaOf(x.k) : null) : null;
           const cls = ["cell", p ? "f c" + colorOf(sport, p) : "", isMe(t) ? "me" : "", x && x.k === nowK ? "now" : "", pk && pk.keeper ? "keep" : "", pk && pk.steal ? "steal" : "", x && x.k != null && !pk && D().extra[x.k] ? "mk" : ""].join(" ").replace(/\s+/g, " ");
-          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `${big ? `${playerAv(sport, p, "sm")}<span class="tvc">` : ""}<b>${esc(shortName(p))}</b><small>${pk.steal ? (taxTxt() ? `stolen ${taxTxt()}, ${esc(team(pk.from).abbr)}` : `stolen from ${esc(team(pk.from).abbr)}`) : D().extra && D().extra[x.k] && goldTxt() ? `golden, ${goldTxt()}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>${big ? "</span>" : ""}` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
+          cells += `<div class="${cls}"${p ? ` data-player="${esc(p.id)}" role="button" tabindex="0" title="${esc(p.n)}${pk.auto ? ", autopick" : ""}"` : ""}>${p ? `${big ? `${playerAv(sport, p, "sm")}<span class="tvc">` : ""}<b>${esc(big ? lastOf(p) : shortName(p))}</b><small>${pk.steal ? (taxTxt() ? `stolen ${taxTxt()}, ${esc(team(pk.from).abbr)}` : `stolen from ${esc(team(pk.from).abbr)}`) : D().extra && D().extra[x.k] && goldTxt() ? `golden, ${goldTxt()}` : via ? `from ${esc(via.abbr)}` : `${S.positions(p).join(", ")} ${esc(p.t)}`}${x.label ? " " + x.label : ""}</small>${big ? "</span>" : ""}` : pk ? "<b>Passed</b>" : x && x.k != null ? `<small class="ps">${plab(x.k)}${x.k === nowK ? ", on the clock" : via ? `, via ${esc(via.abbr)}` : ""}</small>` : ""}</div>`;
         }
       }
       return `<div class="board" id="fk-board"><div class="bgrid" style="--n:${n};grid-template-columns:28px repeat(${n},minmax(0,1fr))">${cells}</div></div>`;
@@ -2280,6 +2283,42 @@
       const pts = ln[ix[col]], g = ix.g != null ? ln[ix.g] : null, yr = sport.data && sport.data.prev;
       return pts ? [[yr ? String(yr) : "Last season", `${(+pts).toFixed(1)} pts${g ? `<em>${Math.round(g)} games</em>` : ""}`]] : [];
     }
+    /* The TV's announcer: each pick read out loud with the browser's own voice, after the fanfare ("With the 7th pick
+       of round 3, Hail Mary selects Jahmyr Gibbs, running back"). On unless turned off on this device. */
+    const tvVoiceOn = () => { try { return localStorage.getItem("fk-tv-voice") !== "0" && typeof speechSynthesis !== "undefined"; } catch (e) { return false; } };
+    const POS_SAY = { QB: "quarterback", RB: "running back", WR: "wide receiver", TE: "tight end", K: "kicker", DEF: "defense", PG: "point guard", SG: "shooting guard", SF: "small forward", PF: "power forward", C: "center", G: "guard", F: "forward", SP: "starting pitcher", RP: "relief pitcher", "1B": "first baseman", "2B": "second baseman", "3B": "third baseman", SS: "shortstop", OF: "outfielder", LW: "left wing", RW: "right wing", D: "defenseman" };
+    function tvSpeak(text) {
+      if (!tvVoiceOn()) return;
+      try {
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        const v = speechSynthesis.getVoices().filter((x) => /^en(-|_)US/i.test(x.lang));
+        if (v.length) u.voice = v.find((x) => /natural|premium|enhanced|google/i.test(x.name)) || v[0];
+        u.rate = 0.98; u.pitch = 1;
+        setTimeout(() => speechSynthesis.speak(u), 650);
+      } catch (e) { /* no speech here */ }
+    }
+    function tvSay(pk) {
+      const p = ctx.byId[pk.pid], t = team(pk.team);
+      if (!p || !t) return;
+      const pos = POS_SAY[S.positions(p)[0]] || S.positions(p)[0] || "";
+      if (auction()) { tvSpeak(`Sold! ${p.n}, to ${t.name}, for ${pk.price} dollars.`); return; }
+      const nTeams = D().round1.length, r = Math.ceil(pk.n / nTeams), k = pk.n - (r - 1) * nTeams;
+      tvSpeak(`With the ${ord(k)} pick of round ${r}, ${t.name} selects ${p.n}${pos ? `, ${pos}` : ""}.`);
+    }
+    /* The TV's side panel while the draft is on: the best players left (overall, then the top few at each position the
+       lineup has a spot for) and a position run when one is going ("RB run: 4 of the last 6 picks"). */
+    function tvSide() {
+      const d = D(), avail = ctx.available.slice().sort((a, b) => (auction() ? (b.$ || 0) - (a.$ || 0) : (a.rank || 1e5) - (b.rank || 1e5)));
+      const made = F.made(d), recent = made.slice(-6).map((pk) => ctx.byId[pk.pid]).filter(Boolean);
+      const cnt = {}; for (const p of recent) { const ps = S.positions(p)[0]; cnt[ps] = (cnt[ps] || 0) + 1; }
+      const run = Object.entries(cnt).filter(([, c]) => c >= 3).sort((a, b) => b[1] - a[1])[0];
+      const pure = [...new Set(d.lineup)].filter((sl) => Array.isArray(sport.slots[sl]) && sport.slots[sl].length === 1 && sport.slots[sl][0] === sl).slice(0, 6);
+      const li = (p) => `<li class="c${colorOf(sport, p)}"><b>${esc(shortName(p))}</b><small>${esc(S.positions(p)[0] || "")} ${esc(p.t || "")}${auction() ? ` · ${money(p.$)}` : ` · #${p.rank}`}</small></li>`;
+      return `<aside class="tv-side" aria-label="Best available">${run ? `<p class="tv-run"><b>${esc(run[0])} run</b> ${run[1]} of the last ${recent.length} picks</p>` : ""}
+        <h3>Best available</h3><ol class="tv-ba">${avail.slice(0, 5).map(li).join("")}</ol>
+        ${pure.map((ps) => { const top = avail.filter((p) => S.positions(p).includes(ps)).slice(0, 2); return top.length ? `<h4>${esc(ps)}</h4><ol class="tv-ba sm">${top.map(li).join("")}</ol>` : ""; }).join("")}</aside>`;
+    }
     function tvRender() {
       const d = D(), n = now(), made = F.made(d);
       // a new pick since the last look: announce the latest one (a burst of autopicks shows only the last)
@@ -2288,6 +2327,7 @@
         const pk = made[made.length - 1];
         ui.tvShow = { pk, until: Date.now() + 7000 };
         alerts.chime("pick");
+        tvSay(pk);
         clearTimeout(ui.tvT); ui.tvT = setTimeout(() => { if (ui.tv) render(); }, 7100);
       }
       ui.tvSeen = made.length;
@@ -2304,6 +2344,8 @@
       } else if (!d.packs) {
         const c = F.onClock(d, n), t = c && team(c.team);
         if (c && Number.isFinite(c.left)) clock = `<span class="ring tv-ring" id="fk-ring2"><span id="fk-timer2"></span></span>`;
+        // no clock: how long he's been on it, or the shot clock the commissioner started
+        else if (c && !d.paused) clock = `<span class="tv-up" id="fk-up" data-since="${d.clockStart}" data-k="${c.index}"><small></small><b></b></span>`;
         if (t) who = `${teamAv(t, "lg")}<span><small>On the clock${d.paused ? ", paused" : ""}, pick ${esc(plab(c.index))}</small><b>${esc(t.name)}</b>${t.owner || (inPerson() && !F.inRoom(d, c.team)) ? `<em>${esc([t.owner, inPerson() && !F.inRoom(d, c.team) ? "picking remotely" : ""].filter(Boolean).join(", "))}</em>` : ""}</span>`;
         const up = c ? d.order.slice(c.index + 1, c.index + 3).map((id, i) => ({ t: team(id), k: c.index + 1 + i })) : [];
         if (up.length) next = `<div class="tv-next"><small>Up next</small>${up.map((x) => `<span>${teamAv(x.t, "sm")}<b>${esc(x.t.name)}</b><em>${esc(plab(x.k))}</em></span>`).join("")}</div>`;
@@ -2319,8 +2361,8 @@
       el.innerHTML = `<div class="droom fk-dark tv">
         <header class="tv-h"><div class="tv-lg">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[F.formatOf(d)])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></div>
           <div class="tv-otc">${clock}<div class="tv-who">${who}</div></div>${next}
-          <button type="button" class="btn sm ghost tv-x" data-act="tvexit">Exit TV mode</button></header>
-        <div class="tv-b">${board(true)}</div>
+          <span class="tv-x"><button type="button" class="btn sm ghost" data-act="tvvoice" aria-pressed="${tvVoiceOn()}">Announcer: ${tvVoiceOn() ? "on" : "off"}</button><button type="button" class="btn sm ghost" data-act="tvexit">Exit TV mode</button></span></header>
+        <div class="tv-b">${board(true)}${d.phase === "live" ? tvSide() : ""}</div>
         ${last ? `<ol class="tv-last" aria-label="Latest picks">${last}</ol>` : ""}${reveal}</div>`;
       drawTimer();
       // keep the pick on the clock in view on a board taller than the screen
@@ -2374,6 +2416,13 @@
       else if (F.onClock(d, n) && F.onClock(d, n).trivia) { const c = F.onClock(d, n); left = Math.max(0, c.left - 2500); total = (d.trivia.sec || 15) * 1000; }   // the grace for the question to arrive isn't shown
       else { const c = F.onClock(d, n); left = c ? c.left : null; total = d.bank ? (c && team(c.team).bank > d.bank.floor * 1000 ? bankFull() : d.bank.floor * 1000) : (d.clock || 1) * 1000; }
       const fin = left != null && Number.isFinite(left);
+      const up = $("#fk-up", el);
+      if (up) {
+        const sh = d.shot && d.shot.k === +up.dataset.k ? d.shot : null, b = up.querySelector("b"), sm = up.querySelector("small");
+        const mmss = (ms) => { const s2 = Math.max(0, Math.floor(ms / 1000)); return `${Math.floor(s2 / 60)}:${String(s2 % 60).padStart(2, "0")}`; };
+        if (sh) { const rem = sh.at + sh.sec * 1000 - n; sm.textContent = "Shot clock"; b.textContent = rem > 0 ? mmss(rem + 999) : "Time!"; up.classList.toggle("hot", rem < 10000); up.classList.toggle("over", rem <= 0); }
+        else { sm.textContent = "On the clock for"; b.textContent = mmss(n - (+up.dataset.since || n)); up.classList.remove("hot", "over"); }
+      }
       for (const [ti, ri] of [["#fk-timer", "#fk-ring"], ["#fk-timer2", "#fk-ring2"], ["#fk-timer3", "#fk-ring3"]]) {
         const t = $(ti, el), ring = $(ri, el);
         if (t) t.textContent = fin ? fmtLeft(left) : "";
@@ -2563,6 +2612,8 @@
             toast(on ? (auction() ? "In-person auction: bid out loud, then tap Sold next to a player to record who got him and for how much." : "In-person draft: no clock. Tap Draft next to a player to enter the pick for whoever is on the clock.") : "The pick clock is back on.");
           }
           else if (a === "tvexit") tvMode(false);
+          else if (a === "tvvoice") { const on = !tvVoiceOn(); try { localStorage.setItem("fk-tv-voice", on ? "1" : "0"); } catch (e2) { /* private mode */ } if (on) tvSpeak("The announcer is on."); else try { speechSynthesis.cancel(); } catch (e2) { /* no speech */ } render(); }
+          else if (a === "shot") { const oc = F.onClock(d, n); if (oc) { d.shot = d.shot && d.shot.k === oc.index ? null : { k: oc.index, at: n, sec: 60 }; save(); render(); toast(d.shot ? `${team(oc.team).name} has 60 seconds. Nothing is picked for them when it runs out.` : "Shot clock off."); } }
           else if (a === "pause") act(() => F.pause(d, n, !d.paused));
           else if (a === "undo") act(() => F.undo(d, ctx, n));
           else if (a === "pass") act(() => F.pass(d, ctx, me(), n));
