@@ -406,6 +406,48 @@ async function poolReminders(token: string) {
   return { due: due.length, sent, failed };
 }
 
+// NFL pick'em reminders (/pickem): a player who turned them on gets an email about three hours before a game he hasn't
+// picked kicks off, at most two a week. pk_remind_due picks who's due and claims each slate, so it's sent once.
+async function pickemReminders(token: string) {
+  const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
+  if (!key || !from) return { pickem: "mail not set up" };
+  const r = await rpc("pk_remind_due", { p_token: token });
+  if (!r || r.error) return { error: r && r.error };
+  const due = r.due || [];
+  let sent = 0, failed = 0;
+  for (const x of due) {
+    const url = "https://davidsolar.dev/pickem/", when = etTime(x.slot), wk = x.stype === 3 ? "this playoff round" : `week ${x.week}`;
+    const line = (g: any) => { const sp = Number(g.spread); return `${g.away} at ${g.home}, ${sp === 0 ? "pick'em" : sp < 0 ? `${g.home} ${sp}` : `${g.away} -${sp}`}`; };
+    const games: string[] = (x.games || []).map(line);
+    const subject = `The Number: ${games.length === 1 ? "a pick" : `${games.length} picks`} lock ${when}`;
+    const lead = `You haven't picked ${games.length === 1 ? "this game" : "these games"} yet, and ${games.length === 1 ? "it locks" : "they lock"} at kickoff, ${when}:`;
+    const more = x.rest ? `You have ${x.rest} more ${x.rest === 1 ? "game" : "games"} to pick later in ${wk}.` : "";
+    const foot = "You get this because you turned on pick reminders for The Number. Turn them off on the Picks tab.";
+    const text = `Hi ${x.name || "there"},\n\n${lead}\n${games.join("\n")}${more ? `\n\n${more}` : ""}\n\nMake your picks: ${url}\n\n${foot}\n\nDraft Lab, davidsolar.dev`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>${h(subject)}</title></head>
+<body style="margin:0;padding:0;background:#F1F3F6"><div style="display:none;max-height:0;overflow:hidden">${h(games.join(", "))}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F3F6"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:14px;overflow:hidden;border:1px solid #E1E5EB">
+  <tr><td style="background:#13233A;padding:20px 24px"><div style="font:700 12.5px ${FONT};color:rgba(255,255,255,.78)">The Number, ${h(wk)}</div>
+    <div style="font:800 22px/1.25 ${FONT};color:#FFFFFF;margin-top:4px">${games.length === 1 ? "A pick locks" : `${games.length} picks lock`} ${h(when)}</div></td></tr>
+  <tr><td style="padding:22px 24px 8px">
+    <p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">Hi ${h(x.name || "there")},</p>
+    <p style="margin:0 0 10px;font:400 16px/1.5 ${FONT};color:#26303D">${h(lead)}</p>
+    <p style="margin:0 0 14px;font:600 15px/1.6 ${FONT};color:#13233A">${games.map((g: string) => h(g)).join("<br>")}</p>
+    ${more ? `<p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">${h(more)}</p>` : ""}
+    <p style="margin:18px 0 22px"><a href="${url}" style="display:inline-block;background:#F6C445;color:#13233A;font:800 16px ${FONT};text-decoration:none;padding:12px 20px;border-radius:10px">Make your picks</a></p></td></tr>
+  <tr><td style="padding:14px 24px 20px;border-top:1px solid #E1E5EB;font:400 13px/1.5 ${FONT};color:#6B7684">${h(foot)}<br>Draft Lab, davidsolar.dev</td></tr>
+</table></td></tr></table></body></html>`;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: [x.email], subject, text, html }),
+    }).catch(() => null);
+    if (res && res.ok) sent++; else failed++;
+    await new Promise((ok) => setTimeout(ok, 550)); // Resend allows two a second
+  }
+  return { due: due.length, sent, failed };
+}
+
 // Weekly recaps: Tuesday morning (9 to 11 a.m. Eastern), each member who turned them on gets a note on every pool with a
 // game that finished in the last week: who went out, the top of the standings, where they stand, and what's due.
 async function poolRecaps(token: string) {
@@ -494,5 +536,6 @@ Deno.serve(async (req) => {
   const mail = await sendMail(token).catch((e) => ({ error: String(e.message || e) }));
   const reminders = await poolReminders(token).catch((e) => ({ error: String(e.message || e) }));
   const recaps = await poolRecaps(token).catch((e) => ({ error: String(e.message || e) }));
-  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
+  const pickem = await pickemReminders(token).catch((e) => ({ error: String(e.message || e) }));
+  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, pickem, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
 });

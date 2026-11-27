@@ -514,8 +514,10 @@
           if (!fresh.length) continue;
           const one = fresh.length === 1, st = (x) => (/^(o|out)$/i.test(String(x.inj)) ? "out" : String(x.inj).toLowerCase());
           const lines = fresh.map((x) => `${x.n} (${x.pos}) is listed as ${st(x)}. His game starts ${when(x.kick)}.`).join("\n");
-          add(+t, "lineup", one ? `${fresh[0].n} is ${st(fresh[0])}` : `${fresh.length} of your starters are out`,
-            `${one ? `${fresh[0].n} is in your week ${w} lineup.` : `These players are in your week ${w} lineup:`}\n${lines}\n\nSwap in someone who's playing before ${one ? "his game starts" : "their games start"}.`, null, "team/roster");
+          const f0 = fresh[0];
+          add(+t, "lineup", one ? `${f0.n} is ${st(f0)}` : `${fresh.length} of your starters are out`,
+            one ? `${f0.n} (${f0.pos}) is listed as ${st(f0)}, and he's in your week ${w} lineup. His game starts ${when(f0.kick)}.\n\nSwap in someone who's playing before then.`
+              : `These players are in your week ${w} lineup:\n${lines}\n\nSwap in someone who's playing before their games start.`, null, "team/roster");
         }
       }
       const was = Object.fromEntries((bl.claims || []).map((x) => [x.id, x.status]));

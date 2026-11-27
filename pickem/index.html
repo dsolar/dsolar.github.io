@@ -140,6 +140,10 @@ table.gp .w{color:var(--win);font-weight:700}.gp .l{color:var(--loss)}.gp .p{col
 
 /* groups */
 .panel{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:16px;margin:0 0 14px}
+.remind{display:flex;gap:10px;align-items:flex-start;margin:18px 0 6px;padding:12px 14px;background:var(--card);border:1px solid var(--rule);border-radius:6px;cursor:pointer}
+.remind input{width:18px;height:18px;margin:2px 0 0;flex:none;accent-color:var(--ink)}
+.remind b{display:block;font-size:.98rem}
+.remind small{display:block;color:var(--ink-2);font-size:.88rem;margin-top:2px}
 .panel h3{margin:0 0 4px;font:800 1.35rem var(--cond);text-transform:uppercase;letter-spacing:.02em}
 .panel p{margin:0 0 12px;color:var(--ink-2);font-size:.95rem}
 .row{display:flex;gap:8px;flex-wrap:wrap}
@@ -188,6 +192,6 @@ table.gp .w{color:var(--win);font-weight:700}.gp .l{color:var(--loss)}.gp .p{col
   </div>
 </main>
 <div class="bar" id="pk-bar" hidden><div class="wrap" id="pk-bar-in"></div></div>
-<script src="app.js?v=3" defer></script>
+<script src="app.js?v=4" defer></script>
 </body>
 </html>

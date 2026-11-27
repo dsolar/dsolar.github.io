@@ -75,8 +75,16 @@
     body.innerHTML = '<div class="week"><button type="button" data-wk="-1" aria-label="Previous week"' + (i > 0 ? "" : " disabled") + ">‹</button><h2>" + esc(weekName(b)) + "</h2>"
       + '<button type="button" data-wk="1" aria-label="Next week"' + (i >= 0 && i < wk.length - 1 ? "" : " disabled") + ">›</button></div>"
       + '<p class="note">' + note + "</p>"
-      + '<div class="games">' + b.games.map(game).join("") + "</div>";
+      + '<div class="games">' + b.games.map(game).join("") + "</div>" + remindBox();
     drawBar();
+  }
+  // pick reminders (tools/pickem_remind.sql): an email about three hours before a game you haven't picked kicks off
+  var remind = null;
+  function remindBox() {
+    if (!signedIn()) return "";
+    if (remind == null) { remind = "?"; rpc("pk_remind_get").then(function (r) { remind = !!(r && r.remind); if (tab === "picks") drawPicks(); }).catch(function () { remind = false; }); return ""; }
+    if (remind === "?") return "";
+    return '<label class="remind"><input type="checkbox" data-remind' + (remind ? " checked" : "") + '><span><b>Email me before my picks lock</b><small>About three hours before a game you haven\'t picked kicks off. Two emails a week at most.</small></span></label>';
   }
   function game(g) {
     var live = g.locked && !g.final, top = g.final ? "Final" : live ? '<span class="live">In progress</span>' : esc(kick(g.kickoff));
@@ -230,6 +238,15 @@
     if (w && board) {
       var wk = board.weeks || [], i = wk.findIndex(function (x) { return x.stype === board.stype && x.week === board.week; }), n = wk[i + Number(w.dataset.wk)];
       if (n) loadBoard({ season: board.season, stype: n.stype, week: n.week }).then(draw, function (err) { toast(err.message, true); });
+      return;
+    }
+    var rm = e.target.closest("[data-remind]");
+    if (rm) {
+      var on = rm.checked; rm.disabled = true;
+      rpc("pk_remind_set", { p_on: on }).then(function (r) {
+        if (!r || r.error) throw new Error((r && r.error) || "Couldn't save that.");
+        remind = on; toast(on ? "Reminders on. You'll get an email before a game you haven't picked kicks off." : "Reminders off.");
+      }).catch(function (err) { rm.checked = !on; toast(err.message, true); }).then(function () { rm.disabled = false; });
       return;
     }
     var sc = e.target.closest("[data-scope]");
