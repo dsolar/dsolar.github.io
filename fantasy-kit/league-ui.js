@@ -2475,7 +2475,7 @@
       // Yahoo's columns beside ours: games played, last season's preseason and final ranks, and % rostered (another
       // site's, when the league came from one: L.ext)
       { const ext = (L().ext && L().ext.ranks) || null, xr = (p) => (ext && ext[p.id]) || {}, yr = Number(L().season) || "", grp = U.groupOf(sport, ui.pf);
-        const add = [].concat(grp && sport.cols[grp] && sport.cols[grp].g != null ? [{ k: "gp", label: "GP", cls: "r num", title: "Games played last season", sort: (p) => S.stat(sport, p, grp, "g") || 0, html: (p) => { const v = S.stat(sport, p, grp, "g"); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } }] : [],
+        const add = [].concat(grp && sport.cols[grp] && sport.cols[grp].g != null ? [{ k: "gp", label: "GP", cls: L().settings.hardCap ? "r num hide-s" : "r num", title: "Games played last season", sort: (p) => S.stat(sport, p, grp, "g") || 0, html: (p) => { const v = S.stat(sport, p, grp, "g"); return v == null ? `<span class="ps">-</span>` : String(Math.round(v)); } }] : [],
           ext ? [{ k: "pre", label: "Pre", cls: "r num hide-s", title: `${L().ext.source} preseason rank, ${yr}`, sort: (p) => xr(p).pre || 1e4, asc: true, html: (p) => (xr(p).pre ? String(xr(p).pre) : `<span class="ps">-</span>`) },
             { k: "fin", label: "Final", cls: "r num hide-s", title: `${L().ext.source} rank for the ${yr} season`, sort: (p) => xr(p).szn || 1e4, asc: true, html: (p) => (xr(p).szn ? String(xr(p).szn) : `<span class="ps">-</span>`) },
             { k: "ros", label: "% Ros", cls: "r num hide-s", title: `Rostered in ${L().ext.source} leagues`, sort: (p) => (xr(p).own != null ? xr(p).own : -1), html: (p) => (xr(p).own != null ? `${Math.round(xr(p).own)}%` : `<span class="ps">-</span>`) }] : []);
@@ -2955,7 +2955,7 @@
       if (currentCollege) lines.push(`NCAAF Week ${currentCollege} now`);
       if (gl()) lines.push("guillotine"); else if (roto()) lines.push("rotisserie"); else if (tot()) lines.push("total points");
       const champ = over() ? championOf() : null;
-      let you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
+      let you = champ != null ? `<b>${esc(T(champ).name)}</b> won the title.` : my && my.w + my.l + my.t > 0 ? `You're <b>${ord(my.rank)} at ${my.w}-${my.l}${my.t ? "-" + my.t : ""}</b>.` : "";
       // a one-night or one-week game has no record to speak of: where you sit on its leaderboard, as the page below shows it
       if (allplay1() && me() != null && champ == null) { const wr = weekRows(), i = wr.rows.findIndex((r) => r.t === me()); if (i >= 0) you = `You're <b>${wr.started ? "" : "projected "}${ord(i + 1)} of ${wr.rows.length}</b>.`; }
       const weeks = total > 1 ? Array.from({ length: total }, (_, i) => { const n = i + 1; return { n, label: weekLabel(n), po: n > reg, gap: n === reg + 1, k: over() || n < w ? "done" : n === w ? "now" : "next" }; }) : [];

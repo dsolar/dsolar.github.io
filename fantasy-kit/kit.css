@@ -3140,3 +3140,5 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 /* player names: the first name drops to its initial in phone-width tables (P. Pritchard), where the column is narrow */
 .pn .fi{display:none}
 @media (max-width:600px){table.t td .pn .fn{display:none}table.t td .pn .fi{display:inline}}
+/* Hard Cap players list on a phone: the salary without its years, so it isn't hidden under the add button */
+@media (max-width:600px){table.t .sal-y{display:none}}

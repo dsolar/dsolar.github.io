@@ -593,7 +593,7 @@
     if (opts.money !== false) cols.push({ k: "$", label: "$", cls: "r num", hide: opts.compact && !opts.auction ? "s" : undefined, title: "Auction value in this league", sort: (p) => p.$, html: (p) => (p.$ ? `<span class="dollar">${money(p.$)}</span>` : `<span class="ps">-</span>`) });
     // Hard Cap: each player's real salary this season (the minimum, starred, while held rights wait on a new deal)
     if (opts.salary) cols.push({ k: "sal", label: "Salary", cls: "r num", title: "Real salary this season: it counts against the league's line", sort: (p) => (p.sal == null ? -1 : p.sal),
-      html: (p) => (p.sal == null ? `<span class="ps">—</span>` : `${S.money(p.sal)}${p.pending ? `<sup title="Held rights: the minimum until his new deal">*</sup>` : p.sals && p.sals.length > 1 ? `<small class="ps"> ${p.sals.length}y</small>` : `<small class="ps"> exp</small>`}`) });
+      html: (p) => (p.sal == null ? `<span class="ps">—</span>` : `${S.money(p.sal)}${p.pending ? `<sup title="Held rights: the minimum until his new deal">*</sup>` : p.sals && p.sals.length > 1 ? `<small class="ps sal-y"> ${p.sals.length}y</small>` : `<small class="ps sal-y"> exp</small>`}`) });
     if (sport.key === "nhl" && !opts.salary) cols.push({ k: "nhlcap", label: "Cap hit", cls: "r num", hide: "s", title: "Real NHL cap hit this season; open the player for contract years and salary details", sort: (p) => p.contract && p.contract.capHit,
       html: (p) => p.contract && p.contract.capHit != null ? `${capMoney(p.contract.capHit)}${p.contract.estimated ? `<sup title="Estimated cap hit">est</sup>` : ""}` : `<span class="ps">—</span>` });
     // a one-week game or a showdown (sport.weekOf): the week's projected points
