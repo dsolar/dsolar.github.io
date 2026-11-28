@@ -204,6 +204,9 @@ button.pl-chip{cursor:pointer}
 .pl-kt:disabled{cursor:default}
 .pl-ksb .bd{display:grid;gap:12px}
 .pl-ksb .pl-kg{grid-template-columns:1fr 1fr;max-width:520px}
+/* the College Football Playoff bracket: same parts, plus logos and the automatic-bid tag */
+.pl-kt .pl-logo{flex:none;width:20px;height:20px;object-fit:contain}
+.pl-aq{margin-left:auto;flex:none;padding:1px 5px;border-radius:999px;background:var(--surface-2,rgba(0,0,0,.06));color:var(--muted);font-size:10px;font-weight:850}
 @media (max-width:900px){.pl-kwrap{grid-template-columns:1fr}}
 @media (max-width:520px){.pl-kcols{grid-template-columns:1fr}.pl-kr{gap:8px}}
 .pl-bbar{position:static}

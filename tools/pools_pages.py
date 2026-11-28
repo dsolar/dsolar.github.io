@@ -7,6 +7,7 @@ import os, re, sys
 
 GAMES = [
     ("bowls", "bowls", "Bowl pick'em", "Pick every bowl and College Football Playoff game, each with a confidence number. Make a pool, send the link, and the site keeps score."),
+    ("cfpo", "cfp-bracket", "College Football Playoff bracket", "Fill out the 12-team College Football Playoff bracket, byes and all, with points doubling every round. Make a pool, send the link, and the site keeps score."),
     ("nflpo", "nfl-bracket", "NFL playoff bracket", "Fill out the 14-team NFL playoff bracket, reseeded the NFL's way. Make a pool, send the link, and the site keeps score."),
     ("nflff", "nfl-playoff-fantasy", "NFL playoff fantasy", "A fantasy lineup every playoff round, and each player only once. Make a pool, send the link, and the site keeps score."),
     ("squares", "squares", "Super Bowl squares", "A 10 by 10 board for the Super Bowl: claim squares, and each quarter's score picks a winner."),

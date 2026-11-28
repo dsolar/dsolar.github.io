@@ -385,6 +385,61 @@
     return { rows: rows, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
   }
 
+  /* College Football Playoff bracket: twelve seeds. Seeds 1 to 4 sit out the first round, played at the higher seed:
+     8-9, 5-12, 7-10, 6-11. The quarterfinals are 1 against the 8/9 winner, 4 against 5/12, 2 against 7/10 and 3
+     against 6/11; the semifinals 1/8/9/4/5/12 and 2/7/10/3/6/11; then the title game. No reseeding. Slots: r1..r4,
+     q1..q4, s1, s2, ch. A team scores for each round it wins that you had it winning: 1, 2, 4, 8.
+     field: [{ team (an ESPN id), seed, name }]. */
+  var CFP_PTS = [0, 1, 2, 4, 8];
+  var CFP_R1 = [[8, 9], [5, 12], [7, 10], [6, 11]], CFP_QF = [1, 4, 2, 3];
+  function cfpRound(slot) { return slot === "ch" ? 4 : slot[0] === "s" ? 3 : slot[0] === "q" ? 2 : 1; }
+  function cfpBracket(field, picks) {
+    picks = picks || {};
+    var team = {}, seed = {};
+    (field || []).forEach(function (f) { team[f.seed] = String(f.team); seed[f.team] = f.seed; });
+    var pickOf = function (slot, a, b) { var t = picks[slot]; return t && (t === a || t === b) ? t : null; };
+    var r1 = CFP_R1.map(function (x, i) { var a = team[x[0]], b = team[x[1]]; return { slot: "r" + (i + 1), a: a, b: b, pick: pickOf("r" + (i + 1), a, b) }; });
+    var qf = CFP_QF.map(function (sd, i) { var a = team[sd], b = r1[i].pick; return { slot: "q" + (i + 1), a: a, b: b, pick: a && b ? pickOf("q" + (i + 1), a, b) : null }; });
+    var sf = [0, 1].map(function (i) { var a = qf[i * 2].pick, b = qf[i * 2 + 1].pick; return { slot: "s" + (i + 1), a: a, b: b, pick: a && b ? pickOf("s" + (i + 1), a, b) : null }; });
+    var ch = { slot: "ch", a: sf[0].pick, b: sf[1].pick, pick: null };
+    if (ch.a && ch.b) ch.pick = pickOf("ch", ch.a, ch.b);
+    return { r1: r1, qf: qf, sf: sf, ch: ch, champ: ch.pick, seed: seed };
+  }
+  // the picks a bracket keeps: only slots whose team still fits after an earlier change
+  function cfpPicks(field, picks) {
+    var b = cfpBracket(field, picks), out = {};
+    b.r1.concat(b.qf, b.sf, [b.ch]).forEach(function (g) { if (g.pick) out[g.slot] = g.pick; });
+    return out;
+  }
+  // board.games: the pool's college games (bowls too; the playoff's are rounds 1 to 4)
+  function cfpo(board, now) {
+    var games = (board.games || []).filter(function (g) { return g.round >= 1 && g.round <= 4; }), won = { 1: {}, 2: {}, 3: {}, 4: {} }, out = {}, by = {};
+    games.forEach(function (g) {
+      if (!g.final || !g.w) return;
+      won[g.round][g.w] = true;
+      var loser = g.w === g.a ? g.b : g.a; if (loser) out[loser] = true;
+    });
+    (board.picks || []).forEach(function (p) { (by[p.user] = by[p.user] || {})[p.slot] = p.team; });
+    var title = games.filter(function (g) { return g.round === 4; })[0], total = title && title.final ? (title.ap || 0) + (title.bp || 0) : null;
+    var rows = (board.members || []).map(function (m) {
+      var mine = by[m.id] || {}, pts = 0, left = 0, picked = 0;
+      Object.keys(mine).forEach(function (slot) {
+        if (slot === "tb" || !mine[slot]) return;
+        picked++;
+        var r = cfpRound(slot), t = mine[slot];
+        if (won[r][t]) pts += CFP_PTS[r]; else if (!out[t]) left += CFP_PTS[r];
+      });
+      var tb = mine.tb != null && mine.tb !== "" ? Number(mine.tb) : null;
+      return { id: m.id, name: m.name, me: !!m.me, points: pts, max: pts + left, picked: picked, champ: mine.ch || null, tb: tb, off: tbOff(tb, total) };
+    });
+    var cmp = function (a, b) { return (b.points - a.points) || (a.off - b.off); };
+    rows.sort(function (a, b) { return cmp(a, b) || (b.max - a.max) || String(a.name).localeCompare(String(b.name)); });
+    var place = 0;
+    rows.forEach(function (r, i) { if (!i || cmp(rows[i - 1], r)) place = i + 1; r.place = place; });
+    var done = !!(title && title.final);
+    return { rows: rows, total: total, done: done, winners: done ? rows.filter(function (r) { return r.place === 1; }).map(function (r) { return r.id; }) : null };
+  }
+
   /* NFL playoff fantasy: a nine-man lineup each round, each player once all postseason, half-PPR points. Each player
      locks at his own game's kickoff.
      stats: { round: { players: { id: [std, half, ppr] } } } from fk-live ?sport=nfl&post=N. */
@@ -599,6 +654,9 @@
     } else if (kind === "nflpo") {
       var Pq = nflpo(board, now);
       top(Pq.rows, function (r) { return r.points + " pts"; });
+    } else if (kind === "cfpo") {
+      var Pc = cfpo(board, now);
+      top(Pc.rows, function (r) { return r.points + " pts"; });
     } else if (kind === "nflff") {
       var X = nflff(board, stats);
       top(X.rows, function (r) { return r.total + " pts"; });
@@ -709,6 +767,12 @@
         return meP.picked >= 13 ? { text: "Bracket in", tone: "ok" } : { text: "Finish your bracket", tone: "todo", due: lk };
       }
       return { text: standing(P.rows, function (r) { return r.points + " pts"; }), tone: "ok" };
+    }
+    if (kind === "cfpo") {
+      var lkc = board.lock ? ms(board.lock) : null, Pc2 = cfpo(board, now), meC = Pc2.rows.filter(function (r) { return r.me; })[0] || {};
+      if (Pc2.done) return meC.place === 1 ? { text: "You won", tone: "won" } : { text: "Finished " + standing(Pc2.rows), tone: "done" };
+      if (!lkc || now < lkc) return meC.picked >= 11 ? { text: "Bracket in", tone: "ok" } : { text: "Finish your bracket", tone: "todo", due: lkc };
+      return { text: standing(Pc2.rows, function (r) { return r.points + " pts"; }), tone: "ok" };
     }
     if (kind === "nflff") {
       var X = nflff(board, stats), meX = X.rows.filter(function (r) { return r.me; })[0] || { rounds: {} };
@@ -981,7 +1045,7 @@
   }
 
   var api = { PTS: PTS, ROUNDS: ROUNDS, MIN_SEEDS: MIN_SEEDS, days: days, field: field, seedOf: seedOf, survivor: survivor, choices: choices, five: five, fiveCheck: fiveCheck, xPts: xPts, winProb: winProb, NFL_LAST: NFL_LAST, nflWeeks: nflWeeks, nfl: nfl, nflChoices: nflChoices, lineProb: lineProb, normCdf: normCdf,
-    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap,
+    bowls: bowls, bowlsCheck: bowlsCheck, autoRank: autoRank, NFL_PTS: NFL_PTS, bracket: bracket, bracketPicks: bracketPicks, nflpo: nflpo, CFP_PTS: CFP_PTS, cfpRound: cfpRound, cfpBracket: cfpBracket, cfpPicks: cfpPicks, cfpo: cfpo, FF_SLOTS: FF_SLOTS, ffSlots: ffSlots, nflff: nflff, reach: reach, status: status, ord: ord, squares: squares, SQ_PERIODS: SQ_PERIODS, survPlan: survPlan, assign: assign, recap: recap,
     MM_PTS: MM_PTS, MM_FF: MM_FF, mmField: mmField, mmSlot: mmSlot, mmFeed: mmFeed, mmSlots: mmSlots, mmPick: mmPick, mmFill: mmFill, mmBracket: mmBracket,
     props: props, propsAnswer: propsAnswer, propsAuto: propsAuto, propsGame: propsGame, propsConf: propsConf,
     OSC_NOMS: OSC_NOMS, oscars: oscars, oscarsWin: oscarsWin,

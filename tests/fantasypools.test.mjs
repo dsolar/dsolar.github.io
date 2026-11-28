@@ -326,3 +326,37 @@ test('weekly recap: who went out, how many are left, and nothing when no game fi
   assert.ok(r.due);                                                 // week 12 pick still to make
   assert.equal(P.recap(b, '2026-12-20T12:00:00Z'), null);           // nothing finished in the last eight days
 });
+
+test('CFP bracket: byes for seeds 1-4, no reseeding, later picks drop when an earlier one changes', () => {
+  const field = Array.from({ length: 12 }, (_, i) => ({ team: String(100 + i + 1), seed: i + 1, name: 'T' + (i + 1) }));
+  const T = (sd) => String(100 + sd);
+  let b = P.cfpBracket(field, {});
+  assert.deepEqual(b.r1.map((g) => [g.a, g.b]), [[T(8), T(9)], [T(5), T(12)], [T(7), T(10)], [T(6), T(11)]]);
+  assert.deepEqual(b.qf.map((g) => g.a), [T(1), T(4), T(2), T(3)]);
+  assert.equal(b.qf[0].b, null, 'the bye team waits on its first-round game');
+  const picks = { r1: T(9), r2: T(5), r3: T(7), r4: T(11), q1: T(1), q2: T(5), q3: T(2), q4: T(11), s1: T(5), s2: T(2), ch: T(5) };
+  b = P.cfpBracket(field, picks);
+  assert.equal(b.qf[0].b, T(9)); assert.equal(b.sf[0].a, T(1)); assert.equal(b.sf[0].b, T(5)); assert.equal(b.champ, T(5));
+  assert.equal(Object.keys(P.cfpPicks(field, picks)).length, 11);
+  // the 5/12 game flips: 5's quarterfinal, semifinal and title picks go with it
+  const kept = P.cfpPicks(field, Object.assign({}, picks, { r2: T(12) }));
+  assert.equal(kept.q2, undefined); assert.equal(kept.s1, undefined); assert.equal(kept.ch, undefined); assert.equal(kept.q1, T(1));
+});
+
+test('CFP bracket: 1-2-4-8 for each round a picked team wins, max drops with a loss, title total breaks ties', () => {
+  const T = (sd) => String(100 + sd);
+  const games = [
+    { id: 'a', round: 1, a: T(9), b: T(8), w: T(8), final: true },
+    { id: 'b', round: 2, a: T(8), b: T(1), w: T(1), final: true },
+    { id: 'c', round: 0, a: '900', b: '901', w: '900', final: true },   // a bowl: not the playoff's
+    { id: 'd', round: 4, a: T(1), b: T(2), w: T(1), final: true, ap: 30, bp: 20 },
+  ];
+  const members = [{ id: 'u1', name: 'A' }, { id: 'u2', name: 'B' }];
+  const picks = [{ user: 'u1', slot: 'r1', team: T(8) }, { user: 'u1', slot: 'q1', team: T(1) }, { user: 'u1', slot: 'ch', team: T(1) }, { user: 'u1', slot: 'tb', team: '55' },
+    { user: 'u2', slot: 'r1', team: T(9) }, { user: 'u2', slot: 'q1', team: T(1) }, { user: 'u2', slot: 'ch', team: T(1) }, { user: 'u2', slot: 'tb', team: '40' }];
+  const R = P.cfpo({ games, members, picks });
+  const a = R.rows.find((r) => r.id === 'u1'), b = R.rows.find((r) => r.id === 'u2');
+  assert.equal(a.points, 1 + 2 + 8); assert.equal(b.points, 2 + 8);
+  assert.equal(R.total, 50); assert.ok(R.done); assert.deepEqual(R.winners, ['u1']);
+  assert.equal(b.max, b.points, "a pick that lost isn't possible any more");
+});

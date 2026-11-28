@@ -11,19 +11,19 @@
   const app = document.getElementById("app");
   const params = new URLSearchParams(location.search);
   const esc = (x) => String(x == null ? "" : x).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket", props: "Prop sheet", oscars: "Oscars ballot", mmff: "Tournament fantasy" };
-  const SPORT = { nfl: "NFL", nflpo: "NFL", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness", oscars: "Oscars", mmff: "March Madness" };
-  const kindName = (k) => k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : k === "oscars" ? "Oscars ballot" : k === "mmff" ? "March Madness fantasy" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
+  const KIND = { nfl: "Survivor", nflpo: "Playoff bracket", cfpo: "Playoff bracket", nflff: "Playoff fantasy", bowls: "Bowl pick'em", survivor: "Survivor", five: "5 teams", squares: "Super Bowl squares", bracket: "Bracket", props: "Prop sheet", oscars: "Oscars ballot", mmff: "Tournament fantasy" };
+  const SPORT = { nfl: "NFL", nflpo: "NFL", cfpo: "College football", nflff: "NFL", squares: "NFL", props: "NFL", bowls: "College football", survivor: "March Madness", five: "March Madness", bracket: "March Madness", oscars: "Oscars", mmff: "March Madness" };
+  const kindName = (k) => k === "cfpo" ? "College Football Playoff bracket" : k === "squares" ? "Super Bowl squares" : k === "props" ? "Super Bowl prop sheet" : k === "oscars" ? "Oscars ballot" : k === "mmff" ? "March Madness fantasy" : `${SPORT[k] || ""} ${(KIND[k] || "").toLowerCase()}`.trim();
   const ET = { timeZone: "America/New_York" };
   /* Each game has its own address, /pools/<slug>/ (pages written by tools/pools_pages.py, each a copy of this page with
      <html data-game="kind">): the game's front page, and its pools' links (/pools/bowls/?p=CODE). Old /fantasy/pools/
      links still work and move to the game's address once the pool loads. */
-  const SLUG = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor", mmff: "march-madness-fantasy" };
+  const SLUG = { bowls: "bowls", cfpo: "cfp-bracket", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor", mmff: "march-madness-fantasy" };
   const GAME = SLUG[document.documentElement.dataset.game] ? document.documentElement.dataset.game : null;
   const gameUrl = (kind) => (SLUG[kind] ? `/pools/${SLUG[kind]}/` : "/pools/");
   const poolUrl = (id, kind, join) => `${gameUrl(kind)}?${join ? "join" : "p"}=${encodeURIComponent(id)}`;
   // the games with a look of their own (the Oscars black tie, the bowls' stadium and tickets)
-  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff", bracket: " g-bracket", nflff: " g-nflff", survivor: " g-surv", nfl: " g-surv", five: " g-five" })[kind] || "";
+  const themeOf = (kind) => ({ oscars: " osc-night", bowls: " g-bowls", cfpo: " g-bowls g-cfpo", nflpo: " g-nflpo", squares: " g-squares", props: " g-props", mmff: " g-mmff", bracket: " g-bracket", nflff: " g-nflff", survivor: " g-surv", nfl: " g-surv", five: " g-five" })[kind] || "";
   const dayName = (d) => new Date(d + "T12:00:00Z").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
   // ESPN parks a kickoff it hasn't timed yet at midnight Eastern: show the day and "time TBA" then
   const tbaTime = (t) => /^(00|24):00$/.test(new Date(t).toLocaleTimeString("en-GB", Object.assign({ hour: "2-digit", minute: "2-digit" }, ET)));
@@ -113,6 +113,12 @@
       <li>A right pick scores its number. Each game's pick and number lock at its kickoff and show to everyone then.</li>
       <li>Playoff games fill in as teams advance: pick them once they're set, any time before kickoff.</li>
       <li>Most points wins. Ties go to <b>more right picks</b>, then the closest guess at the <b>title game's total points</b>.</li></ul>`
+    : kind === "cfpo" ? `<ul class="pl-rules">
+      <li>Fill out the <b>whole College Football Playoff bracket</b>, 12 teams, before the first first-round kickoff.</li>
+      <li>Seeds 1 to 4 have byes. The first round is 8-9, 5-12, 7-10 and 6-11, at the higher seed; the quarterfinals put 1, 4, 2 and 3 against those winners. <b>No reseeding.</b></li>
+      <li>A team scores for every round it wins that you had it winning: <b>1</b> for the first round, <b>2</b> quarterfinals, <b>4</b> semifinals, <b>8</b> the title game.</li>
+      <li>Until the committee sets the field on ${shortDate(CAL.bowlsSet)}, the bracket is the college hub's projection. If the seeds change, check your bracket before it locks.</li>
+      <li>Most points wins. Ties go to the closest guess at the <b>title game's total points</b>.</li></ul>`
     : kind === "nflpo" ? `<ul class="pl-rules">
       <li>Fill out the <b>whole NFL playoff bracket</b>, 14 teams, before the first Wild Card kickoff.</li>
       <li>The bracket reseeds the NFL's way: in the divisional round, each conference's <b>top seed plays the lowest seed left</b>.</li>
@@ -161,7 +167,7 @@
       <li>The last one standing wins. If everyone left loses on the same day, or more than one survives the title game, the <b>higher combined seeds of their winning picks</b> wins. Still tied, they split it.</li></ul>`;
   const fail = (e) => { st.msg = e && e.message ? e.message : String(e || "Something went wrong."); st.busy = false; render(); };
   // picks the owner makes for a member go through mm_as, which runs the member's own save as them (and logs it)
-  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_nflff", "mm_save_bracket", "mm_save_props", "mm_save_mmff"]);
+  const SAVES = new Set(["mm_pick", "mm_pick_nfl", "mm_pick_five", "mm_save_bowls", "mm_save_nflpo", "mm_save_cfpo", "mm_save_nflff", "mm_save_bracket", "mm_save_props", "mm_save_mmff"]);
   const srpc = (fn, args) => (st.as && SAVES.has(fn) ? C.rpc("mm_as", { p_pool: st.code, p_user: st.as, p_fn: fn, p_args: args }) : C.rpc(fn, args));
   const ok = (r) => { if (r && r.error) throw new Error(r.error); return r; };
 
@@ -184,6 +190,7 @@
     pickem: ico('<path d="M4 6h10M4 12h10M4 18h7"/><path d="m15 17 2.5 2.5L22 15"/>'),
     nfl: ico('<path d="M12 3 4 6v6c0 4.4 3.4 7.8 8 9 4.6-1.2 8-4.6 8-9V6z"/><path d="M12 8v5M12 16h.01"/>'),
     nflpo: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h4v10H8M12 12h4"/><path d="M16 9h5v6h-5z"/>'),
+    cfpo: ico('<path d="M3 5h5v4H3M3 15h5v4H3M8 7h4v10H8M12 12h4"/><path d="M16 9h5v6h-5z"/>'),
     nflff: ico('<path d="M8 3h8l1 3 4 2-2 5h-2v8H7v-8H5L3 8l4-2z"/><path d="M10 11h4"/>'),
     mmff: ico('<path d="M8 3h8l1 3 4 2-2 5h-2v8H7v-8H5L3 8l4-2z"/><path d="M12 9v5M10 11.5h4"/>'),
     bowls: ico('<path d="M7 4h10v4a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 3M17 6h3a3 3 0 0 1-3 3M12 13v4M8 20h8M9 17h6"/>'),
@@ -198,7 +205,7 @@
   /* The season's dates, Eastern. Each game is "live" from open to end, and the list puts live games first, then the
      rest by when they open. Roll these forward each summer. */
   const CAL = {
-    nflWeek1: "2026-09-10", nbaTip: "2026-10-20", nbaEnd: "2027-04-11", bowlsSet: "2026-12-06", bowls: "2026-12-12", nflField: "2027-01-10", wildCard: "2027-01-16",
+    nflWeek1: "2026-09-10", nbaTip: "2026-10-20", nbaEnd: "2027-04-11", bowlsSet: "2026-12-06", bowls: "2026-12-12", cfpR1: "2026-12-18", nflField: "2027-01-10", wildCard: "2027-01-16",
     cfpTitle: "2027-01-25", oscarNoms: "2027-01-21", superBowl: "2027-02-14", selection: "2027-03-14", oscars: "2027-03-14", mmTitle: "2027-04-05",
   };
   const day0 = (d) => Date.parse(d + "T05:00:00Z");
@@ -213,6 +220,7 @@
     { sport: "NFL", key: "props", name: "Super Bowl prop sheet", tag: "Nineteen questions on the big game, from the coin toss to the Gatorade.", facts: ["19 questions", "Locks at kickoff", "Edit the sheet"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "NFL", key: "squares", name: "Super Bowl squares", tag: "Claim squares on a 10 by 10 board. Each quarter's score picks a winner.", facts: ["100 squares", "4 winners", "Add friends by name"], soon: "Fill it now", open: CAL.nflField, end: CAL.superBowl },
     { sport: "College football", key: "bowls", name: "Bowl pick'em", tag: "Every bowl and playoff game, each with a confidence number.", facts: ["Every bowl", "Confidence points", "Title game tiebreak"], soon: "Matchups Dec 6", open: CAL.bowlsSet, end: CAL.cfpTitle },
+    { sport: "College football", key: "cfpo", name: "Playoff bracket", tag: "The 12-team bracket, byes and all. Points double every round.", facts: ["12 teams", "1-2-4-8 points", "Locks at the first round"], soon: "Practice now", open: CAL.bowlsSet, end: CAL.cfpTitle },
     { sport: "Oscars", key: "oscars", name: "Oscars ballot", tag: "Pick the winner in every category. Best Picture counts most.", facts: ["24 categories", "Locks at the show", "Runtime tiebreak"], soon: "Practice now", open: CAL.oscarNoms, end: CAL.oscars },
     { sport: "March Madness", key: "bracket", name: "Bracket", tag: "All 63 games, the classic way. Points double every round.", facts: ["63 games", "10-20-40-80-160-320", "Title game tiebreak"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
     { sport: "March Madness", key: "mmff", name: "Tournament fantasy", tag: "A five-man lineup every round, and each player only once.", facts: ["5-man lineups", "Each player once", "6 rounds"], soon: "Practice now", open: CAL.selection, end: CAL.mmTitle },
@@ -235,7 +243,8 @@
   const UP_NEXT = [
     { key: "bowls", from: "2026-11-15", until: CAL.bowlsSet, title: "Bowl pick'em", text: `Matchups come out ${shortDate(CAL.bowlsSet)} and the games start ${shortDate(CAL.bowls)}. Make your pool now so everyone's in before picks open.` },
     { key: "bowls", from: CAL.bowlsSet, until: CAL.bowls, title: "Bowl pick'em", text: `The matchups are out and the first bowl kicks off ${shortDate(CAL.bowls)}. Get a pool going before it does.` },
-    { key: "nflpo", from: CAL.bowls, until: CAL.nflField, title: "NFL playoff bracket", text: `The field is set ${shortDate(CAL.nflField)} and brackets lock at the first Wild Card kickoff. Practice on the projected field until then.` },
+    { key: "cfpo", from: CAL.bowls, until: CAL.cfpR1, title: "College Football Playoff bracket", text: `The 12-team bracket is set and locks at the first kickoff, ${shortDate(CAL.cfpR1)}. Get a pool going alongside your bowl pick'em.` },
+    { key: "nflpo", from: CAL.cfpR1, until: CAL.nflField, title: "NFL playoff bracket", text: `The field is set ${shortDate(CAL.nflField)} and brackets lock at the first Wild Card kickoff. Practice on the projected field until then.` },
     { key: "nflpo", from: CAL.nflField, until: CAL.wildCard, title: "NFL playoff bracket", text: `The field is set. Brackets lock at the first Wild Card kickoff, ${shortDate(CAL.wildCard)} weekend.` },
     { key: "props", from: CAL.wildCard, until: CAL.superBowl, title: "Super Bowl prop sheet", text: `Nineteen questions on the Super Bowl, ${shortDate(CAL.superBowl)}: the coin toss to the Gatorade. Make a sheet for your party; it locks at kickoff.` },
     { key: "bracket", from: "2027-02-15", until: CAL.selection, title: "March Madness bracket", text: `The field comes out ${shortDate(CAL.selection)}. Start your pool now and practice on the projected bracket; brackets lock at the first Round of 64 tip.` },
@@ -416,7 +425,7 @@
     if (st.board && st.board.pool && st.board.pool.kind === "nflff") await ffLoad(st.board);
     if (st.board && st.board.ok && st.board.pool.kind === "mmff") await mfLoad(st.board);
     if (st.board && st.board.ok && st.board.pool.kind === "oscars") st.board.ballot = await loadBallot(st.board.pool.season);
-    if (st.board && st.board.pool && st.board.pool.kind === "bowls" && !st.cfb) {
+    if (st.board && st.board.pool && (st.board.pool.kind === "bowls" || st.board.pool.kind === "cfpo") && !st.cfb) {
       try { st.cfb = await fetch("/cfb/data/extras.json", { cache: "no-cache" }).then((r) => r.json()); } catch (e) { st.cfb = {}; }
       // the college football hub's teams (rank, record, conference) and games (stadium, city, TV, the sportsbook line):
       // it picks up every team's bowl and playoff games from late November, under the same ESPN game ids as the pool
@@ -426,6 +435,14 @@
         st.cfbG = {}; (h.games || []).forEach((g) => { st.cfbG[g.id] = g; });
       } catch (e) { st.cfbT = {}; st.cfbG = {}; }
     }
+    if (st.board && st.board.ok && st.board.pool.kind === "cfpo") cfpField(st.board);
+  }
+  // the CFP field: the college hub's seeds (the committee's once its final ranking is out, the hub's projection before)
+  function cfpField(b) {
+    const sim = (st.cfb && st.cfb.season_sim) || {}, pj = sim.official || sim.projected || null;
+    b.field = pj && Array.isArray(pj.seeds) ? pj.seeds.slice(0, 12).map((id, i) => ({ team: String(id), seed: i + 1, name: ((st.cfbT || {})[id] || {}).short || "" })) : [];
+    b.official = !!sim.official;
+    b.auto = (pj && pj.auto) || [];
   }
   // phones get the share sheet (Messages, WhatsApp...); desktops copy the link
   const canShare = () => !!navigator.share && matchMedia("(pointer:coarse)").matches;
@@ -451,7 +468,7 @@
   }
   function poolHead(b) {
     const p = b.pool, url = `${location.origin}${poolUrl(p.id, p.kind, true)}`;
-    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" || p.kind === "props" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : p.kind === "oscars" ? `The Oscars, ${shortDate(CAL.oscars)}` : `${p.season} tournament`;
+    const when = p.kind === "nfl" ? `${p.season} season from week ${p.startWeek}` : p.kind === "bowls" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} bowl season` : p.kind === "cfpo" ? `${p.season}-${String((p.season + 1) % 100).padStart(2, "0")} playoff` : p.kind === "nflpo" || p.kind === "nflff" ? `${p.season} season playoffs` : p.kind === "squares" || p.kind === "props" ? `Super Bowl, ${shortDate(CAL.superBowl)}` : p.kind === "oscars" ? `The Oscars, ${shortDate(CAL.oscars)}` : `${p.season} tournament`;
     return band(esc(p.name), `${KIND[p.kind]} &middot; ${when} &middot; ${b.members.length} ${b.members.length === 1 ? "entry" : "entries"}`,
       `<div class="pl-share"><span class="pl-code" title="Pool code">${esc(p.id)}</span><button class="btn sm go" data-invite aria-expanded="${!!st.invite}">Invite people</button><a class="btn sm ghost" href="${gameUrl(p.kind)}" title="This game's page: how it works, and your other pools">${esc(kindName(p.kind))}</a></div>`, SPORT[p.kind], artOf(p.kind));
   }
@@ -512,7 +529,7 @@
     let x; try { x = P.status(b, Date.now(), st.ffs); } catch (e) { return true; }
     if (x.tone === "out" || x.tone === "won" || x.tone === "done") return false;
     if (b.pool.kind === "five") { const F = P.five(b, Date.now()); return !F.locked; }
-    if (b.pool.kind === "nflpo") return !b.lock || Date.now() < Date.parse(b.lock);
+    if (b.pool.kind === "nflpo" || b.pool.kind === "cfpo") return !b.lock || Date.now() < Date.parse(b.lock);
     if (b.pool.kind === "squares") return !P.squares(b).locked;
     return true;
   }
@@ -539,6 +556,7 @@
       : b.pool.kind === "nfl" ? (st.tab === "picks" ? nflPicks(b) : nflTable(b))
       : b.pool.kind === "bowls" ? (st.tab === "picks" ? bowlPicks(b) : bowlTable(b))
       : b.pool.kind === "nflpo" ? (st.tab === "picks" ? brPicks(b) : brTable(b))
+      : b.pool.kind === "cfpo" ? (st.tab === "picks" ? cfpPicksView(b) : cfpTable(b))
       : b.pool.kind === "nflff" ? (st.tab === "picks" ? ffPicks(b) : ffTable(b))
       : b.pool.kind === "mmff" ? (st.tab === "picks" ? mfPicks(b) : mfTable(b))
       : b.pool.kind === "squares" ? (st.tab === "picks" ? sqPicks(b) : sqTable(b))
@@ -1101,6 +1119,42 @@
       </tbody></table></div></div><p class="ps">${locked ? "Each round a team wins that you picked scores 1, 2, 4 or 8. Max is what an entry could still reach." : "Everyone's bracket shows at the first Wild Card kickoff."}</p>`;
   }
 
+  // ---------- College Football Playoff bracket ----------
+  const CFP_RN = { 1: "First round", 2: "Quarterfinals", 3: "Semifinals", 4: "Title game" };
+  const cfpN = (id) => (st.cfbT && st.cfbT[id] && esc(st.cfbT[id].short)) || cfbName(id);
+  function cfpPicksView(b) {
+    const field = b.field || [], now = Date.now(), locked = b.lock && now >= Date.parse(b.lock);
+    if (field.length < 12) return `<div class="card"><div class="bd ps">The playoff field isn't out yet. It's set ${shortDate(CAL.bowlsSet)}.</div></div>`;
+    const mine = {}; (b.picks || []).forEach((k) => { if (k.user === me(b) && k.slot !== "tb") mine[k.slot] = k.team; });
+    if (!st.kb) { st.kb = P.cfpPicks(field, mine); st.ktb = myTb(b); }
+    const br = P.cfpBracket(field, st.kb), seedOf = br.seed, auto = new Set(b.auto || []);
+    const won = {}, lost = {}; (b.games || []).forEach((g) => { if (g.round >= 1 && g.final && g.w) { won[g.round + "|" + g.w] = true; lost[g.w === g.a ? g.b : g.a] = true; } });
+    const dirty = JSON.stringify(P.cfpPicks(field, st.kb)) !== JSON.stringify(P.cfpPicks(field, mine)) || String(st.ktb || "") !== String(myTb(b) || "");
+    const total = Object.keys(P.cfpPicks(field, st.kb)).length;
+    const team = (g, t, wait) => {
+      if (!t) return `<span class="pl-kt tbd">${esc(wait || "TBD")}</span>`;
+      const on = g.pick === t, r = P.cfpRound(g.slot), mark = locked && on ? (won[r + "|" + t] ? " won" : lost[t] ? " lost" : "") : "";
+      return `<button type="button" class="pl-kt${on ? " on" : ""}${mark}" data-kb="${g.slot}|${t}"${locked ? " disabled" : ""}>${cfbLogo(t, 20)}<span class="pl-seed">${seedOf[t]}</span><b>${cfpN(t)}</b>${auto.has(t) ? `<small class="pl-aq" title="Automatic bid: a top-five conference champion">AQ</small>` : ""}</button>`;
+    };
+    const game = (g, waitA, waitB) => `<div class="pl-kg">${team(g, g.a, waitA)}${team(g, g.b, waitB)}</div>`;
+    const r1w = (i) => { const x = [[8, 9], [5, 12], [7, 10], [6, 11]][i]; return `Winner ${x[0]}/${x[1]}`; };
+    const half = (h) => `<div class="card pl-kconf"><div class="mod-h"><h2>${h ? "Seeds 2 and 3 side" : "Seeds 1 and 4 side"}</h2></div><div class="pl-kcols">
+      <div class="pl-kr"><h4>First round</h4>${[h * 2, h * 2 + 1].map((i) => game(br.r1[i])).join("")}</div>
+      <div class="pl-kr"><h4>Quarterfinals</h4>${[h * 2, h * 2 + 1].map((i) => game(br.qf[i], null, r1w(i))).join("")}</div>
+      <div class="pl-kr"><h4>Semifinal</h4>${game(br.sf[h], "Quarterfinal winner", "Quarterfinal winner")}</div></div></div>`;
+    const ch = `<div class="card pl-ksb"><div class="mod-h"><h2>National title game</h2></div><div class="bd">${game(br.ch, "Semifinal winner", "Semifinal winner")}
+      <label class="pl-tb">Title game total points<input type="number" inputmode="numeric" min="0" max="200" data-ktb value="${esc(st.ktb || "")}" placeholder="e.g. 52"${locked ? " disabled" : ""}></label>
+      ${locked ? "" : `<div class="pl-save"><span class="ps">${total} of 11 picked. ${dirty ? "Not saved yet." : "Saved."} ${b.lock ? `Locks ${lockText(b)}.` : `Locks at the first kickoff, ${shortDate(CAL.cfpR1)}.`}</span><button type="button" class="btn go" data-ksave${dirty ? "" : " disabled"}>Save bracket</button></div>`}</div></div>`;
+    const note = !locked ? `<div class="pl-note"><b>${b.official ? "The field is set." : "Practice bracket."}</b> ${b.official ? "These are the committee's seeds. Pick away before the first kickoff." : `This is the college hub's projected field. The committee sets the real one ${shortDate(CAL.bowlsSet)}; check your bracket then, since the seeds may change.`}</div>` : "";
+    return note + `<div class="pl-kwrap">${half(0)}${half(1)}</div>` + ch;
+  }
+  function cfpTable(b) {
+    const R = P.cfpo(b, Date.now()), locked = b.lock && Date.now() >= Date.parse(b.lock);
+    return `<div class="card"><div class="table-wrap"><table class="t pl-st"><thead><tr><th class="r">#</th><th>Entry</th><th class="r">Pts</th><th class="r" title="Points still possible">Max</th><th>Champion</th><th class="r pl-hide-s" title="Title game total points">TB</th></tr></thead><tbody>
+      ${R.rows.map((r) => `<tr class="${r.me ? "me" : ""}"><td class="r num">${locked ? r.place : ""}</td><td class="nm"><b>${esc(r.name)}</b>${!r.picked && (locked || r.me) ? `<small class="ps"> no bracket yet</small>` : ""}</td><td class="r num"><b>${r.points}</b></td><td class="r num">${r.max}</td><td>${r.champ && (locked || r.me) ? `<span class="row" style="gap:6px">${cfbLogo(r.champ, 18)}${cfpN(r.champ)}</span>` : `<span class="ps">${r.picked && !locked ? "Hidden till the lock" : "-"}</span>`}</td><td class="r num pl-hide-s">${r.tb != null && (locked || r.me) ? r.tb : ""}</td></tr>`).join("")}
+      </tbody></table></div></div><p class="ps">${locked ? "Each round a team wins that you picked scores 1, 2, 4 or 8. Max is what an entry could still reach." : "Everyone's bracket shows at the first kickoff."}</p>`;
+  }
+
   // ---------- NFL playoff fantasy ----------
   const RNAME = { 1: "Wild Card", 2: "Divisional", 3: "Conference", 4: "Super Bowl" };
   const SLOT_NAME = { QB: "QB", RB1: "RB", RB2: "RB", WR1: "WR", WR2: "WR", TE: "TE", FLEX: "FLEX", K: "K", DEF: "DEF" };
@@ -1423,6 +1477,18 @@
       }));
       return segPick("r", rounds.map((r) => [r, RNAME[r]]), cur) + `<p class="pl-gsum">${lk ? "Under each team: who has it winning this round." : "Everyone's brackets show once the Wild Card round kicks off. For now you see your own."}</p>` + gameList(blocks, "This round's games aren't set yet.");
     }
+    if (k === "cfpo") {
+      const rounds = [1, 2, 3, 4], lk = b.lock && now >= Date.parse(b.lock), po = (b.games || []).filter((g) => g.round >= 1 && g.round <= 4);
+      const cur = st.gsel && st.gsel.k === "r" ? +st.gsel.v : rounds.find((r) => po.some((g) => g.round === r && g.a && g.b && !g.final)) || 1;
+      const by = {}; (b.picks || []).forEach((pk) => { if (pk.slot === "tb" || !pk.team || P.cfpRound(pk.slot) !== cur) return; (by[pk.team] = by[pk.team] || []).push(pk.user); });
+      const gs = po.filter((g) => g.round === cur && g.a && g.b);
+      if (!gs.length) return segPick("r", rounds.map((r) => [r, CFP_RN[r]]), cur) + `<div class="pl-note">${cur === 1 ? `The first round's games show here once the field is set, ${shortDate(CAL.bowlsSet)}.` : "These games fill in as teams advance."}</div>`;
+      const blocks = gs.map((g) => gameBlock({ x: "a", y: "b", when: g.kickoff, final: g.final, label: g.label }, (sd) => {
+        const t = g[sd], sc = sd === "a" ? g.ap : g.bp, on = Date.parse(g.kickoff) <= now;
+        return { logo: cfbLogo(t, 22), name: cfpN(t), score: on ? sc : null, win: g.final && g.w === t, lose: g.final && g.w && g.w !== t, who: who(lk ? by[t] || [] : (by[t] || []).filter((u) => u === uid)), pct: pct(by[t], lk) };
+      }));
+      return segPick("r", rounds.map((r) => [r, CFP_RN[r]]), cur) + `<p class="pl-gsum">${lk ? "Under each team: who has it winning this round." : "Everyone's brackets show at the first kickoff. For now you see your own."}</p>` + gameList(blocks);
+    }
     if (k === "nflff") return ffLineups(b);
     if (k === "mmff") return mfLineups(b);
     return "";
@@ -1658,7 +1724,7 @@
       st.ffslot = t.dataset.ffpick && nx && !phone ? nx : null; st.ffq = "";
       if (phone && t.dataset.ffpick) st.msg = `${((st.ffp || {})[t.dataset.ffpick] || {}).n || "Player"} added. ${nx ? "Tap the next spot, or save." : "Lineup full: save it."}`;
       return draw(); }
-    if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = P.bracketPicks(st.board.field, st.kb); return draw(); }
+    if (t.dataset.kb) { const [slot, tm] = t.dataset.kb.split("|"); st.kb[slot] = tm; st.kb = (st.board.pool.kind === "cfpo" ? P.cfpPicks : P.bracketPicks)(st.board.field, st.kb); return draw(); }
     if (t.hasAttribute("data-sqdraw") && !st.sqDraw) { st.sqDraw = true; st.sqOwn = true; return draw(); }
     if (t.dataset.five) {
       const id = t.dataset.five, i = st.sel.indexOf(id);
@@ -1701,7 +1767,8 @@
         st.msg = `${RNAME[st.ffr]} lineup saved.`; st.ffl = null; await load();
       }
       else if (t.hasAttribute("data-ksave")) {
-        ok(await srpc("mm_save_nflpo", { p_pool: st.code, p_picks: P.bracketPicks(st.board.field, st.kb), p_tb: st.ktb === "" || st.ktb == null ? null : +st.ktb }));
+        const cf = st.board.pool.kind === "cfpo";
+        ok(await srpc(cf ? "mm_save_cfpo" : "mm_save_nflpo", { p_pool: st.code, p_picks: (cf ? P.cfpPicks : P.bracketPicks)(st.board.field, st.kb), p_tb: st.ktb === "" || st.ktb == null ? null : +st.ktb }));
         st.msg = "Bracket saved."; st.kb = null; await load();
       }
       else if (t.dataset.sq != null) {
