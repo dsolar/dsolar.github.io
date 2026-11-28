@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T12:44:16Z",
+ "updated": "2026-11-28T08:03:16Z",
  "source": "SeatGeek, else Ticketmaster face value",
  "fields": [],
  "events": {
@@ -10,16 +10,6 @@
    "title": "Mark Normand",
    "date": "2026-12-19",
    "venue": "Great Cedar Showroom at Foxwoods",
-   "low": null,
-   "src": null
-  },
-  "tm-k7vGF_2K1LVgm": {
-   "sg": 18409092,
-   "history": [],
-   "url": "https://www.ticketmaster.com/dark-star-orchestra-huntington-new-york-11-27-2026/event/000064F4CA7F4D6E",
-   "title": "Dark Star Orchestra",
-   "date": "2026-11-27",
-   "venue": "The Paramount in concert with Northwell",
    "low": null,
    "src": null
   },
@@ -314,6 +304,10 @@
     [
      "2026-11-27",
      56
+    ],
+    [
+     "2026-11-28",
+     56
     ]
    ],
    "sg": null,
@@ -505,6 +499,10 @@
     ],
     [
      "2026-11-27",
+     22
+    ],
+    [
+     "2026-11-28",
      22
     ]
    ],
@@ -760,6 +758,10 @@
     [
      "2026-11-27",
      28
+    ],
+    [
+     "2026-11-28",
+     28
     ]
    ],
    "sg": null,
@@ -881,26 +883,6 @@
    "src": null,
    "low": null
   },
-  "espn-401892795": {
-   "history": [],
-   "sg": 18378518,
-   "title": "Bruins vs Maple Leafs",
-   "date": "2026-11-27",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892795/maple-leafs-bruins",
-   "src": null,
-   "low": null
-  },
-  "espn-401909330": {
-   "history": [],
-   "sg": 18485903,
-   "title": "Celtics vs Hawks",
-   "date": "2026-11-27",
-   "venue": "TD Garden",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909330/hawks-celtics",
-   "src": null,
-   "low": null
-  },
   "tm-Z7r9jZ1AA7vfy": {
    "history": [],
    "sg": 18634494,
@@ -978,6 +960,10 @@
     [
      "2026-11-27",
      44
+    ],
+    [
+     "2026-11-28",
+     44
     ]
    ],
    "sg": null,
@@ -1045,6 +1031,10 @@
     ],
     [
      "2026-11-27",
+     44
+    ],
+    [
+     "2026-11-28",
      44
     ]
    ],
@@ -1220,6 +1210,10 @@
     [
      "2026-11-27",
      34
+    ],
+    [
+     "2026-11-28",
+     34
     ]
    ],
    "sg": null,
@@ -1300,30 +1294,40 @@
    "url": "https://www.ticketmaster.com/kings-of-leon-bridgeport-connecticut-05-25-2027/event/1D0065639FF31CFA",
    "src": null,
    "low": null
+  },
+  "espn-401892909": {
+   "history": [],
+   "sg": 18378527,
+   "title": "Bruins vs Devils",
+   "date": "2026-12-12",
+   "venue": "TD Garden",
+   "url": "https://www.espn.com/nhl/game/_/gameId/401892909/devils-bruins",
+   "src": null,
+   "low": null
   }
  },
  "misses": {
-  "tm-rZ7HnEZ1AfuNZ7": "2026-11-25",
-  "tm-rZ7HnEZ1AfuYF0": "2026-11-25",
-  "tm-rZ7HnEZ1Afugk7": "2026-11-25",
-  "tm-Z7r9jZ1AA77-E": "2026-11-25",
-  "tm-rZ7HnEZ1Af83jf": "2026-11-25",
-  "tm-rZ7HnEZ1Af83jV": "2026-11-25",
-  "tm-rZ7HnEZ1Af83j7": "2026-11-25",
-  "tm-rZ7HnEZ1Af83Qf": "2026-11-25",
-  "tm-rZ7HnEZ1Af83j0": "2026-11-25",
-  "tm-rZ7HnEZ1Af83qf": "2026-11-25",
-  "tm-vv1AvZkf7GkdbzXaM": "2026-11-25",
-  "tm-vvG17Z_2wSVFP-": "2026-11-25",
-  "tm-rZ7HnEZ1AfCa-f": "2026-11-25",
-  "tm-rZ7HnEZ1AfCa0f": "2026-11-25",
-  "tm-vvG17Z_CTNmdDP": "2026-11-25",
-  "tm-vv177Z_KGknM09Yr": "2026-11-25",
-  "tm-k7vGF_KBmAa9o": "2026-11-25",
-  "tm-1AdZZ_KGklJMams": "2026-11-25",
-  "tm-vv177Z_pGklqR-Eh": "2026-11-25",
-  "tm-vv1AvZkfSGkdTcSmB": "2026-11-25",
-  "tm-rZ7HnEZ1A4v9FN": "2026-11-25"
+  "tm-rZ7HnEZ1AfuNZ7": "2026-11-28",
+  "tm-rZ7HnEZ1AfuYF0": "2026-11-28",
+  "tm-rZ7HnEZ1Afugk7": "2026-11-28",
+  "tm-Z7r9jZ1AA77-E": "2026-11-28",
+  "tm-rZ7HnEZ1Af83jf": "2026-11-28",
+  "tm-rZ7HnEZ1Af83jV": "2026-11-28",
+  "tm-rZ7HnEZ1Af83j7": "2026-11-28",
+  "tm-rZ7HnEZ1Af83Qf": "2026-11-28",
+  "tm-rZ7HnEZ1Af83j0": "2026-11-28",
+  "tm-rZ7HnEZ1Af83qf": "2026-11-28",
+  "tm-vv1AvZkf7GkdbzXaM": "2026-11-28",
+  "tm-vvG17Z_2wSVFP-": "2026-11-28",
+  "tm-rZ7HnEZ1AfCa-f": "2026-11-28",
+  "tm-rZ7HnEZ1AfCa0f": "2026-11-28",
+  "tm-vvG17Z_CTNmdDP": "2026-11-28",
+  "tm-vv177Z_KGknM09Yr": "2026-11-28",
+  "tm-k7vGF_KBmAa9o": "2026-11-28",
+  "tm-1AdZZ_KGklJMams": "2026-11-28",
+  "tm-vv177Z_pGklqR-Eh": "2026-11-28",
+  "tm-vv1AvZkfSGkdTcSmB": "2026-11-28",
+  "tm-rZ7HnEZ1A4v9FN": "2026-11-28"
  },
  "drops": []
 }
