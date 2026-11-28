@@ -1,6 +1,6 @@
 {
- "src": "Over The Cap, salary cap space page (overthecap.com/salary-cap-space), pulled 2026-11-26",
- "asOf": "2026-11-26",
+ "src": "Over The Cap, salary cap space page (overthecap.com/salary-cap-space), pulled 2026-11-28",
+ "asOf": "2026-11-28",
  "note": "teamCap = base cap plus carryover and adjustments (cap space + active spending + dead money). Dead money is what still counts for players no longer on the team. 2027 uses OTC's projected $327M base cap.",
  "base": {
   "2026": 301200000,
@@ -116,29 +116,23 @@
     "dead": 75557684,
     "teamCap": 310062068
    },
-   "ARI": {
-    "space": 7641129,
-    "active": 215838443,
-    "dead": 104029752,
-    "teamCap": 327509324
-   },
    "NO": {
     "space": 7386606,
     "active": 180898081,
     "dead": 128720779,
     "teamCap": 317005466
    },
-   "BAL": {
-    "space": 7192987,
-    "active": 284063793,
-    "dead": 22807195,
-    "teamCap": 314063975
-   },
    "CIN": {
     "space": 7190032,
     "active": 296839673,
     "dead": 13334814,
     "teamCap": 317364519
+   },
+   "ARI": {
+    "space": 6805018,
+    "active": 216674554,
+    "dead": 104029752,
+    "teamCap": 327509324
    },
    "GB": {
     "space": 6554874,
@@ -164,9 +158,15 @@
     "dead": 57324877,
     "teamCap": 314384729
    },
+   "BAL": {
+    "space": 4967987,
+    "active": 286288793,
+    "dead": 22807195,
+    "teamCap": 314063975
+   },
    "BUF": {
-    "space": 4099946,
-    "active": 244810945,
+    "space": 4936057,
+    "active": 243974834,
     "dead": 52160710,
     "teamCap": 301071601
    },
