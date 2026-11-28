@@ -8133,7 +8133,7 @@
       "nfl": "SF",
       "claimed_by": "Drake Mayezini",
       "bid": 40,
-      "next_proj": 19.51
+      "next_proj": 18.29
      },
      {
       "n": "James Cook III",
@@ -8467,11 +8467,11 @@
       "pts": null
      },
      {
-      "n": "Jonathan Taylor",
+      "n": "Chase Brown",
       "pos": "RB",
-      "nfl": "IND",
+      "nfl": "CIN",
       "slot": "W/R/T",
-      "proj": 14.63,
+      "proj": 12.14,
       "pts": null
      },
      {
@@ -8483,19 +8483,19 @@
       "pts": 7.16
      },
      {
+      "n": "Jonathan Taylor",
+      "pos": "RB",
+      "nfl": "IND",
+      "slot": "BN",
+      "proj": 14.63,
+      "pts": null
+     },
+     {
       "n": "Brock Purdy",
       "pos": "QB",
       "nfl": "SF",
       "slot": "BN",
       "proj": 0,
-      "pts": null
-     },
-     {
-      "n": "Chase Brown",
-      "pos": "RB",
-      "nfl": "CIN",
-      "slot": "BN",
-      "proj": 12.14,
       "pts": null
      },
      {
@@ -8518,17 +8518,9 @@
       "n": "Kenneth Walker III",
       "pos": "RB",
       "nfl": "KC",
-      "slot": "BN",
-      "proj": 0,
-      "pts": 0
-     },
-     {
-      "n": "Jeremiyah Love",
-      "pos": "RB",
-      "nfl": "ARI",
       "slot": "IR",
       "proj": 0,
-      "pts": null
+      "pts": 0
      }
     ],
     "Drake Mayezini": [

@@ -4,14 +4,14 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-28T11:47:21Z",
+ "updated": "2026-11-28T14:17:16Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 145.87,
+   "proj": 145.88,
    "points": 81.0,
    "scores": [
     132.74,
@@ -147,7 +147,7 @@
      "date": "2026-11-27",
      "final": true,
      "actual": 11.2,
-     "next_proj": 14.51,
+     "next_proj": 14.64,
      "in_best": true
     },
     {
@@ -302,7 +302,7 @@
      "proj": 12.01,
      "rank": "TE2",
      "date": "2026-11-29",
-     "next_proj": 10.23,
+     "next_proj": 11.5,
      "in_best": true
     },
     {
@@ -535,7 +535,7 @@
      "proj": 10.23,
      "rank": "RB27",
      "date": "2026-11-29",
-     "next_proj": 8.12
+     "next_proj": 8.03
     },
     {
      "slot": "BN",
@@ -578,7 +578,7 @@
    ],
    "points_final": 81.0,
    "best": 147.9,
-   "best_next": 140.6,
+   "best_next": 142.0,
    "locked": 81.0,
    "locked_proj": 71.01,
    "games_final": 4
@@ -587,7 +587,7 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 60,
-   "proj": 145.09,
+   "proj": 144.01,
    "points": 47.2,
    "scores": [
     135.46,
@@ -882,48 +882,47 @@
      "proj": 8.62,
      "rank": "TE8",
      "date": "2026-11-29",
-     "next_proj": 8.78,
+     "next_proj": 9.94,
      "in_best": true
     },
     {
      "slot": "W/R/T",
-     "name": "Jonathan Taylor",
-     "nfl": "IND",
+     "name": "Chase Brown",
+     "nfl": "CIN",
      "pos": "RB",
      "yahoo_actual": 0.0,
      "game": "Sun 1:00 pm",
-     "opp": "vs NYG",
+     "opp": "vs NO",
      "season": {
-      "g": 11,
+      "g": 10,
       "wk": [
-       23.6,
-       27.2,
-       8.2,
-       22.2,
+       16.3,
        9.7,
-       20.1,
-       18.0,
-       4.7,
-       6.9,
-       11.3,
-       4.7
+       7.9,
+       13.6,
+       5.5,
+       null,
+       7.8,
+       12.1,
+       9.0,
+       24.3,
+       6.1
       ],
       "tot": {
-       "rush_att": 188,
-       "rush_yd": 760,
-       "rush_td": 8,
-       "rec": 32,
-       "rec_tgt": 45,
-       "rec_yd": 246,
-       "fum_lost": 4
+       "rush_att": 119,
+       "rush_yd": 447,
+       "rush_td": 1,
+       "rec": 52,
+       "rec_tgt": 62,
+       "rec_yd": 276,
+       "fum_lost": 2,
+       "rec_td": 2
       }
      },
-     "proj": 14.63,
-     "rank": "RB12",
+     "proj": 12.14,
+     "rank": "RB20",
      "date": "2026-11-29",
-     "bye_next": true,
-     "next_proj": 0.0,
-     "in_best": true
+     "next_proj": 10.88
     },
     {
      "slot": "Q/W/R/T",
@@ -969,6 +968,46 @@
     },
     {
      "slot": "BN",
+     "name": "Jonathan Taylor",
+     "nfl": "IND",
+     "pos": "RB",
+     "yahoo_actual": 0.0,
+     "game": "Sun 1:00 pm",
+     "opp": "vs NYG",
+     "season": {
+      "g": 11,
+      "wk": [
+       23.6,
+       27.2,
+       8.2,
+       22.2,
+       9.7,
+       20.1,
+       18.0,
+       4.7,
+       6.9,
+       11.3,
+       4.7
+      ],
+      "tot": {
+       "rush_att": 188,
+       "rush_yd": 760,
+       "rush_td": 8,
+       "rec": 32,
+       "rec_tgt": 45,
+       "rec_yd": 246,
+       "fum_lost": 4
+      }
+     },
+     "proj": 14.63,
+     "rank": "RB12",
+     "date": "2026-11-29",
+     "bye_next": true,
+     "next_proj": 0.0,
+     "in_best": true
+    },
+    {
+     "slot": "BN",
      "name": "Brock Purdy",
      "nfl": "SF",
      "pos": "QB",
@@ -1001,46 +1040,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 18.87
-    },
-    {
-     "slot": "BN",
-     "name": "Chase Brown",
-     "nfl": "CIN",
-     "pos": "RB",
-     "yahoo_actual": 0.0,
-     "game": "Sun 1:00 pm",
-     "opp": "vs NO",
-     "season": {
-      "g": 10,
-      "wk": [
-       16.3,
-       9.7,
-       7.9,
-       13.6,
-       5.5,
-       null,
-       7.8,
-       12.1,
-       9.0,
-       24.3,
-       6.1
-      ],
-      "tot": {
-       "rush_att": 119,
-       "rush_yd": 447,
-       "rush_td": 1,
-       "rec": 52,
-       "rec_tgt": 62,
-       "rec_yd": 276,
-       "fum_lost": 2,
-       "rec_td": 2
-      }
-     },
-     "proj": 12.14,
-     "rank": "RB20",
-     "date": "2026-11-29",
-     "next_proj": 10.88
+     "next_proj": 20.33
     },
     {
      "slot": "BN",
@@ -1120,7 +1120,7 @@
      "in_best": true
     },
     {
-     "slot": "BN",
+     "slot": "IR",
      "name": "Kenneth Walker III",
      "nfl": "KC",
      "pos": "RB",
@@ -1158,48 +1158,11 @@
      "actual": 0.0,
      "final": true,
      "next_proj": 17.55
-    },
-    {
-     "slot": "IR",
-     "name": "Jeremiyah Love",
-     "nfl": "ARI",
-     "pos": "RB",
-     "status": "IR",
-     "yahoo_actual": 0.0,
-     "game": "Sun 4:25 pm",
-     "opp": "vs WAS",
-     "season": {
-      "g": 6,
-      "wk": [
-       12.0,
-       6.0,
-       19.4,
-       6.0,
-       2.2,
-       null,
-       null,
-       2.3,
-       null,
-       null,
-       null
-      ],
-      "tot": {
-       "rush_att": 76,
-       "rush_yd": 268,
-       "rush_td": 1,
-       "rec": 11,
-       "rec_tgt": 14,
-       "rec_yd": 36,
-       "rec_td": 1
-      }
-     },
-     "proj": 0.0,
-     "next_proj": 0.0
     }
    ],
    "points_final": 47.2,
    "best": 145.5,
-   "best_next": 135.1,
+   "best_next": 136.3,
    "locked": 47.2,
    "locked_proj": 71.36,
    "games_final": 4
@@ -1208,7 +1171,7 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 8,
-   "proj": 140.12,
+   "proj": 140.18,
    "points": 59.14,
    "scores": [
     95.18,
@@ -1303,7 +1266,7 @@
      "proj": 15.66,
      "rank": "RB9",
      "date": "2026-11-29",
-     "next_proj": 19.51,
+     "next_proj": 18.29,
      "in_best": true
     },
     {
@@ -1463,7 +1426,7 @@
      "proj": 13.38,
      "rank": "WR11",
      "date": "2026-11-29",
-     "next_proj": 11.2,
+     "next_proj": 12.53,
      "in_best": true
     },
     {
@@ -1655,7 +1618,7 @@
      "proj": 15.32,
      "rank": "RB10",
      "date": "2026-11-29",
-     "next_proj": 12.82,
+     "next_proj": 12.21,
      "in_best": true
     },
     {
@@ -1783,7 +1746,7 @@
    ],
    "points_final": 59.14,
    "best": 143.4,
-   "best_next": 140.2,
+   "best_next": 140.3,
    "locked": 59.14,
    "locked_proj": 63.01,
    "games_final": 4
@@ -1996,7 +1959,7 @@
      "proj": 19.16,
      "rank": "RB2",
      "date": "2026-11-30",
-     "next_proj": 17.98,
+     "next_proj": 17.91,
      "in_best": true,
      "assumed_slot": "RB"
     },
@@ -2388,7 +2351,7 @@
    ],
    "points_final": 57.1,
    "best": 150.2,
-   "best_next": 139.7,
+   "best_next": 139.6,
    "fill": 89.27,
    "locked": 57.1,
    "locked_proj": 39.29,
@@ -3600,20 +3563,6 @@
     "last": 0
    },
    {
-    "name": "Christian McCaffrey",
-    "pos": "RB",
-    "nfl": "SF",
-    "proj": 15.66,
-    "rank": "RB9",
-    "next_proj": 19.51,
-    "avg": 20.6,
-    "g": 10,
-    "last": 13.2,
-    "claimed_by": "Drake Mayezini",
-    "bid": 40,
-    "run": "2026-11-25"
-   },
-   {
     "name": "James Cook III",
     "pos": "RB",
     "nfl": "BUF",
@@ -3625,6 +3574,20 @@
     "last": 16.2,
     "claimed_by": "Drake Mayezini",
     "bid": 39,
+    "run": "2026-11-25"
+   },
+   {
+    "name": "Christian McCaffrey",
+    "pos": "RB",
+    "nfl": "SF",
+    "proj": 15.66,
+    "rank": "RB9",
+    "next_proj": 18.29,
+    "avg": 20.6,
+    "g": 10,
+    "last": 13.2,
+    "claimed_by": "Drake Mayezini",
+    "bid": 40,
     "run": "2026-11-25"
    },
    {
@@ -3767,7 +3730,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-28T11:47:24Z",
+  "updated": "2026-11-28T14:17:17Z",
   "players": 3046,
   "unmatched": []
  }
