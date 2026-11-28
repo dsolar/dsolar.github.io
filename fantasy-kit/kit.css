@@ -164,7 +164,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--accent);width:16px;hei
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
 
 /* ---------- layout and modules ---------- */
-.page{padding-top:20px;padding-bottom:64px;display:grid;gap:18px}
+.page{padding-top:20px;padding-bottom:64px;display:grid;gap:18px;grid-template-columns:minmax(0,1fr)}
 .head{display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap}
 .head h1{margin:0;font-size:clamp(28px,4vw,42px)}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
@@ -3328,3 +3328,5 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .bet-r small{font-size:12.5px}
 .bet-a{display:flex;gap:6px;flex:none}
 @media (max-width:560px){.bet-r{flex-direction:column;align-items:flex-start}.bet-l{padding:4px 12px 10px}}
+/* a hidden label inside a sideways-scrolling strip stays inside it, rather than widening the page on a phone */
+.chips,.table-wrap,.ticker,.subs,.seg{position:relative}

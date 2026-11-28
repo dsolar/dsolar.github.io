@@ -321,7 +321,8 @@
     const muShort = (p, m) => { const k = m.n - m.rank + 1, pos = (p.pos || [])[0] || ""; return k === 1 ? `Most to ${pos}s` : m.rank === 1 ? `Fewest to ${pos}s` : k <= m.n / 2 ? `${ord(k)}-most to ${pos}s` : `${ord(m.rank)}-fewest to ${pos}s`; };
     const muTip = (p, m) => `${m.def} has given up ${muWords(p, m)} this season, ${fmtS(m.avg)} a game`;
     function muTag(p, m) {
-      if (!m || !m.ease) return "";
+      // a player who's out won't play the matchup, so no tag
+      if (!m || !m.ease || (p.inj && /^(out|o|ir|il|susp|pup|nfi)/i.test(String(p.inj)))) return "";
       return ` <span class="tag ${m.ease === "easy" ? "win" : "loss"} mu" title="${esc(muTip(p, m))}">${m.ease === "easy" ? "Easy" : "Tough"} matchup</span>`;
     }
     function gameChip(p, w) {
