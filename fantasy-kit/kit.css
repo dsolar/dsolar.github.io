@@ -3291,3 +3291,32 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .tv-ba.sm b{font-size:clamp(11px,.85vw,16px)}
 .tv-run{margin:0;padding:clamp(6px,.6vw,10px) clamp(8px,.8vw,12px);border-radius:10px;background:var(--brand);color:#141008;font-size:clamp(12px,.95vw,18px)}
 @media (max-width:1100px){.tv-side{display:none}}
+/* TV mode: the team on the clock, the code to scan, and the grades show at the end */
+.tv-need{background:var(--surface-2);color:inherit;border:1px solid var(--brand)}
+.tv-ros li{grid-template-columns:clamp(30px,2.6vw,48px) 1fr;align-items:center;column-gap:8px}
+.tv-ros li small{font-weight:800;opacity:.8}
+.tv-ros li.open{background:transparent;border:1px dashed var(--line-2);color:var(--muted)}
+.tv-bench{margin:0;font-size:clamp(11px,.8vw,15px);color:var(--muted)}
+.tv-qr{margin-top:auto;display:flex;align-items:center;gap:10px;padding-top:8px}
+.tv-qr svg{width:clamp(70px,5.6vw,120px);height:auto;background:#fff;border-radius:8px;flex:none}
+.tv-qr span{font-size:clamp(11px,.85vw,16px);color:var(--muted);font-weight:650}
+.tv-gr{flex:1;min-width:0;display:flex;flex-direction:column;gap:clamp(10px,2vh,28px);padding:clamp(12px,2vw,40px);border-radius:16px;background:var(--surface-2);animation:tvIn .5s ease both}
+.tv-gr-h{display:flex;align-items:center;gap:clamp(12px,1.4vw,28px)}
+.tv-gr-h>div{flex:1;display:grid}
+.tv-gr-h small{font-size:clamp(13px,1.1vw,22px);color:var(--muted);font-weight:750}
+.tv-gr-h h2{margin:0;font-size:clamp(32px,4.4vw,92px);line-height:1}
+.tv-gr-h em{font-style:normal;font-size:clamp(14px,1.2vw,24px);color:var(--muted)}
+.tv-grade{font-size:clamp(60px,8vw,170px);font-weight:900;line-height:.9;color:var(--brand)}
+.tv-gr-b{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:clamp(12px,2vw,40px);min-height:0}
+.tv-gr .tv-ros li{padding:clamp(5px,.5vw,10px) clamp(8px,.8vw,14px)}
+.tv-gr .tv-ros b{font-size:clamp(14px,1.25vw,26px)}
+.tv-gr-x{display:grid;gap:clamp(12px,2vh,30px);align-content:start}
+.tv-gr-x div{display:grid;gap:2px}
+.tv-gr-x small{font-size:clamp(12px,1vw,20px);color:var(--muted);font-weight:800}
+.tv-gr-x b{font-size:clamp(22px,2.4vw,48px);font-weight:900;line-height:1.05}
+.tv-gr-x em{font-style:normal;font-size:clamp(12px,1vw,20px);color:var(--muted)}
+.tv-gl{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+.tv-gl li{display:grid;grid-template-columns:clamp(18px,1.4vw,28px) auto 1fr auto;align-items:center;gap:8px;padding:clamp(4px,.45vw,8px) clamp(6px,.6vw,10px);border-radius:9px;font-size:clamp(12px,.95vw,18px)}
+.tv-gl li.on{background:var(--brand-soft);outline:1px solid var(--brand)}
+.tv-gl em{font-style:normal;font-weight:900}
+@media (prefers-reduced-motion:reduce){.tv-gr{animation:none}}

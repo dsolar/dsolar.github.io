@@ -1696,13 +1696,15 @@
       if (packOnly) rows = rows.filter((p) => pk.includes(p.id));
       // every pick you have left is needed for an open starting spot (only K and DEF to go, say): show only who fits
       let fitBar = "";
-      if (mine != null && d.phase === "live" && ui.show !== "all") {
-        const ros = F.rosters(d)[mine].map((id) => ctx.byId[id]).filter(Boolean), left = F.sizeOf(d, mine) - ros.length;
+      // the team the buttons pick for: yours, or whoever is on the clock when you enter picks for the room
+      const fitT = forTeam != null ? forTeam : mine;
+      if (fitT != null && d.phase === "live" && ui.show !== "all") {
+        const ros = F.rosters(d)[fitT].map((id) => ctx.byId[id]).filter(Boolean), left = F.sizeOf(d, fitT) - ros.length;
         const got = F.assign(sport, ros, d.lineup), open = d.lineup.filter((sl, i) => !got[i]);
         if (left > 0 && open.length && left <= open.length) {
-          const names = [...new Set(open)], fitN = rows.filter((p) => F.canAdd(d, ctx, mine, p).ok).length;
-          if (!ui.fitAll && fitN) rows = rows.filter((p) => F.canAdd(d, ctx, mine, p).ok);
-          fitBar = `<div class="rl-bar"><span>${ui.fitAll ? "Showing everyone." : `Only ${names.join(names.length > 2 ? ", " : " and ").replace(/, ([^,]*)$/, ", and $1")} fit${left === 1 ? " your last pick" : ` your last ${left} picks`}, so that's who's showing.`}</span><button class="btn xs" data-act="fitall">${ui.fitAll ? "Only who fits" : "Show everyone"}</button></div>`;
+          const names = [...new Set(open)], fitN = rows.filter((p) => F.canAdd(d, ctx, fitT, p).ok).length;
+          if (!ui.fitAll && fitN) rows = rows.filter((p) => F.canAdd(d, ctx, fitT, p).ok);
+          fitBar = `<div class="rl-bar"><span>${ui.fitAll ? "Showing everyone." : `Only ${names.join(names.length > 2 ? ", " : " and ").replace(/, ([^,]*)$/, ", and $1")} fit${fitT !== mine ? ` ${esc(team(fitT).name)}'s last ${left === 1 ? "pick" : `${left} picks`}` : left === 1 ? " your last pick" : ` your last ${left} picks`}, so that's who's showing.`}</span><button class="btn xs" data-act="fitall">${ui.fitAll ? "Only who fits" : "Show everyone"}</button></div>`;
         }
       }
       const cash = (n) => "$" + Math.round(n || 0);        // `money` is the pack draft's budget further down this function
@@ -2268,6 +2270,9 @@
        Anyone with the league's link can put it up, signed in or not; ?tv=1 on the link opens straight into it. */
     function tvMode(on) {
       ui.tv = on; ui.tvSeen = F.made(D()).length; ui.tvShow = null;
+      // the side panel and the end-of-draft show turn over every 8 seconds
+      clearInterval(ui.tvRot); ui.tvRot = on ? setInterval(() => { if (ui.tv && !dialogOpen() && !(ui.tvShow && Date.now() < ui.tvShow.until)) render(); }, 8000) : null;
+      if (on) loadQr().then(() => { if (ui.tv) render(); });
       try {
         if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().then(() => { ui.tvFs = true; }, () => {});
         if (!on) { ui.tvFs = false; if (document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {}); }
@@ -2309,6 +2314,43 @@
     /* The TV's side panel while the draft is on: the best players left (overall, then the top few at each position the
        lineup has a spot for) and a position run when one is going ("RB run: 4 of the last 6 picks"). */
     function tvSide() {
+      const turn = Math.floor(Date.now() / 8000) % 3 === 2, c = F.onClock(D(), now());
+      if (turn && c && !auction()) return tvTeam(c);
+      return tvBest();
+    }
+    // the team on the clock: who it has where, and the lineup spots it hasn't filled
+    function tvTeam(c) {
+      const d = D(), t = team(c.team), ps = (F.rosters(d)[t.id] || []).map((id) => ctx.byId[id]).filter(Boolean);
+      const asg = F.assign(sport, ps, d.lineup), need = [...new Set(d.lineup.filter((_, i) => !asg[i]))];
+      const bench = ps.filter((p) => !asg.includes(p));
+      return `<aside class="tv-side" aria-label="${esc(t.name)}'s team"><p class="tv-run tv-need">${need.length ? `<b>Needs</b> ${esc(need.join(", "))}` : "<b>Starters set</b>, drafting depth"}</p>
+        <h3 class="row" style="gap:8px">${teamAv(t, "sm")}${esc(t.name)}</h3>
+        <ol class="tv-ba tv-ros">${d.lineup.map((sl, i) => { const p = asg[i]; return `<li class="${p ? `c${colorOf(sport, p)}` : "open"}"><small>${esc(sl)}</small><b>${p ? esc(shortName(p)) : "Open"}</b></li>`; }).join("")}</ol>
+        ${bench.length ? `<h4>Bench</h4><p class="tv-bench">${bench.map((p) => esc(shortName(p))).join(", ")}</p>` : ""}${tvJoin()}</aside>`;
+    }
+    // a code to scan: the draft on your own phone (the link without TV mode)
+    let qrLoad = null;
+    const loadQr = () => qrLoad || (qrLoad = new Promise((res) => { if (window.qrcode) return res(window.qrcode); const sc = document.createElement("script"); sc.src = "/fantasy-kit/vendor/qrcode.min.js"; sc.onload = () => res(window.qrcode); sc.onerror = () => res(null); document.head.appendChild(sc); }));
+    function tvJoin() {
+      if (!window.qrcode || typeof location === "undefined") return "";
+      if (!ui.tvQr) {
+        try { const u = new URL(location.href); u.searchParams.delete("tv"); const q = window.qrcode(0, "M"); q.addData(u.toString()); q.make(); ui.tvQr = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) { ui.tvQr = ""; }
+      }
+      return ui.tvQr ? `<div class="tv-qr">${ui.tvQr}<span>Scan to follow the draft on your phone</span></div>` : "";
+    }
+    /* When the draft is done, the TV turns into the grades show: each team in turn, last projected to first, with
+       its grade, its starters, its best value and its biggest reach, while the league's table runs down the side. */
+    function tvShowGrades() {
+      const d = D(), st = F.standings(d, ctx).slice().sort((a, b) => b.rank - a.rank), R = F.recap(d, ctx);
+      const r = st[Math.floor(Date.now() / 8000) % st.length], t = team(r.team), bv = R.best[r.team], wv = R.worst[r.team];
+      const bp = bv && ctx.byId[bv.pid], wp = wv && wv !== bv && wv.diff < 0 && ctx.byId[wv.pid];
+      const card = `<section class="tv-gr"><div class="tv-gr-h">${teamAv(t, "lg")}<div><small>Projected to finish ${ord(r.rank)} of ${st.length}</small><h2 class="disp">${esc(t.name)}</h2>${t.owner ? `<em>${esc(t.owner)}</em>` : ""}</div><b class="tv-grade">${esc(r.grade)}</b></div>
+        <div class="tv-gr-b"><ol class="tv-ba tv-ros">${d.lineup.map((sl, i) => { const p = r.starters[i]; return `<li class="${p ? `c${colorOf(sport, p)}` : "open"}"><small>${esc(sl)}</small><b>${p ? esc(p.n) : "Open"}</b></li>`; }).join("")}</ol>
+        <div class="tv-gr-x">${bp ? `<div><small>Best value</small><b>${esc(bp.n)}</b><em>${esc(recapLine(bv))}, ${esc(recapGap(bv, true))}</em></div>` : ""}${wp ? `<div><small>Biggest reach</small><b>${esc(wp.n)}</b><em>${esc(recapLine(wv))}, ${esc(recapGap(wv, false))}</em></div>` : ""}</div></div></section>`;
+      const table = `<aside class="tv-side"><h3>The grades</h3><ol class="tv-gl">${st.slice().sort((a, b) => a.rank - b.rank).map((x) => `<li class="${x.team === r.team ? "on" : ""}"><span>${x.rank}</span>${teamAv(team(x.team), "sm")}<b class="ell">${esc(team(x.team).name)}</b><em>${esc(x.grade)}</em></li>`).join("")}</ol>${tvJoin()}</aside>`;
+      return card + table;
+    }
+    function tvBest() {
       const d = D(), avail = ctx.available.slice().sort((a, b) => (auction() ? (b.$ || 0) - (a.$ || 0) : (a.rank || 1e5) - (b.rank || 1e5)));
       const made = F.made(d), recent = made.slice(-6).map((pk) => ctx.byId[pk.pid]).filter(Boolean);
       const cnt = {}; for (const p of recent) { const ps = S.positions(p)[0]; cnt[ps] = (cnt[ps] || 0) + 1; }
@@ -2317,10 +2359,13 @@
       const li = (p) => `<li class="c${colorOf(sport, p)}"><b>${esc(shortName(p))}</b><small>${esc(S.positions(p)[0] || "")} ${esc(p.t || "")}${auction() ? ` · ${money(p.$)}` : ` · #${p.rank}`}</small></li>`;
       return `<aside class="tv-side" aria-label="Best available">${run ? `<p class="tv-run"><b>${esc(run[0])} run</b> ${run[1]} of the last ${recent.length} picks</p>` : ""}
         <h3>Best available</h3><ol class="tv-ba">${avail.slice(0, 5).map(li).join("")}</ol>
-        ${pure.map((ps) => { const top = avail.filter((p) => S.positions(p).includes(ps)).slice(0, 2); return top.length ? `<h4>${esc(ps)}</h4><ol class="tv-ba sm">${top.map(li).join("")}</ol>` : ""; }).join("")}</aside>`;
+        ${pure.map((ps) => { const top = avail.filter((p) => S.positions(p).includes(ps)).slice(0, 2); return top.length ? `<h4>${esc(ps)}</h4><ol class="tv-ba sm">${top.map(li).join("")}</ol>` : ""; }).join("")}${tvJoin()}</aside>`;
     }
     function tvRender() {
       const d = D(), n = now(), made = F.made(d);
+      // opened straight into TV mode from a link (?tv=1): start the turnover and fetch the code's library here
+      if (!ui.tvRot) ui.tvRot = setInterval(() => { if (ui.tv && !dialogOpen() && !(ui.tvShow && Date.now() < ui.tvShow.until)) render(); }, 8000);
+      if (!window.qrcode && !ui.tvQrAsked) { ui.tvQrAsked = true; loadQr().then(() => { if (ui.tv) render(); }); }
       // a new pick since the last look: announce the latest one (a burst of autopicks shows only the last)
       if (ui.tvSeen == null) ui.tvSeen = made.length;
       if (made.length > ui.tvSeen) {
@@ -2362,7 +2407,7 @@
         <header class="tv-h"><div class="tv-lg">${brand.mark || ""}<span><b>${esc(d.name || brand.name || "Draft")}</b><small>${esc(F.FORMATS[F.formatOf(d)])}, ${d.teams.length} teams, ${d.rounds} rounds</small></span></div>
           <div class="tv-otc">${clock}<div class="tv-who">${who}</div></div>${next}
           <span class="tv-x"><button type="button" class="btn sm ghost" data-act="tvvoice" aria-pressed="${tvVoiceOn()}">Announcer: ${tvVoiceOn() ? "on" : "off"}</button><button type="button" class="btn sm ghost" data-act="tvexit">Exit TV mode</button></span></header>
-        <div class="tv-b">${board(true)}${d.phase === "live" ? tvSide() : ""}</div>
+        <div class="tv-b">${d.phase === "done" && d.teams.length > 1 ? tvShowGrades() : board(true)}${d.phase === "live" ? tvSide() : d.phase === "done" ? "" : `<aside class="tv-side">${tvJoin()}</aside>`}</div>
         ${last ? `<ol class="tv-last" aria-label="Latest picks">${last}</ol>` : ""}${reveal}</div>`;
       drawTimer();
       // keep the pick on the clock in view on a board taller than the screen
