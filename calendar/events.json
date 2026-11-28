@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-27T19:39:44Z",
+ "updated": "2026-11-28T10:41:57Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -14,144 +14,6 @@
  },
  "events": [
   {
-   "id": "espn-401892795",
-   "date": "2026-11-27",
-   "time": "13:00",
-   "title": "Bruins vs Maple Leafs",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nhl/game/_/gameId/401892795",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "sg-18918422",
-   "date": "2026-11-27",
-   "time": "19:00",
-   "title": "Ian Lara",
-   "cat": "comedy",
-   "venue": "Laugh Boston",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/ian-lara-tickets/comedy/2026-11-27-7-pm/18918422",
-   "source": "seatgeek",
-   "score": 1
-  },
-  {
-   "id": "tm-vv177Z_oGkTdSxs7",
-   "date": "2026-11-27",
-   "time": "19:00",
-   "title": "The Hotelier (18+)",
-   "cat": "music",
-   "venue": "Paradise Rock Club presented by Citizens",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/the-hotelier-18-boston-massachusetts-11-27-2026/event/0100651FC3CE2C44",
-   "source": "ticketmaster",
-   "aka": [
-    "2026-11-27-the-hotelier-paradise-rock-club"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-vv177Z_4Gkw0aLYu",
-   "date": "2026-11-27",
-   "time": "19:30",
-   "title": "Poly Diaz",
-   "cat": "comedy",
-   "venue": "Arts at the Armory",
-   "city": "Somerville, MA",
-   "url": "https://www.ticketmaster.com/poly-diaz-somerville-massachusetts-11-27-2026/event/0100655CA425FC0D",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18827281"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18601261",
-   "date": "2026-11-27",
-   "time": "19:30",
-   "title": "Sister's Christmas Catechism",
-   "cat": "comedy",
-   "venue": "Charles Playhouse - Stage II",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/sisters-christmas-catechism-tickets/comedy/2026-11-27-7-30-pm/18601261",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
-   "id": "espn-401909330",
-   "date": "2026-11-27",
-   "time": "20:00",
-   "title": "Celtics vs Hawks",
-   "cat": "sports",
-   "venue": "TD Garden",
-   "city": "Boston, MA",
-   "url": "https://www.espn.com/nba/game/_/gameId/401909330/hawks-celtics",
-   "source": "espn",
-   "score": 1
-  },
-  {
-   "id": "tm-vv177Z_6GkwojyGf",
-   "date": "2026-11-27",
-   "time": "20:00",
-   "title": "Chris Botti",
-   "cat": "music",
-   "venue": "The Wilbur",
-   "city": "Boston, MA",
-   "url": "https://www.ticketmaster.com/chris-botti-boston-massachusetts-11-27-2026/event/0100647C91739314",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18156370"
-   ],
-   "score": 0
-  },
-  {
-   "id": "tm-k7vGF_2K1LVgm",
-   "date": "2026-11-27",
-   "time": "20:00",
-   "title": "Dark Star Orchestra",
-   "cat": "music",
-   "venue": "The Paramount in concert with Northwell",
-   "city": "Huntington, NY",
-   "url": "https://www.ticketmaster.com/dark-star-orchestra-huntington-new-york-11-27-2026/event/000064F4CA7F4D6E",
-   "source": "ticketmaster",
-   "drive_hours": 3.75,
-   "act": "Dark Star Orchestra",
-   "aka": [
-    "sg-18406757"
-   ],
-   "score": 3,
-   "why": "love"
-  },
-  {
-   "id": "tm-Z7r9jZ1AAZdud",
-   "date": "2026-11-27",
-   "time": "20:00",
-   "title": "Darlene Love",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1AAZdud",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18398420"
-   ],
-   "score": 0
-  },
-  {
-   "id": "sg-18618955",
-   "date": "2026-11-27",
-   "time": "22:00",
-   "title": "Lake Tahoe Reggae Festival",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://seatgeek.com/lake-tahoe-reggae-festival-tickets/boston-massachusetts-big-night-live-2026-11-27-10-pm/music-festival/18618955",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "tm-LvZ18Qn8Lu9EIOyyLMpD0",
    "date": "2026-11-27",
    "time": "22:00",
@@ -161,18 +23,6 @@
    "city": "Boston, MA",
    "url": "https://www.universe.com/events/reggae-fest-boston-at-big-night-live-tickets-5RC691?ref=ticketmaster",
    "source": "ticketmaster",
-   "score": 0
-  },
-  {
-   "id": "sg-18747167",
-   "date": "2026-11-27",
-   "time": "22:00",
-   "title": "The Glitter Boys",
-   "cat": "music",
-   "venue": "The Sinclair - Cambridge",
-   "city": "Cambridge, MA",
-   "url": "https://seatgeek.com/the-glitter-boys-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-27-10-pm/concert/18747167",
-   "source": "seatgeek",
    "score": 0
   },
   {
@@ -520,18 +370,15 @@
    "why": "big"
   },
   {
-   "id": "tm-Z7r9jZ1A7x9AI",
+   "id": "sg-18261597",
    "date": "2026-11-30",
    "time": "20:00",
    "title": "Temples",
    "cat": "music",
-   "venue": "The Sinclair Music Hall",
+   "venue": "The Sinclair - Cambridge",
    "city": "Cambridge, MA",
-   "url": "https://www.ticketmaster.com/event/Z7r9jZ1A7x9AI",
-   "source": "ticketmaster",
-   "aka": [
-    "sg-18261597"
-   ],
+   "url": "https://seatgeek.com/temples-tickets/cambridge-massachusetts-the-sinclair-cambridge-2026-11-30-8-pm/concert/18261597",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -4743,18 +4590,6 @@
    "score": 0
   },
   {
-   "id": "sg-18825194",
-   "date": "2027-01-29",
-   "time": "20:00",
-   "title": "The Young Americans",
-   "cat": "music",
-   "venue": "The Cabot",
-   "city": "Beverly, MA",
-   "url": "https://seatgeek.com/the-young-americans-tickets/beverly-massachusetts-the-cabot-2027-01-29-8-pm/concert/18825194",
-   "source": "seatgeek",
-   "score": 0
-  },
-  {
    "id": "sg-18798830",
    "date": "2027-01-30",
    "time": "15:00",
@@ -7418,7 +7253,6 @@
     "tm-vv1AvZkfSGkdTcSmB",
     "tm-vv1AvZkfSGkdTiNmr",
     "sg-18685645",
-    "sg-18685642",
     "sg-18685645",
     "sg-18685642",
     "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe"
@@ -7487,6 +7321,9 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/dylan-marlowe-tickets/boston-massachusetts-royale-boston-2027-03-13-7-pm/concert/18754195",
    "source": "seatgeek",
+   "aka": [
+    "sg-18754195"
+   ],
    "score": 0
   },
   {
@@ -10978,6 +10815,24 @@
    ],
    "score": 2,
    "why": "big"
+  },
+  {
+   "id": "tm-k7vGF_p52U5pN",
+   "date": "2027-05-27",
+   "time": "19:30",
+   "title": "Kings of Leon",
+   "cat": "music",
+   "venue": "Albany Med Health System at SPAC",
+   "city": "Saratoga Springs, NY",
+   "url": "https://www.ticketmaster.com/kings-of-leon-saratoga-springs-new-york-05-27-2027/event/00006562CFD8B5A3",
+   "source": "ticketmaster",
+   "drive_hours": 3.5,
+   "act": "Kings of Leon",
+   "aka": [
+    "sg-18746652"
+   ],
+   "score": 2,
+   "why": "big"
   }
  ],
  "movies": [
@@ -11055,8 +10910,8 @@
  "sources": {
   "picks": 1,
   "venues": 0,
-  "espn": 65,
-  "ticketmaster": 484,
-  "seatgeek": 185
+  "espn": 63,
+  "ticketmaster": 479,
+  "seatgeek": 181
  }
 }
