@@ -471,6 +471,28 @@
   }
 
   /* ---------- the room ---------- */
+  // A mock has nobody else in it, so time spent away shouldn't count. Left alone, the draft caught up to the clock when
+  // you came back (a closed tab, another tab, a sleeping laptop) and autopicked every turn you had missed. So the room
+  // marks the time whenever it drives the draft, and coming back after a gap pauses the draft as of that mark: the
+  // clock is where you left it and Resume starts it again. The mark carries the draft it belongs to, so a new mock
+  // never inherits an old one's; a mock saved before there was a mark goes by when its current pick's clock started.
+  const AWAY = 20e3, BEAT = 3e3, LEFT_MIN = 5e3;
+  let beat = 0;
+  function awayGuard() {
+    const D = mock && mock.D, now = Date.now();
+    if (!D) return;
+    // the slow Dutch sale is the exception: its prices are meant to fall over days while you're away
+    const drip = D.auction && D.auction.dutch && D.auction.dutch.pace === "drip";
+    if (D.phase === "live" && !D.paused && !drip) {
+      const m = store.get("mockAt", null), last = m && m.c === D.created ? m.at : D.clockStart || 0;
+      if (last && now - last > AWAY && F.pause(D, last, true).ok) {
+        if (D.left != null) D.left = Math.max(D.left, LEFT_MIN);
+        store.set("mock", mock);
+        setTimeout(() => { if (roomCtl) roomCtl.refresh(); }, 0);
+      }
+    }
+    if (now - beat > BEAT) { beat = now; store.set("mockAt", { c: D.created, at: now }); }
+  }
   async function draftPage() {
     if (!mock) return setupPage();
     document.body.classList.add("fk-room");
@@ -479,7 +501,8 @@
     app.innerHTML = `<div id="room"></div>`;
     roomCtl = U.room({ el: $("#room"), sport: P.sport, players: P.players, draft: () => mock.D, save: () => store.set("mock", mock), me: () => 0, commish: true, solo: true,
       // with the room open in two tabs, only the one you're looking at runs the clock and the bots
-      get drive() { return !document.hidden; },
+      // (and before it runs them, time away is taken off the clock: awayGuard)
+      get drive() { if (document.hidden) return false; awayGuard(); return true; },
       brand: { name: "Draft Lab", mark: `<img src="mark.svg" alt="">` }, exit: { href: "#home", label: "Exit" },
       extra: () => `${playable(mock.D) ? `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&play=mock">Play it out live</a>` : mock.D.season && mock.D.season.oneWeek ? "" : `<a class="btn sm go" href="/fantasy/demo/?s=${mock.D.sport}&f=h&mock=1">Play a season with it</a>`}<a class="btn sm" href="/fantasy/leagues/?${new URLSearchParams({ rules: E.encode(E.fromDraft(mock.D)) })}">Draft with friends</a><button class="btn sm" data-new>New mock</button>` });
     $("#room").addEventListener("click", (e) => { if (e.target.closest("[data-new]")) { mock = null; store.set("mock", null); route(); } });

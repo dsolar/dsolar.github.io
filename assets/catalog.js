@@ -16,7 +16,7 @@
     var hubs = all.filter(function (p) { return p.hub; });
     var sims = all.filter(function (p) { return p.type === "Simulations" && !p.hub && !p.hidden; });
     var hubBox = document.getElementById("hubs-list");
-    if (hubBox) hubBox.innerHTML = hubs.length ? section({ id: "hubs-group", label: "01 / Hubs", title: "Every roster. Every contract.", intro: "Standings, cap sheets, trade value and draft boards for the NBA, NFL and MLB, refreshed every day." }, hubs, hubs, showHidden,
+    if (hubBox) hubBox.innerHTML = hubs.length ? section({ id: "hubs-group", label: "01 / Hubs", title: "Every roster. Every contract.", intro: "Standings, odds, cap sheets and draft boards for six leagues, pro and college, refreshed every day." }, hubs, hubs, showHidden,
       sims.length ? '<div class="collection-more"><span>Plus ' + sims.length + ' front-office ' + (sims.length === 1 ? 'game' : 'games') + ': ' + sims.map(function (p) { return esc(p.title); }).join(', ') + '</span><a href="/simulations/">Explore hubs &amp; tools <span aria-hidden="true">→</span></a></div>' : '') : "";
     var groups = [
       { type: "Games", id: "games", label: "03 / Games", title: "Got a few minutes?", intro: "A few favorites for a quick break. The full collection has daily challenges, strategy games, and chess.", limit: 4, url: "/games/", action: "Explore all games" },

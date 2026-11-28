@@ -272,8 +272,9 @@
       location.hash = href("team/" + tr.dataset.team, { y: yq(state.year) });
       return;
     }
-    var p = e.target.closest("[data-p]");
-    if (p && !e.target.closest(".results") && !e.target.closest("button")) openCard(p.dataset.p);
+    // a button inside a player row (follow, add) is its own action; a button that is the player (the court's five) opens his card
+    var p = e.target.closest("[data-p]"), btn = e.target.closest("button");
+    if (p && !e.target.closest(".results") && (!btn || btn === p)) openCard(p.dataset.p);
   });
 
   // ---------- teams ----------
@@ -400,14 +401,16 @@
     var html = '<div class="panel"><h3>Depth chart <small>' + (i === 0 ? "minutes per game this season" : "projected minutes per game") + '</small></h3><div class="dchart">' +
       '<div class="dhead"><span>Pos</span><span>Starter</span><span>Bench</span></div>';
     SL.forEach(function (s) {
-      var list = cols[s], tot = list.reduce(function (a, d) { return a + (lu.mins[d.x.p.id] || 0); }, 0);
+      // No minutes total per position: each player sits under one listed position with all of his minutes, so a row's
+      // sum isn't minutes played at that spot (it ran past 48 for every team)
+      var list = cols[s];
       var cell = function (d) {
         var m = lu.mins[d.x.p.id] || 0, p = d.x.p;
         return '<span class="dp' + (d.start ? " st" : "") + (m < 1 ? " dnp" : "") + ' T-' + tier(d.x.r) + 'b"' + (p.fill || p.rook ? "" : ' data-p="' + esc(p.id) + '"') + ">" + face(p, d.start ? 30 : 24) +
           '<span class="dn"><b>' + esc(d.start ? p.n : shortName(p.n)) + "</b><small>" + (m >= 1 ? f0(m) + " min" : "DNP") + " · " + rt(d.x.r) + "</small></span></span>";
       };
       var st = list.filter(function (d) { return d.start; }), bn = list.filter(function (d) { return !d.start; });
-      html += '<div class="drow2"><span class="dpos"><b>' + s + "</b><small>" + f0(tot) + " min</small></span>" +
+      html += '<div class="drow2"><span class="dpos"><b>' + s + "</b></span>" +
         '<span class="dst">' + (st.length ? st.map(cell).join("") : '<span class="dp empty">—</span>') + '</span><span class="dbn">' + (bn.length ? bn.map(cell).join("") : '<span class="dp empty">No backup</span>') + "</span></div>";
     });
     return html + '</div><p class="note">Bench players are listed at the first position they play. The colored edge is the impact tier.</p></div>';
