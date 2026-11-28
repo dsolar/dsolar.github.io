@@ -4,14 +4,14 @@
  "week": 12,
  "first_week": 1,
  "total_teams": 15,
- "updated": "2026-11-28T14:17:16Z",
+ "updated": "2026-11-28T17:50:05Z",
  "source": "Yahoo Fantasy",
  "teams": [
   {
    "name": "A Warren Boston",
    "manager": "Noah M",
    "faab": 0,
-   "proj": 145.88,
+   "proj": 145.86,
    "points": 81.0,
    "scores": [
     132.74,
@@ -143,11 +143,11 @@
       }
      },
      "proj": 16.33,
-     "rank": "RB8",
+     "rank": "RB7",
      "date": "2026-11-27",
      "final": true,
      "actual": 11.2,
-     "next_proj": 14.64,
+     "next_proj": 14.65,
      "in_best": true
     },
     {
@@ -180,10 +180,10 @@
        "rec_td": 2
       }
      },
-     "proj": 12.91,
+     "proj": 12.89,
      "rank": "WR14",
      "date": "2026-11-29",
-     "next_proj": 12.2,
+     "next_proj": 12.13,
      "in_best": true
     },
     {
@@ -375,10 +375,10 @@
        "rush_td": 3
       }
      },
-     "proj": 22.94,
+     "proj": 22.92,
      "rank": "QB1",
      "date": "2026-11-29",
-     "next_proj": 20.72,
+     "next_proj": 20.71,
      "in_best": true
     },
     {
@@ -532,10 +532,10 @@
        "rec_yd": 67
       }
      },
-     "proj": 10.23,
+     "proj": 10.49,
      "rank": "RB27",
      "date": "2026-11-29",
-     "next_proj": 8.03
+     "next_proj": 8.02
     },
     {
      "slot": "BN",
@@ -578,7 +578,7 @@
    ],
    "points_final": 81.0,
    "best": 147.9,
-   "best_next": 142.0,
+   "best_next": 141.9,
    "locked": 81.0,
    "locked_proj": 71.01,
    "games_final": 4
@@ -587,7 +587,7 @@
    "name": "Love a Kittle Lamb & WhiteRice",
    "manager": "Daid B",
    "faab": 60,
-   "proj": 144.01,
+   "proj": 144.37,
    "points": 47.2,
    "scores": [
     135.46,
@@ -770,7 +770,7 @@
      "date": "2026-11-26",
      "final": true,
      "actual": 16.9,
-     "next_proj": 14.19,
+     "next_proj": 14.21,
      "in_best": true
     },
     {
@@ -806,10 +806,10 @@
        "rush_yd": 29
       }
      },
-     "proj": 20.81,
+     "proj": 21.24,
      "rank": "WR1",
      "date": "2026-11-29",
-     "next_proj": 24.51,
+     "next_proj": 24.55,
      "in_best": true
     },
     {
@@ -842,10 +842,10 @@
        "rec_td": 7
       }
      },
-     "proj": 15.97,
+     "proj": 15.92,
      "rank": "WR4",
      "date": "2026-11-29",
-     "next_proj": 15.28,
+     "next_proj": 15.29,
      "in_best": true
     },
     {
@@ -879,10 +879,10 @@
        "fum_lost": 1
       }
      },
-     "proj": 8.62,
-     "rank": "TE8",
+     "proj": 9.03,
+     "rank": "TE7",
      "date": "2026-11-29",
-     "next_proj": 9.94,
+     "next_proj": 10.06,
      "in_best": true
     },
     {
@@ -919,10 +919,10 @@
        "rec_td": 2
       }
      },
-     "proj": 12.14,
+     "proj": 12.15,
      "rank": "RB20",
      "date": "2026-11-29",
-     "next_proj": 10.88
+     "next_proj": 10.87
     },
     {
      "slot": "Q/W/R/T",
@@ -1040,7 +1040,7 @@
       }
      },
      "proj": 0.0,
-     "next_proj": 20.33
+     "next_proj": 20.79
     },
     {
      "slot": "BN",
@@ -1073,7 +1073,7 @@
        "rec_td": 7
       }
      },
-     "proj": 13.77,
+     "proj": 13.75,
      "rank": "WR8",
      "date": "2026-11-29",
      "next_proj": 13.22
@@ -1116,7 +1116,7 @@
      "date": "2026-11-25",
      "final": true,
      "actual": 14.5,
-     "next_proj": 14.71,
+     "next_proj": 14.74,
      "in_best": true
     },
     {
@@ -1161,8 +1161,8 @@
     }
    ],
    "points_final": 47.2,
-   "best": 145.5,
-   "best_next": 136.3,
+   "best": 146.2,
+   "best_next": 136.5,
    "locked": 47.2,
    "locked_proj": 71.36,
    "games_final": 4
@@ -1171,7 +1171,7 @@
    "name": "Drake Mayezini",
    "manager": "Scott",
    "faab": 8,
-   "proj": 140.18,
+   "proj": 139.86,
    "points": 59.14,
    "scores": [
     95.18,
@@ -1226,7 +1226,7 @@
      "date": "2026-11-26",
      "final": true,
      "actual": 26.54,
-     "next_proj": 14.71,
+     "next_proj": 14.87,
      "in_best": true
     },
     {
@@ -1263,10 +1263,10 @@
        "rec_td": 3
       }
      },
-     "proj": 15.66,
-     "rank": "RB9",
+     "proj": 15.07,
+     "rank": "RB10",
      "date": "2026-11-29",
-     "next_proj": 18.29,
+     "next_proj": 17.64,
      "in_best": true
     },
     {
@@ -1308,7 +1308,7 @@
      "date": "2026-11-26",
      "final": true,
      "actual": 19.0,
-     "next_proj": 17.48,
+     "next_proj": 17.49,
      "in_best": true
     },
     {
@@ -1349,7 +1349,7 @@
      "date": "2026-11-26",
      "final": true,
      "actual": 9.2,
-     "next_proj": 10.63
+     "next_proj": 10.64
     },
     {
      "slot": "WR",
@@ -1389,7 +1389,7 @@
      "date": "2026-11-25",
      "final": true,
      "actual": 4.4,
-     "next_proj": 14.38,
+     "next_proj": 14.41,
      "in_best": true
     },
     {
@@ -1426,7 +1426,7 @@
      "proj": 13.38,
      "rank": "WR11",
      "date": "2026-11-29",
-     "next_proj": 12.53,
+     "next_proj": 12.52,
      "in_best": true
     },
     {
@@ -1539,9 +1539,9 @@
       }
      },
      "proj": 21.45,
-     "rank": "QB2",
+     "rank": "QB3",
      "date": "2026-11-29",
-     "next_proj": 18.96,
+     "next_proj": 18.84,
      "in_best": true
     },
     {
@@ -1579,7 +1579,7 @@
      "proj": 15.03,
      "rank": "WR6",
      "date": "2026-11-29",
-     "next_proj": 13.5,
+     "next_proj": 13.48,
      "in_best": true
     },
     {
@@ -1616,7 +1616,7 @@
       }
      },
      "proj": 15.32,
-     "rank": "RB10",
+     "rank": "RB9",
      "date": "2026-11-29",
      "next_proj": 12.21,
      "in_best": true
@@ -1745,8 +1745,8 @@
     }
    ],
    "points_final": 59.14,
-   "best": 143.4,
-   "best_next": 140.3,
+   "best": 142.8,
+   "best_next": 139.6,
    "locked": 59.14,
    "locked_proj": 63.01,
    "games_final": 4
@@ -1755,7 +1755,7 @@
    "name": "Tai Streetz Lata?",
    "manager": "JeffS",
    "faab": 15,
-   "proj": 57.1,
+   "proj": 57.13,
    "points": 57.1,
    "scores": [
     111.28,
@@ -1851,7 +1851,7 @@
      "date": "2026-11-26",
      "final": true,
      "actual": 31.8,
-     "next_proj": 12.71,
+     "next_proj": 12.7,
      "in_best": true
     },
     {
@@ -1916,8 +1916,8 @@
        "fum_lost": 1
       }
      },
-     "proj": 21.45,
-     "rank": "QB3",
+     "proj": 21.59,
+     "rank": "QB2",
      "date": "2026-11-29",
      "next_proj": 20.06,
      "in_best": true
@@ -1959,7 +1959,7 @@
      "proj": 19.16,
      "rank": "RB2",
      "date": "2026-11-30",
-     "next_proj": 17.91,
+     "next_proj": 17.9,
      "in_best": true,
      "assumed_slot": "RB"
     },
@@ -2167,7 +2167,6 @@
      "name": "Tetairoa McMillan",
      "nfl": "CAR",
      "pos": "WR",
-     "status": "Q",
      "yahoo_actual": 0.0,
      "game": "Mon 8:15 pm",
      "opp": "@ TB",
@@ -2317,7 +2316,6 @@
      "name": "Darren Waller",
      "nfl": "CAR",
      "pos": "TE",
-     "status": "Q",
      "yahoo_actual": 0.0,
      "game": "Mon 8:15 pm",
      "opp": "@ TB",
@@ -2350,7 +2348,7 @@
     }
    ],
    "points_final": 57.1,
-   "best": 150.2,
+   "best": 150.4,
    "best_next": 139.6,
    "fill": 89.27,
    "locked": 57.1,
@@ -3542,8 +3540,8 @@
     "pos": "QB",
     "nfl": "HOU",
     "proj": 21.45,
-    "rank": "QB2",
-    "next_proj": 18.96,
+    "rank": "QB3",
+    "next_proj": 18.84,
     "avg": 20.9,
     "g": 10,
     "last": 21.46,
@@ -3557,7 +3555,7 @@
     "nfl": "GB",
     "proj": 17.27,
     "rank": "QB12",
-    "next_proj": 20.32,
+    "next_proj": 20.46,
     "avg": 20.3,
     "g": 10,
     "last": 0
@@ -3568,7 +3566,7 @@
     "nfl": "BUF",
     "proj": 16.76,
     "rank": "RB6",
-    "next_proj": 17.48,
+    "next_proj": 17.49,
     "avg": 18.0,
     "g": 10,
     "last": 16.2,
@@ -3580,9 +3578,9 @@
     "name": "Christian McCaffrey",
     "pos": "RB",
     "nfl": "SF",
-    "proj": 15.66,
-    "rank": "RB9",
-    "next_proj": 18.29,
+    "proj": 15.07,
+    "rank": "RB10",
+    "next_proj": 17.64,
     "avg": 20.6,
     "g": 10,
     "last": 13.2,
@@ -3594,9 +3592,9 @@
     "name": "Ja'Marr Chase",
     "pos": "WR",
     "nfl": "CIN",
-    "proj": 15.97,
+    "proj": 15.92,
     "rank": "WR4",
-    "next_proj": 15.28,
+    "next_proj": 15.29,
     "avg": 16.7,
     "g": 10,
     "last": 5.6,
@@ -3624,7 +3622,7 @@
     "nfl": "GB",
     "proj": 12.91,
     "rank": "WR13",
-    "next_proj": 14.38,
+    "next_proj": 14.41,
     "avg": 14.7,
     "g": 10,
     "last": 0,
@@ -3700,8 +3698,8 @@
     "pos": "WR",
     "nfl": "PIT",
     "proj": 5.66,
-    "rank": "WR57",
-    "next_proj": 7.64,
+    "rank": "WR56",
+    "next_proj": 7.72,
     "avg": 7.7,
     "g": 10,
     "last": 0.7
@@ -3730,7 +3728,7 @@
  ],
  "proj_source": {
   "name": "Sleeper",
-  "updated": "2026-11-28T14:17:17Z",
+  "updated": "2026-11-28T17:50:07Z",
   "players": 3046,
   "unmatched": []
  }
