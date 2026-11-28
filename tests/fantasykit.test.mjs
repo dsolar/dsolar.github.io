@@ -93,6 +93,21 @@ test('keepers take their round and undo skips them', () => {
   assert.equal(F.undo(s.D, s.ctx, T0 + 1600).ok, false);
 });
 
+// What Draft Lab does for a mock you walked away from (lab.js, awayGuard): pause it as of the last moment the room ran it
+test('a draft paused as of an earlier moment loses no turns to the time away', () => {
+  const s = setup('nba', { create: { botOffers: false } });     // (a bot's trade offer would hold the clock itself)
+  s.D.teams[s.D.order[0]].owner = 'David';      // you hold the first pick
+  F.start(s.D, T0);
+  const left = T0 + 5000, back = T0 + 3600e3, before = s.D.board.filter(Boolean).length;
+  F.pause(s.D, left, true);
+  assert.equal(s.D.left, 25000, 'the 30 second clock had 25 seconds on it when you left');
+  assert.equal(F.tick(s.D, s.ctx, back), 0, 'an hour away moves nothing');
+  F.pause(s.D, back, false);
+  assert.equal(F.tick(s.D, s.ctx, back + 1000), 0, 'and your pick is still yours on return');
+  assert.equal(s.D.board.filter(Boolean).length, before);
+  assert.ok(F.tick(s.D, s.ctx, back + 26000) > 0, 'the clock runs out 25 seconds after Resume, not before');
+});
+
 test('pause stops the clock', () => {
   const s = setup('nba');
   F.start(s.D, T0);

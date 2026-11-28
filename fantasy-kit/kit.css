@@ -2654,6 +2654,10 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 .fk-find-r .none{padding:10px;font-size:13px;color:var(--muted)}
 @media (max-width:860px){.fk-find input{width:130px}}
 @media (max-width:420px){.fk-find input{width:42px;padding-right:0;color:transparent}.fk-find input:focus{width:170px;color:#F2F5F8}.fk-find input::placeholder{color:transparent}.fk-find input:focus::placeholder{color:#B6C2D0}}
+/* laptops: the one-row masthead runs out of room before it wraps at 860px (the last tab was cut off behind the search
+   box at 1280px once a page added a button), so the search box gives way first, then the account name */
+@media (min-width:861px) and (max-width:1420px){.fk-mast.inline .fk-find input{width:42px;padding-right:0;color:transparent}.fk-mast.inline .fk-find input:focus{width:170px;color:#F2F5F8}.fk-mast.inline .fk-find input::placeholder{color:transparent}.fk-mast.inline .fk-find input:focus::placeholder{color:#B6C2D0}}
+@media (min-width:861px) and (max-width:1120px){.fk-mast.inline .ds-acct-btn .ds-acct-name{display:none}}
 /* the results sit inside the dark masthead, so they carry their own colors rather than the band's */
 .fk-find-r{--fr-bg:#fff;--fr-ink:#111827;--fr-muted:#5B6575;--fr-hover:#EEF1F5;background:var(--fr-bg);color:var(--fr-ink);border-color:rgba(0,0,0,.1)}
 :root[data-theme="dark"] .fk-find-r{--fr-bg:#1B2433;--fr-ink:#EEF2F7;--fr-muted:#9AA7B6;--fr-hover:#273245}

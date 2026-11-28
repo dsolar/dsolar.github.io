@@ -354,14 +354,15 @@ function teamPage(q) {
   return head + window.PCard.facts([[od && fin(od.w) ? Math.round(od.w) + "-" + Math.round(od.l) : proj(t), "Projected record"], [f1(m.tempo), "Pace"]]) +
     '<p class="callout">' + esc(M.teamStory(t, D.teams)) + "</p>" + teamBars(t) +
     '<div class="controls"><label>Spread machine: ' + esc(t.short) + ' vs<select data-vs="' + esc(t.id) + '"><option value="">Pick an opponent</option>' + vsOpts.map(o => '<option value="' + esc(o.id) + '">' + esc(o.short) + "</option>").join("") + "</select></label></div>" +
-'<div class="two">' +
-    '<div><div class="panel"><h3>Résumé so far' + (nt ? " <small>NCAA NET #" + nt.rank + (nt.prev && nt.prev !== nt.rank ? " (was " + nt.prev + ")" : "") + "</small>" : "") + '</h3><div class="body"><div class="kv"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
+// Résumé and March outlook side by side (each its own column; one column when there are no tournament odds yet)
+'<div class="' + (odds(t.id) ? "two" : "") + '">' +
+    '<div><div class="panel"><h3>Résumé so far' + (nt ? " <small>NCAA NET #" + nt.rank + (nt.prev && nt.prev !== nt.rank ? " (was " + nt.prev + ")" : "") + "</small>" : "") + '</h3><div class="body"><div class="kv" style="grid-template-columns:repeat(4,1fr)"><div><b>' + esc(quads["1"] || "—") + "</b><span>Q1</span></div><div><b>" + esc(quads["2"] || "—") + "</b><span>Q2</span></div><div><b>" + esc(quads["3"] || "—") + "</b><span>Q3</span></div><div><b>" + esc(quads["4"] || "—") + "</b><span>Q4</span></div></div>" +
     ["best", "worst", "latest"].filter(k => hl[k]).map(k => { const h = hl[k]; return '<p class="tldr"><b>' + { best: "Best game", worst: "Worst game", latest: "Latest" }[k] + ":</b> " + (h.us > h.them ? "W " : "L ") + int(h.us) + "-" + int(h.them) + " " + (h.venue === "H" ? "vs" : h.venue === "A" ? "at" : "vs") + " " + esc(h.opponent) + " (" + esc(h.date) + ")</p>"; }).join("") +
     // ESPN's BPI split into offense and defense, and how hard the rest of the schedule is (hub.json metrics)
     (fin(t.metrics.bpiOff) && fin(t.metrics.bpiDef) ? '<p class="tldr"><b>ESPN BPI:</b> offense ' + sg(t.metrics.bpiOff) + ", defense " + sg(t.metrics.bpiDef) + " (points a game better than average)" + (fin(t.metrics.remainingSosRank) ? ". Schedule left: " + ordinalC(int(t.metrics.remainingSosRank)) + " toughest" : "") + ".</p>" : "") +
     (nt ? '<p class="tldr"><b>By site:</b> ' + esc(nt.home || "—") + " home, " + esc(nt.road || "—") + " road, " + esc(nt.neutral || "—") + " neutral</p>" : "") +
     (nt ? '<p class="note">Quadrants are the NCAA\'s official NET quadrants' + (NETD.through ? ", through games " + dLabel(NETD.through) : "") + ". Q1 is the toughest: home games against the NET top 30, neutral against the top 50, road against the top 75.</p></div></div>"
-      : '<p class="note">Quadrants are Haslametrics\' own hNET quadrants until the NCAA releases its official NET (about December 1).</p></div></div>') + outlook(t) + '</div></div>';
+      : '<p class="note">Quadrants are Haslametrics\' own hNET quadrants until the NCAA releases its official NET (about December 1).</p></div></div>') + "</div>" + (odds(t.id) ? "<div>" + outlook(t) + "</div>" : "") + "</div>";
 }
 
 function tbarsHtml(groups, sortedOf, color, pctFn) {
