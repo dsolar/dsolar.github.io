@@ -70,7 +70,8 @@
   ];
   var parent = sections.find(function (s) { return s.id === section; });
   var isHub = !path || folder === "kids" || folder === "fantasy" || folder === "games" || folder === "simulations" || path === "404.html";
-  var sportHub = (project && project.hub) || folder === "draft";
+  // (My teams and Tonight sit above the hubs' sport bar, so they carry the hubs' switch too)
+  var sportHub = (project && project.hub) || folder === "draft" || folder === "my-teams" || folder === "tonight";
   // the NFL pick'em is part of Pools: its bar carries the switch with Pools on
   var poolsPage = folder === "pickem";
   var desktop = matchMedia("(min-width: 1000px)");

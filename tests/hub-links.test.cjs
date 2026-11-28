@@ -108,3 +108,54 @@ test("a card that doesn't ask for it has no fantasy line (Draft Lab's own cards)
   const { w } = hubPage();
   assert.doesNotMatch(w.PCard.html({ name: "x", tabs: [] }), /pc-fan/);
 });
+
+// My teams: your leagues (Draft Lab's own strip) and your pools, for someone signed in
+function myTeams(session, fixtures) {
+  const html = read("my-teams/index.html"), scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+  const w = page("https://davidsolar.dev/my-teams/");
+  w.document.body.innerHTML = '<section id="view"></section><section id="mt-leagues" hidden></section><section id="mt-pools" hidden></section>';
+  if (session) w.localStorage.setItem("fk-auth:session", JSON.stringify({ user: { id: "u1" } }));
+  const asked = [], add = w.document.head.appendChild.bind(w.document.head);
+  // the kit's files "load" at once; home.js brings FK.home and (through it) FK.cloud
+  w.document.head.appendChild = (el) => {
+    if (el.tagName !== "SCRIPT") return add(el);
+    asked.push(el.getAttribute("src").replace(/\?.*$/, ""));
+    if (/home\.js/.test(el.src)) w.FK = { home: { mount: async (box) => { box.innerHTML = "<h2>Your leagues, right now</h2>"; box.hidden = false; } }, cloud: { user: () => ({ id: "u1" }), rpc: async (name) => { if (!(name in fixtures)) throw new Error(name); return fixtures[name]; } } };
+    setTimeout(() => el.onload && el.onload(), 0);
+    return el;
+  };
+  w.eval(scripts[scripts.length - 1]);
+  return { w, asked, settle: () => new Promise((r) => setTimeout(r, 60)) };
+}
+
+test("My teams lists your leagues and every kind of pool when you're signed in", async () => {
+  const t = myTeams(true, {
+    mm_pools_mine: [{ id: "AB12", kind: "bowls", name: "Bowl season", members: 6 }, { id: "ZZ9", kind: "oscars", name: "Oscar night", members: 1 }],
+    pk_groups_mine: [{ name: "The guys", members: 8 }], wn_mine: [{ id: "W7", sport: "nba", mode: "ou", name: "Overs", members: 4 }] });
+  await t.settle();
+  assert.deepEqual(t.asked, ["../fantasy-kit/sports.js", "../fantasy-kit/value.js", "../fantasy-kit/home.js"]);
+  assert.ok(!t.w.document.getElementById("mt-leagues").hidden);
+  const el = t.w.document.getElementById("mt-pools"), rows = [...el.querySelectorAll("a.mt-pool")];
+  assert.ok(!el.hidden);
+  assert.deepEqual(rows.map((a) => a.getAttribute("href")), ["/pools/bowls/?p=AB12", "/pools/oscars/?p=ZZ9", "/pickem/", "/pools/wins/?p=W7"]);
+  assert.match(rows[0].textContent, /Bowl season.*Bowl pick'em · 6 entries/);
+  assert.match(rows[1].textContent, /Oscars ballot · 1 entry/);
+  assert.match(rows[3].textContent, /NBA over\/under pool · 4 entries/);
+});
+
+test("My teams: no pools section without pools, and nothing loads for someone signed out", async () => {
+  const none = myTeams(true, { mm_pools_mine: [], pk_groups_mine: [] });     // wn_mine fails: still no error, no section
+  await none.settle();
+  assert.ok(none.w.document.getElementById("mt-pools").hidden);
+  const out = myTeams(false, {});
+  await out.settle();
+  assert.deepEqual(out.asked, []);
+  assert.ok(out.w.document.getElementById("mt-leagues").hidden);
+});
+
+test("the pool games on My teams match the Pools page's own list", () => {
+  const src = read("fantasy-kit/pools.js"), slug = Function("return (" + src.match(/const SLUG = (\{[^}]+\})/)[1] + ")")();
+  const mine = Function("return (" + read("my-teams/index.html").match(/var GAME = (\{[\s\S]*?\});/)[1] + ")")();
+  assert.deepEqual(Object.keys(mine).sort(), Object.keys(slug).sort());
+  for (const k of Object.keys(slug)) assert.equal(mine[k][1], slug[k], k);
+});
