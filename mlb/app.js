@@ -621,7 +621,7 @@
       meta: [(p.el || [p.pos]).join("/"), p.age != null ? "Age " + Math.floor(p.age) : "", p.b ? "B/T " + p.b + "/" + p.th : ""], chips: chips, head: head,
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stats }, hasSv ? { id: "tr", label: "Statcast", html: svp } : null, { id: "ct", label: "Contract", html: ct }],
       foot: '<div class="pc-acts"><button type="button" data-add="a" data-id="' + esc(p.id) + '">Trade: side A</button><button type="button" data-add="b" data-id="' + esc(p.id) + '">Side B</button><a href="' + href("team/" + p.t) + '">' + esc(t.name) + " depth</a></div>",
-      follow: { sport: "mlb-p", id: p.id, name: p.n, info: { t: t.name, href: "/mlb/?card=" + encodeURIComponent(p.id) } } });
+      fantasy: { sport: "mlb", id: p.id }, follow: { sport: "mlb-p", id: p.id, name: p.n, info: { t: t.name, href: "/mlb/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
   }
   // A free agent who isn't on a roster yet: his projection, the crowd's contract, what he's worth year by year
@@ -1348,7 +1348,7 @@
     $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
     // a link straight to a player's card (My teams uses it): /mlb/?card=<id>
-    var dl = new URLSearchParams(location.search).get("card"); if (dl && (H.byId[dl] || H.byId[+dl])) openCard(dl);
+    var dl = new URLSearchParams(location.search).get("card"); if (dl && (H.byId[dl] || H.byId[+dl])) openCard(dl); else if (dl && window.Search) Search.miss(dl);
     // after the first screen: park shapes (team pages), past seasons (player cards), then Statcast
     fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }).then(function (p) { SHAPES = (p && p.parks) || null; if (state.route === "team") render(); });
     fetch("data/history.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (h) { historyData = h && h.season === HUB.season ? h : {}; });

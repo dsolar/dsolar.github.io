@@ -963,6 +963,11 @@ ol.ord{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap
 .pc-contract-note{margin:12px 0 8px;line-height:1.5}
 .pc-contract-links{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:11px;color:var(--muted)}
 .pc-contract-links a{font-weight:700;color:var(--accent)}
+/* the card's link to the same player in his sport's hub, and the slot his recent games load into (assets/gamelog.js) */
+.pc-hubrow{margin:2px 0 12px;font-size:13px;text-align:right}
+.pc-hub{font-weight:750;color:var(--accent);text-decoration:none}
+.pc-hub:hover,.pc-hub:focus-visible{text-decoration:underline}
+.pc-glslot:empty{display:none}
 :root[data-theme="dark"] .su{--sp-t:#74D184;--sp-soft:rgba(116,209,132,.12)}
 :root[data-theme="dark"] .su.sp-nba{--sp-t:#FF9A5E;--sp-soft:rgba(255,154,94,.12)}
 :root[data-theme="dark"] .su.sp-cbb{--sp-t:#BFA8FF;--sp-soft:rgba(191,168,255,.12)}
@@ -2663,6 +2668,11 @@ table.t td:has(> .two),table.t th.two-h{text-align:left}
 :root[data-theme="dark"] .fk-find-r{--fr-bg:#1B2433;--fr-ink:#EEF2F7;--fr-muted:#9AA7B6;--fr-hover:#273245}
 .fk-find-r a{color:var(--fr-ink)}.fk-find-r small,.fk-find-r .none{color:var(--fr-muted)}
 .fk-find-r a:hover,.fk-find-r a:focus{background:var(--fr-hover)}
+/* a result's second link, to the same player in his sport's hub */
+.fk-find-r li{display:flex;align-items:center;gap:2px}
+.fk-find-r li>a:first-child{flex:1;min-width:0}
+.fk-find-r a.hub{flex:none;flex-direction:row;padding:8px 9px;font-size:12px;font-weight:750;color:var(--fr-muted)}
+.fk-find-r a.hub:hover,.fk-find-r a.hub:focus{color:var(--fr-ink)}
 /* a small sample (ui.js sampleOf): a quiet tag by the name, and a line on the player card */
 .tag.ss{background:color-mix(in srgb,#D97706 14%,transparent);color:#9A5A04;border:0;font-weight:750;cursor:help}
 :root[data-theme="dark"] .tag.ss{color:#FBBF24;background:rgba(251,191,36,.14)}

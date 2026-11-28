@@ -82,7 +82,10 @@
         loadIndex(kit).then(function (list) {
           var hits = find(list, input.value);
           ul.innerHTML = hits.map(function (p, i) {
-            return '<li role="option" id="fk-find-' + i + '"><a href="' + esc(URLS.rankings + "?s=" + p.k + "&p=" + encodeURIComponent(p.id)) + '"><b>' + esc(p.n) + '</b><small>' + esc(SHORT[p.k] || p.k) + " &middot; " + esc(p.pos) + (p.t ? " &middot; " + esc(p.t) : "") + "</small></a></li>";
+            // each result goes to his card in the rankings; "Hub" beside it goes to the same player in his sport's hub,
+            // which opens its search with his name typed when it doesn't know the id (the NFL hub keeps other ids)
+            var hub = SHORT[p.k] && p.pos !== "DEF" ? '<a class="hub" href="/' + p.k + "/?card=" + encodeURIComponent(p.id) + "&n=" + encodeURIComponent(p.n) + '" title="' + esc(p.n + " in the " + SHORT[p.k] + " Hub") + '">Hub</a>' : "";
+            return '<li role="option" id="fk-find-' + i + '"><a href="' + esc(URLS.rankings + "?s=" + p.k + "&p=" + encodeURIComponent(p.id)) + '"><b>' + esc(p.n) + '</b><small>' + esc(SHORT[p.k] || p.k) + " &middot; " + esc(p.pos) + (p.t ? " &middot; " + esc(p.t) : "") + "</small></a>" + hub + "</li>";
           }).join("") || (input.value.trim().length > 1 ? '<li class="none">No players by that name</li>' : "");
           ul.hidden = !ul.innerHTML; input.setAttribute("aria-expanded", String(!ul.hidden));
         });
@@ -91,7 +94,7 @@
     document.addEventListener("focusin", function (e) { var box = e.target.closest && e.target.closest(".fk-find"); if (box) loadIndex(box.dataset.kit || ""); });
     document.addEventListener("keydown", function (e) {
       var box = e.target.closest && e.target.closest(".fk-find"); if (!box) return;
-      var links = Array.prototype.slice.call(box.querySelectorAll(".fk-find-r a")), i = links.indexOf(document.activeElement);
+      var links = Array.prototype.slice.call(box.querySelectorAll(".fk-find-r a:not(.hub)")), i = links.indexOf(document.activeElement);
       if (e.key === "ArrowDown" && links.length) { e.preventDefault(); links[Math.min(links.length - 1, i + 1)].focus(); }
       else if (e.key === "ArrowUp" && links.length) { e.preventDefault(); if (i <= 0) box.querySelector("input").focus(); else links[i - 1].focus(); }
       else if (e.key === "Enter" && e.target.tagName === "INPUT" && links.length) { e.preventDefault(); links[0].click(); }

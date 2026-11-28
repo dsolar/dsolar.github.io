@@ -516,7 +516,7 @@
       chips: [[tr.label, "tag"]], head: head,
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: G ? goalieStats(p) : skaterStats(p) }, { id: "tr", label: "Tracking", html: edgePane(p) }, p.k ? { id: "ct", label: "Contract", html: dealTab(p) } : null],
       foot: t ? '<div class="pc-acts"><a href="#/team/' + esc(p.team) + '">' + esc(t.common || t.name) + " page</a></div>" : "",
-      follow: { sport: "nhl-p", id: p.id, name: p.name, info: { t: t ? t.common || t.name : p.team, href: "/nhl/?card=" + encodeURIComponent(p.id) } } });
+      fantasy: { sport: "nhl", id: p.id }, follow: { sport: "nhl-p", id: p.id, name: p.name, info: { t: t ? t.common || t.name : p.team, href: "/nhl/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
     if (!EDGE) loadEdge().then(function () { var pn = card.querySelector('[data-pane="tr"]'); if (pn && PLAYERS[id] === p) pn.innerHTML = edgePane(p); });
   }
@@ -730,7 +730,7 @@
     $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Contracts from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset (CC0). Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + '. <a href="#/method">How it works</a>.';
     render();
     // a link straight to a player's card (My teams uses it): /nhl/?card=<id>
-    var dl = new URLSearchParams(location.search).get("card"); if (dl && PLAYERS[dl]) openCard(+dl);
+    var dl = new URLSearchParams(location.search).get("card"); if (dl && PLAYERS[dl]) openCard(+dl); else if (dl && window.Search) Search.miss(dl);
   }).catch(function () { view.innerHTML = '<p class="loading">The hub didn\'t load. Try again in a minute.</p>'; });
   // find any player or team (assets/search.js)
   if (window.Search) Search.mount({ sport: "nhl", placeholder: "Search NHL players and teams", hint: "Type a player or a team, like Pastrnak or Bruins.",

@@ -84,7 +84,8 @@
     setTimeout(function () { cfg.open(x); }, 0);
   }
   function close() { if (dlg && dlg.open) dlg.close(); }
-  function open() {
+  // open("Tatum") starts with a name already typed (the button and "/" pass an event or nothing, and start empty)
+  function open(q) {
     if (!cfg) return;
     if (!idx || !idx.length) build();
     if (!dlg) {
@@ -106,7 +107,7 @@
       dlg.addEventListener("click", function (e) { if (e.target === dlg) close(); });
     }
     input.placeholder = cfg.placeholder || "Search players and teams";
-    input.value = "";
+    input.value = typeof q === "string" ? q : "";
     draw();
     if (dlg.showModal) dlg.showModal(); else dlg.setAttribute("open", "");
     input.focus();
@@ -155,5 +156,15 @@
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", button); else button();
   }
   // a hub whose data changed (a new day, a trade) can ask for the list to be rebuilt
-  window.Search = { mount: mount, open: open, refresh: function () { idx = null; } };
+  // A link to a player's card (/nba/?card=<id>&n=<name>, from Draft Lab's cards) for a player this hub doesn't carry, a
+  // deep bench player or a minor leaguer: instead of a page that ignored the link, the search box opens with his name
+  // typed. The hub calls Search.miss(id) when it can't find the id it was asked for; anything but the linked id is ignored.
+  var missed = false;
+  function miss(id) {
+    if (missed || !cfg) return;
+    var q = new URLSearchParams(location.search), n = q.get("n");
+    if (!n || String(id) !== q.get("card")) return;
+    missed = true; open(n);
+  }
+  window.Search = { mount: mount, open: open, miss: miss, refresh: function () { idx = null; } };
 })();

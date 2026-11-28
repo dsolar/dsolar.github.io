@@ -49,7 +49,7 @@
       if (keep !== false) D.close();
     });
     if (!D.open) D.showModal();
-    fillTrack(D);
+    fillTrack(D); fillGameLog(D);
     return D;
   }
   /* ---------- manager profiles: one name and photo for every league ---------- */
@@ -825,6 +825,34 @@
       });
     });
   }
+  // Recent games on any card, from the hubs' game log (assets/gamelog.js, which reads ESPN's): a slot in Overview that
+  // fills once the card is on the page, and takes itself away when ESPN has no games for him. By ESPN id where the
+  // pool has one (NBA, NFL, both colleges), by name for MLB and NHL. The file loads the first time a card needs it.
+  const GL_LEAGUE = { nba: "nba", nfl: "nfl", mlb: "mlb", nhl: "nhl", cbb: "ncaab", cfb: "ncaaf" };
+  const realPlayer = (p) => !!(p && p.n && p.id) && !S.positions(p).some((x) => x === "DEF");   // a team defense has no card of its own elsewhere
+  const gameLogSlot = (sport, p) => (GL_LEAGUE[sport.key] && realPlayer(p) ? `<div class="pc-glslot" data-gl="${GL_LEAGUE[sport.key]}" data-espn="${esc(p.espn || "")}" data-name="${esc(p.n)}"></div>` : "");
+  let glLoad = null;
+  function fillGameLog(root) {
+    const slots = $$(".pc-glslot[data-gl]", root);
+    if (!slots.length) return;
+    glLoad = glLoad || new Promise((res) => {
+      if (window.GameLog) return res();
+      const sc = document.createElement("script"); sc.src = "/assets/gamelog.js"; sc.onload = sc.onerror = () => res(); document.head.appendChild(sc);
+    });
+    glLoad.then(() => slots.forEach((el) => {
+      if (!el.isConnected) return;
+      if (!window.GameLog) return el.remove();
+      el.outerHTML = window.GameLog.slot({ league: el.dataset.gl, espn: el.dataset.espn || "", name: el.dataset.name, rows: 3 });
+    }));
+  }
+  // The same player in his sport's hub (/nba/, /nfl/ and the rest), in a new tab so a draft room stays open. The hub
+  // opens his card from ?card=, and its search box with his name typed when it doesn't carry him (assets/search.js,
+  // Search.miss). The NFL hub keys players by the league's ids, so it's sent his ESPN id.
+  const HUBS = { nba: ["nba", "NBA Hub"], nfl: ["nfl", "NFL Hub"], mlb: ["mlb", "MLB Hub"], nhl: ["nhl", "NHL Hub"], cbb: ["cbb", "NCAAB Hub"], cfb: ["cfb", "NCAAF Hub"] };
+  const hubLink = (sport, p) => {
+    const h = HUBS[sport.key], id = h && realPlayer(p) ? (sport.key === "nfl" ? p.espn : p.id) : null;
+    return id ? `<a class="pc-hub" href="/${h[0]}/?${new URLSearchParams({ card: id, n: p.n })}" target="_blank" rel="noopener">Open in the ${h[1]} <span aria-hidden="true">→</span></a>` : "";
+  };
   function playerCard(sport, p, opts = {}) {
     const sc = sport.scorings[opts.scoring] || Object.values(sport.scorings)[0];
     const kd = S.positions(p).some((x) => x === "K" || x === "DEF");
@@ -888,8 +916,10 @@
     const sample = sampleOf(sport, p);
     const overview = [opts.status, opts.week, opts.note, opts.extra, opts.after,
       sample && `<p class="small">Small sample · ${sample.g} of ${sample.of} games played</p>`,
-      details.length && `<div class="stat-row pc-stats">${details.join("")}</div>`, zsFold].filter(Boolean).join("");
-    const tracking = trackSlot(sport, p);
+      details.length && `<div class="stat-row pc-stats">${details.join("")}</div>`,
+      // opts.recent === false: the card already shows his games its own way (a baseball league's splits and game log)
+      opts.recent !== false && gameLogSlot(sport, p), zsFold].filter(Boolean).join("");
+    const tracking = trackSlot(sport, p), hub = hubLink(sport, p);
     const color = S.teamColor && S.teamColor(sport.key, p.t);
     const logo = opts.logo && p.t && p.t !== "FA" && S.teamLogo && S.teamLogo(sport.key, p.t, 32);
     return window.PCard.html({
@@ -905,7 +935,8 @@
         { id: "contract", label: "Contract", html: contractPanel(sport, p) },
         { id: "draft", label: "Draft", html: opts.draft }
       ],
-      foot: opts.actions && `<div class="acts pc-acts">${opts.actions}</div>`
+      // (the link sits above the buttons: on a phone's sheet the buttons stick to the bottom edge)
+      foot: [hub && `<p class="pc-hubrow">${hub}</p>`, opts.actions && `<div class="acts pc-acts">${opts.actions}</div>`].filter(Boolean).join("")
     });
   }
 

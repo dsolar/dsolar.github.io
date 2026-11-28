@@ -762,7 +762,7 @@ function teamShare(p) {
 // the player card, on the shared frame (assets/pcard.js): Overview, Stats, Draft
 function openPlayer(id) {
   if (!playersReady) { pendingPlayer = id; return; }
-  const p = byPlayer[id]; if (!p) return;
+  const p = byPlayer[id]; if (!p) { if (window.Search) Search.miss(id); return; }
   // the Big Board loads on first use: open now, then fill the Draft tab in once it lands (same tab stays open)
   if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { let d = null; try { d = $("#card"); } catch (e) { return; } if (d && d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }).catch(() => {}); } else ensureBoard();
   // last season loads on first use too: open now, redraw the Stats tab when it lands
@@ -802,7 +802,7 @@ function openPlayer(id) {
     meta: [p.pos, p.year, p.height, p.weight, p.jersey ? "#" + p.jersey : ""], chips, head,
     tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: st }, { id: "dr", label: "Draft", html: dr }],
     foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="' + safe(p.url) + '" target="_blank" rel="noopener">ESPN page</a></div>',
-    follow: { sport: "ncaab-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cbb/?card=" + encodeURIComponent(p.id) } } });
+    fantasy: { sport: "cbb", id: p.id }, follow: { sport: "ncaab-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cbb/?card=" + encodeURIComponent(p.id) } } });
   const dlg = $("#card"); dlg.dataset.pid = id; if (!dlg.open) dlg.showModal();
 }
 

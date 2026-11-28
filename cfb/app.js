@@ -688,7 +688,7 @@ function cfbBars(p) {
 }
 function openPlayer(id) {
   if (!P) { pendingPlayer = id; return; }
-  const p = byPlayer[id]; if (!p) return;
+  const p = byPlayer[id]; if (!p) { if (window.Search) Search.miss(id); return; }
   const t = byId[p.teamId], hz = X && X.heisman.ladder.find(x => x.id === id);
   const g = nextGame(p.teamId);
   let ng = ""; if (g) { const home = g.home === p.teamId, o = team(home ? g.away : g.home), l = g.state === "pre" ? lineFor(g) : null; ng = '<p class="tldr"><b>Next:</b> ' + dLabel(g.day, { weekday: "short" }) + " " + (home ? "vs " : "at ") + (o.fcs ? esc(o.short) : '<a href="#/matchup?a=' + esc(t.id) + "&b=" + esc(o.id) + "&site=" + (g.neutral ? "n" : home ? "a" : "b") + '">' + esc(o.short) + "</a>") + (l ? " · " + favText(l.spread, team(g.home), team(g.away)) + ", " + esc(t.short) + " " + pct(home ? l.prob : 1 - l.prob) : "") + "</p>"; }
@@ -725,7 +725,7 @@ function openPlayer(id) {
     meta: [p.pos, p.year, p.ht, p.wt, p.jersey ? "#" + p.jersey : ""], chips, head,
     tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, { id: "dr", label: "Draft", html: dr }],
     foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN page</a></div>',
-    follow: { sport: "ncaaf-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cfb/?card=" + encodeURIComponent(p.id) } } });
+    fantasy: { sport: "cfb", id: p.id }, follow: { sport: "ncaaf-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cfb/?card=" + encodeURIComponent(p.id) } } });
   const dlg = $("#card"); if (!dlg.open) dlg.showModal();
 }
 
