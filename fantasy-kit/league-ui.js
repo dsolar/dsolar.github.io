@@ -3191,7 +3191,7 @@
         .concat(W && W.avg != null ? [["Per week", fmtS(W.avg)]] : pts() ? [[sport.weekOf != null ? `Week ${sport.weekOf}` : "Projection", sport.weekOf != null ? fmtS(p.v / 17) : String(Math.round(p.v))]] : [])
         .concat(trend != null ? [["Last 3 weeks", `${fmtS(last3)}<em class="${trend >= 0.1 ? "up" : trend <= -0.1 ? "dn" : ""}">${trend >= 0 ? "+" : ""}${Math.round(trend * 100)}%</em>`]] : [])
         .concat(startWeeks.length && !bb() && !L().imported ? [["Started", `${started} of ${startWeeks.length}`]] : [])
-        .concat(acq ? [["Acquired", `${esc(acq.how)}<em>${acq.detail}</em>`]] : !auctionLg() && draftedAt(pid) ? [["Drafted", `Rd ${draftedAt(pid).r}, #${draftedAt(pid).n}`]] : [])
+        .concat(acq ? [["Acquired", `${esc(acq.how)}<em>${acq.detail}</em>`]] : !auctionLg() && draftedAt(pid) ? [["Drafted", `Round ${draftedAt(pid).r}<em>pick ${draftedAt(pid).n} overall</em>`]] : [])
         .concat((L().settings.keepers || L().settings.dynasty) && window.FK.season ? [[`${nextYearOf()} keeper`, keepShort(p)]] : [])
         .concat(auctionLg() ? [["Auction", p.$ ? money(p.$) : "-"]] : []);
       const mu = !over() ? muOf(p, curWeek()) : null;
