@@ -1299,3 +1299,20 @@ html{overflow-x:clip}
 .g-nflpo .pl-ksb .pl-kt.on.lost{background:rgba(220,80,80,.2);border-color:#f08a8a;box-shadow:inset 0 0 0 1px #f08a8a}
 .pl-st td.pl-bkchc{white-space:normal;line-height:1.25}
 .pl-st td.pl-bkchc small{white-space:nowrap}
+
+/* a pool's group: invites to its other games, the strip of those games on a pool page, the owner's next-game card */
+.pl-invs{margin:0 16px 4px;border:1px solid color-mix(in srgb,var(--brand,#F6C445) 55%,var(--line));border-radius:var(--r,10px);background:color-mix(in srgb,var(--brand,#F6C445) 9%,var(--surface));overflow:hidden}
+.pl-invs h3{margin:0;padding:10px 14px 0;font-size:13px;font-weight:850}
+.pl-invs .pl-list li{border-top:0}
+.pl-inv-r{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:10px 14px}
+.pl-inv-a{flex:none;display:flex;gap:6px}
+@media (max-width:520px){.pl-inv-r{flex-wrap:wrap}.pl-inv-a{width:100%;padding-left:50px}}
+.pl-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.pl-group>.ps{font-size:12.5px;font-weight:750}
+.pl-gchip{display:inline-flex;align-items:center;gap:6px;padding:4px 4px 4px 4px;border:1px solid var(--line-2);border-radius:999px;background:var(--surface)}
+.pl-gchip a:first-child{display:inline-flex;align-items:center;gap:7px;padding-right:6px;color:var(--ink);text-decoration:none;font-size:13px}
+.pl-gchip .pl-kic{grid-row:auto;width:24px;height:24px;border-radius:999px}
+.pl-gchip .pl-kic svg{width:14px;height:14px}
+.pl-gchip small{color:var(--muted);font-weight:650}
+.pl-gchip .btn{border-radius:999px}
+.pl-next .pl-setf select{max-width:100%}

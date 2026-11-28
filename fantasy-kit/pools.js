@@ -293,10 +293,42 @@
   const dueText = (t) => t - Date.now() < 6 * 864e5 ? tipTime(t) : new Date(t).toLocaleDateString("en-US", Object.assign({ month: "short", day: "numeric" }, ET));
   const TONE_ORDER = { todo: 0, ok: 1, wait: 2, won: 3, out: 4, done: 5 };
   // ---------- a game's own page (/pools/<slug>/): what it is, when it runs, your pools of it, make or join one ----------
+  /* A pool's group, game after game: the owner starts another game for the same people (mm_pool_spawn), and each of
+     them gets an invite, here on the Pools pages, on the old pool's page and by email (fk-clock), to join with a tap. */
+  const invites = async () => (st.user ? ((await C.rpc("mm_invites_mine").catch(() => [])) || []) : []);
+  function invitesHtml(list) {
+    if (!list.length) return "";
+    return `<div class="pl-invs"><h3>${list.length === 1 ? "You're invited" : `${list.length} invites`}</h3><ul class="pl-list">${list.map((v) => `<li class="t-todo"><span class="pl-inv-r"><span class="pl-badge" style="--sc:${sportC(v.kind)}">${ICON[v.kind] || ""}</span><span class="pl-li-t"><b>${esc(v.name)}</b><small>${esc(kindName(v.kind))}${v.by ? ` &middot; ${esc(v.by)} started it for ${v.fromName ? esc(v.fromName) : "your group"}` : ""} &middot; ${v.members} in</small></span>
+      <span class="pl-inv-a"><button type="button" class="btn sm go" data-inv="${esc(v.id)}|1|${esc(v.kind)}">Join</button><button type="button" class="btn sm ghost" data-inv="${esc(v.id)}|0|${esc(v.kind)}">No thanks</button></span></span></li>`).join("")}</ul></div>`;
+  }
+  // the pool page: the group's other games, and whether you're in each
+  function groupStrip(b) {
+    const ls = (b.links || []).filter((l, i, a) => a.findIndex((x) => x.id === l.id) === i);
+    if (!ls.length) return "";
+    return `<nav class="pl-group" aria-label="This group's other games"><span class="ps">This group also plays</span>${ls.map((l) => `<span class="pl-gchip" style="--sc:${sportC(l.kind)}"><a href="${esc(poolUrl(l.id, l.kind))}"><i class="pl-kic">${ICON[l.kind] || ""}</i><b>${esc(kindName(l.kind))}</b><small>${l.members} in</small></a>${l.in ? "" : l.invited ? `<button type="button" class="btn sm go" data-inv="${esc(l.id)}|1|${esc(l.kind)}">Join</button>` : `<a class="btn sm go" href="${esc(poolUrl(l.id, l.kind, true))}">Join</a>`}</span>`).join("")}</nav>`;
+  }
+  // the owner's card: start the next game for everyone here
+  function nextGameCard(b) {
+    const p = b.pool, today = new Date().toISOString().slice(0, 10), have = {};
+    (b.links || []).forEach((l) => { if (l.rel === "next") have[l.kind] = l; });
+    const opts = GAMES.filter((g) => g.key !== "pickem" && g.key !== "wins" && g.key !== p.kind && (!g.end || g.end >= today) && KIND[g.key])
+      // the likely next one first: the same sport, then what opens soonest; a game that's been running a while goes last
+      .map((g) => { const o = g.open || today, stale = o < new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10); return { g, k: [SPORT[g.key] === SPORT[p.kind] ? 0 : 1, stale ? 1 : 0, o < today ? today : o, have[g.key] ? 1 : 0] }; })
+      .sort((x, y) => (x.k[3] - y.k[3]) || (x.k[0] - y.k[0]) || (x.k[1] - y.k[1]) || x.k[2].localeCompare(y.k[2])).map((x) => x.g);
+    if (!opts.length) return "";
+    const others = b.members.length - 1;
+    return `<section class="card pl-set pl-next"><div class="mod-h"><h2>Next game for this group</h2></div><div class="bd pl-setb">
+      <p class="ps">Start another game for these people. ${others ? `${others === 1 ? "The other member gets" : `All ${others} other members get`} an invite to join with one tap, by email and on their Pools page.` : "Anyone who joins this pool later can find it here too."} Buy-in, payouts and past champions carry over.</p>
+      <form id="pl-spawn" class="pl-setf"><label>Game<select name="kind">${opts.map((g) => `<option value="${g.key}">${esc(kindName(g.key))}${have[g.key] ? " (started)" : ""}</option>`).join("")}</select></label>
+        <label>Name<input name="name" maxlength="40" value="${esc(p.name)}"></label>
+        <button class="btn sm go">Start it and invite everyone</button></form></div></section>`;
+  }
+
   async function gameHome(kind) {
     const gm = GAMES.find((g) => g.key === kind) || { name: KIND[kind], tag: "", facts: [] };
     let mine = [], stat = {};
-    if (st.user) { mine = ((await C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; })) || []).filter((p) => p.kind === kind); stat = await statuses(mine); }
+    let invs = [];
+    if (st.user) { [mine, invs] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), invites()]); mine = (mine || []).filter((p) => p.kind === kind); stat = await statuses(mine); }
     const now = Date.now(), live = gm.open && now >= day0(gm.open) && now < day0(gm.end) + 864e5;
     const when = gm.open ? (live ? (gm.live || "Live now") : now < day0(gm.open) ? gm.soon || `Opens ${shortDate(gm.open)}` : `Back next season`) : "";
     const nx = UP_NEXT.find((x) => x.key === kind && now >= day0(x.from) && now < day0(x.until));
@@ -314,7 +346,7 @@
     const pill = (x) => !x ? "" : x.tone === "todo" ? `<span class="pl-due">${x.due ? `Due ${esc(dueText(x.due))}` : "To do"}</span>` : x.tone === "won" ? `<span class="pl-due won">Won</span>` : x.tone === "out" ? `<span class="pl-due out">Out</span>` : "";
     const list = mine.map((p) => { const x = stat[p.id]; return `<li class="${x ? "t-" + x.tone : ""}"><a href="${esc(poolUrl(p.id, p.kind))}"><span class="pl-badge" style="--sc:${sportC(p.kind)}">${ICON[p.kind]}</span><span class="pl-li-t"><b>${esc(p.name)}</b><small>${x && x.text ? esc(x.text) : `${p.members} ${p.members === 1 ? "entry" : "entries"}`}</small></span>${pill(x)}<span class="pl-chev" aria-hidden="true">&rsaquo;</span></a></li>`; }).join("");
     const yours = st.user ? `<section class="card pl-yours"><div class="pl-yours-h"><h2>Your pools</h2></div>
-      ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
+      ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>${invitesHtml(invs)}
       ${list ? `<ul class="pl-list">${list}</ul>` : `<div class="pl-empty"><b>You're not in one yet.</b> Make one and send the link, or join a friend's with their code.</div>`}</section>` : signinCard("Sign in to make or join a pool");
     const facts = (gm.facts || []).length ? `<p class="statline pl-gfacts">${gm.facts.map((f) => `<span>${esc(f)}</span>`).join("")}${when ? `<span><b>${esc(when)}</b></span>` : ""}</p>` : "";
     app.innerHTML = `<div class="wrap page pl pl-game${themeOf(kind)}">${band(esc(gm.name), esc(gm.tag), acts, SPORT[kind] || "Pools", artOf(kind))}
@@ -324,10 +356,10 @@
       <p class="ps"><a href="/pools/">Every pool, every sport</a></p></div>`;
   }
   async function home() {
-    let mine = [], groups = [], wins = [], stat = {};
+    let mine = [], groups = [], wins = [], stat = {}, invs = [];
     if (st.user) {
       // wins pools (their own page, /pools/wins/) are listed here with the rest
-      [mine, groups, wins] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => []), C.rpc("wn_mine").catch(() => [])]);
+      [mine, groups, wins, invs] = await Promise.all([C.rpc("mm_pools_mine").catch((e) => { st.msg = e.message; return []; }), C.rpc("pk_groups_mine").catch(() => []), C.rpc("wn_mine").catch(() => []), invites()]);
       if (!Array.isArray(wins)) wins = [];
       stat = await statuses(mine || []);
       if ((groups || []).length) {
@@ -407,7 +439,7 @@
     const yours = st.user ? `<section class="card pl-yours"><div class="pl-yours-h"><h2>Your pools</h2><div class="pl-yours-act">
         <button type="button" class="btn sm${panel === "make" ? " on" : ""}" data-panel="make" aria-expanded="${panel === "make"}">+ Make a pool</button><button type="button" class="btn sm${panel === "join" ? " on" : ""}" data-panel="join" aria-expanded="${panel === "join"}">Join with a code</button></div></div>
       ${panel === "make" ? makeForm : panel === "join" ? joinForm : ""}<p class="pl-msg" role="status">${esc(st.msg)}</p>
-      ${summary}${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="pl-empty"><b>No pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : "";
+      ${invitesHtml(invs)}${summary}${items.length ? `<ul class="pl-list">${items.join("")}</ul>` : `<div class="pl-empty"><b>No pools yet.</b> Make one and send the code, or join a friend's.</div>`}</section>` : "";
     const signin = st.user ? "" : signinCard("Sign in to make or join a pool");
     const has = items.length > 0;
     const haveK = new Set((mine || []).map((p) => p.kind));
@@ -521,7 +553,7 @@
       ${b.members.length > 1 ? `<div class="pl-row"><label>Hand the pool to<select data-xfer><option value="">Pick a member</option>${b.members.filter((m) => !m.me).map((m) => `<option value="${esc(m.id)}"${st.xfer === m.id ? " selected" : ""}>${esc(m.name)}</option>`).join("")}</select></label><button type="button" class="btn sm${st.xferArm ? " danger" : ""}" data-xferb${st.xfer ? "" : " disabled"}>${st.xferArm ? "Tap again: they become the owner" : "Hand it over"}</button></div>` : ""}
       <form id="pl-del" class="pl-row pl-del"><label>Delete this pool <small class="ps">Type its code, ${esc(p.id)}, to confirm. Every pick goes with it.</small><input name="code" maxlength="6" autocomplete="off" placeholder="Pool code"></label><button class="btn sm danger">Delete</button></form>
       </div></section>`;
-    return how + you + members + (p.kind === "props" ? propsEditor(b) : "") + commish + log;
+    return how + you + members + (p.kind === "props" ? propsEditor(b) : "") + nextGameCard(b) + commish + log;
   }
   // a reminder only helps while there's a pick still ahead of you: not once you're out, the pool is over, or a
   // lock-once game (5 teams, the NFL bracket) has locked
@@ -569,7 +601,7 @@
     const asBar = st.as && b.as ? `<div class="pl-asbar" role="status"><span><b>You're making picks for ${esc(b.as.name)}.</b> Every lock still applies, and each pick is logged where the whole pool can see it.</span><button type="button" class="btn sm" data-asdone>Done</button></div>` : "";
     // an old link moves to the game's own address
     if (SLUG[b.pool.kind] && !location.pathname.startsWith(gameUrl(b.pool.kind))) { try { history.replaceState(null, "", poolUrl(b.pool.id, b.pool.kind) + location.hash); } catch (x) { /* fine */ } }
-    app.innerHTML = `<div class="wrap page pl${themeOf(b.pool.kind)}">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${projectedNote(b)}
+    app.innerHTML = `<div class="wrap page pl${themeOf(b.pool.kind)}">${poolHead(b)}${asBar}${st.invite ? invitePanel(b) : ""}${pin}${groupStrip(b)}${projectedNote(b)}
       <div class="seg pl-tabs" role="tablist">${tabs.map(([k, n]) => `<button type="button" role="tab" data-tab="${k}" aria-selected="${st.tab === k}">${n}</button>`).join("")}</div>
       <p class="pl-msg" role="status">${esc(st.msg)}</p>${body}${st.tab === "standings" ? potAndChamps(b) : ""}</div>`;
     // 6: a day strip that runs past the screen opens on the day it's showing
@@ -1615,10 +1647,17 @@
     if (st.code) await pool(); else if (GAME) await gameHome(GAME); else await home();
   }
   app.addEventListener("click", async (e) => {
-    const t = e.target.closest("[data-tab],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-mfr],[data-mfslot],[data-mfadd],[data-mfclear],[data-mfsave],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
+    const t = e.target.closest("[data-tab],[data-inv],[data-day],[data-week],[data-pick],[data-unpick],[data-npick],[data-nunpick],[data-five],[data-save5],[data-copy],[data-make],[data-sport],[data-panel],[data-pp],[data-ppans],[data-ppsave],[data-osc],[data-oscans],[data-oscsave],[data-oscfav],[data-mfr],[data-mfslot],[data-mfadd],[data-mfclear],[data-mfsave],[data-pedadd],[data-peddel],[data-pedsave],[data-bk],[data-bkreg],[data-bkfill],[data-bkclear],[data-bkview],[data-bksave],[data-bteam],[data-bauto],[data-bfav],[data-bremind],[data-bsave],[data-kb],[data-ksave],[data-ffr],[data-ffslot],[data-ffpick],[data-ffsave],[data-sq],[data-sqdraw],[data-invite],[data-gsel],[data-leave],[data-rm],[data-ffcard],[data-luview],[data-champrm],[data-xferb],[data-as],[data-asdone],[data-planall],[data-ffstat],[data-ffview],[data-ffcol],[data-ffback]");
     if (!t || t.disabled) return;
     st.msg = "";
     if (t.dataset.tab) { st.tab = t.dataset.tab; return draw(); }
+    if (t.dataset.inv) {
+      const [id, yes, kind] = t.dataset.inv.split("|");
+      t.disabled = true;
+      try { ok(await C.rpc("mm_invite_answer", { p_pool: id, p_yes: yes === "1" })); } catch (x) { st.msg = x.message; return render(); }
+      if (yes === "1") { location.href = poolUrl(id, kind); return; }
+      return render();
+    }
     if (t.dataset.day) { const n = +t.dataset.day; st.open[n] = t.getAttribute("aria-expanded") !== "true"; return draw(); }
     if (t.dataset.week) { st.open["w" + t.dataset.week] = t.getAttribute("aria-expanded") !== "true"; return draw(); }
     if (t.dataset.panel) { st.panel = st.panel === t.dataset.panel ? "" : t.dataset.panel; return draw(); }
@@ -1850,6 +1889,13 @@
       if (f.id === "pl-money") { ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { buyin: v("buyin") === "" ? null : +v("buyin"), payouts: [0, 1, 2].map((i) => +v("pay" + i) || 0) } })); st.msg = "Saved."; await load(); return render(); }
       if (f.id === "pl-oscrun") { const n = f.elements.run.value; ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { tbAnswer: n === "" ? null : +n } })); st.msg = n === "" ? "Cleared." : `Saved: ${n} minutes.`; await load(); return render(); }
       if (f.id === "pl-champ") { if (!v("name")) return; const c = ((st.board.pool.extra || {}).champs || []).concat([{ year: v("year"), name: v("name") }]); ok(await C.rpc("mm_pool_extra", { p_pool: st.code, p_set: { champs: c } })); await load(); return render(); }
+      if (f.id === "pl-spawn") {
+        const r = await C.rpc("mm_pool_spawn", { p_from: st.code, p_kind: f.elements.kind.value, p_name: v("name") || null });
+        if (r && r.error === "exists") { location.href = poolUrl(r.id, r.kind); return; }
+        ok(r);
+        try { sessionStorage.setItem("pl-flash", r.invited ? `Your new pool is ready. ${r.invited === 1 ? "1 person" : `${r.invited} people`} from ${st.board.pool.name} got an invite.` : "Your new pool is ready."); } catch (x) { /* no flash */ }
+        location.href = poolUrl(r.id, r.kind); return;
+      }
       if (f.id === "pl-del") { ok(await C.rpc("mm_pool_delete", { p_pool: st.code, p_confirm: v("code") })); location.href = "/pools/"; return; }
       if (f.id === "pl-sqset") {
         ok(await C.rpc("mm_squares_set", { p_pool: st.code, p_cap: +v("cap"), p_price: v("price") === "" ? null : +v("price"), p_pay: [0, 1, 2, 3].map((k) => +v("pay" + k)) }));
@@ -1884,6 +1930,7 @@
     const back = C.fromLink();
     if (back && back.user) st.user = back.user;
     st.user = C.user();
+    try { const fl = sessionStorage.getItem("pl-flash"); if (fl) { st.msg = fl; sessionStorage.removeItem("pl-flash"); } } catch (x) { /* fine */ }
     try { const j = await fetch("/cbb/data/teams.json", { cache: "no-cache" }).then((r) => r.json()); st.teams = j.teams || {}; } catch (e) { /* names fall back to TBD */ }
     render();
   })();

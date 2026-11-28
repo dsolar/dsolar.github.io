@@ -352,10 +352,10 @@ async function loadPoolRules() {
   poolRules = { at: Date.now(), P: g.FK.pools };
   return g.FK.pools;
 }
-const POOL_KIND: Record<string, string> = { nfl: "NFL survivor", survivor: "March Madness survivor", five: "5 teams", bowls: "bowl pick'em", nflpo: "NFL playoff bracket", nflff: "NFL playoff fantasy", bracket: "March Madness bracket", props: "Super Bowl prop sheet", oscars: "Oscars ballot", mmff: "March Madness fantasy" };
-const POOL_WHAT: Record<string, string> = { nfl: "this week's survivor pick", survivor: "today's survivor pick", five: "your five teams", bowls: "some bowl picks", nflpo: "your playoff bracket", nflff: "this round's lineup", bracket: "your bracket", props: "your prop sheet", oscars: "your Oscars ballot", mmff: "this round's lineup" };
+const POOL_KIND: Record<string, string> = { nfl: "NFL survivor", survivor: "March Madness survivor", five: "5 teams", bowls: "bowl pick'em", cfpo: "College Football Playoff bracket", nflpo: "NFL playoff bracket", nflff: "NFL playoff fantasy", bracket: "March Madness bracket", props: "Super Bowl prop sheet", oscars: "Oscars ballot", mmff: "March Madness fantasy" };
+const POOL_WHAT: Record<string, string> = { nfl: "this week's survivor pick", survivor: "today's survivor pick", five: "your five teams", bowls: "some bowl picks", cfpo: "your playoff bracket", nflpo: "your playoff bracket", nflff: "this round's lineup", bracket: "your bracket", props: "your prop sheet", oscars: "your Oscars ballot", mmff: "this round's lineup" };
 // each game's own page (fantasy-kit/pools.js SLUG), so a reminder opens the pool where it's played
-const POOL_SLUG: Record<string, string> = { bowls: "bowls", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor", mmff: "march-madness-fantasy" };
+const POOL_SLUG: Record<string, string> = { bowls: "bowls", cfpo: "cfp-bracket", nflpo: "nfl-bracket", nflff: "nfl-playoff-fantasy", squares: "squares", props: "props", oscars: "oscars", bracket: "march-madness", survivor: "march-madness-survivor", five: "five-teams", nfl: "nfl-survivor", mmff: "march-madness-fantasy" };
 const poolLink = (pool: string, kind: string) => `https://davidsolar.dev/pools/${POOL_SLUG[kind] ? POOL_SLUG[kind] + "/" : ""}?p=${encodeURIComponent(pool)}`;
 const etTime = (t: number) => new Date(t).toLocaleString("en-US", { weekday: "short", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).replace(":00 ", " ") + " ET";
 async function poolReminders(token: string) {
@@ -404,6 +404,42 @@ async function poolReminders(token: string) {
     await new Promise((ok) => setTimeout(ok, 550)); // Resend allows two a second
   }
   return { due: due.length, sent, failed };
+}
+
+// A pool's group, game after game: when the owner starts another game for the same people (mm_pool_spawn), each of them
+// gets one email inviting them in. mm_invite_mail_take claims each invite as it's taken, so it's sent once.
+async function poolInvites(token: string) {
+  const key = Deno.env.get("RESEND_API_KEY"), from = Deno.env.get("FK_MAIL_FROM");
+  if (!key || !from) return { invites: "mail not set up" };
+  const r = await rpc("mm_invite_mail_take", { p_token: token });
+  if (!r || r.error) return { error: r && r.error };
+  let sent = 0, failed = 0;
+  for (const x of r.invites || []) {
+    const url = poolLink(x.pool, x.kind), game = POOL_KIND[x.kind] || "pool", by = x.by || "Your pool's owner";
+    const subject = `${by} started a ${game} for ${x.from_name || "your group"}`;
+    const lead = `${by} started a ${game}, ${x.pool_name}, for everyone in ${x.from_name || "your pool"}. You're invited: open it and tap Join.`;
+    const foot = `You're getting this because you're in ${x.from_name || "a pool"} on davidsolar.dev and its owner started a new game for the group. If you'd rather skip it, ignore this email.`;
+    const text = `Hi ${x.name || "there"},\n\n${lead}\n\nJoin: ${url}\n\n${foot}\n\nDraft Lab, davidsolar.dev`;
+    const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><title>${h(subject)}</title></head>
+<body style="margin:0;padding:0;background:#F1F3F6"><div style="display:none;max-height:0;overflow:hidden">${h(lead)}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F3F6"><tr><td align="center" style="padding:24px 12px">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#FFFFFF;border-radius:14px;overflow:hidden;border:1px solid #E1E5EB">
+  <tr><td style="background:#13233A;padding:20px 24px"><div style="font:700 12.5px ${FONT};color:rgba(255,255,255,.78)">${h(x.pool_name)} &middot; ${h(POOL_KIND[x.kind] || "Pool")}</div>
+    <div style="font:800 22px/1.25 ${FONT};color:#FFFFFF;margin-top:4px">You're invited to the next game</div></td></tr>
+  <tr><td style="padding:22px 24px 8px">
+    <p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">Hi ${h(x.name || "there")},</p>
+    <p style="margin:0 0 14px;font:400 16px/1.5 ${FONT};color:#26303D">${h(lead)}</p>
+    <p style="margin:18px 0 22px"><a href="${h(url)}" style="display:inline-block;background:#F6C445;color:#13233A;font:800 16px ${FONT};text-decoration:none;padding:12px 20px;border-radius:10px">Open ${h(x.pool_name)}</a></p></td></tr>
+  <tr><td style="padding:14px 24px 20px;border-top:1px solid #E1E5EB;font:400 13px/1.5 ${FONT};color:#6B7684">${h(foot)}<br>Draft Lab, davidsolar.dev</td></tr>
+</table></td></tr></table></body></html>`;
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from, to: [x.email], subject, text, html }),
+    }).catch(() => null);
+    if (res && res.ok) sent++; else failed++;
+    await new Promise((ok) => setTimeout(ok, 550)); // Resend allows two a second
+  }
+  return { sent, failed };
 }
 
 // NFL pick'em reminders (/pickem): a player who turned them on gets an email about three hours before a game he hasn't
@@ -560,7 +596,8 @@ Deno.serve(async (req) => {
   const mail = await sendMail(token).catch((e) => ({ error: String(e.message || e) }));
   const reminders = await poolReminders(token).catch((e) => ({ error: String(e.message || e) }));
   const recaps = await poolRecaps(token).catch((e) => ({ error: String(e.message || e) }));
+  const invites = await poolInvites(token).catch((e) => ({ error: String(e.message || e) }));
   const pickem = await pickemReminders(token).catch((e) => ({ error: String(e.message || e) }));
   const site = await siteAdmin(token).catch((e) => ({ error: String(e.message || e) }));
-  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, pickem, site, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
+  return new Response(JSON.stringify({ ...leagues, mail, reminders, recaps, invites, pickem, site, engine: engine ? engine.sha || "site" : null }), { headers: { "Content-Type": "application/json" } });
 });
