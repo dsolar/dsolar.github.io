@@ -208,7 +208,7 @@
       if (pre()) return tab === "league" ? [["overview", "Overview"], ["standings", gl() ? "Survivors" : "Standings"], ["managers", "Managers"], ["rules", "Rules"]].concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : [])
         : tab === "team" ? [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]])
         : tab === "players" ? [["all", "All players"], ["watch", "Your queue"]].concat(sport.key === "mlb" ? [["trends", "Trends"], ["news", "News"]] : sport.key === "nfl" ? [["trends", "Trends"], ["news", "News"]] : hasNews() ? [["news", "News"]] : []) : [];
-      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(pickOn() ? [["picks", "Pick'em"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
+      if (tab === "league") return [["overview", "Overview"]].concat([["standings", gl() ? "Survivors" : "Standings"], ["scoreboard", gl() ? "Weekly results" : flat() ? "By week" : "Scoreboard"]].concat(recapOn() && lastDone() >= 1 ? [["recap", "Recap"]] : []).concat(pickOn() ? [["picks", "Pick'em"]] : []).concat(betOn() ? [["bets", "Side bets"]] : []).concat(!pts() && !gl() && sc().type === "cats" ? [["teamstats", "Team stats"]] : []).concat([["rosters", "Rosters"], ["transactions", "Transactions"], ["managers", "Managers"]]).concat(opts.dues ? [["dues", "Dues"]] : []).concat([["history", "History"], ["rules", "Rules"]]).concat(opts.chat ? [["chat", "Chat", opts.chat.unread()]] : []));
       if (tab === "commish") return [["home", "Overview"], ["season", "Season"], ["managers", "Managers"], ["rules", "Rules"], ["rosters", "Rosters & trades"]];
       if (tab === "team") return [["roster", "Roster"]].concat(flat() ? [] : [["schedule", gl() ? "History" : "Schedule"]]).concat(L().settings.trades === false ? [] : [["trades", "Trades", pendingTrades()]]);
       if (tab === "players") return [["fa", "Free agents"], ["all", "All players"], ["watch", "Watch list"]].concat(L().settings.trades !== false && me() != null && !gl() ? [["finder", "Trade finder"]] : []).concat([ ["claims", "Waiver claims", L().claims.filter((c) => c.team === me() && c.status === "open").length]]).concat(hasNews() ? [["news", "News"]] : [], [["trends", "Trends"], ["tx", "Transactions"]]);
@@ -1119,6 +1119,77 @@
         ${best.length ? `<div class="bd ps" style="padding-top:8px">${best.slice(-3).reverse().map((b) => `${esc(weekLabel(b.w))}: ${b.top.t.length > 2 ? `${b.top.t.length} teams tied` : b.top.t.map((t) => esc(T(t).name)).join(" and ")} with ${b.top.r} right`).join(". ")}.</div>` : ""}</div>`
         : `<div class="card"><div class="bd"><p class="ps" style="margin:0">The leaderboard starts once a week with picks is final.</p></div></div>`;
       return `<div class="wrap page">${head}<div class="stack" style="max-width:820px">${cards.join("")}${lb}</div></div>`;
+    }
+    /* ---------- side bets ----------
+       One manager offers another a bet and the other takes it or turns it down (opts.bets; tools/fantasykit_bets.sql).
+       The page settles each from the results: a week's scores (or their matchup, in a category league), the final
+       standings, or the commissioner's call on a bet made in words. Money moves outside Draft Lab, like dues; the
+       tally says who's up and who owes. */
+    function betOn() { return !!opts.bets && !pre(); }
+    const weekBets = () => !roto() && !tot() && !gl();
+    function betWhat(b) { const A = T(b.by).name, B = T(b.to).name; return b.kind === "week" ? `${A} outscores ${B} in ${weekLabel(b.week).toLowerCase()}` : b.kind === "season" ? `${A} finishes ahead of ${B} this season` : b.terms || "a custom bet"; }
+    // { done, winner (a team, or null on a tie), now: words for where it stands }
+    function betState(b) {
+      const A = b.by, B = b.to, nm = (t) => T(t).name;
+      if (b.kind === "custom") return b.winner != null ? { done: true, winner: b.winner, now: `${nm(b.winner)} won, the commissioner says` } : { done: false, now: "The commissioner settles it" };
+      if (b.kind === "season") {
+        const order = G.standings(L()).map((r) => r.team), ia = order.indexOf(A), ib = order.indexOf(B);
+        if (ia < 0 || ib < 0) return { done: false, now: "" };
+        const lead = ia < ib ? A : B;
+        return over() ? { done: true, winner: lead, now: `${nm(lead)} finished ahead, ${ord(Math.min(ia, ib) + 1)} to ${ord(Math.max(ia, ib) + 1)}` } : { done: false, now: `${nm(lead)} is ahead for now, ${ord(Math.min(ia, ib) + 1)} to ${ord(Math.max(ia, ib) + 1)}` };
+      }
+      const w = b.week, fin = !!(L().results && L().results[w]);
+      if (w > L().week) return { done: false, now: `${weekLabel(w)} hasn't started` };
+      const ms = G.matchups(L(), ctx, w, fin ? 1 : frac(w)), score = (t) => { const m = ms.find((x) => x.a === t || x.b === t); return m ? (m.a === t ? m.sa : m.sb) : null; };
+      const face = ms.find((m) => (m.a === A && m.b === B) || (m.a === B && m.b === A));
+      let lead = null, line = "";
+      if (!pts() && face) { lead = face.w === "a" ? face.a : face.w === "b" ? face.b : null; line = `${fmtS(face.a === A ? face.sa : face.sb)}-${fmtS(face.a === A ? face.sb : face.sa)}`; }
+      else { const sa = score(A), sb = score(B); if (sa == null || sb == null) return { done: false, now: "" }; lead = sa > sb ? A : sb > sa ? B : null; line = `${fmtS(sa)} to ${fmtS(sb)}`; }
+      if (fin) return { done: true, winner: lead, now: lead == null ? `A tie, ${line}: no one pays` : `${nm(lead)} won it, ${line}` };
+      return { done: false, now: lead == null ? `Tied so far, ${line}` : `${nm(lead)} leads, ${line}` };
+    }
+    function betsPage() {
+      const list = opts.bets.list(), mid = me();
+      const head = `<div class="head"><h1 class="disp">Side bets</h1><span class="ps">Bet another manager on a week, the season, or anything you agree on. Money moves outside Draft Lab, like dues; this page keeps score.</span></div>`;
+      if (list === undefined) return `<div class="wrap page">${head}<div class="card"><div class="bd"><p class="ps" style="margin:0">Loading bets…</p></div></div></div>`;
+      const amtTxt = (b) => (b.amt ? money(b.amt) : "bragging rights");
+      const line = (b) => `<b>${esc(T(b.by).name)}</b> bet <b>${esc(T(b.to).name)}</b> ${esc(amtTxt(b))}: ${esc(betWhat(b))}`;
+      const mineIn = (b) => b.by === mid || b.to === mid;
+      const offers = list.filter((b) => b.status === "offered");
+      const toMe = offers.filter((b) => b.to === mid), byMe = offers.filter((b) => b.by === mid);
+      const live = list.filter((b) => b.status === "on").map((b) => Object.assign({ st: betState(b) }, b));
+      const open = live.filter((b) => !b.st.done), done = live.filter((b) => b.st.done);
+      // the tally: what each team is up or down on settled bets, and who owes whom
+      const net = {}, owes = [];
+      for (const b of done) {
+        if (b.st.winner == null || !b.amt) continue;
+        const lose = b.st.winner === b.by ? b.to : b.by;
+        net[b.st.winner] = (net[b.st.winner] || 0) + b.amt; net[lose] = (net[lose] || 0) - b.amt;
+        owes.push(`${T(lose).name} owes ${T(b.st.winner).name} ${money(b.amt)}`);
+      }
+      // the form: against whom, on what, for how much
+      const others = L().teams.filter((t) => t.id !== mid && t.owner);
+      const weeks = weekBets() && !over() ? Array.from({ length: 4 }, (_, i) => L().week + i).filter((w) => w <= G.totalWeeks(L()) && !pickLocked(w)) : [];
+      const form = mid == null ? "" : !others.length ? `<div class="card"><div class="bd"><p class="ps" style="margin:0">Side bets need another manager in the league.</p></div></div>`
+        : `<div class="card"><div class="mod-h"><h2>Make a bet</h2></div><form class="bd stack bet-f" style="gap:10px" data-betform>
+          <label class="field"><span class="lbl">Against</span><select name="to" class="txsel">${others.map((t) => `<option value="${t.id}">${esc(t.name)}${t.owner ? `, ${esc(t.owner)}` : ""}</option>`).join("")}</select></label>
+          <label class="field"><span class="lbl">On</span><select name="on" class="txsel">${weeks.map((w) => `<option value="w${w}">I outscore them in ${esc(weekLabel(w).toLowerCase())}</option>`).join("")}${over() ? "" : `<option value="season">I finish ahead of them this season</option>`}<option value="custom">Something else (the commissioner settles it)</option></select></label>
+          <label class="field bet-terms" hidden><span class="lbl">The bet</span><input type="text" name="terms" maxlength="160" placeholder="Gibbs outscores Bijan the rest of the way"></label>
+          <label class="field"><span class="lbl">Amount</span><span class="row" style="gap:6px;align-items:center"><span>$</span><input type="number" name="amt" min="0" max="1000" step="1" value="10" inputmode="numeric" style="max-width:110px"><span class="ps">$0 is bragging rights</span></span></label>
+          <div class="row" style="justify-content:flex-end"><button class="btn go">Offer the bet</button></div></form></div>`;
+      const row = (b, acts, note) => `<li class="bet-r"><div><span>${line(b)}</span>${note ? `<small class="ps">${note}</small>` : ""}</div>${acts ? `<div class="bet-a">${acts}</div>` : ""}</li>`;
+      const sect = (title, items) => (items.length ? `<div class="card"><div class="mod-h"><h2>${title}</h2></div><ul class="bet-l">${items.join("")}</ul></div>` : "");
+      const commish = !!opts.commish;
+      const cards = [
+        sect("Waiting on you", toMe.map((b) => row(b, `<button class="btn sm go" data-bet="yes|${b.id}">Take it</button><button class="btn sm ghost" data-bet="no|${b.id}">No thanks</button>`))),
+        sect("Your offers", byMe.map((b) => row(b, `<button class="btn sm ghost" data-bet="cancel|${b.id}">Take it back</button>`, "Waiting on their answer"))),
+        sect("Other offers", offers.filter((b) => !mineIn(b)).map((b) => row(b, "", "Waiting on an answer"))),
+        sect("Live", open.map((b) => row(b, commish && b.kind === "custom" ? `<button class="btn sm" data-bet="win|${b.id}|${b.by}">${esc(T(b.by).name)} won</button><button class="btn sm" data-bet="win|${b.id}|${b.to}">${esc(T(b.to).name)} won</button>` : "", esc(b.st.now)))),
+        sect("Settled", done.map((b) => row(b, commish && b.kind === "custom" ? `<button class="btn sm ghost" data-bet="win|${b.id}|">Undo the call</button>` : "", `<span class="${b.st.winner === mid ? "up" : b.st.winner != null && mineIn(b) ? "dn" : ""}">${esc(b.st.now)}</span>`))),
+      ].join("");
+      const tally = Object.keys(net).length ? `<div class="card"><div class="mod-h"><h2>The tally</h2><span class="grow"></span><span class="ps">Settled bets</span></div><div class="table-wrap"><table class="t"><tbody>${Object.entries(net).sort((a, b) => b[1] - a[1]).map(([t, v]) => `<tr${isMe(+t) ? ' class="me"' : ""}><td><span class="row" style="gap:7px">${teamAv(T(+t), "sm")}<b class="ell">${esc(T(+t).name)}</b></span></td><td class="num"><b class="${v > 0 ? "up" : v < 0 ? "dn" : ""}">${v > 0 ? "+" : v < 0 ? "-" : ""}${money(Math.abs(v))}</b></td></tr>`).join("")}</tbody></table></div><div class="bd ps" style="padding-top:8px">${esc(owes.join(". "))}.</div></div>` : "";
+      const empty = !cards && !tally ? `<div class="card"><div class="bd"><p class="ps" style="margin:0">No bets yet this season.</p></div></div>` : "";
+      return `<div class="wrap page">${head}<div class="stack" style="max-width:820px">${form}${cards}${tally}${empty}</div></div>`;
     }
     /* ---------- league chat (shared leagues pass opts.chat: posts(), send(body), unread(), seen()) ---------- */
     // Posts and the league's biggest moves, oldest first, so a trade shows up where people talked about it.
@@ -3302,7 +3373,7 @@
       const keep = $("#fk-players") ? $("#fk-players").scrollTop : 0;
       const focus = U.focusKey(opts.el) || U.focusKey(opts.top);
       let html = "";
-      if (r.tab === "league") html = { overview, chat: chatPage, picks: picksPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, teamstats: teamStatsPage, rosters: rostersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
+      if (r.tab === "league") html = { overview, chat: chatPage, picks: picksPage, bets: betsPage, standings: standingsPage, scoreboard: () => scoreboardPage(r.arg), recap: () => recapPage(r.arg), managers: managersPage, transactions: txPage, teamstats: teamStatsPage, rosters: rostersPage, dues: duesPage, history: pastPage, rules: settingsPage }[r.sub]();
       else if (r.tab === "team") html = { roster: () => rosterPage(r.arg), schedule: () => schedulePage(r.arg), trades: () => tradesPage(r.arg) }[r.sub]();
       if (pre() && (r.tab === "team" || (r.tab === "league" && (r.sub === "standings" || r.sub === "managers")))) html = `<div class="wrap" style="padding-top:12px"><div class="banner pre-note"><b>Before the draft.</b> ${r.tab === "team" ? (r.sub === "schedule" ? "The schedule as it stands. It's set when the draft ends." : "These are the spots to fill. Rosters fill in at the draft; build your queue on the Players tab.") : "Everyone's 0-0 until the season starts after the draft."} <a href="#draft">Enter the draft room</a></div></div>` + html;
       else if (r.tab === "matchup") html = matchupPage(r.sub, r.arg);
@@ -3610,6 +3681,30 @@
       const step = box.children[1] ? box.children[1].offsetLeft - box.children[0].offsetLeft : box.clientWidth, i = Math.round(box.scrollLeft / step), tabs = box.previousElementSibling;
       if (tabs && tabs.classList.contains("mb-tabs")) tabs.querySelectorAll("[data-mbtab]").forEach((x) => x.setAttribute("aria-pressed", String(+x.dataset.mbtab === i)));
     }, true);
+    // side bets: the form (a bet in words shows its box), and the answers
+    opts.el.addEventListener("change", (e) => { const f = e.target.closest("[data-betform]"); if (f && e.target.name === "on") { const box = f.querySelector(".bet-terms"); box.hidden = e.target.value !== "custom"; if (!box.hidden) box.querySelector("input").focus(); } });
+    opts.el.addEventListener("submit", async (e) => {
+      const f = e.target.closest("[data-betform]");
+      if (!f || !opts.bets) return;
+      e.preventDefault();
+      const fd = new FormData(f), on = String(fd.get("on") || ""), btn = f.querySelector(".btn.go");
+      const kind = on === "season" ? "season" : on === "custom" ? "custom" : "week", week = kind === "week" ? +on.slice(1) : null;
+      btn.disabled = true;
+      const r = await opts.bets.offer(+fd.get("to"), kind, week, String(fd.get("terms") || ""), Math.round(+fd.get("amt") || 0)).catch((err) => ({ error: err.message }));
+      btn.disabled = false;
+      if (r && r.error) { U.toast(r.error, true); return; }
+      U.toast(`Bet offered to ${T(+fd.get("to")).name}. They'll hear about it.`);
+      f.reset(); f.querySelector(".bet-terms").hidden = true; render();
+    });
+    opts.el.addEventListener("click", async (e) => {
+      const b = e.target.closest("[data-bet]");
+      if (!b || !opts.bets || b.disabled) return;
+      const [a, id, w] = b.dataset.bet.split("|");
+      b.disabled = true;
+      const r = await (a === "yes" ? opts.bets.answer(+id, true) : a === "no" ? opts.bets.answer(+id, false) : a === "cancel" ? opts.bets.cancel(+id) : opts.bets.settle(+id, w === "" ? null : +w)).catch((err) => ({ error: err.message }));
+      if (r && r.error) { U.toast(r.error, true); b.disabled = false; return; }
+      U.toast(a === "yes" ? "You're on." : a === "no" ? "Turned down." : a === "cancel" ? "Taken back." : w === "" ? "The call is undone." : "Settled."); render();
+    });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-txt") { ui.txt = e.target.value; ui.txlim = 200; render(); } });
     opts.el.addEventListener("change", (e) => { if (e.target.id === "fk-nshow") { ui.newsShow = e.target.value; ui.newsMore = false; render(); return; } if (e.target.id === "fk-pshow") { ui.pshow = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "fk-pro") { ui.ppro = e.target.value; ui.plimit = 0; render(); return; } if (e.target.id === "team-pick") { const r = route(); location.hash = `#team/${r.sub || "roster"}/${e.target.value}`; } });
     opts.top.addEventListener("click", (e) => { const t = e.target.closest("[data-trade]"); if (t) { e.preventDefault(); openTrade(null); } });

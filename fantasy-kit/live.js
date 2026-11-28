@@ -438,6 +438,7 @@
       get invite() { return info.invite ? openSeats() : null; },
       chat,
       picks: pickApi,
+      bets: betApi,
       history: () => past,
       faces: () => faces,
       editProfile: C.user() ? editProfile : null,
@@ -541,6 +542,23 @@
       if (r && Array.isArray(r.list)) { pickList = r.list; pickAt = Date.now(); }
       return r;
     },
+  };
+  // side bets (tools/fantasykit_bets.sql): the season's open and live bets, loaded when the page asks and at most once
+  // a minute; every change brings back the whole list
+  let betList, betAt = 0, betBusy = false;
+  const betCall = async (fn, args) => { const r = await C.rpc(fn, Object.assign({ p_id: id }, args)); if (r && Array.isArray(r.list)) { betList = r.list; betAt = Date.now(); } return r; };
+  const betApi = {
+    list() {
+      if (!betBusy && Date.now() - betAt > 60e3) {
+        betBusy = true; betAt = Date.now();
+        C.rpc("fk_bets", { p_id: id }).then((r) => { if (Array.isArray(r)) { betList = r; if (app && !U.dialogOpen()) app.refresh(); } }).catch(() => {}).finally(() => { betBusy = false; });
+      }
+      return betList;
+    },
+    offer: (to, kind, week, terms, amt) => betCall("fk_bet_offer", { p_to: to, p_kind: kind, p_week: week, p_terms: terms, p_amt: amt }),
+    answer: (bet, accept) => betCall("fk_bet_answer", { p_bet: bet, p_accept: accept }),
+    cancel: (bet) => betCall("fk_bet_cancel", { p_bet: bet }),
+    settle: (bet, winner) => betCall("fk_bet_settle", { p_bet: bet, p_winner: winner }),
   };
   async function loadPosts() {
     clearTimeout(postT);

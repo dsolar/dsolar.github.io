@@ -3320,3 +3320,11 @@ h1.disp,h2.disp,h3.disp,.disp{font-weight:800}
 .tv-gl li.on{background:var(--brand-soft);outline:1px solid var(--brand)}
 .tv-gl em{font-style:normal;font-weight:900}
 @media (prefers-reduced-motion:reduce){.tv-gr{animation:none}}
+/* side bets */
+.bet-l{list-style:none;margin:0;padding:4px 16px 12px;display:grid;gap:2px}
+.bet-r{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.bet-r:last-child{border-bottom:0}
+.bet-r>div:first-child{display:grid;gap:2px;font-size:14px;line-height:1.35}
+.bet-r small{font-size:12.5px}
+.bet-a{display:flex;gap:6px;flex:none}
+@media (max-width:560px){.bet-r{flex-direction:column;align-items:flex-start}.bet-l{padding:4px 12px 10px}}
