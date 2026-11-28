@@ -4,6 +4,150 @@
  "events": [
   {
    "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
+   "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
+   "sub": "Drew Mestemaker (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Drew Mestemaker to declare for the Pro Football Draft",
+     "price": 72.5,
+     "last": 50.0,
+     "bid": 45.0,
+     "ask": 100.0,
+     "volume": 2041
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
+   "title": "Will Arch Manning declare for the 2027 Pro Football Draft?",
+   "sub": "Arch Manning (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Arch Manning to declare for the Pro Football Draft",
+     "price": 33.5,
+     "last": 44.0,
+     "bid": 23.0,
+     "ask": 44.0,
+     "volume": 3144
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27ASIM",
+   "title": "Will Austin Simmons declare for the 2027 Pro Football Draft?",
+   "sub": "Austin Simmons (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Austin Simmons to declare for the Pro Football Draft",
+     "price": 56.5,
+     "last": 99.0,
+     "bid": 15.0,
+     "ask": 98.0,
+     "volume": 98
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
+   "title": "Will CJ Carr declare for the 2027 Pro Football Draft?",
+   "sub": "CJ Carr (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "CJ Carr to declare for the Pro Football Draft",
+     "price": 74.0,
+     "last": 99.0,
+     "bid": 50.0,
+     "ask": 98.0,
+     "volume": 1043
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
+   "title": "Will Darian Mensah declare for the 2027 Pro Football Draft?",
+   "sub": "Darian Mensah (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Darian Mensah to declare for the Pro Football Draft",
+     "price": 89.5,
+     "last": 99.0,
+     "bid": 80.0,
+     "ask": 99.0,
+     "volume": 184
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
+   "title": "Will Dante Moore declare for the 2027 Pro Football Draft?",
+   "sub": "Dante Moore (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Dante Moore to declare for the Pro Football Draft",
+     "price": 76.0,
+     "last": 52.0,
+     "bid": 54.0,
+     "ask": 98.0,
+     "volume": 320
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
+   "title": "Will Jadan Baugh declare for the 2027 Pro Football Draft?",
+   "sub": "Jadan Baugh (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Jadan Baugh to declare for the Pro Football Draft",
+     "price": 91.0,
+     "last": 87.0,
+     "bid": 87.0,
+     "ask": 95.0,
+     "volume": 45
+    }
+   ]
+  },
+  {
+   "league": "nfl",
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
+   "title": "Will Ryan Coleman-Williams declare for the 2027 Pro Football Draft?",
+   "sub": "Ryan Coleman-Williams (2027)",
+   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "outcomes": [
+    {
+     "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
+     "price": 70.0,
+     "last": 99.0,
+     "bid": 41.0,
+     "ask": 99.0,
+     "volume": 222
+    }
+   ]
+  },
+  {
+   "league": "nfl",
    "series": "KXNFLDRAFT1ST",
    "event": "KXNFLDRAFT1ST-27",
    "title": "Team to make the 1st Overall Pick in the 2027 Pro Football Draft",
@@ -12,11 +156,11 @@
    "outcomes": [
     {
      "name": "Miami",
-     "price": 38.5,
-     "last": 38.0,
-     "bid": 38.0,
+     "price": 37.5,
+     "last": 36.0,
+     "bid": 36.0,
      "ask": 39.0,
-     "volume": 32029
+     "volume": 32054
     },
     {
      "name": "Tennessee",
@@ -270,145 +414,1315 @@
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
-   "title": "Will Drew Mestemaker declare for the 2027 Pro Football Draft?",
-   "sub": "Drew Mestemaker (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-2",
+   "title": "Pro Football #2 Overall Pick",
+   "sub": "2nd Pick 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
-     "name": "Drew Mestemaker to declare for the Pro Football Draft",
-     "price": 72.5,
-     "last": 50.0,
-     "bid": 45.0,
-     "ask": 100.0,
-     "volume": 2041
+     "name": "Jeremiah Smith",
+     "price": 24.0,
+     "last": 26.0,
+     "bid": 22.0,
+     "ask": 26.0,
+     "volume": 71
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 20.0,
+     "last": 0.0,
+     "bid": 19.0,
+     "ask": 21.0,
+     "volume": 0
+    },
+    {
+     "name": "Colin Simmons",
+     "price": 9.5,
+     "last": 11.0,
+     "bid": 7.0,
+     "ask": 12.0,
+     "volume": 264
+    },
+    {
+     "name": "CJ Carr",
+     "price": 4.5,
+     "last": 0.0,
+     "bid": 4.0,
+     "ask": 5.0,
+     "volume": 0
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 4.0,
+     "last": 4.0,
+     "bid": 3.0,
+     "ask": 5.0,
+     "volume": 1
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Charlie Becker",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chris Cole",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Zereoue Williams",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ellis Robinson IV",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ashton Hampton",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jadan Baugh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Goosby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Xavier Gilliam",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Lauck",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Boubacar Traore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Nick Marsh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kelley Jones",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kyngstonn Viliamu-Asa",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Bolden",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Yhonzae Pierre",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jackson Harris",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kade Pieper",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Greg Johnson",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Duff",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Brendan Sorsby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Aidan Chiles",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
     }
    ]
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27AMAN",
-   "title": "Will Arch Manning declare for the 2027 Pro Football Draft?",
-   "sub": "Arch Manning (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-3",
+   "title": "Pro Football #3 Overall Pick",
+   "sub": "3rd Pick 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
-     "name": "Arch Manning to declare for the Pro Football Draft",
-     "price": 33.0,
-     "last": 27.0,
-     "bid": 24.0,
-     "ask": 42.0,
-     "volume": 3117
+     "name": "Drew Mestemaker",
+     "price": 15.0,
+     "last": 22.0,
+     "bid": 14.0,
+     "ask": 16.0,
+     "volume": 21
+    },
+    {
+     "name": "Jeremiah Smith",
+     "price": 14.5,
+     "last": 0.0,
+     "bid": 13.0,
+     "ask": 16.0,
+     "volume": 0
+    },
+    {
+     "name": "Colin Simmons",
+     "price": 9.5,
+     "last": 11.0,
+     "bid": 8.0,
+     "ask": 11.0,
+     "volume": 219
+    },
+    {
+     "name": "CJ Carr",
+     "price": 7.0,
+     "last": 7.0,
+     "bid": 6.0,
+     "ask": 8.0,
+     "volume": 1
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 6.0,
+     "last": 6.0,
+     "bid": 5.0,
+     "ask": 7.0,
+     "volume": 1
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Charlie Becker",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chris Cole",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Zereoue Williams",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ellis Robinson IV",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ashton Hampton",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jadan Baugh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Goosby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Xavier Gilliam",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Lauck",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Boubacar Traore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Nick Marsh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kelley Jones",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kyngstonn Viliamu-Asa",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Bolden",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Yhonzae Pierre",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jackson Harris",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kade Pieper",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Greg Johnson",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Duff",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Brendan Sorsby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Aidan Chiles",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
     }
    ]
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27ASIM",
-   "title": "Will Austin Simmons declare for the 2027 Pro Football Draft?",
-   "sub": "Austin Simmons (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-4",
+   "title": "Pro Football #4 Overall Pick",
+   "sub": "4th Pick 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
-     "name": "Austin Simmons to declare for the Pro Football Draft",
-     "price": 57.0,
-     "last": 99.0,
-     "bid": 16.0,
-     "ask": 98.0,
-     "volume": 98
+     "name": "Colin Simmons",
+     "price": 10.5,
+     "last": 0.0,
+     "bid": 10.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 8.5,
+     "last": 9.0,
+     "bid": 8.0,
+     "ask": 9.0,
+     "volume": 0
+    },
+    {
+     "name": "Jeremiah Smith",
+     "price": 8.0,
+     "last": 8.0,
+     "bid": 7.0,
+     "ask": 9.0,
+     "volume": 1
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 6.5,
+     "last": 0.0,
+     "bid": 6.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 6.5,
+     "last": 0.0,
+     "bid": 6.0,
+     "ask": 7.0,
+     "volume": 0
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 3.5,
+     "last": 4.0,
+     "bid": 3.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Charlie Becker",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Chris Cole",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Zereoue Williams",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ellis Robinson IV",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ashton Hampton",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jadan Baugh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Goosby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Xavier Gilliam",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Lauck",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Boubacar Traore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Nick Marsh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kelley Jones",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kyngstonn Viliamu-Asa",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Bolden",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Yhonzae Pierre",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jackson Harris",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kade Pieper",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Greg Johnson",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Duff",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Brendan Sorsby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Aidan Chiles",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
     }
    ]
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27CCAR",
-   "title": "Will CJ Carr declare for the 2027 Pro Football Draft?",
-   "sub": "CJ Carr (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-5",
+   "title": "Pro Football #5 Overall Pick",
+   "sub": "5th Pick 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
-     "name": "CJ Carr to declare for the Pro Football Draft",
-     "price": 74.0,
-     "last": 99.0,
-     "bid": 50.0,
-     "ask": 98.0,
-     "volume": 1043
+     "name": "Colin Simmons",
+     "price": 12.5,
+     "last": 16.0,
+     "bid": 10.0,
+     "ask": 15.0,
+     "volume": 224
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 10.0,
+     "last": 0.0,
+     "bid": 9.0,
+     "ask": 11.0,
+     "volume": 0
+    },
+    {
+     "name": "CJ Carr",
+     "price": 5.0,
+     "last": 5.0,
+     "bid": 4.0,
+     "ask": 6.0,
+     "volume": 1
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 3.5,
+     "last": 0.0,
+     "bid": 3.0,
+     "ask": 4.0,
+     "volume": 0
+    },
+    {
+     "name": "Jeremiah Smith",
+     "price": 2.5,
+     "last": 3.0,
+     "bid": 2.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 2.5,
+     "last": 3.0,
+     "bid": 2.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Charlie Becker",
+     "price": 2.5,
+     "last": 3.0,
+     "bid": 2.0,
+     "ask": 3.0,
+     "volume": 0
+    },
+    {
+     "name": "Drew Mestemaker",
+     "price": 2.0,
+     "last": 2.0,
+     "bid": 1.0,
+     "ask": 3.0,
+     "volume": 1
+    },
+    {
+     "name": "Chris Cole",
+     "price": 2.0,
+     "last": 2.0,
+     "bid": 1.0,
+     "ask": 3.0,
+     "volume": 54
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ashton Hampton",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Arch Manning",
+     "price": 1.5,
+     "last": 0.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Zereoue Williams",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Ellis Robinson IV",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jadan Baugh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Goosby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Xavier Gilliam",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trevor Lauck",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Boubacar Traore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Nick Marsh",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kelley Jones",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kyngstonn Viliamu-Asa",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Bolden",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Yhonzae Pierre",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Jackson Harris",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Kade Pieper",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Greg Johnson",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "KJ Duff",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Dante Moore",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Brendan Sorsby",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
+    },
+    {
+     "name": "Aidan Chiles",
+     "price": 1.0,
+     "last": 0.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 0
     }
    ]
   },
   {
    "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMEN",
-   "title": "Will Darian Mensah declare for the 2027 Pro Football Draft?",
-   "sub": "Darian Mensah (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-1",
+   "title": "Pro Football #1 Overall Pick in 2027",
+   "sub": "1st Pick 2027",
+   "url": "https://kalshi.com/markets/kxnfldraftpick",
    "outcomes": [
     {
-     "name": "Darian Mensah to declare for the Pro Football Draft",
-     "price": 89.5,
-     "last": 99.0,
-     "bid": 80.0,
-     "ask": 99.0,
-     "volume": 184
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27DMOO",
-   "title": "Will Dante Moore declare for the 2027 Pro Football Draft?",
-   "sub": "Dante Moore (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
-    {
-     "name": "Dante Moore to declare for the Pro Football Draft",
-     "price": 76.0,
+     "name": "Jeremiah Smith",
+     "price": 52.5,
      "last": 52.0,
-     "bid": 54.0,
-     "ask": 98.0,
-     "volume": 320
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27JBAU",
-   "title": "Will Jadan Baugh declare for the 2027 Pro Football Draft?",
-   "sub": "Jadan Baugh (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
+     "bid": 52.0,
+     "ask": 53.0,
+     "volume": 105080
+    },
     {
-     "name": "Jadan Baugh to declare for the Pro Football Draft",
-     "price": 91.0,
-     "last": 87.0,
-     "bid": 87.0,
-     "ask": 95.0,
-     "volume": 45
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-27RCOL",
-   "title": "Will Ryan Coleman-Williams declare for the 2027 Pro Football Draft?",
-   "sub": "Ryan Coleman-Williams (2027)",
-   "url": "https://kalshi.com/markets/kxncaafdraftdeclare",
-   "outcomes": [
+     "name": "Drew Mestemaker",
+     "price": 34.5,
+     "last": 35.0,
+     "bid": 34.0,
+     "ask": 35.0,
+     "volume": 80655
+    },
     {
-     "name": "Ryan Coleman-Williams to declare for the Pro Football Draft",
-     "price": 70.0,
-     "last": 99.0,
-     "bid": 41.0,
-     "ask": 99.0,
-     "volume": 222
+     "name": "CJ Carr",
+     "price": 9.5,
+     "last": 9.0,
+     "bid": 9.0,
+     "ask": 10.0,
+     "volume": 49832
+    },
+    {
+     "name": "Arch Manning",
+     "price": 4.0,
+     "last": 4.0,
+     "bid": 3.0,
+     "ask": 5.0,
+     "volume": 169406
+    },
+    {
+     "name": "Darian Mensah",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 51668
+    },
+    {
+     "name": "Trinidad Chambliss",
+     "price": 1.5,
+     "last": 1.0,
+     "bid": 1.0,
+     "ask": 2.0,
+     "volume": 52848
+    },
+    {
+     "name": "LaNorris Sellers",
+     "price": 1.0,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 28599
+    },
+    {
+     "name": "Austin Simmons",
+     "price": 1.0,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 2.0,
+     "volume": 14071
+    },
+    {
+     "name": "Dante Moore",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 46538
+    },
+    {
+     "name": "DJ Lagway",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2865
+    },
+    {
+     "name": "Julian Sayin",
+     "price": 0.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 24884
+    },
+    {
+     "name": "Jordan Seaton",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2794
+    },
+    {
+     "name": "Leonard Moore",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 5316
+    },
+    {
+     "name": "Cam Coleman",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 3403
+    },
+    {
+     "name": "Dylan Stewart",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 19575
+    },
+    {
+     "name": "Quincy Rhodes Jr.",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2463
+    },
+    {
+     "name": "Ryan Williams",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 2879
+    },
+    {
+     "name": "John Mateer",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 10110
+    },
+    {
+     "name": "Nico Iamaleava",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 7634
+    },
+    {
+     "name": "Jayden Maiava",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 15519
+    },
+    {
+     "name": "Sam Leavitt",
+     "price": 0.5,
+     "last": 1.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 14613
+    },
+    {
+     "name": "Lincoln Kienholz",
+     "price": 0.5,
+     "last": 2.0,
+     "bid": 0.0,
+     "ask": 1.0,
+     "volume": 701
     }
    ]
   },
@@ -8660,1320 +9974,6 @@
   },
   {
    "league": "nfl",
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-2",
-   "title": "Pro Football #2 Overall Pick",
-   "sub": "2nd Pick 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftpick",
-   "outcomes": [
-    {
-     "name": "Jeremiah Smith",
-     "price": 24.0,
-     "last": 0.0,
-     "bid": 22.0,
-     "ask": 26.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 20.0,
-     "last": 0.0,
-     "bid": 19.0,
-     "ask": 21.0,
-     "volume": 0
-    },
-    {
-     "name": "Colin Simmons",
-     "price": 9.5,
-     "last": 11.0,
-     "bid": 7.0,
-     "ask": 12.0,
-     "volume": 264
-    },
-    {
-     "name": "CJ Carr",
-     "price": 4.5,
-     "last": 0.0,
-     "bid": 4.0,
-     "ask": 5.0,
-     "volume": 0
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 4.0,
-     "last": 4.0,
-     "bid": 3.0,
-     "ask": 5.0,
-     "volume": 1
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Charlie Becker",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Chris Cole",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Zereoue Williams",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ellis Robinson IV",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ashton Hampton",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jadan Baugh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Goosby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Xavier Gilliam",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Lauck",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Boubacar Traore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Nick Marsh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kelley Jones",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kyngstonn Viliamu-Asa",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Bolden",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Yhonzae Pierre",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jackson Harris",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kade Pieper",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Greg Johnson",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Duff",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Brendan Sorsby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Aidan Chiles",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-3",
-   "title": "Pro Football #3 Overall Pick",
-   "sub": "3rd Pick 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftpick",
-   "outcomes": [
-    {
-     "name": "Drew Mestemaker",
-     "price": 15.0,
-     "last": 22.0,
-     "bid": 14.0,
-     "ask": 16.0,
-     "volume": 21
-    },
-    {
-     "name": "Jeremiah Smith",
-     "price": 14.5,
-     "last": 0.0,
-     "bid": 13.0,
-     "ask": 16.0,
-     "volume": 0
-    },
-    {
-     "name": "Colin Simmons",
-     "price": 9.5,
-     "last": 11.0,
-     "bid": 8.0,
-     "ask": 11.0,
-     "volume": 219
-    },
-    {
-     "name": "CJ Carr",
-     "price": 7.0,
-     "last": 7.0,
-     "bid": 6.0,
-     "ask": 8.0,
-     "volume": 1
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 6.0,
-     "last": 6.0,
-     "bid": 5.0,
-     "ask": 7.0,
-     "volume": 1
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 4.0,
-     "volume": 0
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Charlie Becker",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Chris Cole",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Zereoue Williams",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ellis Robinson IV",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ashton Hampton",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jadan Baugh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Goosby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Xavier Gilliam",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Lauck",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Boubacar Traore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Nick Marsh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kelley Jones",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kyngstonn Viliamu-Asa",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Bolden",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Yhonzae Pierre",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jackson Harris",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kade Pieper",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Greg Johnson",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Duff",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Brendan Sorsby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Aidan Chiles",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-4",
-   "title": "Pro Football #4 Overall Pick",
-   "sub": "4th Pick 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftpick",
-   "outcomes": [
-    {
-     "name": "Colin Simmons",
-     "price": 10.5,
-     "last": 0.0,
-     "bid": 10.0,
-     "ask": 11.0,
-     "volume": 0
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 8.5,
-     "last": 9.0,
-     "bid": 8.0,
-     "ask": 9.0,
-     "volume": 0
-    },
-    {
-     "name": "Jeremiah Smith",
-     "price": 8.0,
-     "last": 8.0,
-     "bid": 7.0,
-     "ask": 9.0,
-     "volume": 1
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 6.5,
-     "last": 0.0,
-     "bid": 6.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 6.5,
-     "last": 0.0,
-     "bid": 6.0,
-     "ask": 7.0,
-     "volume": 0
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 3.5,
-     "last": 4.0,
-     "bid": 3.0,
-     "ask": 4.0,
-     "volume": 0
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Charlie Becker",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Chris Cole",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Zereoue Williams",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ellis Robinson IV",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ashton Hampton",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jadan Baugh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Goosby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Xavier Gilliam",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Lauck",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Boubacar Traore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Nick Marsh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kelley Jones",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kyngstonn Viliamu-Asa",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Bolden",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Yhonzae Pierre",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jackson Harris",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kade Pieper",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Greg Johnson",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Duff",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Brendan Sorsby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Aidan Chiles",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-5",
-   "title": "Pro Football #5 Overall Pick",
-   "sub": "5th Pick 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftpick",
-   "outcomes": [
-    {
-     "name": "Colin Simmons",
-     "price": 12.5,
-     "last": 16.0,
-     "bid": 10.0,
-     "ask": 15.0,
-     "volume": 224
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 10.0,
-     "last": 0.0,
-     "bid": 9.0,
-     "ask": 11.0,
-     "volume": 0
-    },
-    {
-     "name": "CJ Carr",
-     "price": 5.0,
-     "last": 5.0,
-     "bid": 4.0,
-     "ask": 6.0,
-     "volume": 1
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 3.5,
-     "last": 0.0,
-     "bid": 3.0,
-     "ask": 4.0,
-     "volume": 0
-    },
-    {
-     "name": "Jeremiah Smith",
-     "price": 2.5,
-     "last": 3.0,
-     "bid": 2.0,
-     "ask": 3.0,
-     "volume": 0
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 2.5,
-     "last": 3.0,
-     "bid": 2.0,
-     "ask": 3.0,
-     "volume": 0
-    },
-    {
-     "name": "Charlie Becker",
-     "price": 2.5,
-     "last": 3.0,
-     "bid": 2.0,
-     "ask": 3.0,
-     "volume": 0
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 2.0,
-     "last": 2.0,
-     "bid": 1.0,
-     "ask": 3.0,
-     "volume": 1
-    },
-    {
-     "name": "Chris Cole",
-     "price": 2.0,
-     "last": 2.0,
-     "bid": 1.0,
-     "ask": 3.0,
-     "volume": 54
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ashton Hampton",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Arch Manning",
-     "price": 1.5,
-     "last": 0.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Zereoue Williams",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Ellis Robinson IV",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jadan Baugh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Goosby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Xavier Gilliam",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trevor Lauck",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Boubacar Traore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Nick Marsh",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kelley Jones",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kyngstonn Viliamu-Asa",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Bolden",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Yhonzae Pierre",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Jackson Harris",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Kade Pieper",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Greg Johnson",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "KJ Duff",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Dante Moore",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Brendan Sorsby",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    },
-    {
-     "name": "Aidan Chiles",
-     "price": 1.0,
-     "last": 0.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 0
-    }
-   ]
-  },
-  {
-   "league": "nfl",
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-1",
-   "title": "Pro Football #1 Overall Pick in 2027",
-   "sub": "1st Pick 2027",
-   "url": "https://kalshi.com/markets/kxnfldraftpick",
-   "outcomes": [
-    {
-     "name": "Jeremiah Smith",
-     "price": 51.0,
-     "last": 55.0,
-     "bid": 47.0,
-     "ask": 55.0,
-     "volume": 105069
-    },
-    {
-     "name": "Drew Mestemaker",
-     "price": 35.5,
-     "last": 34.0,
-     "bid": 34.0,
-     "ask": 37.0,
-     "volume": 80624
-    },
-    {
-     "name": "CJ Carr",
-     "price": 10.5,
-     "last": 9.0,
-     "bid": 9.0,
-     "ask": 12.0,
-     "volume": 49823
-    },
-    {
-     "name": "Arch Manning",
-     "price": 4.0,
-     "last": 4.0,
-     "bid": 3.0,
-     "ask": 5.0,
-     "volume": 169393
-    },
-    {
-     "name": "Darian Mensah",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 51137
-    },
-    {
-     "name": "Trinidad Chambliss",
-     "price": 1.5,
-     "last": 1.0,
-     "bid": 1.0,
-     "ask": 2.0,
-     "volume": 52839
-    },
-    {
-     "name": "LaNorris Sellers",
-     "price": 1.0,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 28599
-    },
-    {
-     "name": "Austin Simmons",
-     "price": 1.0,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 2.0,
-     "volume": 14071
-    },
-    {
-     "name": "Dante Moore",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 46538
-    },
-    {
-     "name": "DJ Lagway",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2865
-    },
-    {
-     "name": "Julian Sayin",
-     "price": 0.5,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 24884
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2794
-    },
-    {
-     "name": "Leonard Moore",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 5316
-    },
-    {
-     "name": "Cam Coleman",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 3403
-    },
-    {
-     "name": "Dylan Stewart",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 19575
-    },
-    {
-     "name": "Quincy Rhodes Jr.",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2463
-    },
-    {
-     "name": "Ryan Williams",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 2879
-    },
-    {
-     "name": "John Mateer",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 10110
-    },
-    {
-     "name": "Nico Iamaleava",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 7634
-    },
-    {
-     "name": "Jayden Maiava",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 15519
-    },
-    {
-     "name": "Sam Leavitt",
-     "price": 0.5,
-     "last": 1.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 14613
-    },
-    {
-     "name": "Lincoln Kienholz",
-     "price": 0.5,
-     "last": 2.0,
-     "bid": 0.0,
-     "ask": 1.0,
-     "volume": 701
-    }
-   ]
-  },
-  {
-   "league": "nfl",
    "series": "KXNFLDRAFTTOP",
    "event": "KXNFLDRAFTTOP-27-5",
    "title": "Pro Football Players Drafted Top 5",
@@ -10149,20 +10149,20 @@
      "volume": 0
     },
     {
+     "name": "Jordan Seaton",
+     "price": 48.5,
+     "last": 11.0,
+     "bid": 12.0,
+     "ask": 85.0,
+     "volume": 41
+    },
+    {
      "name": "Leonard Moore",
      "price": 48.0,
      "last": 58.0,
      "bid": 10.0,
      "ask": 86.0,
      "volume": 59
-    },
-    {
-     "name": "Jordan Seaton",
-     "price": 47.5,
-     "last": 11.0,
-     "bid": 12.0,
-     "ask": 83.0,
-     "volume": 41
     },
     {
      "name": "Quincy Rhodes Jr.",
@@ -10206,10 +10206,10 @@
     },
     {
      "name": "CJ Carr",
-     "price": 36.5,
+     "price": 37.5,
      "last": 7.0,
      "bid": 7.0,
-     "ask": 66.0,
+     "ask": 68.0,
      "volume": 84
     },
     {
@@ -10296,11 +10296,19 @@
    "outcomes": [
     {
      "name": "Tyran Stokes",
-     "price": 53.0,
+     "price": 50.0,
      "last": 51.0,
-     "bid": 48.0,
-     "ask": 58.0,
+     "bid": 44.0,
+     "ask": 56.0,
      "volume": 4714
+    },
+    {
+     "name": "Caleb Holt",
+     "price": 9.5,
+     "last": 6.0,
+     "bid": 5.0,
+     "ask": 14.0,
+     "volume": 1180
     },
     {
      "name": "Jordan Smith Jr.",
@@ -10309,14 +10317,6 @@
      "bid": 5.0,
      "ask": 13.0,
      "volume": 1739
-    },
-    {
-     "name": "Caleb Holt",
-     "price": 8.5,
-     "last": 6.0,
-     "bid": 5.0,
-     "ask": 12.0,
-     "volume": 1180
     },
     {
      "name": "Bruce Branch III",
@@ -10426,10 +10426,10 @@
    "outcomes": [
     {
      "name": "Drew Mestemaker",
-     "price": 58.5,
+     "price": 57.0,
      "last": 67.0,
      "bid": 52.0,
-     "ask": 65.0,
+     "ask": 62.0,
      "volume": 4990
     },
     {
@@ -10572,74 +10572,74 @@
     },
     {
      "name": "Arch Manning",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Dante Moore",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Nico Iamaleava",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Julian Sayin",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Jayden Maiava",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Drake Lindsey",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Sam Leavitt",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Josh Hoover",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Katin Houser",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
@@ -10686,122 +10686,122 @@
    "outcomes": [
     {
      "name": "Drew Mestemaker",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Darian Mensah",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Trinidad Chambliss",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "CJ Carr",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Arch Manning",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Dante Moore",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Austin Simmons",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Jayden Maiava",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Sam Leavitt",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "LaNorris Sellers",
-     "price": 47.0,
+     "price": 46.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 94.0,
+     "ask": 93.0,
      "volume": 0
     },
     {
      "name": "Nico Iamaleava",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Julian Sayin",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Drake Lindsey",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Josh Hoover",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     },
     {
      "name": "Katin Houser",
-     "price": 44.0,
+     "price": 43.5,
      "last": 0.0,
      "bid": 0.0,
-     "ask": 88.0,
+     "ask": 87.0,
      "volume": 0
     }
    ]
@@ -10809,9 +10809,9 @@
  ],
  "_seen": [
   {
-   "series": "KXNFLDRAFT1ST",
-   "event": "KXNFLDRAFT1ST-27",
-   "n": 32,
+   "series": "KXNCAAFDRAFTDECLARE",
+   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
+   "n": 1,
    "keys": [
     "can_close_early",
     "close_time",
@@ -10859,12 +10859,6 @@
   },
   {
    "series": "KXNCAAFDRAFTDECLARE",
-   "event": "KXNCAAFDRAFTDECLARE-2027DMES",
-   "n": 1,
-   "keys": null
-  },
-  {
-   "series": "KXNCAAFDRAFTDECLARE",
    "event": "KXNCAAFDRAFTDECLARE-27AMAN",
    "n": 1,
    "keys": null
@@ -10903,6 +10897,42 @@
    "series": "KXNCAAFDRAFTDECLARE",
    "event": "KXNCAAFDRAFTDECLARE-27RCOL",
    "n": 1,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFT1ST",
+   "event": "KXNFLDRAFT1ST-27",
+   "n": 32,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-2",
+   "n": 34,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-3",
+   "n": 34,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-4",
+   "n": 34,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-5",
+   "n": 34,
+   "keys": null
+  },
+  {
+   "series": "KXNFLDRAFTPICK",
+   "event": "KXNFLDRAFTPICK-27-1",
+   "n": 22,
    "keys": null
   },
   {
@@ -11089,36 +11119,6 @@
    "series": "KXNFLDRAFTSELECT",
    "event": "KXNFLDRAFTSELECT-27P9",
    "n": 32,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-2",
-   "n": 34,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-3",
-   "n": 34,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-4",
-   "n": 34,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-5",
-   "n": 34,
-   "keys": null
-  },
-  {
-   "series": "KXNFLDRAFTPICK",
-   "event": "KXNFLDRAFTPICK-27-1",
-   "n": 22,
    "keys": null
   },
   {
