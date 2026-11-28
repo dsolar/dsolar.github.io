@@ -1348,7 +1348,7 @@
     $("#foot").innerHTML = "Data from FanGraphs (Depth Charts, Steamer, RosterResource, The Board), pulled " + esc(HUB.pulled || "—") + '. Photos from MLB. <a href="#/method">How it works</a>.';
     render();
     // a link straight to a player's card (My teams uses it): /mlb/?card=<id>
-    var dl = new URLSearchParams(location.search).get("card"); if (dl && (H.byId[dl] || H.byId[+dl])) openCard(dl);
+    var dl = new URLSearchParams(location.search).get("card"); if (dl && (H.byId[dl] || H.byId[+dl])) openCard(dl); else if (dl && window.Search) Search.miss(dl);
     // after the first screen: park shapes (team pages), past seasons (player cards), then Statcast
     fetch("data/parks.json").then(function (r) { return r.ok ? r.json() : {}; }).catch(function () { return {}; }).then(function (p) { SHAPES = (p && p.parks) || null; if (state.route === "team") render(); });
     fetch("data/history.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }).then(function (h) { historyData = h && h.season === HUB.season ? h : {}; });

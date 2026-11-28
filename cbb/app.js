@@ -762,7 +762,7 @@ function teamShare(p) {
 // the player card, on the shared frame (assets/pcard.js): Overview, Stats, Draft
 function openPlayer(id) {
   if (!playersReady) { pendingPlayer = id; return; }
-  const p = byPlayer[id]; if (!p) return;
+  const p = byPlayer[id]; if (!p) { if (window.Search) Search.miss(id); return; }
   // the Big Board loads on first use: open now, then fill the Draft tab in once it lands (same tab stays open)
   if (!BOARD && fin(p.draftRank)) { const pending = ensureBoard(); if (pending) pending.then(() => { let d = null; try { d = $("#card"); } catch (e) { return; } if (d && d.open && d.dataset.pid === id) { const cur = d.querySelector("[data-ctab][aria-selected=true]"); openPlayer(id); const b2 = cur && d.querySelector('[data-ctab="' + cur.dataset.ctab + '"]'); if (b2) b2.click(); } }).catch(() => {}); } else ensureBoard();
   // last season loads on first use too: open now, redraw the Stats tab when it lands

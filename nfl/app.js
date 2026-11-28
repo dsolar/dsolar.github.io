@@ -1539,8 +1539,11 @@
     W.sim = SIM;
     $("#foot").innerHTML = "Rosters and contracts as of " + esc(r[0].updated) + " (week " + r[0].week + "). Data from nflverse: Over The Cap contracts, NFL rosters, ESPN depth charts, Pro Football Reference snap counts." + ' <a href="#/method">How it works</a>.';
     render();
-    // a link straight to a player's card (My teams uses it): /nfl/?card=<id>
-    var dl = new URLSearchParams(location.search).get("card"); if (dl && W.byId[dl]) openCard(dl);
+    // a link straight to a player's card (My teams uses it): /nfl/?card=<id>. Draft Lab doesn't keep the league's
+    // own ids, so its links carry his ESPN id (all digits, where the league's read 00-0035378)
+    var dl = new URLSearchParams(location.search).get("card"), hit = dl && W.byId[dl] ? dl : null;
+    if (dl && !hit && /^\d+$/.test(dl)) { var be = W.players.filter(function (p) { return String(p.espn || "") === dl; })[0]; if (be) hit = be.id; }
+    if (hit) openCard(hit); else if (dl && window.Search) Search.miss(dl);
     setTimeout(warmTrade, 1200);
   }).catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
   // find any player or team (assets/search.js)

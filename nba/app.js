@@ -2152,7 +2152,7 @@
       $("#foot").innerHTML = "Rosters and contracts as of " + esc(H.asOf) + ". Updated every day from Basketball-Reference, ESPN, DARKO, pbpstats and the Big Board. " + howLink() + ".";
       render();
       // a link straight to a player's card (My teams uses it): /nba/?card=<id>
-      var dl = new URLSearchParams(location.search).get("card"); if (dl && H.W.P[dl]) openCard(dl);
+      var dl = new URLSearchParams(location.search).get("card"); if (dl && H.W.P[dl]) openCard(dl); else if (dl && window.Search) Search.miss(dl);
     })
     .catch(function (e) { view.innerHTML = '<p class="loading">Couldn\'t load the league: ' + esc(e.message) + "</p>"; });
   // find any player or team (assets/search.js)

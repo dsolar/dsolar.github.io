@@ -730,7 +730,7 @@
     $("#foot").innerHTML = 'Expected goals and lines from <a href="https://moneypuck.com" rel="noopener">MoneyPuck.com</a>. Contracts from the open <a href="https://github.com/ehlersio/nhl-contracts" rel="noopener">nhl-contracts</a> dataset (CC0). Standings, rosters and stats from the NHL. Updated ' + fmtDate(H.asOf) + '. <a href="#/method">How it works</a>.';
     render();
     // a link straight to a player's card (My teams uses it): /nhl/?card=<id>
-    var dl = new URLSearchParams(location.search).get("card"); if (dl && PLAYERS[dl]) openCard(+dl);
+    var dl = new URLSearchParams(location.search).get("card"); if (dl && PLAYERS[dl]) openCard(+dl); else if (dl && window.Search) Search.miss(dl);
   }).catch(function () { view.innerHTML = '<p class="loading">The hub didn\'t load. Try again in a minute.</p>'; });
   // find any player or team (assets/search.js)
   if (window.Search) Search.mount({ sport: "nhl", placeholder: "Search NHL players and teams", hint: "Type a player or a team, like Pastrnak or Bruins.",
