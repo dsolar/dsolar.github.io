@@ -725,7 +725,7 @@ function openPlayer(id) {
     meta: [p.pos, p.year, p.ht, p.wt, p.jersey ? "#" + p.jersey : ""], chips, head,
     tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, { id: "dr", label: "Draft", html: dr }],
     foot: '<div class="pc-acts"><a href="#/team?id=' + esc(t.id) + '">' + esc(t.short) + ' page</a><a class="pri" href="https://www.espn.com/college-football/player/_/id/' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">ESPN page</a></div>',
-    follow: { sport: "ncaaf-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cfb/?card=" + encodeURIComponent(p.id) } } });
+    fantasy: { sport: "cfb", id: p.id }, follow: { sport: "ncaaf-p", id: p.id, name: p.name, info: { t: t.short, espn: p.id, href: "/cfb/?card=" + encodeURIComponent(p.id) } } });
   const dlg = $("#card"); if (!dlg.open) dlg.showModal();
 }
 

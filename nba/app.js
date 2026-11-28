@@ -713,7 +713,7 @@
     cardBody.innerHTML = P.html({ face: face(p, 60), name: p.n, color: t.color, team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.short || t.name) + "</a>",
       meta: [posOf(p), age != null ? "Age " + age : "", p.yos != null && !p.two ? (p.yos === 0 ? "Rookie" : ord(p.yos + 1) + " season") : ""], chips: chips, head: head,
       tabs: tabs.map(function (x) { return { id: x[0], label: x[1], html: panes[x[0]] || "" }; }), tab: cardTab, foot: foot,
-      follow: { sport: "nba-p", id: p.id, name: p.n, info: { t: t.short || t.name, espn: p.espn || "", href: "/nba/?card=" + encodeURIComponent(p.id) } } });
+      fantasy: { sport: "nba", id: p.id }, follow: { sport: "nba-p", id: p.id, name: p.n, info: { t: t.short || t.name, espn: p.espn || "", href: "/nba/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
   }
   // ---------- the card's Stats tab: box-score lines from hardcap/stats.json (per game), this season and last, then by week

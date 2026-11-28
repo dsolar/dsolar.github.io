@@ -516,7 +516,7 @@
       chips: [[tr.label, "tag"]], head: head,
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: G ? goalieStats(p) : skaterStats(p) }, { id: "tr", label: "Tracking", html: edgePane(p) }, p.k ? { id: "ct", label: "Contract", html: dealTab(p) } : null],
       foot: t ? '<div class="pc-acts"><a href="#/team/' + esc(p.team) + '">' + esc(t.common || t.name) + " page</a></div>" : "",
-      follow: { sport: "nhl-p", id: p.id, name: p.name, info: { t: t ? t.common || t.name : p.team, href: "/nhl/?card=" + encodeURIComponent(p.id) } } });
+      fantasy: { sport: "nhl", id: p.id }, follow: { sport: "nhl-p", id: p.id, name: p.name, info: { t: t ? t.common || t.name : p.team, href: "/nhl/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
     if (!EDGE) loadEdge().then(function () { var pn = card.querySelector('[data-pane="tr"]'); if (pn && PLAYERS[id] === p) pn.innerHTML = edgePane(p); });
   }

@@ -11,6 +11,9 @@
      o.tab      the tab to open (falls back to the first; the last tab picked is remembered across cards)
      o.foot     markup under the tabs (buttons, notes)
      o.follow   {sport: "nba-p", id, name, info} the Follow button for this player (assets/follow.js)
+     o.fantasy  {sport: "nba" | "nfl" | "mlb" | "nhl" | "cbb" | "cfb", id} or, where the hub's ids aren't Draft Lab's
+                (the NFL), {sport, name, pos}: a line under the tabs with his fantasy numbers and a link to his card
+                in Draft Lab. It shows only for players Draft Lab has (see "the fantasy line" below)
    Pieces for the panes: PCard.sec, PCard.bars, PCard.line, PCard.facts, PCard.spec, PCard.table.
    Tabs use [data-ctab] buttons and [data-pane] panes (the NBA Hub's existing contract); clicks are handled here. */
 (function () {
@@ -31,6 +34,8 @@
     if (head.length) h += '<div class="pc-head" style="--n:' + head.length + '">' + head.map(function (x) { return "<div><b" + (x.tone ? ' class="' + x.tone + '"' : "") + ">" + esc(x.v) + "</b><span>" + esc(x.l) + "</span></div>"; }).join("") + "</div>";
     if (tabs.length > 1) h += '<div class="ctabs pc-tabs" role="tablist">' + tabs.map(function (t) { return '<button type="button" role="tab" data-ctab="' + t.id + '" aria-selected="' + (t.id === cur) + '">' + esc(t.label) + "</button>"; }).join("") + "</div>";
     h += tabs.map(function (t) { return '<div class="cpane pc-pane" data-pane="' + t.id + '"' + (t.id === cur ? "" : " hidden") + ">" + t.html + "</div>"; }).join("");
+    var f = o.fantasy;
+    if (f && f.sport && (f.id != null || f.name)) h += '<div class="pc-fan" hidden data-fs="' + esc(f.sport) + '"' + (f.id != null ? ' data-fid="' + esc(f.id) + '"' : "") + (f.name ? ' data-fname="' + esc(f.name) + '"' : "") + (f.pos ? ' data-fpos="' + esc(f.pos) + '"' : "") + "></div>";
     if (o.foot) h += '<div class="pc-foot">' + o.foot + "</div>";
     return h + "</div>";
   }
@@ -130,5 +135,57 @@
       "</section>" + (o.after || "");
   }
 
-  window.PCard = { html: html, sec: sec, bars: bars, line: line, facts: facts, spec: spec, table: table, color: color, esc: esc, teamHead: teamHead, game: game };
+  // ---------- the fantasy line on a hub's player card (o.fantasy) ----------
+  // Draft Lab's player index (fantasy-kit/data/search.json: [sport, id, name, team, pos]) says whether it has him, so
+  // the line never links to nothing: a lineman, a minor leaguer or a walk-on gets no line. He's found by id where the
+  // hub and Draft Lab share ids, and by name and position where they don't (the NFL: the league's ids here, Sleeper's
+  // there), only when one player in the pool has that name. The numbers are the draft market's, for the sports that
+  // have a market file (market-<sport>.json: ESPN's average draft position and roster share, FantasyPros' rank).
+  // Both files load the first time a card asks, and are kept for the visit.
+  var FAN = { index: null, market: {} }, MARKET = { nba: 1, nfl: 1, mlb: 1 };
+  var nkey = function (s) { return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\b(jr|sr|ii|iii|iv|v)\b\.?/g, "").replace(/[^a-z]/g, ""); };
+  var getJson = function (url) { return fetch(url).then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; }); };
+  function fanIndex() {
+    return FAN.index || (FAN.index = getJson("/fantasy-kit/data/search.json").then(function (d) {
+      var by = {}, names = {};
+      ((d && d.players) || []).forEach(function (r) {
+        by[r[0] + ":" + r[1]] = r;
+        var k = r[0] + ":" + nkey(r[2]) + ":" + r[4];
+        names[k] = names[k] === undefined ? r : null;      // two players, one name and position: no guessing
+      });
+      return { by: by, names: names };
+    }));
+  }
+  function fanMarket(s) {
+    if (!MARKET[s]) return Promise.resolve(null);
+    return FAN.market[s] || (FAN.market[s] = getJson("/fantasy-kit/data/market-" + s + ".json").then(function (d) { return (d && d.players) || null; }));
+  }
+  function fanFill(el) {
+    if (el._fan) return el._fan;
+    var s = el.getAttribute("data-fs"), id = el.getAttribute("data-fid"), name = el.getAttribute("data-fname"), pos = el.getAttribute("data-fpos");
+    return (el._fan = fanIndex().then(function (ix) {
+      var r = id != null ? ix.by[s + ":" + id] : ix.names[s + ":" + nkey(name) + ":" + pos];
+      if (!r) { el.remove(); return null; }
+      return fanMarket(s).then(function (m) {
+        var x = m && m[r[1]], bits = [];
+        if (x) {
+          var fp = x.fp && (x.fp.ALL || x.fp.HALF || x.fp.PPR || x.fp.STANDARD);
+          if (x.adp != null) bits.push('<span title="Average draft position in ESPN leagues"><b>' + (+x.adp).toFixed(1) + "</b> ADP</span>");
+          if (fp) bits.push('<span title="FantasyPros consensus rank"><b>#' + esc(fp) + "</b> FantasyPros</span>");
+          if (x.own != null) bits.push('<span title="Share of ESPN leagues with him on a roster"><b>' + (+x.own >= 99.95 ? "100" : (+x.own).toFixed(+x.own >= 10 ? 0 : 1)) + "%</b> rostered</span>");
+        }
+        el.innerHTML = '<span class="pc-fan-l">Fantasy</span>' + bits.join("") + '<a href="/fantasy/rankings/?s=' + encodeURIComponent(s) + "&p=" + encodeURIComponent(r[1]) + '">Open in Draft Lab <span aria-hidden="true">→</span></a>';
+        el.hidden = false;
+        return r;
+      });
+    }));
+  }
+  // cards are written into the page whole (and rewritten as late data lands), so the line fills whenever one appears
+  function fanHydrate(root) { return Promise.all(Array.prototype.map.call((root || document).querySelectorAll(".pc-fan[data-fs]"), fanFill)); }
+  if (typeof MutationObserver !== "undefined" && typeof document !== "undefined" && document.documentElement) {
+    var fanQueued = false;
+    new MutationObserver(function () { if (fanQueued) return; fanQueued = true; setTimeout(function () { fanQueued = false; fanHydrate(); }, 0); }).observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  window.PCard = { html: html, sec: sec, bars: bars, line: line, facts: facts, spec: spec, table: table, color: color, esc: esc, teamHead: teamHead, game: game, fantasy: fanHydrate };
 })();

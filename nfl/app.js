@@ -1152,7 +1152,7 @@
     cardBody.innerHTML = PC.html({ face: face(p, 60), name: p.n, color: t.color, team: '<a href="' + href("team/" + p.t) + '">' + logo(p.t, 18) + " " + esc(t.name) + "</a>",
       meta: [posOf(p), p.age ? "Age " + Math.floor(p.age) : "", p.exp === 0 ? "Rookie" : p.exp + " yrs exp", p.draft && p.exp > 1 ? p.draft[0] + " pick " + p.draft[1] : ""], chips: chips, head: head,
       tabs: [{ id: "ov", label: "Overview", html: ov }, { id: "st", label: "Stats", html: stp }, hasNgs ? { id: "tr", label: "Next Gen", html: '<div id="ngsc"><p class="note">Loading Next Gen Stats…</p></div>' } : null, /^(QB|RB|WR|TE|EDGE|IDL|LB|CB|S)$/.test(g) ? { id: "ad", label: "Advanced", html: '<div id="advc"><p class="note">Loading advanced stats…</p></div>' } : null, { id: "ct", label: "Contract", html: ct }],
-      foot: foot, follow: { sport: "nfl-p", id: p.id, name: p.n, info: { t: t.short, espn: p.espn || "", href: "/nfl/?card=" + encodeURIComponent(p.id) } } });
+      foot: foot, fantasy: { sport: "nfl", name: p.n, pos: p.pos }, follow: { sport: "nfl-p", id: p.id, name: p.n, info: { t: t.short, espn: p.espn || "", href: "/nfl/?card=" + encodeURIComponent(p.id) } } });
     if (!card.open) card.showModal();
     gameLog(p);
     ngsCard(p);

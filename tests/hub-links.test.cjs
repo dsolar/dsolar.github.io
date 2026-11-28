@@ -59,3 +59,52 @@ test("Draft Lab's card: recent games in Overview and a link to the player's hub"
     if (def) assert.doesNotMatch(U.playerCard(sport, def, {}), /pc-glslot|class="pc-hub"/, `${key}: a team defense gets neither`);
   }
 });
+
+// A hub card's fantasy line (assets/pcard.js, o.fantasy), against the real index and market files
+function hubPage() {
+  const w = page("https://davidsolar.dev/nba/");
+  w.fetch = async (url) => { const f = String(url).replace(/^\//, ""); return fs.existsSync(path.join(ROOT, f)) ? { ok: true, json: async () => JSON.parse(read(f)) } : { ok: false }; };
+  w.eval(read("assets/pcard.js"));
+  const card = (fantasy) => { const d = w.document.createElement("div"); d.innerHTML = w.PCard.html({ name: "x", tabs: [{ id: "ov", label: "Overview", html: "<p>.</p>" }], fantasy }); w.document.body.appendChild(d); return d; };
+  return { w, card };
+}
+
+test("a hub card's fantasy line: the market's numbers and a link to his Draft Lab card", async () => {
+  const { w, card } = hubPage();
+  const market = JSON.parse(read("fantasy-kit/data/market-nba.json")).players, id = Object.keys(market).find((k) => market[k].adp != null && market[k].own != null);
+  const d = card({ sport: "nba", id });
+  assert.ok(d.querySelector(".pc-fan").hidden, "hidden until it knows Draft Lab has him");
+  await w.PCard.fantasy(d);
+  const el = d.querySelector(".pc-fan");
+  assert.ok(el && !el.hidden);
+  assert.equal(el.querySelector("a").getAttribute("href"), "/fantasy/rankings/?s=nba&p=" + encodeURIComponent(id));
+  assert.match(el.textContent, new RegExp(market[id].adp.toFixed(1).replace(".", "\\.") + " ADP"));
+  assert.match(el.textContent, /% rostered/);
+});
+
+test("the fantasy line: no line for a player Draft Lab doesn't have, a link alone where there's no market file", async () => {
+  const { w, card } = hubPage();
+  const gone = card({ sport: "nba", id: "nobody-at-all" });
+  await w.PCard.fantasy(gone);
+  assert.equal(gone.querySelector(".pc-fan"), null);
+  const row = JSON.parse(read("fantasy-kit/data/search.json")).players.find((r) => r[0] === "nhl"), nhl = card({ sport: "nhl", id: row[1] });
+  await w.PCard.fantasy(nhl);
+  const el = nhl.querySelector(".pc-fan");
+  assert.ok(el && !el.hidden);
+  assert.equal(el.querySelectorAll("b").length, 0, "no numbers");
+  assert.equal(el.querySelector("a").getAttribute("href"), "/fantasy/rankings/?s=nhl&p=" + encodeURIComponent(row[1]));
+});
+
+test("the fantasy line: the NFL hub's players are matched by name and position, never across positions", async () => {
+  const { w, card } = hubPage();
+  const row = JSON.parse(read("fantasy-kit/data/search.json")).players.find((r) => r[0] === "nfl" && r[4] === "QB");
+  const qb = card({ sport: "nfl", name: row[2], pos: "QB" }), lb = card({ sport: "nfl", name: row[2], pos: "LB" });
+  await w.PCard.fantasy(qb); await w.PCard.fantasy(lb);
+  assert.equal(qb.querySelector(".pc-fan a").getAttribute("href"), "/fantasy/rankings/?s=nfl&p=" + encodeURIComponent(row[1]));
+  assert.equal(lb.querySelector(".pc-fan"), null, "a linebacker who shares a quarterback's name gets no line");
+});
+
+test("a card that doesn't ask for it has no fantasy line (Draft Lab's own cards)", () => {
+  const { w } = hubPage();
+  assert.doesNotMatch(w.PCard.html({ name: "x", tabs: [] }), /pc-fan/);
+});
