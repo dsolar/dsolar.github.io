@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-28T10:41:57Z",
+ "updated": "2026-11-28T18:29:30Z",
  "votes_url": "https://calendar-votes.dsolar.workers.dev/",
  "theaters": {
   "weekday": {
@@ -13,18 +13,6 @@
   }
  },
  "events": [
-  {
-   "id": "tm-LvZ18Qn8Lu9EIOyyLMpD0",
-   "date": "2026-11-27",
-   "time": "22:00",
-   "title": "Reggae Fest Boston at Big Night Live",
-   "cat": "music",
-   "venue": "Big Night Live",
-   "city": "Boston, MA",
-   "url": "https://www.universe.com/events/reggae-fest-boston-at-big-night-live-tickets-5RC691?ref=ticketmaster",
-   "source": "ticketmaster",
-   "score": 0
-  },
   {
    "id": "sg-18696801",
    "date": "2026-11-28",
@@ -4356,9 +4344,6 @@
    "city": "Boston, MA",
    "url": "https://www.ticketmaster.com/richard-thompson-band-boston-massachusetts-01-24-2027/event/01006546CEFDB67D",
    "source": "ticketmaster",
-   "aka": [
-    "sg-18683861"
-   ],
    "score": 0
   },
   {
@@ -4587,6 +4572,18 @@
    "aka": [
     "sg-18863445"
    ],
+   "score": 0
+  },
+  {
+   "id": "sg-18825194",
+   "date": "2027-01-29",
+   "time": "20:00",
+   "title": "The Young Americans",
+   "cat": "music",
+   "venue": "The Cabot",
+   "city": "Beverly, MA",
+   "url": "https://seatgeek.com/the-young-americans-tickets/beverly-massachusetts-the-cabot-2027-01-29-8-pm/concert/18825194",
+   "source": "seatgeek",
    "score": 0
   },
   {
@@ -5523,7 +5520,6 @@
    "source": "ticketmaster",
    "aka": [
     "sg-18639183",
-    "sg-18830722",
     "2027-02-13-chelsea-cutler-roadrunner"
    ],
    "score": 0
@@ -7253,6 +7249,7 @@
     "tm-vv1AvZkfSGkdTcSmB",
     "tm-vv1AvZkfSGkdTiNmr",
     "sg-18685645",
+    "sg-18685642",
     "sg-18685645",
     "sg-18685642",
     "2027-03-13-dropkick-murphys-mgm-music-hall-at-fe"
@@ -7321,9 +7318,6 @@
    "city": "Boston, MA",
    "url": "https://seatgeek.com/dylan-marlowe-tickets/boston-massachusetts-royale-boston-2027-03-13-7-pm/concert/18754195",
    "source": "seatgeek",
-   "aka": [
-    "sg-18754195"
-   ],
    "score": 0
   },
   {
@@ -7453,7 +7447,8 @@
     "20:00"
    ],
    "aka": [
-    "sg-18709470"
+    "sg-18709470",
+    "sg-18728587"
    ],
    "score": 0
   },
@@ -10911,7 +10906,7 @@
   "picks": 1,
   "venues": 0,
   "espn": 63,
-  "ticketmaster": 479,
-  "seatgeek": 181
+  "ticketmaster": 478,
+  "seatgeek": 182
  }
 }
