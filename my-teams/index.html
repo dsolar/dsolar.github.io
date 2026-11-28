@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>My teams | David Solar</title>
-<meta name="description" content="Every team you follow across the hubs: who they play next, when and on what channel, their record and where they stand.">
+<meta name="description" content="Every team and player you follow across the hubs, with your fantasy leagues and pools: who plays next, where you stand and what needs you.">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#002244">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -16,7 +16,7 @@
 <script src="../assets/analytics.js" defer></script>
 <link rel="stylesheet" href="../assets/navigation.css?v=20261125pr">
 <script src="../assets/projects.js?v=20261124-bb" defer></script>
-<script src="../assets/navigation.js?v=20261127sh" defer></script>
+<script src="../assets/navigation.js?v=20261128mt" defer></script>
 <script src="../assets/follow.js?v=20261124pl" defer></script>
 <script src="../assets/espn-teams.js?v=20261124"></script>
 <link rel="stylesheet" href="../assets/faces.css?v=20261109k">
@@ -74,7 +74,38 @@
   .mt-p .ds-follow span:last-child{display:none}
   .mt-p .ds-follow{padding:6px 8px}
   .mt-p .ds-follow span:first-child{font-size:17px}
-  @media (max-width:640px){.mt-grid{grid-template-columns:1fr}.mt-nm a{font-size:18px}}
+  /* your Draft Lab leagues (fantasy-kit/home.js draws them; the sec-h and ym classes are its own, dressed for the hubs
+     here) and your pools */
+  .mt-sec{margin:0 0 26px}
+  .mt-sec .sec-h{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex-wrap:wrap;margin:0 0 10px}
+  .mt-sec .sec-h h2{margin:0;font:800 22px/1.15 var(--display);letter-spacing:-.01em}
+  .mt-sec .sec-h p{margin:4px 0 0;color:var(--muted);font-size:14px}
+  .mt-sec .sec-h a{font:600 14px/1.2 var(--body);color:var(--red);text-decoration:none}
+  .mt-sec .sec-h a:hover{text-decoration:underline}
+  .ym{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  .ym-item{min-width:0;background:var(--card);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+  .ym-item:hover{border-color:var(--ink)}
+  .ym-c{display:flex;gap:12px;align-items:flex-start;padding:14px;text-decoration:none;color:var(--ink)}
+  .ym-lg{width:30px;height:30px;object-fit:contain;flex:none}
+  .ym-sp{display:grid;place-items:center;font:700 10px/1 var(--body);border:1px solid var(--rule);border-radius:7px;color:var(--muted)}
+  .ym-m{display:flex;flex-direction:column;min-width:0;gap:3px}
+  .ym-m b{font:700 16px/1.2 var(--body);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ym-m small{color:var(--muted);font-size:13px}
+  .ym-s{display:flex;flex-direction:column;margin-top:6px}
+  .ym-s:empty{display:none}
+  .ym-sc{font:800 22px/1 var(--display);font-variant-numeric:tabular-nums}
+  .ym-sc i{font-style:normal;color:var(--muted);margin:0 5px}
+  .ym-sc.up{color:var(--up)}.ym-sc.down{color:var(--down)}
+  .ym-vs{font-size:13px;color:var(--muted);margin-top:3px}
+  .ym-attention{display:block;padding:10px 14px;border-top:1px solid var(--rule-2);font:600 13.5px/1.25 var(--body);color:var(--red);text-decoration:none}
+  .ym-attention:hover{text-decoration:underline}
+  .mt-pool{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--rule-2);color:var(--ink);text-decoration:none}
+  .mt-pool:first-child{border-top:0}
+  .mt-pool:hover b{text-decoration:underline}
+  .mt-pool b{display:block;font:700 16px/1.2 var(--body)}
+  .mt-pool small{display:block;margin-top:3px;color:var(--muted);font-size:13px}
+  .mt-pool i{font-style:normal;color:var(--muted);font-size:20px;line-height:1}
+  @media (max-width:640px){.mt-grid{grid-template-columns:1fr}.mt-nm a{font-size:18px}.ym{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -88,12 +119,14 @@
     <div>
       <p class="kicker">Your teams, every sport</p>
       <h1>My <span>teams</span></h1>
-      <p class="sub">Every team and player you follow on the hubs: who they play next, when and where to watch, where they stand and how your players did last time out.</p>
+      <p class="sub">Every team and player you follow on the hubs, with your fantasy leagues and pools: who plays next, where you stand and what needs you.</p>
     </div>
   </header>
   <nav class="tabs" aria-label="Your sports"><a href="/my-teams/" aria-current="page">My teams</a><a href="/tonight/">Tonight</a></nav>
   <section id="view" aria-live="polite"><p class="loading">Loading your teams…</p></section>
-  <p class="foot">Schedules, records and standings from ESPN. Follow a team or a player with the ☆ on its page or card in any hub.</p>
+  <section id="mt-leagues" class="mt-sec" hidden></section>
+  <section id="mt-pools" class="mt-sec" aria-labelledby="mt-poolh" hidden></section>
+  <p class="foot">Schedules, records and standings from ESPN. Follow a team or a player with the ☆ on its page or card in any hub. Leagues and pools are the ones on your account.</p>
 </main>
 
 <script src="../assets/hubswitch.js?v=20261125s2" defer></script>
@@ -220,6 +253,42 @@
   window.addEventListener("ds-follow", function () { loadPlayers(); var fs = follows(); fs.filter(function (f) { return !data[f.key]; }).forEach(function (f) { load(f).then(draw); }); draw(); });
   window.addEventListener("dsolar:auth", draw);
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script>
+<script>
+/* Your Draft Lab leagues and your pools, under your teams, for someone signed in (the site's one account).
+   The leagues strip is Draft Lab's own (fantasy-kit/home.js: this week's score, and what's waiting on you), so the two
+   pages can't drift; it needs the kit's sports and value files, loaded here only once there's a session.
+   The pools are a plain list: every bracket, survivor and pick'em pool, the pick'em group and the wins pools. */
+(function () {
+  "use strict";
+  var on = false; try { on = !!JSON.parse(localStorage.getItem("fk-auth:session") || "null"); } catch (e) { /* private mode */ }
+  if (!on) return;
+  var KIT = "../fantasy-kit/";
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); };
+  var script = function (src) { return new Promise(function (ok, bad) { var s = document.createElement("script"); s.src = KIT + src; s.onload = ok; s.onerror = function () { bad(new Error(src)); }; document.head.appendChild(s); }); };
+  // each pool game's name and address, as fantasy-kit/pools.js has them (KIND, SPORT and SLUG there: keep these in step)
+  var GAME = { bowls: ["Bowl pick'em", "bowls"], cfpo: ["College Football Playoff bracket", "cfp-bracket"], nflpo: ["NFL playoff bracket", "nfl-bracket"], nflff: ["NFL playoff fantasy", "nfl-playoff-fantasy"],
+    squares: ["Super Bowl squares", "squares"], props: ["Super Bowl prop sheet", "props"], oscars: ["Oscars ballot", "oscars"], bracket: ["March Madness bracket", "march-madness"],
+    survivor: ["March Madness survivor", "march-madness-survivor"], five: ["March Madness 5 teams", "five-teams"], nfl: ["NFL survivor", "nfl-survivor"], mmff: ["March Madness fantasy", "march-madness-fantasy"] };
+  var count = function (n, one, many) { return n == null ? "" : n + " " + (n === 1 ? one : many); };
+  function pools() {
+    var C = window.FK && window.FK.cloud, el = document.getElementById("mt-pools");
+    if (!C || !C.user || !C.user() || !el) return;
+    var list = function (name) { return C.rpc(name).then(function (r) { return Array.isArray(r) ? r : []; }).catch(function () { return []; }); };
+    return Promise.all([list("mm_pools_mine"), list("pk_groups_mine"), list("wn_mine")]).then(function (r) {
+      var rows = r[0].map(function (p) { var g = GAME[p.kind] || ["Pool", ""]; return [g[1] ? "/pools/" + g[1] + "/?p=" + encodeURIComponent(p.id) : "/pools/", p.name, [g[0], count(p.members, "entry", "entries")]]; })
+        .concat(r[1].map(function (g) { return ["/pickem/", g.name, ["NFL pick'em group", count(g.members, "member", "members")]]; }))
+        .concat(r[2].map(function (p) { return ["/pools/wins/?p=" + encodeURIComponent(p.id), p.name, [(p.sport === "nba" ? "NBA" : "NFL") + (p.mode === "ou" ? " over/under pool" : " wins pool"), count(p.members, "entry", "entries")]]; }));
+      if (!rows.length) return;
+      el.innerHTML = '<div class="sec-h"><div><h2 id="mt-poolh">Your pools</h2><p>Brackets, survivor, pick\'em and wins pools you\'re in.</p></div><a href="/pools/">All pools &rarr;</a></div><div class="mt-plist">' +
+        rows.map(function (x) { return '<a class="mt-pool" href="' + esc(x[0]) + '"><span><b>' + esc(x[1] || "Pool") + "</b><small>" + esc(x[2].filter(Boolean).join(" · ")) + '</small></span><i aria-hidden="true">&rsaquo;</i></a>'; }).join("") + "</div>";
+      el.hidden = false;
+    });
+  }
+  script("sports.js?v=20261121lg").then(function () { return script("value.js?v=20261124ij"); }).then(function () { return script("home.js?v=20261124manager"); })
+    .then(function () { return window.FK && window.FK.home ? window.FK.home.mount(document.getElementById("mt-leagues")) : null; })
+    .then(pools).catch(function () { /* the leagues and pools are extras here: the page stands without them */ });
 })();
 </script>
 </body>
